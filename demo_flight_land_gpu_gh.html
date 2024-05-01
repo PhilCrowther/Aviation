@@ -62,7 +62,6 @@ import WebGPU from 'three/addons/capabilities/WebGPU.js';		// ### WebGPU
 import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';	// ### WebGPU
 import Stats from "three/addons/libs/stats.module.js";
 import {Lensflare, LensflareElement} from "three/addons/objects/Lensflare.js";
-//import {nodeFrame} from 'three/addons/renderers/webgl-legacy/nodes/WebGLNodes.js';	// ### Nodes
 
 /*= Start ===================================================================*/
 // Note: Since three.js uses meters, computer Speed and Altitude in Meters
@@ -575,8 +574,6 @@ function initAll() {
 
 //= 2 RENDER ===================================================================
 function rendAll() {
-//	requestAnimationFrame(rendAll);
-//	nodeFrame.update();					// ### Nodes
 	if (PawsOn == 0 && LodFlg > 0) {
 		moveAirPln();
 //		moveJetExh();
