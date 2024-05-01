@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Apr 2024
+Version dated 30 Apr 2024
 
-This shows an animated model of an FM2 aircraft in flight over and animated ocean
+This shows an animated model of an airplane in flight over an animated ocean using nodes.
 -->
 
 <head>
-<title>Aircraft Viewer - Nodes - FM2 - Clouds</title>
+<title>Animation FM2-vc27 Ocean Nodes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_fm2.css">
 </head>
@@ -1321,20 +1321,13 @@ function toggleYawR() {
 	else InpKey.y = 0.1;
 }
 
-// Window Resize
-function onWindowResize() {
-	camera.aspect = window.innerWidth/window.innerHeight;
-	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth,window.innerHeight);
-}
+//= Window Resize Input ========================================================
 
-/* CHANGES ====================================================================
- * 230511:	This version
- * 240218:	Removed internal function references to common variable
- * 240415:	Added clouds
- * 240420:	Converted to SI units
- * 240424:	Changed all air_ variables to 8 character names
-*/
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
 </script>
 </body>

@@ -4,21 +4,13 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Apr 2024
+Version dated 30 Apr 2024
 
-FILE STRUCTURE:
-3js [dir]
--- common [dir]
----- (contains subdirectories for my modules, models, scenery, skyboxes, etc.)
-Aircraft [dir]
--- b29_6BG_ocean3N.html - this file
-
-UNITS:
-This version uses SI units, except for beginning values which are converted to SI units.
+This shows an animated model of an airplane in flight over an animated ocean using nodes.
 -->
 
 <head>
-<title>Aircraft Viewer - Nodes - B29</title>
+<title>Animation B29-6bg Ocean Nodes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_b29n.css">
 </head>
@@ -1154,16 +1146,13 @@ function toggleYawR() {
 	else InpKey.y = 0.1;
 }
 
-// Window Resize
-function onWindowResize() {
-	camera.aspect = window.innerWidth/window.innerHeight;
-	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth,window.innerHeight);
-}
+//= Window Resize Input ========================================================
 
-//= CHANGES ====================================================================
-// 230511 - This version
-// 240218 - Removed internal function references to common variable
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
 </script>
 </body>
