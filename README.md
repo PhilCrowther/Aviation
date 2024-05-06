@@ -13,15 +13,4 @@ The repository includes several sample programs that show how to use these resou
 You can run these programs and load these resources using the following syntax:
 <pre>https://philcrowther.github.io/Aviation/file_name</pre>
 
-<table>
-	<tr>
-		<td>
-		<iframe src="https://philcrowther.github.io/Aviation/anim_FM2_vc27_ocean3n_gh.html" width="100%" height="auto"></iframe>
-		</td>
-	</tr>
-	<tr>
-		<td>
-		<div class="caption">"A WWII FM2 model aircraft flying over an animated ocean.</div>
-		</td>
-	</tr>
-</table>
+For example: https://philcrowther.github.io/Aviation/anim_FM2_vc27_ocean3n_gh.html
