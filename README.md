@@ -13,4 +13,4 @@ The repository includes several sample programs that show how to use these resou
 You can run these programs and load these resources using the following syntax:
 <pre>https://philcrowther.github.io/Aviation/file_name</pre>
 
-For example: https://philcrowther.github.io/Aviation/anim_FM2_vc27_ocean3n_gh.html
+For example: https://philcrowther.github.io/Aviation/fmod_FM2_vc27_ocean_gh.html
