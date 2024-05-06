@@ -61,6 +61,7 @@ import {
 		attribute,
 		positionLocal,
 		MeshStandardNodeMaterial,
+		MeshBasicNodeMaterial
 } from 'three/nodes';
 //import {nodeFrame} from 'three/addons/renderers/webgl-legacy/nodes/WebGLNodes.js';	// ### Nodes
 import {nodeFrame} from 'https://unpkg.com/three@0.163.0/examples/jsm/renderers/webgl-legacy/nodes/WebGLNodes.js';	// ### Nodes
@@ -559,32 +560,32 @@ function loadGeoMat(grd_) {
 //- Load AirObj ----------------------------------------------------------------
 function initAirObj(air_) {
 	// Front
-	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new THREE.MeshLambertMaterial({color: 0xff00ff}));
+	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.rotation.x = -Math.PI/2;
 	mesh.position.z = -5;
 	mesh.castShadow = true;
 	air_.AirPBY.add(mesh);
 	// Back
-	mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new THREE.MeshLambertMaterial({color: 0xff00ff}));
+	mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.rotation.x = Math.PI/2;
 	mesh.rotation.y = Math.PI;
 	mesh.position.z = 15;
 	mesh.castShadow = true;
 	air_.AirPBY.add(mesh);
 	// Wing
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new THREE.MeshLambertMaterial({color: 0xffffff}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 2.5;
 	mesh.castShadow = true;
 	air_.AirPBY.add(mesh);
 	// HTail
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new THREE.MeshLambertMaterial({color: 0xffffff}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
 	air_.AirPBY.add(mesh);
 	// VTail
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new THREE.MeshLambertMaterial({color: 0xff00ff}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.position.y = 2.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
@@ -730,7 +731,7 @@ return deg;}
 //- Make Mesh ------------------------------------------------------------------
 function makMsh() {
 	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
-	let material = new THREE.MeshBasicMaterial({transparent:true,opacity:0}); 
+	let material = new MeshBasicNodeMaterial({transparent:true,opacity:0});
 	let mesh = new THREE.Mesh(geometry, material);
 return mesh;}
 

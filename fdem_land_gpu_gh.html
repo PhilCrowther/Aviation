@@ -54,10 +54,11 @@ This shows a flyable airplane in flight over an procedural land using nodes and 
 import * as THREE from "three";
 import {
 		color,
-		float,
 		texture,
+		float,
 		MeshBasicNodeMaterial,
-		MeshLambertNodeMaterial
+		MeshLambertNodeMaterial,
+		MeshStandardNodeMaterial
 } from 'three/nodes';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';		// ### WebGPU
 import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';	// ### WebGPU
@@ -1457,35 +1458,35 @@ function makeTClr(dtColr,dtData,Weight) {
 
 //= Airplane ===================================================================
 
-//- Load Airplane --------------------------------------------------------------
+//- Load AirObj ----------------------------------------------------------------
 function initAirObj(air_) {
 	// Front
-	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new MeshLambertNodeMaterial({colorNode:color(0xff00ff)}));
+	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.rotation.x = -Math.PI/2;
 	mesh.position.z = -5;
 	mesh.castShadow = true;
 	air_.AirPBY.add(mesh);
 	// Back
-	mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new MeshLambertNodeMaterial({colorNode:color(0xff00ff)}));
+	mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.rotation.x = Math.PI/2;
 	mesh.rotation.y = Math.PI;
 	mesh.position.z = 15;
 	mesh.castShadow = true;
 	air_.AirPBY.add(mesh);
 	// Wing
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new MeshLambertNodeMaterial({colorNode:color(0xffffff)}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 2.5;
 	mesh.castShadow = true;
 	air_.AirPBY.add(mesh);
 	// HTail
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new MeshLambertNodeMaterial({colorNode:color(0xffffff)}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
 	air_.AirPBY.add(mesh);
 	// VTail
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new MeshLambertNodeMaterial({colorNode:color(0xff00ff)}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.position.y = 2.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
@@ -1493,7 +1494,7 @@ function initAirObj(air_) {
 	air_.AirPBY.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);
 }
 
-//- Move Airplane --------------------------------------------------------------
+//- Move AirObj ----------------------------------------------------------------
 function moveAirObj(air_) {
 	// Pitch -----------------------------------------------
 	air_.RotDif.x = air_.InpRot.x;				// Change to Pitch Speed
