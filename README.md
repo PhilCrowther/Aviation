@@ -6,4 +6,4 @@ The fmod programs show detailed airplane models flying over an animated ocean wi
 The fsim program is a basic flight simulation which uses the flight and ocean simulation modules.
 
 You can run these programs and load these resources using the following syntax:
-https://philcrowther.github.io/Aviation/file_name
+<code>https://philcrowther.github.io/Aviation/file_name</code>
