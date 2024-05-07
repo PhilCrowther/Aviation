@@ -219,7 +219,7 @@ function init1GrMap(grx_, grd_, scene) {
 
 //= Move Grid Map ==============================================================
 
-function move1GrMap(grx_, grd) {
+function move1GrMap(grx_, grd_) {
 	let grd1_ = grd_.Grx[1];
 	let grd2_ = grd_.Grx[2];
 	let j, v = 0;
