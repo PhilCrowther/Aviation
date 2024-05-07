@@ -217,22 +217,21 @@ function init1GrMap(grx_, grd_, scene) {
 	}
 }
 
-//- Move Grid Map --------------------------------------------------------------
+//- Move Moving Map ------------------------------------------------------------
 
 function move1GrMap(grx_, grd_) {
 	let grd1_ = grd_.Grx[1];
 	let grd2_ = grd_.Grx[2];
-	let j = 0;
-	let v = 0; 
+	let j, v = 0;
 	let max = 0.5*grx_.RCs*grx_.Siz;
 	let min = -max;
-	// Update Z, X and Y-Values
+	// Update ZX
 	for (let i = 0; i < grx_.RCs; i++) {
-		grx_.MZV[i] = grx_.MZV[i] - grd_.SPS.z;	// Rows
-		grx_.MXV[i] = grx_.MXV[i] - grd_.SPS.x;	// Columns
+		grx_.MZV[i] = grx_.MZV[i] - grd_.MSP.z;	// Rows
+		grx_.MXV[i] = grx_.MXV[i] - grd_.MSP.x;	// Columns
 	}
 	// Test North/South
-	if (grd_.SPS.z < 0) {					// If Moving South
+	if (grd_.MSP.z < 0) {					// If Moving South
 		j = grx_.Nor;
 		if (grx_.MZV[j] >= max) {
 			v = min+(grx_.MZV[j]-max);
@@ -252,7 +251,7 @@ function move1GrMap(grx_, grd_) {
 			if (grx_.Typ == 2) grd2_.NSA = grd2_.NSA + grx_.Stp;
 		}
 	}
-	if (grd_.SPS.z > 0) {					// If Moving North
+	if (grd_.MSP.z > 0) {					// If Moving North
 		j = grx_.Nor + 1;
 		if (j > grx_.RCi) j = 0;
 		if (grx_.MZV[j] <= min) {
@@ -274,7 +273,7 @@ function move1GrMap(grx_, grd_) {
 		}
 	}
 	// Test East/West
-	if (grd_.SPS.x < 0) {					// If Moving West
+	if (grd_.MSP.x < 0) {					// If Moving West
 		j = grx_.Est;
 		if (grx_.MXV[j] >= max) {
 			v = min+(grx_.MXV[j]-max);
@@ -294,7 +293,7 @@ function move1GrMap(grx_, grd_) {
 			if (grx_.Typ == 2) grd2_.EWA = grd2_.EWA + grx_.Stp;
 		}
 	}
-	if (grd_.SPS.x > 0) {						// If Moving East
+	if (grd_.MSP.x > 0) {						// If Moving East
 		j = grx_.Est + 1;
 		if (j > grx_.RCi) j = 0;	
 		if (grx_.MXV[j] <= min) {
@@ -319,16 +318,17 @@ function move1GrMap(grx_, grd_) {
 	let n = 0;
 	for (let r = 0; r < grx_.RCs; r++) {	// Row
 		for (let c = 0; c < grx_.RCs; c++) {	// Col
-			grx_.Ptr[n].position.set(grx_.MXV[c],-grd_.SPS.y,-grx_.MZV[r]);
+			grx_.Ptr[n].position.set(grx_.MXV[c],-grd_.MSP.y,-grx_.MZV[r]);
+			if (grx_.Typ > 0) grx_.Ptr[n].position.y = -grd_.MSP.y-grd_.WMx;
 			grx_.Ptr[n].visible = true;	// Default for Outer Grid
 			n++;
 		}
 	}
 	// Outer Grids Only - Make Cut-Out Area Invisible
 	if (grx_.Typ > 0) {
-		let r = grx_.Nor + 1 + grx_.NSA;			// Get Lower index
+		let r = grx_.Nor + 1 + grx_.NSA;		// Get Lower index
 		if (r > grx_.RCi) r = r - grx_.RCs;
-		let c = grx_.Est + 1 + grx_.EWA;			// Get Left Index
+		let c = grx_.Est + 1 + grx_.EWA;		// Get Left Index
 		if (c > grx_.RCi) c = c - grx_.RCs;
 		for (let i = 0; i < grx_.RCF; i++) {
 			n = r * grx_.RCs + c;
