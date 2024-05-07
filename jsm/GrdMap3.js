@@ -125,8 +125,8 @@ function init1GrMap(grx_, grd_, scene) {
 /* Move Moving Map ----------------------------------------------*/
 
 function move1GrMap(grx_, grd_) {
-	let grd1_ = grx_.Grx[1];
-	let grd2_ = grx_.Grx[2];
+	let grd1_ = grd_.Grx[1];
+	let grd2_ = grd_.Grx[2];
 	let j, v = 0;
 	let max = 0.5*grx_.RCs*grx_.Siz;
 	let min = -max;
