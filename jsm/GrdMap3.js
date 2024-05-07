@@ -14,9 +14,6 @@ import {
 	Mesh
 } from 'three';
 
-/* = LOCAL VARIABLES =========================================================*/
-let geometry, material, mesh;
-
 /*= PROGRAM ==================================================================*/
 
 let GrdMap = function (grd_, scene) {
@@ -109,8 +106,8 @@ function init1GrMap(grx_, grd_, scene) {
 		zx = zx + grx_.Siz;
 	}
 	// Load Geometry and Material
-	geometry = grd_.Geo[grx_.Typ];
-	material = grd_.Mat[grx_.Typ];
+	let geometry = grd_.Geo[grx_.Typ];
+	let material = grd_.Mat[grx_.Typ];
 	// Set Starting Position of Squares
 	let n = 0;
 	for (let z = 0; z < grx_.RCs; z++) {		// Row
