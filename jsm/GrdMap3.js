@@ -25,6 +25,10 @@ import {
 		MeshStandardNodeMaterial,
 } from 'three/nodes';
 
+//= CONSTANTS ==================================================================
+//-	Conversions
+var DegRad = Math.PI/180;		// Convert Degrees to Radians
+
 /*= PROGRAM ==================================================================*/
 
 let GrdMap = function (grd_, scene) {
