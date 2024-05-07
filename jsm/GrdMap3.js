@@ -217,15 +217,15 @@ function init1GrMap(grx_, grd_, scene) {
 	}
 }
 
-//- Move Moving Map ------------------------------------------------------------
+//= Move Grid Map ==============================================================
 
-function move1GrMap(grx_, grd_) {
+function move1GrMap(grx_, grd) {
 	let grd1_ = grd_.Grx[1];
 	let grd2_ = grd_.Grx[2];
 	let j, v = 0;
 	let max = 0.5*grx_.RCs*grx_.Siz;
 	let min = -max;
-	// Update ZX
+	// Update Z, X and Y-Values
 	for (let i = 0; i < grx_.RCs; i++) {
 		grx_.MZV[i] = grx_.MZV[i] - grd_.SPS.z;	// Rows
 		grx_.MXV[i] = grx_.MXV[i] - grd_.SPS.x;	// Columns
@@ -319,16 +319,15 @@ function move1GrMap(grx_, grd_) {
 	for (let r = 0; r < grx_.RCs; r++) {	// Row
 		for (let c = 0; c < grx_.RCs; c++) {	// Col
 			grx_.Ptr[n].position.set(grx_.MXV[c],-grd_.SPS.y,-grx_.MZV[r]);
-			if (grx_.Typ > 0) grx_.Ptr[n].position.y = -grd_.SPS.y-grd_.WMx;
 			grx_.Ptr[n].visible = true;	// Default for Outer Grid
 			n++;
 		}
 	}
 	// Outer Grids Only - Make Cut-Out Area Invisible
-	if (grx_.Typ > 0) {
-		let r = grx_.Nor + 1 + grx_.NSA;		// Get Lower index
+	if (grx_.Typ) {
+		let r = grx_.Nor + 1 + grx_.NSA;			// Get Lower index
 		if (r > grx_.RCi) r = r - grx_.RCs;
-		let c = grx_.Est + 1 + grx_.EWA;		// Get Left Index
+		let c = grx_.Est + 1 + grx_.EWA;			// Get Left Index
 		if (c > grx_.RCi) c = c - grx_.RCs;
 		for (let i = 0; i < grx_.RCF; i++) {
 			n = r * grx_.RCs + c;
