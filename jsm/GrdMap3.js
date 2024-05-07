@@ -11,8 +11,19 @@
 //
 
 import {
+	PlaneGeometry
 	Mesh
 } from 'three';
+import {
+		color,
+		texture,
+		normalMap,
+		float,
+		vec2,
+		attribute,
+		positionLocal,
+		MeshStandardNodeMaterial,
+} from 'three/nodes';
 
 /*= PROGRAM ==================================================================*/
 
@@ -107,12 +118,13 @@ function init1GrMap(grx_, grd_, scene) {
 	}	
 	// Common Variables
 	let n, si, d2, yd0, xd0;
-	let geometry = new THREE.PlaneGeometry(grx_.Siz, grx_.Siz);
+	let geometry = new PlaneGeometry(grx_.Siz, grx_.Siz);
 	// Default to Prevent Err (Lower Left to Upper Right)
-	let material = new MeshLambertNodeMaterial({colorNode: color(0xc00000)});
+//	let material = new MeshLambertNodeMaterial({colorNode: color(0xc00000)});
+	let material = new MeshStandardNodeMaterial({colorNode: color(0xc00000)});
 	// Assign Textures and Save Square Pointers
 	for (let i = 0; i < grx_.Num; i++) {
-		let mesh = new THREE.Mesh(geometry,material);
+		let mesh = new Mesh(geometry,material);
 		if (grx_.Shd) mesh.receiveShadow = true;
 		grx_.Ptr[i] = mesh;
 	}
@@ -136,7 +148,7 @@ function init1GrMap(grx_, grd_, scene) {
 						si = yd2*3+xd2;
 						d2 = yd0 + xd0 + yd2*27 + xd2;
 						material = MatPtr[MatIdx[si]];
-						grx_.Ptr[d2] = new THREE.Mesh(geometry,material);
+						grx_.Ptr[d2] = new Mesh(geometry,material);
 						if (grx_.Shd) grx_.Ptr[d2].receiveShadow = true;
 						si++;
 					}
@@ -159,7 +171,7 @@ function init1GrMap(grx_, grd_, scene) {
 				for (let ad = 0; ad < 3; ad++) {
 					d2 = yd0 + xd + ad*9*grx_.RCs;
 					for (let bd = 0; bd < 3; bd++) {
-						grx_.Ptr[d2] = new THREE.Mesh(geometry,material);
+						grx_.Ptr[d2] = new Mesh(geometry,material);
 						if (grx_.Shd) grx_.Ptr[d2].receiveShadow = true;
 						d2 = d2 + 9;
 					}
@@ -180,7 +192,7 @@ function init1GrMap(grx_, grd_, scene) {
 				for (let ad = 0; ad < 9; ad++) {
 					d2 = yd0 + xd + ad*3*grx_.RCs;
 					for (let bd = 0; bd < 9; bd++) { 
-						grx_.Ptr[d2] = new THREE.Mesh(geometry,material);
+						grx_.Ptr[d2] = new Mesh(geometry,material);
 						if (grx_.Shd) grx_.Ptr[d2].receiveShadow = true;
 						d2 = d2 + 3;
 					}
