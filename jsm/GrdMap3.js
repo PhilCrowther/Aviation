@@ -11,7 +11,7 @@
 //
 
 import {
-	PlaneGeometry
+	PlaneGeometry,
 	Mesh
 } from 'three';
 import {
