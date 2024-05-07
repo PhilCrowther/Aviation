@@ -83,18 +83,18 @@ GrdMap.prototype.update = function (grd_) {
 	move1GrMap(grd_.Grx[2], grd_);
 }
 
-/* Init Moving Map (Ocean) --------------------------------------*/
+//- Init Grid Map --------------------------------------------------------------
 
 function init1GrMap(grx_, grd_, scene) {
 	// Load Variables
 	grx_.RCi = grx_.RCs-1;				// Max Index Value
 	grx_.MZV[grx_.RCi] = 0;				// Z-Values
 	grx_.MXV[grx_.RCi] = 0;				// X-Values
-	grx_.Nor = grx_.RCi;				// Max North Square (updated)
-	grx_.Est = grx_.RCi;				// Max East Square (updated)
+	grx_.Nor = grx_.RCi;					// Max North Square (updated)
+	grx_.Est = grx_.RCi;					// Max East Square (updated)
 	grx_.Num = grx_.RCs * grx_.RCs;		// Size of array
-	grx_.Ptr[grx_.Num-1] = 0;			// Mesh Pointers
-	if (grx_.Typ > 0) {
+	grx_.Ptr[grx_.Num-1] = 0;				// Mesh Pointers
+	if (grx_.Typ) {
 		grx_.NSA = (grx_.RCs-grx_.RCF)/2;	// (27-3=6)
 		grx_.EWA = grx_.NSA;
 	}
@@ -104,33 +104,113 @@ function init1GrMap(grx_, grd_, scene) {
 		grx_.MZV[i] = zx;
 		grx_.MXV[i] = zx;
 		zx = zx + grx_.Siz;
+	}	
+	// Common Variables
+	let n, si, d2, yd0, xd0;
+	let geometry = new THREE.PlaneGeometry(grx_.Siz, grx_.Siz);
+	// Default to Prevent Err (Lower Left to Upper Right)
+	let material = new MeshLambertNodeMaterial({colorNode: color(0xc00000)});
+	// Assign Textures and Save Square Pointers
+	for (let i = 0; i < grx_.Num; i++) {
+		let mesh = new THREE.Mesh(geometry,material);
+		if (grx_.Shd) mesh.receiveShadow = true;
+		grx_.Ptr[i] = mesh;
 	}
-	// Load Geometry and Material
-	let geometry = grd_.Geo[grx_.Typ];
-	let material = grd_.Mat[grx_.Typ];
+	let Lv1Idx = grd_.Idx[0];	// G0Indx
+	let Lv2Idx = grd_.Idx[1];	// G1Indx
+	let MatPtr;
+	//
+	if (grx_.Typ == 0) {
+		n = 0;
+		MatPtr = grd_.Mat[0];	// G0MPtr
+		// Use Combination of Grid 0 3x3 Index and Grid 1 Index to Determine Material for Each Square 
+		for (let yd = 0; yd < 9; yd++) {	// For each 3X3 section
+			for (let xd = 0; xd < 9; xd++) {
+				yd0 = yd * 81;
+				xd0 = xd * 3;
+				let MatIdx = Lv1Idx[Lv2Idx[n]];	//G1Indx points to 3X3 type, G0Indx points to sequence
+				si = 0;
+				// Within single 3x3 Grid
+				for (let yd2 = 0; yd2 < 3; yd2++) {
+					for (let xd2 = 0; xd2 < 3; xd2++) {
+						si = yd2*3+xd2;
+						d2 = yd0 + xd0 + yd2*27 + xd2;
+						material = MatPtr[MatIdx[si]];
+						grx_.Ptr[d2] = new THREE.Mesh(geometry,material);
+						if (grx_.Shd) grx_.Ptr[d2].receiveShadow = true;
+						si++;
+					}
+				}
+				n++;		
+			}
+		}	
+	}
+	if (grx_.Typ == 1) {
+		// 81 textures are repeated 9X on the full map
+		// Assign Textures
+		n = 0;
+		MatPtr = grd_.Mat[1];	// G1MPtr
+		for (let yd = 0; yd < 9; yd++) {
+			for (let xd = 0; xd < 9; xd++) {
+				// From Upper Left
+				material = MatPtr[Lv2Idx[n]];
+				yd0 = yd*grx_.RCs;
+				// Assign Textures and Save Square Pointers
+				for (let ad = 0; ad < 3; ad++) {
+					d2 = yd0 + xd + ad*9*grx_.RCs;
+					for (let bd = 0; bd < 3; bd++) {
+						grx_.Ptr[d2] = new THREE.Mesh(geometry,material);
+						if (grx_.Shd) grx_.Ptr[d2].receiveShadow = true;
+						d2 = d2 + 9;
+					}
+				}
+				n++;
+			}
+		}
+	}
+	if (grx_.Typ == 2) {
+		// 27 textures are repeated 27X on the full map
+		n = 0;
+		MatPtr = grd_.Mat[2];	// G2MPtr
+		for (let yd = 0; yd < 3; yd++) {	// Source
+			for (let xd = 0; xd < 3; xd++) {
+				material = MatPtr[n];
+				yd0 = yd*grx_.RCs;			// Within the lower left square
+				// Assign Textures and Save Square Pointers
+				for (let ad = 0; ad < 9; ad++) {
+					d2 = yd0 + xd + ad*3*grx_.RCs;
+					for (let bd = 0; bd < 9; bd++) { 
+						grx_.Ptr[d2] = new THREE.Mesh(geometry,material);
+						if (grx_.Shd) grx_.Ptr[d2].receiveShadow = true;
+						d2 = d2 + 3;
+					}
+				}
+				n++;
+			}
+		}
+	}
+	n = 0;
 	// Set Starting Position of Squares
-	let n = 0;
-	for (let z = 0; z < grx_.RCs; z++) {		// Row
+	for (let y = 0; y < grx_.RCs; y++) {		// Row
 		for (let x = 0; x < grx_.RCs; x++) {	// Column
-			grx_.Ptr[n] = new Mesh(geometry,material);
-			if (grx_.Shd == 1) grx_.Ptr[n].receiveShadow = true;
+			grx_.Ptr[n].rotation.x = -90*DegRad;
 			scene.add(grx_.Ptr[n]);
-			grx_.Ptr[n].position.set(grx_.MXV[x],-grd_.SPS.y,-grx_.MZV[z]);
-			if (grx_.Typ > 0) grx_.Ptr[n].position.y = grx_.Ptr[n].position.y-grd_.WMx;
+			grx_.Ptr[n].position.set(grx_.MXV[x],-grd_.SPS.y,-grx_.MZV[y]);
 			n++;
 		}
 	}
 }
 
-/* Move Moving Map ----------------------------------------------*/
+//- Move Grid Map --------------------------------------------------------------
 
-function move1GrMap(grx_, grd_) {
+function move1GrMap(grx_, grd) {
 	let grd1_ = grd_.Grx[1];
 	let grd2_ = grd_.Grx[2];
-	let j, v = 0;
+	let j = 0;
+	let v = 0; 
 	let max = 0.5*grx_.RCs*grx_.Siz;
 	let min = -max;
-	// Update ZX
+	// Update Z, X and Y-Values
 	for (let i = 0; i < grx_.RCs; i++) {
 		grx_.MZV[i] = grx_.MZV[i] - grd_.SPS.z;	// Rows
 		grx_.MXV[i] = grx_.MXV[i] - grd_.SPS.x;	// Columns
@@ -224,16 +304,15 @@ function move1GrMap(grx_, grd_) {
 	for (let r = 0; r < grx_.RCs; r++) {	// Row
 		for (let c = 0; c < grx_.RCs; c++) {	// Col
 			grx_.Ptr[n].position.set(grx_.MXV[c],-grd_.SPS.y,-grx_.MZV[r]);
-			if (grx_.Typ > 0) grx_.Ptr[n].position.y = -grd_.SPS.y-grd_.WMx;
 			grx_.Ptr[n].visible = true;	// Default for Outer Grid
 			n++;
 		}
 	}
 	// Outer Grids Only - Make Cut-Out Area Invisible
-	if (grx_.Typ > 0) {
-		let r = grx_.Nor + 1 + grx_.NSA;		// Get Lower index
+	if (grx_.Typ) {
+		let r = grx_.Nor + 1 + grx_.NSA;			// Get Lower index
 		if (r > grx_.RCi) r = r - grx_.RCs;
-		let c = grx_.Est + 1 + grx_.EWA;		// Get Left Index
+		let c = grx_.Est + 1 + grx_.EWA;			// Get Left Index
 		if (c > grx_.RCi) c = c - grx_.RCs;
 		for (let i = 0; i < grx_.RCF; i++) {
 			n = r * grx_.RCs + c;
