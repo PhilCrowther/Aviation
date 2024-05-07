@@ -325,7 +325,7 @@ function move1GrMap(grx_, grd_) {
 		}
 	}
 	// Outer Grids Only - Make Cut-Out Area Invisible
-	if (grx_.Typ) {
+	if (grx_.Typ > 0) {
 		let r = grx_.Nor + 1 + grx_.NSA;			// Get Lower index
 		if (r > grx_.RCi) r = r - grx_.RCs;
 		let c = grx_.Est + 1 + grx_.EWA;			// Get Left Index
