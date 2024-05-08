@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 Apr 2024
+Version dated 8 May 2024
 
 A flight simulation of an animated airplane model over an animated ocean using nodes.
 -->
@@ -71,7 +71,7 @@ import Stats from "three/addons/libs/stats.module.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {Lensflare,LensflareElement} from "three/addons/objects/Lensflare.js";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3.js";
+import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight3.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean3.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr3N.js";
@@ -93,7 +93,7 @@ import {nodeFrame} from 'three/addons/renderers/webgl-legacy/nodes/WebGLNodes.js
 // Nose not level in normal cruise flight - too much ACPang or reversed?
 
 //- AIRPLANE: Start -----------------------------------------------------------
-let USorSI = "SI";					// Units of Measurement (US or SI)
+let USorSI = "US";					// Units of Measurement (US or SI)
 let BegSpd = 0;						// Speed (mph)
 let BegEWP = 0;						// EW Position (feet)
 let BegAlt = 0;						// Altitude (feet)
@@ -141,8 +141,8 @@ if (USorSI = "US") {
 	BegEWP = BegNSP*Ft2Mtr;
 }
 
-//= INPUTS ====================================================================
-//-	VIEW KEYS -------------------------------------------------------------------
+//= INPUTS =====================================================================
+//-	VIEW KEYS ------------------------------------------------------------------
 let U45flg = 0;						// Up 45 degrees
 let D45flg = 0;						// Down 45 degrees
 let	L45flg = 0;						// Left 45 degrees
@@ -237,7 +237,7 @@ let air_ = {
 //- Load Models and Animations -------------------------------------------------
 //	File Path
 let ACPath = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
-//	Animation Mixers - My Airplane
+//	Animation Mixers - External Model
 let ACFile = "fm2_flyt_caf_npa.glb";	// Name of airplane model file (rotated blender file)
 let mxr_ = {
 		// File Name
@@ -253,7 +253,7 @@ let mxr_ = {
 		// Canopy, Tailhook, SpinProp XP
 		Cnp:0, THk:0
 	}
-//	Animation Mixers - My Virtual Cockpit
+//	Animation Mixers - Internal Model
 let VCFile = "fm2_flyt_vcp_npa.glb";	// Name of airplane model file (rotated blender file)
 let vxr_ = {
 		// File Name
