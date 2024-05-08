@@ -800,7 +800,7 @@ function initAll() {
 	grids = new GrdMap(grd_,scene);		// Init Grid Map
 	grids.update(grd_);					// Mode Grid Map
 	initRoads();
-	makeTrees();
+//	makeTrees();
 	initObject();						// Stationary Objects
 	moveCamera();						// position camera
 	noPause();							// Pause Off
@@ -835,7 +835,7 @@ function rendAll() {
 		grd_.SPS.copy(air_.MapSPS);		// Update Position
 		grids.update(grd_);				// Mode Grid Map
 		moveRoads();
-		moveTrees();		
+//		moveTrees();		
 		moveObject();					// Move objects
 		moveCamera();
 		moveSounds();
