@@ -5,9 +5,9 @@ This includes a flight simulation module (Flight3), an ocean simulation module (
 The repository includes several sample programs that show how to use these resources.
 </p>
 <ul>
-	<li>The fdem programs show a basic airplane flying over the ocean (using the ocean module) and land.</li>
+	<li>The fdem programs show a basic airplane flying over the ocean and land (using the applicable modules).</li>
 	<li>The fmod programs show detailed airplane models flying over an animated ocean with simple clouds.</li>
-	<li>The fsim program is a basic flight simulation which uses the flight and ocean simulation modules.</li>
+	<li>The fsim programs are basic flight simulation which use the flight, grid and ocean simulation modules.</li>
 </ul>
 <p>
 You can run these programs and load these resources using the following syntax:
