@@ -72,7 +72,8 @@ import {
 		color,
 		float,
 		texture,
-		MeshLambertNodeMaterial
+		MeshLambertNodeMaterial,
+		MeshBasicNodeMaterial
 } from 'three/nodes';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';		// ### WebGPU
 import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';	// ### WebGPU
@@ -796,11 +797,10 @@ function initAll() {
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 	initGrdTxt();
 	grd_.SPS.y = air_.MapSPS.y;
-//	initGrdMap();
 	grids = new GrdMap(grd_,scene);		// Init Grid Map
-	grids.update(grd_);				// Mode Grid Map
+	grids.update(grd_);					// Mode Grid Map
 	initRoads();
-//	initTrees();
+	makeTrees();
 	initObject();						// Stationary Objects
 	moveCamera();						// position camera
 	noPause();							// Pause Off
@@ -832,13 +832,10 @@ function rendAll() {
 	if (PawsOn == 0 && LodFlg > 0 && controls.isLocked === true) {
 		DLTime = 1/60;					// ### Until we fix overspeed
 		moveAirObj();					// Move aircaft
-		grd_.SPS.z = air_.MapSPS.z;		// Update Common Grid Data (in meters)
-		grd_.SPS.x = air_.MapSPS.x;
-		grd_.SPS.y = air_.MapSPS.y;
-//		moveGrdMap();					// Move ground
+		grd_.SPS.copy(air_.MapSPS);		// Update Position
 		grids.update(grd_);				// Mode Grid Map
 		moveRoads();
-//		moveTrees();		
+		moveTrees();		
 		moveObject();					// Move objects
 		moveCamera();
 		moveSounds();
@@ -1330,18 +1327,18 @@ function moveRoad2(Rod) {
 	}
 }
 
-/* Trees =====================================================================*/
+//= TREES ======================================================================
 
-/* Init Trees ----------------------------------------------------------------*/
+//- Make Trees ------------------------------------------------------------------
 
-function initTrees() {
+function makeTrees() {
 	let points = [
 		new THREE.Vector2(4.0,-6.7),	// Bot
 		new THREE.Vector2(4.9,-3.0),
 		new THREE.Vector2(4.2, 3.0),
 		new THREE.Vector2(3,5, 2.0),
 		new THREE.Vector2(1.8, 5.8),
-		new THREE.Vector2(0.1, 6.0)	// Top
+		new THREE.Vector2(0.1, 6.0)		// Top
 	];
 	let gomtre = new THREE.LatheGeometry(points,6);
 	let gomtrn = new THREE.BoxGeometry(0.9,3.0,0.9);
@@ -1353,19 +1350,11 @@ function initTrees() {
 	txttre.magFilter = THREE.LinearFilter;
 	txttre.minFilter = THREE.LinearMipMapLinearFilter;
 	txttre.generateMipmaps = true;
-	txttre.anisotropy = maxAnisotropy;		// ###
+	txttre.anisotropy = maxAnisotropy;	// ###
 	txttre.needsUpdate = true;
-//	let mtltre = new THREE.MeshLambertMaterial({map: txttre});
 	let mtltre = new MeshLambertNodeMaterial({colorNode: texture(txttre)});
-//	let mtltrn = new THREE.MeshLambertMaterial({color:0x161005});
 	let mtltrn = new MeshLambertNodeMaterial({colorNode: color(0x161005)});
-//	let mtlshd = new THREE.MeshLambertMaterial({
-//		color: 0x000000,
-//		transparent: true,
-//		opacity: .5,
-//		depthWrite: false
-//	});
-	let mtlshd = new MeshLambertNodeMaterial({colorNode: color(0x000000)});
+	let mtlshd = new MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
 	// Make Prototype Tree
 	let tree0 = new THREE.Mesh(gomtre,mtltre);
 	let trnk = new THREE.Mesh(gomtrn,mtltrn);
@@ -1400,25 +1389,25 @@ function initTrees() {
 		scene.add(Trees[n]);
 		Trees[n].rotation.y = (Math.floor(Math.random()+0.5))*90*DegRad;
 		Trees[n].position.y = 9.8;
-		TreePX[n] = 804.672*Math.floor(27*(Math.random()-0.5))+50;
-		TreePZ[n] = 804.672*Math.floor(27*(Math.random()-0.5))+50;
+		TreePX[n] = GrdSiz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
+		TreePZ[n] = GrdSiz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
 	}
+	moveTrees();
 }
 
-// Move Trees
+//- Move Trees -----------------------------------------------------------------
+
 function moveTrees() {
 	// Convert Distances into Meters to match landscape program
-	let a = 10865;
+	let a = 13.5*GrdSiz;
 	for (let n = 0; n < TreTot; n ++) {
 		// Set Position 
-		let x = TreePX[n]-air_.MapPos.x-1320;
+		let x = TreePX[n]-air_.MapPos.x-GrdSiz/2;
 		if (x > a) x = x - 2*a;
 		if (x < -a) x = x + 2*a;
-//		x = x*Ft2Mtr;
-		let z = air_.MapPos.z-TreePZ[n]-1320;
+		let z = air_.MapPos.z-TreePZ[n]-GrdSiz/2;
 		if (z > a) z = z - 2*a;
 		if (z < -a) z = z + 2*a;
-//		z = z*Ft2Mtr;
 		let y = -grd_.SPS.y*.99+9.8;	// Objects elevate above ground as we climb to prevent flicker
 		Trees[n].position.set(x,y,z);
 	}
