@@ -1,13 +1,12 @@
-//= GRID MAP MODULE ============================================================
+//= GRIDMAP3 MODULE ============================================================
 
-// GrdWtr variation
-// Version 1.01 (dated 31 May 2023)
-// Copyright 2022-2023, Phil Crowther
+// GrdMap3 Module (updated 7 May 2024)
+// Copyright 2022-2024, Phil Crowther
 // icensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
 //
 // @fileoverview
-// This moduel contains functions creating a scrolling grid map using the Ocean module
+// This moduel contains functions creating a scrolling grid map for Land
 //
 
 import {
@@ -16,12 +15,6 @@ import {
 } from 'three';
 import {
 		color,
-		texture,
-		normalMap,
-		float,
-		vec2,
-		attribute,
-		positionLocal,
 		MeshStandardNodeMaterial,
 } from 'three/nodes';
 
@@ -127,7 +120,6 @@ function init1GrMap(grx_, grd_, scene) {
 	let n, si, d2, yd0, xd0;
 	let geometry = new PlaneGeometry(grx_.Siz, grx_.Siz);
 	// Default to Prevent Err (Lower Left to Upper Right)
-//	let material = new MeshLambertNodeMaterial({colorNode: color(0xc00000)});
 	let material = new MeshStandardNodeMaterial({colorNode: color(0xc00000)});
 	// Assign Textures and Save Square Pointers
 	for (let i = 0; i < grx_.Num; i++) {
@@ -353,10 +345,3 @@ function move1GrMap(grx_, grd_) {
 }
 
 export {GrdMap};
-
-/*= REVISIONS ================================================================*/
-//- 230530	Moved Grid Definitions into Module
-//- 230531	Created this generalized version of GrdWtr.
-//			Routines in Main Program now handle creation of Geometry and Materials
-//			(You can now use this for animated and non-animated Ocean)
-		
