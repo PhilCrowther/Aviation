@@ -27,17 +27,17 @@ import {
 
 //= CONSTANTS ==================================================================
 //-	Conversions
-var DegRad = Math.PI/180;		// Convert Degrees to Radians
+var DegRad = Math.PI/180;			// Convert Degrees to Radians
 
 /*= PROGRAM ==================================================================*/
 
 let GrdMap = function (grd_, scene) {
 
-/*- Grid 0 -------------------------------------------------------------------*/
+//- Grid 0 ---------------------------------------------------------------------
 	grd_.Grx[0] = {
 		Typ:	0,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,			// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	grd_.Siz,			// Size of square
+		Siz:	GrdSiz,				// Size of square
 		Stp:	grd_.Stp,			// Steps
 		RCi:	0,					// Rows and Columns Index (computed)
 		MZV:	[0],				// Ground Z Value
@@ -50,13 +50,14 @@ let GrdMap = function (grd_, scene) {
 		RCF:	0,					// N/A
 		NSA:	0,					// N/A
 		EWA:	0,					// N/A
+		Mat:	0					// N/A
 	}
-/*- Grid 1 -------------------------------------------------------------------*/
+//- Grid 1 ---------------------------------------------------------------------
 	grd_.Grx[1] = {
 		Typ:	1,					// Type of Grid - Inner or Outer
-		RCs:	16,					// Rows and Columns - use odd number (for now = divisible by 3)
+		RCs:	grd_.RCs,			// Rows and Columns - use odd number (for now = divisible by 3)
 		Siz:	grd_.Grx[0].Siz*grd_.Grx[0].Stp,	// Size of square
-		Stp:	4,					// Steps (### changed)
+		Stp:	grd_.Stp,			// Steps (### changed)
 		RCi:	0,					// Rows and Columns Index (computed)
 		MZV:	[0],				// Ground Z Value
 		MXV:	[0],				// Ground X Value
@@ -68,11 +69,12 @@ let GrdMap = function (grd_, scene) {
 		RCF:	grd_.Grx[0].RCs/grd_.Grx[0].Stp,	// Cut-Out Area (27/3 = 9)
 		NSA:	0,					// Shared North/South Adjustment (updated)
 		EWA:	0,					// Shared East/West Adjustment (updated)
+		Mat:	0					// Match Texture of Outer and Inner Blocks
 	}
-/*- Grid 2 -------------------------------------------------------------------*/
+//- Grid 2 ---------------------------------------------------------------------
 	grd_.Grx[2] = {
 		Typ:	2,					// Type of Grid - Inner or Outer
-		RCs:	16,					// Rows and Columns - use odd number (for now = divisible by 3)
+		RCs:	grd_.RCs,			// Rows and Columns - use odd number (for now = divisible by 3)
 		Siz:	grd_.Grx[1].Siz*grd_.Grx[1].Stp,	// Size of square
 		Stp:	1,					// Squares to flip
 		RCi:	0,					// Rows and Columns Index (computed)
@@ -86,6 +88,7 @@ let GrdMap = function (grd_, scene) {
 		RCF:	grd_.Grx[1].RCs/grd_.Grx[1].Stp,	// Cut-Out Area
 		NSA:	0,					// Shared North/South Adjustment (updated)
 		EWA:	0,					// Shared East/West Adjustment (updated)
+		Mat:	0					// Match Texture of Outer and Inner Blocks
 	}
 	init1GrMap(grd_.Grx[0], grd_, scene);
 	init1GrMap(grd_.Grx[1], grd_, scene);
@@ -105,12 +108,12 @@ function init1GrMap(grx_, grd_, scene) {
 	grx_.RCi = grx_.RCs-1;				// Max Index Value
 	grx_.MZV[grx_.RCi] = 0;				// Z-Values
 	grx_.MXV[grx_.RCi] = 0;				// X-Values
-	grx_.Nor = grx_.RCi;					// Max North Square (updated)
-	grx_.Est = grx_.RCi;					// Max East Square (updated)
+	grx_.Nor = grx_.RCi;				// Max North Square (updated)
+	grx_.Est = grx_.RCi;				// Max East Square (updated)
 	grx_.Num = grx_.RCs * grx_.RCs;		// Size of array
-	grx_.Ptr[grx_.Num-1] = 0;				// Mesh Pointers
+	grx_.Ptr[grx_.Num-1] = 0;			// Mesh Pointers
 	if (grx_.Typ) {
-		grx_.NSA = (grx_.RCs-grx_.RCF)/2;	// (27-3=6)
+		grx_.NSA = (grx_.RCs-grx_.RCF)/2; // (27-3=6)
 		grx_.EWA = grx_.NSA;
 	}
 	// Compute Starting Z and X Values
