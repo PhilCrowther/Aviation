@@ -37,7 +37,7 @@ let GrdMap = function (grd_, scene) {
 	grd_.Grx[0] = {
 		Typ:	0,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,			// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	GrdSiz,				// Size of square
+		Siz:	grd_.Siz,				// Size of square
 		Stp:	grd_.Stp,			// Steps
 		RCi:	0,					// Rows and Columns Index (computed)
 		MZV:	[0],				// Ground Z Value
