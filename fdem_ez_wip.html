@@ -203,6 +203,13 @@ let ani_ = {	// Internal
 //- Aircraft Textures ----------------------------------------------------------
 let	AirSrc = "https://threejs.org/examples/textures/roughness_map.jpg";
 let AirTxE, AirTxR;
+let PanSrc = "https://PhilCrowther.github.io/Aviation/textures/panel.png";
+let PanTxt;
+//- Panel ----------------------------------------------------------------------
+let canvas = document.createElement("canvas");
+	canvas.width = 1024;
+	canvas.height = 1024;
+let	ctx = canvas.getContext('2d');
 //- Altimeter ------------------------------------------------------------------
 let AltLin = 0;
 let AltXYZ = new THREE.Vector3(0,0.3,0);
@@ -607,6 +614,15 @@ function loadAirTxt() {
 		texture.needsUpdate = true;
 		AirTxR = texture;
 	});
+	// Panel
+	txtrLoader.load(PanSrc, function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+//		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.needsUpdate = true;
+		PanTxt = texture;
+		if (PanTxt) console.log("ok");
+	});
 }
 
 //= Make Airplane ==============================================================
@@ -702,12 +718,18 @@ function makeAirInt() {	// [2]
 	mesh = new THREE.Mesh(new THREE.CylinderGeometry(2,3.1,9,64), material);
 	mesh.rotation.set(-90*DegRad,0,0);
 	cockpit.add(mesh);
-	// Panel
+	// Back Panel
 	color = new THREE.Color("gray");
-	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
+	material = new THREE.MeshPhongMaterial({color: color, map: PanTxt, flatShading: true});
 	let panelA = new THREE.Mesh(new THREE.CircleGeometry(2,64,0,Math.PI), material);
 	panelA.position.set(0,0,-4);
 	cockpit.add(panelA);
+	// Front Panel
+	let texture = makePanelB();
+	material = new THREE.MeshStandardMaterial({map: texture, transparent: true, roughness: 1.0, flatShading: true});
+	let panelB = new THREE.Mesh(new THREE.CircleGeometry(2,64,0,Math.PI), material);
+	panelB.position.set(0,0,0.2);
+	panelA.add(panelB);
 	// Altimeter
 	AltLin = makeLines(AltXYZ,AltPos);
 	panelA.add(AltLin);
@@ -750,6 +772,42 @@ let	mesh = new THREE.Mesh(new THREE.BoxGeometry(200,1,14), material);
 }
 
 //- Make Instrument PanelB -----------------------------------------------------
+
+function makePanelB() {
+    ctx.fillStyle = "darkgray";
+	ctx.fillRect(0,0,1024,1024);	// fillRect(x, y, width, height)
+	// ctx.arc(x, y, radius, startAngle, endAngle, counterclockwise)
+	ctx.globalCompositeOperation = 'destination-out';
+	ctx.beginPath();
+	ctx.arc(300, 825, 100, 0, 2 * Math.PI, false);
+	ctx.fill();
+	ctx.globalCompositeOperation = 'destination-out';
+	ctx.beginPath();
+	ctx.arc(512, 885, 100, 0, 2 * Math.PI, false);
+	ctx.fill();
+	ctx.globalCompositeOperation = 'destination-out';
+	ctx.beginPath();
+	ctx.arc(724, 824, 100, 0, 2 * Math.PI, false);
+	ctx.fill();
+	ctx.globalCompositeOperation = 'destination-out';
+	ctx.beginPath();
+	ctx.arc(150, 650, 100, 0, 2 * Math.PI, false);
+	ctx.fill();
+	ctx.globalCompositeOperation = 'destination-out';
+	ctx.beginPath();
+	ctx.arc(512, 650, 100, 0, 2 * Math.PI, false);
+	ctx.fill();
+	ctx.globalCompositeOperation = 'destination-out';
+	ctx.beginPath();
+	ctx.arc(874, 650, 100, 0, 2 * Math.PI, false);
+	ctx.fill();
+	let ID = ctx.getImageData(0,0,1024,1024);
+	let dtData = ID.data;
+	let texture = new THREE.DataTexture(dtData, 1024, 1024);
+	texture.format = THREE.RGBAFormat;
+	texture.needsUpdate = true;
+	return texture;
+}
 
 function makeLines(LinXYZ,LinPos) {
 	let material = new THREE.LineBasicMaterial({color:0xffffff});
