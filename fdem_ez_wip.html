@@ -720,7 +720,7 @@ function makeAirInt() {	// [2]
 	cockpit.add(mesh);
 	// Back Panel
 	color = new THREE.Color("gray");
-	material = new THREE.MeshPhongMaterial({color: color, map: PanTxt, flatShading: true});
+	material = new THREE.MeshBasicMaterial({map: PanTxt, flatShading: true});
 	let panelA = new THREE.Mesh(new THREE.CircleGeometry(2,64,0,Math.PI), material);
 	panelA.position.set(0,0,-4);
 	cockpit.add(panelA);
