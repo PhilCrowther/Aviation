@@ -216,7 +216,7 @@ let	ctx = canvas.getContext('2d');
 //- Altimeter ------------------------------------------------------------------
 let AltLin = 0;
 let AltXYZ = new THREE.Vector3(0,0.3,0);
-let AltPos = new THREE.Vector3(-0.85,1.18,0.1);
+let AltPos = new THREE.Vector3(0.85,1.18,0.1);
 
 //= Airplane Data ==============================================================
 //- FM2 ------------------------------------------------------------------------
@@ -383,7 +383,7 @@ let	renderer = new THREE.WebGLRenderer({antialias: true});
 	renderer.setAnimationLoop(rendAll);	
 	document.body.appendChild(renderer.domElement);
 //- Lights
-let ambLight = new THREE.AmbientLight(SunCol,0.5);
+let ambLight = new THREE.AmbientLight(SunCol,0.25);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	scene.add(sunLight);
@@ -782,27 +782,27 @@ function makePanelB() {
 	// ctx.arc(x, y, radius, startAngle, endAngle, counterclockwise)
 	ctx.globalCompositeOperation = 'destination-out';
 	ctx.beginPath();
-	ctx.arc(300, 825, 100, 0, 2 * Math.PI, false);
+	ctx.arc(512, 885, 100, 0, 2 * Math.PI, false);	// Attitude
 	ctx.fill();
 	ctx.globalCompositeOperation = 'destination-out';
 	ctx.beginPath();
-	ctx.arc(512, 885, 100, 0, 2 * Math.PI, false);
+	ctx.arc(300, 825, 98, 0, 2 * Math.PI, false);	// Airspeed
 	ctx.fill();
 	ctx.globalCompositeOperation = 'destination-out';
 	ctx.beginPath();
-	ctx.arc(724, 824, 100, 0, 2 * Math.PI, false);
+	ctx.arc(724, 825, 98, 0, 2 * Math.PI, false);	// Altitude
 	ctx.fill();
 	ctx.globalCompositeOperation = 'destination-out';
 	ctx.beginPath();
-	ctx.arc(150, 650, 100, 0, 2 * Math.PI, false);
+	ctx.arc(150, 650, 98, 0, 2 * Math.PI, false);	// Turn Coordinator
 	ctx.fill();
 	ctx.globalCompositeOperation = 'destination-out';
 	ctx.beginPath();
-	ctx.arc(512, 650, 100, 0, 2 * Math.PI, false);
+	ctx.arc(512, 650, 98, 0, 2 * Math.PI, false);	// Compass
 	ctx.fill();
 	ctx.globalCompositeOperation = 'destination-out';
 	ctx.beginPath();
-	ctx.arc(874, 650, 100, 0, 2 * Math.PI, false);
+	ctx.arc(874, 650, 98, 0, 2 * Math.PI, false);	// Vertical Speed
 	ctx.fill();
 	let ID = ctx.getImageData(0,0,1024,1024);
 	let dtData = ID.data;
