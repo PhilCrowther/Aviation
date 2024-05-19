@@ -383,7 +383,7 @@ let	renderer = new THREE.WebGLRenderer({antialias: true});
 	renderer.setAnimationLoop(rendAll);	
 	document.body.appendChild(renderer.domElement);
 //- Lights
-let ambLight = new THREE.AmbientLight(SunCol,1.0);
+let ambLight = new THREE.AmbientLight(SunCol,0.5);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	scene.add(sunLight);
