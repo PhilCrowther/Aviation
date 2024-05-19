@@ -128,8 +128,11 @@ let LodFlg = 0;							// Set when initialized
 let SBxFlg = 1;							// SkyBox (1 = On)
 
 //= SKYBOX =====================================================================
-let	SunRot = new THREE.Vector3(23,312,1000);	// Lat,Lon,Dst - for Sun Mesh and Lensflare
 let FogCol = 0xbab4a6;					// Sky (for Fog only)
+let SunCol = 0xffffff;					// Sun
+//
+let	SunLLD = new THREE.Vector3(23,312,1000);	// Lat,Lon,Dst - for Sun Mesh and Lensflare
+let SunInt = 3;					// Default intensity of light/sun
 //- SkyBox
 let SBPath = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 //-	LensFlare
@@ -380,9 +383,9 @@ let	renderer = new THREE.WebGLRenderer({antialias: true});
 	renderer.setAnimationLoop(rendAll);	
 	document.body.appendChild(renderer.domElement);
 //- Lights
-let ambLight = new THREE.AmbientLight(0x404040);
+let ambLight = new THREE.AmbientLight(SunCol,1.0);
 	scene.add(ambLight);
-let sunLight = new THREE.DirectionalLight(0xffffff, 3);
+let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	scene.add(sunLight);
 //- Camera
 let camera = new THREE.PerspectiveCamera(70, width/height, 1, 50000);
@@ -571,7 +574,7 @@ function initSkyBox() {
 	// Fog
 	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
 	// SunLight Position
-let SunPos = new THREE.Vector3(SunRot.x,Mod360(180-SunRot.y),SunRot.z);
+let SunPos = new THREE.Vector3(SunLLD.x,Mod360(180-SunLLD.y),SunLLD.z);
 	SunPos = rotLLD(SunPos);	// Set Position above Light
 	sunLight.position.copy(SunPos).normalize();
 	// Lensflare
