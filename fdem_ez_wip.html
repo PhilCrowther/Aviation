@@ -15,7 +15,7 @@ Probably due to computed value for CfL - not work for inverted flight?
 	
 <head>
 <meta charset="utf-8" />
-<title>Airplane Flight Module: Flight Demo</title>
+<title>Flight Demo: EZ</title>
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/main2pxD.css">
 </head>
 
@@ -720,7 +720,7 @@ function makeAirInt() {	// [2]
 	cockpit.add(mesh);
 	// Back Panel
 	color = new THREE.Color("gray");
-	material = new THREE.MeshBasicMaterial({map: PanTxt, flatShading: true});
+	material = new THREE.MeshBasicMaterial({map: PanTxt});
 	let panelA = new THREE.Mesh(new THREE.CircleGeometry(2,64,0,Math.PI), material);
 	panelA.position.set(0,0,-4);
 	cockpit.add(panelA);
