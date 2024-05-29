@@ -960,8 +960,7 @@ function moveFlight() {
 	air_.AirRot.x = air_.AirObj.rotation.x*RadDeg;
 	// Heading -----------------------------------------------------------------
 	air_.AirRot.y = Mod360(-air_.AirObj.rotation.y*RadDeg);
-	air_.HdgDif = Mod360(air_.AirRot.y-air_.OldRot.y);	// Change in Heading (display)
-	if (air_.HdgDif > 180) air_.HdgDif = 360-air_.HdgDif;
+	air_.HdgDif = (air_.AirRot.y-air_.OldRot.y)/air_.DLTime;	// Change in Heading (display)
 	air_.OldRot.y = air_.AirRot.y;					// Save old heading	
 	// Bank --------------------------------------------------------------------
 	// If Pitch Set ............................................................
@@ -1378,7 +1377,8 @@ function prntHUDval() {
 	Air_Bnk = air_.AirRot.z;				// Bank Angle
 	if (Air_Bnk > 180) Air_Bnk = Mod360(360-Air_Bnk);
 	Air_BnkNode.nodeValue = Air_Bnk.toFixed(0);
-	Air_TRt = air_.HdgDif/DLTime;			// Turn Time (deg/min)
+	Air_TRt = air_.HdgDif;					// Turn Rate (deg/sec)
+	if (Air_TRt < 0) Air_TRt = -Air_TRt;	// Positive Value
 	Air_TRtNode.nodeValue = Air_TRt.toFixed(2);
 	Air_TRd = 10000;						// Turn Radius
 	if (Air_TRt < 250) Air_TRd = (360/Air_TRt)*(air_.SpdMPS*Mtr2Ft*Math.cos(air_.AirRot.x*DegRad))/(2*Math.PI);
@@ -1404,15 +1404,38 @@ function PauseText(){
 
 //- INSTRUMENTS
 function chngInst() {
-	// Altimeter
+	let Spd = air_.SpdKPH*Km2Mil;
+	// deg = -(d0+(s1-s0)*(d1-d0)/(s1-s0))
+	// 000 mph = -000 deg; deg = -(spd*97/100)
+	// 100 mph = -097 deg; deg = -(97+(spd-100)*66/50)
+	// 150 mph = -163 deg; deg = -(163+(spd-150)*62/50)
+	// 200 mph = -218 deg; deg = -(218+(spd-200)*42/100)
+	// 300 mph = -260 deg; deg = -(260+(spd-300)*90/200)
+	// 400 mph = -305 deg; 
+	// 500 mph = -355 deg;
+//	Spd = 500;
+	let SpdD = -Spd*97/100;	// default
+	if (Spd>300) SpdD = -(260+(Spd-300)*90/200);
+	else if (Spd>200) SpdD = -(218+(Spd-200)*42/100);
+	else if (Spd>150) SpdD = -(163+(Spd-150)*55/50);
+	else if (Spd>100) SpdD = -(97+(Spd-100)*66/50);
+	SpdD = SpdD*DegRad;
+	gau_.SpdPtr.rotation.set(0,0,SpdD)
+	// 3. Altimeter
 	let Alt = air_.MapPos.y*Mtr2Ft/1000;
 	let AltD = -Mod360(Alt*360)*DegRad;
 	gau_.AltPtr.rotation.set(0,0,AltD);
-	// Heading
+	// 4. Turn Coordinator
+	let Trn = air_.HdgDif;
+	if (Trn > 7.5) Trn = 7.5;
+	if (Trn < -7.5) Trn = -7.5;
+	let TrnD = -(Trn*1296/180)*DegRad;		// Std Rate = 3 deg/sec
+	gau_.TrnPtr.rotation.set(0,0,TrnD);		
+	// 5. Heading
 	let Hdg = air_.AirRot.y;
 	let HdgD =-Hdg*DegRad;
 	gau_.HdgPtr.rotation.set(0,0,HdgD);
-	// VSI
+	// 6. VSI
 	let VSI = air_.MapSpd.y*Mtr2Ft*60/air_.DLTime;	// Vertical Speed (fpm)
 	if (VSI > 6000) VSI = 6000;
 	if (VSI < -6000) VSI = -6000;
@@ -1460,8 +1483,8 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right
 	if (event.keyCode == K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up
 	if (event.keyCode == K_PitD) air_.InpKey.x = -KeyVal.x;	// Pitch Down
-	if (event.keyCode == K_YawL) air_.RotDif.y = -KeyVal.y;	// Yaw Left
-	if (event.keyCode == K_YawR) air_.RotDif.y = KeyVal.y;	// Yaw Right
+	if (event.keyCode == K_YawL) air_.RotDif.y = KeyVal.y;	// Yaw Left
+	if (event.keyCode == K_YawR) air_.RotDif.y = -KeyVal.y;	// Yaw Right
 	if (event.keyCode == K_Look) cam_.Pan = 1;				// Pan View
 	if (event.keyCode == K_SelV) viewFlg();					// Toggle View
 	if (event.keyCode == K_AtPF) autoFlg();					// Toggle Bank Flag
