@@ -12,7 +12,6 @@ Appears to behave the same as prior versions - i.e. in steep bank, airplane will
 Probably due to computed value for CfL - not work for inverted flight?
 -->
 
-	
 <head>
 <meta charset="utf-8" />
 <title>Flight Demo: EZ</title>
@@ -219,16 +218,20 @@ let gau_ = {
 		SpdPos: new THREE.Vector3(-0.86,1.18,GauPos), // Model: XYz Pos
 		SpdXYZ: new THREE.Vector3(0,0.3,0),			// Model: Ptr Length
 		SpdPtr: 0,									// Pointer Address
-		// Altitude
+		// Altitude (Small = 10k)
 		AltPos: new THREE.Vector3(0.86,1.18,GauPos), // Model: XYz Pos
-		AltXYZ: new THREE.Vector3(0,0.3,0),			// Model: Ptr Length
+		AltXYZ: new THREE.Vector3(0,0.2,0),			// Model: Ptr Length
 		AltPtr: 0,									// Pointer Address
+		// Altitude (Large = 1k)
+		Al2Pos: new THREE.Vector3(0.86,1.18,GauPos), // Model: XYz Pos
+		Al2XYZ: new THREE.Vector3(0,0.3,0),			// Model: Ptr Length
+		Al2Ptr: 0,									// Pointer Address
 		// Turn Coordinator
 		TrnPos: new THREE.Vector3(-1.45,0.5,GauPos), // Model: XYz Pos
 		TrnXYZ: new THREE.Vector3(0,0.3,0),			// Model: Ptr Length
 		TrnPtr: 0,
 		// Heading
-		HdgPos: new THREE.Vector3(0,0.5,GauPos), // Model: XYz Pos
+		HdgPos: new THREE.Vector3(0,0.5,GauPos), 	// Model: XYz Pos
 		HdgXYZ: new THREE.Vector3(0,0.3,0),			// Model: Ptr Length
 		HdgPtr: 0,									// Pointer Address
 		// VSI
@@ -750,6 +753,8 @@ function makeAirInt() {	// [2]
 	panel.add(gau_.SpdPtr);
 	gau_.AltPtr = makeLines(gau_.AltXYZ,gau_.AltPos);
 	panel.add(gau_.AltPtr);
+	gau_.Al2Ptr = makeLines(gau_.Al2XYZ,gau_.Al2Pos);
+	panel.add(gau_.Al2Ptr);
 	gau_.TrnPtr = makeLines(gau_.TrnXYZ,gau_.TrnPos);
 	panel.add(gau_.TrnPtr);
 	gau_.HdgPtr = makeLines(gau_.HdgXYZ,gau_.HdgPos);
@@ -1422,9 +1427,12 @@ function chngInst() {
 	SpdD = SpdD*DegRad;
 	gau_.SpdPtr.rotation.set(0,0,SpdD)
 	// 3. Altimeter
-	let Alt = air_.MapPos.y*Mtr2Ft/1000;
+	let Alt = air_.MapPos.y*Mtr2Ft/10000;
 	let AltD = -Mod360(Alt*360)*DegRad;
 	gau_.AltPtr.rotation.set(0,0,AltD);
+	let Al2 = air_.MapPos.y*Mtr2Ft/1000;
+	let Al2D = -Mod360(Al2*360)*DegRad;
+	gau_.Al2Ptr.rotation.set(0,0,Al2D);
 	// 4. Turn Coordinator
 	let Trn = air_.HdgDif;
 	if (Trn > 7.5) Trn = 7.5;
