@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Mar 2024
+Version dated 29 May 2024
 //
 Use FlightW3 module with GrdFlg commands eliminated.
 Also, computed horizontal map speed after gravity adjustment.
@@ -68,8 +68,8 @@ Probably due to computed value for CfL - not work for inverted flight?
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.162.0/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
+			"three": "https://unpkg.com/three@0.165.0/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
 		}
 	}
 </script>
@@ -642,7 +642,7 @@ function loadAirTxt() {
 	txtrLoader.load(PanSrc, function(texture) {
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
-//		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.needsUpdate = true;
 		PanTxt = texture;
 		if (PanTxt) console.log("ok");
