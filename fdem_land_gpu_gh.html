@@ -42,9 +42,9 @@ This shows a flyable airplane in flight over an procedural land using nodes and 
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.164.0/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.164.0/examples/jsm/",
-			"three/nodes": "https://unpkg.com/three@0.164.0/examples/jsm/nodes/Nodes.js"
+			"three": "https://unpkg.com/three@0.165.0/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/",
+			"three/nodes": "https://unpkg.com/three@0.165.0/examples/jsm/nodes/Nodes.js"
 		}
 	}
 </script>
@@ -60,8 +60,8 @@ import {
 		MeshLambertNodeMaterial,
 		MeshStandardNodeMaterial
 } from 'three/nodes';
-import WebGPU from 'three/addons/capabilities/WebGPU.js';		// ### WebGPU
-import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';	// ### WebGPU
+import WebGPU from 'three/addons/capabilities/WebGPU.js';
+import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 import Stats from "three/addons/libs/stats.module.js";
 import {Lensflare, LensflareElement} from "three/addons/objects/Lensflare.js";	// ### not work with WebGPU
 // Custom Modules
