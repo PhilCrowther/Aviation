@@ -56,9 +56,9 @@ A flight simulation of an animated airplane model over an animated ocean using n
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.164.0/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.164.0/examples/jsm/",
-			"three/nodes": "https://unpkg.com/three@0.164.0/examples/jsm/nodes/Nodes.js"
+			"three": "https://unpkg.com/three@0.165.0/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/",
+			"three/nodes": "https://unpkg.com/three@0.165.0/examples/jsm/nodes/Nodes.js"
 		}
 	}
 </script>
@@ -77,8 +77,7 @@ import {
 		positionLocal,
 		MeshStandardNodeMaterial,
 } from 'three/nodes';
-//import {nodeFrame} from 'three/addons/renderers/webgl-legacy/nodes/WebGLNodes.js';	// Nodes
-import {nodeFrame} from 'https://unpkg.com/three@0.163.0/examples/jsm/renderers/webgl-legacy/nodes/WebGLNodes.js';	// ### Nodes
+import {nodeFrame} from 'https://unpkg.com/three@0.163.0/examples/jsm/renderers/webgl-legacy/nodes/WebGLNodes.js';	// ### Legacy
 import Stats from "three/addons/libs/stats.module.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {Lensflare,LensflareElement} from "three/addons/objects/Lensflare.js";
