@@ -49,9 +49,9 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.163.0/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/",
-			"three/nodes": "https://unpkg.com/three@0.163.0/examples/jsm/nodes/Nodes.js"
+			"three": "https://unpkg.com/three@0.165.0/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/",
+			"three/nodes": "https://unpkg.com/three@0.165.0/examples/jsm/nodes/Nodes.js"
 		}
 	}
 </script>
@@ -60,14 +60,6 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 
 // Basic Modules
 import * as THREE from "three";
-import Stats from "three/addons/libs/stats.module.js";
-import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {Lensflare,LensflareElement} from "three/addons/objects/Lensflare.js";
-// Special Modules
-import {Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3.js";
-import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean3.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr3N.js";
 import {
 		color,
 		texture,
@@ -78,7 +70,16 @@ import {
 		positionLocal,
 		MeshStandardNodeMaterial,
 } from 'three/nodes';
-import {nodeFrame} from 'three/addons/renderers/webgl-legacy/nodes/WebGLNodes.js';	// Nodes
+//import {nodeFrame} from 'three/addons/renderers/webgl-legacy/nodes/WebGLNodes.js';	// Nodes
+import {nodeFrame} from 'https://unpkg.com/three@0.163.0/examples/jsm/renderers/webgl-legacy/nodes/WebGLNodes.js';	// ### Nodes
+import Stats from "three/addons/libs/stats.module.js";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import {Lensflare,LensflareElement} from "three/addons/objects/Lensflare.js";
+// Special Modules
+import {Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3.js";
+import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean3.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr3N.js";
 
 //= STARTING VALUES ============================================================
 //- AIRPLANE: Start -----------------------------------------------------------
