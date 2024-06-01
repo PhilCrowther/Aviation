@@ -14,3 +14,6 @@ You can run these programs and load these resources using the following syntax:
 <pre>https://philcrowther.github.io/Aviation/file_name</pre>
 
 For example: https://philcrowther.github.io/Aviation/fmod_FM2_vc27_ocean_gh.html
+
+NOTE:
+The main programs are currently updated to r165, but the ocean module does not work with WebGPU yet. Effective with r164, node textures work only with WebGPU. We have gotten around this limitation by using a r163 WebGL legacy file. We hope to shorlty update the ocean module to work with WebGPU so that this kludge will not be necessary.
