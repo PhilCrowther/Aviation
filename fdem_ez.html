@@ -409,7 +409,7 @@ let	renderer = new THREE.WebGLRenderer({antialias: true});
 	renderer.setAnimationLoop(rendAll);	
 	document.body.appendChild(renderer.domElement);
 //- Lights
-let ambLight = new THREE.AmbientLight(SunCol,0.25);
+let ambLight = new THREE.AmbientLight(SunCol,0.1);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	scene.add(sunLight);
@@ -650,7 +650,6 @@ function loadAirTxt() {
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.needsUpdate = true;
 		PanTxt = texture;
-		if (PanTxt) console.log("ok");
 	});
 	// Attitude Indicator
 	txtrLoader.load(AtISrc, function(texture) {
@@ -659,7 +658,6 @@ function loadAirTxt() {
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.needsUpdate = true;
 		AtITxt = texture;
-		if (AtITxt) console.log("ok");
 	});
 }
 
@@ -758,7 +756,7 @@ function makeAirInt() {	// [2]
 	cockpit.add(mesh);
 	// Panel
 	color = new THREE.Color("gray");
-	material = new THREE.MeshBasicMaterial({color: 0xa0a0a0, map: PanTxt, transparent: true});
+	material = new THREE.MeshBasicMaterial({map: PanTxt, transparent: true});
 	let panel = new THREE.Mesh(new THREE.CircleGeometry(PanMRd,64,0,Math.PI), material);
 	panel.position.set(0,0,-4);
 	cockpit.add(panel);
