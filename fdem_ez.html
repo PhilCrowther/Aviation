@@ -764,6 +764,7 @@ function makeAirInt() {	// [2]
 	cockpit.add(panel);
 	// Attitude Indicator
 	let geoAtI = new THREE.SphereGeometry(0.3,32,16);
+	geoAtI.rotateY(-90*DegRad);
 	geoAtI.rotateX(-12.5*DegRad);
 	let matAtI = new THREE.MeshBasicMaterial({map: AtITxt});
 	gau_.AtIMsh = new THREE.Mesh(geoAtI, matAtI);
