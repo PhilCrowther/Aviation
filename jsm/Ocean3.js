@@ -237,7 +237,7 @@ Render(wavTim) {
 		this.renderer.render(this.screenQuad, this.textureCamera);
 	}
 		
-	// 2. Current Wave Phase (uses Ping and Pont Buffers)
+	// 2. Current Wave Phase (uses Ping and Pong Buffers)
 	this.screenQuad.material = this.materialPhase;
 	if (this.initial) {
 		this.materialPhase.uniforms.u_phases.value = this.pingPhaseTexture;
@@ -251,7 +251,7 @@ Render(wavTim) {
 	this.renderer.render(this.screenQuad, this.textureCamera);
 	this.pingPhase = !this.pingPhase;
 	
-	// 3. rende9rSpectrum (combination of initial Spectrum and Wave Phases)
+	// 3. renderSpectrum (combination of initial Spectrum and Wave Phases)
 	this.screenQuad.material = this.materialSpectrum;
 	this.materialSpectrum.uniforms.u_begFFT.value = this.initialSpectrumFramebuffer.texture;
 	this.materialSpectrum.uniforms.u_phases.value = this.pingPhase ? this.pingPhaseFramebuffer.texture : this.pongPhaseFramebuffer.texture;
@@ -330,7 +330,7 @@ let commonVS = `
 let initialSpectrumFS = `
 	precision highp float;
 	precision highp int;
-	#define PI 3.141592653589793238
+	#define PIX 6.283185307179586476
 	#define G 9.81
 	#define KM 370.0
 	#define CM 0.23
@@ -352,7 +352,7 @@ let initialSpectrumFS = `
 		vec2 coordinates = gl_FragCoord.xy-0.5;
 		float n = (coordinates.x < u_grdres * 0.5) ? coordinates.x : coordinates.x - u_grdres;
 		float m = (coordinates.y < u_grdres * 0.5) ? coordinates.y : coordinates.y - u_grdres;
-		vec2 K = (2.0*PI*vec2(n,m))/u_grdsiz;
+		vec2 K = (PIX*vec2(n,m))/u_grdsiz;
 		float k = length(K);	
 		float l_wind = length(u_wind);
 		float Omega = 0.84;
@@ -361,26 +361,26 @@ let initialSpectrumFS = `
 		float cp = omega(kp)/kp;
 		float Lpm = exp(-1.25*square(kp/k));
 		float gamma = 1.7;
-		float sigma = 0.08*(1.0+4.0*pow(Omega, -3.0));
+		float sigma = 0.08*(1.0+4.0*pow(Omega,-3.0));
 		float Gamma = exp(-square(sqrt(k/kp)-1.0)/2.0*square(sigma));
 		float Jp = pow(gamma, Gamma);
 		float Fp = Lpm*Jp*exp(-Omega/sqrt(10.0)*(sqrt(k/kp)-1.0));
 		float alphap = 0.006*sqrt(Omega);
 		float Bl = 0.5*alphap*cp/c*Fp;
-		float z0 = 0.000037 * square(l_wind)/G*pow(l_wind/cp, 0.9);
+		float z0 = 0.000037 * square(l_wind)/G*pow(l_wind/cp,0.9);
 		float uStar = 0.41*l_wind/log(10.0/z0);		
 		float alpham = 0.01*((uStar<CM) ? (1.0+log(uStar/CM)) : (1.0+3.0*log(uStar/CM)));
 		float Fm = exp(-0.25*square(k/KM-1.0));
 		float Bh = 0.5*alpham*CM/c*Fm*Lpm;
 		float a0 = log(2.0)/4.0;
 		float am = 0.13*uStar/CM;
-		float Delta = tanH(a0+4.0*pow(c/cp, 2.5)+am*pow(CM/c, 2.5));
-		float cosPhi = dot(normalize(u_wind), normalize(K));
-		float S = (1.0/(2.0*PI))*pow(k,-4.0)*(Bl+Bh)*(1.0+Delta*(2.0*cosPhi*cosPhi-1.0));
-		float dk = 2.0*PI/u_grdsiz;
+		float Delta = tanH(a0+4.0*pow(c/cp,2.5)+am*pow(CM/c,2.5));
+		float cosPhi = dot(normalize(u_wind),normalize(K));
+		float S = (1.0/PIX)*pow(k,-4.0)*(Bl+Bh)*(1.0+Delta*(2.0*cosPhi*cosPhi-1.0));
+		float dk = PIX/u_grdsiz;
 		float h = sqrt(S/2.0)*dk;
 		if (K.x == 0.0 && K.y == 0.0) {h = 0.0;} 	//no DC term
-		outColor = vec4(h, 0.0, 0.0, 0.0);
+		outColor = vec4(h,0.0,0.0,0.0);
 	}
 `;
 
@@ -389,7 +389,7 @@ let phaseFS = `
 	precision highp float;
 	precision highp int;
 	precision highp sampler2D;
-	#define PI 3.141592653589793238
+	#define PIX 6.283185307179586476
 	#define G 9.81
 	#define KM 370.0	
 	in vec2 vUv;
@@ -405,11 +405,11 @@ let phaseFS = `
 		vec2 coordinates = gl_FragCoord.xy-0.5;
 		float n = (coordinates.x < u_grdres*0.5) ? coordinates.x : coordinates.x - u_grdres;
 		float m = (coordinates.y < u_grdres*0.5) ? coordinates.y : coordinates.y - u_grdres;
-		vec2 waveVector = (2.0*PI*vec2(n,m))/u_grdsiz;
-		float phase = texture(u_phases, vUv).r;
+		vec2 waveVector = (PIX*vec2(n,m))/u_grdsiz;
+		float phase = texture(u_phases,vUv).r;
 		float deltaPhase = omega(length(waveVector))*u_deltaTime;
-		phase = mod(phase+deltaPhase, 2.0*PI);
-		outColor = vec4(phase, 0.0, 0.0, 0.0);
+		phase = mod(phase+deltaPhase,PIX);
+		outColor = vec4(phase,0.0,0.0,0.0);
 	}
 `;
 
@@ -418,7 +418,7 @@ let currentSpectrumFS = `
 	precision highp float;
 	precision highp int;
 	precision highp sampler2D;
-	#define PI 3.141592653589793238
+	#define PIX 6.283185307179586476
 	#define G 9.81
 	#define KM 370.0	
 	in vec2 vUv;
@@ -428,7 +428,7 @@ let currentSpectrumFS = `
 	uniform float u_choppy;
 	uniform sampler2D u_phases;
 	uniform sampler2D u_begFFT;
-	vec2 multiplyComplex(vec2 a, vec2 b){
+	vec2 multiplyComplex(vec2 a,vec2 b){
 		return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
 	}
 	vec2 multiplyByI(vec2 z){
@@ -441,10 +441,10 @@ let currentSpectrumFS = `
 		vec2 coordinates = gl_FragCoord.xy-0.5;
 		float n = (coordinates.x < u_grdres * 0.5) ? coordinates.x : coordinates.x - u_grdres;
 		float m = (coordinates.y < u_grdres * 0.5) ? coordinates.y : coordinates.y - u_grdres;
-		vec2 waveVector = (2.0 * PI * vec2(n, m)) / u_grdsiz;
-		float phase = texture(u_phases, vUv).r;	
-		vec2 phaseVector = vec2(cos(phase), sin(phase));
-		vec2 h0 = texture(u_begFFT, vUv).rg;
+		vec2 waveVector = (PIX*vec2(n, m))/u_grdsiz;
+		float phase = texture(u_phases,vUv).r;	
+		vec2 phaseVector = vec2(cos(phase),sin(phase));
+		vec2 h0 = texture(u_begFFT,vUv).rg;
 		vec2 h0Star = texture(u_begFFT, vec2(1.0 - vUv + 1.0 / u_grdres)).rg;
 		h0Star.y *= -1.0;		//star means conj complex	
 		vec2 h = multiplyComplex(h0, phaseVector) + multiplyComplex(h0Star, vec2(phaseVector.x, -phaseVector.y));
@@ -456,7 +456,7 @@ let currentSpectrumFS = `
 		hX = vec2(0.0);
 		hZ = vec2(0.0);
 		}
-		outColor = vec4(hX + multiplyByI(h), hZ);
+		outColor = vec4(hX+multiplyByI(h),hZ);
 	}
 `;
 
@@ -467,24 +467,24 @@ let displacementHorizontalFS = `
 	precision highp float;
 	precision highp int;
 	precision highp sampler2D;	
-	#define PI 3.141592653589793238
+	#define PIX 6.283185307179586476
 	in vec2 vUv;
 	out vec4 outColor;
 	uniform sampler2D u_input;
 	uniform float u_transformSize;
 	uniform float u_subtransformSize;
-	vec2 multiplyComplex(vec2 a, vec2 b){
-		return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+	vec2 multiplyComplex(vec2 a,vec2 b){
+		return vec2(a.x*b.x - a.y*b.y, a.y*b.x + a.x*b.y);
 	}	
 	void main(){	
 		float index = vUv.x * u_transformSize - 0.5;		// horizontal
-		float evenIndex = floor(index / u_subtransformSize) * (u_subtransformSize * 0.5) + mod(index, u_subtransformSize * 0.5);
+		float evenIndex = floor(index/u_subtransformSize) * (u_subtransformSize*0.5) + mod(index,u_subtransformSize*0.5);
 		vec4 even = texture(u_input, vec2(evenIndex+0.5, gl_FragCoord.y)/u_transformSize).rgba;
 		vec4 odd = texture(u_input, vec2(evenIndex + u_transformSize*0.5+0.5, gl_FragCoord.y)/u_transformSize).rgba;
-		float twiddleArgument = -2.0*PI*(index/u_subtransformSize);
-		vec2 twiddle = vec2(cos(twiddleArgument), sin(twiddleArgument));
-		vec2 outputA = even.xy + multiplyComplex(twiddle, odd.xy);
-		vec2 outputB = even.zw + multiplyComplex(twiddle, odd.zw);
+		float twiddleArgument = -PIX*(index/u_subtransformSize);
+		vec2 twiddle = vec2(cos(twiddleArgument),sin(twiddleArgument));
+		vec2 outputA = even.xy+multiplyComplex(twiddle, odd.xy);
+		vec2 outputB = even.zw+multiplyComplex(twiddle, odd.zw);
 		outColor = vec4(outputA,outputB);
 	}
 `;
@@ -493,24 +493,24 @@ let displacementVerticalFS = `
 	precision highp float;
 	precision highp int;
 	precision highp sampler2D;	
-	#define PI 3.141592653589793238	
+	#define PIX 6.283185307179586476
 	in vec2 vUv;
 	out vec4 outColor;
 	uniform sampler2D u_input;
 	uniform float u_transformSize;
 	uniform float u_subtransformSize;
 	vec2 multiplyComplex(vec2 a, vec2 b){
-		return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+		return vec2(a.x*b.x - a.y*b.y, a.y*b.x + a.x*b.y);
 	}	
 	void main(){
 		float index = vUv.y * u_transformSize - 0.5;		// vertical
-		float evenIndex = floor(index / u_subtransformSize) * (u_subtransformSize * 0.5) + mod(index, u_subtransformSize * 0.5);
+		float evenIndex = floor(index/u_subtransformSize) * (u_subtransformSize*0.5) + mod(index,u_subtransformSize*0.5);
 		vec4 even = texture(u_input, vec2(gl_FragCoord.x, evenIndex+0.5)/u_transformSize).rgba;
 		vec4 odd = texture(u_input, vec2(gl_FragCoord.x, evenIndex+u_transformSize*0.5+0.5)/u_transformSize).rgba;
-		float twiddleArgument = -2.0*PI*(index/u_subtransformSize);
-		vec2 twiddle = vec2(cos(twiddleArgument), sin(twiddleArgument));
-		vec2 outputA = even.xy + multiplyComplex(twiddle, odd.xy);
-		vec2 outputB = even.zw + multiplyComplex(twiddle, odd.zw);
+		float twiddleArgument = -PIX*(index/u_subtransformSize);
+		vec2 twiddle = vec2(cos(twiddleArgument),sin(twiddleArgument));
+		vec2 outputA = even.xy + multiplyComplex(twiddle,odd.xy);
+		vec2 outputB = even.zw + multiplyComplex(twiddle,odd.zw);
 		outColor = vec4(outputA,outputB);
 	}
 `;
@@ -529,20 +529,20 @@ let ocean_normals = `
 	void main (void) {
 		float texel = 1.0/u_grdres;
 		float texelSize = u_grdsiz/u_grdres;
-		vec3 ctr = texture(u_displacementMap, vUv).rgb;
+		vec3 ctr = texture(u_displacementMap,vUv).rgb;
 		vec3 rgt = vec3(texelSize, 0.0, 0.0) + texture(u_displacementMap, vUv + vec2(texel, 0.0)).rgb - ctr;
 		vec3 lft = vec3(-texelSize, 0.0, 0.0) + texture(u_displacementMap, vUv + vec2(-texel, 0.0)).rgb - ctr;
 		vec3 top = vec3(0.0, 0.0, -texelSize) + texture(u_displacementMap, vUv + vec2(0.0, -texel)).rgb - ctr;
 		vec3 bot = vec3(0.0, 0.0, texelSize) + texture(u_displacementMap, vUv + vec2(0.0, texel)).rgb - ctr;
-		vec3 topRgt = cross(rgt, top);
-		vec3 topLft = cross(top, lft);
-		vec3 botLft = cross(lft, bot);
-		vec3 botRgt = cross(bot, rgt);
-		vec3 nrm3 = vec3(normalize(topRgt + topLft + botLft + botRgt));
+		vec3 topRgt = cross(rgt,top);
+		vec3 topLft = cross(top,lft);
+		vec3 botLft = cross(lft,bot);
+		vec3 botRgt = cross(bot,rgt);
+		vec3 nrm3 = vec3(normalize(topRgt+topLft+botLft+botRgt));
 		vec3 tmp2 = nrm3;
 		nrm3.b = tmp2.g;
 		nrm3.g = tmp2.b;
-		outColor = vec4(nrm3*0.5+0.5, 1.0);
+		outColor = vec4(nrm3*0.5+0.5,1.0);
 	}
 `;
 
@@ -553,3 +553,4 @@ export {Ocean};
 // 230614: Vecsion 2	: Changed to Class; on initialization, only imput renderer and wav_; on render, only input wavTim; moved wavTim variables to main program
 // 230628: Version 2a	: Many improvements to original code and Oceean is now WebGL2 compatible (the three.js default)
 // 240210: Version 3	: Updated to include 2023 changes to shaders, including new names; Moved computation initial spectrum comp back to render
+// 240608: Premultiplied PI by 2 in shaders definitions - apparently anything with a number is invalid, so used PIX
