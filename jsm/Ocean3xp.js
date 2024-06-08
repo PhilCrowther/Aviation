@@ -330,7 +330,7 @@ let commonVS = `
 let initialSpectrumFS = `
 	precision highp float;
 	precision highp int;
-	#define 2PI 6.283185307179586476
+	#define PIX 6.283185307179586476
 	#define G 9.81
 	#define KM 370.0
 	#define CM 0.23
@@ -352,7 +352,7 @@ let initialSpectrumFS = `
 		vec2 coordinates = gl_FragCoord.xy-0.5;
 		float n = (coordinates.x < u_grdres * 0.5) ? coordinates.x : coordinates.x - u_grdres;
 		float m = (coordinates.y < u_grdres * 0.5) ? coordinates.y : coordinates.y - u_grdres;
-		vec2 K = (2PI*vec2(n,m))/u_grdsiz;
+		vec2 K = (PIX*vec2(n,m))/u_grdsiz;
 		float k = length(K);	
 		float l_wind = length(u_wind);
 		float Omega = 0.84;
@@ -376,7 +376,7 @@ let initialSpectrumFS = `
 		float am = 0.13*uStar/CM;
 		float Delta = tanH(a0+4.0*pow(c/cp,2.5)+am*pow(CM/c,2.5));
 		float cosPhi = dot(normalize(u_wind),normalize(K));
-		float S = (1.0/2PI)*pow(k,-4.0)*(Bl+Bh)*(1.0+Delta*(2.0*cosPhi*cosPhi-1.0));
+		float S = (1.0/PIX)*pow(k,-4.0)*(Bl+Bh)*(1.0+Delta*(2.0*cosPhi*cosPhi-1.0));
 		float dk = 2.0*PI/u_grdsiz;
 		float h = sqrt(S/2.0)*dk;
 		if (K.x == 0.0 && K.y == 0.0) {h = 0.0;} 	//no DC term
@@ -389,7 +389,7 @@ let phaseFS = `
 	precision highp float;
 	precision highp int;
 	precision highp sampler2D;
-	#define 2PI 6.283185307179586476
+	#define PIX 6.283185307179586476
 	#define G 9.81
 	#define KM 370.0	
 	in vec2 vUv;
@@ -405,10 +405,10 @@ let phaseFS = `
 		vec2 coordinates = gl_FragCoord.xy-0.5;
 		float n = (coordinates.x < u_grdres*0.5) ? coordinates.x : coordinates.x - u_grdres;
 		float m = (coordinates.y < u_grdres*0.5) ? coordinates.y : coordinates.y - u_grdres;
-		vec2 waveVector = (2PI*vec2(n,m))/u_grdsiz;
+		vec2 waveVector = (PIX*vec2(n,m))/u_grdsiz;
 		float phase = texture(u_phases,vUv).r;
 		float deltaPhase = omega(length(waveVector))*u_deltaTime;
-		phase = mod(phase+deltaPhase,2PI);
+		phase = mod(phase+deltaPhase,PIX);
 		outColor = vec4(phase,0.0,0.0,0.0);
 	}
 `;
@@ -418,7 +418,7 @@ let currentSpectrumFS = `
 	precision highp float;
 	precision highp int;
 	precision highp sampler2D;
-	#define 2PI 6.283185307179586476
+	#define PIX 6.283185307179586476
 	#define G 9.81
 	#define KM 370.0	
 	in vec2 vUv;
@@ -441,7 +441,7 @@ let currentSpectrumFS = `
 		vec2 coordinates = gl_FragCoord.xy-0.5;
 		float n = (coordinates.x < u_grdres * 0.5) ? coordinates.x : coordinates.x - u_grdres;
 		float m = (coordinates.y < u_grdres * 0.5) ? coordinates.y : coordinates.y - u_grdres;
-		vec2 waveVector = (2PI*vec2(n, m))/u_grdsiz;
+		vec2 waveVector = (PIX*vec2(n, m))/u_grdsiz;
 		float phase = texture(u_phases,vUv).r;	
 		vec2 phaseVector = vec2(cos(phase),sin(phase));
 		vec2 h0 = texture(u_begFFT,vUv).rg;
@@ -467,7 +467,7 @@ let displacementHorizontalFS = `
 	precision highp float;
 	precision highp int;
 	precision highp sampler2D;	
-	#define 2PI 6.283185307179586476
+	#define PIX 6.283185307179586476
 	in vec2 vUv;
 	out vec4 outColor;
 	uniform sampler2D u_input;
@@ -481,7 +481,7 @@ let displacementHorizontalFS = `
 		float evenIndex = floor(index/u_subtransformSize) * (u_subtransformSize*0.5) + mod(index,u_subtransformSize*0.5);
 		vec4 even = texture(u_input, vec2(evenIndex+0.5, gl_FragCoord.y)/u_transformSize).rgba;
 		vec4 odd = texture(u_input, vec2(evenIndex + u_transformSize*0.5+0.5, gl_FragCoord.y)/u_transformSize).rgba;
-		float twiddleArgument = -2PI*(index/u_subtransformSize);
+		float twiddleArgument = -PIX*(index/u_subtransformSize);
 		vec2 twiddle = vec2(cos(twiddleArgument),sin(twiddleArgument));
 		vec2 outputA = even.xy+multiplyComplex(twiddle, odd.xy);
 		vec2 outputB = even.zw+multiplyComplex(twiddle, odd.zw);
@@ -493,7 +493,7 @@ let displacementVerticalFS = `
 	precision highp float;
 	precision highp int;
 	precision highp sampler2D;	
-	#define 2PI 6.283185307179586476
+	#define PIX 6.283185307179586476
 	in vec2 vUv;
 	out vec4 outColor;
 	uniform sampler2D u_input;
@@ -507,7 +507,7 @@ let displacementVerticalFS = `
 		float evenIndex = floor(index/u_subtransformSize) * (u_subtransformSize*0.5) + mod(index,u_subtransformSize*0.5);
 		vec4 even = texture(u_input, vec2(gl_FragCoord.x, evenIndex+0.5)/u_transformSize).rgba;
 		vec4 odd = texture(u_input, vec2(gl_FragCoord.x, evenIndex+u_transformSize*0.5+0.5)/u_transformSize).rgba;
-		float twiddleArgument = -2PI*(index/u_subtransformSize);
+		float twiddleArgument = -PIX*(index/u_subtransformSize);
 		vec2 twiddle = vec2(cos(twiddleArgument),sin(twiddleArgument));
 		vec2 outputA = even.xy + multiplyComplex(twiddle,odd.xy);
 		vec2 outputB = even.zw + multiplyComplex(twiddle,odd.zw);
