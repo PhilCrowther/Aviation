@@ -377,7 +377,7 @@ let initialSpectrumFS = `
 		float Delta = tanH(a0+4.0*pow(c/cp,2.5)+am*pow(CM/c,2.5));
 		float cosPhi = dot(normalize(u_wind),normalize(K));
 		float S = (1.0/PIX)*pow(k,-4.0)*(Bl+Bh)*(1.0+Delta*(2.0*cosPhi*cosPhi-1.0));
-		float dk = 2.0*PI/u_grdsiz;
+		float dk = PIX/u_grdsiz;
 		float h = sqrt(S/2.0)*dk;
 		if (K.x == 0.0 && K.y == 0.0) {h = 0.0;} 	//no DC term
 		outColor = vec4(h,0.0,0.0,0.0);
