@@ -37,12 +37,9 @@ let	initDspHrzComp, pingDspHrzComp, pongDspHrzComp,pingDspVrtComp, pongDspVrtCom
 //- PingPong
 let pingPhase = true;
 //- Uniform
-let subTFSzUniform = uniform(0);
-
-//- Time -----------------------------------------------------------------------
-//let wavTim = 0;
-let wavTim = uniform(0.);
+let wavTim = uniform(0);		// ### AS: changed to 0
 let wavSpd = 1.0;	// Animation speed - use in main program (lower is faster)
+let subTFSzUniform = uniform(0);
 
 //= BASIC SETUP ================================================================
 let	scene = new THREE.Scene();
@@ -76,8 +73,7 @@ function rendAll() {
 	// Update time
 	nowTim = clock.getElapsedTime();
 	difTim = nowTim-oldTim;
-//	wavTim = difTim*wavSpd || 0.0;
-	wavTim.value = difTim || 0.0;
+	wavTim.value += difTim || 0.0;		// ### AS: Changed to +=
 	oldTim = nowTim;
 	//
 	moveOcean(wavTim);
@@ -161,7 +157,7 @@ function initOcean(wavTim) {
 			//- Compute vUv
 			var idx = getIdx(indxTex);
 			//- My Shader
-			var pixel_coord = vec2<f32>(idx.xy)-0.5;
+			var pixel_coord = vec2<f32>(idx.xy)-u_grdres/2.0;	// ### AS: range is 0 to 512
 			var n: f32 = pixel_coord.x-u_grdres;	// use "else" value first
 			if (pixel_coord.x < u_grdres*0.5) {n = pixel_coord.x;}	// use "if" value second
 			var m: f32 = pixel_coord.y-u_grdres;	// use "else" value first
@@ -216,7 +212,7 @@ function initOcean(wavTim) {
 			//- Compute vUv
 			var idx = getIdx(indxTex);
 			//- My Shader
-			var pixel_coord = vec2<f32>(idx.xy)-0.5;
+			var pixel_coord = vec2<f32>(idx.xy)-u_grdres/2.0;	// ### AS: range is 0 to 512
 			var n: f32 = pixel_coord.x-u_grdres;	// use "else" value first
 			if (pixel_coord.x < u_grdres*0.5) {n = pixel_coord.x;}	// use "if" value second
 			var m: f32 = pixel_coord.y-u_grdres;	// use "else" value first
@@ -252,7 +248,7 @@ function initOcean(wavTim) {
 			var posYN = f32(sizeTex-posY) / sizeTex;	// neg height
 			var idxN = vec2u(u32(posXN),u32(posYN));			
 			//- My Shader
-			var pixel_coord = vec2<f32>(idx.xy) - 0.5;
+			var pixel_coord = vec2<f32>(idx.xy)-u_grdres/2.0;	// ### AS: range is 0 to 512
 			var n: f32 = pixel_coord.x-u_grdres;	// use "else" value first
 			if (pixel_coord.x < u_grdres*0.5) {n = pixel_coord.x;}	// use "if" value second
 			var m: f32 = pixel_coord.y-u_grdres;	// use "else" value first
@@ -289,9 +285,9 @@ function initOcean(wavTim) {
 			var PI: f32 = 3.14159265359;
 			//- Compute vUv
 			var idx = getIdx(indxTex);
-			var idxf = vec2<f32>(idx);		// ### add this to change format
+			var idxf = vec2<f32>(idx);			// add this to change format
 			//
-			var index: f32 = idxf.x*512.-0.5;	// ### ref idxf
+			var index: f32 = idxf.x*512.-0.5;	// ref idxf
 			var evenIndex: f32 = floor(index/subTFSz)*(subTFSz*0.5)+((index)%(subTFSz*0.5));
 			let even = vec4<f32>( textureLoad( readTex, vec2u(u32(evenIndex+0.5),idx.y)/512, 0 ).rgba);
 			let odd  = vec4<f32>( textureLoad( readTex, vec2u(u32(evenIndex+512.*0.5+0.5),idx.y)/512, 0 ).rgba );		
@@ -315,9 +311,9 @@ function initOcean(wavTim) {
 			var PI: f32 = 3.14159265359;
 			//- Compute vUv
 			var idx = getIdx(indxTex);
-			var idxf = vec2<f32>(idx);		// ### change this to format
+			var idxf = vec2<f32>(idx);			// change this to format
 			//
-			var index: f32 = idxf.y*512.-0.5;	// ### ref idxf
+			var index: f32 = idxf.y*512.-0.5;	// ref idxf
 			var evenIndex: f32 = floor(index/subTFSz)*(subTFSz*0.5)+((index)%(subTFSz*0.5));
 			let even = vec4<f32>(textureLoad(readTex,vec2u(idx.x,u32(evenIndex+0.5))/512,0).rgba);
 			let odd =  vec4<f32>(textureLoad(readTex,vec2u(idx.x,u32(evenIndex+512.*0.5+0.5))/512,0).rgba);
