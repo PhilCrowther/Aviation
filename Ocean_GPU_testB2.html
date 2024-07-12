@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Ocean WebGPU test butterfly</title>
+<title>Ocean WebGPU test butterfly 2</title>
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link type="text/css" rel="stylesheet" href="styles/main.css">
 </head>
@@ -144,11 +144,6 @@ function initOcean(wavTim) {
 			var posX = index % ${rez};	// width
 			var posY = index / ${rez};	// height
 			return vec2u(u32(posX),u32(posY));
-		}
-		fn getIdxI(index: u32) -> vec2i {
-			var posX = index % ${rez};	// width
-			var posY = index / ${rez};	// height
-			return vec2i(i32(posX),i32(posY));
 		}
 	`);
 	//= Shader 1 ===============================================================
@@ -344,15 +339,14 @@ function initOcean(wavTim) {
 			// Variables
 			var PI: f32 = 3.14159265359;
 			//- Compute vUv
-			var idx = getIdxI(indxTex);
+			var idx = getIdx(indxTex);
 			//			
-			var data = textureLoad(butterfly,vec2i(i32(stepTex/bfw),idx.x/512),0);
-			var even = textureLoad(readTex,vec2i(i32(data.z),idx.y/512),0);
-			var odd =  textureLoad(readTex,vec2i(i32(data.w),idx.y/512),0);
+			var data = textureLoad(butterfly,vec2u(u32(stepTex),idx.x),0);
+			var even = textureLoad(readTex,vec2u(u32(data.z), idx.y),0);
+			var odd =  textureLoad(readTex,vec2u(u32(data.w), idx.y),0);
 			var outputA = vec2<f32>(even.xy+multiplyComplex(data.rg,odd.xy));
 			var outputB = vec2<f32>(even.zw+multiplyComplex(data.rg,odd.zw));
-			textureStore(storTex,idx,vec4<f32>(outputA,outputB));
-		}
+			textureStore(storTex,idx,vec4<f32>(outputA,outputB));		}
 	`, [subroutines]);
 	//= Shader 4B ==============================================================
 	//	Displacement Map (AS WebGPU)
@@ -369,14 +363,14 @@ function initOcean(wavTim) {
 			// Variables
 			var PI: f32 = 3.14159265359;
 			//- Compute vUv
-			var idx = getIdxI(indxTex);
-			//
-			var data = textureLoad(butterfly,vec2i(i32(stepTex/bfw),idx.y/512),0);
-			var even = textureLoad(readTex,vec2i(idx.x/512,i32(data.z)),0);
-			var odd  = textureLoad(readTex,vec2i(idx.x/512,i32(data.w)),0);		
+			var idx = getIdx(indxTex);
+			//			
+			var data = textureLoad(butterfly,vec2u(u32(stepTex),idx.y),0);
+			var even = textureLoad(readTex,vec2u(idx.x,u32(data.z)),0);
+			var odd =  textureLoad(readTex,vec2u(idx.x,u32(data.w)),0);
 			var outputA = vec2<f32>(even.xy+multiplyComplex(data.rg,odd.xy));
 			var outputB = vec2<f32>(even.zw+multiplyComplex(data.rg,odd.zw));
-			textureStore(storTex,idx,vec4<f32>(outputA,outputB));		
+			textureStore(storTex,idx,vec4<f32>(outputA,outputB));
 		}
 	`, [subroutines]);
 	//= Instructions ===========================================================
