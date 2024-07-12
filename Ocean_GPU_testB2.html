@@ -333,8 +333,7 @@ function initOcean(wavTim) {
 			butterfly: texture_2d<f32>,
 			storTex: texture_storage_2d<rgba32float,write>,
 			indxTex: u32,
-			stepTex: f32,
-			bfw: f32
+			stepTex: f32
 		) -> void {
 			// Variables
 			var PI: f32 = 3.14159265359;
@@ -342,8 +341,8 @@ function initOcean(wavTim) {
 			var idx = getIdx(indxTex);
 			//			
 			var data = textureLoad(butterfly,vec2u(u32(stepTex),idx.x),0);
-			var even = textureLoad(readTex,vec2u(u32(data.z), idx.y),0);
-			var odd =  textureLoad(readTex,vec2u(u32(data.w), idx.y),0);
+			var even = textureLoad(readTex,vec2u(u32(data.z),idx.y),0);
+			var odd =  textureLoad(readTex,vec2u(u32(data.w),idx.y),0);
 			var outputA = vec2<f32>(even.xy+multiplyComplex(data.rg,odd.xy));
 			var outputB = vec2<f32>(even.zw+multiplyComplex(data.rg,odd.zw));
 			textureStore(storTex,idx,vec4<f32>(outputA,outputB));		}
@@ -357,8 +356,7 @@ function initOcean(wavTim) {
 			butterfly: texture_2d<f32>,
 			storTex: texture_storage_2d<rgba32float,write>,
 			indxTex: u32,
-			stepTex: f32,
-			bfw: f32
+			stepTex: f32
 		) -> void {
 			// Variables
 			var PI: f32 = 3.14159265359;
@@ -417,7 +415,6 @@ function initOcean(wavTim) {
 		N: rez,
 	}).compute(Math.log2(rez)*rez);
 	//- Shader 4. Displacement
-	let bfwU = uniform(Math.log2(rez)-1);
 	//- Shader 4A
 	initDspHrzComp = compDspHrz({
 		sizeTex: rez,
@@ -425,8 +422,7 @@ function initOcean(wavTim) {
 		butterfly: texture(butterflyTexture),
 		storTex: textureStore(pongTransformTexture),
 		indxTex: instanceIndex,	
-		stepTex: stepBF,
-		bfw: bfwU
+		stepTex: stepBF
 	}).compute(rez**2);
 	pingDspHrzComp = compDspHrz({
 		sizeTex: rez,
@@ -434,8 +430,7 @@ function initOcean(wavTim) {
 		butterfly: texture(butterflyTexture),
 		storTex: textureStore(pongTransformTexture),
 		indxTex: instanceIndex,
-		stepTex: stepBF,
-		bfw: bfwU
+		stepTex: stepBF
 	}).compute(rez**2);
 	pongDspHrzComp = compDspHrz({
 		sizeTex: rez,
@@ -443,8 +438,7 @@ function initOcean(wavTim) {
 		butterfly: texture(butterflyTexture),
 		storTex: textureStore(pingTransformTexture),
 		indxTex: instanceIndex,
-		stepTex: stepBF,
-		bfw: bfwU
+		stepTex: stepBF
 	}).compute(rez**2);	
 	//- Shader 4B
 	pingDspVrtComp = compDspVrt({
@@ -453,8 +447,7 @@ function initOcean(wavTim) {
 		butterfly: texture(butterflyTexture),
 		storTex: textureStore(pongTransformTexture),
 		indxTex: instanceIndex,
-		stepTex: stepBF,
-		bfw: bfwU
+		stepTex: stepBF
 	}).compute(rez**2);
 	pongDspVrtComp = compDspVrt({
 		sizeTex: rez,
@@ -462,8 +455,7 @@ function initOcean(wavTim) {
 		butterfly: texture(butterflyTexture),
 		storTex: textureStore(pingTransformTexture),
 		indxTex: instanceIndex,
-		stepTex: stepBF,
-		bfw: bfwU
+		stepTex: stepBF
 	}).compute(rez**2)
 	//= Render =================================================================
 	renderer.compute(initSpectrumComp);
