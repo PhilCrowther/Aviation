@@ -20,7 +20,7 @@
 
 <script type="module">
 import * as THREE from 'three';
-import {texture, textureStore, wgslFn, instanceIndex, MeshBasicNodeMaterial, positionLocal, code, uniform, float} from 'three/nodes';
+import {texture, textureStore, wgslFn, instanceIndex, MeshBasicNodeMaterial, positionLocal, code, uniform, timerLocal} from 'three/nodes';
 import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 import StorageTexture from 'three/addons/renderers/common/StorageTexture.js';
 
@@ -36,6 +36,7 @@ let initSpectrumComp,pingPhaseComp,pongPhaseComp,pingSpectrumComp,pongSpectrumCo
 let butterflyComp;
 let	initDspHrzComp, pingDspHrzComp, pongDspHrzComp,pingDspVrtComp, pongDspVrtComp;
 //- PingPong
+let initPhase = true;
 let pingPhase = true;
 //- Uniform
 let wavTim = uniform(0);		// ### AS: changed to 0
@@ -128,8 +129,11 @@ function initOcean(wavTim) {
 		fn square(x: f32) -> f32 {
 			return x * x;
 		}
-		fn omega(k: f32) -> f32 {
+		fn omega1(k: f32) -> f32 {
 			return sqrt(9.81*k*(1.+square(k/370.)));
+		}
+		fn omega2(k: f32) -> f32 {
+			return sqrt(9.81*k*(1.+k*k/370.*370.));
 		}
 		fn tanH(x: f32) -> f32 {
 			return (1.-exp(-2.*x))/(1.+exp(-2.*x));
@@ -162,19 +166,19 @@ function initOcean(wavTim) {
 			//- Compute vUv
 			var idx = getIdx(indxTex);
 			//- My Shader
-			var pixel_coord = vec2<f32>(idx.xy)-u_grdres/2.0;	// ### AS: range is 0 to 512
-			var n: f32 = pixel_coord.x-u_grdres;	// use "else" value first
-			if (pixel_coord.x < u_grdres*0.5) {n = pixel_coord.x;}	// use "if" value second
-			var m: f32 = pixel_coord.y-u_grdres;	// use "else" value first
-			if (pixel_coord.y < u_grdres*0.5) {m = pixel_coord.y;}	// use "if" value second
-			let K = vec2<f32>(n,m)*2.*PI/u_grdsiz;
+			var pixel_coord = vec2<f32>(idx.xy)-u_grdres*0.5;	// ### AS: range is 0 to 512
+			var n: f32 = pixel_coord.x;
+			if (pixel_coord.x >= u_grdres*0.5) {n = pixel_coord.x-u_grdres;}		
+			var m: f32 = pixel_coord.y;
+			if (pixel_coord.y >= u_grdres*0.5) {m = pixel_coord.y-u_grdres;}
 			//-
+			let K = vec2<f32>(n,m)*2.*PI/u_grdsiz;
 			var k: f32 = length(K);
 			var l_wind: f32 = length(u_wind);
 			var Omega: f32 = 0.84;
 			var kp: f32 = 9.81 * square(Omega/l_wind);
-			var c: f32 = omega(k)/k;
-			var cp: f32 = omega(kp)/kp;
+			var c: f32 = omega1(k)/k;
+			var cp: f32 = omega1(kp)/kp;
 			var Lpm: f32 = exp(-1.25*square(kp/k));
 			var gamma: f32 = 1.7;
 			var sigma: f32 = 0.08*(1.+4.*pow(Omega,-3.));
@@ -217,15 +221,15 @@ function initOcean(wavTim) {
 			//- Compute vUv
 			var idx = getIdx(indxTex);
 			//- My Shader
-			var pixel_coord = vec2<f32>(idx.xy)-u_grdres/2.0;	// ### AS: range is 0 to 512
-			var n: f32 = pixel_coord.x-u_grdres;	// use "else" value first
-			if (pixel_coord.x < u_grdres*0.5) {n = pixel_coord.x;}	// use "if" value second
-			var m: f32 = pixel_coord.y-u_grdres;	// use "else" value first
-			if (pixel_coord.y < u_grdres*0.5) {m = pixel_coord.y;}	// use "if" value second
+			var pixel_coord = vec2<f32>(idx.xy)-u_grdres*0.5;	// ### AS: range is 0 to 512
+			var n: f32 = pixel_coord.x;
+			if (pixel_coord.x >= u_grdres*0.5) {n = pixel_coord.x-u_grdres;}		
+			var m: f32 = pixel_coord.y;
+			if (pixel_coord.y >= u_grdres*0.5) {m = pixel_coord.y-u_grdres;}	
 			var waveVector = vec2<f32>(n,m)*2.*PI/u_grdsiz;
 			//-
 			var phase: f32 = textureLoad(readTex,idx,0).r;
-			var deltaPhase: f32 = omega(length(waveVector))*timeTex;
+			var deltaPhase: f32 = omega2(length(waveVector))*timeTex;
 			phase = ((phase+deltaPhase) % (2.*PI));
 			textureStore(storTex,idx,vec4<f32>(phase,0,0,1));	// use 1 for a value to make visible
 		}
@@ -253,11 +257,11 @@ function initOcean(wavTim) {
 			var posYN = f32(sizeTex-posY) / sizeTex;	// neg height
 			var idxN = vec2u(u32(posXN),u32(posYN));			
 			//- My Shader
-			var pixel_coord = vec2<f32>(idx.xy)-u_grdres/2.0;	// ### AS: range is 0 to 512
-			var n: f32 = pixel_coord.x-u_grdres;	// use "else" value first
-			if (pixel_coord.x < u_grdres*0.5) {n = pixel_coord.x;}	// use "if" value second
-			var m: f32 = pixel_coord.y-u_grdres;	// use "else" value first
-			if (pixel_coord.y < u_grdres*0.5) {m = pixel_coord.y;}	// use "if" value second
+			var pixel_coord = vec2<f32>(idx.xy)-u_grdres*0.5;	// ### AS: range is 0 to 512
+			var n: f32 = pixel_coord.x;
+			if (pixel_coord.x >= u_grdres*0.5) {n = pixel_coord.x-u_grdres;}		
+			var m: f32 = pixel_coord.y;
+			if (pixel_coord.y >= u_grdres*0.5) {m = pixel_coord.y-u_grdres;}	
 			var waveVector = vec2<f32>(n,m)*2.*PI/u_grdsiz;
 			//
 			var phase = textureLoad(readTx1,idx,0).r;
@@ -461,69 +465,76 @@ function initOcean(wavTim) {
 	renderer.compute(initSpectrumComp);
 	renderer.compute(butterflyComp,[1,8,1]);
 	//= Display ================================================================
-	let siz = 50, seg = 256;
+	let siz = 50;
 	//- Plane 1 ----------------------------------------------------------------
 	let mat1 = new MeshBasicNodeMaterial({
 		colorNode: texture(initSpectrumTexture),
 	});
-	let mesh1 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz,seg,seg), mat1);
+	let mesh1 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat1);
 	mesh1.position.set(-1.52*siz,0.51*siz,0);
 	scene.add(mesh1);
-	//- Phase -----------------------------------------------------------------
-	let matP = new MeshBasicNodeMaterial({
+	//- Phase Array ------------------------------------------------------------
+	let matA = new MeshBasicNodeMaterial({
 		colorNode: texture(phaseArrayTexture),
 	});
-	let meshP = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz,seg,seg), matP);
-	meshP.position.set(-0.51*siz,0.51*siz,0);
-	scene.add(meshP);
+	let meshA = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matA);
+	meshA.position.set(-0.51*siz,0.51*siz,0);
+	scene.add(meshA);
 	//- Plane 2a ----------------------------------------------------------------
 	let mat2a = new MeshBasicNodeMaterial({
 		colorNode: texture(pingPhaseTexture),
 	});
-	let mesh2a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz,seg,seg), mat2a);
+	let mesh2a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat2a);
 	mesh2a.position.set(0.51*siz,0.51*siz,0);
 	scene.add(mesh2a);
 	//- Plane 2b ----------------------------------------------------------------
 	let mat2b = new MeshBasicNodeMaterial({
 		colorNode: texture(pongPhaseTexture),
 	});
-	let mesh2b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz,seg,seg), mat2b);
+	let mesh2b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat2b);
 	mesh2b.position.set(1.52*siz,0.51*siz,0);
 	scene.add(mesh2b);
 	//- Plane 3 ----------------------------------------------------------------
 	let mat3 = new MeshBasicNodeMaterial({
 		colorNode: texture(compSpectrumTexture),
 	});
-	let mesh3 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz,seg,seg), mat3);
+	let mesh3 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat3);
 	mesh3.position.set(-1.52*siz,-0.51*siz,0);
 	scene.add(mesh3);
 	//- Butterfly --------------------------------------------------------------
 	let matB = new MeshBasicNodeMaterial({
 		colorNode: texture(butterflyTexture),
 	});
-	let meshB = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz,seg,seg), matB);
+	let meshB = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matB);
 	meshB.position.set(-0.52*siz,-0.51*siz,0);
 	scene.add(meshB);
 	//- Plane 4a ---------------------------------------------------------------
 	let mat4a = new MeshBasicNodeMaterial({
 		colorNode: texture(pingTransformTexture),
 	});
-	let mesh4a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz,seg,seg), mat4a);
+	let mesh4a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat4a);
 	mesh4a.position.set(0.51*siz,-0.51*siz,0);
 	scene.add(mesh4a);
 	//- Plane 4b ----------------------------------------------------------------
 	let mat4b = new MeshBasicNodeMaterial({
 		colorNode: texture(pongTransformTexture),
 	});
-	let mesh4b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz,seg,seg), mat4b);
+	let mesh4b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat4b);
 	mesh4b.position.set(1.52*siz,-0.51*siz,0);
 	scene.add(mesh4b);
 }
 
 //- MOVE -----------------------------------------------------------------------
 function moveOcean(wavTim) {
-	// 2. New Phase to PingPhase or PongPhase
-	renderer.compute(pingPhase ? pingPhaseComp : pongPhaseComp);
+	// 2. Initial
+	if (initPhase) {
+		renderer.compute(pingPhaseComp);
+		initPhase = false;
+	}
+	else {
+		renderer.compute(pingPhase ? pingPhaseComp : pongPhaseComp);
+	}
+	renderer.compute(pingPhase ? pongPhaseComp : pingPhaseComp);	
 	pingPhase = !pingPhase;
 	// 3. New Spectrum from PingPhase or PongPhase
 	renderer.compute(pingPhase ? pingSpectrumComp : pongSpectrumComp);
@@ -533,7 +544,7 @@ function moveOcean(wavTim) {
 	for (let i = 0; i < iterations; i++) {	// Horizontal Ping/Pong
 		pingPong = !pingPong;
 		stepBF.value = i;
-		if (i == 0) renderer.computeAsync(initDspHrzComp);	// if first rep, then New Spectrum to PingHrz
+		if (i == 0) renderer.compute(initDspHrzComp);	// if first rep, then New Spectrum to PingHrz
 		else {	// Otherwise, Ping/Pong
 			renderer.compute(pingPong ? pingDspHrzComp : pongDspHrzComp);
 		}
