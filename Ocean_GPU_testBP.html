@@ -32,8 +32,7 @@ var DegRad = Math.PI/180;	// Convert Degrees to Radians
 //- Ocean Module ---------------------------------------------------------------
 let rez = 512.;	// Texture Size
 //- Instruction Addresses
-let initSpectrumHComp,initSpectrumIComp;
-let pingPhaseComp,pongPhaseComp,pingSpectrumComp,pongSpectrumComp;
+let initSpectrumComp,pingPhaseComp,pongPhaseComp,pingSpectrumComp,pongSpectrumComp;
 let butterflyComp,permutationComp;
 let	initDspHrzComp, pingDspHrzComp, pongDspHrzComp,pingDspVrtComp, pongDspVrtComp;
 //- PingPong
@@ -91,10 +90,8 @@ function rendAll() {
 
 function initOcean(wavTim) {
 	//- Create Buffers ---------------------------------------------------------
-	let initSpectrumHTexture = new StorageTexture(rez,rez);
-		initSpectrumHTexture.type = THREE.FloatType;
-	let initSpectrumITexture = new StorageTexture(rez,rez);
-		initSpectrumITexture.type = THREE.FloatType;
+	let initSpectrumTexture = new StorageTexture(rez,rez);
+		initSpectrumTexture.type = THREE.FloatType;
 	let pingPhaseTexture = new StorageTexture(rez,rez);
 		pingPhaseTexture.type = THREE.FloatType;
 	let pongPhaseTexture = new StorageTexture(rez,rez);
@@ -147,10 +144,10 @@ function initOcean(wavTim) {
 			return vec2u(u32(posX),u32(posY));
 		}
 	`);
-	//= Shader 1A ==============================================================
+	//= Shader 1 ===============================================================
 	//	Set intitial wave frequency at a texel coordinate (AS V2)
-	let initSpectrumH = wgslFn(`
-		fn initSpectrumH(
+	let initSpectrum = wgslFn(`
+		fn initSpectrum(
 			sizeTex: f32,
 			storTex: texture_storage_2d<rgba32float, write>,
 			indxTex: u32,
@@ -213,21 +210,6 @@ function initOcean(wavTim) {
 //			var nrnd1 = random(seed + 0.1);	
 //			return sqrt(-2.0*log(max(0.001, nrnd0)))*cos(2.0*PI*nrnd1);
 //		}	
-	`, [subroutines]);
-	//= Shader 1B ==============================================================
-	//  Initial Inverse Spectrum
-	let initialSpectrumI = wgslFn(`
-		fn initialSpectrumI(
-			sizeTex: f32,
-			readTex: texture_2d<f32>,
-			storTex: texture_storage_2d<rgba32float, write>,
-			indxTex: u32
-		) -> void {
-			var idx = getIdx(indxTex); 
-			var h0k = textureLoad(readTex,idx,0).xy;
-			var h0MinusK = textureLoad(readTex,vec2<u32>((u32(sizeTex)-idx.x)%u32(sizeTex),(u32(sizeTex)-idx.y)%u32(sizeTex)),0);
-			textureStore(storTex,idx,vec4f(h0k.x,h0k.y,h0MinusK.x,-h0MinusK.y));
-		}
 	`, [subroutines]);
 	//= Shader 2 ===============================================================
 	//	Current Phase (AS V2)
@@ -421,18 +403,12 @@ function initOcean(wavTim) {
 		}     
 	`, [subroutines]);
 	//= Instructions ===========================================================
-	//- Shader 1A. Initial Frequency
-	initSpectrumHComp = initSpectrumH({
+	//- Shader 1. Initial Frequency
+	initSpectrumComp = initSpectrum({
 		sizeTex: rez,
-		storTex: textureStore(initSpectrumHTexture),
+		storTex: textureStore(initSpectrumTexture),
 		indxTex: instanceIndex
 	}).compute(rez**2);
-	initSpectrumIComp = initSpectrumI({
-		sizeTex: rez,
-		readTex: texture(initSpectrumHTexture),
-		storTex: textureStore(initSpectrumITexture),
-		indxTex: instanceIndex
-	}).compute(rez ** 2);
 	//- Shader 2. Initial Phase
 	pingPhaseComp = compPhase({
 		sizeTex: rez,
@@ -451,15 +427,15 @@ function initOcean(wavTim) {
 	//- Shader 3. New Phase
 	pingSpectrumComp = compSpectrum({
 		sizeTex: rez,
-		readTx1: texture(phaseArrayTexture),
-		readTx2: texture(pingPhaseTexture),
+		readTx1: texture(pingPhaseTexture),
+		readTx2: texture(initSpectrumTexture),
 		storTex: textureStore(compSpectrumTexture),
 		indxTex: instanceIndex
 	}).compute(rez**2);
 	pongSpectrumComp = compSpectrum({
 		sizeTex: rez,
-		readTx1: texture(phaseArrayTexture),
-		readTx2: texture(pongPhaseTexture),
+		readTx1: texture(pongPhaseTexture),
+		readTx2: texture(initSpectrumTexture),
 		storTex: textureStore(compSpectrumTexture),
 		indxTex: instanceIndex
 	}).compute(rez**2);
@@ -519,73 +495,72 @@ function initOcean(wavTim) {
 		indxTex: instanceIndex,
 	}).compute(rez**2)
 	//= Render =================================================================
-	renderer.compute(initSpectrumHComp);
-//	renderer.compute(initSpectrumIComp);
+	renderer.compute(initSpectrumComp);
 	renderer.compute(butterflyComp,[1,8,1]);
 	//= Display ================================================================
 	let siz = 50;
 	//- Plane 1 ----------------------------------------------------------------
 	let mat1 = new MeshBasicNodeMaterial({
-		colorNode: texture(initSpectrumHTexture),
+		colorNode: texture(initSpectrumTexture),
 	});
 	let mesh1 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat1);
-	mesh1.position.set(-1.52*siz,0.51*siz,0);
+	mesh1.position.set(-1.52*siz,siz,0);
 	scene.add(mesh1);
 	//- Phase Array ------------------------------------------------------------
 	let matA = new MeshBasicNodeMaterial({
 		colorNode: texture(phaseArrayTexture),
 	});
 	let meshA = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matA);
-	meshA.position.set(-0.51*siz,0.51*siz,0);
+	meshA.position.set(-0.51*siz,siz,0);
 	scene.add(meshA);
 	//- Plane 2a ----------------------------------------------------------------
 	let mat2a = new MeshBasicNodeMaterial({
 		colorNode: texture(pingPhaseTexture),
 	});
 	let mesh2a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat2a);
-	mesh2a.position.set(0.51*siz,0.51*siz,0);
+	mesh2a.position.set(0.51*siz,siz,0);
 	scene.add(mesh2a);
 	//- Plane 2b ----------------------------------------------------------------
 	let mat2b = new MeshBasicNodeMaterial({
 		colorNode: texture(pongPhaseTexture),
 	});
 	let mesh2b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat2b);
-	mesh2b.position.set(1.52*siz,0.51*siz,0);
+	mesh2b.position.set(1.52*siz,siz,0);
 	scene.add(mesh2b);
 	//- Plane 3 ----------------------------------------------------------------
 	let mat3 = new MeshBasicNodeMaterial({
 		colorNode: texture(compSpectrumTexture),
 	});
 	let mesh3 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat3);
-	mesh3.position.set(-1.52*siz,-0.51*siz,0);
+	mesh3.position.set(-1.52*siz,0.0*siz,0);
 	scene.add(mesh3);
 	//- Butterfly --------------------------------------------------------------
 	let matB = new MeshBasicNodeMaterial({
 		colorNode: texture(butterflyTexture),
 	});
 	let meshB = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matB);
-	meshB.position.set(-0.52*siz,-0.51*siz,0);
+	meshB.position.set(-0.52*siz,0,0);
 	scene.add(meshB);
 	//- Plane 4a ---------------------------------------------------------------
 	let mat4a = new MeshBasicNodeMaterial({
 		colorNode: texture(pingTransformTexture),
 	});
 	let mesh4a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat4a);
-	mesh4a.position.set(0.51*siz,-0.51*siz,0);
+	mesh4a.position.set(0.51*siz,0,0);
 	scene.add(mesh4a);
 	//- Plane 4b ----------------------------------------------------------------
 	let mat4b = new MeshBasicNodeMaterial({
 		colorNode: texture(pongTransformTexture),
 	});
 	let mesh4b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat4b);
-	mesh4b.position.set(1.52*siz,-0.51*siz,0);
+	mesh4b.position.set(1.52*siz,0,0);
 	scene.add(mesh4b);
 	//- Plane 5 ----------------------------------------------------------------
 	let mat5 = new MeshBasicNodeMaterial({
 		colorNode: texture(dispMapTexture),
 	});
 	let mesh5 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat5);
-	mesh5.position.set(-1.52*siz,-1.52*siz,0);
+	mesh5.position.set(-1.52*siz,-siz,0);
 	scene.add(mesh5);
 }
 
