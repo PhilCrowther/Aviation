@@ -11,9 +11,9 @@
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.166.0/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.166.0/examples/jsm/",
-			"three/nodes": "https://unpkg.com/three@0.166.0/examples/jsm/nodes/Nodes.js"
+			"three": "https://unpkg.com/three@0.166.1/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.166.1/examples/jsm/",
+			"three/nodes": "https://unpkg.com/three@0.166.1/examples/jsm/nodes/Nodes.js"
 		}
 	}
 </script>
@@ -32,7 +32,8 @@ var DegRad = Math.PI/180;	// Convert Degrees to Radians
 //- Ocean Module ---------------------------------------------------------------
 let rez = 512.;	// Texture Size
 //- Instruction Addresses
-let initSpectrumComp,pingPhaseComp,pongPhaseComp,pingSpectrumComp,pongSpectrumComp;
+let initSpectrumHComp,initSpectrumIComp;
+let pingPhaseComp,pongPhaseComp,pingSpectrumComp,pongSpectrumComp;
 let butterflyComp,permutationComp;
 let	initDspHrzComp, pingDspHrzComp, pongDspHrzComp,pingDspVrtComp, pongDspVrtComp;
 //- PingPong
@@ -90,8 +91,10 @@ function rendAll() {
 
 function initOcean(wavTim) {
 	//- Create Buffers ---------------------------------------------------------
-	let initSpectrumTexture = new StorageTexture(rez,rez);
-		initSpectrumTexture.type = THREE.FloatType;
+	let initSpectrumHTexture = new StorageTexture(rez,rez);
+		initSpectrumHTexture.type = THREE.FloatType;
+	let initSpectrumITexture = new StorageTexture(rez,rez);
+		initSpectrumITexture.type = THREE.FloatType;
 	let pingPhaseTexture = new StorageTexture(rez,rez);
 		pingPhaseTexture.type = THREE.FloatType;
 	let pongPhaseTexture = new StorageTexture(rez,rez);
@@ -129,20 +132,14 @@ function initOcean(wavTim) {
 		fn square(x: f32) -> f32 {
 			return x * x;
 		}
-		fn omega1(k: f32) -> f32 {
-			return sqrt(9.81*k*(1.+square(k/370.)));
-		}
-		fn omega2(k: f32) -> f32 {
-			return sqrt(9.81*k*(1.+k*k/370.*370.));
-		}
 		fn tanH(x: f32) -> f32 {
-			return (1.-exp(-2.*x))/(1.+exp(-2.*x));
+			return (1.-exp(-2*x))/(1.+exp(-2*x));
 		}
 		fn multiplyComplex(a: vec2f, b: vec2f) -> vec2f {
-			return vec2f(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+			return vec2f(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
 		fn multiplyByI(z: vec2f) -> vec2f {
-			return vec2f(-z.y, z.x);
+			return vec2f(-z.y,z.x);
 		}
 		fn getIdx(index: u32) -> vec2u {
 			var posX = index % ${rez};	// width
@@ -150,58 +147,86 @@ function initOcean(wavTim) {
 			return vec2u(u32(posX),u32(posY));
 		}
 	`);
-	//= Shader 1 ===============================================================
+	//= Shader 1A ==============================================================
 	//	Set intitial wave frequency at a texel coordinate (AS V2)
-	let initSpectrum = wgslFn(`
-		fn initSpectrum(
+	let initSpectrumH = wgslFn(`
+		fn initSpectrumH(
 			sizeTex: f32,
 			storTex: texture_storage_2d<rgba32float, write>,
-			indxTex: u32
+			indxTex: u32,
 		) -> void {
 			// Variables
-			var PI: f32 = 3.14159265359;
-			var u_wind = vec2<f32>(10.,10.);
-			var u_grdres: f32 = 512.;
-			var u_grdsiz:f32 = 512.;
+			var u_wind = vec2<f32>(10,10);
+			var u_grdres: f32 = 512;
+			var u_grdsiz:f32 = 512;
 			//- Compute vUv
 			var idx = getIdx(indxTex);
 			//- My Shader
 			var pixel_coord = vec2<f32>(idx.xy)-u_grdres*0.5;	// ### AS: range is 0 to 512
 			var n: f32 = pixel_coord.x;
-			if (pixel_coord.x >= u_grdres*0.5) {n = pixel_coord.x-u_grdres;}		
+			if (pixel_coord.x >= u_grdres*0.5) {n = pixel_coord.x-u_grdres;}
 			var m: f32 = pixel_coord.y;
 			if (pixel_coord.y >= u_grdres*0.5) {m = pixel_coord.y-u_grdres;}
 			//-
-			let K = vec2<f32>(n,m)*2.*PI/u_grdsiz;
+			let K = vec2<f32>(n,m)*P2/u_grdsiz;
 			var k: f32 = length(K);
 			var l_wind: f32 = length(u_wind);
 			var Omega: f32 = 0.84;
-			var kp: f32 = 9.81 * square(Omega/l_wind);
-			var c: f32 = omega1(k)/k;
-			var cp: f32 = omega1(kp)/kp;
+			var kp: f32 = G*square(Omega/l_wind);
+			var c: f32 = omega(k)/k;			
+			var cp: f32 = omega(kp)/kp;
 			var Lpm: f32 = exp(-1.25*square(kp/k));
 			var gamma: f32 = 1.7;
-			var sigma: f32 = 0.08*(1.+4.*pow(Omega,-3.));
-			var Gamma: f32 = exp(-square(sqrt(k/kp)-1.)/2.*square(sigma));
+			var sigma: f32 = 0.08*(1.+4*pow(Omega,-3));
+			var Gamma: f32 = exp(-square(sqrt(k/kp)-1)/2*square(sigma));
 			var Jp: f32 = pow(gamma,Gamma);
-			var Fp: f32 = Lpm*Jp*exp(-Omega/sqrt(10.)*(sqrt(k/kp)-1.));
+			var Fp: f32 = Lpm*Jp*exp(-Omega/sqrt(10)*(sqrt(k/kp)-1));
 			var alphap: f32 = 0.006 * sqrt(Omega);
-			var Bl: f32 = 0.5*alphap*cp/c*Fp;
-			var z0: f32 = 0.000037*square(l_wind)/9.81*pow(l_wind/cp,0.9);
-			var uStar: f32 = 0.41*l_wind/log(10./z0);
-			var alpham: f32 = 0.01*(1.+3.*log(uStar/0.23));	// use "else" value first
-			if (uStar < 0.23) {alpham = 0.01*(1.+log(uStar/0.23));}	// use "if" value second
-			var Fm: f32 = exp(-0.25*square(k/370.-1.));
-			var Bh: f32 = 0.5*alpham*0.23/c*Fm*Lpm;
-			var a0: f32 = log(2.)/4.;
-			var am: f32 = 0.13*uStar/0.23;
-			var Delta: f32 = tanH(a0+4.*pow(c/cp,2.5)+am*pow(0.23/c,2.5));
+			var Bl: f32 = 0.5*alphap*cp/c*Fp;			
+			var z0: f32 = 0.000037*square(l_wind)/G*pow(l_wind/cp,0.9);
+			var uStar: f32 = 0.41*l_wind/log(10/z0);
+			var alpham: f32 = 0.01*(1+3*log(uStar/CM));	// use "else" value first
+			if (uStar < CM) {alpham = 0.01*(1+log(uStar/CM));}	// use "if" value second
+			var Fm: f32 = exp(-0.25*square(k/KM-1));
+			var Bh: f32 = 0.5*alpham*CM/c*Fm*Lpm;
+			var a0: f32 = log(2.)/4;
+			var am: f32 = 0.13*uStar/CM;
+			var Delta: f32 = tanH(a0+4.*pow(c/cp,2.5)+am*pow(CM/c,2.5));
 			var cosPhi: f32 = dot(normalize(u_wind),normalize(K));
-			var S: f32 = 1./(2.*PI)*pow(k,-4.)*(Bl+Bh)*(1.+Delta*(2.*cosPhi*cosPhi-1.));
-			var dk: f32 = 2.*PI/u_grdsiz;
-			var h: f32 = sqrt(S/2.)*dk;
-			if (K.x == 0. && K.y == 0.) {h = 0.;}	
-			textureStore(storTex,idx,vec4<f32>(h,0.,0.,1.));	// use 1 for a value to make visible
+			var S: f32 = (1/P2)*pow(k,-4)*(Bl+Bh)*(1+Delta*(2*cosPhi*cosPhi-1));
+			var dk: f32 = P2/u_grdsiz;
+			var h: f32 = sqrt(S/2)*dk;
+			if (K.x == 0 && K.y == 0) {h = 0;}
+			textureStore(storTex,idx,vec4<f32>(h,0,0,1));	// use 1 for a value to make visible
+		}
+		// Constants
+		const P2: f32 = 6.28318530718;
+		const G: f32 = 9.81;
+		const CM: f32 = 0.23;
+		const KM: f32 = 370;
+		// Subroutines
+		fn omega(k: f32) -> f32 {
+			return sqrt(G*k*(1+square(k/KM)));
+		}
+//		fn gaussianRandom(seed: vec2f) -> vec2f {
+//			var nrnd0 = random(seed);
+//			var nrnd1 = random(seed + 0.1);	
+//			return sqrt(-2.0*log(max(0.001, nrnd0)))*cos(2.0*PI*nrnd1);
+//		}	
+	`, [subroutines]);
+	//= Shader 1B ==============================================================
+	//  Initial Inverse Spectrum
+	let initialSpectrumI = wgslFn(`
+		fn initialSpectrumI(
+			sizeTex: f32,
+			readTex: texture_2d<f32>,
+			storTex: texture_storage_2d<rgba32float, write>,
+			indxTex: u32
+		) -> void {
+			var idx = getIdx(indxTex); 
+			var h0k = textureLoad(readTex,idx,0).xy;
+			var h0MinusK = textureLoad(readTex,vec2<u32>((u32(sizeTex)-idx.x)%u32(sizeTex),(u32(sizeTex)-idx.y)%u32(sizeTex)),0);
+			textureStore(storTex,idx,vec4f(h0k.x,h0k.y,h0MinusK.x,-h0MinusK.y));
 		}
 	`, [subroutines]);
 	//= Shader 2 ===============================================================
@@ -215,23 +240,30 @@ function initOcean(wavTim) {
 			timeTex: f32
 		) -> void {	
 			// Variables
-			var PI = 3.14159265359;
-			var u_grdres: f32 = 512.;
-			var u_grdsiz: f32 = 512.;
+			var u_grdres: f32 = 512;
+			var u_grdsiz: f32 = 512;
 			//- Compute vUv
 			var idx = getIdx(indxTex);
 			//- My Shader
 			var pixel_coord = vec2<f32>(idx.xy)-u_grdres*0.5;	// ### AS: range is 0 to 512
 			var n: f32 = pixel_coord.x;
-			if (pixel_coord.x >= u_grdres*0.5) {n = pixel_coord.x-u_grdres;}		
+			if (pixel_coord.x >= u_grdres*0.5) {n = pixel_coord.x-u_grdres;}
 			var m: f32 = pixel_coord.y;
-			if (pixel_coord.y >= u_grdres*0.5) {m = pixel_coord.y-u_grdres;}	
-			var waveVector = vec2<f32>(n,m)*2.*PI/u_grdsiz;
+			if (pixel_coord.y >= u_grdres*0.5) {m = pixel_coord.y-u_grdres;}
+			var waveVector = vec2<f32>(n,m)*P2/u_grdsiz;
 			//-
 			var phase: f32 = textureLoad(readTex,idx,0).r;
 			var deltaPhase: f32 = omega2(length(waveVector))*timeTex;
-			phase = ((phase+deltaPhase) % (2.*PI));
+			phase = ((phase+deltaPhase) % (P2));
 			textureStore(storTex,idx,vec4<f32>(phase,0,0,1));	// use 1 for a value to make visible
+		}
+		// Constants
+		const P2: f32 = 6.28318530718;
+		const G: f32 = 9.81;
+		const KM: f32 = 370;		
+		// Subroutines
+		fn omega2(k: f32) -> f32 {
+			return sqrt(G*k*(1+k*k/KM*KM));
 		}
 	`, [subroutines]);
 	//= Shader 3 ===============================================================
@@ -245,10 +277,9 @@ function initOcean(wavTim) {
 			indxTex: u32
 		) -> void {
 			// Variables
-			var PI: f32 = 3.14159265359;
-			var u_grdres: f32 = 512.;
-			var u_grdsiz: f32 = 512.;
-			var u_choppy: f32 = 1.;
+			var u_grdres: f32 = 512;
+			var u_grdsiz: f32 = 512;
+			var u_choppy: f32 = 1;
 			//- Compute vUv and neg vUv
 			var posX = f32(indxTex) % sizeTex;	// width
 			var posY = f32(indxTex) / sizeTex;	// height
@@ -259,26 +290,28 @@ function initOcean(wavTim) {
 			//- My Shader
 			var pixel_coord = vec2<f32>(idx.xy)-u_grdres*0.5;	// ### AS: range is 0 to 512
 			var n: f32 = pixel_coord.x;
-			if (pixel_coord.x >= u_grdres*0.5) {n = pixel_coord.x-u_grdres;}		
+			if (pixel_coord.x >= u_grdres*0.5) {n = pixel_coord.x-u_grdres;}
 			var m: f32 = pixel_coord.y;
 			if (pixel_coord.y >= u_grdres*0.5) {m = pixel_coord.y-u_grdres;}	
-			var waveVector = vec2<f32>(n,m)*2.*PI/u_grdsiz;
+			var waveVector = vec2<f32>(n,m)*P2/u_grdsiz;
 			//
 			var phase = textureLoad(readTx1,idx,0).r;
 			var phaseVector = vec2<f32>(cos(phase),sin(phase));
 			var h0 = vec2<f32>(textureLoad(readTx2,idx,0).rg);
 			var h0Star = vec2<f32>(textureLoad(readTx2,idxN,0).rg);
-			h0Star.y = h0Star.y*(-1.);
+			h0Star.y = h0Star.y*(-1);
 			var h = vec2<f32>(multiplyComplex(h0,phaseVector)+multiplyComplex(h0Star,vec2<f32>(phaseVector.x,-phaseVector.y)));
 			var hX = vec2<f32>(-multiplyByI(h*(waveVector.x/length(waveVector)))*u_choppy);
 			var hZ = vec2<f32>(-multiplyByI(h*(waveVector.y/length(waveVector)))*u_choppy);
-			if (waveVector.x == 0. && waveVector.y == 0.) {
-				h = vec2<f32>(0.,0.);
-				hX = vec2<f32>(0.,0.);
-				hZ = vec2<f32>(0.,0.);
+			if (waveVector.x == 0 && waveVector.y == 0) {
+				h  = vec2<f32>(0,0);
+				hX = vec2<f32>(0,0);
+				hZ = vec2<f32>(0,0);
 			}
 			textureStore(storTex,idx,vec4<f32>(hX+multiplyByI(h),hZ));
-	} 
+		}
+		// Variables
+		const P2: f32 = 6.28318530718;
 	`, [subroutines]);
 	//= Butterfly ==============================================================
 	//  This assists with Ping/Pong computations
@@ -291,12 +324,11 @@ function initOcean(wavTim) {
 			var posX = f32(indxTex)%log2(N);
 			var posY = floor(f32(indxTex)/log2(N));
 			var idx = vec2u(u32(posX),u32(posY));
-			const PI: f32 = 3.1415926;
 			var k: f32 = (posY*N/pow(2,posX+1))%N;
-			var twiddle: vec2<f32> = vec2<f32>(cos(2*PI*k/N),sin(2*PI*k/N));
+			var twiddle: vec2<f32> = vec2<f32>(cos(P2*k/N),sin(P2*k/N));
 			var butterflyspan: f32 = pow(2,f32(posX));
 			var butterflywing: u32 = 0;
-			if(posY%pow(2,posX+1)<pow(2,posX)){
+			if(posY%pow(2,posX+1) < pow(2,posX)){
 				butterflywing = 1;
 			}
 			else{
@@ -326,7 +358,9 @@ function initOcean(wavTim) {
 				bitReversedIndex = bitReversedIndex | (((index >> i) & 1) << (numBits-i-1));
 			} 
 			return f32(bitReversedIndex);
-		}	
+		}
+		// Variables
+		const P2: f32 = 6.28318530718;
 	`, [subroutines]);
 	//= Shader 4A ==============================================================
 	//	Displacement Map (AS WebGPU)
@@ -334,22 +368,21 @@ function initOcean(wavTim) {
 		fn compDspHrz(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
-			butterfly: texture_2d<f32>,
+			butrTex: texture_2d<f32>,
 			storTex: texture_storage_2d<rgba32float,write>,
 			indxTex: u32,
 			stepTex: f32
 		) -> void {
-			// Variables
-			var PI: f32 = 3.14159265359;
 			//- Compute vUv
 			var idx = getIdx(indxTex);
 			//			
-			var data = textureLoad(butterfly,vec2u(u32(stepTex),idx.x),0);
+			var data = textureLoad(butrTex,vec2u(u32(stepTex),idx.x),0);
 			var even = textureLoad(readTex,vec2u(u32(data.z),idx.y),0);
 			var odd =  textureLoad(readTex,vec2u(u32(data.w),idx.y),0);
 			var outputA = vec2<f32>(even.xy+multiplyComplex(data.rg,odd.xy));
 			var outputB = vec2<f32>(even.zw+multiplyComplex(data.rg,odd.zw));
-			textureStore(storTex,idx,vec4<f32>(outputA,outputB));		}
+			textureStore(storTex,idx,vec4<f32>(outputA,outputB));
+		}
 	`, [subroutines]);
 	//= Shader 4B ==============================================================
 	//	Displacement Map (AS WebGPU)
@@ -357,17 +390,15 @@ function initOcean(wavTim) {
 		fn compDspVrt(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
-			butterfly: texture_2d<f32>,
+			butrTex: texture_2d<f32>,
 			storTex: texture_storage_2d<rgba32float,write>,
 			indxTex: u32,
 			stepTex: f32
 		) -> void {
-			// Variables
-			var PI: f32 = 3.14159265359;
 			//- Compute vUv
 			var idx = getIdx(indxTex);
 			//			
-			var data = textureLoad(butterfly,vec2u(u32(stepTex),idx.y),0);
+			var data = textureLoad(butrTex,vec2u(u32(stepTex),idx.y),0);
 			var even = textureLoad(readTex,vec2u(idx.x,u32(data.z)),0);
 			var odd =  textureLoad(readTex,vec2u(idx.x,u32(data.w)),0);
 			var outputA = vec2<f32>(even.xy+multiplyComplex(data.rg,odd.xy));
@@ -386,16 +417,22 @@ function initOcean(wavTim) {
 		) -> void {
 			var idx = getIdx(indxTex);  
 			var input = textureLoad(readTex,idx,0);
-			textureStore(storTex,idx,input*(1.0-2.0*f32((idx.x+idx.y)%2)));
+			textureStore(storTex,idx,input*(1-2*f32((idx.x+idx.y)%2)));
 		}     
 	`, [subroutines]);
 	//= Instructions ===========================================================
-	//- Shader 1. Initial Frequency
-	initSpectrumComp = initSpectrum({
+	//- Shader 1A. Initial Frequency
+	initSpectrumHComp = initSpectrumH({
 		sizeTex: rez,
-		storTex: textureStore(initSpectrumTexture),
+		storTex: textureStore(initSpectrumHTexture),
 		indxTex: instanceIndex
 	}).compute(rez**2);
+	initSpectrumIComp = initSpectrumI({
+		sizeTex: rez,
+		readTex: texture(initSpectrumHTexture),
+		storTex: textureStore(initSpectrumITexture),
+		indxTex: instanceIndex
+	}).compute(rez ** 2);
 	//- Shader 2. Initial Phase
 	pingPhaseComp = compPhase({
 		sizeTex: rez,
@@ -437,7 +474,7 @@ function initOcean(wavTim) {
 	initDspHrzComp = compDspHrz({
 		sizeTex: rez,
 		readTex: texture(compSpectrumTexture),
-		butterfly: texture(butterflyTexture),
+		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pongTransformTexture),
 		indxTex: instanceIndex,	
 		stepTex: stepBF
@@ -445,7 +482,7 @@ function initOcean(wavTim) {
 	pingDspHrzComp = compDspHrz({
 		sizeTex: rez,
 		readTex: texture(pingTransformTexture),
-		butterfly: texture(butterflyTexture),
+		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pongTransformTexture),
 		indxTex: instanceIndex,
 		stepTex: stepBF
@@ -453,7 +490,7 @@ function initOcean(wavTim) {
 	pongDspHrzComp = compDspHrz({
 		sizeTex: rez,
 		readTex: texture(pongTransformTexture),
-		butterfly: texture(butterflyTexture),
+		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pingTransformTexture),
 		indxTex: instanceIndex,
 		stepTex: stepBF
@@ -462,7 +499,7 @@ function initOcean(wavTim) {
 	pingDspVrtComp = compDspVrt({
 		sizeTex: rez,
 		readTex: texture(pingTransformTexture),
-		butterfly: texture(butterflyTexture),
+		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pongTransformTexture),
 		indxTex: instanceIndex,
 		stepTex: stepBF
@@ -470,7 +507,7 @@ function initOcean(wavTim) {
 	pongDspVrtComp = compDspVrt({
 		sizeTex: rez,
 		readTex: texture(pongTransformTexture),
-		butterfly: texture(butterflyTexture),
+		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pingTransformTexture),
 		indxTex: instanceIndex,
 		stepTex: stepBF
@@ -482,13 +519,14 @@ function initOcean(wavTim) {
 		indxTex: instanceIndex,
 	}).compute(rez**2)
 	//= Render =================================================================
-	renderer.compute(initSpectrumComp);
+	renderer.compute(initSpectrumHComp);
+//	renderer.compute(initSpectrumIComp);
 	renderer.compute(butterflyComp,[1,8,1]);
 	//= Display ================================================================
 	let siz = 50;
 	//- Plane 1 ----------------------------------------------------------------
 	let mat1 = new MeshBasicNodeMaterial({
-		colorNode: texture(initSpectrumTexture),
+		colorNode: texture(initSpectrumHTexture),
 	});
 	let mesh1 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat1);
 	mesh1.position.set(-1.52*siz,0.51*siz,0);
