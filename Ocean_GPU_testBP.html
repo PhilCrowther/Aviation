@@ -415,25 +415,24 @@ function initOcean(wavTim) {
 			var u_grdres: f32 = 512;
 			var u_grdsiz: f32 = 512;
 			//- Compute vUv
-			var idx = getIdx(indxTex);
+			var posX = u32(indxTex) % u32(sizeTex);	// width
+			var posY = u32(indxTex) / u32(sizeTex);	// height
+			var idx = vec2u(u32(posX), u32(posY));
 			//
-			let texel: f32 = 1/u_grdres;
-			let texelSize: f32 = u_grdsiz/u_grdres;
-			let ctr = vec3<f32>(textureLoad(readTex,idx,0).rgb);
-			let rgt = vec3<f32>( texelSize,0,0) + textureLoad(readTex,idx+vec2<u32>(u32( texel),0),0).rgb-ctr;			
-			let lft = vec3<f32>(-texelSize,0,0) + textureLoad(readTex,idx+vec2<u32>(u32(-texel),0),0).rgb-ctr;
-			let top = vec3<f32>(0,0,-texelSize) + textureLoad(readTex,idx+vec2<u32>(0,u32(-texel)),0).rgb-ctr;
-			let bot = vec3<f32>(0,0, texelSize) + textureLoad(readTex,idx+vec2<u32>(0,u32( texel)),0).rgb-ctr;
+			var ctr = vec3<f32>( 0,textureLoad(readTex,vec2<u32>(posX,   posY  ),0).r*strength, 0);			
+			var rgt = vec3<f32>( 1,textureLoad(readTex,vec2<u32>(posX+1, posY  ),0).r*strength, 0) - ctr;
+			var lft = vec3<f32>(-1,textureLoad(readTex,vec2<u32>(posX-1, posY  ),0).r*strength, 0) - ctr;
+			var top = vec3<f32>( 0,textureLoad(readTex,vec2<u32>(posX,   posY-1),0).r*strength,-1) - ctr;
+			var bot = vec3<f32>( 0,textureLoad(readTex,vec2<u32>(posX,   posY+1),0).r*strength, 1) - ctr;
 			let topRgt = vec3<f32>(cross(rgt,top));
 			let topLft = vec3<f32>(cross(top,lft));
 			let botLft = vec3<f32>(cross(lft,bot));
 			let botRgt = vec3<f32>(cross(bot,rgt));
 			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
-			let tmp2 = vec3<f32>(nrm3);
-			nrm3.b = tmp2.g;
-			nrm3.g = tmp2.b;
-			textureStore(storTex,idx,vec4f(nrm3*0.5+0.5,1));
+			textureStore(storTex,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 		}
+		// Variables
+		const strength: f32 = 1;
 	`, [subroutines]);
 	//= Instructions ===========================================================
 	//- Shader 1. Initial Frequency
