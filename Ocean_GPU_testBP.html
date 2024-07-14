@@ -504,63 +504,63 @@ function initOcean(wavTim) {
 		colorNode: texture(initSpectrumTexture),
 	});
 	let mesh1 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat1);
-	mesh1.position.set(-1.52*siz,siz,0);
+	mesh1.position.set(-1.51*siz,1.01*siz,0);
 	scene.add(mesh1);
 	//- Phase Array ------------------------------------------------------------
 	let matA = new MeshBasicNodeMaterial({
 		colorNode: texture(phaseArrayTexture),
 	});
 	let meshA = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matA);
-	meshA.position.set(-0.51*siz,siz,0);
+	meshA.position.set(-0.505*siz,1.01*siz,0);
 	scene.add(meshA);
 	//- Plane 2a ----------------------------------------------------------------
 	let mat2a = new MeshBasicNodeMaterial({
 		colorNode: texture(pingPhaseTexture),
 	});
 	let mesh2a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat2a);
-	mesh2a.position.set(0.51*siz,siz,0);
+	mesh2a.position.set(0.505*siz,1.01*siz,0);
 	scene.add(mesh2a);
 	//- Plane 2b ----------------------------------------------------------------
 	let mat2b = new MeshBasicNodeMaterial({
 		colorNode: texture(pongPhaseTexture),
 	});
 	let mesh2b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat2b);
-	mesh2b.position.set(1.52*siz,siz,0);
+	mesh2b.position.set(1.51*siz,1.01*siz,0);
 	scene.add(mesh2b);
 	//- Plane 3 ----------------------------------------------------------------
 	let mat3 = new MeshBasicNodeMaterial({
 		colorNode: texture(compSpectrumTexture),
 	});
 	let mesh3 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat3);
-	mesh3.position.set(-1.52*siz,0.0*siz,0);
+	mesh3.position.set(-1.51*siz,0.0,0);
 	scene.add(mesh3);
 	//- Butterfly --------------------------------------------------------------
 	let matB = new MeshBasicNodeMaterial({
 		colorNode: texture(butterflyTexture),
 	});
 	let meshB = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matB);
-	meshB.position.set(-0.51*siz,0,0);
+	meshB.position.set(-0.505*siz,0,0);
 	scene.add(meshB);
 	//- Plane 4a ---------------------------------------------------------------
 	let mat4a = new MeshBasicNodeMaterial({
 		colorNode: texture(pingTransformTexture),
 	});
 	let mesh4a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat4a);
-	mesh4a.position.set(0.51*siz,0,0);
+	mesh4a.position.set(0.505*siz,0,0);
 	scene.add(mesh4a);
 	//- Plane 4b ----------------------------------------------------------------
 	let mat4b = new MeshBasicNodeMaterial({
 		colorNode: texture(pongTransformTexture),
 	});
 	let mesh4b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat4b);
-	mesh4b.position.set(1.52*siz,0,0);
+	mesh4b.position.set(1.51*siz,0,0);
 	scene.add(mesh4b);
 	//- Plane 5 ----------------------------------------------------------------
 	let mat5 = new MeshBasicNodeMaterial({
 		colorNode: texture(dispMapTexture),
 	});
 	let mesh5 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat5);
-	mesh5.position.set(-1.52*siz,-siz,0);
+	mesh5.position.set(-1.51*siz,-1.01*siz,0);
 	scene.add(mesh5);
 }
 
