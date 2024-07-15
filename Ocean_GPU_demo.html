@@ -1,9 +1,9 @@
-﻿<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
+<!DOCTYPE html>
+<!-- saved from url=(0101)file:///D:/!!Documents/!_html/web_philcrowther.com/WebGL/Seas_WebGPU_alone/iFFT_LAB2_231201_r159.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <title>Ocean GPU Demo</title>
-<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <style>
 body {
 	overflow: hidden;
@@ -15,7 +15,8 @@ body {
 }
 </style>
 </head>
-<body>
+
+<body oncontextmenu="return false;">
 
 <script type="importmap">
 	{
@@ -28,82 +29,127 @@ body {
 </script>
 
 <script type="module">
-import * as THREE from 'three';
+
+// This uses three.js/examples/webgl_nodes_materials_instance_uniform.html.
+// NOT WORKING!
+
+import * as THREE from "three";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
-import {texture, textureStore, wgslFn, instanceIndex, MeshBasicNodeMaterial, MeshStandardNodeMaterial,
-		positionLocal, code, uniform, color, normalMap, vec2
+import Stats from "three/addons/libs/stats.module.js";
+import {
+		color,
+		texture,
+		normalMap,
+		float,
+		vec2,
+		attribute,
+		positionLocal,
+		MeshStandardNodeMaterial,
+		textureStore,
+		wgslFn,
+		instanceIndex,
+		code,
+		uniform,
+		timerLocal
 } from 'three/nodes';
 import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 import StorageTexture from 'three/addons/renderers/common/StorageTexture.js';
 
-//= VARIABLES ==================================================================
-//- Time
-let oldTim, nowTim, difTim = 0;
-//- Constants ------------------------------------------------------------------
-var DegRad = Math.PI/180;	// Convert Degrees to Radians
-//- Ocean Module ---------------------------------------------------------------
+/*= VARIABLES ================================================================*/
+//-	Sky
+let SkyCol = 0x1732c1;			// Sky
+let SkyLim = 100000;			// Max viewing distance
+let cubeMap = 0;				// Address of Texture
+//- Sun
 let SunCol = 0xffffff;			// Sun
 let SunLon = 315;
 let SunLat = 80;
 let SunDst = 5000;				// Distance of sun object
 let	SunPos = new THREE.Vector3();
+//-	Math Predefined
+var PieVal = Math.PI;			// PI
+var DegRad = PieVal / 180;		// Convert Degrees to Radians
+var RadDeg = 180 / PieVal;		// Convert Radians to Degrees
+//-	Stats
+let stats = 0;
+//- Flags
+let StsFlg = 1;					// Stats ((0 = off, 1 = on)
+let LodFlg = 0;
+let PawsOn = 0;
+let WireOn = 0;
 //- Misc
 let V3temp = new THREE.Vector3();
-//
+/*= GRID DATA ================================================================*/
+let GrdSiz = 512;				// Size of Smallest Grid Square (meters)
+let GrdRes = 512;
+let GrdSeg = 512;				// Segments per Plane (256 = OK, 512 = too much)
+/*= OCEAN ====================================================================*/
 let WtrCol = 0x081080;			// Water (Navy)
-let cubeMap = 0;				// Address of Texture
-let normalMapScale = vec2(1.0,-1.0);
+let WndSpd = 20;
+let WndHdg = 0;
+let Choppy = 1.6;
+//
+let waves = 0;
+let wav_ = {
+		// Sources
+		Res: GrdRes,			// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
+		WSp: WndSpd,			// Wind Speed
+		WHd: WndHdg,			// Wind Heading
+		Chp: Choppy,			// default = 1
+		// Results
+		Dsp: 0,					// The Displacement Map
+		Nrm: 0,					// The Normal Map
+	};
+let wavSpd = 1;					// Animation speed - use in main program (lower is faster)
+let wavTim = uniform(0);
+let normalMapScale = vec2(1.0,1.0);
+// External
+let WtrGeo, WtrMat, WtrMsh = 0;	// Main Display
+// Texture
+let ColSrc = "https://threejs.org/examples/textures/uv_grid_opengl.jpg";	// 1024
+let uvTexture = 0;
 // Planes
 let GrdRCs = 2;
 let GrdPtr = [0];
 let WavMZV = [0];
 let WavMXV = [0];
-//
-let GrdSiz = 512;				// Size of Smallest Grid Square (meters)
-let GrdRes = 512;
-let GrdSeg = 512;				// Segments per Plane (256 = OK, 512 = too much)
-let Choppy = 1;
-let wav_ = {
-		// Sources
-		Res: GrdRes,			// Resolution - segments per square (default = 512)
-		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
-		// Results
-		Dsp: 0,					// The Displacement Map
-		Nrm: 0,					// The Normal Map
-	};
-//- Instruction Addresses
-let initSpectrumComp,pingPhaseComp,pongPhaseComp,pingSpectrumComp,pongSpectrumComp;
-let butterflyComp,permutationComp,compNormalComp;
-let	initDspHrzComp, pingDspHrzComp, pongDspHrzComp,pingDspVrtComp, pongDspVrtComp;
-//- PingPong
-let initPhase = true;
-let pingPhase = true;
-//- Uniform
-let wavTim = uniform(0);		// ### AS: changed to 0
-let wavSpd = 1.0;	// Animation speed - use in main program (lower is faster)
-let stepBF = uniform(0);
-//= BASIC SETUP ================================================================
+
+//= Key Bindings ===============================================================
+let K_Paws = 80;				// Pause (p)
+let K_Wire = 87;				// Pause (p)
+
+/*= BASIC VALUES ============================================================*/
+let	container = document.createElement('div');
+	document.body.appendChild(container);
+//- Camera
+let	camera = new THREE.PerspectiveCamera(55.0, window.innerWidth/window.innerHeight, 0.5, SkyLim);
+	camera.position.set(0, 350, 800);
+//- Scene
 let	scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x1f1f1f);
 //- Renderer
 let	renderer = new WebGPURenderer({antialias: true});
-	renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
-	document.body.appendChild(renderer.domElement);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.autoUpdate = true;
+	renderer.receiveShadow = true;
+	renderer.shadowMap.type = THREE.BasicShadowMap;
+	container.appendChild(renderer.domElement);
 //- Lights
-let sunLight = new THREE.DirectionalLight(SunCol, 4.0);
+let sunLight = new THREE.DirectionalLight(SunCol, 3.0);
 	scene.add(sunLight);
-let sunPos = new THREE.Vector3();
-//- Camera
-let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,5000);
-	camera.position.set(0,100,100);
+let sunPos = new THREE.Vector3();		// Normalized value
 //- Controls
 let	controls = new OrbitControls(camera, renderer.domElement);
-//- Inputs
-	window.addEventListener('resize',onWindowResize);
 //- Clock
 let clock = new THREE.Clock();
+let oldTim, nowTim, difTim = 0;
+//- Inputs
+	document.addEventListener("keydown", onDocumentKeyDown, false);
+//	document.addEventListener("keyup", onDocumentKeyUp, false);
+	window.addEventListener("resize", onWindowResize, false);
 //- Loading Manager
 	// Create a loading manager to set RESOURCES_LOADED when appropriate.
 	// Pass loadingManager to all resource loaders.
@@ -122,31 +168,46 @@ let txtrLoader = new THREE.TextureLoader(loadingManager);
 /*= 0 LOAD ALL ===============================================================*/
 function loadAll() {
 	loadSkyBox();
+	loadOceans();
 }
 
-//= INITIALIZE =================================================================
-
+/*= 1 INITIALIZE =============================================================*/
 function initAll() {
-	initSkyBox();
-	initOcean(renderer,wav_,wavTim);
+	initSkyBox();						// Sky, Fog and Sun
+	initOceans(renderer,wav_);
+	// Show stats
+	if (StsFlg) {						// show stats
+		stats = new Stats();
+		stats.setMode(0);				// FPS only
+		stats.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+		container.appendChild(stats.dom);
+	}
+	LodFlg = 1;
 }
 
-//= RENDER =====================================================================
-
+/*= 2 RENDER =================================================================*/
 function rendAll() {
-	// Update time
-	nowTim = clock.getElapsedTime();
-	difTim = nowTim-oldTim;
-//	wavTim.value = difTim || 0.0;		// ### AS: Changed to +=
-	wavTim.value += difTim || 0.0;		// ### AS: Changed to +=
-	oldTim = nowTim;
-	//
-	moveOcean(renderer,wav_,wavTim);
-	//
-	renderer.render(scene, camera);
+//	requestAnimationFrame(rendAll);	
+	if (PawsOn == 0 && LodFlg > 0) {
+		// Update camera position
+		if(camera.position.y < 0.0) {
+			camera.position.y = 2.0;
+		}
+		// Update time
+		nowTim = clock.getElapsedTime();
+		difTim = nowTim-oldTim;
+//		wavTim.value = difTim*wavSpd || 0.0;
+		wavTim.value += difTim*wavSpd || 0.0;		// ### AS: Changed to +=
+		oldTim = nowTim;
+		//
+		waves.render(wavTim);			// Ocean
+		controls.update();				// Controls
+		if (StsFlg) stats.update();		// Stats
+	}
+	renderer.render(scene, camera);		// Render
 }
 
-//= SKY BOX ====================================================================
+/*= SKY BOX ==================================================================*/
 
 // Load SkyBox
 function loadSkyBox() {
@@ -157,58 +218,208 @@ function loadSkyBox() {
 	cubeMap.format = THREE.RGBAFormat;
 	cubeMap.colorSpace = THREE.SRGBColorSpace;	// r152
 	scene.background = cubeMap;
-	scene.environment = cubeMap;				// ### Nodes
+	scene.environment = cubeMap;					// ### Nodes
 }
 
 function initSkyBox() {
+	// Sun Object
+	let geometry = new THREE.SphereGeometry(64, 16, 16);
+	let material = new THREE.MeshBasicMaterial({color: SunCol});
+	let SunMsh = new THREE.Mesh(geometry, material);
+	scene.add(SunMsh);
 	// SunLight Position
 	let LatRad = SunLat * DegRad;
 	let LonRad = Mod360(180-SunLon)*DegRad; 
 	SunPos = RoteV3(LonRad,LatRad,SunDst);				// Set Position above Light
+	SunMsh.position.set(SunPos.x,SunPos.y,SunPos.z);
 	SunPos.normalize();									// Use normalized value
 	sunLight.position.set(SunPos.x,SunPos.y,SunPos.z);
 }
 
-//= OCEAN ======================================================================
+//= OCEANS =====================================================================
 
-//- INIT -----------------------------------------------------------------------
+function loadOceans() {
+//	uvTexture = new THREE.TextureLoader(loadingManager).load('https://threejs.org/examples/textures/uv_grid_opengl.jpg');
+	uvTexture = txtrLoader.load('https://threejs.org/examples/textures/uv_grid_opengl.jpg');
+}
 
-function initOcean(renderer,wav_,wavTim) {
-	//- Create Buffers ---------------------------------------------------------
-	let initSpectrumTexture = new StorageTexture(wav_.Res,wav_.Res);
-		initSpectrumTexture.type = THREE.FloatType;
-	let pingPhaseTexture = new StorageTexture(wav_.Res,wav_.Res);
-		pingPhaseTexture.type = THREE.FloatType;
-	let pongPhaseTexture = new StorageTexture(wav_.Res,wav_.Res);
-		pongPhaseTexture.type = THREE.FloatType;
-	let compSpectrumTexture = new StorageTexture(wav_.Res,wav_.Res);
-		compSpectrumTexture.type = THREE.FloatType;
-	let butterflyTexture = new StorageTexture(Math.log2(wav_.Res),wav_.Res);
-		butterflyTexture.magFilter = butterflyTexture.minFilter = THREE.NearestFilter;
-		butterflyTexture.type = THREE.FloatType;
-	let pingTransformTexture = new StorageTexture(wav_.Res,wav_.Res);
-		pingTransformTexture.type = THREE.FloatType;
-	let pongTransformTexture = new StorageTexture(wav_.Res,wav_.Res);
-		pongTransformTexture.type = THREE.FloatType;
-	let dispMapTexture = new StorageTexture(wav_.Res,wav_.Res);
-		dispMapTexture.type = THREE.FloatType;
-	let normMapTexture = new StorageTexture(wav_.Res,wav_.Res);
-		normMapTexture.type = THREE.FloatType;
-	// Create Initial Phase Array
-	let phaseArray = new window.Float32Array(4*(wav_.Res**2));
-	for (let y = 0; y < wav_.Res; y++) {
-		for (let x = 0; x < wav_.Res; x++) {
-			phaseArray[y*wav_.Res*4+x*4] = Math.random()*2.0*Math.PI;
-			phaseArray[y*wav_.Res*4+x*4+1] = 0.0;
-			phaseArray[y*wav_.Res*4+x*4+2] = 0.0;
-			phaseArray[y*wav_.Res*4+x*4+3] = 1.0;	// make visible
+function initOceans(renderer,wav_) {
+	waves = new Ocean(renderer,wav_);
+	WtrGeo = new THREE.PlaneGeometry(GrdSiz, GrdSiz, GrdSeg, GrdSeg);	
+	WtrGeo.rotateX(-Math.PI * 0.5);
+	let color2 = new THREE.Color(WtrCol);
+	WtrMat = new MeshStandardNodeMaterial( {
+		colorNode: color(color2),
+//		map: uvTexture,
+		metalness: 0.5,												// Mine = 1.0, theirs = 0
+		roughness: 0.1,												// Mine = 0.7, theirs = 0.1
+//		normalMap: wav_.Nrm,
+		positionNode: positionLocal.add(texture(wav_.Dsp).xyz),
+		normalNode: normalMap(texture(wav_.Nrm),normalMapScale),	// Animated texture
+		envMap: cubeMap,
+		envMapIntensity: 1,
+//		wireframe: true,
+	} );
+
+	// Compute Starting Z and X Values
+	let zx = -0.5*(GrdRCs)*GrdSiz+0.5*GrdSiz;
+	for (let i = 0; i < GrdRCs; i++) {
+		WavMZV[i] = zx;
+		WavMXV[i] = zx;
+		zx = zx + GrdSiz;
+	}
+	// 4 Adjacent Planes
+	let n = 0;
+	for (let z = 0; z < GrdRCs; z++) {		// Row X2
+		for (let x = 0; x < GrdRCs; x++) {	// Column X2
+			GrdPtr[n] = new THREE.Mesh(WtrGeo,WtrMat);
+//			GrdPtr[n].color = new THREE.Color(WtrCol);
+			scene.add(GrdPtr[n]);
+			GrdPtr[n].position.set(WavMXV[x],0,-WavMZV[z]);
+			n++;
 		}
 	}
-	let phaseArrayTexture = new THREE.DataTexture(phaseArray,wav_.Res,wav_.Res,THREE.RGBAFormat);	
-	phaseArrayTexture.minFilter = phaseArrayTexture.magFilter = THREE.NearestFilter;
-	phaseArrayTexture.wrapS = phaseArrayTexture.wrapT = THREE.ClampToEdgeWrapping;
-	phaseArrayTexture.type = THREE.FloatType;
-	phaseArrayTexture.needsUpdate = true;
+}
+
+/*= 4 MISC SUBROUTINES =======================================================*/
+
+//- Converts degrees to 360
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;	// Make deg a positive number
+	deg = deg % 360;				// Compute remainder of any number divided by 360
+return deg;}
+
+//- Rotates Vector
+function RoteV3(lon,lat,dst) {
+	// Latitude
+	V3temp.y = dst * Math.sin(lat);
+	V3temp.z = dst * Math.cos(lat);
+	// Longitude
+	V3temp.x = V3temp.z * Math.sin(lon);
+	V3temp.z = V3temp.z * Math.cos(lon);
+return V3temp;}
+
+//- Keyboard -------------------------------------------------------------------
+
+//- Key Down
+function onDocumentKeyDown(event) {
+	let keyCode = event.which;
+	if (event.keyCode == K_Paws) togglePaws();			// Pause
+	if (event.keyCode == K_Wire) toggleWire();			// Wire	
+}
+
+//- Key Up
+function onDocumentKeyUp(event) {
+	let keyCode = event.which;
+	//
+}
+
+//- Toggle Pause
+function togglePaws() {
+	PawsOn = 1 - PawsOn;
+}
+
+//- Toggle Wire
+function toggleWire() {
+	WireOn = 1 - WireOn;
+	if (WireOn) {
+		for (let x = 0; x < 16; x++) {
+			WtrMat.wireframe = true;
+			WtrMat.needsUpdate = true;		
+		}
+	}
+	else {
+		for (let x = 0; x < 16; x++) {
+			WtrMat.wireframe = false;
+			WtrMat.needsUpdate = true;
+		}
+	}
+}
+
+//= OCEAN ======================================================================
+/*
+ *	Don't Change After Initialization
+ *	@param {float} Res		Resolution - segments per square (default = 512)
+ *	@param {float} Siz		Size of Smallest Square (meters)
+ *	@param {float} WSp		Wind Speed (meters/sec)
+ *	@param {float} WHd		Wind Heading (degrees)
+ *	@param {float} Chp		Choppiness - default = 1
+ *	@param {float} Dsp		The Displacement Map
+ *	@param {float} Nrm		The Normal Map
+ *	@param {float} Spd		Wave Speed Adjustment
+*/
+
+// Original 2013: David Li (david.li/waves/) - shaders and js program
+// Original 2014: Aleksandr Albert (routter.co.tt) - three.js program
+// Modified 2015: Jeremy Bouny (github.com/fft-ocean) - three.js program
+// Modified 2023: Phil Crowther (philcrowther.com) - updated three.js class module
+// Modified 2023: Attila Schroeder - improvements and update to WebGL2
+// Modified 2024: Attila Schroeder - converted to GPU
+
+class Ocean {
+	constructor(renderer, wav_) {
+		this._init(renderer, wav_);
+	}
+
+	// Initialize
+	_init(renderer, wav_) {
+		this.ocean = this.Ocean(renderer, wav_);
+	}
+
+	render(wavTim) {
+		this.update = this.Render(wavTim);
+	}
+
+//= Initialize Ocean ============================================
+Ocean(renderer, wav_) {
+	// flag used to trigger parameter changes
+	this.renderer = renderer;
+	// Load Variables
+	this.Res = wav_.Res;
+	this.Siz = wav_.Siz;
+	this.windX = wav_.WSp*Math.sin(wav_.WHd*Math.PI/180);
+	this.windY = wav_.WSp*Math.cos(wav_.WHd*Math.PI/180);
+	this.Chp = wav_.Chp;
+	// Initialize Program Variables
+	this.stepBF = uniform(0);
+	this.initPhase = true;
+	this.pingPhase = true;
+	//- Create Buffers ---------------------------------------------------------
+	this.initSpectrumTexture = new StorageTexture(this.Res,this.Res);
+	this.initSpectrumTexture.type = THREE.FloatType;
+	this.pingPhaseTexture = new StorageTexture(this.Res,this.Res);
+	this.pingPhaseTexture.type = THREE.FloatType;
+	this.pongPhaseTexture = new StorageTexture(this.Res,this.Res);
+	this.pongPhaseTexture.type = THREE.FloatType;
+	this.compSpectrumTexture = new StorageTexture(this.Res,this.Res);
+	this.compSpectrumTexture.type = THREE.FloatType;
+	this.butterflyTexture = new StorageTexture(Math.log2(this.Res),this.Res);
+	this.butterflyTexture.magFilter = this.butterflyTexture.minFilter = THREE.NearestFilter;
+	this.butterflyTexture.type = THREE.FloatType;
+	this.pingTransformTexture = new StorageTexture(this.Res,this.Res);
+	this.pingTransformTexture.type = THREE.FloatType;
+	this.pongTransformTexture = new StorageTexture(this.Res,this.Res);
+	this.pongTransformTexture.type = THREE.FloatType;
+	this.dispMapTexture = new StorageTexture(this.Res,this.Res);
+	this.dispMapTexture.type = THREE.FloatType;
+	this.normMapTexture = new StorageTexture(this.Res,this.Res);
+	this.normMapTexture.type = THREE.FloatType;
+	// Create Initial Phase Array
+	this.phaseArray = new window.Float32Array(4*(this.Res**2));
+	for (let y = 0; y < this.Res; y++) {
+		for (let x = 0; x < this.Res; x++) {
+			this.phaseArray[y*this.Res*4+x*4] = Math.random()*2.0*Math.PI;
+			this.phaseArray[y*this.Res*4+x*4+1] = 0.0;
+			this.phaseArray[y*this.Res*4+x*4+2] = 0.0;
+			this.phaseArray[y*this.Res*4+x*4+3] = 1.0;	// make visible
+		}
+	}
+	this.phaseArrayTexture = new THREE.DataTexture(this.phaseArray,this.Res,this.Res,THREE.RGBAFormat);	
+	this.phaseArrayTexture.minFilter = this.phaseArrayTexture.magFilter = THREE.NearestFilter;
+	this.phaseArrayTexture.wrapS = this.phaseArrayTexture.wrapT = THREE.ClampToEdgeWrapping;
+	this.phaseArrayTexture.type = THREE.FloatType;
+	this.phaseArrayTexture.needsUpdate = true;
+	//= Define shaders and constant uniforms =======================
 	//= Shader Subroutines =====================================================
 	let subroutines = code(`
 		fn square(x: f32) -> f32 {
@@ -232,7 +443,7 @@ function initOcean(renderer,wav_,wavTim) {
 	`);
 	//= Shader 1 ===============================================================
 	//	Set intitial wave frequency at a texel coordinate (AS V2)
-	let initSpectrum = wgslFn(`
+	this.initSpectrum = wgslFn(`
 		fn initSpectrum(
 			sizeTex: f32,
 			storTex: texture_storage_2d<rgba32float, write>,
@@ -291,15 +502,10 @@ function initOcean(renderer,wav_,wavTim) {
 		fn omega(k: f32) -> f32 {
 			return sqrt(G*k*(1+square(k/KM)));
 		}
-//		fn gaussianRandom(seed: vec2f) -> vec2f {
-//			var nrnd0 = random(seed);
-//			var nrnd1 = random(seed + 0.1);	
-//			return sqrt(-2.0*log(max(0.001, nrnd0)))*cos(2.0*PI*nrnd1);
-//		}	
 	`, [subroutines]);
 	//= Shader 2 ===============================================================
 	//	Current Phase (AS V2)
-	let compPhase = wgslFn(`	
+	this.compPhase = wgslFn(`	
 		fn compPhase(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
@@ -336,7 +542,7 @@ function initOcean(renderer,wav_,wavTim) {
 	`, [subroutines]);
 	//= Shader 3 ===============================================================
 	//	Current Spectrum (AS V2)
-	let compSpectrum = wgslFn(`
+	this.compSpectrum = wgslFn(`
 		fn compSpectrum(
 			sizeTex: f32,
 			readTx1: texture_2d<f32>,
@@ -383,7 +589,7 @@ function initOcean(renderer,wav_,wavTim) {
 	`, [subroutines]);
 	//= Butterfly ==============================================================
 	//  This assists with Ping/Pong computations
-	let butterfly = wgslFn(`
+	this.butterfly = wgslFn(`
 		fn butterfly( 
 			storTex: texture_storage_2d<rgba32float, write>,
 			indxTex: u32, 
@@ -432,7 +638,7 @@ function initOcean(renderer,wav_,wavTim) {
 	`, [subroutines]);
 	//= Shader 4A ==============================================================
 	//	Displacement Map (AS WebGPU)
-	let compDspHrz = wgslFn(`
+	this.compDspHrz = wgslFn(`
 		fn compDspHrz(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
@@ -454,7 +660,7 @@ function initOcean(renderer,wav_,wavTim) {
 	`, [subroutines]);
 	//= Shader 4B ==============================================================
 	//	Displacement Map (AS WebGPU)
-	let compDspVrt = wgslFn(`
+	this.compDspVrt = wgslFn(`
 		fn compDspVrt(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
@@ -476,7 +682,7 @@ function initOcean(renderer,wav_,wavTim) {
 	`, [subroutines]);
 	//= Shader 5 ===============================================================
 	// Permutation
-	let permutation = wgslFn(`
+	this.permutation = wgslFn(`
 		fn permutation(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
@@ -490,7 +696,7 @@ function initOcean(renderer,wav_,wavTim) {
 	`, [subroutines]);
 	//= Shader 6 ===============================================================
 	//  Normal Map
-	let compNormal = wgslFn(`
+	this.compNormal = wgslFn(`
 		fn compNormal(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
@@ -500,7 +706,6 @@ function initOcean(renderer,wav_,wavTim) {
 			// Variables
 			var u_grdres: f32 = 512;
 			var u_grdsiz: f32 = 512;
-			var strength: f32 = 1;
 			//- Compute vUv
 			var posX = u32(indxTex) % u32(sizeTex);	// width
 			var posY = u32(indxTex) / u32(sizeTex);	// height
@@ -518,208 +723,160 @@ function initOcean(renderer,wav_,wavTim) {
 			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
 			textureStore(storTex,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 		}
+		// Variables
+		const strength: f32 = 1;
 	`, [subroutines]);
 	//= Instructions ===========================================================
 	//- Shader 1. Initial Frequency
-	initSpectrumComp = initSpectrum({
-		sizeTex: wav_.Res,
-		storTex: textureStore(initSpectrumTexture),
+	this.initSpectrumComp = this.initSpectrum({
+		sizeTex: this.Res,
+		storTex: textureStore(this.initSpectrumTexture),
 		indxTex: instanceIndex
-	}).compute(wav_.Res**2);
+	}).compute(this.Res**2);
 	//- Shader 2. Initial Phase
-	pingPhaseComp = compPhase({
-		sizeTex: wav_.Res,
-		readTex: texture(phaseArrayTexture),
-		storTex: textureStore(pingPhaseTexture),
+	this.pingPhaseComp = this.compPhase({
+		sizeTex: this.Res,
+		readTex: texture(this.phaseArrayTexture),
+		storTex: textureStore(this.pingPhaseTexture),
 		indxTex: instanceIndex,
 		timeTex: wavTim
-	}).compute(wav_.Res**2);
-	pongPhaseComp = compPhase({
-		sizeTex: wav_.Res,
-		readTex: texture(phaseArrayTexture),
-		storTex: textureStore(pongPhaseTexture),
+	}).compute(this.Res**2);
+	this.pongPhaseComp = this.compPhase({
+		sizeTex: this.Res,
+		readTex: texture(this.phaseArrayTexture),
+		storTex: textureStore(this.pongPhaseTexture),
 		indxTex: instanceIndex,
 		timeTex: wavTim
-	}).compute(wav_.Res**2);
+	}).compute(this.Res**2);
 	//- Shader 3. New Phase
-	pingSpectrumComp = compSpectrum({
-		sizeTex: wav_.Res,
-		readTx1: texture(pingPhaseTexture),
-		readTx2: texture(initSpectrumTexture),
-		storTex: textureStore(compSpectrumTexture),
+	this.pingSpectrumComp = this.compSpectrum({
+		sizeTex: this.Res,
+		readTx1: texture(this.pingPhaseTexture),
+		readTx2: texture(this.initSpectrumTexture),
+		storTex: textureStore(this.compSpectrumTexture),
 		indxTex: instanceIndex
-	}).compute(wav_.Res**2);
-	pongSpectrumComp = compSpectrum({
-		sizeTex: wav_.Res,
-		readTx1: texture(pongPhaseTexture),
-		readTx2: texture(initSpectrumTexture),
-		storTex: textureStore(compSpectrumTexture),
+	}).compute(this.Res**2);
+	this.pongSpectrumComp = this.compSpectrum({
+		sizeTex: this.Res,
+		readTx1: texture(this.pongPhaseTexture),
+		readTx2: texture(this.initSpectrumTexture),
+		storTex: textureStore(this.compSpectrumTexture),
 		indxTex: instanceIndex
-	}).compute(wav_.Res**2);
+	}).compute(this.Res**2);
 	//- Butterfly
-	butterflyComp = butterfly({ 
-		storTex: textureStore(butterflyTexture), 
+	this.butterflyComp = this.butterfly({ 
+		storTex: textureStore(this.butterflyTexture), 
 		indxTex: instanceIndex,
-		N: wav_.Res,
-	}).compute(Math.log2(wav_.Res)*wav_.Res);
+		N: this.Res,
+	}).compute(Math.log2(this.Res)*this.Res);
 	//- Shader 4. Displacement
 	//- Shader 4A
-	initDspHrzComp = compDspHrz({
-		sizeTex: wav_.Res,
-		readTex: texture(compSpectrumTexture),
-		butrTex: texture(butterflyTexture),
-		storTex: textureStore(pongTransformTexture),
+	this.initDspHrzComp = this.compDspHrz({
+		sizeTex: this.Res,
+		readTex: texture(this.compSpectrumTexture),
+		butrTex: texture(this.butterflyTexture),
+		storTex: textureStore(this.pongTransformTexture),
 		indxTex: instanceIndex,	
-		stepTex: stepBF
-	}).compute(wav_.Res**2);
-	pingDspHrzComp = compDspHrz({
-		sizeTex: wav_.Res,
-		readTex: texture(pingTransformTexture),
-		butrTex: texture(butterflyTexture),
-		storTex: textureStore(pongTransformTexture),
+		stepTex: this.stepBF
+	}).compute(this.Res**2);
+	this.pingDspHrzComp = this.compDspHrz({
+		sizeTex: this.Res,
+		readTex: texture(this.pingTransformTexture),
+		butrTex: texture(this.butterflyTexture),
+		storTex: textureStore(this.pongTransformTexture),
 		indxTex: instanceIndex,
-		stepTex: stepBF
-	}).compute(wav_.Res**2);
-	pongDspHrzComp = compDspHrz({
-		sizeTex: wav_.Res,
-		readTex: texture(pongTransformTexture),
-		butrTex: texture(butterflyTexture),
-		storTex: textureStore(pingTransformTexture),
+		stepTex: this.stepBF
+	}).compute(this.Res**2);
+	this.pongDspHrzComp = this.compDspHrz({
+		sizeTex: this.Res,
+		readTex: texture(this.pongTransformTexture),
+		butrTex: texture(this.butterflyTexture),
+		storTex: textureStore(this.pingTransformTexture),
 		indxTex: instanceIndex,
-		stepTex: stepBF
-	}).compute(wav_.Res**2);	
+		stepTex: this.stepBF
+	}).compute(this.Res**2);	
 	//- Shader 4B
-	pingDspVrtComp = compDspVrt({
-		sizeTex: wav_.Res,
-		readTex: texture(pingTransformTexture),
-		butrTex: texture(butterflyTexture),
-		storTex: textureStore(pongTransformTexture),
+	this.pingDspVrtComp = this.compDspVrt({
+		sizeTex: this.Res,
+		readTex: texture(this.pingTransformTexture),
+		butrTex: texture(this.butterflyTexture),
+		storTex: textureStore(this.pongTransformTexture),
 		indxTex: instanceIndex,
-		stepTex: stepBF
-	}).compute(wav_.Res**2);
-	pongDspVrtComp = compDspVrt({
-		sizeTex: wav_.Res,
-		readTex: texture(pongTransformTexture),
-		butrTex: texture(butterflyTexture),
-		storTex: textureStore(pingTransformTexture),
+		stepTex: this.stepBF
+	}).compute(this.Res**2);
+	this.pongDspVrtComp = this.compDspVrt({
+		sizeTex: this.Res,
+		readTex: texture(this.pongTransformTexture),
+		butrTex: texture(this.butterflyTexture),
+		storTex: textureStore(this.pingTransformTexture),
 		indxTex: instanceIndex,
-		stepTex: stepBF
-	}).compute(wav_.Res**2)
+		stepTex: this.stepBF
+	}).compute(this.Res**2)
 	//- Shader 5
-	permutationComp = permutation({
-		sizeTex: wav_.Res,
-		readTex: texture(pingTransformTexture),
-		storTex: textureStore(dispMapTexture),
+	this.permutationComp = this.permutation({
+		sizeTex: this.Res,
+		readTex: texture(this.pingTransformTexture),
+		storTex: textureStore(this.dispMapTexture),
 		indxTex: instanceIndex,
-	}).compute(wav_.Res**2)
+	}).compute(this.Res**2)
 	//- Shader 6
-	compNormalComp = compNormal({
-		sizeTex: wav_.Res,
-		readTex: texture(dispMapTexture),
-		storTex: textureStore(normMapTexture),
+	this.compNormalComp = this.compNormal({
+		sizeTex: this.Res,
+		readTex: texture(this.dispMapTexture),
+		storTex: textureStore(this.normMapTexture),
 		indxTex: instanceIndex,
-	}).compute(wav_.Res**2)	
+	}).compute(this.Res**2)	
 	//= Render =================================================================
-	renderer.compute(initSpectrumComp);
-	renderer.compute(butterflyComp,[1,8,1]);
-	//= Display ================================================================
-	let GrdSiz = 512;
-	let GrdSeg = 256;
-	let WtrGeo = new THREE.PlaneGeometry(GrdSiz, GrdSiz, GrdSeg, GrdSeg);	
-	WtrGeo.rotateX(-Math.PI * 0.5);
-	let color2 = new THREE.Color(WtrCol);
-	let WtrMat = new MeshStandardNodeMaterial({
-		colorNode: color(color2),
-		metalness: 0.5,			// Mine = 1.0, theirs = 0
-		roughness: 0.1,			// Mine = 0.7, theirs = 0.1
-		positionNode: positionLocal.add(texture(dispMapTexture).xyz),
-		normalNode: normalMap(texture(normMapTexture),normalMapScale),	// Animated texture
-		envMap: cubeMap,
-		envMapIntensity: 1,
+	this.renderer.compute(this.initSpectrumComp);
+	this.renderer.compute(this.butterflyComp,[1,8,1]);
+	// Static Targets
+	wav_.Dsp = this.dispMapTexture;
+	wav_.Nrm = this.normMapTexture;
+};	// End of Initialize
 
-	});
-	// Compute Starting Z and X Values
-	let zx = -0.5*(GrdRCs)*GrdSiz+0.5*GrdSiz;
-	for (let i = 0; i < GrdRCs; i++) {
-		WavMZV[i] = zx;
-		WavMXV[i] = zx;
-		zx = zx + GrdSiz;
-	}
-	// 4 Adjacent Planes
-	let n = 0;
-	for (let z = 0; z < GrdRCs; z++) {		// Row X2
-		for (let x = 0; x < GrdRCs; x++) {	// Column X2
-			GrdPtr[n] = new THREE.Mesh(WtrGeo,WtrMat);
-			scene.add(GrdPtr[n]);
-			GrdPtr[n].position.set(WavMXV[x],0,-WavMZV[z]);
-			n++;
-		}
-	}
-}
-
-//- MOVE -----------------------------------------------------------------------
-function moveOcean(renderer,wav_,wavTim) {
+// = OCEAN.RENDER = (called by Main Program) ====================
+Render(wavTim) {
 	// 2. Initial
-	if (initPhase) {
-		renderer.compute(pingPhaseComp);
-		initPhase = false;
+	if (this.initPhase) {
+		this.renderer.compute(this.pingPhaseComp);
+		this.initPhase = false;
 	}
 	else {
-		renderer.compute(pingPhase ? pingPhaseComp : pongPhaseComp);
+		this.renderer.compute(this.pingPhase ? this.pingPhaseComp : this.pongPhaseComp);
 	}
-	renderer.compute(pingPhase ? pongPhaseComp : pingPhaseComp);	
-	pingPhase = !pingPhase;
+	this.renderer.compute(this.pingPhase ? this.pongPhaseComp : this.pingPhaseComp);	
+	this.pingPhase = !this.pingPhase;
 	// 3. New Spectrum from PingPhase or PongPhase
-	renderer.compute(pingPhase ? pingSpectrumComp : pongSpectrumComp);
+	this.renderer.compute(this.pingPhase ? this.pingSpectrumComp : this.pongSpectrumComp);
 	// 4. Displacement Map (iterations = 9*2
-	let iterations = Math.log2(wav_.Res); // log2(512) = 9
+	let iterations = Math.log2(this.Res); // log2(512) = 9
 	let pingPong = false;
 	for (let i = 0; i < iterations; i++) {	// Horizontal Ping/Pong
 		pingPong = !pingPong;
-		stepBF.value = i;
-		if (i == 0) renderer.compute(initDspHrzComp);	// if first rep, then New Spectrum to PingHrz
+		this.stepBF.value = i;
+		if (i == 0) this.renderer.compute(this.initDspHrzComp);	// if first rep, then New Spectrum to PingHrz
 		else {	// Otherwise, Ping/Pong
-			renderer.compute(pingPong ? pingDspHrzComp : pongDspHrzComp);
+			this.renderer.compute(pingPong ? this.pingDspHrzComp : this.pongDspHrzComp);
 		}
 	}
 	for (let i = 0; i < iterations; i++) {	// Vertical Ping/Pong
 		pingPong = !pingPong;
-		stepBF.value = i;
-		renderer.compute(pingPong ? pingDspVrtComp : pongDspVrtComp);	// Ping/Pong
+		this.stepBF.value = i;
+		this.renderer.compute(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
 	}
 	// 5. Displacement
-	renderer.compute(permutationComp);
-	renderer.compute(compNormalComp);
-}
+	this.renderer.compute(this.permutationComp);
+	this.renderer.compute(this.compNormalComp);	
+};	// End of Update
 
-//= 4 MISC SUBROUTINES =========================================================
+};	// End of Module
 
-//- Converts degrees to 360
-function Mod360(deg) {
-	while (deg < 0) deg = deg+360;	// Make deg a positive number
-	deg = deg % 360;				// Compute remainder of any number divided by 360
-return deg;}
 
-//- Rotates Vector
-function RoteV3(lon,lat,dst) {
-	// Latitude
-	V3temp.y = dst * Math.sin(lat);
-	V3temp.z = dst * Math.cos(lat);
-	// Longitude
-	V3temp.x = V3temp.z * Math.sin(lon);
-	V3temp.z = V3temp.z * Math.cos(lon);
-return V3temp;}
-
-//= WINDOW RESIZE ==============================================================
-
+//= Window Resize Input ========================================================
 function onWindowResize() {
-	renderer.setSize(window.innerWidth, window.innerHeight);
-	const aspect = window.innerWidth / window.innerHeight;
-	const frustumHeight = camera.top - camera.bottom;
-	camera.left = - frustumHeight * aspect / 2;
-	camera.right = frustumHeight * aspect / 2;
+	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-	rendAll();
+	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 </script>
