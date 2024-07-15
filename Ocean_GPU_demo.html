@@ -94,7 +94,7 @@ let	renderer = new WebGPURenderer({antialias: true});
 //- Lights
 let sunLight = new THREE.DirectionalLight(SunCol, 4.0);
 	scene.add(sunLight);
-let sunPos = new THREE.Vector3(1000,1000,1000);
+let sunPos = new THREE.Vector3();
 //- Camera
 let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,5000);
 	camera.position.set(0,100,100);
@@ -500,7 +500,7 @@ function initOcean(renderer,wav_,wavTim) {
 			// Variables
 			var u_grdres: f32 = 512;
 			var u_grdsiz: f32 = 512;
-			var strength: f32 = 3;
+			var strength: f32 = 1;
 			//- Compute vUv
 			var posX = u32(indxTex) % u32(sizeTex);	// width
 			var posY = u32(indxTex) / u32(sizeTex);	// height
@@ -624,18 +624,18 @@ function initOcean(renderer,wav_,wavTim) {
 	renderer.compute(butterflyComp,[1,8,1]);
 	//= Display ================================================================
 	let GrdSiz = 512;
-	let GrdSeg = 512;
+	let GrdSeg = 256;
 	let WtrGeo = new THREE.PlaneGeometry(GrdSiz, GrdSiz, GrdSeg, GrdSeg);	
 	WtrGeo.rotateX(-Math.PI * 0.5);
 	let color2 = new THREE.Color(WtrCol);
 	let WtrMat = new MeshStandardNodeMaterial({
 		colorNode: color(color2),
-		metalness: 0.4,			// Mine = 1.0, theirs = 0
-		roughness: 0.6,			// Mine = 0.7, theirs = 0.1
+		metalness: 0.5,			// Mine = 1.0, theirs = 0
+		roughness: 0.1,			// Mine = 0.7, theirs = 0.1
 		positionNode: positionLocal.add(texture(dispMapTexture).xyz),
 		normalNode: normalMap(texture(normMapTexture),normalMapScale),	// Animated texture
 		envMap: cubeMap,
-		envMapIntensity: 0.5,
+		envMapIntensity: 1,
 
 	});
 	// Compute Starting Z and X Values
