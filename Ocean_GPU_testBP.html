@@ -4,7 +4,16 @@
 <meta charset="utf-8">
 <title>Ocean WebGPU test butterfly permute</title>
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-<link type="text/css" rel="stylesheet" href="styles/main.css">
+<style>
+body {
+	overflow: hidden;
+	margin:0;
+	color: black;
+	font-family: Courier;
+	font-size: 20pt;
+	font-weight: bold;
+}
+</style>
 </head>
 <body>
 
@@ -20,6 +29,7 @@
 
 <script type="module">
 import * as THREE from 'three';
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import {texture, textureStore, wgslFn, instanceIndex, MeshBasicNodeMaterial, positionLocal, code, uniform, timerLocal} from 'three/nodes';
 import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 import StorageTexture from 'three/addons/renderers/common/StorageTexture.js';
@@ -30,7 +40,6 @@ let oldTim, nowTim, difTim = 0;
 //- Constants ------------------------------------------------------------------
 var DegRad = Math.PI/180;	// Convert Degrees to Radians
 //- Ocean Module ---------------------------------------------------------------
-let rez = 512.;	// Texture Size
 //- Instruction Addresses
 let initSpectrumComp,pingPhaseComp,pongPhaseComp,pingSpectrumComp,pongSpectrumComp;
 let butterflyComp,permutationComp,compNormalComp;
@@ -42,6 +51,19 @@ let pingPhase = true;
 let wavTim = uniform(0);		// ### AS: changed to 0
 let wavSpd = 1.0;	// Animation speed - use in main program (lower is faster)
 let stepBF = uniform(0);
+
+let GrdSiz = 512;				// Size of Smallest Grid Square (meters)
+let GrdRes = 512;
+let GrdSeg = 512;				// Segments per Plane (256 = OK, 512 = too much)
+let Choppy = 1;
+let wav_ = {
+		// Sources
+		Res: GrdRes,			// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
+		// Results
+		Dsp: 0,					// The Displacement Map
+		Nrm: 0,					// The Normal Map
+	};
 
 //= BASIC SETUP ================================================================
 let	scene = new THREE.Scene();
@@ -66,7 +88,7 @@ let clock = new THREE.Clock();
 //= INITIALIZE =================================================================
 
 function initAll() {
-	initOcean(wavTim);
+	initOcean(renderer,wav_,wavTim);
 }
 
 //= RENDER =====================================================================
@@ -79,7 +101,7 @@ function rendAll() {
 //	wavTim.value = difTim || 0.0;		// ### AS: Changed to +=
 	oldTim = nowTim;
 	//
-	moveOcean(wavTim);
+	moveOcean(renderer,wav_,wavTim);
 	//
 	renderer.renderAsync(scene, camera);
 }
@@ -88,38 +110,38 @@ function rendAll() {
 
 //- INIT -----------------------------------------------------------------------
 
-function initOcean(wavTim) {
+function initOcean(renderer,wav_,wavTim) {
 	//- Create Buffers ---------------------------------------------------------
-	let initSpectrumTexture = new StorageTexture(rez,rez);
+	let initSpectrumTexture = new StorageTexture(wav_.Res,wav_.Res);
 		initSpectrumTexture.type = THREE.FloatType;
-	let pingPhaseTexture = new StorageTexture(rez,rez);
+	let pingPhaseTexture = new StorageTexture(wav_.Res,wav_.Res);
 		pingPhaseTexture.type = THREE.FloatType;
-	let pongPhaseTexture = new StorageTexture(rez,rez);
+	let pongPhaseTexture = new StorageTexture(wav_.Res,wav_.Res);
 		pongPhaseTexture.type = THREE.FloatType;
-	let compSpectrumTexture = new StorageTexture(rez,rez);
+	let compSpectrumTexture = new StorageTexture(wav_.Res,wav_.Res);
 		compSpectrumTexture.type = THREE.FloatType;
-	let butterflyTexture = new StorageTexture(Math.log2(rez),rez);
+	let butterflyTexture = new StorageTexture(Math.log2(wav_.Res),wav_.Res);
 		butterflyTexture.magFilter = butterflyTexture.minFilter = THREE.NearestFilter;
 		butterflyTexture.type = THREE.FloatType;
-	let pingTransformTexture = new StorageTexture(rez,rez);
+	let pingTransformTexture = new StorageTexture(wav_.Res,wav_.Res);
 		pingTransformTexture.type = THREE.FloatType;
-	let pongTransformTexture = new StorageTexture(rez,rez);
+	let pongTransformTexture = new StorageTexture(wav_.Res,wav_.Res);
 		pongTransformTexture.type = THREE.FloatType;
-	let dispMapTexture = new StorageTexture(rez,rez);
+	let dispMapTexture = new StorageTexture(wav_.Res,wav_.Res);
 		dispMapTexture.type = THREE.FloatType;
-	let normMapTexture = new StorageTexture(rez,rez);
+	let normMapTexture = new StorageTexture(wav_.Res,wav_.Res);
 		normMapTexture.type = THREE.FloatType;
 	// Create Initial Phase Array
-	let phaseArray = new window.Float32Array(4*(rez**2));
-	for (let y = 0; y < rez; y++) {
-		for (let x = 0; x < rez; x++) {
-			phaseArray[y*rez*4+x*4] = Math.random()*2.0*Math.PI;
-			phaseArray[y*rez*4+x*4+1] = 0.0;
-			phaseArray[y*rez*4+x*4+2] = 0.0;
-			phaseArray[y*rez*4+x*4+3] = 1.0;	// make visible
+	let phaseArray = new window.Float32Array(4*(wav_.Res**2));
+	for (let y = 0; y < wav_.Res; y++) {
+		for (let x = 0; x < wav_.Res; x++) {
+			phaseArray[y*wav_.Res*4+x*4] = Math.random()*2.0*Math.PI;
+			phaseArray[y*wav_.Res*4+x*4+1] = 0.0;
+			phaseArray[y*wav_.Res*4+x*4+2] = 0.0;
+			phaseArray[y*wav_.Res*4+x*4+3] = 1.0;	// make visible
 		}
 	}
-	let phaseArrayTexture = new THREE.DataTexture(phaseArray,rez,rez,THREE.RGBAFormat);	
+	let phaseArrayTexture = new THREE.DataTexture(phaseArray,wav_.Res,wav_.Res,THREE.RGBAFormat);	
 	phaseArrayTexture.minFilter = phaseArrayTexture.magFilter = THREE.NearestFilter;
 	phaseArrayTexture.wrapS = phaseArrayTexture.wrapT = THREE.ClampToEdgeWrapping;
 	phaseArrayTexture.type = THREE.FloatType;
@@ -139,8 +161,9 @@ function initOcean(wavTim) {
 			return vec2f(-z.y,z.x);
 		}
 		fn getIdx(index: u32) -> vec2u {
-			var posX = index % ${rez};	// width
-			var posY = index / ${rez};	// height
+			var u_grdres: u32 = 512;
+			var posX = index % u_grdres;	// width
+			var posY = index / u_grdres;	// height
 			return vec2u(u32(posX),u32(posY));
 		}
 	`);
@@ -412,128 +435,142 @@ function initOcean(wavTim) {
 			indxTex: u32,
 		) -> void {
 			// Variables
-			var u_grdres: f32 = 512;
-			var u_grdsiz: f32 = 512;
+			var u_grdres: f32 = 512.;
+			var u_grdsiz: f32 = 512.;
 			//- Compute vUv
 			var posX = u32(indxTex) % u32(sizeTex);	// width
 			var posY = u32(indxTex) / u32(sizeTex);	// height
 			var idx = vec2u(u32(posX), u32(posY));
+			var idxf = vec2f(idx);
 			//
-			var ctr = vec3<f32>( 0,textureLoad(readTex,vec2<u32>(posX,   posY  ),0).r*strength, 0);			
-			var rgt = vec3<f32>( 1,textureLoad(readTex,vec2<u32>(posX+1, posY  ),0).r*strength, 0) - ctr;
-			var lft = vec3<f32>(-1,textureLoad(readTex,vec2<u32>(posX-1, posY  ),0).r*strength, 0) - ctr;
-			var top = vec3<f32>( 0,textureLoad(readTex,vec2<u32>(posX,   posY-1),0).r*strength,-1) - ctr;
-			var bot = vec3<f32>( 0,textureLoad(readTex,vec2<u32>(posX,   posY+1),0).r*strength, 1) - ctr;
-			let topRgt = vec3<f32>(cross(rgt,top));
-			let topLft = vec3<f32>(cross(top,lft));
-			let botLft = vec3<f32>(cross(lft,bot));
-			let botRgt = vec3<f32>(cross(bot,rgt));
-			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
+			let texel: f32 = 1/u_grdres;
+			let texelSize: f32 = u_grdsiz/u_grdres;
+			//
+			let C = vec3<f32>(textureLoad(readTex,idx,0).rgb);
+			let idxR = vec2<u32>(idxf+vec2<f32>(texel,0));
+			let R = vec3<f32>(vec3<f32>(texelSize,0,0)+textureLoad(readTex,idxR,0).rgb) - C;
+			let idxL = vec2<u32>(idxf+vec2<f32>(-texel,0));
+			let L = vec3<f32>(vec3<f32>(-texelSize,0,0)+textureLoad(readTex,idxL,0).rgb) - C;	
+			let idxT = vec2<u32>(idxf+vec2<f32>(0,-texel));
+			let T = vec3<f32>(vec3<f32>(0,0,-texelSize)+textureLoad(readTex,idxT,0).rgb) - C;
+			let idxB = vec2<u32>(idxf+vec2<f32>(0,texel));
+			let B = vec3<f32>(vec3<f32>(0,0,texelSize)+textureLoad(readTex,idxB,0).rgb) - C;
+			//
+			let TR = vec3<f32>(cross(R,T));
+			let TL = vec3<f32>(cross(T,L));
+			let BL = vec3<f32>(cross(L,B));
+			let BR = vec3<f32>(cross(B,R));
+			var nrm3 = vec3<f32>(normalize(TR+TL+BL+BR));
+			//
+			nrm3 = vec3<f32>(nrm3) * 0.5 + 0.5;	// ### NEW
 			textureStore(storTex,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
+//			let tmp2: vec3<f32> = nrm3;
+//			nrm3.b = tmp2.g;
+//			nrm3.g = tmp2.b;
+//			nrm3 = vec3<f32>(nrm3) * 0.5 + 0.5;
+//			textureStore(storTex,idx,vec4f(nrm3.x,nrm3.y,nrm3.z,1));
 		}
-		// Variables
-		const strength: f32 = 1;
 	`, [subroutines]);
 	//= Instructions ===========================================================
 	//- Shader 1. Initial Frequency
 	initSpectrumComp = initSpectrum({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		storTex: textureStore(initSpectrumTexture),
 		indxTex: instanceIndex
-	}).compute(rez**2);
+	}).compute(wav_.Res**2);
 	//- Shader 2. Initial Phase
 	pingPhaseComp = compPhase({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTex: texture(phaseArrayTexture),
 		storTex: textureStore(pingPhaseTexture),
 		indxTex: instanceIndex,
 		timeTex: wavTim
-	}).compute(rez**2);
+	}).compute(wav_.Res**2);
 	pongPhaseComp = compPhase({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTex: texture(phaseArrayTexture),
 		storTex: textureStore(pongPhaseTexture),
 		indxTex: instanceIndex,
 		timeTex: wavTim
-	}).compute(rez**2);
+	}).compute(wav_.Res**2);
 	//- Shader 3. New Phase
 	pingSpectrumComp = compSpectrum({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTx1: texture(pingPhaseTexture),
 		readTx2: texture(initSpectrumTexture),
 		storTex: textureStore(compSpectrumTexture),
 		indxTex: instanceIndex
-	}).compute(rez**2);
+	}).compute(wav_.Res**2);
 	pongSpectrumComp = compSpectrum({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTx1: texture(pongPhaseTexture),
 		readTx2: texture(initSpectrumTexture),
 		storTex: textureStore(compSpectrumTexture),
 		indxTex: instanceIndex
-	}).compute(rez**2);
+	}).compute(wav_.Res**2);
 	//- Butterfly
 	butterflyComp = butterfly({ 
 		storTex: textureStore(butterflyTexture), 
 		indxTex: instanceIndex,
-		N: rez,
-	}).compute(Math.log2(rez)*rez);
+		N: wav_.Res,
+	}).compute(Math.log2(wav_.Res)*wav_.Res);
 	//- Shader 4. Displacement
 	//- Shader 4A
 	initDspHrzComp = compDspHrz({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTex: texture(compSpectrumTexture),
 		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pongTransformTexture),
 		indxTex: instanceIndex,	
 		stepTex: stepBF
-	}).compute(rez**2);
+	}).compute(wav_.Res**2);
 	pingDspHrzComp = compDspHrz({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTex: texture(pingTransformTexture),
 		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pongTransformTexture),
 		indxTex: instanceIndex,
 		stepTex: stepBF
-	}).compute(rez**2);
+	}).compute(wav_.Res**2);
 	pongDspHrzComp = compDspHrz({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTex: texture(pongTransformTexture),
 		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pingTransformTexture),
 		indxTex: instanceIndex,
 		stepTex: stepBF
-	}).compute(rez**2);	
+	}).compute(wav_.Res**2);	
 	//- Shader 4B
 	pingDspVrtComp = compDspVrt({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTex: texture(pingTransformTexture),
 		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pongTransformTexture),
 		indxTex: instanceIndex,
 		stepTex: stepBF
-	}).compute(rez**2);
+	}).compute(wav_.Res**2);
 	pongDspVrtComp = compDspVrt({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTex: texture(pongTransformTexture),
 		butrTex: texture(butterflyTexture),
 		storTex: textureStore(pingTransformTexture),
 		indxTex: instanceIndex,
 		stepTex: stepBF
-	}).compute(rez**2)
+	}).compute(wav_.Res**2)
 	//- Shader 5
 	permutationComp = permutation({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTex: texture(pingTransformTexture),
 		storTex: textureStore(dispMapTexture),
 		indxTex: instanceIndex,
-	}).compute(rez**2)
+	}).compute(wav_.Res**2)
 	//- Shader 6
 	compNormalComp = compNormal({
-		sizeTex: rez,
+		sizeTex: wav_.Res,
 		readTex: texture(dispMapTexture),
 		storTex: textureStore(normMapTexture),
 		indxTex: instanceIndex,
-	}).compute(rez**2)	
+	}).compute(wav_.Res**2)	
 	//= Render =================================================================
 	renderer.compute(initSpectrumComp);
 	renderer.compute(butterflyComp,[1,8,1]);
@@ -612,7 +649,7 @@ function initOcean(wavTim) {
 }
 
 //- MOVE -----------------------------------------------------------------------
-function moveOcean(wavTim) {
+function moveOcean(renderer,wav_,wavTim) {
 	// 2. Initial
 	if (initPhase) {
 		renderer.compute(pingPhaseComp);
@@ -626,7 +663,7 @@ function moveOcean(wavTim) {
 	// 3. New Spectrum from PingPhase or PongPhase
 	renderer.compute(pingPhase ? pingSpectrumComp : pongSpectrumComp);
 	// 4. Displacement Map (iterations = 9*2
-	let iterations = Math.log2(rez); // log2(512) = 9
+	let iterations = Math.log2(wav_.Res); // log2(512) = 9
 	let pingPong = false;
 	for (let i = 0; i < iterations; i++) {	// Horizontal Ping/Pong
 		pingPong = !pingPong;

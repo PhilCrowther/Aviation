@@ -704,24 +704,40 @@ Ocean(renderer, wav_) {
 			indxTex: u32,
 		) -> void {
 			// Variables
-			var u_grdres: f32 = 512;
-			var u_grdsiz: f32 = 512;
+			var u_grdres: f32 = 512.;
+			var u_grdsiz: f32 = 512.;
 			//- Compute vUv
 			var posX = u32(indxTex) % u32(sizeTex);	// width
 			var posY = u32(indxTex) / u32(sizeTex);	// height
 			var idx = vec2u(u32(posX), u32(posY));
+			var idxf = vec2f(idx);
 			//
-			var ctr = vec3<f32>( 0,textureLoad(readTex,vec2<u32>(posX,   posY  ),0).r*strength, 0);			
-			var rgt = vec3<f32>( 1,textureLoad(readTex,vec2<u32>(posX+1, posY  ),0).r*strength, 0) - ctr;
-			var lft = vec3<f32>(-1,textureLoad(readTex,vec2<u32>(posX-1, posY  ),0).r*strength, 0) - ctr;
-			var top = vec3<f32>( 0,textureLoad(readTex,vec2<u32>(posX,   posY-1),0).r*strength,-1) - ctr;
-			var bot = vec3<f32>( 0,textureLoad(readTex,vec2<u32>(posX,   posY+1),0).r*strength, 1) - ctr;
-			let topRgt = vec3<f32>(cross(rgt,top));
-			let topLft = vec3<f32>(cross(top,lft));
-			let botLft = vec3<f32>(cross(lft,bot));
-			let botRgt = vec3<f32>(cross(bot,rgt));
-			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
+			let texel: f32 = 1. / u_grdres;
+			let texelSize: f32 = u_grdsiz / u_grdres;
+			//
+			let C = vec3<f32>(textureLoad(readTex,idx,0).rgb);
+			let idxR = vec2<u32>(idxf+vec2<f32>(texel,0));
+			let R = vec3<f32>(vec3<f32>(texelSize,0,0) + textureLoad(readTex,idxR,0).rgb) - C;
+			let idxL = vec2<u32>(idxf+vec2<f32>(-texel,0));
+			let L = vec3<f32>(vec3<f32>(-texelSize,0,0) + textureLoad(readTex,idxL,0).rgb) - C;	
+			let idxT = vec2<u32>(idxf+vec2<f32>(0,-texel));
+			let T = vec3<f32>(vec3<f32>(0,0,-texelSize) + textureLoad(readTex,idxT,0).rgb) - C;
+			let idxB = vec2<u32>(idxf+vec2<f32>(0,texel));
+			let B = vec3<f32>(vec3<f32>(0,0,texelSize) + textureLoad(readTex,idxB,0).rgb) - C;
+			//
+			let TR = vec3<f32>(cross(R,T));
+			let TL = vec3<f32>(cross(T,L));
+			let BL = vec3<f32>(cross(L,B));
+			let BR = vec3<f32>(cross(B,R));
+			var nrm3 = vec3<f32>(normalize(TR+TL+BL+BR));
+			//
+			nrm3 = vec3<f32>(nrm3) * 0.5 + 0.5;	// ### NEW
 			textureStore(storTex,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
+//			let tmp2: vec3<f32> = nrm3;
+//			nrm3.b = tmp2.g;
+//			nrm3.g = tmp2.b;
+//			nrm3 = vec3<f32>(nrm3) * 0.5 + 0.5;
+//			textureStore(storTex,idx,vec4f(nrm3.x,nrm3.y,nrm3.z,1));
 		}
 		// Variables
 		const strength: f32 = 1;
