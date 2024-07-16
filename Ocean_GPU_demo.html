@@ -103,7 +103,7 @@ let wav_ = {
 	};
 let wavSpd = 1;					// Animation speed - use in main program (lower is faster)
 let wavTim = uniform(0);
-let normalMapScale = vec2(1.0,-1.0);
+let normalMapScale = vec2(1.0,1.0);
 // External
 let WtrGeo, WtrMat, WtrMsh = 0;	// Main Display
 // Texture
@@ -721,13 +721,7 @@ Ocean(renderer, wav_) {
 			let botLft = vec3<f32>(cross(lft,bot));
 			let botRgt = vec3<f32>(cross(bot,rgt));
 			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
-			//
-//			textureStore(storTex,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
-			let tmp2: vec3<f32>(nrm3);	
-			nrm3.z = tmp2.y;	// this is done so that the normal map
-			nrm3.y = tmp2.z;	// displays the correct colors
-			textureStore(storTex,idx,vec4<f32>(nrm3 * 0.5 + 0.5, 1.));
-
+			textureStore(storTex,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 		}
 		// Variables
 		const strength: f32 = 1;
