@@ -103,7 +103,7 @@ let wav_ = {
 	};
 let wavSpd = 1;					// Animation speed - use in main program (lower is faster)
 let wavTim = uniform(0);
-let normalMapScale = vec2(1.0,-1.0);
+let normalMapScale = vec2(1.0,1.0);
 // External
 let WtrGeo, WtrMat, WtrMsh = 0;	// Main Display
 // Texture
@@ -243,7 +243,7 @@ function loadOceans() {
 	uvTexture = txtrLoader.load('https://threejs.org/examples/textures/uv_grid_opengl.jpg');
 }
 
-function initOceans(renderer,wav_) {
+function initOceans() {
 	waves = new Ocean(renderer,wav_);
 	WtrGeo = new THREE.PlaneGeometry(GrdSiz, GrdSiz, GrdSeg, GrdSeg);	
 	WtrGeo.rotateX(-Math.PI * 0.5);
@@ -256,7 +256,6 @@ function initOceans(renderer,wav_) {
 		normalNode: normalMap(texture(wav_.Nrm),normalMapScale),	// Animated texture
 		envMap: cubeMap,
 		envMapIntensity: 1,
-//		wireframe: true,
 	} );
 
 	// Compute Starting Z and X Values
@@ -379,7 +378,7 @@ Ocean(renderer, wav_) {
 	this.windY = wav_.WSp*Math.cos(wav_.WHd*Math.PI/180);
 	this.Chp = wav_.Chp;
 	// Initialize Program Variables
-	this.subTFSzV = uniform(0);
+	this.stepBF = uniform(0);
 	this.initPhase = true;
 	this.pingPhase = true;
 	//- Create Buffers ---------------------------------------------------------
@@ -391,6 +390,9 @@ Ocean(renderer, wav_) {
 	this.pongPhaseTexture.type = THREE.FloatType;
 	this.compSpectrumTexture = new StorageTexture(this.Res,this.Res);
 	this.compSpectrumTexture.type = THREE.FloatType;
+	this.butterflyTexture = new StorageTexture(Math.log2(this.Res),this.Res);
+	this.butterflyTexture.magFilter = this.butterflyTexture.minFilter = THREE.NearestFilter;
+	this.butterflyTexture.type = THREE.FloatType;
 	this.pingTransformTexture = new StorageTexture(this.Res,this.Res);
 	this.pingTransformTexture.type = THREE.FloatType;
 	this.pongTransformTexture = new StorageTexture(this.Res,this.Res);
@@ -548,11 +550,11 @@ Ocean(renderer, wav_) {
 			var u_grdsiz: f32 = 512;
 			var u_choppy: f32 = 1.6;
 			//- Compute vUv(u) and neg vUv(u)
-			var posX = f32(indxTex)%sizeTex;	// width
-			var posY = f32(indxTex)/sizeTex;	// height
-			var idx = vec2u(u32(posX),u32(posY));
-			var posXN = f32(sizeTex-posX)%sizeTex;	// neg width (AS)
-			var posYN = f32(sizeTex-posY)/sizeTex;	// neg height
+			var posX = f32(indxTex) % sizeTex;	// width
+			var posY = f32(indxTex) / sizeTex;	// height
+			var idx = vec2u(u32(posX), u32(posY));
+			var posXN = f32(sizeTex-posX) % sizeTex;	// neg width (AS)
+			var posYN = f32(sizeTex-posY) / sizeTex;	// neg height
 			var idxN = vec2u(u32(posXN),u32(posYN));			
 			//- My Shader
 			var pixel_coord = vec2<f32>(idx.xy)-u_grdres*0.5;	// ### AS: range is 0 to 512
@@ -580,34 +582,82 @@ Ocean(renderer, wav_) {
 		// Variables
 		const P2: f32 = 6.28318530718;
 	`, [subroutines]);
+	//= Butterfly ==============================================================
+	//  This assists with Ping/Pong computations
+	this.butterfly = wgslFn(`
+		fn computeWGSL(
+			storTex: texture_storage_2d<rgba32float, write>,
+			indxTex: u32, 
+			N: f32,
+		) -> void {
+			//- Compute vUv(u)
+			var posX = f32(indxTex)%log2(N);
+			var posY = floor(f32(indxTex)/log2(N));
+			var idx = vec2u(u32(posX),u32(posY));
+			//
+			var k: f32 = (posY*N/pow(2,posX+1))%N;
+			var twiddle: vec2<f32> = vec2<f32>(cos(P2*k/N),sin(P2*k/N));
+			var butterflyspan: f32 = pow(2,f32(posX));
+			var butterflywing: u32 = 0;
+			if(posY%pow(2,posX+1) < pow(2,posX)){
+				butterflywing = 1;
+			}
+			else{
+				butterflywing = 0;
+			}
+			if(u32(posX) == 0){
+				if(butterflywing == 1){
+					textureStore(storTex,idx,vec4f(twiddle.x,twiddle.y,reverseBits(idx.y,N),reverseBits(idx.y+1,N)));
+				}
+				else{
+					textureStore(storTex,idx,vec4f(twiddle.x,twiddle.y,reverseBits(idx.y-1,N),reverseBits(idx.y,N)));
+				}
+			}
+			else{
+				if(butterflywing == 1){
+					textureStore(storTex,idx,vec4f(twiddle.x,twiddle.y,posY,posY+butterflyspan));
+				}
+				else{
+					textureStore(storTex,idx,vec4f(twiddle.x,twiddle.y,posY-butterflyspan,posY));
+				}
+			}
+		}
+		fn reverseBits(index: u32, N: f32) -> f32 {
+			var bitReversedIndex: u32 = 0;
+			var numBits: u32 = u32(log2(N));
+			for (var i: u32 = 0; i < numBits; i=i+1) {
+				bitReversedIndex = bitReversedIndex | (((index >> i) & 1) << (numBits-i-1));
+			} 
+			return f32(bitReversedIndex);
+		}
+		// Variables
+		const P2: f32 = 6.28318530718;
+	`, [subroutines]);
 	//= Shader 4A ==============================================================
 	//	Displacement Map (AS WebGPU)
 	this.compDspHrz = wgslFn(`
 		fn computeWGSL(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
+			butrTex: texture_2d<f32>,
 			storTex: texture_storage_2d<rgba32float,write>,
 			indxTex: u32,
-			subTFSz: f32
+			stepTex: f32
 		) -> void {
 			//- Compute vUv(i)
 			var posX = f32(indxTex)%sizeTex;
 			var posY = floor(f32(indxTex)/sizeTex);
 			var idx = vec2i(i32(posX),i32(posY));
-			var idxf = vec2f(f32(posX),f32(posY));	// add this to change format
-			//
-			var index: f32 = idxf.x-0.5;		// ref idxf
-			var evenIndex: f32 = floor(index/subTFSz)*(subTFSz*0.5)+((index)%(subTFSz*0.5));
-			let even = textureLoad(readTex,vec2<i32>(i32(evenIndex+0.5),idx.y),0);
-			let odd = textureLoad(readTex,vec2<i32>(i32(evenIndex+512*0.5+0.5),idx.y),0);
-			var twiddleArgument: f32 = -P2*(index/subTFSz);
-			var twiddle = vec2<f32>(cos(twiddleArgument),sin(twiddleArgument));
-			var outputA = vec2<f32>(even.xy+multiplyComplex(twiddle,odd.xy));
-			var outputB = vec2<f32>(even.zw+multiplyComplex(twiddle,odd.zw));
-			textureStore(storTex,idx,vec4<f32>(outputA,outputB));
+			//			
+			var data = textureLoad(butrTex,vec2<i32>(i32(stepTex),idx.x),0);
+			var even = textureLoad(readTex,vec2<i32>(i32(data.z),idx.y),0).rg;
+			var odd =  textureLoad(readTex,vec2<i32>(i32(data.w),idx.y),0).rg;
+//			var outputA = vec2<f32>(even.xy+multiplyComplex(data.rg,odd.xy));
+//			var outputB = vec2<f32>(even.zw+multiplyComplex(data.rg,odd.zw));
+//			textureStore(storTex,idx,vec4<f32>(outputA,outputB));
+			var H = vec2<f32>(even + multiplyComplex(data.rg,odd.xy));
+			textureStore(storTex,idx,vec4<f32>(H,0,1));
 		}
-		// Variables
-		const P2: f32 = 6.28318530718;
 	`, [subroutines]);
 	//= Shader 4B ==============================================================
 	//	Displacement Map (AS WebGPU)
@@ -615,32 +665,29 @@ Ocean(renderer, wav_) {
 		fn computeWGSL(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
+			butrTex: texture_2d<f32>,
 			storTex: texture_storage_2d<rgba32float,write>,
 			indxTex: u32,
-			subTFSz: f32
+			stepTex: f32
 		) -> void {
 			//- Compute vUv(i)
 			var posX = f32(indxTex)%sizeTex;
 			var posY = floor(f32(indxTex)/sizeTex);
-			var idx = vec2i(i32(posX),i32(posY));
-			var idxf = vec2f(f32(posX),f32(posY));	// add this to change format
-			//
-			var index: f32 = idxf.y-0.5;		// ref idxf
-			var evenIndex: f32 = floor(index/subTFSz)*(subTFSz*0.5)+((index)%(subTFSz*0.5));
-			let even = textureLoad(readTex,vec2<i32>(idx.x,i32(evenIndex+0.5)),0);
-			let odd = textureLoad(readTex,vec2<i32>(idx.x,i32(evenIndex+512*0.5+0.5)),0);
-			var twiddleArgument: f32 = -P2*(index/subTFSz);
-			var twiddle = vec2<f32>(cos(twiddleArgument),sin(twiddleArgument));
-			var outputA = vec2<f32>(even.xy+multiplyComplex(twiddle,odd.xy));
-			var outputB = vec2<f32>(even.zw+multiplyComplex(twiddle,odd.zw));
-			textureStore(storTex,idx,vec4<f32>(outputA,outputB));
+			var idx  = vec2i(i32(posX),i32(posY));
+			//			
+			var data = textureLoad(butrTex,vec2<i32>(i32(stepTex),idx.y),0);
+			var even = textureLoad(readTex,vec2<i32>(idx.x,i32(data.z)),0).rg;
+			var odd =  textureLoad(readTex,vec2<i32>(idx.x,i32(data.w)),0).rg;
+//			var outputA = vec2<f32>(even.xy+multiplyComplex(data.rg,odd.xy));
+//			var outputB = vec2<f32>(even.zw+multiplyComplex(data.rg,odd.zw));
+//			textureStore(storTex,idx,vec4<f32>(outputA,outputB));
+			var H = vec2<f32>(even+multiplyComplex(data.rg,odd.xy));
+			textureStore(storTex,idx,vec4<f32>(H,0,1));
 		}
-		// Variables
-		const P2: f32 = 6.28318530718;
 	`, [subroutines]);
 	//= Shader 5 ===============================================================
 	// Permutation
-	let permutation = wgslFn(`
+	this.permutation = wgslFn(`
 		fn computeWGSL(
 			sizeTex: f32,
 			readTex: texture_2d<f32>,
@@ -650,10 +697,11 @@ Ocean(renderer, wav_) {
 			// Compute vUv (special)
 			var posX = f32(indxTex)%sizeTex;
 			var posY = floor(f32(indxTex)/sizeTex);
-			var idx  = vec2i(i32(posX),i32(posY)); 
+			var idx  = vec2i(i32(posX),i32(posY));
+			//
 			var input = textureLoad(readTex,idx,0);
-			input = input*(1-2*f32((idx.x+idx.y)%2));
-			textureStore(storTex,idx,input);
+			input.y = input.y*1.5;
+			textureStore(storTex,idx,input*(1-2*f32((idx.x+idx.y)%2)));
 		}     
 	`, [subroutines]);
 	//= Shader 6 ===============================================================
@@ -668,7 +716,7 @@ Ocean(renderer, wav_) {
 			// Variables
 			var u_grdres: f32 = 512;
 			var u_grdsiz: f32 = 512;
-			//- Compute vUv
+			//- Compute vUv(u)
 			var posX = u32(indxTex) % u32(sizeTex);	// width
 			var posY = u32(indxTex) / u32(sizeTex);	// height
 			var idx  = vec2u(u32(posX), u32(posY));
@@ -737,46 +785,57 @@ Ocean(renderer, wav_) {
 		storTex: textureStore(this.compSpectrumTexture),
 		indxTex: instanceIndex
 	}).compute(this.Res**2);
+	//- Butterfly
+	this.butterflyComp = this.butterfly({ 
+		storTex: textureStore(this.butterflyTexture), 
+		indxTex: instanceIndex,
+		N: this.Res,
+	}).compute(Math.log2(this.Res)*this.Res);
 	//- Shader 4. Displacement
 	//- Shader 4A
 	this.initDspHrzComp = this.compDspHrz({
 		sizeTex: this.Res,
 		readTex: texture(this.compSpectrumTexture),
+		butrTex: texture(this.butterflyTexture),
 		storTex: textureStore(this.pongTransformTexture),
 		indxTex: instanceIndex,	
-		subTFSz: this.subTFSzV
+		stepTex: this.stepBF
 	}).compute(this.Res**2);
 	this.pingDspHrzComp = this.compDspHrz({
 		sizeTex: this.Res,
 		readTex: texture(this.pingTransformTexture),
+		butrTex: texture(this.butterflyTexture),
 		storTex: textureStore(this.pongTransformTexture),
 		indxTex: instanceIndex,
-		subTFSz: this.subTFSzV
+		stepTex: this.stepBF
 	}).compute(this.Res**2);
 	this.pongDspHrzComp = this.compDspHrz({
 		sizeTex: this.Res,
 		readTex: texture(this.pongTransformTexture),
+		butrTex: texture(this.butterflyTexture),
 		storTex: textureStore(this.pingTransformTexture),
 		indxTex: instanceIndex,
-		subTFSz: this.subTFSzV
+		stepTex: this.stepBF
 	}).compute(this.Res**2);	
 	//- Shader 4B
 	this.pingDspVrtComp = this.compDspVrt({
 		sizeTex: this.Res,
 		readTex: texture(this.pingTransformTexture),
+		butrTex: texture(this.butterflyTexture),
 		storTex: textureStore(this.pongTransformTexture),
 		indxTex: instanceIndex,
-		subTFSz: this.subTFSzV
+		stepTex: this.stepBF
 	}).compute(this.Res**2);
 	this.pongDspVrtComp = this.compDspVrt({
 		sizeTex: this.Res,
 		readTex: texture(this.pongTransformTexture),
+		butrTex: texture(this.butterflyTexture),
 		storTex: textureStore(this.pingTransformTexture),
 		indxTex: instanceIndex,
-		subTFSz: this.subTFSzV
+		stepTex: this.stepBF
 	}).compute(this.Res**2)
 	//- Shader 5
-	this.permutationComp = permutation({
+	this.permutationComp = this.permutation({
 		sizeTex: this.Res,
 		readTex: texture(this.pingTransformTexture),
 		storTex: textureStore(this.dispMapTexture),
@@ -785,12 +844,13 @@ Ocean(renderer, wav_) {
 	//- Shader 6
 	this.compNormalComp = this.compNormal({
 		sizeTex: this.Res,
-		readTex: texture(this.pingTransformTexture),
+		readTex: texture(this.dispMapTexture),
 		storTex: textureStore(this.normMapTexture),
 		indxTex: instanceIndex,
 	}).compute(this.Res**2)	
 	//= Render =================================================================
 	this.renderer.compute(this.initSpectrumComp);
+	this.renderer.compute(this.butterflyComp,[1,8,1]);
 	// Static Targets
 	wav_.Dsp = this.dispMapTexture;
 	wav_.Nrm = this.normMapTexture;
@@ -815,7 +875,7 @@ Render(wavTim) {
 	let pingPong = false;
 	for (let i = 0; i < iterations; i++) {	// Horizontal Ping/Pong
 		pingPong = !pingPong;
-		this.subTFSzV.value = Math.pow(2,(i%iterations+1));
+		this.stepBF.value = i;
 		if (i == 0) this.renderer.compute(this.initDspHrzComp);	// if first rep, then New Spectrum to PingHrz
 		else {	// Otherwise, Ping/Pong
 			this.renderer.compute(pingPong ? this.pingDspHrzComp : this.pongDspHrzComp);
@@ -823,14 +883,16 @@ Render(wavTim) {
 	}
 	for (let i = 0; i < iterations; i++) {	// Vertical Ping/Pong
 		pingPong = !pingPong;
-		this.subTFSzV.value = Math.pow(2,(i%iterations+1));
+		this.stepBF.value = i;
 		this.renderer.compute(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
 	}
 	// 5. Displacement
 	this.renderer.compute(this.permutationComp);
 	this.renderer.compute(this.compNormalComp);	
 };	// End of Update
+
 };	// End of Module
+
 
 //= Window Resize Input ========================================================
 function onWindowResize() {
