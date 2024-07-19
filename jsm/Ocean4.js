@@ -59,7 +59,7 @@ import StorageTexture from 'three/addons/renderers/common/StorageTexture.js';
 // Modified 2024: Attila Schroeder - converted to GPU and added butterfly texture
 
 class Ocean {
-	constructor(renderer, wav_) {
+	constructor(renderer,wav_,wavTim) {
 		this._init(renderer, wav_);
 	}
 
@@ -73,7 +73,7 @@ class Ocean {
 	}
 
 //= Initialize Ocean ===========================================================
-Ocean(renderer, wav_) {
+Ocean(renderer,wav_,wavTim) {
 	// flag used to trigger parameter changes
 	this.renderer = renderer;
 	// Load Variables
