@@ -29,12 +29,13 @@ import {
 	WebGLRenderTarget
 } from 'three';
 import {
-		vec2,
-		textureStore,
-		wgslFn,
-		instanceIndex,
-		code,
-		uniform
+	vec2,
+	texture,
+	textureStore,
+	wgslFn,
+	instanceIndex,
+	code,
+	uniform
 } from 'three/nodes';
 import StorageTexture from 'three/addons/renderers/common/StorageTexture.js';
 
