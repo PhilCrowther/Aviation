@@ -28,6 +28,10 @@ import {
 	Vector2,
 	WebGLRenderTarget
 } from 'three';
+import {
+		vec2,
+		uniform
+} from 'three/nodes';
 
 //= OCEAN ========================================================
 /*
