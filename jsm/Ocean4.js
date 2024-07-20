@@ -489,7 +489,7 @@ Ocean(renderer,wav_) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pingPhaseTexture),
 		u_indx: instanceIndex,
-		u_time: wavTim,
+		u_time: this.WavTim,
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	this.pongPhaseComp = this.compPhase({
