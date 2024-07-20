@@ -593,7 +593,7 @@ Ocean(renderer,wav_) {
 
 // = OCEAN.RENDER = (called by Main Program) ====================
 Render(wavTim) {
-	this.wavTim.value = wavTim;
+	this.WavTim.value = wavTim;
 	// 2. Initial
 	if (this.initPhase) {
 		this.renderer.compute(this.pingPhaseComp);
