@@ -73,7 +73,7 @@ class Ocean {
 	}
 
 //= Initialize Ocean ===========================================================
-Ocean(renderer,wav_,wavTim) {
+Ocean(renderer,wav_) {
 	// flag used to trigger parameter changes
 	this.renderer = renderer;
 	// Load Variables
@@ -85,6 +85,7 @@ Ocean(renderer,wav_,wavTim) {
 	this.Chp = wav_.Chp;
 	// Initialize Program Variables
 	this.stepBF = uniform(0);
+	this.WavTim = uniform(0);
 	this.initPhase = true;
 	this.pingPhase = true;
 	//- Create Buffers ---------------------------------------------------------	
@@ -496,7 +497,7 @@ Ocean(renderer,wav_,wavTim) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pongPhaseTexture),
 		u_indx: instanceIndex,
-		u_time: wavTim,
+		u_time: this.WavTim,
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	//- Shader 3. New Phase
@@ -592,6 +593,7 @@ Ocean(renderer,wav_,wavTim) {
 
 // = OCEAN.RENDER = (called by Main Program) ====================
 Render(wavTim) {
+	this.wavTim.value = wavTim;
 	// 2. Initial
 	if (this.initPhase) {
 		this.renderer.compute(this.pingPhaseComp);
