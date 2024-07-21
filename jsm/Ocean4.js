@@ -412,6 +412,11 @@ Ocean(renderer,wav_) {
 	`, [subroutines]);
 	//- Shader 5 ---------------------------------------------------------------
 	// Permutation
+	// Technically, the Ping/Pong method above results in only a vec2 value
+	// where H.x = real number (vertical displacement) and H.y is an imaginary number.
+	// Creating a real 3D Ocean would require 3 vec2 computations, which a shader can't handle.
+	// Thus, as others have done, we are using the imaginary number to create horizontal displacement.
+	// This may not be technically correct, but results in a more interesting ocean.
 	this.permutation = wgslFn(`
 		fn computeWGSL(
 			u_tsiz: f32,
@@ -425,8 +430,16 @@ Ocean(renderer,wav_) {
 			var idx  = vec2i(i32(posX),i32(posY));
 			//
 			var input = textureLoad(r_ping,idx,0);
-			input.y = input.y*1.5;		// ### multiplier
-			textureStore(w_disp,idx,input*(1-2*f32((idx.x+idx.y)%2)));
+			input = input*(1-2*f32((idx.x+idx.y)%2));
+			// Swap values
+			input.z = input.y;	// Imaginary value
+			input.y = input.x;	// Real value
+			input.x = input.z;	// Imaginary va
+			// Increase amplitude
+			input.x = input.x*1.5;
+			input.y = input.y*2.0;
+			input.z = input.z*1.5;
+			textureStore(w_disp,idx,input);
 		}     
 	`, [subroutines]);
 	//- Shader 6 ---------------------------------------------------------------
