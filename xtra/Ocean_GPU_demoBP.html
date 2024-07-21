@@ -2,7 +2,7 @@
 <!-- saved from url=(0101)file:///D:/!!Documents/!_html/web_philcrowther.com/WebGL/Seas_WebGPU_alone/iFFT_LAB2_231201_r159.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<title>Ocean GPU Demo</title>
+<title>Ocean GPU DemoBP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <style>
 body {
@@ -29,9 +29,6 @@ body {
 </script>
 
 <script type="module">
-
-// This uses three.js/examples/webgl_nodes_materials_instance_uniform.html.
-// NOT WORKING!
 
 import * as THREE from "three";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
@@ -103,7 +100,7 @@ let wav_ = {
 		Dsp: 0,					// The Displacement Map
 		Nrm: 0,					// The Normal Map
 	};
-let wavTim = uniform(0);
+let wavTim = 0;
 //- External Values
 let wavSpd = 1;					// Animation speed - use in main program (lower is faster)
 let normalMapScale = vec2(1.0,1.0);
@@ -199,7 +196,8 @@ function rendAll() {
 		nowTim = clock.getElapsedTime();
 		difTim = nowTim-oldTim;
 //		wavTim.value = difTim*wavSpd || 0.0;
-		wavTim.value += difTim*wavSpd || 0.0;		// ### AS: Changed to +=
+//		wavTim.value += difTim*wavSpd || 0.0;		// ### AS: Changed to +=
+		wavTim += difTim*wavSpd || 0.0;		// ### AS: Changed to +=
 		oldTim = nowTim;
 		//
 		waves.render(wavTim);			// Ocean
@@ -336,7 +334,7 @@ function toggleWire() {
 	}
 }
 
-//= OCEAN ======================================================================
+//= OCEAN ========================================================
 /*
  *	Don't Change After Initialization
  *	@param {float} Res		Resolution of Computation
@@ -356,7 +354,7 @@ function toggleWire() {
 // Modified 2024: Attila Schroeder - converted to GPU and added butterfly texture
 
 class Ocean {
-	constructor(renderer, wav_) {
+	constructor(renderer,wav_,wavTim) {
 		this._init(renderer, wav_);
 	}
 
@@ -370,7 +368,7 @@ class Ocean {
 	}
 
 //= Initialize Ocean ===========================================================
-Ocean(renderer, wav_) {
+Ocean(renderer,wav_) {
 	// flag used to trigger parameter changes
 	this.renderer = renderer;
 	// Load Variables
@@ -382,18 +380,9 @@ Ocean(renderer, wav_) {
 	this.Chp = wav_.Chp;
 	// Initialize Program Variables
 	this.stepBF = uniform(0);
+	this.WavTim = uniform(0);
 	this.initPhase = true;
 	this.pingPhase = true;
-	//
-	let BaseParams = {
-		format: THREE.RGBAFormat,
-		stencilBuffer: false,
-		depthBuffer: false,
-		premultiplyAlpha: false
-	};
-	let NRP = JSON.parse(JSON.stringify(BaseParams));	
-		NRP.minFilter = NRP.magFilter = THREE.NearestFilter;
-		NRP.wrapS = NRP.wrapT = THREE.RepeatWrapping;
 	//- Create Buffers ---------------------------------------------------------	
 	this.initSpectrumTexture = new StorageTexture(this.Res,this.Res);
 	this.initSpectrumTexture.type = THREE.FloatType;
@@ -454,7 +443,7 @@ Ocean(renderer, wav_) {
 	this.phaseArrayTexture = new THREE.DataTexture(this.phaseArray,this.Res,this.Res,THREE.RGBAFormat);
 	this.phaseArrayTexture.type = THREE.FloatType;
 	this.phaseArrayTexture.minFilter = this.phaseArrayTexture.magFilter = THREE.NearestFilter;
-//	this.phaseArrayTexture.wrapS = this.phaseArrayTexture.wrapT = THREE.ClampToEdgeWrapping;	// causses line
+//	this.phaseArrayTexture.wrapS = this.phaseArrayTexture.wrapT = ClampToEdgeWrapping;	// causses line
 	this.phaseArrayTexture.needsUpdate = true;
 	//= Shaders ================================================================
 	//- Common Subroutines -----------------------------------------------------
@@ -795,7 +784,7 @@ Ocean(renderer, wav_) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pingPhaseTexture),
 		u_indx: instanceIndex,
-		u_time: wavTim,
+		u_time: this.WavTim,
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	this.pongPhaseComp = this.compPhase({
@@ -803,7 +792,7 @@ Ocean(renderer, wav_) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pongPhaseTexture),
 		u_indx: instanceIndex,
-		u_time: wavTim,
+		u_time: this.WavTim,
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	//- Shader 3. New Phase
@@ -899,6 +888,7 @@ Ocean(renderer, wav_) {
 
 // = OCEAN.RENDER = (called by Main Program) ====================
 Render(wavTim) {
+	this.WavTim.value = wavTim;
 	// 2. Initial
 	if (this.initPhase) {
 		this.renderer.compute(this.pingPhaseComp);
@@ -933,7 +923,6 @@ Render(wavTim) {
 };	// End of Update
 
 };	// End of Module
-
 
 //= Window Resize Input ========================================================
 function onWindowResize() {
