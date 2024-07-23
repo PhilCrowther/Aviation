@@ -378,7 +378,7 @@ let Air_Spd, Air_Alt,Air_Hdg;
 	loadAll();
 
 //= 0 LOAD ALL =================================================================
-function loadAll() {
+async function loadAll() {
 	air_.AirObj.rotation.z = Mod360(360-air_.AirRot.z) * DegRad;	// Bank
 	air_.AirObj.rotation.x = Mod360(air_.AirRot.x) * DegRad;		// Pitch
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad;		// Heading
