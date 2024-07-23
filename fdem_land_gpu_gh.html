@@ -12,7 +12,7 @@ This shows a flyable airplane in flight over an procedural land using nodes and 
 <head>
 <title>FlightDemo Land Nodes WebGPU</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<link rel="stylesheet" href="styles/butn_map2b.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -42,9 +42,9 @@ This shows a flyable airplane in flight over an procedural land using nodes and 
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.165.0/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/",
-			"three/nodes": "https://unpkg.com/three@0.165.0/examples/jsm/nodes/Nodes.js"
+			"three": "https://unpkg.com/three@0.166.0/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.166.0/examples/jsm/",
+			"three/nodes": "https://unpkg.com/three@0.166.0/examples/jsm/nodes/Nodes.js"
 		}
 	}
 </script>
@@ -58,7 +58,13 @@ import {
 		float,
 		MeshBasicNodeMaterial,
 		MeshLambertNodeMaterial,
-		MeshStandardNodeMaterial
+		MeshStandardNodeMaterial,
+		range,
+		timerLocal,
+		positionLocal,
+		uv,
+		mix,
+		SpriteNodeMaterial
 } from 'three/nodes';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
@@ -148,15 +154,15 @@ let air_ = {
 let quaternion = new THREE.Quaternion();
 
 //= JET EXHAUST ================================================================
-let SmkPtr = 0;
-let SmkPts = 400;
-let SmkPos = [];
-let SmkCol = [];
-let SmkDns = .3;				// Starting density
-let SmkFad = .8;				// Fades by this much every frame
-let SmkSpd = 10;
-let SmkWid = .05;
-let SmkLim = 200;				// Max distance
+let SmkMat = "https://threejs.org/examples/textures/opengameart/smoke1.png";
+let SmkMap = 0;
+let lifeRange = range(0.1,1);
+let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
+let timer = timerLocal(.2,1);
+let lifeTime = timer.mul(lifeRange).mod(.05);
+let scaleRange = range(.01,.02);
+let rotateRange = range(.1,4);
+let life = lifeTime.div(lifeRange);
 
 //= TEXTURES ===================================================================
 //- SkyBox
@@ -510,6 +516,7 @@ let CtrObj = new THREE.Object3D();
 //= 0 LOAD ALL =================================================================
 function loadAll() {
 	loadSkyBox();
+	loadJetExh();
 }
 
 //= 1 INITIALIZE ===============================================================
@@ -538,7 +545,6 @@ function initAll() {
 function rendAll() {
 	if (PawsOn == 0 && LodFlg > 0) {
 		moveAirObj(air_);
-		moveJetExh();
 		grd_.SPS.copy(air_.MapSPS);
 		grids.update(grd_);				// Mode Grid Map
 		moveRoads();
@@ -1258,46 +1264,32 @@ function moveAirObj(air_) {
 
 //= JET EXHAUST ===============================================================
 
-//- Init Jet Exhaust ----------------------------------------------------------
-function initJetExh() {
-	let x,y,z;
-	for (let i = 0; i < SmkPts; i++) {
-	// create a particle with random position values, -250 -> 250
-		x = Math.random() * 4 - 2;		// +/-5
-		y = Math.random() * 4 - 2;		// 
-		z = Math.random() * SmkLim;		//
-		SmkPos.push(x,y,z);				// position
-		SmkCol.push(240,240,240,SmkDns);	// color and density
-	}
-	// create the particle system
-	let geometry = new THREE.BufferGeometry();
-	geometry.setAttribute('position', new THREE.Float32BufferAttribute(SmkPos, 3));
-	geometry.setAttribute('color', new THREE.Float32BufferAttribute(SmkCol, 4));
-	let material = new THREE.PointsMaterial({size: 4, vertexColors: true, transparent: true});
-	SmkPtr = new THREE.Points(geometry, material);
-	SmkPtr.position.z = 30;				// behind the airplane
-	// add it to the scene
-	air_.AirPBY.add(SmkPtr);
+//- Load Jet Exhaust ----------------------------------------------------------
+function loadJetExh() {
+	SmkMap = txtrLoader.load(SmkMat);
 }
 
-//- Move Jet Exhaust -----------------------------------------------------------
-function moveJetExh() {
-	let pos = SmkPtr.geometry.attributes.position.array;
-	let col = SmkPtr.geometry.attributes.color.array;
-	let p = 0;
-	let q = 0;
-	for (let i = 0; i < SmkPts; i++) {
-		pos[p+2] = pos[p+2]+SmkSpd;		// Z distance
-		if (pos[p+2] > SmkLim) {
-			pos[p+2] = pos[p+2]-SmkLim;	// cut-off
-			col[q+3] = SmkDns;			// density
-		}
-		col[q+3] = SmkFad*col[q+3];
-		p += 3;
-		q += 4;
-	}
-	SmkPtr.geometry.attributes.position.needsUpdate = true;
-	SmkPtr.geometry.attributes.color.needsUpdate = true;
+//- Init Jet Exhaust ----------------------------------------------------------
+function initJetExh() {
+//	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
+	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
+	let textureNode = texture(SmkMap, uv().rotateUV(timer.mul(rotateRange)));
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
+	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+	let smokeNodeMaterial = new SpriteNodeMaterial();
+		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.opacityNode = opacityNode;
+		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
+		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		smokeNodeMaterial.depthWrite = false;
+		smokeNodeMaterial.transparent = true;
+	let smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
+		smokeInstancedSprite.scale.setScalar(400);
+		smokeInstancedSprite.isInstancedMesh = true;
+		smokeInstancedSprite.count = 100;
+		smokeInstancedSprite.rotation.x = Math.PI/2;
+		smokeInstancedSprite.position.z = 10;
+		air_.AirObj.add(smokeInstancedSprite);
 }
 
 //= MOVE CAMERA ================================================================
