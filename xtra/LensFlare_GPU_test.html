@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0101)file:///D:/!!Documents/!_html/web_philcrowther.com/WebGL/Seas_WebGPU_alone/iFFT_LAB2_231201_r159.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<title>LensFlare GPU test</title>
+<title>LensFlare GPU</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <style>
 body {
@@ -79,18 +78,17 @@ let SBPath = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
 let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
 let LF0Txt, LF1Txt = 0;
-let Sp0Src = "https://threejs.org/examples/textures/sprite1.png";
-let Sp1Src = "https://threejs.org/examples/textures/sprite1.png";
+let Sp0Src = "https://philcrowther.github.io/Aviation/textures/fx/hex.png";
+let Sp1Src = "https://philcrowther.github.io/Aviation/textures/fx/hex.png";
 let Sp0Txt, Sp1Txt = 0;
 let sprite0, sprite1 = 0;
-
 
 //= BASIC VALUES ===============================================================
 let	container = document.createElement('div');
 	document.body.appendChild(container);
 //- Camera
 let	camera = new THREE.PerspectiveCamera(55.0, window.innerWidth/window.innerHeight, 0.5, SkyLim);
-	camera.position.set(0, 350, 800);
+	camera.position.set(600,0,800);
 //- Scene
 let	scene = new THREE.Scene();
 //- Renderer
@@ -175,8 +173,8 @@ function loadSkyBox() {
 	envMap.colorSpace = THREE.SRGBColorSpace;	// ### r152
 	scene.background = envMap;
 	// LensFlare
-	LF0Txt = txtrLoader.load(LF0Src);
-	LF1Txt = txtrLoader.load(LF1Src);
+//	LF0Txt = txtrLoader.load(LF0Src);
+//	LF1Txt = txtrLoader.load(LF1Src);
 	Sp0Txt = txtrLoader.load(Sp0Src);
 	Sp1Txt = txtrLoader.load(Sp1Src);
 }
@@ -194,21 +192,26 @@ let SunPos = new THREE.Vector3(SunLLD.x,Mod360(180-SunLLD.y),SunLLD.z);
 let	spotLight = new THREE.PointLight(0xffffff);
 	scene.add(spotLight);
 	spotLight.position.copy(SunPos);
-	let LF = new Lensflare();
-	LF.addElement(new LensflareElement(LF0Txt, 256, 0));
-	LF.addElement(new LensflareElement(LF1Txt, 32, 0.2));
-	LF.addElement(new LensflareElement(LF1Txt, 256, 0.9));
-	spotLight.add(LF);
+//	let LF = new Lensflare();
+//	LF.addElement(new LensflareElement(LF0Txt, 256, 0));
+//	LF.addElement(new LensflareElement(LF1Txt, 32, 0.2));
+//	LF.addElement(new LensflareElement(LF1Txt, 256, 0.9));
+//	spotLight.add(LF);
 	// Lensflare (alt)
-//	let mat0 = new THREE.SpriteMaterial({
-//		color:  0xffffff,
-//		map: LF0Txt,
-//		transparent:true,
-//		depthWrite:false,
-//		opacity: 0.1
-//	});
-	let mat0 = new THREE.SpriteMaterial({map: Sp1Txt, color: 0xffffff});
-	let mat1 = new THREE.SpriteMaterial({map: Sp1Txt, color: 0xffffff});
+	let mat0 = new THREE.SpriteMaterial({
+		color:  0xffffff,
+		map: Sp0Txt,
+		transparent:true,
+		opacity: 0.3,
+		depthWrite:false
+	});
+	let mat1 = new THREE.SpriteMaterial({
+		color:  0xffffff,
+		map: Sp1Txt,
+		transparent:true,
+		opacity: 0.3,
+		depthWrite:false
+	});
 	sprite0 = new THREE.Sprite(mat0);
 	sprite1 = new THREE.Sprite(mat1);
 	sprite0.position.copy(sunLight.position);
