@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<title>LensFlare GPU</title>
+<title>LensFlare GPU test</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <style>
 body {
@@ -20,9 +20,9 @@ body {
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.163.0/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/",
-			"three/nodes": "https://unpkg.com/three@0.163.0/examples/jsm/nodes/Nodes.js"
+			"three": "https://unpkg.com/three@0.166.1/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.166.1/examples/jsm/",
+			"three/nodes": "https://unpkg.com/three@0.166.1/examples/jsm/nodes/Nodes.js"
 		}
 	}
 </script>
@@ -30,22 +30,13 @@ body {
 <script type="module">
 
 import * as THREE from "three";
+import WebGPU from 'three/addons/capabilities/WebGPU.js';
+import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 import {Lensflare, LensflareElement} from "three/addons/objects/Lensflare.js";
-import {
-		color,
-		texture,
-		normalMap,
-		float,
-		vec2,
-		attribute,
-		positionLocal,
-		MeshStandardNodeMaterial,
-} from 'three/nodes';
-import {nodeFrame} from 'three/addons/renderers/webgl-legacy/nodes/WebGLNodes.js';	// ### Nodes
 
-/*= VARIABLES ================================================================*/
+//= VARIABLES ==================================================================
 //-	Sky
 let SkyCol = 0x1732c1;			// Sky
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
@@ -92,7 +83,7 @@ let	camera = new THREE.PerspectiveCamera(55.0, window.innerWidth/window.innerHei
 //- Scene
 let	scene = new THREE.Scene();
 //- Renderer
-let	renderer = new THREE.WebGLRenderer({antialias: true});
+let renderer = new WebGPURenderer({antialias: true});	// ### WebGPU
     renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -124,15 +115,15 @@ let RESOURCES_LOADED = false;
 	};
 let txtrLoader = new THREE.TextureLoader(loadingManager);
 
-/*= MAIN PROGRAM =============================================================*/
+//= MAIN PROGRAM ===============================================================
 	loadAll();
 
-/*= 0 LOAD ALL ===============================================================*/
+//= 0 LOAD ALL =================================================================
 function loadAll() {
 	loadSkyBox();
 }
 
-/*= 1 INITIALIZE =============================================================*/
+//= 1 INITIALIZE ===============================================================
 function initAll() {
 	initSkyBox();						// Sky, Fog and Sun
 	// Show stats
@@ -145,10 +136,9 @@ function initAll() {
 	LodFlg = 1;
 }
 
-/*= 2 RENDER =================================================================*/
+//= 2 RENDER ===================================================================
 function rendAll() {
-//	requestAnimationFrame(rendAll);
-	nodeFrame.update();					// ### Nodes	
+//	requestAnimationFrame(rendAll);	
 	if (LodFlg > 0) {
 		// Update time
 		nowTim = clock.getElapsedTime();
@@ -175,8 +165,8 @@ function loadSkyBox() {
 	// LensFlare
 //	LF0Txt = txtrLoader.load(LF0Src);
 //	LF1Txt = txtrLoader.load(LF1Src);
-	Sp0Txt = txtrLoader.load(Sp0Src);
-	Sp1Txt = txtrLoader.load(Sp1Src);
+	Sp0Txt = txtrLoader.load(LF1Src);
+	Sp1Txt = txtrLoader.load(LF1Src);
 }
 
 function initSkyBox() {
@@ -199,17 +189,15 @@ let	spotLight = new THREE.PointLight(0xffffff);
 //	spotLight.add(LF);
 	// Lensflare (alt)
 	let mat0 = new THREE.SpriteMaterial({
-		color:  0xffffff,
 		map: Sp0Txt,
-		transparent:true,
-		opacity: 0.3,
+		blending: THREE.AdditiveBlending,
+		depthTest:false,
 		depthWrite:false
 	});
 	let mat1 = new THREE.SpriteMaterial({
-		color:  0xffffff,
 		map: Sp1Txt,
-		transparent:true,
-		opacity: 0.3,
+		blending: THREE.AdditiveBlending,
+		depthTest:false,
 		depthWrite:false
 	});
 	sprite0 = new THREE.Sprite(mat0);
@@ -258,7 +246,7 @@ function rotLLD(LLD) {
 	return LLD;
 }
 
-/*= 4 MISC SUBROUTINES =======================================================*/
+//= 4 MISC SUBROUTINES =========================================================
 
 //- Converts degrees to 360
 function Mod360(deg) {
