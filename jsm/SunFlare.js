@@ -91,7 +91,7 @@ SunFlare(scene,camera,SnF_) {
 		this.SnF_.spr[i].position.z = -this.SnF_.rad[i];		// neg
 		this.SnF_.msh[i].attach(this.SnF_.spr[i]);				// Attach Sprite to Rotator
 		this.scene.add(this.SnF_.msh[i]);						//
-		if (this.SnF_.flg) this.SnF_.par.add(this.SnF_.msh[i]);	// If OrbCon: Attach Rotator to Camera Clone
+		if (this.SnF_.flg) this.SnF_.par.attach(this.SnF_.msh[i]);	// If OrbCon: Attach Rotator to Camera Clone
 		else {this.camera.attach(this.SnF_.msh[i]);}			// Otherwise: Attach Rotator to Camera
 	}	
 };	// End of Initialize
