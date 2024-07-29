@@ -17,8 +17,6 @@
 
 
 import {
-	SpriteMaterial,
-	AdditiveBlending,
 	Sprite
 } from 'three';
 
@@ -78,15 +76,8 @@ SunFlare(scene,camera,SnF_) {
 		this.scene.add(this.SnF_.par);
 	}
 	// Get Sprites
-	let LnFmat;
 	for (let i = 0; i < SnF_.num; i++) {
-		LnFmat = new SpriteMaterial({
-			map: this.SnF_.txt[i],
-			blending: AdditiveBlending,							// For the original non-transparent material
-			depthTest:false,
-			depthWrite:false
-		});
-		this.SnF_.spr[i] = new Sprite(LnFmat);
+		this.SnF_.spr[i] = new Sprite(SnF_.mat);
 		this.SnF_.spr[i].scale.set(this.SnF_.siz[i],this.SnF_.siz[i],1);
 		this.SnF_.spr[i].position.z = -this.SnF_.rad[i];		// neg
 		this.SnF_.msh[i].attach(this.SnF_.spr[i]);				// Attach Sprite to Rotator
