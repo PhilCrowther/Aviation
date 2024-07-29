@@ -65,7 +65,7 @@ class SunFlare {
 		this.update = this.Update();
 	}
 
-//= Initialize Ocean ===========================================================
+//= INITIALIZE =================================================================
 SunFlare(scene,camera,SnF_) {
 	// Load Variables
 	this.scene = scene;
@@ -96,7 +96,7 @@ SunFlare(scene,camera,SnF_) {
 	}	
 };	// End of Initialize
 
-// = OCEAN.RENDER = (called by Main Program) ====================
+// = UPDATE ====================================================================
 Update() {
 	if (this.SnF_.fl) {											// For OrbitCoontrol, Copy Camera Rotation and Position
 		this.SnF_.par.rotation.copy(this.camera.rotation);
