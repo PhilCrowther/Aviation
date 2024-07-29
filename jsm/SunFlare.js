@@ -103,7 +103,7 @@ Update() {
 		this.SnF_.par.position.copy(this.camera.position);
 	}
 	// Get Difference Between Sun and Camera Directions
-	this.SnF_.off.x = htis.SnF_.cam.x-this.SnF_.sun.x;			// Camera Lat Offset
+	this.SnF_.off.x = this.SnF_.cam.x-this.SnF_.sun.x;			// Camera Lat Offset
 	this.SnF_.off.y = PoM360(Mod360(this.SnF_.cam.y-this.SnF_.sun.y));	// Camera Lat Offset
 	// Test Visibility
 	let VisFlg = 0;
