@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>SunFlare test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
+</head>
+
+<body oncontextmenu="return false;">
+
+<div id="container">
+	<div class="overlay1">
+		<div>Cam Lat: <span id="Cam_Lat"></span></div>
+		<div>Cam Lon: <span id="Cam_Lon"></span></div>
+		<br>
+		<div>Off Lat: <span id="Off_Lat"></span></div>
+		<div>Off Lon: <span id="Off_Lon"></span></div>
+	</div>
+</div>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://unpkg.com/three@0.166.1/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.166.1/examples/jsm/",
+			"three/nodes": "https://unpkg.com/three@0.166.1/examples/jsm/nodes/Nodes.js"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+import WebGPU from 'three/addons/capabilities/WebGPU.js';
+import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import Stats from "three/addons/libs/stats.module.js";
+import {Lensflare, LensflareElement} from "three/addons/objects/Lensflare.js";
+
+//= VARIABLES ==================================================================
+//-	Conversions
+var DegRad = Math.PI/180;		// Convert Degrees to Radians
+var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
+//-	Sky
+let SkyCol = 0x1732c1;			// Sky
+let FogCol = 0xbab4a6;			// Sky (for Fog only)
+let SkyLim = 100000;			// Max viewing distance
+//- Sun
+let SunCol = 0xffffff;			// Sun
+let SunDst = 10000;				// for shadows and lensflare
+let	SunLLD = new THREE.Vector3(23,312,SunDst);	// Lat,Lon,Dst for Sun Mesh and Lensflare
+let SunPos = new THREE.Vector3();
+//- Camera
+let CamDst = 1500*Ft2Mtr;		// Distance from Center
+let	CamLLD = new THREE.Vector3(SunLLD.x,SunLLD.y,CamDst);	// CamLat, CamLon, CamDst
+let	CamPos = new THREE.Vector3(-CamLLD.x,-CamLLD.y,CamLLD.z);	// On opposite side from Sun
+	CamPos = rotLLD(CamPos);	// Set Position above Light
+let OrbCon = 1;					// Used by OrbitControls
+//-	Controls
+let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
+//-	Stats
+let stats = 0;
+//- Flags
+let LodFlg = 0;
+let CamFlg = 0;					// 0 = mine; 1 = OrbitControl
+let SnFFlg = 1;					// 1 = SunFlare
+let StsFlg = 1;					// Stats ((0 = off, 1 = on)
+//- Misc
+let V3temp = new THREE.Vector3();
+
+//= CAMERA CONTROLS ============================================================
+let CamRSp = 0.5;				// Rotation speed
+let CamDSp = 1;					// In/out speed
+let CamRot = 180;
+let PanFlg = 0;
+//- Limits
+let CamMxX = 90;				// Max lat
+let CamMxD = CamDst * 3;		// Max distance
+let CamMnD = CamDst * 0.5;		// Min distance
+//- 
+let	CamMsh = makMsh();			// Armature base - use to rotate camera
+	CamMsh.rotation.order = "YXZ";
+let CtrMsh = makMsh();			// Center of Rotation
+	CtrMsh.rotation.order = "YXZ";
+	CtrMsh.add(CamMsh);
+
+//= SKYBOX =====================================================================
+let SBPath = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
+
+//=	LENSFLARE ==================================================================
+//- Textures
+let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
+//- Parameters
+let SnF_ = {
+		//- General
+		flg: CamFlg,					// 0 = default, 1 = OrbitControls
+		//- Heading Offset
+		sun: new THREE.Vector2(SunLLD.x,SunLLD.y),	// Sun Position
+		cam: new THREE.Vector2(CamLLD.x,CamLLD.y),	// Camera Direction		
+		off: new THREE.Vector2(0,0),	// Sun Offset (lat/lon) [for display]
+		//- Sprites
+		num: 2,							// Number of Sprites
+		src: [SnFhex,SnFhex],			// Texture Source
+		mat: [],						// Material Address
+		spr: [],						// Sprite Address
+		rad: [10000,10000],				// Radius
+		siz: [400,1000],					// Size
+		mlt: [0.45,-0.4],				// Offset Multiplier
+		msh: [makMsh(),makMsh()],		// Rotators
+		par: makMsh()					// Parent (Camera Clone) [OrbCon Only]
+	}
+
+//= BASIC VALUES ===============================================================
+let	container = document.createElement('div');
+	document.body.appendChild(container);
+//- Scene
+let	scene = new THREE.Scene();
+//- Renderer
+let renderer = new WebGPURenderer({antialias: true});	// ### WebGPU
+    renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.autoUpdate = true;
+	renderer.receiveShadow = true;
+	renderer.shadowMap.type = THREE.BasicShadowMap;
+	container.appendChild(renderer.domElement);
+//- Lights
+let sunLight = new THREE.DirectionalLight(SunCol, 3.0);
+	scene.add(sunLight);
+//- Camera and Controls
+let	camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 1, SkyLim);
+	if (CamFlg) {
+		OrbCon = new OrbitControls(camera, renderer.domElement);
+		camera.position.copy(CamPos);	// set starting value
+	}
+	else {	// For Default Camera - Enable Mouse Inputs
+		initCamera(camera);
+		renderer.domElement.addEventListener("mousedown", onMouseDown, false);
+		renderer.domElement.addEventListener("mouseup", onMouseUp, false);
+		renderer.domElement.addEventListener("mousemove", onMouseMove, false);
+		renderer.domElement.addEventListener('mousewheel', onMouseWheel, {capture: false, passive: false});		
+	}
+	window.addEventListener("resize", onWindowResize, false);
+//- Loading Manager
+	// Create a loading manager to set RESOURCES_LOADED when appropriate.
+	// Pass loadingManager to all resource loaders.
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+//= HTML OVERLAY TEXT ==========================================================
+let Cam_LatElement = document.getElementById("Cam_Lat");	// Cam Lat
+let Cam_LatNode = document.createTextNode("");
+	Cam_LatElement.appendChild(Cam_LatNode);
+let Cam_LonElement = document.getElementById("Cam_Lon");	// Cam Lon
+let Cam_LonNode = document.createTextNode("");
+	Cam_LonElement.appendChild(Cam_LonNode);
+let Off_LatElement = document.getElementById("Off_Lat");	// Off Lat
+let Off_LatNode = document.createTextNode("");
+	Off_LatElement.appendChild(Off_LatNode);
+let Off_LonElement = document.getElementById("Off_Lon");	// Off Lon
+let Off_LonNode = document.createTextNode("");
+	Off_LonElement.appendChild(Off_LonNode);
+let Cam_Lat,Cam_Lon,Off_Lat,Off_Lon;
+
+//= MAIN PROGRAM ===============================================================
+	loadAll();
+
+//= 0 LOAD ALL =================================================================
+function loadAll() {
+	loadSkyBox();
+	if (SnFFlg) loadSunFlr();			// SunFlare
+}
+
+//= 1 INITIALIZE ===============================================================
+function initAll() {
+	initSkyBox();						// Sky, Fog and Sun
+	if (SnFFlg) initSunFlr(camera,SnF_);	// SunFlare
+	initCtrBox();
+	// Init stats
+	if (StsFlg) {						// show stats
+		stats = new Stats();
+		stats.setMode(0);				// FPS only
+		stats.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+		container.appendChild(stats.dom);
+	}
+	LodFlg = LodFlg+1;
+}
+
+//= 2 RENDER ===================================================================
+function rendAll() {
+//	requestAnimationFrame(rendAll);	
+	if (LodFlg == 2) {
+		// Update Camera Controls
+		if (CamFlg)	{
+			OrbCon.update();	// Controls
+			CamLLD.x = OrbCon.getPolarAngle()*RadDeg-90;
+			CamLLD.y = Mod360(360-OrbCon.getAzimuthalAngle()*RadDeg);	
+		}
+		else {moveCamera(camera)};
+		// SunFlare
+		if (SnFFlg) {
+			moveSunFlr(SnF_);			// SunFlare
+			SnF_.cam.x = CamLLD.x;		// Update
+			SnF_.cam.y = CamLLD.y;
+		}
+		// HUD
+		prntHUDval();
+		// Stats
+		if (StsFlg) stats.update();		// Stats
+	}
+	renderer.render(scene, camera);		// Render
+}
+
+//= SKY BOX ====================================================================
+
+function loadSkyBox() {
+	let envMap = cubeLoader
+		.setPath(SBPath)
+		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
+	envMap.format = THREE.RGBAFormat;
+	envMap.colorSpace = THREE.SRGBColorSpace;	// ### r152
+	scene.background = envMap;
+	LodFlg = 1;
+}
+
+function initSkyBox() {
+	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
+	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
+	// Fog (doesn't work with Normal Material)
+	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
+	// SunLight Position
+	SunPos = new THREE.Vector3(SunLLD.x,Mod360(180-SunLLD.y),SunLLD.z);
+	SunPos = rotLLD(SunPos);	// Set Position above Light
+	sunLight.position.copy(SunPos).normalize();
+}
+
+//- Rotates Vector -------------------------------------------------------------
+function rotLLD(LLD) {
+	let lat = LLD.x*DegRad;
+	let lon = LLD.y*DegRad;
+	// Latitude
+	LLD.y = LLD.z * Math.sin(lat);
+	LLD.z = LLD.z * Math.cos(lat);
+	// Longitude
+	LLD.x = LLD.z * Math.sin(lon);
+	LLD.z = LLD.z * Math.cos(lon);
+	return LLD;
+}
+
+//= SUNFLARE ===================================================================
+// The creates LensFlares caused by the sun and which do not change distance.
+// This creates LensFlare sprites and attaches them to rotator meshes.
+// The rotator meshes are attached to the camera.
+// The offset is the difference between the direction of the sun and camera.
+// The offset is multiplied by the amount required to create the illusion of depth.
+// If the offset is too great (the Sun is no longer visible), the sprites are turned off.
+
+function loadSunFlr() {
+	for (let i = 0; i < SnF_.num; i++) {
+		let texture = txtrLoader.load(SnF_.src[i]);
+		SnF_.mat[i] = new THREE.SpriteMaterial({
+			color: 0xffffff,
+			map: texture,
+			transparent:true,
+			opacity: 0.5,		
+//			depthTest:false,
+//			depthWrite:false
+		});
+	}
+}
+
+//= SUNFLARE MODULE (WIP) ======================================================
+
+function initSunFlr(camera,SnF_) {
+	if (CamFlg) {	// Initialize Camera Clone
+		SnF_.par.rotation.copy(camera.rotation);
+		SnF_.par.position.copy(camera.position);
+		scene.add(SnF_.par);
+	}
+	// Get Sprites
+	let SnFmat;
+	for (let i = 0; i < SnF_.num; i++) {
+		SnF_.spr[i] = new THREE.Sprite(SnF_.mat[i]);
+		SnF_.spr[i].scale.set(SnF_.siz[i],SnF_.siz[i],1);
+		SnF_.spr[i].position.z = -SnF_.rad[i];		// neg
+		SnF_.msh[i].attach(SnF_.spr[i]);			// Attach Sprite to Rotator
+		scene.add(SnF_.msh[i]);						//
+		if (CamFlg) SnF_.par.attach(SnF_.msh[i]);	// If OrbCon: Attach Rotator to Camera Clone
+		else {camera.attach(SnF_.msh[i]);}			// Otherwise: Attach Rotator to Camera
+	}
+}
+
+function moveSunFlr(SnF_) {
+	if (CamFlg) {	// Copy Camera Rotation and Position
+		SnF_.par.rotation.copy(camera.rotation);
+		SnF_.par.position.copy(camera.position);
+	}
+	// Get Difference Between Sun and Camera Directions
+	SnF_.off.x = SnF_.cam.x-SnF_.sun.x;					// Camera Lat Offset
+	SnF_.off.y = PoM360(Mod360(SnF_.cam.y-SnF_.sun.y));	// Camera Lat Offset
+	// Test Visibility
+	let VisFlg = 0;
+	let ratio = window.innerWidth/window.innerHeight;
+	if (Math.abs(SnF_.off.x) > 45 || Math.abs(SnF_.off.y) > 45*ratio) VisFlg = 1;
+	if (VisFlg) {
+		for (let i = 0; i < SnF_.num; i++) {
+			SnF_.spr[i].visible = false;	
+		}
+	}
+	// If visible
+	else {
+		for (let i = 0; i < SnF_.num; i++) {
+			SnF_.spr[i].visible = true;
+			SnF_.msh[i].rotation.x = -SnF_.off.x*SnF_.mlt[i]*DegRad;
+			SnF_.msh[i].rotation.y = SnF_.off.y*SnF_.mlt[i]*DegRad;
+		}
+	}
+}
+
+//= MAKE BOX IN CENTER =========================================================
+
+function initCtrBox() {
+	let BoxGeo = new THREE.BoxGeometry(10,10,10); 
+	let BoxMat = new THREE.MeshBasicMaterial({color: 0xff0000}); 
+	let BoxMsh = new THREE.Mesh(BoxGeo,BoxMat); 
+	scene.add(BoxMsh)
+}
+
+//= CAMERA CONTROLS ============================================================
+
+function initCamera(camera) {
+	camera.rotation.order = "YXZ";
+	camera.position.z = -CamLLD.z;
+	camera.rotation.y = CamRot*DegRad;	// Default = looking in at center
+	CamMsh.attach(camera);
+	scene.add(CtrMsh);
+}
+
+function moveCamera(camera) {
+	// In external view, the camera is facing in and the armature is pointing out:
+	// * x.rotation = -CamLat
+	// * y.rotation = CamLon + 180
+	camera.position.z = -CamLLD.z;
+	CamMsh.rotation.x = Mod360(-CamLLD.x)*DegRad;
+	CamMsh.rotation.y = Mod360(CamRot-CamLLD.y)*DegRad;
+}
+
+//= 4 MISC SUBROUTINES =========================================================
+
+//- Converts degrees to 360
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;	// Make deg a positive number
+	deg = deg % 360;				// Compute remainder of any number divided by 360
+return deg;}
+
+//  Converts 360 degrees to +/- 180
+function PoM360(deg) {
+	if (deg > 180) deg = deg-360;
+return deg;}
+
+//- Rotates Vector
+function RoteV3(lon,lat,dst) {
+	// Latitude
+	V3temp.y = dst * Math.sin(lat);
+	V3temp.z = dst * Math.cos(lat);
+	// Longitude
+	V3temp.x = V3temp.z * Math.sin(lon);
+	V3temp.z = V3temp.z * Math.cos(lon);
+return V3temp;}
+
+function makMsh() {
+	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
+	let material = new THREE.MeshBasicMaterial({transparent:true,opacity:0}); 
+	let mesh = new THREE.Mesh(geometry, material);
+return mesh;}
+
+//= OUTPUTS ====================================================================
+
+// Print HUD Values
+function prntHUDval() {
+	Cam_Lat = CamLLD.x;		// Cam Lat
+	Cam_LatNode.nodeValue = Cam_Lat.toFixed(0);
+	Cam_Lon = CamLLD.y;		// Cam Lon
+	Cam_LonNode.nodeValue = Cam_Lon.toFixed(0);
+	Off_Lat = SnF_.off.x;	// Off Lat
+	Off_LatNode.nodeValue = Off_Lat.toFixed(0);
+	Off_Lon = SnF_.off.y;	// Off Lon
+	Off_LonNode.nodeValue = Off_Lon.toFixed(0);
+}
+
+//= 5 INPUTS ===================================================================
+
+//= Mouse Input ================================================================
+
+function onMouseDown(event) {
+	event.preventDefault();
+	PanFlg = 1;
+	onPointerDownX = event.clientX;
+	onPointerDownY = event.clientY;
+	onPointerDownLon = CamLLD.y;
+	onPointerDownLat = CamLLD.x;
+}
+
+function onMouseUp(event) {
+	PanFlg = 0;
+}
+
+function onMouseMove(event) {
+//- Panning View
+	if (PanFlg > 0) {
+		CamLLD.x = (onPointerDownY - event.clientY) * CamRSp + onPointerDownLat;
+		CamLLD.x = Math.max(-CamMxX, Math.min(CamMxX, CamLLD.x));
+		CamLLD.y = (event.clientX - onPointerDownX) * CamRSp + onPointerDownLon;
+		CamLLD.y = Mod360(CamLLD.y);
+	}
+}
+
+function onMouseWheel(event) {
+	CamLLD.z = CamLLD.z + event.deltaY * CamDSp;
+	CamLLD.z = Math.max(CamMnD, Math.min(CamMxD, CamLLD.z));
+}
+
+//= WINDOW RESIZE ==============================================================
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+</script>
+</body>
+</html>
