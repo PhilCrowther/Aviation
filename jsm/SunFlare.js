@@ -1,6 +1,6 @@
 ﻿//= SUNFLARE MODULE ============================================================
 
-//	Version 1.0 (28 Jul 2024)
+//	Version 1.0 (29 Jul 2024)
 //
 //	This module allows you to create a LensWlare of the Sun in both WebGL or WebGPU.
 //	This works with a default camera rotator and with OrbitControls.
@@ -27,7 +27,7 @@ import {
 //	SnF_.cam (vec2)			// Camera Direction (lat/lon) degrees
 //	SnF_.num				// Number of Sprites
 //	SnF_.mat (array)		// Material Addresses
-//	SnF_.rad (array)		// Sprite Distances
+//	SnF_.dst (array)		// Sprite Distances
 //	SnF_.siz (array)		// Sprite Scale
 //	SnF_.mlt (array)		// Sprite Offset Multiplier
 //	SnF_.msh (array)		// Sprite Rotator Mesh Addresses
@@ -70,32 +70,34 @@ SunFlare(scene,camera,SnF_) {
 	this.camera = camera;
 	this.SnF_ = SnF_;
 	//
-	if (this.SnF_.flg) {										// For ObritControl, Initialize Camera Clone
+	if (this.SnF_.flg) {	// For ObritControl, Initialize Camera Clone
 		this.SnF_.par.rotation.copy(this.camera.rotation);
 		this.SnF_.par.position.copy(this.camera.position);
 		this.scene.add(this.SnF_.par);
 	}
-	// Get Sprites
 	for (let i = 0; i < SnF_.num; i++) {
+		// Sprite
 		this.SnF_.spr[i] = new Sprite(SnF_.mat);
 		this.SnF_.spr[i].scale.set(this.SnF_.siz[i],this.SnF_.siz[i],1);
-		this.SnF_.spr[i].position.z = -this.SnF_.rad[i];		// neg
-		this.SnF_.msh[i].attach(this.SnF_.spr[i]);				// Attach Sprite to Rotator
-		this.scene.add(this.SnF_.msh[i]);						//
-		if (this.SnF_.flg) this.SnF_.par.attach(this.SnF_.msh[i]);	// If OrbCon: Attach Rotator to Camera Clone
-		else {this.camera.attach(this.SnF_.msh[i]);}			// Otherwise: Attach Rotator to Camera
+		this.SnF_.spr[i].position.z = -this.SnF_.dst[i];	// Make this Negative
+		// Sprite Rotator
+		this.SnF_.msh[i].attach(this.SnF_.spr[i]);	// Attach Sprite to Rotator
+		this.scene.add(this.SnF_.msh[i]);			// Make Rotator Visible
+		// Attach Sprite Rotator
+		if (this.SnF_.flg) this.SnF_.par.attach(this.SnF_.msh[i]);	// If OrbControls: Attach to Camera Clone
+		else {this.camera.attach(this.SnF_.msh[i]);}	// Otherwise: Attach Rotator to Camera
 	}	
 };	// End of Initialize
 
 // = UPDATE ====================================================================
 Update() {
-	if (this.SnF_.flg) {											// For OrbitCoontrol, Copy Camera Rotation and Position
+	if (this.SnF_.flg) {	// For OrbitCoontrol, Copy Camera Rotation and Position
 		this.SnF_.par.rotation.copy(this.camera.rotation);
 		this.SnF_.par.position.copy(this.camera.position);
 	}
 	// Get Difference Between Sun and Camera Directions
-	this.SnF_.off.x = this.SnF_.cam.x-this.SnF_.sun.x;			// Camera Lat Offset
-	this.SnF_.off.y = PoM360(Mod360(this.SnF_.cam.y-this.SnF_.sun.y));	// Camera Lat Offset
+	this.SnF_.off.x = this.SnF_.cam.x-this.SnF_.sun.x;	// Lat
+	this.SnF_.off.y = PoM360(Mod360(this.SnF_.cam.y-this.SnF_.sun.y));	// Lon
 	// Test Visibility
 	let VisFlg = 0;
 	let ratio = window.innerWidth/window.innerHeight;
@@ -105,7 +107,7 @@ Update() {
 			this.SnF_.spr[i].visible = false;	
 		}
 	}
-	// If visible
+	// If visible, Compute Position
 	else {
 		for (let i = 0; i < this.SnF_.num; i++) {
 			this.SnF_.spr[i].visible = true;
