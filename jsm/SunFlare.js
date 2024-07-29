@@ -57,7 +57,7 @@ class SunFlare {
 	}
 
 	// Initialize
-	_init(renderer, wav_) {
+	_init(scene,camera,SnF_) {
 		this.sunflare = this.SunFlare(scene,camera,SnF_);
 	}
 
