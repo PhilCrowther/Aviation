@@ -75,9 +75,9 @@ SunFlare(scene,camera,SnF_) {
 		this.SnF_.par.position.copy(this.camera.position);
 		this.scene.add(this.SnF_.par);
 	}
-	for (let i = 0; i < SnF_.num; i++) {
+	for (let i = 0; i < this.SnF_.num; i++) {
 		// Sprite
-		this.SnF_.spr[i] = new Sprite(SnF_.mat);
+		this.SnF_.spr[i] = new Sprite(this.SnF_.mat);
 		this.SnF_.spr[i].scale.set(this.SnF_.siz[i],this.SnF_.siz[i],1);
 		this.SnF_.spr[i].position.z = -this.SnF_.dst[i];	// Make this Negative
 		// Sprite Rotator
