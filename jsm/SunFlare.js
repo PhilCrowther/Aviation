@@ -26,7 +26,7 @@ import {
 //	SnF_.sun (vec2) 		// Sun Position (lat/lon) in degrees
 //	SnF_.cam (vec2)			// Camera Direction (lat/lon) degrees
 //	SnF_.num				// Number of Sprites
-//	SnF_.txt (array)		// Texture Addresses
+//	SnF_.mat (array)		// Material Addresses
 //	SnF_.rad (array)		// Sprite Distances
 //	SnF_.siz (array)		// Sprite Scale
 //	SnF_.mlt (array)		// Sprite Offset Multiplier
@@ -89,7 +89,7 @@ SunFlare(scene,camera,SnF_) {
 
 // = UPDATE ====================================================================
 Update() {
-	if (this.SnF_.fl) {											// For OrbitCoontrol, Copy Camera Rotation and Position
+	if (this.SnF_.flg) {											// For OrbitCoontrol, Copy Camera Rotation and Position
 		this.SnF_.par.rotation.copy(this.camera.rotation);
 		this.SnF_.par.position.copy(this.camera.position);
 	}
