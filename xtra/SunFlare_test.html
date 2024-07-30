@@ -37,78 +37,90 @@ import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 
 //= VARIABLES ==================================================================
-//-	Conversions
+//- Starting Values ------------------------------------------------------------
+let CamTyp = 1;					// 0 = mine; 1 = OrbitControl
+let CamLat = 23;				// Camera Direction - Vertical
+let CamLon = 312;				// Camera Direction - Horizontal
+let CamDst = 500;				// Camera Distance (from Center)
+let CamAdj = 180;				// Adjustment (180 = looking in, 0 = looking out)
+
+//-	Conversions ----------------------------------------------------------------
 var DegRad = Math.PI/180;		// Convert Degrees to Radians
 var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
-let Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
-//-	Sky
-let SkyCol = 0x1732c1;			// Sky
-let FogCol = 0xbab4a6;			// Sky (for Fog only)
-let SkyLim = 100000;			// Max viewing distance
-//- Sun
-let SunCol = 0xffffff;			// Sun
-let SunDst = 10000;				// for shadows and lensflare
-let	SunLLD = new THREE.Vector3(23,312,SunDst);	// Lat,Lon,Dst for Sun Mesh and Lensflare
-let SunPos = new THREE.Vector3();
-//- Camera
-let CamDst = 1500*Ft2Mtr;		// Distance from Center
-let	CamLLD = new THREE.Vector3(SunLLD.x,SunLLD.y,CamDst);	// CamLat, CamLon, CamDst
-let	CamPos = new THREE.Vector3(-CamLLD.x,-CamLLD.y,CamLLD.z);	// On opposite side from Sun
-	CamPos = rotLLD(CamPos);	// Set Position above Light
-let OrbCon = 1;					// Used by OrbitControls
-//-	Controls
-let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
-//-	Stats
-let stats = 0;
-//- Flags
-let LodFlg = 0;
-let CamFlg = 0;					// 0 = mine; 1 = OrbitControl
-let SnFFlg = 1;					// 1 = SunFlare
-let StsFlg = 1;					// Stats ((0 = off, 1 = on)
-//- Misc
-let V3temp = new THREE.Vector3();
 
-//= CAMERA CONTROLS ============================================================
-let CamRSp = 0.5;				// Rotation speed
-let CamDSp = 1;					// In/out speed
-let CamRot = 180;
-let PanFlg = 0;
-//- Limits
-let CamMxX = 90;				// Max lat
-let CamMxD = CamDst * 3;		// Max distance
-let CamMnD = CamDst * 0.5;		// Min distance
-//- 
-let	CamMsh = makMsh();			// Armature base - use to rotate camera
-	CamMsh.rotation.order = "YXZ";
-let CtrMsh = makMsh();			// Center of Rotation
-	CtrMsh.rotation.order = "YXZ";
-	CtrMsh.add(CamMsh);
+//- Internal Variables ---------------------------------------------------------
+let StatOn = 1;					// Stats (1 = on, 0 = off)
+let LodFlg = 0;
+
+//= CAMERA =====================================================================
+//- Variables
+let CamFOV = 55;				// Field of View
+let CamVmn = 1;					// Min Viewing Distance
+let CamVmx = 100000;			// Max Viewing Distance
+let CamAsp = 0;					// Camera Aspect
+//- Parameters
+let cam_ = {
+		// Camera
+		lld: new THREE.Vector3(CamLat,CamLon,CamDst),
+		adj: CamAdj,			// Camera Adjustment (180 = look in)
+		dsp: 1,					// Scrolling Speed (In/Out)
+		mnD: CamDst*0.5,		// Min Scrolling Distance
+		mxD: CamDst*3,			// Max Scrolling Distance
+		// Rotator
+		rot: makMsh(),			// Camera Rotator
+		rsp: 0.5,				// Rotation Speed
+		mxX: 90,				// Max Lat
+		// Center of Rotation
+		ctr: makMsh(),			// Center of Rotation
+}
+//-	MyCamera Controls
+let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
+let PanFlg = 0;					// Set if Pan Button Pressed
+//- Orbit Controls
+let	CamPos = new THREE.Vector3(-CamLat,-CamLon,CamDst);	// On opposite side from Sun
+	CamPos = rotLLD(CamPos);			
+let OrbCon = 1;					// Used by OrbitControls
 
 //= SKYBOX =====================================================================
+let SkyCol = 0x1732c1;			// Sky
+let FogCol = 0xbab4a6;			// 
+//- Texture
 let SBPath = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 
-//=	LENSFLARE ==================================================================
+//= SUN ========================================================================
+let SunCol = 0xffffff;			// Sun
+let SunInt = 3;					// Intensity
+//- Rotation and Position (fixed)
+let SunLat = 23;				// Direction - Vert
+let SunLon = 312;				// Direction - Horz
+let SunDst = 10000;				// Distance (for shadows and lensflare)
+let SunPos = new THREE.Vector3(SunLat,Mod360(180-SunLon),SunDst);
+	SunPos = rotLLD(SunPos);	// Position XYZ
+
+//=	SUNFLARE ===================================================================
 //- Textures
 let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
 //- Parameters
 let SnF_ = {
 		//- General
-		flg: CamFlg,					// 0 = default, 1 = OrbitControls
-		//- Heading Offset
-		sun: new THREE.Vector2(SunLLD.x,SunLLD.y),	// Sun Position
-		cam: new THREE.Vector2(CamLLD.x,CamLLD.y),	// Camera Direction		
-		off: new THREE.Vector2(0,0),	// Sun Offset (lat/lon) [for display]
+		typ: CamTyp,			// 0 = default, 1 = OrbitControls
 		//- Sprites
-		num: 2,							// Number of Sprites
-		src: [SnFhex,SnFhex],			// Texture Source
-		mat: [],						// Material Address
-		spr: [],						// Sprite Address
-		rad: [10000,10000],				// Radius
-		siz: [400,1000],					// Size
-		mlt: [0.45,-0.4],				// Offset Multiplier
-		msh: [makMsh(),makMsh()],		// Rotators
-		par: makMsh()					// Parent (Camera Clone) [OrbCon Only]
+		num: 2,					// Number of Sprites
+		dst: SunDst,			// Distance
+		src: [SnFhex,SnFhex],	// Sprite Texture Source
+		spr: [],				// Sprite Address
+		siz: [400,1000],		// Sprite Size
+		mlt: [0.45,-0.4],		// Offset Multiplier (1 = centered)
+		//- Rotators
+		msh: [],				// Rotators
+		par: 0,					// Parent (Camera Clone) [OrbCon Only]
+		//- Heading Offset
+		cam: new THREE.Vector2(CamLat,CamLon),	// Camera Direction
+		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
+		off: new THREE.Vector2(),	// Sun Offset (lat/lon) [for display]
+		asp: CamAsp,			// Camera Aspect
 	}
+let SnFFlg = 1;					// 1 = SunFlare On
 
 //= BASIC VALUES ===============================================================
 let	container = document.createElement('div');
@@ -126,11 +138,13 @@ let renderer = new WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.BasicShadowMap;
 	container.appendChild(renderer.domElement);
 //- Lights
-let sunLight = new THREE.DirectionalLight(SunCol, 3.0);
+let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
+	sunLight.position.copy(SunPos).normalize();
 	scene.add(sunLight);
 //- Camera and Controls
-let	camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 1, SkyLim);
-	if (CamFlg) {
+	CamAsp =  window.innerWidth/window.innerHeight;
+let	camera = new THREE.PerspectiveCamera(CamFOV,CamAsp,CamVmn,CamVmx);
+	if (CamTyp) {
 		OrbCon = new OrbitControls(camera, renderer.domElement);
 		camera.position.copy(CamPos);	// set starting value
 	}
@@ -180,15 +194,15 @@ function loadAll() {
 
 //= 1 INITIALIZE ===============================================================
 function initAll() {
-	initSkyBox();						// Sky, Fog and Sun
+	initSkyBox();						// SkyBox
 	if (SnFFlg) initSunFlr(camera,SnF_);	// SunFlare
 	initCtrBox();
 	// Init stats
-	if (StsFlg) {						// show stats
-		stats = new Stats();
-		stats.setMode(0);				// FPS only
-		stats.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
-		container.appendChild(stats.dom);
+	if (StatOn) {						// show stats
+		StatOn = new Stats();
+		StatOn.setMode(0);				// FPS only
+		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+		container.appendChild(StatOn.dom);
 	}
 	LodFlg = LodFlg+1;
 }
@@ -197,23 +211,22 @@ function initAll() {
 function rendAll() {
 //	requestAnimationFrame(rendAll);	
 	if (LodFlg == 2) {
-		// Update Camera Controls
-		if (CamFlg)	{
+		// Camera Controls
+		if (CamTyp)	{	//OrbitControls - Update Camera Rotatio
 			OrbCon.update();	// Controls
-			CamLLD.x = OrbCon.getPolarAngle()*RadDeg-90;
-			CamLLD.y = Mod360(360-OrbCon.getAzimuthalAngle()*RadDeg);	
+			cam_.lld.x = OrbCon.getPolarAngle()*RadDeg-90;
+			cam_.lld.y = Mod360(360-OrbCon.getAzimuthalAngle()*RadDeg);	
 		}
 		else {moveCamera(camera)};
 		// SunFlare
 		if (SnFFlg) {
+			SnF_.asp = CamAsp;			// Camera Aspect
+			SnF_.cam.x = cam_.lld.x;		// Update Camera Rotation
+			SnF_.cam.y = cam_.lld.y;
 			moveSunFlr(SnF_);			// SunFlare
-			SnF_.cam.x = CamLLD.x;		// Update
-			SnF_.cam.y = CamLLD.y;
 		}
-		// HUD
-		prntHUDval();
-		// Stats
-		if (StsFlg) stats.update();		// Stats
+		prntHUDval();					// HUD
+		if (StatOn) StatOn.update();	// Stats
 	}
 	renderer.render(scene, camera);		// Render
 }
@@ -235,10 +248,6 @@ function initSkyBox() {
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
 	// Fog (doesn't work with Normal Material)
 	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
-	// SunLight Position
-	SunPos = new THREE.Vector3(SunLLD.x,Mod360(180-SunLLD.y),SunLLD.z);
-	SunPos = rotLLD(SunPos);	// Set Position above Light
-	sunLight.position.copy(SunPos).normalize();
 }
 
 //- Rotates Vector -------------------------------------------------------------
@@ -264,41 +273,43 @@ function rotLLD(LLD) {
 
 function loadSunFlr() {
 	for (let i = 0; i < SnF_.num; i++) {
-		let texture = txtrLoader.load(SnF_.src[i]);
-		SnF_.mat[i] = new THREE.SpriteMaterial({
+		let SnFtxt = txtrLoader.load(SnF_.src[i]);
+		let SnFmat = new THREE.SpriteMaterial({
 			color: 0xffffff,
-			map: texture,
+			map: SnFtxt,
 			transparent:true,
 			opacity: 0.5,		
-//			depthTest:false,
-//			depthWrite:false
+			depthTest:false,
+			depthWrite:false
 		});
+		SnF_.spr[i] = new THREE.Sprite(SnFmat);
+		SnF_.spr[i].scale.set(SnF_.siz[i],SnF_.siz[i],1);
+		SnF_.spr[i].position.z = -SnF_.dst;			// Make Negative
 	}
 }
 
 //= SUNFLARE MODULE (WIP) ======================================================
 
 function initSunFlr(camera,SnF_) {
-	if (CamFlg) {	// Initialize Camera Clone
+	if (SnF_.typ) {	// Initialize Camera Clone
+		SnF_.par = makMsh();	
 		SnF_.par.rotation.copy(camera.rotation);
 		SnF_.par.position.copy(camera.position);
 		scene.add(SnF_.par);
 	}
+	else {SnF_.par = camera};
 	// Get Sprites
-	let SnFmat;
 	for (let i = 0; i < SnF_.num; i++) {
-		SnF_.spr[i] = new THREE.Sprite(SnF_.mat[i]);
-		SnF_.spr[i].scale.set(SnF_.siz[i],SnF_.siz[i],1);
-		SnF_.spr[i].position.z = -SnF_.rad[i];		// neg
-		SnF_.msh[i].attach(SnF_.spr[i]);			// Attach Sprite to Rotator
-		scene.add(SnF_.msh[i]);						//
-		if (CamFlg) SnF_.par.attach(SnF_.msh[i]);	// If OrbCon: Attach Rotator to Camera Clone
-		else {camera.attach(SnF_.msh[i]);}			// Otherwise: Attach Rotator to Camera
+		// Sprite Rotators
+		SnF_.msh[i] = makMsh();				// Make Rotators
+		SnF_.msh[i].attach(SnF_.spr[i]);	// Attach Sprite to Rotator
+		scene.add(SnF_.msh[i]);				// Make Visible
+		SnF_.par.attach(SnF_.msh[i]);		// Attach to Parent
 	}
 }
 
 function moveSunFlr(SnF_) {
-	if (CamFlg) {	// Copy Camera Rotation and Position
+	if (SnF_.typ) {	// Copy Camera Rotation and Position
 		SnF_.par.rotation.copy(camera.rotation);
 		SnF_.par.position.copy(camera.position);
 	}
@@ -307,14 +318,13 @@ function moveSunFlr(SnF_) {
 	SnF_.off.y = PoM360(Mod360(SnF_.cam.y-SnF_.sun.y));	// Camera Lat Offset
 	// Test Visibility
 	let VisFlg = 0;
-	let ratio = window.innerWidth/window.innerHeight;
-	if (Math.abs(SnF_.off.x) > 45 || Math.abs(SnF_.off.y) > 45*ratio) VisFlg = 1;
+	if (Math.abs(SnF_.off.x) > 45 || Math.abs(SnF_.off.y) > 45*SnF_.asp) VisFlg = 1;
 	if (VisFlg) {
 		for (let i = 0; i < SnF_.num; i++) {
 			SnF_.spr[i].visible = false;	
 		}
 	}
-	// If visible
+	// If visible, Compute Displacement
 	else {
 		for (let i = 0; i < SnF_.num; i++) {
 			SnF_.spr[i].visible = true;
@@ -333,23 +343,29 @@ function initCtrBox() {
 	scene.add(BoxMsh)
 }
 
-//= CAMERA CONTROLS ============================================================
+//= MY CAMERA ===================================================================
 
-function initCamera(camera) {
+function initCamera() {
+	// Camera
 	camera.rotation.order = "YXZ";
-	camera.position.z = -CamLLD.z;
-	camera.rotation.y = CamRot*DegRad;	// Default = looking in at center
-	CamMsh.attach(camera);
-	scene.add(CtrMsh);
+	camera.position.z = -cam_.lld.z;
+	camera.rotation.y = cam_.adj*DegRad;			// Default = looking in at center
+	// Rotator
+	cam_.rot.rotation.order = "YXZ";
+	cam_.rot.attach(camera);
+	// Center of Rotation
+	cam_.ctr.rotation.order = "YXZ";
+	cam_.ctr.attach(cam_.rot);
+	scene.add(cam_.ctr);
 }
 
-function moveCamera(camera) {
+function moveCamera() {
 	// In external view, the camera is facing in and the armature is pointing out:
 	// * x.rotation = -CamLat
-	// * y.rotation = CamLon + 180
-	camera.position.z = -CamLLD.z;
-	CamMsh.rotation.x = Mod360(-CamLLD.x)*DegRad;
-	CamMsh.rotation.y = Mod360(CamRot-CamLLD.y)*DegRad;
+	// * y.rotation = 180 - CamLon
+	camera.position.z = -cam_.lld.z;
+	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
+	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
 }
 
 //= 4 MISC SUBROUTINES =========================================================
@@ -385,9 +401,9 @@ return mesh;}
 
 // Print HUD Values
 function prntHUDval() {
-	Cam_Lat = CamLLD.x;		// Cam Lat
+	Cam_Lat = cam_.lld.x;		// Cam Lat
 	Cam_LatNode.nodeValue = Cam_Lat.toFixed(0);
-	Cam_Lon = CamLLD.y;		// Cam Lon
+	Cam_Lon = cam_.lld.y;		// Cam Lon
 	Cam_LonNode.nodeValue = Cam_Lon.toFixed(0);
 	Off_Lat = SnF_.off.x;	// Off Lat
 	Off_LatNode.nodeValue = Off_Lat.toFixed(0);
@@ -397,15 +413,15 @@ function prntHUDval() {
 
 //= 5 INPUTS ===================================================================
 
-//= Mouse Input ================================================================
+//= Mouse Input (My Camera Only) ===============================================
 
 function onMouseDown(event) {
 	event.preventDefault();
 	PanFlg = 1;
 	onPointerDownX = event.clientX;
 	onPointerDownY = event.clientY;
-	onPointerDownLon = CamLLD.y;
-	onPointerDownLat = CamLLD.x;
+	onPointerDownLon = cam_.lld.y;
+	onPointerDownLat = cam_.lld.x;
 }
 
 function onMouseUp(event) {
@@ -415,21 +431,22 @@ function onMouseUp(event) {
 function onMouseMove(event) {
 //- Panning View
 	if (PanFlg > 0) {
-		CamLLD.x = (onPointerDownY - event.clientY) * CamRSp + onPointerDownLat;
-		CamLLD.x = Math.max(-CamMxX, Math.min(CamMxX, CamLLD.x));
-		CamLLD.y = (event.clientX - onPointerDownX) * CamRSp + onPointerDownLon;
-		CamLLD.y = Mod360(CamLLD.y);
+		cam_.lld.x = (onPointerDownY - event.clientY) * cam_.rsp + onPointerDownLat;
+		cam_.lld.x = Math.max(-cam_.mxX, Math.min(cam_.mxX, cam_.lld.x));
+		cam_.lld.y = (event.clientX - onPointerDownX) * cam_.rsp + onPointerDownLon;
+		cam_.lld.y = Mod360(cam_.lld.y);
 	}
 }
 
 function onMouseWheel(event) {
-	CamLLD.z = CamLLD.z + event.deltaY * CamDSp;
-	CamLLD.z = Math.max(CamMnD, Math.min(CamMxD, CamLLD.z));
+	cam_.lld.z = cam_.lld.z + event.deltaY * cam_.dsp;
+	cam_.lld.z = Math.max(cam_.mnD, Math.min(cam_.mxD, cam_.lld.z));
 }
 
 //= WINDOW RESIZE ==============================================================
 function onWindowResize() {
-	camera.aspect = window.innerWidth / window.innerHeight;
+	CamAsp = window.innerWidth / window.innerHeight;
+	camera.aspect = CamAsp;
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
