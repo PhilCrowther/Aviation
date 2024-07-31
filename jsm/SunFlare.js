@@ -1,123 +1,110 @@
 ﻿//= SUNFLARE MODULE ============================================================
 
-//	Version 1.0 (29 Jul 2024)
+//	Version 1.0 (30 Jul 2024)
 //
 //	This module allows you to create a LensWlare of the Sun in both WebGL or WebGPU.
 //	This works with a default camera rotator and with OrbitControls.
 //	this module is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 //
 //	EXPLANATION:
-//	This Module creates LensFlares caused by the sun and which do not change distance.
-//	The Module creates LensFlare sprites and attaches them to rotator meshes.
-//	The rotator meshes are attached to the camera (or a camera clone for OrbitControls).
-//	The Module computes an offset, which is the difference between the direction of the sun and camera.
+//	This Module creates LensFlares caused by the sun which do not change distance.
+//	The Module creates Sprite Rotator Meshes and attaches SunFlare Sprites to them.
+//	The Module attaches the Sprite Rotator Meshes to the camera (or a camera clone for OrbitControls).
+//	The Module computes an offset, which is the difference between the direction of the camera and the Sun.
 //	The offset is multiplied by a multiplier which creates the illusion of depth.
 //	If the offset is too great (the Sun is no longer visible on the screen), the sprites are turned off.
 //
 
 
 import {
-	Sprite
+	BoxGeometry,
+	MeshBasicMaterial,
+	Mesh
 } from 'three';
 
 //= EXTERNAL VARIABLES =========================================================
 // This module uses the following inputs
-//	SnF_.flg				// 0 = default, 1 = OrbitControls
-//	SnF_.sun (vec2) 		// Sun Position (lat/lon) in degrees
-//	SnF_.cam (vec2)			// Camera Direction (lat/lon) degrees
+//	SnF_.typ				// 0 = default, 1 = OrbitControls
 //	SnF_.num				// Number of Sprites
-//	SnF_.mat (array)		// Material Addresses
-//	SnF_.dst (array)		// Sprite Distances
-//	SnF_.siz (array)		// Sprite Scale
+//	SnF_.spr (array)		// Sprite Addresses
 //	SnF_.mlt (array)		// Sprite Offset Multiplier
-//	SnF_.msh (array)		// Sprite Rotator Mesh Addresses
-//	SnF_.par				// (Orbit Control Only) Camera Clone Mesh (parent)
+//	SnF_.cam (vec2)			// Camera Direction (lat/lon) degrees
+//	SnF_.sun (vec2) 		// Sun Position (lat/lon) in degrees
+//  SnF_.asp				// Screen Aspect Ratio
 // This module generates the following outputs:
+//	SnF_.msh [mesh array]	// Sprite Rotators
+//	SnF_.par:				// Parent (camera or camera clone for OrbitControls)
 //	SnF_.off (vec2)			// Sun Offset (lat/lon) degrees (for display)
-//	SnF_.spr (array)		// Sprite Addresses (if want to change textures, etc)
-
-//= NOTE: If you use OrbitControls, you must update SnF_.cam in render using the following:
-//	SnF_.cam.x = OrbCon.getPolarAngle()*RadDeg-90;
-//	SnF_.cam.y = Mod360(360-OrbCon.getAzimuthalAngle()*RadDeg);
-//  where OrbCon is the address of the OrbitControls
-//  The Mod360 function and the RadDeg variable are shown below.
 
 //= INTERNAL VARIABLES =========================================================
 //	Standard Conversions
 var DegRad = Math.PI/180;	// Convert Degrees to Radians
-var RadDeg = 180/Math.PI;	// Convert Radians to Degrees
 
 //= SUNFLARE ==================================================================
 
 class SunFlare {
-	constructor(scene,camera,SnF_) {
-		this._init(scene,camera,SnF_);
-	}
+	constructor(scene,camera, SnF_) {
+		this._init(scene,camera, SnF_);
+    }
 
 	// Initialize
-	_init(scene,camera,SnF_) {
-		this.sunflare = this.SunFlare(scene,camera,SnF_);
+	_init(scene,camera, SnF_) {
+		this.sunflare = this.sunflare(scene,camera, SnF_);
 	}
 
-	update() {
-		this.update = this.Update();
+	update(SnF_) {
+		this.update = this.update(SnF_);
 	}
 
-//= INITIALIZE =================================================================
-SunFlare(scene,camera,SnF_) {
-	// Load Variables
-	this.scene = scene;
-	this.camera = camera;
-	this.SnF_ = SnF_;
+//= Initialize =================================================================
+sunflare(scene,camera,SnF_) {
 	//
-	if (this.SnF_.flg) {	// For ObritControl, Initialize Camera Clone
-		this.SnF_.par.rotation.copy(this.camera.rotation);
-		this.SnF_.par.position.copy(this.camera.position);
-		this.scene.add(this.SnF_.par);
+	this.camera = camera;
+	//
+	if (SnF_.typ) {	// Initialize Camera Clone
+		SnF_.par = makMsh();	
+		SnF_.par.rotation.copy(this.camera.rotation);
+		SnF_.par.position.copy(this.camera.position);
+		scene.add(SnF_.par);
 	}
-	for (let i = 0; i < this.SnF_.num; i++) {
-		// Sprite
-		this.SnF_.spr[i] = new Sprite(this.SnF_.mat);
-		this.SnF_.spr[i].scale.set(this.SnF_.siz[i],this.SnF_.siz[i],1);
-		this.SnF_.spr[i].position.z = -this.SnF_.dst[i];	// Make this Negative
-		// Sprite Rotator
-		this.SnF_.msh[i].attach(this.SnF_.spr[i]);	// Attach Sprite to Rotator
-		this.scene.add(this.SnF_.msh[i]);			// Make Rotator Visible
-		// Attach Sprite Rotator
-		if (this.SnF_.flg) this.SnF_.par.attach(this.SnF_.msh[i]);	// If OrbControls: Attach to Camera Clone
-		else {this.camera.attach(this.SnF_.msh[i]);}	// Otherwise: Attach Rotator to Camera
-	}	
-};	// End of Initialize
+	else {SnF_.par = this.camera};
+	// Get Sprites
+	for (let i = 0; i < SnF_.num; i++) {
+		// Sprite Rotators
+		SnF_.msh[i] = makMsh();				// Make Rotators
+		SnF_.msh[i].attach(SnF_.spr[i]);	// Attach Sprite to Rotator
+		scene.add(SnF_.msh[i]);			// Make Visible
+		SnF_.par.attach(SnF_.msh[i]);		// Attach to Parent
+	}
+};
 
-// = UPDATE ====================================================================
-Update() {
-	if (this.SnF_.flg) {	// For OrbitCoontrol, Copy Camera Rotation and Position
-		this.SnF_.par.rotation.copy(this.camera.rotation);
-		this.SnF_.par.position.copy(this.camera.position);
+update(SnF_) {
+	if (SnF_.typ) {	// Copy Camera Rotation and Position
+		SnF_.par.rotation.copy(this.camera.rotation);
+		SnF_.par.position.copy(this.camera.position);
 	}
 	// Get Difference Between Sun and Camera Directions
-	this.SnF_.off.x = this.SnF_.cam.x-this.SnF_.sun.x;	// Lat
-	this.SnF_.off.y = PoM360(Mod360(this.SnF_.cam.y-this.SnF_.sun.y));	// Lon
+	SnF_.off.x = SnF_.cam.x-SnF_.sun.x;					// Camera Lat Offset
+	SnF_.off.y = PoM360(Mod360(SnF_.cam.y-SnF_.sun.y));	// Camera Lat Offset
 	// Test Visibility
 	let VisFlg = 0;
-	let ratio = window.innerWidth/window.innerHeight;
-	if (Math.abs(this.SnF_.off.x) > 45 || Math.abs(this.SnF_.off.y) > 45*ratio) VisFlg = 1;
+	if (Math.abs(SnF_.off.x) > 45 || Math.abs(SnF_.off.y) > 45*SnF_.asp) VisFlg = 1;
 	if (VisFlg) {
-		for (let i = 0; i < this.SnF_.num; i++) {
-			this.SnF_.spr[i].visible = false;	
+		for (let i = 0; i < SnF_.num; i++) {
+			SnF_.spr[i].visible = false;	
 		}
 	}
-	// If visible, Compute Position
+	// If visible, Compute Displacement
 	else {
-		for (let i = 0; i < this.SnF_.num; i++) {
-			this.SnF_.spr[i].visible = true;
-			this.SnF_.msh[i].rotation.x = -this.SnF_.off.x*this.SnF_.mlt[i]*DegRad;
-			this.SnF_.msh[i].rotation.y = this.SnF_.off.y*this.SnF_.mlt[i]*DegRad;
+		for (let i = 0; i < SnF_.num; i++) {
+			SnF_.spr[i].visible = true;
+			SnF_.msh[i].rotation.x = -SnF_.off.x*SnF_.mlt[i]*DegRad;
+			SnF_.msh[i].rotation.y = SnF_.off.y*SnF_.mlt[i]*DegRad;
 		}
 	}
-};	// End of Update
+};
 
-};	// End of Main Module
+};
 
 //= MISCELLANOUS SUBROUTINES ===================================================
 
@@ -131,6 +118,12 @@ return deg;}
 function PoM360(deg) {
 	if (deg > 180) deg = deg-360;
 return deg;}
+
+function makMsh() {
+	let geometry = new BoxGeometry(0.01,0.01,0.01); 
+	let material = new MeshBasicMaterial({transparent:true,opacity:0}); 
+	let mesh = new Mesh(geometry, material);
+return mesh;}
 
 
 //= EXPORT =====================================================================
