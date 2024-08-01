@@ -1,6 +1,6 @@
 ﻿//= SUNFLARE MODULE ============================================================
 
-//	Version 1.0 (30 Jul 2024)
+//	Version 1.0 (30 Jul 2024, rev. 1 Aug 2024)
 //
 //	This module allows you to create a LensWlare of the Sun in both WebGL or WebGPU.
 //	This works with a default camera rotator and with OrbitControls.
@@ -8,13 +8,12 @@
 //
 //	EXPLANATION:
 //	This Module creates LensFlares caused by the sun which do not change distance.
-//	The Module creates Sprite Rotator Meshes and attaches SunFlare Sprites to them.
-//	The Module attaches the Sprite Rotator Meshes to the camera (or a camera clone for OrbitControls).
+//	The Module creates Sprite Rotator Meshes and adds SunFlare Sprites to them.
+//	The Module adds the Sprite Rotator Meshes to the camera (or a camera clone for OrbitControls).
 //	The Module computes an offset, which is the difference between the direction of the camera and the Sun.
 //	The offset is multiplied by a multiplier which creates the illusion of depth.
 //	If the offset is too great (the Sun is no longer visible on the screen), the sprites are turned off.
 //
-
 
 import {
 	BoxGeometry,
@@ -72,9 +71,9 @@ sunflare(scene,camera,SnF_) {
 	for (let i = 0; i < SnF_.num; i++) {
 		// Sprite Rotators
 		SnF_.msh[i] = makMsh();				// Make Rotators
-		SnF_.msh[i].attach(SnF_.spr[i]);	// Attach Sprite to Rotator
-		scene.add(SnF_.msh[i]);			// Make Visible
-		SnF_.par.attach(SnF_.msh[i]);		// Attach to Parent
+		SnF_.msh[i].add(SnF_.spr[i]);		// Add Sprite to Rotator
+		scene.add(SnF_.msh[i]);				// Make Visible
+		SnF_.par.add(SnF_.msh[i]);			// Add to Parent
 	}
 };
 
@@ -131,4 +130,5 @@ return mesh;}
 export {SunFlare};
 
 //= CHANGE LOG =================================================================
-//- 240728: Version 1	:
+//- 240728: Version 1
+//- 240801: Changed attach to add
