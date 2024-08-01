@@ -54,35 +54,6 @@ var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 let StatOn = 1;					// Stats (1 = on, 0 = off)
 let LodFlg = 0;
 
-//= CAMERA =====================================================================
-//- Variables
-let CamFOV = 55;				// Field of View
-let CamVmn = 1;					// Min Viewing Distance
-let CamVmx = 100000;			// Max Viewing Distance
-let CamAsp = 0;					// Camera Aspect
-//- Parameters
-let cam_ = {
-		// Camera
-		lld: new THREE.Vector3(CamLat,CamLon,CamDst),
-		adj: CamAdj,			// Camera Adjustment (180 = look in)
-		dsp: 1,					// Scrolling Speed (In/Out)
-		mnD: CamDst*0.5,		// Min Scrolling Distance
-		mxD: CamDst*3,			// Max Scrolling Distance
-		// Rotator
-		rot: makMsh(),			// Camera Rotator
-		rsp: 0.5,				// Rotation Speed
-		mxX: 90,				// Max Lat
-		// Center of Rotation
-		ctr: makMsh(),			// Center of Rotation
-}
-//-	MyCamera Controls
-let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
-let PanFlg = 0;					// Set if Pan Button Pressed
-//- Orbit Controls
-let	CamPos = new THREE.Vector3(-CamLat,-CamLon,CamDst);	// On opposite side from Sun
-	CamPos = rotLLD(CamPos);			
-let OrbCon = 1;					// Used by OrbitControls
-
 //= SKYBOX =====================================================================
 let SkyCol = 0x1732c1;			// Sky
 let FogCol = 0xbab4a6;			// 
@@ -121,9 +92,37 @@ let SnF_ = {
 		cam: new THREE.Vector2(CamLat,CamLon),	// Camera Direction
 		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
 		off: new THREE.Vector2(),	// Sun Offset (lat/lon) [for display]
-		asp: CamAsp,			// Camera Aspect
+		asp: 0,					// Camera Aspect
 	}
 let SnFFlg = 1;					// 1 = SunFlare On
+
+//= CAMERA =====================================================================
+//- Variables
+let CamFOV = 55;				// Field of View
+let CamVmn = 1;					// Min Viewing Distance
+let CamVmx = 100000;			// Max Viewing Distance
+//- Parameters
+let cam_ = {
+		// Camera
+		lld: new THREE.Vector3(CamLat,CamLon,CamDst),
+		adj: CamAdj,			// Camera Adjustment (180 = look in)
+		dsp: 1,					// Scrolling Speed (In/Out)
+		mnD: CamDst*0.5,		// Min Scrolling Distance
+		mxD: CamDst*3,			// Max Scrolling Distance
+		// Rotator
+		rot: makMsh(),			// Camera Rotator
+		rsp: 0.5,				// Rotation Speed
+		mxX: 90,				// Max Lat
+		// Center of Rotation
+		ctr: makMsh(),			// Center of Rotation
+}
+//-	MyCamera Controls
+let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
+let PanFlg = 0;					// Set if Pan Button Pressed
+//- Orbit Controls
+let	CamPos = new THREE.Vector3(-CamLat,-CamLon,CamDst);	// On opposite side from Sun
+	CamPos = rotLLD(CamPos);			
+let OrbCon = 1;					// Used by OrbitControls
 
 //= BASIC VALUES ===============================================================
 let	container = document.createElement('div');
@@ -145,7 +144,7 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.position.copy(SunPos).normalize();
 	scene.add(sunLight);
 //- Camera and Controls
-	CamAsp =  window.innerWidth/window.innerHeight;
+let CamAsp =  window.innerWidth/window.innerHeight;
 let	camera = new THREE.PerspectiveCamera(CamFOV,CamAsp,CamVmn,CamVmx);
 	if (CamTyp) {
 		OrbCon = new OrbitControls(camera, renderer.domElement);
@@ -268,8 +267,8 @@ function rotLLD(LLD) {
 
 //= SUNFLARE ===================================================================
 // The creates LensFlares caused by the sun and which do not change distance.
-// This creates LensFlare sprites and attaches them to rotator meshes.
-// The rotator meshes are attached to the camera.
+// This creates LensFlare sprites and adds them to rotator meshes.
+// The rotator meshes are added to the camera.
 // The offset is the difference between the direction of the sun and camera.
 // The offset is multiplied by the amount required to create the illusion of depth.
 // If the offset is too great (the Sun is no longer visible), the sprites are turned off.
@@ -309,10 +308,10 @@ function initCamera() {
 	camera.rotation.y = cam_.adj*DegRad;			// Default = looking in at center
 	// Rotator
 	cam_.rot.rotation.order = "YXZ";
-	cam_.rot.attach(camera);
+	cam_.rot.add(camera);
 	// Center of Rotation
 	cam_.ctr.rotation.order = "YXZ";
-	cam_.ctr.attach(cam_.rot);
+	cam_.ctr.add(cam_.rot);
 	scene.add(cam_.ctr);
 }
 

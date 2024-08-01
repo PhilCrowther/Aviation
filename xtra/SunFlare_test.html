@@ -52,12 +52,53 @@ var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 let StatOn = 1;					// Stats (1 = on, 0 = off)
 let LodFlg = 0;
 
+//= SKYBOX =====================================================================
+let SkyCol = 0x1732c1;			// Sky
+let FogCol = 0xbab4a6;			// 
+//- Texture
+let SBPath = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
+
+//= SUN ========================================================================
+let SunCol = 0xffffff;			// Sun
+let SunInt = 3;					// Intensity
+//- Rotation and Position (fixed)
+let SunLat = 23;				// Direction - Vert
+let SunLon = 312;				// Direction - Horz
+let SunDst = 10000;				// Distance (for shadows and lensflare)
+let SunPos = new THREE.Vector3(SunLat,Mod360(180-SunLon),SunDst);
+	SunPos = rotLLD(SunPos);	// Position XYZ
+
+//=	SUNFLARE ===================================================================
+let sunflare = 0;
+//- Textures
+let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
+//- Parameters
+let SnF_ = {
+		//- General
+		typ: CamTyp,			// 0 = default, 1 = OrbitControls
+		//- Sprites
+		num: 2,					// Number of Sprites
+		dst: SunDst,			// Distance
+		src: [SnFhex,SnFhex],	// Sprite Texture Source
+		spr: [],				// Sprite Address
+		siz: [400,1000],		// Sprite Size
+		mlt: [0.45,-0.4],		// Offset Multiplier (1 = centered)
+		//- Rotators
+		msh: [],				// Rotators
+		par: 0,					// Parent (Camera Clone) [OrbCon Only]
+		//- Heading Offset
+		cam: new THREE.Vector2(CamLat,CamLon),	// Camera Direction
+		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
+		off: new THREE.Vector2(),	// Sun Offset (lat/lon) [for display]
+		asp: 0,					// Camera Aspect
+	}
+let SnFFlg = 1;					// 1 = SunFlare On
+
 //= CAMERA =====================================================================
 //- Variables
 let CamFOV = 55;				// Field of View
 let CamVmn = 1;					// Min Viewing Distance
 let CamVmx = 100000;			// Max Viewing Distance
-let CamAsp = 0;					// Camera Aspect
 //- Parameters
 let cam_ = {
 		// Camera
@@ -81,47 +122,6 @@ let	CamPos = new THREE.Vector3(-CamLat,-CamLon,CamDst);	// On opposite side from
 	CamPos = rotLLD(CamPos);			
 let OrbCon = 1;					// Used by OrbitControls
 
-//= SKYBOX =====================================================================
-let SkyCol = 0x1732c1;			// Sky
-let FogCol = 0xbab4a6;			// 
-//- Texture
-let SBPath = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
-
-//= SUN ========================================================================
-let SunCol = 0xffffff;			// Sun
-let SunInt = 3;					// Intensity
-//- Rotation and Position (fixed)
-let SunLat = 23;				// Direction - Vert
-let SunLon = 312;				// Direction - Horz
-let SunDst = 10000;				// Distance (for shadows and lensflare)
-let SunPos = new THREE.Vector3(SunLat,Mod360(180-SunLon),SunDst);
-	SunPos = rotLLD(SunPos);	// Position XYZ
-
-//=	SUNFLARE ===================================================================
-//- Textures
-let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
-//- Parameters
-let SnF_ = {
-		//- General
-		typ: CamTyp,			// 0 = default, 1 = OrbitControls
-		//- Sprites
-		num: 2,					// Number of Sprites
-		dst: SunDst,			// Distance
-		src: [SnFhex,SnFhex],	// Sprite Texture Source
-		spr: [],				// Sprite Address
-		siz: [400,1000],		// Sprite Size
-		mlt: [0.45,-0.4],		// Offset Multiplier (1 = centered)
-		//- Rotators
-		msh: [],				// Rotators
-		par: 0,					// Parent (Camera Clone) [OrbCon Only]
-		//- Heading Offset
-		cam: new THREE.Vector2(CamLat,CamLon),	// Camera Direction
-		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
-		off: new THREE.Vector2(),	// Sun Offset (lat/lon) [for display]
-		asp: CamAsp,			// Camera Aspect
-	}
-let SnFFlg = 1;					// 1 = SunFlare On
-
 //= BASIC VALUES ===============================================================
 let	container = document.createElement('div');
 	document.body.appendChild(container);
@@ -142,7 +142,7 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.position.copy(SunPos).normalize();
 	scene.add(sunLight);
 //- Camera and Controls
-	CamAsp =  window.innerWidth/window.innerHeight;
+let CamAsp =  window.innerWidth/window.innerHeight;
 let	camera = new THREE.PerspectiveCamera(CamFOV,CamAsp,CamVmn,CamVmx);
 	if (CamTyp) {
 		OrbCon = new OrbitControls(camera, renderer.domElement);
@@ -195,7 +195,7 @@ function loadAll() {
 //= 1 INITIALIZE ===============================================================
 function initAll() {
 	initSkyBox();						// SkyBox
-	if (SnFFlg) initSunFlr(camera,SnF_);	// SunFlare
+	if (SnFFlg) sunflare = new SunFlare(scene,camera,SnF_);	// SunFlare
 	initCtrBox();
 	// Init stats
 	if (StatOn) {						// show stats
@@ -221,9 +221,9 @@ function rendAll() {
 		// SunFlare
 		if (SnFFlg) {
 			SnF_.asp = CamAsp;			// Camera Aspect
-			SnF_.cam.x = cam_.lld.x;		// Update Camera Rotation
+			SnF_.cam.x = cam_.lld.x;	// Update Camera Rotation
 			SnF_.cam.y = cam_.lld.y;
-			moveSunFlr(SnF_);			// SunFlare
+			sunflare.update(SnF_);		// SunFlare
 		}
 		prntHUDval();					// HUD
 		if (StatOn) StatOn.update();	// Stats
@@ -288,52 +288,6 @@ function loadSunFlr() {
 	}
 }
 
-//= SUNFLARE MODULE (WIP) ======================================================
-
-function initSunFlr(camera,SnF_) {
-	if (SnF_.typ) {	// Initialize Camera Clone
-		SnF_.par = makMsh();	
-		SnF_.par.rotation.copy(camera.rotation);
-		SnF_.par.position.copy(camera.position);
-		scene.add(SnF_.par);
-	}
-	else {SnF_.par = camera};
-	// Get Sprites
-	for (let i = 0; i < SnF_.num; i++) {
-		// Sprite Rotators
-		SnF_.msh[i] = makMsh();				// Make Rotators
-		SnF_.msh[i].attach(SnF_.spr[i]);	// Attach Sprite to Rotator
-		scene.add(SnF_.msh[i]);				// Make Visible
-		SnF_.par.attach(SnF_.msh[i]);		// Attach to Parent
-	}
-}
-
-function moveSunFlr(SnF_) {
-	if (SnF_.typ) {	// Copy Camera Rotation and Position
-		SnF_.par.rotation.copy(camera.rotation);
-		SnF_.par.position.copy(camera.position);
-	}
-	// Get Difference Between Sun and Camera Directions
-	SnF_.off.x = SnF_.cam.x-SnF_.sun.x;					// Camera Lat Offset
-	SnF_.off.y = PoM360(Mod360(SnF_.cam.y-SnF_.sun.y));	// Camera Lat Offset
-	// Test Visibility
-	let VisFlg = 0;
-	if (Math.abs(SnF_.off.x) > 45 || Math.abs(SnF_.off.y) > 45*SnF_.asp) VisFlg = 1;
-	if (VisFlg) {
-		for (let i = 0; i < SnF_.num; i++) {
-			SnF_.spr[i].visible = false;	
-		}
-	}
-	// If visible, Compute Displacement
-	else {
-		for (let i = 0; i < SnF_.num; i++) {
-			SnF_.spr[i].visible = true;
-			SnF_.msh[i].rotation.x = -SnF_.off.x*SnF_.mlt[i]*DegRad;
-			SnF_.msh[i].rotation.y = SnF_.off.y*SnF_.mlt[i]*DegRad;
-		}
-	}
-}
-
 //= MAKE BOX IN CENTER =========================================================
 
 function initCtrBox() {
@@ -352,10 +306,10 @@ function initCamera() {
 	camera.rotation.y = cam_.adj*DegRad;			// Default = looking in at center
 	// Rotator
 	cam_.rot.rotation.order = "YXZ";
-	cam_.rot.attach(camera);
+	cam_.rot.add(camera);
 	// Center of Rotation
 	cam_.ctr.rotation.order = "YXZ";
-	cam_.ctr.attach(cam_.rot);
+	cam_.ctr.add(cam_.rot);
 	scene.add(cam_.ctr);
 }
 
@@ -442,6 +396,73 @@ function onMouseWheel(event) {
 	cam_.lld.z = cam_.lld.z + event.deltaY * cam_.dsp;
 	cam_.lld.z = Math.max(cam_.mnD, Math.min(cam_.mxD, cam_.lld.z));
 }
+
+
+//= SUNFLARE MODULE ============================================================
+
+class SunFlare {
+	constructor(scene,camera, SnF_) {
+		this._init(scene,camera, SnF_);
+    }
+
+	// Initialize
+	_init(scene,camera, SnF_) {
+		this.sunflare = this.sunflare(scene,camera, SnF_);
+	}
+
+	update(SnF_) {
+		this.update = this.update(SnF_);
+	}
+
+//= Initialize =================================================================
+sunflare(scene,camera,SnF_) {
+	//
+	this.camera = camera;
+	//
+	if (SnF_.typ) {	// Initialize Camera Clone
+		SnF_.par = makMsh();	
+		SnF_.par.rotation.copy(this.camera.rotation);
+		SnF_.par.position.copy(this.camera.position);
+		scene.add(SnF_.par);
+	}
+	else {SnF_.par = this.camera};
+	// Get Sprites
+	for (let i = 0; i < SnF_.num; i++) {
+		// Sprite Rotators
+		SnF_.msh[i] = makMsh();				// Make Rotators
+		SnF_.msh[i].add(SnF_.spr[i]);		// Attach Sprite to Rotator
+		scene.add(SnF_.msh[i]);				// Make Visible
+		SnF_.par.add(SnF_.msh[i]);			// Attach to Parent
+	}
+};
+
+update(SnF_) {
+	if (SnF_.typ) {	// Copy Camera Rotation and Position
+		SnF_.par.rotation.copy(this.camera.rotation);
+		SnF_.par.position.copy(this.camera.position);
+	}
+	// Get Difference Between Sun and Camera Directions
+	SnF_.off.x = SnF_.cam.x-SnF_.sun.x;					// Camera Lat Offset
+	SnF_.off.y = PoM360(Mod360(SnF_.cam.y-SnF_.sun.y));	// Camera Lat Offset
+	// Test Visibility
+	let VisFlg = 0;
+	if (Math.abs(SnF_.off.x) > 45 || Math.abs(SnF_.off.y) > 45*SnF_.asp) VisFlg = 1;
+	if (VisFlg) {
+		for (let i = 0; i < SnF_.num; i++) {
+			SnF_.spr[i].visible = false;	
+		}
+	}
+	// If visible, Compute Displacement
+	else {
+		for (let i = 0; i < SnF_.num; i++) {
+			SnF_.spr[i].visible = true;
+			SnF_.msh[i].rotation.x = -SnF_.off.x*SnF_.mlt[i]*DegRad;
+			SnF_.msh[i].rotation.y = SnF_.off.y*SnF_.mlt[i]*DegRad;
+		}
+	}
+};
+
+};
 
 //= WINDOW RESIZE ==============================================================
 function onWindowResize() {
