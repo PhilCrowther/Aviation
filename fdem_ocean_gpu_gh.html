@@ -81,6 +81,8 @@ import {SunFlare} from "https://PhilCrowther.github.io/Aviation/jsm/SunFlare.js"
 //- Camera ---------------------------------------------------------------------
 let CamLat = -10;				// Camera Direction - Vert (+/- 90)
 let CamLon = 315;				// Camera Direction - Horz (0->360)
+	CamLat = 23;				// Camera Direction - Vert (+/- 90)
+	CamLon = 312;				// Camera Direction - Horz (0->360)
 let CamDst = 500;				// Camera Distance (from Center)
 let CamAdj = 180;				// Adjustment (180 = looking in, 0 = looking out)
 //- Airplane -------------------------------------------------------------------
@@ -258,6 +260,7 @@ let air_ = {
 		MapPos: new THREE.Vector3().copy(BegPos), // Map Position (meters)
 		MapSPS: new THREE.Vector3(0,BegPos.y,0),  // MSX, MPY, MSZ (meters)
 	}
+let ACHSpd = 0;
 
 //= JET EXHAUST ================================================================
 let SmkMat = "https://threejs.org/examples/textures/opengameart/smoke1.png";
@@ -276,32 +279,40 @@ let CamSel = 0;					// Camera View
 let	CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
 //- Cameras
-let CmSlld = [new THREE.Vector3(CamLat,CamLon,200),new THREE.Vector3(CamLat,CamLon,100)]
-let CmSmmd = [new THREE.Vector3(CmSlld[0].z*0.5,CmSlld[0].z*2.0,0.50),
-			  new THREE.Vector3(CmSlld[1].z*0.5,CmSlld[1].z*3.0,0.25)];
-let CmSpar = [CamCtr,air_.AirPBY];
+let CamLLD = [new THREE.Vector3(CamLat,CamLon,200),new THREE.Vector3(CamLat,CamLon,100)]
+let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.50),
+			  new THREE.Vector3(CamLLD[1].z*0.5,CamLLD[1].z*3.0,0.25)];
+let CamPar = [CamCtr,air_.AirObj];
 //- Parameters
 let cam_ = {
 		// Camera
-		lld: new THREE.Vector3(CamLat,CamLon,CmSlld[CamSel].z),
+		lld: new THREE.Vector3(CamLat,CamLon,CamLLD[CamSel].z),
 		adj: 180,				// Camera Adjustment (180 = look in)
-		mmd: new THREE.Vector3().copy(CmSmmd[CamSel]),	// In/Out - min,max,spd
+		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
 		rot: makMsh(),			// Camera Rotator
 		mmr: new THREE.Vector3(90,0,0.2),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
-		par: CmSpar[CamSel],	// Center of Rotation
+		par: CamPar[CamSel],	// Center of Rotation
 }
 //- Adjustments
 	cam_.rot.rotation.order = "YXZ";
 	cam_.par.add(cam_.rot);		// Attach Rotators
 //-
 let	PanFlg = 0;					// Camera Panning
-//let CmOlld = new THREE.Vector3(CamLat,CamLon,CmSlld[CamSel].z);
-let CmOlld = new THREE.Vector3().copy(CmSlld[CamSel]);
+let CmOlld = new THREE.Vector3().copy(CamLLD[CamSel]);
 //-	Controls
 let onPointerDownX, onPointerDownY;
 let onPointerDownLon, onPointerDownLat;
+//- Combined Degrees
+let CmQuat = new THREE.Quaternion();
+let ObjDeg = makMsh();
+	ObjDeg.rotation.order = "YXZ";
+let CamDeg = makMsh();
+	CamDeg.rotation.order = "YXZ";
+	ObjDeg.add(CamDeg);
+let CamLL2 = new THREE.Vector2();
+
 
 //= KEY BINDINGS ===============================================================
 let K_SpdU = 45;				// Speed Up (insert)
@@ -393,18 +404,6 @@ let txtrLoader = new THREE.TextureLoader(loadingManager);
 let imagLoader = new THREE.ImageLoader(loadingManager);
 let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
-//= OBJECTS ====================================================================
-//- Aircraft
-	air_.AirObj.rotation.order = "YXZ";
-	air_.AirPBY.rotation.order = "YXZ";
-	air_.AirObj.add(air_.AirPBY);
-	scene.add(air_.AirObj);
-let quaternion = new THREE.Quaternion();
-//-
-let CamDir = new THREE.Vector3();
-camera.getWorldDirection(CamDir);
-console.log(Math.round(CamDir.x*RadDeg),Math.round(CamDir.y*RadDeg),Math.round(CamDir.z*RadDeg));
-
 //= HTML OVERLAY TEXT ==========================================================
 let Air_SpdElement = document.getElementById("Air_Spd");	// Airspeed
 let Air_SpdNode = document.createTextNode("");
@@ -416,6 +415,38 @@ let Air_HdgElement = document.getElementById("Air_Hdg");	// Heading
 let Air_HdgNode = document.createTextNode("");
 	Air_HdgElement.appendChild(Air_HdgNode);
 let Air_Spd, Air_Alt,Air_Hdg;
+
+//= OBJECTS ====================================================================
+//- Aircraft
+	air_.AirObj.rotation.order = "YXZ";
+	air_.AirPBY.rotation.order = "YXZ";
+	air_.AirObj.add(air_.AirPBY);
+	scene.add(air_.AirObj);
+let quaternion = new THREE.Quaternion();
+//= MORE =======================================================================
+let CmASph = new THREE.Spherical(-cam_.lld.z,(90-cam_.lld.x)*DegRad,Mod360(180-cam_.lld.y)*DegRad);
+let	CmAPos = new THREE.Vector3().setFromSpherical(CmASph);
+	console.log(Math.round(CmAPos.x),Math.round(CmAPos.y),Math.round(CmAPos.z));
+//let CmARot = new THREE.Spherical().setFromCartesianCoords(CmAPos.x,CmAPos.y,CmAPos.z);	// all NaN
+//	console.log(Math.round(CmARot.x),Math.round(CmARot.y*RadDeg),Math.round(CmARot.z*RadDeg));
+
+let CmBLLD = new THREE.Vector3(cam_.lld.x,Mod360(180-cam_.lld.y),-cam_.lld.z);
+let	CmBPos = rotLLD(CmBLLD);	// Position XYZ
+	console.log(Math.round(CmBPos.x),Math.round(CmBPos.y),Math.round(CmBPos.z));
+
+
+//- Rotates Vector -------------------------------------------------------------
+function rotLLD(LLD) {
+	let lat = LLD.x*DegRad;
+	let lon = LLD.y*DegRad;
+	// Latitude
+	LLD.y = LLD.z * Math.sin(lat);
+	LLD.z = LLD.z * Math.cos(lat);
+	// Longitude
+	LLD.x = LLD.z * Math.sin(lon);
+	LLD.z = LLD.z * Math.cos(lon);
+	return LLD;
+}
 	
 //= MAIN PROGRAM ===============================================================
 	loadAll();
@@ -466,8 +497,16 @@ function rendAll() {
 		//
 		if (SnFFlg) {					// SunFlare
 			SnF_.asp = CamAsp;			// Camera Aspect
-			SnF_.cam.x = cam_.lld.x;	// Update Camera Rotation
-			SnF_.cam.y = cam_.lld.y;
+			// Update Camera Rotation
+			if (CamSel) {				// Linked
+				SnF_.cam.x = CamLL2.x;	
+				SnF_.cam.y = CamLL2.y;
+			}
+			else {						// Not Linked
+				SnF_.cam.x = cam_.lld.x;
+				SnF_.cam.y = cam_.lld.y;
+			}
+			console.log(Math.round(SnF_.cam.x),Math.round(SnF_.cam.y));			
 			sunflare.update(SnF_);		// SunFlare
 		}
 		// Move Things
@@ -661,7 +700,7 @@ function moveAirObj(air_) {
 	// Yaw
 	air_.RotDif.y = air_.InpRot.y;
 	// Turn Rate = tan(bank) * G/V = tan(bank) * 32.174 / 300 fps (aprox 200 mph)
-	let ACHSpd = 0;
+	ACHSpd = 0;
 	if (air_.RotDif.z > -InpVal.z && air_.RotDif.z < InpVal.z) {
 		let ACBrad = air_.AirRot.z * DegRad;
 		ACHSpd = Math.tan(ACBrad) * 32.174 / 300;
@@ -752,6 +791,21 @@ function moveCamera() {
 	camera.position.z = -cam_.lld.z;
 	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
+	if (CamSel) compCamAng();
+}
+
+function compCamAng() {
+	// Load Parent Rotation
+	ObjDeg.rotation.copy(cam_.par.rotation);
+	// Load Camera Adjustments
+	CamDeg.rotation.x = cam_.lld.x*DegRad;
+	CamDeg.rotation.y = -cam_.lld.y*DegRad;	
+	// Combine and Transfer Combined Rotation to ObjDeg
+	CamDeg.getWorldQuaternion(CmQuat);
+	ObjDeg.setRotationFromQuaternion(CmQuat);	
+	// Load Resulting Values into Variables (for display)
+	CamLL2.x = ObjDeg.rotation.x*RadDeg;
+	CamLL2.y = Mod360(-ObjDeg.rotation.y*RadDeg+ACHSpd);
 }
 
 //= 4 MISC SUBROUTINES =========================================================
@@ -760,6 +814,11 @@ function moveCamera() {
 function Mod360(deg) {
 	while (deg < 0) deg = deg+360;	// Make deg a positive number
 	deg = deg % 360;				// Compute remainder of any number divided by 360
+return deg;}
+
+//- Converts 360 degrees to +/-180 ---------------------------------------------
+function PoM360(deg) {
+	if (deg > 180) deg = deg-360;
 return deg;}
 
 //- Make Mesh ------------------------------------------------------------------
@@ -830,7 +889,7 @@ function onMouseUp(event) {
 
 function onMouseMove(event) {
 //- Panning View
-	if (PanFlg > 0) {
+	if (PanFlg) {
 		cam_.lld.x = (onPointerDownY - event.clientY) * cam_.mmr.z + onPointerDownLat;
 		if (cam_.mmr.x) cam_.lld.x = Math.max(-cam_.mmr.x, Math.min(cam_.mmr.x, cam_.lld.x));
 		cam_.lld.y = (event.clientX - onPointerDownX) * cam_.mmr.z + onPointerDownLon;
@@ -879,19 +938,19 @@ function toggleCamera() {
 	// From External to Linked
 	if (CamSel == 0) {
 		cam_.par.remove(cam_.rot);
-		CmSlld[CamSel].copy(cam_.lld);	// Save lld
+		CamLLD[CamSel].copy(cam_.lld);	// Save lld
 		CamSel = 1;			
 	}
 	// From Linked to External
 	else if (CamSel == 1) {
 		cam_.par.remove(cam_.rot);
-		CmSlld[CamSel].copy(cam_.lld);	// Save lld
+		CamLLD[CamSel].copy(cam_.lld);	// Save lld
 		CamSel = 0;					
 	}
-	cam_.par = CmSpar[CamSel]		// Load new parent
+	cam_.par = CamPar[CamSel]		// Load new parent
 	cam_.par.add(cam_.rot);			// Attach Rotators
-	cam_.lld.copy(CmSlld[CamSel]);	// Restore saved values
-	cam_.mmd.copy(CmSmmd[CamSel]);	// In/Out - min, max, spd
+	cam_.lld.copy(CamLLD[CamSel]);	// Restore saved values
+	cam_.mmd.copy(CamMMD[CamSel]);	// In/Out - min, max, spd
 }
 
 //- Flight Controls
