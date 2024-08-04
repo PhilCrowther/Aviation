@@ -37,7 +37,8 @@ import {
 
 //= INTERNAL VARIABLES =========================================================
 //	Standard Conversions
-var DegRad = Math.PI/180;	// Convert Degrees to Radians
+let DegRad = Math.PI/180;	// Convert Degrees to Radians
+let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 
 //= SUNFLARE ==================================================================
 
