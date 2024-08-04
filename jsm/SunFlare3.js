@@ -87,8 +87,10 @@ update(SnF_) {
 	SnF_.off.y = PoM360(Mod360(SnF_.cam.y-SnF_.sun.y));	// Camera Lat Offset
 	if (SnF_.rot) {
 		let radius = Math.sqrt(SnF_.off.x*SnF_.off.x+SnF_.off.y*SnF_.off.y);
-		SnF_.off.x = radius*Math.sin(SnF_.rot*DegRad);
-		SnF_.off.y = radius*Math.cos(SnF_.rot*DegRad);
+		let angle = Math.atan2(SnF_.off.x,SnF_.off.y)*RadDeg;
+		let angle = angle + SnF_.rot;	
+		SnF_.off.x = radius*Math.cos(angle);
+		SnF_.off.y = radius*Math.sin(angle);
 	}
 	// Test Visibility
 	let VisFlg = 0;
