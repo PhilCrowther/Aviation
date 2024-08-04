@@ -88,9 +88,9 @@ update(SnF_) {
 	if (SnF_.rot) {
 		let radius = Math.sqrt(SnF_.off.x*SnF_.off.x+SnF_.off.y*SnF_.off.y);
 		let angle = Math.atan2(SnF_.off.x,SnF_.off.y)*RadDeg;
-		let angle = angle + SnF_.rot;	
-		SnF_.off.x = radius*Math.cos(angle);
-		SnF_.off.y = radius*Math.sin(angle);
+		let angle = Mod360(angle + SnF_.rot);	
+		SnF_.off.x = radius*Math.cos(angle*DegRad);
+		SnF_.off.y = radius*Math.sin(angle*DegRad);
 	}
 	// Test Visibility
 	let VisFlg = 0;
