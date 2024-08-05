@@ -75,14 +75,12 @@ import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr3N.js";
-import {SunFlare} from "https://PhilCrowther.github.io/Aviation/jsm/SunFlare.js";
+import {SunFlare} from "https://PhilCrowther.github.io/Aviation/jsm/SunFlare2.js";
 
 //= Start ======================================================================
 //- Camera ---------------------------------------------------------------------
 let CamLat = -10;				// Camera Direction - Vert (+/- 90)
 let CamLon = 315;				// Camera Direction - Horz (0->360)
-	CamLat = 23;				// Camera Direction - Vert (+/- 90)
-	CamLon = 312;				// Camera Direction - Horz (0->360)
 let CamDst = 500;				// Camera Distance (from Center)
 let CamAdj = 180;				// Adjustment (180 = looking in, 0 = looking out)
 //- Airplane -------------------------------------------------------------------
@@ -95,8 +93,8 @@ let PitSpd = 1;					// Pitch Speed
 
 //= CONSTANTS ==================================================================
 //-	Conversions
-var DegRad = Math.PI/180;		// Convert Degrees to Radians
-var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let DegRad = Math.PI/180;		// Convert Degrees to Radians
+let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 let Mtr2Ft = 3.28084;			// Meters to Feet
 let Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 let Km2Mil = 0.621371;
@@ -113,8 +111,6 @@ let PawsOn = 0;					// Pause
 let LodFlg = 0;					// Done initializing
 let WireOn = 0;					// Wireframe View
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
-//- Temporary
-let TempV3 = new THREE.Vector3();
 
 //= SKYBOX =====================================================================
 let SkyCol = 0x1732c1;			// Sky
@@ -155,7 +151,7 @@ let SnF_ = {
 		msh: [],				// Rotators
 		par: 0,					// Parent (Camera Clone) [OrbCon Only]
 		//- Heading Offset
-		cam: new THREE.Vector2(CamLat,CamLon),	// Camera Direction
+		cam: new THREE.Vector3(CamLat,CamLon,0),	// Camera Direction
 		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
 		off: new THREE.Vector2(),	// Sun Offset (lat/lon) [for display]
 		asp: 0,					// Camera Aspect
@@ -274,7 +270,7 @@ let rotateRange = range(.1,4);
 let life = lifeTime.div(lifeRange);
 
 //= CAMERA =====================================================================
-let CamSel = 0;					// Camera View
+let CamSel = 0;	// Camera View (0 = attached to grid, 1 = attached to airplane)
 //- Create Center Mesh
 let	CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
@@ -287,6 +283,7 @@ let CamPar = [CamCtr,air_.AirObj];
 let cam_ = {
 		// Camera
 		lld: new THREE.Vector3(CamLat,CamLon,CamLLD[CamSel].z),
+		llz: new THREE.Vector3(CamLat,CamLon,0),	// CamSel = 1: llz.z = Camera Bank
 		adj: 180,				// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
@@ -297,22 +294,20 @@ let cam_ = {
 }
 //- Adjustments
 	cam_.rot.rotation.order = "YXZ";
-	cam_.par.add(cam_.rot);		// Attach Rotators
+	cam_.par.add(cam_.rot);		// Attach Rotator
 //-
 let	PanFlg = 0;					// Camera Panning
 let CmOlld = new THREE.Vector3().copy(CamLLD[CamSel]);
 //-	Controls
 let onPointerDownX, onPointerDownY;
 let onPointerDownLon, onPointerDownLat;
-//- Combined Degrees
+//- CamSel = 1: Combined Degrees
 let CmQuat = new THREE.Quaternion();
 let ObjDeg = makMsh();
 	ObjDeg.rotation.order = "YXZ";
 let CamDeg = makMsh();
 	CamDeg.rotation.order = "YXZ";
 	ObjDeg.add(CamDeg);
-let CamLL2 = new THREE.Vector2();
-
 
 //= KEY BINDINGS ===============================================================
 let K_SpdU = 45;				// Speed Up (insert)
@@ -423,30 +418,6 @@ let Air_Spd, Air_Alt,Air_Hdg;
 	air_.AirObj.add(air_.AirPBY);
 	scene.add(air_.AirObj);
 let quaternion = new THREE.Quaternion();
-//= MORE =======================================================================
-let CmASph = new THREE.Spherical(-cam_.lld.z,(90-cam_.lld.x)*DegRad,Mod360(180-cam_.lld.y)*DegRad);
-let	CmAPos = new THREE.Vector3().setFromSpherical(CmASph);
-	console.log(Math.round(CmAPos.x),Math.round(CmAPos.y),Math.round(CmAPos.z));
-//let CmARot = new THREE.Spherical().setFromCartesianCoords(CmAPos.x,CmAPos.y,CmAPos.z);	// all NaN
-//	console.log(Math.round(CmARot.x),Math.round(CmARot.y*RadDeg),Math.round(CmARot.z*RadDeg));
-
-let CmBLLD = new THREE.Vector3(cam_.lld.x,Mod360(180-cam_.lld.y),-cam_.lld.z);
-let	CmBPos = rotLLD(CmBLLD);	// Position XYZ
-	console.log(Math.round(CmBPos.x),Math.round(CmBPos.y),Math.round(CmBPos.z));
-
-
-//- Rotates Vector -------------------------------------------------------------
-function rotLLD(LLD) {
-	let lat = LLD.x*DegRad;
-	let lon = LLD.y*DegRad;
-	// Latitude
-	LLD.y = LLD.z * Math.sin(lat);
-	LLD.z = LLD.z * Math.cos(lat);
-	// Longitude
-	LLD.x = LLD.z * Math.sin(lon);
-	LLD.z = LLD.z * Math.cos(lon);
-	return LLD;
-}
 	
 //= MAIN PROGRAM ===============================================================
 	loadAll();
@@ -494,21 +465,6 @@ function rendAll() {
 		difTim = nowTim-oldTim;
 		wavTim += difTim*wavSpd || 0.0;
 		oldTim = nowTim;
-		//
-		if (SnFFlg) {					// SunFlare
-			SnF_.asp = CamAsp;			// Camera Aspect
-			// Update Camera Rotation
-			if (CamSel) {				// Linked
-				SnF_.cam.x = CamLL2.x;	
-				SnF_.cam.y = CamLL2.y;
-			}
-			else {						// Not Linked
-				SnF_.cam.x = cam_.lld.x;
-				SnF_.cam.y = cam_.lld.y;
-			}
-			console.log(Math.round(SnF_.cam.x),Math.round(SnF_.cam.y));			
-			sunflare.update(SnF_);		// SunFlare
-		}
 		// Move Things
 		moveAirObj(air_);
 		grd_.MSP.copy(air_.MapSPS);
@@ -518,6 +474,20 @@ function rendAll() {
 	}
 	prntHUDval(air_);
 	moveCamera();
+	if (SnFFlg) {					// SunFlare
+		SnF_.asp = CamAsp;			// Camera Aspect
+		// Update Camera Rotation
+		if (CamSel) {				// Linked
+			SnF_.cam.copy(cam_.llz);	
+		}
+		else {						// Not Linked
+			SnF_.cam.x = cam_.lld.x;
+			SnF_.cam.y = cam_.lld.y;
+			SnF_.cam.z = 0;
+		}
+//		console.log(Math.round(SnF_.cam.x),Math.round(SnF_.cam.y),Math.round(cam_.llz.z));			
+		sunflare.update(SnF_);		// SunFlare
+	}
 	renderer.render(scene, camera);		// Render
 }
 
@@ -791,6 +761,7 @@ function moveCamera() {
 	camera.position.z = -cam_.lld.z;
 	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
+	cam_.llz.z = 0;
 	if (CamSel) compCamAng();
 }
 
@@ -804,8 +775,9 @@ function compCamAng() {
 	CamDeg.getWorldQuaternion(CmQuat);
 	ObjDeg.setRotationFromQuaternion(CmQuat);	
 	// Load Resulting Values into Variables (for display)
-	CamLL2.x = ObjDeg.rotation.x*RadDeg;
-	CamLL2.y = Mod360(-ObjDeg.rotation.y*RadDeg+ACHSpd);
+	cam_.llz.x = ObjDeg.rotation.x*RadDeg;
+	cam_.llz.y = Mod360(-ObjDeg.rotation.y*RadDeg);
+	cam_.llz.z = Mod360(-ObjDeg.rotation.z*RadDeg);
 }
 
 //= 4 MISC SUBROUTINES =========================================================
