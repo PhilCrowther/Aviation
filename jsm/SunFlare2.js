@@ -97,7 +97,6 @@ update(SnF_) {
 	// Test Visibility
 	let VisFlg = 0;
 	if (Math.abs(SnF_.off.x) > 45 || Math.abs(SnF_.off.y) > 45*SnF_.asp) VisFlg = 1;
-	// To Do: if the Camera is banked, these limits need to be rotated.
 	if (VisFlg) {
 		for (let i = 0; i < SnF_.num; i++) {
 			SnF_.spr[i].visible = false;	
