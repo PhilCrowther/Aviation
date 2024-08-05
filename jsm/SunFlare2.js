@@ -129,9 +129,9 @@ return deg;}
 
 //- Make Simple Mesh -----------------------------------------------------------
 function makMsh() {
-	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicNodeMaterial({transparent:true,opacity:0});
-	let mesh = new THREE.Mesh(geometry, material);
+	let geometry = new BoxGeometry(0.01,0.01,0.01); 
+	let material = new MeshBasicMaterial({transparent:true,opacity:0});
+	let mesh = new Mesh(geometry, material);
 return mesh;}
 
 //= EXPORT =====================================================================
