@@ -136,28 +136,31 @@ let SnFFlg = 1;					// 1 = SunFlare On
 let sunflare = 0;
 //- Textures
 let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
+//- Sprites
+let SnFsrc = [SnFhex,SnFhex]	// Spreit Texture Source
+let SnFsiz = [300,800];			// Sprite Size
+	SnFsiz = [300,1500];		// Sprite Size
+let SnFopa = [0.1,0.025];		// Sprite Opacity
+	SnFopa = [0.25,0.025];		// Sprite Opacity
+let SnFmlt = [0.3,-0.4];		// Offset Multiplier (1 = centered on Sun)
+let SnFdst = SunDst;			// Distance (default = 10000)
 //- Parameters
 let SnF_ = {
 		//- General
 		typ: 0,					// 0 = default, 1 = OrbitControls
 		//- Sprites
 		num: 2,					// Number of Sprites
-		dst: SunDst,			// Distance
-		src: [SnFhex,SnFhex],	// Sprite Texture Source
 		spr: [],				// Sprite Address
-		siz: [300,800],			// Sprite Size
-		mlt: [0.3,-0.4],		// Offset Multiplier (1 = centered)
+		mlt: SnFmlt,			// Offset Multiplier
 		//- Rotators
 		msh: [],				// Rotators
 		par: 0,					// Parent (Camera Clone) [OrbCon Only]
 		//- Heading Offset
 		cam: new THREE.Vector3(CamLat,CamLon,0),	// Camera Direction
 		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
-		off: new THREE.Vector2(),	// Sun Offset (lat/lon) [for display]
+		off: new THREE.Vector2(),	// Sun Offset (lat/lon) [shared]
 		asp: 0,					// Camera Aspect
 	}
-//-
-let SnFopa = [0.1,0.025];			// Sprite Opacity
 
 //= GRID DATA ==================================================================
 let GrdSiz = 804.67;			// Size of Smallest Grid Square (meters)
@@ -271,7 +274,7 @@ let life = lifeTime.div(lifeRange);
 
 //= CAMERA =====================================================================
 let CamSel = 0;	// Camera View (0 = attached to grid, 1 = attached to airplane)
-//- Create Center Mesh
+//- Create Default Center Mesh
 let	CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
 //- Cameras
@@ -279,11 +282,12 @@ let CamLLD = [new THREE.Vector3(CamLat,CamLon,200),new THREE.Vector3(CamLat,CamL
 let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.50),
 			  new THREE.Vector3(CamLLD[1].z*0.5,CamLLD[1].z*3.0,0.25)];
 let CamPar = [CamCtr,air_.AirObj];
+let CamLnk = [0,1];				// 1 = Linked to Airplane
 //- Parameters
 let cam_ = {
 		// Camera
-		lld: new THREE.Vector3(CamLat,CamLon,CamLLD[CamSel].z),
-		llz: new THREE.Vector3(CamLat,CamLon,0),	// CamSel = 1: llz.z = Camera Bank
+		lld: new THREE.Vector3(CamLat,CamLon,CamLLD[CamSel].z),	// Internal LLD
+		llz: new THREE.Vector3(CamLat,CamLon,0),				// External LLZ
 		adj: 180,				// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
@@ -476,16 +480,7 @@ function rendAll() {
 	moveCamera();
 	if (SnFFlg) {					// SunFlare
 		SnF_.asp = CamAsp;			// Camera Aspect
-		// Update Camera Rotation
-		if (CamSel) {				// Linked
-			SnF_.cam.copy(cam_.llz);	
-		}
-		else {						// Not Linked
-			SnF_.cam.x = cam_.lld.x;
-			SnF_.cam.y = cam_.lld.y;
-			SnF_.cam.z = 0;
-		}
-//		console.log(Math.round(SnF_.cam.x),Math.round(SnF_.cam.y),Math.round(cam_.llz.z));			
+		SnF_.cam.copy(cam_.llz);	// Camera LLZ		
 		sunflare.update(SnF_);		// SunFlare
 	}
 	renderer.render(scene, camera);		// Render
@@ -512,19 +507,20 @@ function initSkyBox() {
 //= SUNFLARE ===================================================================
 
 function loadSunFlr() {
+	let SnFtxt,SnFmat;
 	for (let i = 0; i < SnF_.num; i++) {
-		let SnFtxt = txtrLoader.load(SnF_.src[i]);
-		let SnFmat = new THREE.SpriteMaterial({
+		SnFtxt = txtrLoader.load(SnFsrc[i]);
+		SnFmat = new THREE.SpriteMaterial({
 			color: 0xffffff,
 			map: SnFtxt,
 			transparent:true,
-			opacity: SnFopa[i],		
+			opacity: SnFopa[i],		// Opacity
 			depthTest:false,
 			depthWrite:false
 		});
 		SnF_.spr[i] = new THREE.Sprite(SnFmat);
-		SnF_.spr[i].scale.set(SnF_.siz[i],SnF_.siz[i],1);
-		SnF_.spr[i].position.z = -SnF_.dst;		// Make Negative
+		SnF_.spr[i].scale.set(SnFsiz[i],SnFsiz[i],1);
+		SnF_.spr[i].position.z = -SnFdst;		// Make Negative
 	}
 }
 
@@ -761,11 +757,12 @@ function moveCamera() {
 	camera.position.z = -cam_.lld.z;
 	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
-	cam_.llz.z = 0;
-	if (CamSel) compCamAng();
+	cam_.llz.copy(cam_.lld);		// Default Camera External LL
+	cam_.llz.z = 0;				// Default Camera External Bank = 0
+	if (CamLnk[CamSel]) compCamAng();	// If Linked to Airplane
 }
 
-function compCamAng() {
+function compCamAng() {		// If Linked to Airplane
 	// Load Parent Rotation
 	ObjDeg.rotation.copy(cam_.par.rotation);
 	// Load Camera Adjustments
@@ -793,7 +790,7 @@ function PoM360(deg) {
 	if (deg > 180) deg = deg-360;
 return deg;}
 
-//- Make Mesh ------------------------------------------------------------------
+//- Make Simple Mesh -----------------------------------------------------------
 function makMsh() {
 	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
 	let material = new MeshBasicNodeMaterial({transparent:true,opacity:0});
