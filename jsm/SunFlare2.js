@@ -116,23 +116,23 @@ update(SnF_) {
 
 //= MISCELLANOUS SUBROUTINES ===================================================
 
-//- Converts degrees to 360
+//- Converts degrees to 360 ----------------------------------------------------
 function Mod360(deg) {
 	while (deg < 0) deg = deg+360;	// Make deg a positive number
 	deg = deg % 360;				// Compute remainder of any number divided by 360
 return deg;}
 
-//  Converts 360 degrees to +/- 180
+//- Converts 360 degrees to +/-180 ---------------------------------------------
 function PoM360(deg) {
 	if (deg > 180) deg = deg-360;
 return deg;}
 
+//- Make Simple Mesh -----------------------------------------------------------
 function makMsh() {
-	let geometry = new BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicMaterial({transparent:true,opacity:0}); 
-	let mesh = new Mesh(geometry, material);
+	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
+	let material = new MeshBasicNodeMaterial({transparent:true,opacity:0});
+	let mesh = new THREE.Mesh(geometry, material);
 return mesh;}
-
 
 //= EXPORT =====================================================================
 
