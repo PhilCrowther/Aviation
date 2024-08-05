@@ -1,6 +1,6 @@
-﻿//= SUNFLARE MODULE ============================================================
+﻿//= SUNFLARE2 MODULE ============================================================
 
-//	Version 1.0 (30 Jul 2024, rev. 1 Aug 2024)
+//	Version 1.0 (5 Aug 2024)
 //
 //	This module allows you to create a LensWlare of the Sun in both WebGL or WebGPU.
 //	This works with a default camera rotator and with OrbitControls.
@@ -13,6 +13,7 @@
 //	The Module computes an offset, which is the difference between the direction of the camera and the Sun.
 //	The offset is multiplied by a multiplier which creates the illusion of depth.
 //	If the offset is too great (the Sun is no longer visible on the screen), the sprites are turned off.
+//  This SunFlare2 Module is designed to handle situations wheer the Camera is attached to a moving object.
 //
 
 import {
@@ -86,18 +87,17 @@ update(SnF_) {
 	// Get Difference Between Sun and Camera Directions
 	SnF_.off.x = SnF_.sun.x-SnF_.cam.x;					// Camera Lat Offset
 	SnF_.off.y = PoM360(Mod360(SnF_.sun.y-SnF_.cam.y));	// Camera Lat Offset
-	if (SnF_.cam.z) {
+	if (SnF_.cam.z) {	// If the Camera is banked
 		let radius = Math.sqrt(SnF_.off.x*SnF_.off.x+SnF_.off.y*SnF_.off.y);
-		let angle0 = Mod360(Math.atan2(SnF_.off.y,SnF_.off.x)*RadDeg);
-		let angle1 = Mod360(angle0-SnF_.cam.z);
-		SnF_.off.x = radius*Math.cos(angle1*DegRad);
+		let angle0 = Mod360(Math.atan2(SnF_.off.y,SnF_.off.x)*RadDeg);	// Angle to Sun
+		let angle1 = Mod360(angle0-SnF_.cam.z);			// Subtract Bank
+		SnF_.off.x = radius*Math.cos(angle1*DegRad);	// Recompute offsets
 		SnF_.off.y = radius*Math.sin(angle1*DegRad);
 	}
-//	let ang = Mod360(Math.atan2(SnF_.off.y,SnF_.off.x)*RadDeg);
-//	console.log(Math.round(SnF_.off.x),Math.round(SnF_.off.y),Math.round(ang),Math.round(SnF_.cam.z));
 	// Test Visibility
 	let VisFlg = 0;
 	if (Math.abs(SnF_.off.x) > 45 || Math.abs(SnF_.off.y) > 45*SnF_.asp) VisFlg = 1;
+	// To Do: if the Camera is banked, these limits need to be rotated.
 	if (VisFlg) {
 		for (let i = 0; i < SnF_.num; i++) {
 			SnF_.spr[i].visible = false;	
@@ -140,5 +140,4 @@ return mesh;}
 export {SunFlare};
 
 //= CHANGE LOG =================================================================
-//- 240728: Version 1
-//- 240801: Changed attach to add
+//- 240805: Version 2
