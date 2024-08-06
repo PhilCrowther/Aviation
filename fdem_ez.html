@@ -1038,15 +1038,15 @@ function moveFlight() {
 	air_.MapSPS.z = air_.MapSpd.z;
 	// e. Animated Parts -------------------------------------------------------
 	if (cam_.Sel) {	// Internal View
-		ani_.AiL.rotation.x = -30*air_.RotDif.z*DegRad;
-		ani_.AiR.rotation.x = 30*air_.RotDif.z*DegRad;
+		ani_.AiL.rotation.x = 30*air_.RotDif.z*DegRad;
+		ani_.AiR.rotation.x = -30*air_.RotDif.z*DegRad;
 		ani_.Spd.rotation.x = -air_.ACPadj*DegRad;
 	}
 	else {	// External View
 		ane_.Elv.rotation.x = -30*air_.RotDif.x*DegRad;
 		ane_.Rud.rotation.y = -30*air_.RotDif.y*DegRad;
-		ane_.AiL.rotation.x = -30*air_.RotDif.z*DegRad;
-		ane_.AiR.rotation.x = 30*air_.RotDif.z*DegRad;
+		ane_.AiL.rotation.x = 30*air_.RotDif.z*DegRad;
+		ane_.AiR.rotation.x = -30*air_.RotDif.z*DegRad;
 	}
 };
 
