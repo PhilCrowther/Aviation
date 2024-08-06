@@ -77,12 +77,19 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr3N.js";
 import {SunFlare} from "https://PhilCrowther.github.io/Aviation/jsm/SunFlare2.js";
 
-//= Start ======================================================================
-//- Camera ---------------------------------------------------------------------
+//= NOTES
+//- Sections relating to my Camera Rotator are designated MY CAMERA
+//- You can use this Camera Rotator to create different camera options
+//- You can:
+//-	1. Rotate around a point the map center, looking inward (like Orbit Controls)
+//- 2. Rotate around a static or moving object (like an Airplane) looking inwards.
+//- 3. Attach to a static or moving object (like an Airplane) looking outwards
+
+//= STARTING VALUES ============================================================
+//- MY CAMERA ------------------------------------------------------------------
+let CamSel = 0;					// Camera Seletion (0 = linked to grid, 1 = linked to Airplane)
 let CamLat = -10;				// Camera Direction - Vert (+/- 90)
 let CamLon = 315;				// Camera Direction - Horz (0->360)
-let CamDst = 500;				// Camera Distance (from Center)
-let CamAdj = 180;				// Adjustment (180 = looking in, 0 = looking out)
 //- Airplane -------------------------------------------------------------------
 let USorSI = "US";				// Starting Units of Measurement (US or SI)
 let BegSpd = 500;				// Aircraft Speed (miles per hour)
@@ -262,6 +269,7 @@ let air_ = {
 let ACHSpd = 0;
 
 //= JET EXHAUST ================================================================
+//- Inputs
 let SmkMat = "https://threejs.org/examples/textures/opengameart/smoke1.png";
 let SmkMap = 0;
 let lifeRange = range(0.1,1);
@@ -272,46 +280,52 @@ let scaleRange = range(.01,.02);
 let rotateRange = range(.1,4);
 let life = lifeTime.div(lifeRange);
 
-//= CAMERA =====================================================================
-let CamSel = 0;	// Camera View (0 = attached to grid, 1 = attached to airplane)
+//= MY CAMERA ==================================================================
+//let CamSel = 0;	// Starting Camera View (0 = attached to grid, 1 = attached to airplane)
 //- Create Default Center Mesh
 let	CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
-//- Cameras
+//- Camera Inputs (for 2 External Cameras, second linked to Airplane)
+let CamNum = 2;
 let CamLLD = [new THREE.Vector3(CamLat,CamLon,200),new THREE.Vector3(CamLat,CamLon,100)]
 let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.50),
 			  new THREE.Vector3(CamLLD[1].z*0.5,CamLLD[1].z*3.0,0.25)];
+let CamAdj = [180,180];			// 180 = Looking In
 let CamPar = [CamCtr,air_.AirObj];
-let CamLnk = [0,1];				// 1 = Linked to Airplane
-//- Parameters
+let CamLnk = [];				// 1 = Linked to Airplane
+for (let i = 0; i < CamNum; i++) {
+	if (CamPar[i] == air_.AirObj) CamLnk[i] = 1;
+}
+//- Shared Variables
 let cam_ = {
+		sel: CamSel,
+		num: CamNum,
+		pan: 0,
 		// Camera
-		lld: new THREE.Vector3(CamLat,CamLon,CamLLD[CamSel].z),	// Internal LLD
-		llz: new THREE.Vector3(CamLat,CamLon,0),				// External LLZ
-		adj: 180,				// Camera Adjustment (180 = look in)
+		lld: new THREE.Vector3().copy(CamLLD[CamSel]),	// Internal LLD
+		llz: new THREE.Vector3(CamLat,CamLon,0),		// External LLZ
+		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
 		rot: makMsh(),			// Camera Rotator
 		mmr: new THREE.Vector3(90,0,0.2),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
 		par: CamPar[CamSel],	// Center of Rotation
+		// Linked Airplane
+		lnk: CamLnk[CamSel],
+		qat: new THREE.Quaternion(),
+		obj: makMsh(),
+		deg: makMsh()
 }
 //- Adjustments
 	cam_.rot.rotation.order = "YXZ";
 	cam_.par.add(cam_.rot);		// Attach Rotator
-//-
-let	PanFlg = 0;					// Camera Panning
-let CmOlld = new THREE.Vector3().copy(CamLLD[CamSel]);
+	cam_.obj.rotation.order = "YXZ";
+	cam_.deg.rotation.order = "YXZ";
+	cam_.obj.add(cam_.deg);	
 //-	Controls
 let onPointerDownX, onPointerDownY;
 let onPointerDownLon, onPointerDownLat;
-//- CamSel = 1: Combined Degrees
-let CmQuat = new THREE.Quaternion();
-let ObjDeg = makMsh();
-	ObjDeg.rotation.order = "YXZ";
-let CamDeg = makMsh();
-	CamDeg.rotation.order = "YXZ";
-	ObjDeg.add(CamDeg);
 
 //= KEY BINDINGS ===============================================================
 let K_SpdU = 45;				// Speed Up (insert)
@@ -360,23 +374,22 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 let	camera = new THREE.PerspectiveCamera(55,CamAsp,1,100000);
-	camera.rotation.order = "YXZ";
-	camera.position.z = -cam_.lld.z;
-	camera.rotation.y = cam_.adj*DegRad;
-	cam_.rot.add(camera);	// Attach to rotator
 	scene.add(CamCtr);
 //- Clock
 let clock = new THREE.Clock();
 let oldTim, nowTim, difTim = 0;
 //- Inputs
+	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
 	document.addEventListener("keyup", onDocumentKeyUp, false);
+	// MY CAMERA
 	renderer.domElement.addEventListener("mousedown", onMouseDown, false);
 	renderer.domElement.addEventListener("mouseup", onMouseUp, false);
 	renderer.domElement.addEventListener("mousemove", onMouseMove, false);
 	renderer.domElement.addEventListener('mousewheel', onMouseWheel, {capture: false, passive: false});
 	renderer.domElement.addEventListener("touchstart", onTouchStart, false);
 	renderer.domElement.addEventListener("touchmove", onTouchMove, false);
+	// Buttons
 	document.getElementById("PAW").addEventListener("click", togglePause, false);
 	document.getElementById("CAM").addEventListener("click", toggleCamera, false);
 	document.getElementById("FST").addEventListener("click", toggleSpdU, false);
@@ -440,6 +453,7 @@ function loadAll() {
 
 //= 1 INITIALIZE (called by loading manager) ===================================
 function initAll() {
+	initCamera(camera,cam_);
 	initSkyBox();						// Sky, Fog and Sun
 	if (SnFFlg) sunflare = new SunFlare(scene,camera,SnF_);	// SunFlare
 	waves = new Ocean(renderer,wav_);	// Initialize Ocean
@@ -477,7 +491,7 @@ function rendAll() {
 		if (StatOn) StatOn.update();	// update stats
 	}
 	prntHUDval(air_);
-	moveCamera();
+	moveCamera(camera,cam_);
 	if (SnFFlg) {					// SunFlare
 		SnF_.asp = CamAsp;			// Camera Aspect
 		SnF_.cam.copy(cam_.llz);	// Camera LLZ		
@@ -748,33 +762,38 @@ function initJetExh() {
 		air_.AirObj.add(smokeInstancedSprite);
 }
 
-//= CAMERA =====================================================================
+//= MY CAMERA ==================================================================
 
-function moveCamera() {
+function initCamera(camera,cam_) {
+	camera.rotation.order = "YXZ";
+	camera.position.z = -cam_.lld.z;
+	camera.rotation.y = cam_.adj*DegRad;
+	cam_.rot.add(camera);		// Attach to rotator
+}
+
+function moveCamera(camera,cam_) {
 	// In external view, the camera is facing in and the armature is pointing out:
 	// * x.rotation = -CamLat
 	// * y.rotation = CamAdj - CamLon
 	camera.position.z = -cam_.lld.z;
 	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
-	cam_.llz.copy(cam_.lld);		// Default Camera External LL
+	cam_.llz.copy(cam_.lld);	// Default Camera External LL
 	cam_.llz.z = 0;				// Default Camera External Bank = 0
-	if (CamLnk[CamSel]) compCamAng();	// If Linked to Airplane
-}
-
-function compCamAng() {		// If Linked to Airplane
-	// Load Parent Rotation
-	ObjDeg.rotation.copy(cam_.par.rotation);
-	// Load Camera Adjustments
-	CamDeg.rotation.x = cam_.lld.x*DegRad;
-	CamDeg.rotation.y = -cam_.lld.y*DegRad;	
-	// Combine and Transfer Combined Rotation to ObjDeg
-	CamDeg.getWorldQuaternion(CmQuat);
-	ObjDeg.setRotationFromQuaternion(CmQuat);	
-	// Load Resulting Values into Variables (for display)
-	cam_.llz.x = ObjDeg.rotation.x*RadDeg;
-	cam_.llz.y = Mod360(-ObjDeg.rotation.y*RadDeg);
-	cam_.llz.z = Mod360(-ObjDeg.rotation.z*RadDeg);
+	if (cam_.lnk) {				// If Linked to Airplane
+		// Load Parent Rotation
+		cam_.obj.rotation.copy(cam_.par.rotation);
+		// Load Camera Adjustments
+		cam_.deg.rotation.x = cam_.lld.x*DegRad;
+		cam_.deg.rotation.y = -cam_.lld.y*DegRad;	
+		// Combine and Transfer Combined Rotation to cam_.obj
+		cam_.deg.getWorldQuaternion(cam_.qat);
+		cam_.obj.setRotationFromQuaternion(cam_.qat);	
+		// Load Resulting Values into Variables (for display)
+		cam_.llz.x = cam_.obj.rotation.x*RadDeg;
+		cam_.llz.y = Mod360(-cam_.obj.rotation.y*RadDeg);
+		cam_.llz.z = Mod360(-cam_.obj.rotation.z*RadDeg);
+	}
 }
 
 //= 4 MISC SUBROUTINES =========================================================
@@ -841,11 +860,11 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_YawR) air_.InpRot.y = 0;			// Yaw Right
 }
 
-//= Mouse Input ================================================================
+//= Mouse Input [MY CAMERA] ====================================================
 
 function onMouseDown(event) {
 	event.preventDefault();
-	PanFlg = 1;
+	cam_.pan = 1;
 	onPointerDownX = event.clientX;
 	onPointerDownY = event.clientY;
 	onPointerDownLon = cam_.lld.y;
@@ -853,12 +872,12 @@ function onMouseDown(event) {
 }
 
 function onMouseUp(event) {
-	PanFlg = 0;
+	cam_.pan = 0;
 }
 
 function onMouseMove(event) {
 //- Panning View
-	if (PanFlg) {
+	if (cam_.pan) {
 		cam_.lld.x = (onPointerDownY - event.clientY) * cam_.mmr.z + onPointerDownLat;
 		if (cam_.mmr.x) cam_.lld.x = Math.max(-cam_.mmr.x, Math.min(cam_.mmr.x, cam_.lld.x));
 		cam_.lld.y = (event.clientX - onPointerDownX) * cam_.mmr.z + onPointerDownLon;
@@ -871,7 +890,7 @@ function onMouseWheel(event) {
 	cam_.lld.z = Math.max(cam_.mmd.x, Math.min(cam_.mmd.y, cam_.lld.z));
 }
 
-//= Touch Screen Input =========================================================
+//= Touch Screen Input [MY CAMERA] =============================================
 
 function onTouchStart(event) {
 	// Single Touch
@@ -904,22 +923,7 @@ function togglePause() {
 
 //- Change Camera View
 function toggleCamera() {
-	// From External to Linked
-	if (CamSel == 0) {
-		cam_.par.remove(cam_.rot);
-		CamLLD[CamSel].copy(cam_.lld);	// Save lld
-		CamSel = 1;			
-	}
-	// From Linked to External
-	else if (CamSel == 1) {
-		cam_.par.remove(cam_.rot);
-		CamLLD[CamSel].copy(cam_.lld);	// Save lld
-		CamSel = 0;					
-	}
-	cam_.par = CamPar[CamSel]		// Load new parent
-	cam_.par.add(cam_.rot);			// Attach Rotators
-	cam_.lld.copy(CamLLD[CamSel]);	// Restore saved values
-	cam_.mmd.copy(CamMMD[CamSel]);	// In/Out - min, max, spd
+	changeCamSel();
 }
 
 //- Flight Controls
@@ -972,6 +976,21 @@ function toggleYawL() {
 function toggleYawR() {
 	if (air_.InpRot.y == 0) air_.InpRot.y = InpVal.y;
 	else air_.InpRot.y = 0;
+}
+
+//= Buttons [MY CAMERA] ========================================================
+
+function changeCamSel() {
+	cam_.par.remove(cam_.rot);				// Unlink Old Parent
+	CamLLD[cam_.sel].copy(cam_.lld);		// Save lld
+	cam_.sel++
+	if (cam_.sel == cam_.num) cam_.sel = 0;
+	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
+	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
+	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
+	cam_.par = CamPar[cam_.sel]				// Load New Parent
+	cam_.par.add(cam_.rot);					// Attach Rotators
+	cam_.lnk = CamLnk[cam_.sel];			// Type of Parent
 }
 
 //= Window Resize Input ========================================================
