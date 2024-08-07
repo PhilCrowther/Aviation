@@ -19,6 +19,12 @@ body {
 	font-weight: bold;
 }
 
+canvas {
+	width: 100%;
+	height: 100%;
+	z-index: 0;
+}
+
 /* Upper Left */
 
 .overlay1 {
