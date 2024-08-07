@@ -77,10 +77,6 @@ This version uses SI units, except for beginning values which are converted to S
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {Lensflare,LensflareElement} from "three/addons/objects/Lensflare.js";
-// Special Modules
-import {Mod360,PoM360,MaxVal,rotLLD,makMsh} from "../3js/common/air/FlightW3.js";
-import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "../3js/common/air/AnimFM2.js";
 import {
 		color,
 		texture,
@@ -91,10 +87,12 @@ import {
 		positionLocal,
 		MeshStandardNodeMaterial,
 } from 'three/nodes';
-import {nodeFrame} from 'three/addons/renderers/webgl-legacy/nodes/WebGLNodes.js';	// Nodes
+import {Lensflare,LensflareElement} from "three/addons/objects/Lensflare.js";
 // Custom Modules
-import {Ocean} from "../3js/common/air/Ocean4.js";
-import {GrdMap} from "../3js/common/air/GrdWtr3N.js";
+import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
+import {Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr3N.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4.js";
 
 //= STARTING VALUES ============================================================
 //- AIRPLANE: Start -----------------------------------------------------------
