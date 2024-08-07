@@ -27,7 +27,7 @@ This version uses SI units, except for beginning values which are converted to S
 <head>
 <title>Aircraft Viewer: FM2 - GPU - Ocean</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<link rel="stylesheet" href="../3js/common/styles/butn_fm2.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_fm2.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -64,9 +64,9 @@ This version uses SI units, except for beginning values which are converted to S
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.163.0/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/",
-			"three/nodes": "https://unpkg.com/three@0.163.0/examples/jsm/nodes/Nodes.js"
+			"three": "https://unpkg.com/three@0.166.1/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.166.1/examples/jsm/",
+			"three/nodes": "https://unpkg.com/three@0.166.1/examples/jsm/nodes/Nodes.js"
 		}
 	}
 </script>
@@ -635,7 +635,6 @@ function initAll() {
 
 function rendAll() {
 	// This block runs while resources are loading.
-	nodeFrame.update();					// ### Nodes
 	if(RESOURCES_LOADED == false){
 		boxrot = Mod360(boxrot - 3);
 		loadingScreen.box.rotation.set(Math.PI,0,boxrot * DegRad);
