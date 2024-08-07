@@ -921,7 +921,7 @@ function moveAirObj() {
 // Load Sounds
 function loadSounds() {	
 	//- My Engine --------------------------------------------------------------
-	let fname = ACPath + "/fx/" + acsnd1;
+	let fname = ACPath + "sounds/" + acsnd1;
 	audioLoader.load(fname, function(buffer) {
 		sound1.setBuffer(buffer);
 		sound1.setRefDistance(RefDst);
@@ -929,7 +929,7 @@ function loadSounds() {
 		sound1.setVolume(0);
 	});
 	//- My Prop ----------------------------------------------------------------
-	fname = ACPath + "/fx/" + acsnd2;
+	fname = ACPath + "sounds/" + acsnd2;
 	audioLoader.load(fname, function(buffer) {
 		sound2.setBuffer(buffer);
 		sound2.setRefDistance(RefDst);
