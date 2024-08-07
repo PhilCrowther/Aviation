@@ -687,15 +687,6 @@ function initSkyBox() {
 let SunPos = new THREE.Vector3(SunLLD.x,Mod360(180-SunLLD.y),SunLLD.z);
 	SunPos = rotLLD(SunPos);	// Set Position above Light
 	sunLight.position.copy(SunPos).normalize();	
-	// Lensflare
-let	spotLight = new THREE.PointLight(0xffffff);
-	scene.add(spotLight);
-	spotLight.position.copy(SunPos);
-	let LF = new Lensflare();
-	LF.addElement(new LensflareElement(LF0Txt, 256, 0));
-	LF.addElement(new LensflareElement(LF1Txt, 32, 0.2));
-	LF.addElement(new LensflareElement(LF1Txt, 256, 0.9));
-	spotLight.add(LF);
 }
 
 //= GEOMAT =====================================================================
