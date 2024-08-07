@@ -4,24 +4,9 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Apr 2024
+Version dated 7 May 2024
 
-This demo program contains sample routines for:
-* Loading and updating an animated model of an FM2 airplane created in Blender.
-* Creating scenery for the ocean and a couple of islands.
-* Loading animated objects, including another airplane and a carrier
-* Creating hard surfaces for landing, including a moving surface on the carrier.
-* Loading and playing sounds.
-
-FILE STRUCTURE:
-3js [dir]
--- common [dir]
----- (contains subdirectories for my modules, models, scenery, skyboxes, etc.)
-Aircraft [dir]
--- FM2_vc27_ocean3N.html - this file
-
-UNITS:
-This version uses SI units, except for beginning values which are converted to SI units.
+This shows an animated model of an airplane in flight over an animated ocean using nodes.
 -->
 
 <head>
@@ -75,8 +60,6 @@ This version uses SI units, except for beginning values which are converted to S
 
 // Basic Modules
 import * as THREE from "three";
-
-import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {
 		color,
 		texture,
@@ -90,10 +73,9 @@ import {
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 import Stats from "three/addons/libs/stats.module.js";
-import {Lensflare,LensflareElement} from "three/addons/objects/Lensflare.js";
-// Custom Modules
-import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
+// Special Modules
 import {Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3.js";
+import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr3N.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4.js";
 
@@ -152,7 +134,6 @@ let RefDst = 25;					// Reference distance for Positional Sound
 let PawsOn = 0;						// Pause
 let LodFlg = 0;
 let SndFlg = 0;
-let LFFlag = 1;						// Lensflare flag			
 //-	Stats
 let stats = 1;						// Stats ((0 = off, 1 = on)
 //-	Altitude Adjustment
@@ -308,13 +289,9 @@ let anm_ = {
 //= TEXTURES ===================================================================
 //- SkyBox
 let SBPath = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
-//-	LensFlare
-let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
-let LF0Txt, LF1Txt = 0;
 //- Ocean
-let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";	// Nodes
-let	RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";	// Nodes
+let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
+let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;						// !!! Change this for each image
@@ -483,6 +460,7 @@ let ambLight = new THREE.AmbientLight(SunCol, 0.5);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.castShadow = true;
+	sunLight.target.position.set(0,0,0);
 	sunLight.shadow.bias = -0.00005;	// Default = 0 - causes lines;
 	sunLight.shadow.mapSize.width = 8192;
 	sunLight.shadow.mapSize.height = 8192;
@@ -492,8 +470,6 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.shadow.camera.right = LgtBox;
 	sunLight.shadow.camera.top = LgtBox;
 	sunLight.shadow.camera.bottom = -LgtBox;
-	sunLight.shadow.bias = - 0.0005;					// ### WebGPU
-	sunLight.target.position.set(0,0,0);
 	scene.add(sunLight);
 //- Sounds
 let	listener = new THREE.AudioListener();
@@ -556,6 +532,7 @@ let RESOURCES_LOADED = false;
 	};
 let txtrLoader = new THREE.TextureLoader(loadingManager);
 let imagLoader = new THREE.ImageLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 let gltfLoader = new GLTFLoader(loadingManager);
 let audioLoader = new THREE.AudioLoader(loadingManager);
 //- Wait Screen
@@ -645,7 +622,8 @@ function rendAll() {
 		// Update time
 		nowTim = clock.getElapsedTime();
 		difTim = nowTim-oldTim;
-		wavTim = difTim*wavSpd || 0.0;
+//		wavTim = difTim*wavSpd || 0.0;
+		wavTim += difTim*wavSpd || 0.0;	// ### GPU
 		oldTim = nowTim;
 		// Move Objects
 		moveAirObj();					// Move aircaft
@@ -660,22 +638,18 @@ function rendAll() {
 		prntHUDval();					// print HUD values
 		if (stats) stats.update();		// update stats
 	}
-	renderer.render(scene,camera);
+	renderer.render(scene, camera);
 }
 
 //= SKY BOX ====================================================================
 
 function loadSkyBox() {
-	let fpath = SBPath;
-	let envMap = new THREE.CubeTextureLoader(loadingManager)
+	let envMap = cubeLoader
 		.setPath(fpath)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace;	// ### r152
 	scene.background = envMap;
-	// LensFlare
-	LF0Txt = txtrLoader.load(LF0Src);
-	LF1Txt = txtrLoader.load(LF1Src);
 }
 
 function initSkyBox() {
@@ -1333,20 +1307,13 @@ function toggleYawR() {
 	else InpKey.y = 0.1;
 }
 
-// Window Resize
-function onWindowResize() {
-	camera.aspect = window.innerWidth/window.innerHeight;
-	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth,window.innerHeight);
-}
+//= Window Resize Input ========================================================
 
-/* CHANGES ====================================================================
- * 230511:	This version
- * 240218:	Removed internal function references to common variable
- * 240415:	Added clouds
- * 240420:	Converted to SI units
- * 240424:	Changed all air_ variables to 8 character names
-*/
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
 </script>
 </body>
