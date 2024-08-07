@@ -218,7 +218,7 @@ let InpPwr = 0;							// Power
 
 //- Load Models and Animations -------------------------------------------------
 //-	File Path
-let ACPath = "../3js/common/models/fm2/";	// Used to load models and sounds
+let ACPath = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
 //-	Animation Mixers - My Aircraft
 let ACFile = "fm2_flyt_caf_npa.glb";	// Name of aircraft model file (rotated blender file)
 let mxr_ = {
@@ -313,8 +313,8 @@ let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
 let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
 let LF0Txt, LF1Txt = 0;
 //- Ocean
-let DifSrc = "../3js/common/textures/transition1F.png";					// Nodes
-let	RufSrc = "../3js/common/textures/transition5.png";					// Nodes
+let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";	// Nodes
+let	RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";	// Nodes
 let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;						// !!! Change this for each image
@@ -600,7 +600,7 @@ function WaitScreen() {
 	// Set up the loading screen scene.
 	// It can be treated just like our main scene.
 	let geometry = new THREE.PlaneGeometry(1,1);
-	let texture = txtrLoader.load("../3js/common/textures/prop.jpg");
+	let texture = txtrLoader.load("https://PhilCrowther.github.io/Aviation/textures/wait/prop.jpg");
 	let material = new THREE.MeshBasicMaterial({map: texture});
 	loadingScreen.box = new THREE.Mesh(geometry, material);
 	loadingScreen.box.rotation.set(Math.PI,0,0);
