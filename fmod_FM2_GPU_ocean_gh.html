@@ -646,7 +646,7 @@ function rendAll() {
 
 function loadSkyBox() {
 	let envMap = cubeLoader
-		.setPath(fpath)
+		.setPath(SBPath)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace;	// ### r152
