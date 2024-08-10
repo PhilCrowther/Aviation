@@ -49,9 +49,9 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.166.1/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.166.1/examples/jsm/",
-			"three/nodes": "https://unpkg.com/three@0.166.1/examples/jsm/nodes/Nodes.js"
+			"three": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.167.1/examples/jsm/"
 		}
 	}
 </script>
@@ -69,16 +69,15 @@ import {
 		attribute,
 		positionLocal,
 		MeshStandardNodeMaterial,
-} from 'three/nodes';
+} from 'three/tsl';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
-import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
 // Special Modules
 import {Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
 //= NOTES ======================================================================
 //	* Shadows = Jaggies
@@ -460,10 +459,10 @@ let CamLLD = [new THREE.Vector3(CamLat,CamLon,30),
 			  new THREE.Vector3(CamLat,CamLon,30),
 			  new THREE.Vector3(0,0,-0.1)];
 let CamAdj = [180,180,0];		// 180 = Looking In
-let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.50),
+let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.50),	// In/Out - min,max,spd
 			  new THREE.Vector3(CamLLD[1].z*0.5,CamLLD[1].z*3.0,0.25),
-			  new THREE.Vector3(45,110,0.2)];
-let CamMMR = [new THREE.Vector3(80,0,0.2),
+			  new THREE.Vector3(0,1,0.0001)];	// Cockpit View: Throttle - min,max,spd
+let CamMMR = [new THREE.Vector3(80,0,0.2),	// Rotate - min/max Lat/Lon,rspd
 			  new THREE.Vector3(80,0,0.2),
 			  new THREE.Vector3(45,110,0.1)];
 let CamPar = [CamCtr,air_.AirObj,CamPVC];
@@ -521,7 +520,7 @@ let K_Paws = 80;			// Pause (p)
 //- Display
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x000000);
-let renderer = new WebGPURenderer({antialias: true});	// ### WebGPU
+let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -545,9 +544,9 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 //	sunLight.shadow.camera.bottom = -ShdBox;
 //	sunLight.shadow.mapSize.width = 8192;
 //	sunLight.shadow.mapSize.height = 8192;	
-//	sunLight.shadow.bias = 0.0005;	// Some shadows;
-//	sunLight.target.position.set(0,0,0);
-	
+//	sunLight.shadow.bias = -0.0005;	// Some shadows;
+	sunLight.target.position.set(0,0,0);
+	// Sample Program
 	sunLight.shadow.camera.near = 0.1;
 	sunLight.shadow.camera.far = 500;
 	sunLight.shadow.camera.right = 17;
@@ -557,8 +556,12 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
 	sunLight.shadow.radius = 4;
-	sunLight.shadow.bias = - 0.0005;		// jaggies
-	
+	sunLight.shadow.bias = - 0.0003;		// jaggies
+//	sunLight.shadow.bias = - 0.00005;		// bigger jaggies
+//	sunLight.shadow.bias = - 0.0005;		// jaggies
+//	sunLight.shadow.bias = - 0.0001;		// jaggies
+//	sunLight.shadow.bias = - 0.001;			// jaggies & back disappears
+	//
 	scene.add(sunLight);
 //- Sounds
 let	listener = new THREE.AudioListener();
@@ -1140,9 +1143,24 @@ function moveCamera(camera,cam_) {
 	// In external view, the camera is facing in and the armature is pointing out:
 	// * x.rotation = -CamLat
 	// * y.rotation = CamAdj - CamLon
+	// Move Camera In/Out
 	camera.position.z = -cam_.lld.z;
+	// Rotate Camera Lat
+	if (cam_.mmr.x) cam_.lld.x = Math.max(-cam_.mmr.x, Math.min(cam_.mmr.x, cam_.lld.x));	
 	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
+//	cam_.rot.rotation.x = -cam_.lld.x;		// causes Error
+	// Rotate Camera Lon
+	// New [too far left slam to max right]
+//		if (cam_.mmr.y) cam_.lld.y = Math.max(-cam_.mmr.y, Math.min(cam_.mmr.y, cam_.lld.y))
+//		cam_.lld.y = Mod360(cam_.lld.y);
+		// Old [same, but all the way left to all the way right
+		cam_.lld.y = Mod360(cam_.lld.y);
+		if (cam_.flg) {	// Limit Lon (Internal View Only)
+			if (cam_.lld.y > 180 && cam_.lld.y < (360-cam_.mmr.y)) cam_.lld.y = (360-cam_.lld.y);
+			if (cam_.lld.y < 180 && cam_.lld.y > cam_.mmr.y) cam_.lld.y = cam_.mmr.y;
+		}
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
+//	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y);	// Causes Error
 	//= Determine Camera Rotation
 	cam_.llz.copy(cam_.lld);	// Default Camera External LL
 	cam_.llz.z = 0;				// Default Camera External Bank = 0
@@ -1242,21 +1260,18 @@ function onMouseUp(event) {
 }
 
 function onMouseMove(event) {
-// Panning View
+// Panning View (Results are in Degrees, not Radians)
 	if (cam_.pan) {
 		cam_.lld.x = (onPointerDownY - event.clientY)*cam_.mmr.z + onPointerDownLat;
-		if (cam_.mmr.x) cam_.lld.x = Math.max(-cam_.mmr.x, Math.min(cam_.mmr.x, cam_.lld.x));
 		cam_.lld.y = (event.clientX - onPointerDownX)*cam_.mmr.z + onPointerDownLon;
-		if (cam_.mmr.y) cam_.lld.y = Math.max(-cam_.mmr.y, Math.min(cam_.mmr.y, cam_.lld.y));
-		cam_.lld.y = Mod360(cam_.lld.y);
 	}
 }
 
 function onMouseWheel(event) {
-	if (cam_.flg) {	// Internal View
-		air_.PwrPct = air_.PwrPct - event.deltaY * 0.0001;	// Move Throttle: Increment = 1%
-		if (air_.PwrPct > 1) air_.PwrPct = 1;
-		if (air_.PwrPct < 0) air_.PwrPct = 0;
+	if (cam_.flg) {	// Cockpit View
+		air_.PwrPct = air_.PwrPct - event.deltaY * cam_.mmd.z;	// Move Throttle: Increment = 1%
+		if (air_.PwrPct > cam_.mmd.y) air_.PwrPct = cam_.mmd.y;	// Max Throttle
+		if (air_.PwrPct < cam_.mmd.x) air_.PwrPct = cam_.mmd.x;	// Min Throttle
 	}
 	else {	// External View	
 		cam_.lld.z = cam_.lld.z + event.deltaY*cam_.mmd.z;
