@@ -13,7 +13,6 @@
 // Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
 import {
-	Camera,
 	ClampToEdgeWrapping,
 	DataTexture,
 	FloatType,
@@ -85,23 +84,23 @@ Ocean(renderer,wav_) {
 	this.initPhase = true;
 	this.pingPhase = true;
 	//- Create Buffers ---------------------------------------------------------	
-	this.initSpectrumTexture = StorageTexture(this.Res,this.Res);
+	this.initSpectrumTexture = new StorageTexture(this.Res,this.Res);
 	this.initSpectrumTexture.type = FloatType;
-	this.pingPhaseTexture = StorageTexture(this.Res,this.Res);
+	this.pingPhaseTexture = new StorageTexture(this.Res,this.Res);
 	this.pingPhaseTexture.type = FloatType;
-	this.pongPhaseTexture = StorageTexture(this.Res,this.Res);
+	this.pongPhaseTexture = new StorageTexture(this.Res,this.Res);
 	this.pongPhaseTexture.type = FloatType;
-	this.compSpectrumTexture = StorageTexture(this.Res,this.Res);
+	this.compSpectrumTexture = new StorageTexture(this.Res,this.Res);
 	this.compSpectrumTexture.type = FloatType;
-	this.butterflyTexture = StorageTexture(Math.log2(this.Res),this.Res);
+	this.butterflyTexture = new StorageTexture(Math.log2(this.Res),this.Res);
 	this.butterflyTexture.type = FloatType;
-	this.pingTransformTexture = StorageTexture(this.Res,this.Res);
+	this.pingTransformTexture = new StorageTexture(this.Res,this.Res);
 	this.pingTransformTexture.type = FloatType;
-	this.pongTransformTexture = StorageTexture(this.Res,this.Res);
+	this.pongTransformTexture = new StorageTexture(this.Res,this.Res);
 	this.pongTransformTexture.type = FloatType;
-	this.dispMapTexture = StorageTexture(this.Res,this.Res);
+	this.dispMapTexture = new StorageTexture(this.Res,this.Res);
 	this.dispMapTexture.type = FloatType;
-	this.normMapTexture = StorageTexture(this.Res,this.Res);
+	this.normMapTexture = new StorageTexture(this.Res,this.Res);
 	this.normMapTexture.type = FloatType;
 	//- Adjustments - Filter
 	this.initSpectrumTexture.magFilter = this.initSpectrumTexture.minFilter = NearestFilter;
