@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================
 
-// Version 4a (updated 10 Aug 2024)
+// Version 4a (updated 11 Aug 2024)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -21,8 +21,7 @@ import {
 	NearestFilter,
 	RepeatWrapping,
 	RGBAFormat,
-	StorageTexture,
-	WebGLRenderTarget
+	StorageTexture
 } from 'three';
 import {
 	vec2,
@@ -645,3 +644,4 @@ export {Ocean};
 // 230628: Version 2a	: Many improvements to original code and Oceean is now WebGL2 compatible (the three.js default)
 // 240210: Version 3	: Updated to include 2023 changes to shaders, including new names; Moved computation initial spectrum comp back to render
 // 240719: Version 4	: Converted to WebGPU module
+// 240811: Version 4a	: Updated to r167 and cleaned up imports
