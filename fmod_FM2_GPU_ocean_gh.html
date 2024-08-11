@@ -10,7 +10,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 -->
 
 <head>
-<title>Aircraft Viewer: FM2 - GPU - Ocean</title>
+<title>Airplane Model: FM2 - GPU - Ocean</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_fm2.css">
 </head>
@@ -678,7 +678,7 @@ function initAll() {
 	grd_.NMS = wav_.NMS;
 	grids = new GrdMap(grd_,scene);
 	if (SnFFlg) initSFlare(scene,camera,SnF_);	// SunFlare
-	initClouds();
+//	initClouds();
 	// Other
 	initCamera(camera,cam_);		// position camera
 	prntHUDval();						// print HUD values
@@ -714,7 +714,7 @@ function rendAll() {
 		waves.render(wavTim); // Render Ocean
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update(grd_);	// Grids
-		moveClouds();
+//		moveClouds();
 		// Other
 		moveSounds(air_);
 		prntHUDval();		// print HUD values
