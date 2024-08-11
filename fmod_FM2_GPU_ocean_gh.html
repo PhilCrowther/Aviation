@@ -60,16 +60,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 
 // Basic Modules
 import * as THREE from "three";
-import {
-		color,
-		texture,
-		normalMap,
-		float,
-		vec2,
-		attribute,
-		positionLocal,
-		MeshStandardNodeMaterial,
-} from 'three/tsl';
+import {color,float,MeshStandardNodeMaterial,normalMap,positionLocal,texture,vec2} from 'three/tsl';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
@@ -459,12 +450,12 @@ let CamLLD = [new THREE.Vector3(CamLat,CamLon,30),
 			  new THREE.Vector3(CamLat,CamLon,30),
 			  new THREE.Vector3(0,0,-0.1)];
 let CamAdj = [180,180,0];		// 180 = Looking In
-let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.50),	// In/Out - min,max,spd
-			  new THREE.Vector3(CamLLD[1].z*0.5,CamLLD[1].z*3.0,0.25),
+let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
+			  new THREE.Vector3(CamLLD[1].z*0.5,CamLLD[1].z*3.0,0.1),
 			  new THREE.Vector3(0,1,0.0001)];	// Cockpit View: Throttle - min,max,spd
 let CamMMR = [new THREE.Vector3(80,0,0.2),	// Rotate - min/max Lat/Lon,rspd
 			  new THREE.Vector3(80,0,0.2),
-			  new THREE.Vector3(45,110,0.1)];
+			  new THREE.Vector3(45,110,0.2)];
 let CamPar = [CamCtr,air_.AirObj,CamPVC];
 let CamFlg = [0,0,1];		// 1 = cockpit view
 let CamLnk = [0,1,1];		// 1 = Linked to Airplane
@@ -1148,7 +1139,7 @@ function moveCamera(camera,cam_) {
 	// Rotate Camera Lat
 	if (cam_.mmr.x) cam_.lld.x = Math.max(-cam_.mmr.x, Math.min(cam_.mmr.x, cam_.lld.x));	
 	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
-//	cam_.rot.rotation.x = -cam_.lld.x;		// causes Error
+	if(cam_.flg) cam_.rot.rotation.x = Mod360(cam_.lld.x)*DegRad;
 	// Rotate Camera Lon
 	// New [too far left slam to max right]
 //		if (cam_.mmr.y) cam_.lld.y = Math.max(-cam_.mmr.y, Math.min(cam_.mmr.y, cam_.lld.y))
@@ -1275,7 +1266,7 @@ function onMouseWheel(event) {
 	}
 	else {	// External View	
 		cam_.lld.z = cam_.lld.z + event.deltaY*cam_.mmd.z;
-		cam_.lld.z = Math.max(cam_.mmd.y, Math.min(cam_.mmd.x, cam_.lld.z));		
+		cam_.lld.z = Math.max(cam_.mmd.x, Math.min(cam_.mmd.y, cam_.lld.z));		
 	}
 }
 

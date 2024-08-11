@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Aug 2024
+Version dated 19 Jul 2024
 
 This demo program uses included versions of the Ocean and GrdMap modules.
 
@@ -43,38 +43,22 @@ This demo program uses included versions of the Ocean and GrdMap modules.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.166.1/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.166.1/examples/jsm/",
-			"three/nodes": "https://unpkg.com/three@0.166.1/examples/jsm/nodes/Nodes.js"
+			"three": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.167.1/examples/jsm/"
 		}
 	}
 </script>
 
 <script type="module">
 import * as THREE from "three";
-import {
-		color,
-		texture,
-		normalMap,
-		float,
-		vec2,
-		attribute,
-		positionLocal,
-		MeshStandardNodeMaterial,
-		MeshBasicNodeMaterial,
-		range,
-		mix,
-		uv,
-		timerLocal,
-		SpriteNodeMaterial	
-} from 'three/nodes';
+import {color,MeshBasicNodeMaterial,MeshStandardNodeMaterial,mix,positionLocal,
+		range,SpriteNodeMaterial,texture,timerLocal,uv,vec2} from 'three/tsl';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
-import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
-import StorageTexture from 'three/addons/renderers/common/StorageTexture.js';
 import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr3N.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 import {SunFlare} from "https://PhilCrowther.github.io/Aviation/jsm/SunFlare2.js";
 
 //= NOTES
@@ -178,23 +162,25 @@ let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 let GeoAll = [];				// Array used to assemble Grids
 
 //= ANIMATED OCEAN =============================================================
-let WtrCol = 0x1060ff;			// Water (Nodes)
+//let WtrCol = 0x1060ff;			// Water (Nodes)
+let WtrCol = 0x081080;			// Water (Navy) ### Ocean_GPU
 //- Textures
 let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
 let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
-let ImgSiz = 512;						// !!! Change this for each image
+let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
 let	context = canvas.getContext('2d');
-	context.translate(0, ImgSiz);		// Flips vertical for three.js
+	context.translate(0, ImgSiz);	// Flips vertical for three.js
 	context.scale(1,-1);
 //- Constants
 let WndSpd = 20.0;
 let WndHdg = 0.0;
-let Choppy = 1.6;
+//let Choppy = 1.6;
+let Choppy = 2.0;				// ### Ocean_GPU
 let WavMax = 5;					// Maximum wave height (set height of outer waves)
 //- Variables
 let waves = 0;
@@ -208,7 +194,7 @@ let wav_ = {
 		// Animated Maps
 		Dsp: 0,					// The Displacement Map
 		Nrm: 0,					// The Normal Map
-		NMS: vec2(1.0,1.0),	// Normal Map Scale (flip Y for left-handed maps)
+		NMS: vec2(1.0,1.0),		// Normal Map Scale (flip Y for left-handed maps)
 	};
 let wavTim = 0;
 // External Values
@@ -344,7 +330,7 @@ let K_Paws = 80;				// Pause (p)
 //- Display
 let	scene = new THREE.Scene();
 	scene.background = new THREE.Color(FogCol);
-let renderer = new WebGPURenderer({antialias: true});	// ### WebGPU
+let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
     renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -401,6 +387,7 @@ let oldTim, nowTim, difTim = 0;
 	document.getElementById("PTU").addEventListener("click", togglePitU, false);
 	document.getElementById("YWL").addEventListener("click", toggleYawL, false);
 	document.getElementById("YWR").addEventListener("click", toggleYawR, false);
+	// Window Resize
 	window.addEventListener("resize", onWindowResize, false);
 //- Loading Manager
 	// Create a loading manager to set RESOURCES_LOADED when appropriate.
@@ -454,7 +441,7 @@ function loadAll() {
 //= 1 INITIALIZE (called by loading manager) ===================================
 function initAll() {
 	initCamera(camera,cam_);
-	initSkyBox();						// Sky, Fog and Sun
+	initSkyBox();			// Sky, Fog and Sun
 	if (SnFFlg) sunflare = new SunFlare(scene,camera,SnF_);	// SunFlare
 	waves = new Ocean(renderer,wav_);	// Initialize Ocean
 	grd_.Dsp = wav_.Dsp;
@@ -462,13 +449,13 @@ function initAll() {
 	grd_.NMS = wav_.NMS;
 	grd_.MSP.copy(air_.MapSPS);
 	grids = new GrdMap(grd_,scene);
-	initAirObj(air_);						// Load Aircraft
+	initAirObj(air_);		// Load Aircraft
 	initJetExh();
 	prntHUDval(air_);
 	// Show stats
-	if (StatOn) {							// show stats
+	if (StatOn) {			// show stats
 		StatOn = new Stats();
-		StatOn.setMode(0);					// FPS only
+		StatOn.setMode(0);	// FPS only
 		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
 		container.appendChild(StatOn.dom);
 	}
@@ -486,18 +473,18 @@ function rendAll() {
 		// Move Things
 		moveAirObj(air_);
 		grd_.MSP.copy(air_.MapSPS);
-		waves.render(wavTim);			// Render Ocean
-		grids.update(grd_);				// Grids
-		if (StatOn) StatOn.update();	// update stats
+		waves.render(wavTim); // Render Ocean
+		grids.update(grd_);	// Grids
+		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval(air_);
 	moveCamera(camera,cam_);
-	if (SnFFlg) {					// SunFlare
-		SnF_.asp = CamAsp;			// Camera Aspect
-		SnF_.cam.copy(cam_.llz);	// Camera LLZ		
-		sunflare.update(SnF_);		// SunFlare
+	if (SnFFlg) {			// SunFlare
+		SnF_.asp = CamAsp;	// Camera Aspect
+		SnF_.cam.copy(cam_.llz); // Camera LLZ		
+		sunflare.update(SnF_);	// SunFlare
 	}
-	renderer.render(scene, camera);		// Render
+	renderer.render(scene, camera); // Render
 }
 
 //= SKY BOX ====================================================================
@@ -507,7 +494,7 @@ function loadSkyBox() {
 		.setPath(SBPath)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
-	envMap.colorSpace = THREE.SRGBColorSpace;	// ### r152
+	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = envMap;
 }
 
@@ -528,7 +515,7 @@ function loadSunFlr() {
 			color: 0xffffff,
 			map: SnFtxt,
 			transparent:true,
-			opacity: SnFopa[i],		// Opacity
+			opacity: SnFopa[i], // Opacity
 			depthTest:false,
 			depthWrite:false
 		});
