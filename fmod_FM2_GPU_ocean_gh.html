@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Aug 2024
+Version dated 14 Aug 2024
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -526,31 +526,16 @@ let ambLight = new THREE.AmbientLight(SunCol, 0.5);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.position.copy(SunPos).normalize();
 	sunLight.castShadow = true;
-//	sunLight.shadow.camera.near = 0.001;
-//	sunLight.shadow.camera.far = ShdDst+ShdBox;
-//	sunLight.shadow.camera.right = ShdBox;
-//	sunLight.shadow.camera.left = -ShdBox;
-//	sunLight.shadow.camera.top = ShdBox;
-//	sunLight.shadow.camera.bottom = -ShdBox;
-//	sunLight.shadow.mapSize.width = 8192;
-//	sunLight.shadow.mapSize.height = 8192;	
-//	sunLight.shadow.bias = -0.0005;	// Some shadows;
-	sunLight.target.position.set(0,0,0);
-	// Sample Program
-	sunLight.shadow.camera.near = 0.1;
+	sunLight.shadow.camera.near = 0.001;	// no dif?
 	sunLight.shadow.camera.far = 500;
 	sunLight.shadow.camera.right = 17;
 	sunLight.shadow.camera.left = - 17;
 	sunLight.shadow.camera.top	= 17;
 	sunLight.shadow.camera.bottom = - 17;
-	sunLight.shadow.mapSize.width = 2048;
-	sunLight.shadow.mapSize.height = 2048;
+	sunLight.shadow.mapSize.width = 8192;	// best!
+	sunLight.shadow.mapSize.height = 8192;
 	sunLight.shadow.radius = 4;
-	sunLight.shadow.bias = - 0.0003;		// jaggies
-//	sunLight.shadow.bias = - 0.00005;		// bigger jaggies
-//	sunLight.shadow.bias = - 0.0005;		// jaggies
-//	sunLight.shadow.bias = - 0.0001;		// jaggies
-//	sunLight.shadow.bias = - 0.001;			// jaggies & back disappears
+	sunLight.shadow.bias = - 0.0001;		// best
 	//
 	scene.add(sunLight);
 //- Sounds
