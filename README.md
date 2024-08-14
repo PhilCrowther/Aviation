@@ -18,5 +18,5 @@ For example: https://philcrowther.github.io/Aviation/fmod_FM2_GPU_ocean_gh.html
 NOTE:
 When we started this Repo, you could use NodeMaterials with WebGL2. This ended with r165. Effective with r166, you could use NodeMatgerials only with WebGPU. And r167 made significant changes to the three.js WebGPU modules. 
 The Ocean3 module works with NodeMaterials and WebGL2 up to r165. The Ocean4 module works with NodMaterials and WebGPU up to r166. The Ocean4a module works with NodeMaterials and WebGPU starting with r167. 
-The SunFlare module works with a simple Camera rotator or Orbit Controls. The SunFlare2 modules works with a compound Camera rotator (and not OrbitControls)
-Thanks to Attila Schroeder for his encouragement and assistance.
+The SunFlare module works with a simple Camera rotator or Orbit Controls. The SunFlare2 modules works with a compound Camera rotator (and not OrbitControls)<br>
+Special thanks to Attila Schroeder for his encouragement and assistance.
