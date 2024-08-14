@@ -27,5 +27,5 @@ The Ocean3 and GrdWtr3 modules work with Standard Materials and WebGL2. The Ocea
 </p><p>
 Both SunFlare modules should work with WebGL2 and WebGPU. The SunFlare module works with a simple Camera rotator or Orbit Controls. The SunFlare2 modules works with a compound Camera rotator (and not OrbitControls).
 </p><p>
-Special thanks to Attila Schroeder for his encouragement and assistance.
+Special thanks to Attila Schroeder for his encouragement and assistance in converting everything to WebGPU and NodeMaterials and to all the volunteers at three.js for taking who took on the daunting task of modifying three.js to work with NodeMaterials and WebGPU.
 </p>
