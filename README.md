@@ -1,4 +1,4 @@
-<h2>An Aviation Resources Repository (Rev. 14 Aug 2024)</h2>
+<h2>An Aviation Resources Repository (rev. 14 Aug 2024)</h2>
 <p>
 This repository contains aviation-related resources designed to simulate 3D flight in three.js.
 </p><p>
