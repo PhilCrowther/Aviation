@@ -439,6 +439,7 @@ let anm_ = {
 //- Create Default Center Mesh
 let	CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
+//- Create Cockpit Attach Point
 let	CamPVC = makMsh();
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
@@ -1123,6 +1124,7 @@ function moveCamera(camera,cam_) {
 	// Move Camera Rotator Lat
 	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 	if(cam_.flg) cam_.rot.rotation.x = Mod360(cam_.lld.x)*DegRad;
+	// Move Camera Rotator Lon
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
 	//= Determine Camera Rotation
 	cam_.llz.copy(cam_.lld);	// Default Camera External LL
@@ -1295,7 +1297,7 @@ function toggleCamera() {
 	// Old CamSel
 	cam_.par.remove(cam_.rot);			// Unlink Old Parent
 	CamLLD[cam_.sel].copy(cam_.lld);	// Save lld
-	// Change CamSel
+	// New CamSel
 	cam_.sel++
 	if (cam_.sel == cam_.num) cam_.sel = 0;
 	// 0 = Level (from Cockpit)
@@ -1331,16 +1333,16 @@ function toggleCamera() {
 		// Canopy
 		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anmfps);
 	}
-	//
-	cam_.lld.copy(CamLLD[cam_.sel]);	// Restore Saved Values
-	cam_.mmd.copy(CamMMD[cam_.sel]);	// In/Out - min, max, spd
-	cam_.adj = CamAdj[cam_.sel];		// Load Adjustment
+	// Common Changes
+	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
+	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
+	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
 	camera.rotation.y = cam_.adj*DegRad;	// 180 = Looking in
-	cam_.mmr.copy(CamMMR[cam_.sel]);	// Rotation min, max, spd
-	cam_.par = CamPar[cam_.sel]			// Load New Parent
-	cam_.par.add(cam_.rot);				// Attach Rotators
-	cam_.flg = CamFlg[cam_.sel];		// 1 = cockpit
-	cam_.lnk = CamLnk[cam_.sel];		// 1 = Linked to Airplane
+	cam_.mmr.copy(CamMMR[cam_.sel]);		// Rotation min, max, spd
+	cam_.par = CamPar[cam_.sel]				// Load New Parent
+	cam_.par.add(cam_.rot);					// Attach Rotators
+	cam_.flg = CamFlg[cam_.sel];			// 1 = cockpit
+	cam_.lnk = CamLnk[cam_.sel];			// 1 = Linked to Airplane
 }
 
 // Toggle Reference Lines

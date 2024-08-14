@@ -273,15 +273,16 @@ let	CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
 //- Camera Inputs (for 2 External Cameras, second linked to Airplane)
 let CamNum = 2;
-let CamLLD = [new THREE.Vector3(CamLat,CamLon,200),new THREE.Vector3(CamLat,CamLon,100)]
+let CamLLD = [new THREE.Vector3(CamLat,CamLon,200),
+			  new THREE.Vector3(CamLat,CamLon,100)];
+let CamAdj = [180,180];			// 180 = Looking In
 let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.50),
 			  new THREE.Vector3(CamLLD[1].z*0.5,CamLLD[1].z*3.0,0.25)];
-let CamAdj = [180,180];			// 180 = Looking In
+let CamMMR = [new THREE.Vector3(90,0,0.2),	// Rotate - min/max Lat/Lon,rspd
+			  new THREE.Vector3(90,0,0.2)];
 let CamPar = [CamCtr,air_.AirObj];
-let CamLnk = [];				// 1 = Linked to Airplane
-for (let i = 0; i < CamNum; i++) {
-	if (CamPar[i] == air_.AirObj) CamLnk[i] = 1;
-}
+let CamFlg = [0,0];			// 1 = cockpit view
+let CamLnk = [0,1];				// 1 = Linked to Airplane
 //- Shared Variables
 let cam_ = {
 		sel: CamSel,
@@ -290,13 +291,14 @@ let cam_ = {
 		// Camera
 		lld: new THREE.Vector3().copy(CamLLD[CamSel]),	// Internal LLD
 		llz: new THREE.Vector3(CamLat,CamLon,0),		// External LLZ
-		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
+		adj: CamAdj[CamSel],							// Camera Adj (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
-		rot: makMsh(),			// Camera Rotator
-		mmr: new THREE.Vector3(90,0,0.2),	// Rotate - min/max Lat/Lon,rspd
+		rot: makMsh(),									// Camera Rotator
+		mmr: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
-		par: CamPar[CamSel],	// Center of Rotation
+		par: CamPar[CamSel],							// Center of Rotation
+		flg: CamFlg[CamSel], // View Flag (0 = external, 1 = Cockpit)
 		// Linked Airplane
 		lnk: CamLnk[CamSel],
 		qat: new THREE.Quaternion(),
@@ -762,9 +764,14 @@ function moveCamera(camera,cam_) {
 	// In external view, the camera is facing in and the armature is pointing out:
 	// * x.rotation = -CamLat
 	// * y.rotation = CamAdj - CamLon
+	// Move Camera In/Out
 	camera.position.z = -cam_.lld.z;
+	// Move Camera Rotator Lat	
 	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
+	if(cam_.flg) cam_.rot.rotation.x = Mod360(cam_.lld.x)*DegRad;
+	// Move Camera Rotator Lon
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
+	//= Determine Camera Rotation
 	cam_.llz.copy(cam_.lld);	// Default Camera External LL
 	cam_.llz.z = 0;				// Default Camera External Bank = 0
 	if (cam_.lnk) {				// If Linked to Airplane
@@ -863,12 +870,12 @@ function onMouseUp(event) {
 }
 
 function onMouseMove(event) {
-//- Panning View
+// Panning View
 	if (cam_.pan) {
-		cam_.lld.x = (onPointerDownY - event.clientY) * cam_.mmr.z + onPointerDownLat;
+		cam_.lld.x = (onPointerDownY - event.clientY)*cam_.mmr.z + onPointerDownLat;
 		if (cam_.mmr.x) cam_.lld.x = Math.max(-cam_.mmr.x, Math.min(cam_.mmr.x, cam_.lld.x));
-		cam_.lld.y = (event.clientX - onPointerDownX) * cam_.mmr.z + onPointerDownLon;
-		cam_.lld.y = Mod360(cam_.lld.y);
+		cam_.lld.y = (event.clientX - onPointerDownX)*cam_.mmr.z + onPointerDownLon;
+		if (cam_.mmr.y) cam_.lld.y = Math.max(-cam_.mmr.y, Math.min(cam_.mmr.y, cam_.lld.y));
 	}
 }
 
@@ -910,7 +917,20 @@ function togglePause() {
 
 //- Change Camera View
 function toggleCamera() {
-	changeCamSel();
+	// Old CamSel
+	cam_.par.remove(cam_.rot);				// Unlink Old Parent
+	CamLLD[cam_.sel].copy(cam_.lld);		// Save lld
+	// New CamSel
+	cam_.sel++
+	if (cam_.sel == cam_.num) cam_.sel = 0;
+	// Common Changes
+	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
+	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
+	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
+	cam_.mmr.copy(CamMMR[cam_.sel]);		// Rotation min, max, spd
+	cam_.par = CamPar[cam_.sel]				// Load New Parent
+	cam_.par.add(cam_.rot);					// Attach Rotators
+	cam_.lnk = CamLnk[cam_.sel];			// Type of Parent
 }
 
 //- Flight Controls
@@ -963,21 +983,6 @@ function toggleYawL() {
 function toggleYawR() {
 	if (air_.InpRot.y == 0) air_.InpRot.y = InpVal.y;
 	else air_.InpRot.y = 0;
-}
-
-//= Buttons [MY CAMERA] ========================================================
-
-function changeCamSel() {
-	cam_.par.remove(cam_.rot);				// Unlink Old Parent
-	CamLLD[cam_.sel].copy(cam_.lld);		// Save lld
-	cam_.sel++
-	if (cam_.sel == cam_.num) cam_.sel = 0;
-	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
-	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
-	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
-	cam_.par = CamPar[cam_.sel]				// Load New Parent
-	cam_.par.add(cam_.rot);					// Attach Rotators
-	cam_.lnk = CamLnk[cam_.sel];			// Type of Parent
 }
 
 //= Window Resize Input ========================================================
