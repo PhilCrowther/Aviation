@@ -71,8 +71,7 @@ import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
 //= NOTES ======================================================================
-//	* Shadows = Jaggies
-//	* Cockpit Movement = Jams to Right
+//	* Improve Shadows
 
 //= STARTING VALUES ============================================================
 //- MY CAMERA ------------------------------------------------------------------
@@ -448,14 +447,14 @@ let	CamPVC = makMsh();
 let CamNum = 3;
 let CamLLD = [new THREE.Vector3(CamLat,CamLon,30),
 			  new THREE.Vector3(CamLat,CamLon,30),
-			  new THREE.Vector3(0,0,-0.1)];
+			  new THREE.Vector3(0,0,0.001)];
 let CamAdj = [180,180,0];		// 180 = Looking In
 let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
 			  new THREE.Vector3(CamLLD[1].z*0.5,CamLLD[1].z*3.0,0.1),
-			  new THREE.Vector3(0,1,0.0001)];	// Cockpit View: Throttle - min,max,spd
-let CamMMR = [new THREE.Vector3(80,0,0.2),	// Rotate - min/max Lat/Lon,rspd
-			  new THREE.Vector3(80,0,0.2),
-			  new THREE.Vector3(45,110,0.2)];
+			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
+let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
+			  new THREE.Vector3(80,0,0.5),
+			  new THREE.Vector3(45,110,0.4)];
 let CamPar = [CamCtr,air_.AirObj,CamPVC];
 let CamFlg = [0,0,1];		// 1 = cockpit view
 let CamLnk = [0,1,1];		// 1 = Linked to Airplane
@@ -781,8 +780,8 @@ function initSFlare(scene,camera,SnF_) {
 
 function moveSFlare(SnF_) {
 	// Get Difference Between Sun and Camera Directions
-	SnF_.off.x = SnF_.sun.x-SnF_.cam.x;					// Camera Lat Offset
-	SnF_.off.y = PoM360(Mod360(SnF_.sun.y-SnF_.cam.y));	// Camera Lat Offset
+	SnF_.off.x = SnF_.sun.x-SnF_.cam.x;				// Camera Lat Offset
+	SnF_.off.y = PoM360(Mod360(SnF_.sun.y-SnF_.cam.y));	// Camera Lon Offset
 	if (SnF_.cam.z) {	// If the Camera is banked
 		let radius = Math.sqrt(SnF_.off.x*SnF_.off.x+SnF_.off.y*SnF_.off.y);
 		let angle0 = Mod360(Math.atan2(SnF_.off.y,SnF_.off.x)*RadDeg);	// Angle to Sun
@@ -1136,22 +1135,10 @@ function moveCamera(camera,cam_) {
 	// * y.rotation = CamAdj - CamLon
 	// Move Camera In/Out
 	camera.position.z = -cam_.lld.z;
-	// Rotate Camera Lat
-	if (cam_.mmr.x) cam_.lld.x = Math.max(-cam_.mmr.x, Math.min(cam_.mmr.x, cam_.lld.x));	
+	// Move Camera Rotator Lat
 	cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 	if(cam_.flg) cam_.rot.rotation.x = Mod360(cam_.lld.x)*DegRad;
-	// Rotate Camera Lon
-	// New [too far left slam to max right]
-//		if (cam_.mmr.y) cam_.lld.y = Math.max(-cam_.mmr.y, Math.min(cam_.mmr.y, cam_.lld.y))
-//		cam_.lld.y = Mod360(cam_.lld.y);
-		// Old [same, but all the way left to all the way right
-		cam_.lld.y = Mod360(cam_.lld.y);
-		if (cam_.flg) {	// Limit Lon (Internal View Only)
-			if (cam_.lld.y > 180 && cam_.lld.y < (360-cam_.mmr.y)) cam_.lld.y = (360-cam_.lld.y);
-			if (cam_.lld.y < 180 && cam_.lld.y > cam_.mmr.y) cam_.lld.y = cam_.mmr.y;
-		}
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
-//	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y);	// Causes Error
 	//= Determine Camera Rotation
 	cam_.llz.copy(cam_.lld);	// Default Camera External LL
 	cam_.llz.z = 0;				// Default Camera External Bank = 0
@@ -1169,6 +1156,7 @@ function moveCamera(camera,cam_) {
 		cam_.llz.y = Mod360(-cam_.obj.rotation.y*RadDeg);
 		cam_.llz.z = Mod360(-cam_.obj.rotation.z*RadDeg);
 	}
+//	console.log(Math.round(cam_.llz.x),Math.round(cam_.llz.y));
 }
 
 //= OUTPUTS ===================================================================
@@ -1251,10 +1239,12 @@ function onMouseUp(event) {
 }
 
 function onMouseMove(event) {
-// Panning View (Results are in Degrees, not Radians)
+// Panning View
 	if (cam_.pan) {
 		cam_.lld.x = (onPointerDownY - event.clientY)*cam_.mmr.z + onPointerDownLat;
+		if (cam_.mmr.x) cam_.lld.x = Math.max(-cam_.mmr.x, Math.min(cam_.mmr.x, cam_.lld.x));
 		cam_.lld.y = (event.clientX - onPointerDownX)*cam_.mmr.z + onPointerDownLon;
+		if (cam_.mmr.y) cam_.lld.y = Math.max(-cam_.mmr.y, Math.min(cam_.mmr.y, cam_.lld.y));
 	}
 }
 
