@@ -923,7 +923,7 @@ function rendAll() {
 		// Update time
 		nowTim = clock.getElapsedTime();
 		difTim = nowTim-oldTim;
-		wavTim = difTim*wavSpd || 0.0;
+		wavTim += difTim*wavSpd || 0.0;
 		flg_.Tim = nowTim;
 		oldTim = nowTim;
 		moveCamera(camera,cam_);
