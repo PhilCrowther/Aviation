@@ -67,7 +67,9 @@ A flight simulation of an animated airplane model over an animated ocean using W
 
 // Basic Modules
 import * as THREE from "three";
-import {color,texture,float,vec2,attribute} from 'three/tsl';
+import {color,texture,float,vec2,attribute,
+		timerLocal,range,positionLocal,uv,mix,SpriteNodeMaterial
+} from 'three/tsl';
 import Stats from "three/addons/libs/stats.module.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 // Special Modules
@@ -524,16 +526,6 @@ let xsh_ = {
 		Mx0: 0,
 		An0: 0
 	}
-//	CVE Wake
-let xwk_ = {
-		Ptr: 0,						// Address
-		Pts: 2000,					// Number of points
-		Pos: [],					// Position
-		Col: [],					// Color
-		Fad: 0.8,					// Rate of fade
-		Lim: 305,					// Max distance of wake (1000 ft)
-		Viz: 1524					// Max visibility range (5000 ft)
-	}
 
 //= ANIMATED FLAG (CVE) ========================================================
 let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
@@ -557,6 +549,10 @@ let	flg_ = {
 		// Viz Test
 		Viz: 152.4					// (meters)
 	}
+
+//= SHIP WAKE ==================================================================
+let WakAdr = "https://threejs.org/examples/textures/opengameart/smoke1.png";
+let WakMap = 0;
 
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
@@ -860,6 +856,7 @@ function loadAll() {
 	loadAirObj();
 	loadObject();						// load objects	
 	loadFlag();
+	loadShpWak();						//	
 }
 
 //= WAIT SCREEN ================================================================
@@ -1287,7 +1284,8 @@ function loadShips() {
 		//
 		xsh_.Ptr.position.set(0,0,0);	// position within group is always 0,0,0
 		// Ship Wake
-		initShpWak(xwk_);
+//		initShpWak(xwk_);
+		initShpWak();
 	});
 }
 
@@ -1330,70 +1328,7 @@ function moveShips() {
 	let z = CVEGrp.position.z;
 	xsh_.Dst = Math.sqrt(x*x+z*z);		// Compute distance
 	// Ship Wake
-	moveShpWak(xsh_,xwk_);
-}
-
-//- Ship Wake ------------------------------------------------------------------
-
-//	Init Wake
-function initShpWak() {
-	// Make 2 Trails of Random Particles
-	let x,y,z;
-	let a = 25;		// meters
-	for (let i = 0; i < xwk_.Pts; i++) {
-	// create a particle with random position values, -250 -> 250
-		x = Math.random() * (16 - 8 + a)*Ft2Mtr;	// +/-8
-		y = Math.random() * (4 - 2 + 3)*Ft2Mtr;	// +/-2+3
-		z = Math.random() * xwk_.Lim;			// +/-200
-		xwk_.Pos.push(x,y,z);					// Position
-		xwk_.Col.push(240, 240, 240, .75);		// Colors
-		a=-a;
-	}
-	// create the particle system
-	let geometry = new THREE.BufferGeometry();
-	geometry.setAttribute('position', new THREE.Float32BufferAttribute(xwk_.Pos, 3));
-	geometry.setAttribute('color', new THREE.Float32BufferAttribute(xwk_.Col, 4));	
-	let material = new THREE.PointsMaterial({size: 1, vertexColors: true, transparent: true});
-	xwk_.Ptr = new THREE.Points(geometry, material);
-	xwk_.Ptr.position.set(0,.99,76.2);	// meters
-	CVEGrp.add(xwk_.Ptr);
-	xwk_.Ptr.geometry.attributes.position.needsUpdate = true;
-	xwk_.Ptr.geometry.attributes.color.needsUpdate = true;
-}
-
-//	Move Wake
-function moveShpWak() {
-	// Set Density (decreases with distance)
-	let t = 0;
-	if (xsh_.Dst<xwk_.Viz) t = (xwk_.Viz-xsh_.Dst)/xwk_.Viz;
-	// Recycle at different rates
-	let n = Math.floor(.25*xwk_.Pts);		// 1/4 of pts
-	let d = xwk_.Lim;						// 1000
-	moveShpWk0(0,n,d,t);
-	d = d*xwk_.Fad;							// 800
-	moveShpWk0(n,2*n,d,t);
-	d = d*xwk_.Fad;							// 640
-	moveShpWk0(2*n,3*n,d,t);
-	d = d*xwk_.Fad;							// 512
-	moveShpWk0(3*n,xwk_.Pts,d,t);
-	xwk_.Ptr.geometry.attributes.position.needsUpdate = true;
-	xwk_.Ptr.geometry.attributes.color.needsUpdate = true;
-}
-
-//	Move Wake: Subroutine
-function moveShpWk0(n1,n2,d,t) {
-	let WakSpd = xsh_.Spd * DLTime;	
-	let pos = xwk_.Ptr.geometry.attributes.position.array;
-	let col = xwk_.Ptr.geometry.attributes.color.array;	
-	let p = n1*3;	
-	let q = n1*4;
-	for (let i = n1; i < n2; i++) {
-		pos[p+2] = pos[p+2] + WakSpd;	// Z distance
-		if (pos[p+2]>d) pos[p+2] = pos[p+2]-d;	// cut-off
-		col[q+3] = t;
-		p += 3;
-		q += 4;
-	}
+//	moveShpWak(xsh_,xwk_);
 }
 
 //= FLAG =======================================================================
@@ -1443,6 +1378,45 @@ function moveFlag() {
 		flg_.Geo.attributes.position.needsUpdate = true;
 		flg_.Geo.computeVertexNormals();
 	}
+}
+
+//= SHIP WAKE (New) ============================================================
+
+//- Load Ship Wake -------------------------------------------------------------
+function loadShpWak() {
+	WakMap = txtrLoader.load(WakAdr);
+}
+
+//- Init Ship Wake -------------------------------------------------------------
+function initShpWak() {
+	let lifeRange = range(0.1,1);
+	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
+	let timer = timerLocal(.001,.0011);		// Lower = slower
+	let lifeTime = timer.mul(lifeRange).mod(.05);
+	let scaleRange = range(.01,.02);
+//	let rotateRange = range(.1,4);
+	let rotateRange = range(.1,.2);			// No apparent change
+	let life = lifeTime.div(lifeRange);
+	//
+	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
+	let textureNode = texture(WakMap, uv().rotateUV(timer.mul(rotateRange)));
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
+	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+	let smokeNodeMaterial = new SpriteNodeMaterial();
+		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.opacityNode = opacityNode;
+		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
+		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		smokeNodeMaterial.depthWrite = false;
+		smokeNodeMaterial.transparent = true;
+	let smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
+		smokeInstancedSprite.scale.setScalar(4000);		// Makes Visible (was 400)
+		smokeInstancedSprite.isInstancedMesh = true;
+		smokeInstancedSprite.count = 600;				// Increases continuity (was 100)
+		smokeInstancedSprite.rotation.x = Math.PI/2;
+		smokeInstancedSprite.position.z = 75;			// Increased
+		smokeInstancedSprite.position.y = -5;			// Added
+		CVEGrp.add(smokeInstancedSprite);
 }
 
 //= HARDENED SURFACES ==========================================================
