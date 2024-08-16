@@ -79,11 +79,16 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
 //= GENERAL ===================================================================
 
-// WIP
-// Nose not level in normal cruise flight - too much ACPang or reversed?
+// TO DO:
+// Program:
+// * Fix Ship Wake and add Volcano Smoke
+// * Fine-tune Shadows
+// Flight Module:
+// * Add Auto-Pilot
+// * Add change in Air Density
+// * Add lag to tail leaving/returning to ground
 
-//- AIRPLANE: Start -----------------------------------------------------------
-//- MY CAMERA ------------------------------------------------------------------
+//- CAMERA ---------------------------------------------------------------------
 let CamSel = 1;						// Camera Seletion (0 = External; 1 = Internal)
 //- AIRPLANE: Start ------------------------------------------------------------
 let USorSI = "US";					// Units of Measurement (US or SI)
@@ -133,49 +138,45 @@ if (USorSI = "US") {
 
 //= INPUTS =====================================================================
 //-	VIEW KEYS ------------------------------------------------------------------
-let U45flg = 0;						// Up 45 degrees
-let D45flg = 0;						// Down 45 degrees
-let	L45flg = 0;						// Left 45 degrees
-let R45flg = 0;						// Right 45 degrees
-let L90flg = 0;						// Left 90 degrees
-let R90flg = 0;						// Right 90 degrees
+let U45flg = 0;					// Up 45 degrees
+let D45flg = 0;					// Down 45 degrees
+let	L45flg = 0;					// Left 45 degrees
+let R45flg = 0;					// Right 45 degrees
+let L90flg = 0;					// Left 90 degrees
+let R90flg = 0;					// Right 90 degrees
 
 //= INPUT VALUES ==============================================================
-//	Background
-let SkyLim = 100000;				// Used for Camera and SkyCube
-let SkyCol = 0xbab4a6;				// Sky
-let FogCol = 0xbab4a6;				// Sky (for Fog only)
-let WtrCol = 0x1060ff;				// Water (Nodes)
-//	Sound File
-let RefDst = 25;					// Reference distance for Positional Sound	
-//	Flags
-let PawsOn = 0;						// Pause
-let InfoOn = 0;						// Info
+//- Display
+let PawsOn = 0;					// Pause
+let InfoOn = 0;					// Info
+let StatOn = 1;					// Stats ((0 = off, 1 = on)
+//	Program Flags
 let LodFlg = 0;
-let SndFlg = 0;					
-//	Time
-let DLTnow = 0;						// Current DLTime
-//	Stats
-let stats = 1;						// Stats ((0 = off, 1 = on)
 //	Altitude Adjustment
-let AltAdj = 0.96;					// Raises objects above map as altitude increases
+let AltAdj = 0.96;				// Raises objects above map as altitude increases
 //	Animations
-let anmfps = 24;					// Blender FPS
-let aoarng = 20;					// AoA range (model)
+let anmfps = 24;				// Blender FPS
+let aoarng = 20;				// AoA range (model)
+
+//= SKYBOX =====================================================================
+let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 
 //= SUN ========================================================================
-let SunCol = 0xffffff;				// Sun
-let SunInt = 3;						// Default intensity of light/sun
+let SunCol = 0xffffff;			// Sun
+let SunInt = 3;					// Default intensity of light/sun
 //- Rotation and Position (fixed)
-let SunLat = 23;			// Direction - Vert (+/- 90)
-let SunLon = 312;			// Direction - Horz (0->360)
-let SunDst = 10000;			// Distance (for shadows and lensflare)
+let SunLat = 23;				// Direction - Vert (+/- 90)
+let SunLon = 312;				// Direction - Horz (0->360)
+let SunDst = 10000;				// Distance (for shadows and lensflare)
 //- New
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let LgtDst = 5000;					// [feet] for shadow
-let LgtBox = 25;					// Size of shadow box
+let LgtDst = 5000;				// [feet] for shadow
+let LgtBox = 25;				// Size of shadow box
+
+//= FOG ========================================================================
+let FogCol = 0xbab4a6;				// Sky (for Fog only)
 
 //=	SUNFLARE ===================================================================
 let SnFFlg = 1;					// 1 = SunFlare On
@@ -205,52 +206,164 @@ let SnF_ = {
 		asp: 0,					// Camera Aspect
 	}
 
+//= GRDWTR TEXTURES ============================================================
+let WtrCol = 0x1060ff;			// Water (Nodes)
+//- Textures
+let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
+let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
+//- Canvas (for splitting up textures)
+let ImgSiz = 512;						// !!! Change this for each image
+let canvas = document.createElement("canvas");
+	canvas.width = ImgSiz;
+	canvas.height = ImgSiz;
+let	context = canvas.getContext('2d');
+	context.translate(0, ImgSiz);		// Flips vertical for three.js
+	context.scale(1,-1);
+let WavMax = 5;					// Maximum wave height (set height of outer waves)
+
+//= GRDWTR MODULE ==============================================================
+//	This ocean map has 3 nested grids of squares.
+//	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
+//	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
+//	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
+let grids = 0;
+let GrdSiz = 1600;				// 1600 = 1 mile
+let GrdRes = 512;
+let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
+// Common Variables
+let grd_ = {
+		MSP: new THREE.Vector3 (),	// MSX, MPY, MSZ (meters) (from Flight)
+		RCs: 16,				// Squares in each of first 2 grids
+		Siz: GrdSiz,			// Size of smallest square
+		Stp: 4,					// Squares in each of first 2 grids
+		Seg: GrdSeg,			// Segments for smallest square
+		Grx: [],				// Index of Grids (0-2)
+		Geo: [],				// Master Index of Basic Geometries
+		Col: new THREE.Color(WtrCol), // Color
+		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
+		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
+		NMS: vec2(),			// Grid 0-1 Normal Map Scale (from Ocean)
+		Df0: [],				// Grid 0-1 Diffuse Maps
+		Rf0: [],				// Grid 0-1 Roughness Maps
+		Mt0: [],				// Grid 0 Materials
+		Mt1: [],				// Grid 1 Materials
+		Dif: 0,					// Grid 2 Diffuse Map
+		Ruf: 0,					// Grid 2 Roughness Maps
+		Gr2: 0,					// Grid 2 Normal Map
+		Mat: [],				// Grid 2 Materials
+		WMx: WavMax,			// Max wave height, used to lower outer squares
+	};
+//	Since textures must be loaded in the Main Program and since design of materials 
+//	and goemetry can vary, some of the Grid initialization is handled in the Main Program
+//  by the LoadGeoMat and InitGeoMat routines
+
+//= OCEAN MODULE ===============================================================
+let WndSpd = 10.0;
+let WndHdg = 30.0;
+let Choppy = 1.5;
+//
+let waves = 0;
+let wav_ = {
+		// Sources
+		Res: GrdRes,			// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
+		WSp: WndSpd,			// Wind Speed
+		WHd: WndHdg,			// Wind Heading
+		Chp: Choppy,			// default = 1
+		// Animated Maps
+		Dsp: 0,					// The Displacement Map
+		Nrm: 0,					// The Normal Map
+		NMS: vec2(1.0,1.0),	// Normal Map Scale (flip Y for left-handed maps)
+	};
+let wavSpd = 0.5;				// Animation speed - use in main program (lower is faster)
+let wavTim = 0;
+
+//= STATIC OBJECTS =============================================================
+let ObjNum = 3;					// number of objects
+//- Should allow for fast update of position
+let ObjTyp = [0];				// Object Type
+	ObjTyp[ObjNum - 1] = 0;
+let ObjNam = [0];				// Object Name
+	ObjNam[ObjNum - 1] = 0;
+let ObjMdl = [0];				// Model source
+	ObjMdl[ObjNum - 1] = 0;
+let ObjTxt = [0];				// Model texture
+	ObjTxt[ObjNum - 1] = 0;
+let ObjPos = [0];				// Map Position
+	ObjPos[3*(ObjNum - 1)] = 0;
+let ObjPtr = [0];				// Object Address
+	ObjPtr[ObjNum - 1] = 0;
+//	List of Objects (allow for expanding list of objects)
+//	Hangars
+let ObjIdx = 0;
+	ObjTyp[ObjIdx] = 0;			// 0 = Fixed standard object
+	ObjNam[ObjIdx] = "hangar";
+	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/hangar.glb";
+	ObjTxt[ObjIdx] = 0;
+	ObjPos[ObjIdx] = new THREE.Vector3(60,9,640);		// meters
+	ObjIdx++;
+// Homebase
+	ObjTyp[ObjIdx] = 1;			// 1 = Fixed large object
+	ObjNam[ObjIdx] = "homebase";
+	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";
+	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";
+	ObjPos[ObjIdx] = new THREE.Vector3(610,30,275);		// meters
+	ObjIdx++;
+// Giaros Island
+	ObjTyp[ObjIdx] = 1;			// 1 = Fixed - large feature
+	ObjNam[ObjIdx] = "giaro";
+	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb";
+	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png";
+	ObjPos[ObjIdx] = new THREE.Vector3(-1610,1,2440);	// meters
+	ObjIdx++;
+
 //= MY AIRPLANE ================================================================
 //	Airplane Data
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: DLTime,				// Seconds per frame (can vary)
-		GrvMPS: GrvMPS,				// Gravity (ups)
-		AirDSL: AirDSL,				// Air Density (varies with altitude)
+		DLTime: DLTime,			// Seconds per frame (can vary)
+		GrvMPS: GrvMPS,			// Gravity (ups)
+		AirDSL: AirDSL,			// Air Density (varies with altitude)
 		// Designators
-		AirIDN: 0,					// Aircraft Type: 0 = FM2
+		AirIDN: 0,				// Aircraft Type: 0 = FM2
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(0,0,0),	// Rotation (in degrees)
-		AirObj: makMsh(),			// Airplane Object 
-		AirPBY: makMsh(),			// Changes in radians
+		AirObj: makMsh(),		// Airplane Object 
+		AirPBY: makMsh(),		// Changes in radians
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0),	// Change
 		// Airplane Speed
-		SpdKPH: BegSpd,				// Speed in KPH
-		SpdMPS: BegSpd/3.6,			// Speed - meters per second
+		SpdKPH: BegSpd,			// Speed in KPH
+		SpdMPS: BegSpd/3.6,		// Speed - meters per second
 		SpdMPF: (BegSpd/3.6)*DLTime,	// Speed - meters per frame	
 		// Airplane Map Speed and Position		
 		MapSpd: new THREE.Vector3(), // Map Speed (meters)
 		MapPos: new THREE.Vector3().copy(BegPos), // Map Position (meters)
 		MapSPS: new THREE.Vector3(0,BegPos.y,0), // MSX, MPY, MSZ (meters)	
 		// Variables Obtained from Flight
-		PwrPct: BegPwr,				// % of Primary Power (0 to 1) (Main and Flight)
-		SupPct: 0,					// Percent of Supplemental Power (War Enmergency or Afterburner)
-		CfLift: 0,					// Coefficient of Lift (user input) - determines lift
-		CfFlap: 0,					// Coefficient of Lift due to flaps (user input)
-		FlpPct: 0,					// Percent of Flaps
-		LngPct: 0,					// Percent of Landing Gear
-		BrkPct: 0,					// Percent of Air Brakes
-		SplPct: 0,					// Percent of Spoiler
-		AGBank: 0,					// Aileron Bank on Ground
-		BrkVal: 0,					// Brakes
-		GrdZed: 0,					// Ground level (default)
-		GrdFlg: 0,					// Ground Flag (1 = on ground)
-		ACPAdj: 0,					// Airplane pitch adjustment
-		MovFlg: 0,					// If Sitting on a Moving Object
+		PwrPct: BegPwr,			// % of Primary Power (0 to 1) (Main and Flight)
+		SupPct: 0,				// Percent of Supplemental Power (War Enmergency or Afterburner)
+		CfLift: 0,				// Coefficient of Lift (user input) - determines lift
+		CfFlap: 0,				// Coefficient of Lift due to flaps (user input)
+		FlpPct: 0,				// Percent of Flaps
+		LngPct: 0,				// Percent of Landing Gear
+		BrkPct: 0,				// Percent of Air Brakes
+		SplPct: 0,				// Percent of Spoiler
+		AGBank: 0,				// Aileron Bank on Ground
+		BrkVal: 0,				// Brakes
+		GrdZed: 0,				// Ground level (default)
+		GrdFlg: 0,				// Ground Flag (1 = on ground)
+		ACPAdj: 0,				// Airplane pitch adjustment
+		MovFlg: 0,				// If Sitting on a Moving Object
 		// Values for the Selected Airplane Type (obtained from Flight)
-		CfLMax: 0,					// Maximum Coefficient of Lift
-		FlpCfL: 0,					// Max Flap Cfl (0.2*CfLMax)
-		ACMass: 0,					// Airplane Mass
-		Weight: 0,					// Used by autopilots
+		CfLMax: 0,				// Maximum Coefficient of Lift
+		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
+		ACMass: 0,				// Airplane Mass
+		Weight: 0,				// Used by autopilots
 		PYBmul: new THREE.Vector3(0,0,0), // Airplane Pitch/Yaw/Bank Multiplier
-		BnkMax: 0,					// Maximum bank rate
+		BnkMax: 0,				// Maximum bank rate
 	}
 // 
 // Adjustments
@@ -260,12 +373,12 @@ let air_ = {
 
 //- Load Models and Animations -------------------------------------------------
 //	File Path
-let ACPath = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
+let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
 //	Animation Mixers - External Model
-let ACFile = "fm2_flyt_caf_npa.glb";	// Name of airplane model file (rotated blender file)
+let AirFNm = "fm2_flyt_caf_npa.glb";	// Name of airplane model file (rotated blender file)
 let mxr_ = {
 		// File Name
-		FNm: ACPath + ACFile,
+		FNm: AirSrc + AirFNm,
 		// GLTF
 		GLT: 0,
 		// Address
@@ -281,7 +394,7 @@ let mxr_ = {
 let VCFile = "fm2_flyt_vcp_npa.glb";	// Name of airplane model file (rotated blender file)
 let vxr_ = {
 		// File Name
-		FNm: ACPath + VCFile,
+		FNm: AirSrc + VCFile,
 		// GLTF
 		GLT: 0,
 		// Address
@@ -422,16 +535,16 @@ let xwk_ = {
 		Viz: 1524					// Max visibility range (5000 ft)
 	}
 
-//= FLAG =======================================================================
+//= ANIMATED FLAG (CVE) ========================================================
+let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
+//
 let	flg_ = {
 		// Mesh
 		Ptr: 0,
 		MpP: new THREE.Vector3 (44.2,92.47,-58.93),	// Map Position
 		Rot: new THREE.Vector3 (0,270,0),
-		// Texture and Material
-		Txt: "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png",
+		// Material and Geometry
 		Mat: 0,
-		// Geometry
 		Geo: 0,						// Geometry Address (can use this for all flags)
 		Siz: new THREE.Vector2 (3,1.8),	// Size ZY (meters)
 		Seg: new THREE.Vector2 (50,1),	// Segments ZY
@@ -445,120 +558,7 @@ let	flg_ = {
 		Viz: 152.4					// (meters)
 	}
 
-//= TEXTURES ===================================================================
-//- SkyBox
-let SBPath = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
-//- Ocean
-let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
-let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
-let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
-//- Canvas (for splitting up textures)
-let ImgSiz = 512;						// !!! Change this for each image
-let canvas = document.createElement("canvas");
-	canvas.width = ImgSiz;
-	canvas.height = ImgSiz;
-let	context = canvas.getContext('2d');
-	context.translate(0, ImgSiz);		// Flips vertical for three.js
-	context.scale(1,-1);
-
-//= GRID DATA ===================================================================
-let GrdSiz = 1600;					// 1600 = 1 mile
-let GrdRes = 512;
-let GrdSeg = 256;					// Segments per Plane (256 = OK, 512 = too much)
-
-//= OCEAN =======================================================================
-let WndSpd = 10.0;
-let WndHdg = 30.0;
-let Choppy = 1.5;
-let WavMax = 5;					// Maximum wave height (set height of outer waves)
-//
-let waves = 0;
-let wav_ = {
-		// Sources
-		Res: GrdRes,			// Resolution - segments per square (default = 512)
-		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
-		WSp: WndSpd,			// Wind Speed
-		WHd: WndHdg,			// Wind Heading
-		Chp: Choppy,			// default = 1
-		// Animated Maps
-		Dsp: 0,					// The Displacement Map
-		Nrm: 0,					// The Normal Map
-		NMS: vec2(1.0,1.0),	// Normal Map Scale (flip Y for left-handed maps)
-	};
-let wavSpd = 0.5;				// Animation speed - use in main program (lower is faster)
-let wavTim = 0;
-
-//= GRID MODULE ================================================================
-//	This ocean map has 3 nested grids of squares.
-//	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
-//	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
-//	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-let grids = 0;
-let grd_ = {
-		MSP: new THREE.Vector3 (),	// MSX, MPY, MSZ (meters) (from Flight)
-		RCs: 16,				// Squares in each of first 2 grids
-		Siz: GrdSiz,			// Size of smallest square
-		Stp: 4,					// Squares in each of first 2 grids
-		Seg: GrdSeg,			// Segments for smallest square
-		Grx: [],				// Index of Grids (0-2)
-		Geo: [],				// Master Index of Basic Geometries
-		Col: new THREE.Color(WtrCol), // Color
-		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
-		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
-		NMS: vec2(),			// Grid 0-1 Normal Map Scale (from Ocean)
-		Df0: [],				// Grid 0-1 Diffuse Maps
-		Rf0: [],				// Grid 0-1 Roughness Maps
-		Mt0: [],				// Grid 0 Materials
-		Mt1: [],				// Grid 1 Materials
-		Dif: 0,					// Grid 2 Diffuse Map
-		Ruf: 0,					// Grid 2 Roughness Maps
-		Gr2: 0,					// Grid 2 Normal Map
-		Mat: [],				// Grid 2 Materials
-		WMx: WavMax,			// Max wave height, used to lower outer squares
-	};
-//	Since textures must be loaded in the Main Program and since design of materials 
-//	and goemetry can vary, some of the Grid initialization is handled in the Main Program
-//  by the LoadGeoMat and InitGeoMat routines
-
-//= STATIC OBJECTS =============================================================
-let ObjNum = 3;						// number of objects
-let ObjTyp = [0];					// Object Type
-	ObjTyp[ObjNum - 1] = 0;
-let ObjNam = [0];					// Object Name
-	ObjNam[ObjNum - 1] = 0;
-let ObjMdl = [0];					// Model source
-	ObjMdl[ObjNum - 1] = 0;
-let ObjTxt = [0];					// Model texture
-	ObjTxt[ObjNum - 1] = 0;
-let ObjPos = [0];					// Map Position
-	ObjPos[3*(ObjNum - 1)] = 0;
-let ObjPtr = [0];					// Object Address
-	ObjPtr[ObjNum - 1] = 0;
-//	Index (allow for expanding list of objects)
-//	Hangars
-let ObjIdx = 0;
-	ObjTyp[ObjIdx] = 0;				// 0 = Fixed standard object
-	ObjNam[ObjIdx] = "hangar";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/hangar.glb";
-	ObjTxt[ObjIdx] = 0;
-	ObjPos[ObjIdx] = new THREE.Vector3(60,9,640);		// meters
-	ObjIdx++;
-// Homebase
-	ObjTyp[ObjIdx] = 1;				// 1 = Fixed large object
-	ObjNam[ObjIdx] = "homebase";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";
-	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";
-	ObjPos[ObjIdx] = new THREE.Vector3(610,30,275);		// meters
-	ObjIdx++;
-// Giaros Island
-	ObjTyp[ObjIdx] = 1;				// 1 = Fixed - large feature
-	ObjNam[ObjIdx] = "giaro";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb";
-	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png";
-	ObjPos[ObjIdx] = new THREE.Vector3(-1610,1,2440);	// meters
-	ObjIdx++;
-
-//= MINIMUM ALTITUDE ===========================================================
+//= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
 let BasAlt = 8.8392;				// 29 ft
 	BasAlt = 8.25;					// 
@@ -675,7 +675,9 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.shadow.camera.bottom = -LgtBox;
 	scene.add(sunLight);
 // 	Sounds
+let SndFlg = 0;
 let	listener = new THREE.AudioListener();
+let RefDst = 25;	// Reference distance for Positional Audio
 let sound1 = new THREE.PositionalAudio(listener);
 let sound2 = new THREE.PositionalAudio(listener);
 let sound3 = new THREE.PositionalAudio(listener);
@@ -900,11 +902,11 @@ function initAll() {
 	noPause();
 	noInfo();
 	// Show stats
-	if (stats) {						// show stats
-		stats = new Stats();
-		stats.setMode(0);				// FPS only
-		stats.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
-		container.appendChild(stats.dom);
+	if (StatOn) {						// show stats
+		StatOn = new Stats();
+		StatOn.setMode(0);				// FPS only
+		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+		container.appendChild(StatOn.dom);
 	}
 	LodFlg = 1;
 }
@@ -945,7 +947,7 @@ function rendAll() {
 		moveMinAlt();
 		moveSounds();
 		prntHUDval();					// print HUD values
-		if (stats) stats.update();		// update stats
+		if (StatOn) StatOn.update();	// update stats
 	}
 	renderer.render(scene, camera);
 }
@@ -953,9 +955,8 @@ function rendAll() {
 //= SKYBOX =====================================================================
 
 function loadSkyBox() {
-	let fpath = SBPath;
 	let envMap = new THREE.CubeTextureLoader(loadingManager)
-		.setPath(fpath)
+		.setPath(SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace;	// ### r152
@@ -1399,8 +1400,7 @@ function moveShpWk0(n1,n2,d,t) {
 
 //	Load and Initialize Flag
 function loadFlag() {
-	let fname = flg_.Txt;
-	txtrLoader.load(fname, function(texture) {
+	txtrLoader.load(FlgSrc, function(texture) {
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -1745,7 +1745,7 @@ function moveBullet() {
 // Load Sounds
 function loadSounds() {	
 	// My Engine ---------------------------------------------------------------
-	let fname = ACPath + "/sounds/" + acsnd1;
+	let fname = AirSrc + "sounds/" + acsnd1;
 	audioLoader.load(fname, function(buffer) {
 		sound1.setBuffer(buffer);
 		sound1.setRefDistance(RefDst);
@@ -1753,7 +1753,7 @@ function loadSounds() {
 		sound1.setVolume(0);
 	});
 	// My Prop -----------------------------------------------------------------
-	fname = ACPath + "/sounds/" + acsnd2;
+	fname = AirSrc + "sounds/" + acsnd2;
 	audioLoader.load(fname, function(buffer) {
 		sound2.setBuffer(buffer);
 		sound2.setRefDistance(RefDst);
@@ -1761,7 +1761,7 @@ function loadSounds() {
 		sound2.setVolume(0);
 	});
 	// My Guns -----------------------------------------------------------------
-	fname = ACPath + "/sounds/" + acsnd3;
+	fname = AirSrc + "sounds/" + acsnd3;
 	audioLoader.load(fname, function(buffer) {
 		sound3.setBuffer(buffer);
 		sound3.setRefDistance(RefDst);
@@ -1769,7 +1769,7 @@ function loadSounds() {
 		sound3.setVolume(0);
 	});
 	// XP Engine ---------------------------------------------------------------
-	fname = XPPath + "/sounds/" + xpsnd1;
+	fname = XPPath + "sounds/" + xpsnd1;
 	audioLoader.load(fname, function(buffer) {
 		sound4.setBuffer(buffer);
 		sound4.setRefDistance(RefDst);	// Distance at which sound is full volume
