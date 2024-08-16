@@ -21,7 +21,7 @@ NOTE:
 <p>
 When we started this Repo a few months ago, you could use NodeMaterials with WebGL2. This ended with r165. Effective with r166, you could use NodeMatgerials only with WebGPU. And r167 made significant changes to the three.js WebGPU modules.
 </p><p>
-The AnimFM2, FlightW3 and GrdMap3 modules work with WebGL2 and WebGPU up to r166
+The FlightW3 and GrdMap3 modules work with WebGL2 and WebGPU up to r166
 </p><p>
 The Ocean3 and GrdWtr3 modules work with Standard Materials and WebGL2. The Ocean3 and GrdWtr3N modules work with NodeMaterials and WebGL2 up to r165. The Ocean4 and GrdWtr4 modules work with NodMaterials and WebGPU up to r166. The Ocean4a and GrdWtr4a modules work with NodeMaterials and WebGPU starting with r167. 
 </p><p>
