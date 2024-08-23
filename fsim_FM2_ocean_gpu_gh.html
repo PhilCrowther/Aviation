@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 15 Aug 2024
+Version dated 23 Aug 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -67,7 +67,7 @@ A flight simulation of an animated airplane model over an animated ocean using W
 
 // Basic Modules
 import * as THREE from "three";
-import {color,texture,float,vec2,attribute,
+import {MeshLambertNodeMaterial,color,texture,float,vec2,attribute,
 		timerLocal,range,positionLocal,uv,mix,SpriteNodeMaterial
 } from 'three/tsl';
 import Stats from "three/addons/libs/stats.module.js";
@@ -83,8 +83,8 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
 // TO DO:
 // Program:
-// * Fix Ship Wake and add Volcano Smoke
-// * Fine-tune Shadows
+// * Fix Volcano Smoke
+// * Fine-tune Airplane Shadows
 // Flight Module:
 // * Add Auto-Pilot
 // * Add change in Air Density
@@ -511,7 +511,7 @@ let xac_ = {
 let xpsnd1 = "fm2_prop.wav";		// File (xp prop)
 let xpvol1 = 1.0;					// Volume
 
-//= MOVING SHIPS ===============================================================
+//= MOVING SHIP ================================================================
 let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
 let XSFile = "CVE_noflag.glb";
 //	Data
@@ -527,7 +527,7 @@ let xsh_ = {
 		An0: 0
 	}
 
-//= ANIMATED FLAG (CVE) ========================================================
+//= SHIP FLAG ==================================================================
 let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
 //
 let	flg_ = {
@@ -551,8 +551,15 @@ let	flg_ = {
 	}
 
 //= SHIP WAKE ==================================================================
-let WakAdr = "https://threejs.org/examples/textures/opengameart/smoke1.png";
+let WakSrc = "https://threejs.org/examples/textures/opengameart/smoke1.png";
 let WakMap = 0;
+
+//= VOLCANO ====================================================================
+let VlkAdr = "https://threejs.org/examples/textures/opengameart/smoke1.png";
+let VlkMap = 0;
+//
+let smokeInstancedSprite;
+let VlkPos = new THREE.Vector3(610,150,275);
 
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
@@ -708,6 +715,7 @@ let RESOURCES_LOADED = false;
 	};
 let txtrLoader = new THREE.TextureLoader(loadingManager);
 let imagLoader = new THREE.ImageLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 let gltfLoader = new GLTFLoader(loadingManager);
 let audioLoader = new THREE.AudioLoader(loadingManager);
 // 	Wait Screen
@@ -855,8 +863,9 @@ function loadAll() {
 	loadGeoMat();
 	loadAirObj();
 	loadObject();						// load objects	
-	loadFlag();
-	loadShpWak();						//	
+	loadShpFlg();
+	loadShpWak();						// Ship Wake
+	loadVulkan();						// Volcano
 }
 
 //= WAIT SCREEN ================================================================
@@ -880,6 +889,7 @@ function initAll() {
 	initSkyBox();
 	if (SnFFlg) initSFlare(scene,camera,SnF_);	// SunFlare
 	// Objects
+	initVulkan();						// Volcano
 	initObject();						// Determine relative XZ location of all objects, including CVE
 	moveMinAlt();						// Determine if over CVE - resulting is special handling
 	flight = Flight(air_);				// position airplane using air_.GrdZed
@@ -935,7 +945,8 @@ function rendAll() {
 		moveAirObj();					// Move aircaft
 		moveBullet();
 		moveObject();					// Move objects
-		moveFlag();
+		moveShpFlg();
+		moveVulkan();					// Volcano
 		// Move Grids
 		waves.render(wavTim);			// Render Ocean
 		grd_.MSP.copy(air_.MapSPS);
@@ -952,7 +963,7 @@ function rendAll() {
 //= SKYBOX =====================================================================
 
 function loadSkyBox() {
-	let envMap = new THREE.CubeTextureLoader(loadingManager)
+	let envMap = cubeLoader
 		.setPath(SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
@@ -1148,8 +1159,8 @@ function loadFixed() {
 		}
 		// Island
 		if (ObjTyp[i] == 1) {
-			txtrLoader.load(ObjTxt[i], function (texture) {	
-				let mat = new THREE.MeshLambertMaterial({map: texture, transparent: true});
+			txtrLoader.load(ObjTxt[i], function (IslTxt) {	
+				let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(IslTxt), transparent: true});
 				gltfLoader.load(ObjMdl[i], function (gltf) {
 					gltf.scene.traverse(function (child) {
 					// Note: Blender object must include a UV map
@@ -1327,14 +1338,12 @@ function moveShips() {
 	let x = CVEGrp.position.x;
 	let z = CVEGrp.position.z;
 	xsh_.Dst = Math.sqrt(x*x+z*z);		// Compute distance
-	// Ship Wake
-//	moveShpWak(xsh_,xwk_);
 }
 
-//= FLAG =======================================================================
+//= SHIP FLAG ==================================================================
 
 //	Load and Initialize Flag
-function loadFlag() {
+function loadShpFlg() {
 	txtrLoader.load(FlgSrc, function(texture) {
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
@@ -1355,7 +1364,7 @@ function loadFlag() {
 }
 
 //	Move Flag Mesh
-function moveFlag() {
+function moveShpFlg() {
 	if (xsh_.Dst<flg_.Viz) {	// Only if within range
 		// Vertex Order for 4X1
 		//		0,1,2,3,4,
@@ -1380,11 +1389,11 @@ function moveFlag() {
 	}
 }
 
-//= SHIP WAKE (New) ============================================================
+//= SHIP WAKE ==================================================================
 
 //- Load Ship Wake -------------------------------------------------------------
 function loadShpWak() {
-	WakMap = txtrLoader.load(WakAdr);
+	WakMap = txtrLoader.load(WakSrc);
 }
 
 //- Init Ship Wake -------------------------------------------------------------
@@ -1418,6 +1427,58 @@ function initShpWak() {
 		smokeInstancedSprite.position.y = -5;			// Added
 		CVEGrp.add(smokeInstancedSprite);
 }
+
+//= VOLCANO ====================================================================
+
+//- Load Volcano ---------------------------------------------------------------
+function loadVulkan() {
+	VlkMap = txtrLoader.load(VlkAdr);
+}
+
+//- Init Volcano ---------------------------------------------------------------
+function initVulkan() {	
+	// create nodes
+	let lifeRange = range(.1,1);
+//	let offsetRange = range(new THREE.Vector3(-2,3,-2), new THREE.Vector3(2,5,2));
+	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));
+//	let timer = timerLocal(.2,1);
+	let timer = timerLocal(.02,.1);		// Lower = slower
+	let lifeTime = timer.mul(lifeRange).mod(1);
+	let scaleRange = range(.3,2);
+	let rotateRange = range(.1,4);
+	let life = lifeTime.div(lifeRange);
+	//
+	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
+	let textureNode = texture(VlkMap, uv().rotateUV(timer.mul(rotateRange)));
+	let opacityNode = textureNode.a.mul(life.oneMinus());
+	// Smoke
+	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+	let smokeNodeMaterial = new SpriteNodeMaterial();
+		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.opacityNode = opacityNode;
+		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
+		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		smokeNodeMaterial.depthRead = false;
+		smokeNodeMaterial.depthWrite = false;
+		smokeNodeMaterial.transparent = true;
+	smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
+		smokeInstancedSprite.scale.setScalar(300);
+		smokeInstancedSprite.isInstancedMesh = true;
+		smokeInstancedSprite.count = 500;
+		smokeInstancedSprite.position.copy(VlkPos);
+		smokeInstancedSprite.renderOrder = 1;
+		scene.add(smokeInstancedSprite);
+}
+
+//- Move Volcano ---------------------------------------------------------------
+function moveVulkan() {
+	// Compute New Relative Position (Using fraction does not Work)
+	let x = 0.95*(VlkPos.x-air_.MapPos.x);
+	let y = 0.95*(VlkPos.y-air_.MapPos.y);
+	let z = 0.95*(air_.MapPos.z-VlkPos.z);
+	smokeInstancedSprite.position.set(x,y,z);
+}
+
 
 //= HARDENED SURFACES ==========================================================
 //	Home Airfield and CVE Deck (moving)
