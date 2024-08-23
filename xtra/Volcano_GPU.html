@@ -179,7 +179,7 @@ function loadIsland() {
 			Island = gltf.scene;
 			let s = 1609;		// 1 unit = 1 mile (meters)
 			Island.scale.set(s,s,s);
-			Island.renderOrder = 0;
+//			Island.renderOrder = 0;	// No reason to set since default = 0
 			scene.add(Island);
 		},
 		null, null				// OnProgress/OnError functions
@@ -224,7 +224,7 @@ function initVulkan() {
 		smokeInstancedSprite.isInstancedMesh = true;
 		smokeInstancedSprite.count = 500;
 		smokeInstancedSprite.position.copy(SmkPos);
-		smokeInstancedSprite.renderOrder = 1;
+		smokeInstancedSprite.renderOrder = 1;	// This allows the transparent smoke to work with transparent island
 		scene.add(smokeInstancedSprite);
 }
 
