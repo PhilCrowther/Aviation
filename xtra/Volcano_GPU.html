@@ -3,9 +3,9 @@
 
 <!--
 Scenery Viewer
-Copyright 2017-23, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 may 2023
+Version dated 23 Aug 2024
 -->
 
 <head>
@@ -40,7 +40,9 @@ Version dated 3 may 2023
 <script type="module">
 
 import * as THREE from "three";
-import {color,texture,float,vec2,attribute,timerLocal,range,positionLocal,uv,mix,SpriteNodeMaterial} from 'three/tsl';
+import {MeshLambertNodeMaterial,color,texture,float,vec2,attribute,
+		timerLocal,range,positionLocal,uv,mix,SpriteNodeMaterial
+} from 'three/tsl';
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
@@ -93,6 +95,8 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setAnimationLoop(rendAll);	
 	document.body.appendChild(renderer.domElement);
 //- Light
+let ambLight = new THREE.AmbientLight(0xffffff,0.25);
+	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(0xffffff,3);
 	sunLight.position.copy(SunPos).normalize();
 	scene.add(sunLight);
@@ -165,7 +169,7 @@ function rendAll() {
 //- Load Island ----------------------------------------------------------------
 function loadIsland() {
 	let IslTxt = txtrLoader.load(IslSrc);
-	let IslMat = new THREE.MeshBasicMaterial({map: IslTxt, transparent: true});
+	let IslMat = new THREE.MeshLambertNodeMaterial({colorNode: texture(IslTxt), transparent: true});
 	gltfLoader.load(IslObj,
 		function (gltf) {					// OnLoad function
 			gltf.scene.traverse(function (child) {
