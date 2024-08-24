@@ -1,3 +1,5 @@
+<img border="2" src="texture/images/fsim_240824.jpg" height="300" style="float: center">
+
 <h2>My Aviation Resources Repository (rev. 14 Aug 2024)</h2>
 <p>
 This repository contains aviation-related resources designed to simulate 3D flight in three.js.
