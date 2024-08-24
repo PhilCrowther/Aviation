@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 23 Aug 2024
+Version dated 24 Aug 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -67,8 +67,8 @@ A flight simulation of an animated airplane model over an animated ocean using W
 
 // Basic Modules
 import * as THREE from "three";
-import {MeshLambertNodeMaterial,color,texture,float,vec2,attribute,
-		timerLocal,range,positionLocal,uv,mix,SpriteNodeMaterial
+import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,SpriteNodeMaterial,
+		color,texture,attribute,timerLocal,range,positionLocal,uv,mix
 } from 'three/tsl';
 import Stats from "three/addons/libs/stats.module.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
@@ -78,17 +78,46 @@ import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowt
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
-
 //= GENERAL ===================================================================
 
-// TO DO:
-// Program:
-// * Fix Volcano Smoke
-// * Fine-tune Airplane Shadows
-// Flight Module:
-// * Add Auto-Pilot
-// * Add change in Air Density
-// * Add lag to tail leaving/returning to ground
+/*	This flight simulation demo uses the most advanced version of three.js */
+
+//=	FEATURES
+//-	Flight Smulation
+//	* Realistic Flight Simulation (Flight Module)
+//	* Taildragger landing
+//	* Static and Moving Landing Surfaces
+//-	My Airplane:
+//	* Detailed Airplane Model - External and Internal (created in Blender)
+//	* Animated Controls and Gauges - External and Internal (AnimFM2 Module)
+//	* Animated Pilot
+//-	Scenery:
+//	* Animated and Textured iFFT Ocean (Ocean and GrdMap Modules)
+//	* Islands, including Volcano with Animated Smoke
+//	* SunFlare
+//-	Traffic:
+//	* Animated Traffic - Airplane and Carrier
+//	* Landable Moving Carrier
+//	* Animated Ship Flag
+//	* Animated Ship Wake
+//-	Controls:
+//	* Multi-Positional Camera
+//-	Sounds:
+//	* 3D Sounds
+
+//=	TO DO:
+//-	Program:
+//	* Change all materials to Node Materials.
+//	* Improve Volcano Smoke
+//	* Improve Airplane Shadows
+//	* Fix Bullets
+//	* Fix Carrier Landing
+//	* Improve Appearance of Prop (use NodeMaterials?)
+//	* Add Exhaust Flashes
+//-	Flight Module:
+//	* Add Auto-Pilot
+//	* Add change in Air Density
+//	* Add lag to tail leaving/returning to ground
 
 //- CAMERA ---------------------------------------------------------------------
 let CamSel = 1;						// Camera Seletion (0 = External; 1 = Internal)
@@ -235,7 +264,7 @@ let GrdRes = 512;
 let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 // Common Variables
 let grd_ = {
-		MSP: new THREE.Vector3 (),	// MSX, MPY, MSZ (meters) (from Flight)
+		MSP: new THREE.Vector3(),	// MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,				// Squares in each of first 2 grids
 		Siz: GrdSiz,			// Size of smallest square
 		Stp: 4,					// Squares in each of first 2 grids
@@ -245,7 +274,7 @@ let grd_ = {
 		Col: new THREE.Color(WtrCol), // Color
 		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
 		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
-		NMS: vec2(),			// Grid 0-1 Normal Map Scale (from Ocean)
+		NMS: new THREE.Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
 		Df0: [],				// Grid 0-1 Diffuse Maps
 		Rf0: [],				// Grid 0-1 Roughness Maps
 		Mt0: [],				// Grid 0 Materials
@@ -276,7 +305,7 @@ let wav_ = {
 		// Animated Maps
 		Dsp: 0,					// The Displacement Map
 		Nrm: 0,					// The Normal Map
-		NMS: vec2(1.0,1.0),	// Normal Map Scale (flip Y for left-handed maps)
+		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
 	};
 let wavSpd = 0.5;				// Animation speed - use in main program (lower is faster)
 let wavTim = 0;
@@ -559,7 +588,7 @@ let VlkAdr = "https://threejs.org/examples/textures/opengameart/smoke1.png";
 let VlkMap = 0;
 //
 let smokeInstancedSprite;
-let VlkPos = new THREE.Vector3(610,150,275);
+let VlkPos = new THREE.Vector3(610,50,275);
 
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
@@ -859,7 +888,7 @@ function loadAll() {
 	grd_.MSP.y = air_.MapPos.y;			// Use to initialize objects
 	WaitScreen();						// load loading screen
 	loadSkyBox();
-	if (SnFFlg) loadSFlare(SnF_);		// SunFlare
+	if (SnFFlg) loadSunFlr(SnF_);		// SunFlare
 	loadGeoMat();
 	loadAirObj();
 	loadObject();						// load objects	
@@ -873,10 +902,10 @@ function loadAll() {
 function WaitScreen() {
 	// Set up the loading screen scene.
 	// It can be treated just like our main scene.
-	let geometry = new THREE.PlaneGeometry(1,1);
-	let texture = txtrLoader.load("https://PhilCrowther.github.io/Aviation/textures/wait/prop.jpg");
-	let material = new THREE.MeshBasicMaterial({map: texture});
-	loadingScreen.box = new THREE.Mesh(geometry, material);
+	let BoxGeo = new THREE.PlaneGeometry(1,1);
+	let BoxTxt = txtrLoader.load("https://PhilCrowther.github.io/Aviation/textures/wait/prop.jpg");
+	let BoxMat = new THREE.MeshBasicNodeMaterial({colorNode: texture(BoxTxt)});
+	loadingScreen.box = new THREE.Mesh(BoxGeo,BoxMat);
 	loadingScreen.box.rotation.set(Math.PI,0,0);
 	loadingScreen.box.position.set(0,0,5);
 	loadingScreen.camera.lookAt(loadingScreen.box.position);
@@ -887,7 +916,7 @@ function WaitScreen() {
 
 function initAll() {
 	initSkyBox();
-	if (SnFFlg) initSFlare(scene,camera,SnF_);	// SunFlare
+	if (SnFFlg) initSunFlr(scene,camera,SnF_);	// SunFlare
 	// Objects
 	initVulkan();						// Volcano
 	initObject();						// Determine relative XZ location of all objects, including CVE
@@ -939,7 +968,7 @@ function rendAll() {
 		if (SnFFlg) {			// SunFlare
 			SnF_.asp = CamAsp;	// Camera Aspect
 			SnF_.cam.copy(cam_.llz); // Camera LLZ		
-			moveSFlare(SnF_);	// SunFlare
+			moveSunFlr(SnF_);	// SunFlare
 		}
 		// Move Objects
 		moveAirObj();					// Move aircaft
@@ -980,15 +1009,15 @@ function initSkyBox() {
 
 //= SUNFLARE ===================================================================
 
-function loadSFlare(SnF_) {
+function loadSunFlr(SnF_) {
 	let SnFtxt,SnFmat;
 	for (let i = 0; i < SnF_.num; i++) {
 		SnFtxt = txtrLoader.load(SnFsrc[i]);
-		SnFmat = new THREE.SpriteMaterial({
-			color: 0xffffff,
-			map: SnFtxt,
+		SnFmat = new THREE.SpriteNodeMaterial({
+			colorNode: color(0xffffff),
+			colorNode: texture(SnFtxt),
 			transparent:true,
-			opacity: SnFopa[i], // Opacity
+			opacityNode: SnFopa[i], // Opacity
 			depthTest:false,
 			depthWrite:false
 		});
@@ -998,7 +1027,7 @@ function loadSFlare(SnF_) {
 	}
 }
 
-function initSFlare(scene,camera,SnF_) {
+function initSunFlr(scene,camera,SnF_) {
 	SnF_.par = camera;
 	// Get Sprites
 	for (let i = 0; i < SnF_.num; i++) {
@@ -1010,7 +1039,7 @@ function initSFlare(scene,camera,SnF_) {
 	}
 };
 
-function moveSFlare(SnF_) {
+function moveSunFlr(SnF_) {
 	// Get Difference Between Sun and Camera Directions
 	SnF_.off.x = SnF_.sun.x-SnF_.cam.x;				// Camera Lat Offset
 	SnF_.off.y = PoM360(Mod360(SnF_.sun.y-SnF_.cam.y));	// Camera Lon Offset
@@ -1344,13 +1373,13 @@ function moveShips() {
 
 //	Load and Initialize Flag
 function loadShpFlg() {
-	txtrLoader.load(FlgSrc, function(texture) {
+	txtrLoader.load(FlgSrc, function(FlgTxt) {
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.needsUpdate = true
-		flg_.Mat = new THREE.MeshPhongMaterial({map: texture, side: THREE.DoubleSide});
+		flg_.Mat = new THREE.MeshPhongNodeMaterial({colorNode: texture(FlgTxt), side: THREE.DoubleSide});
 		flg_.Geo = new THREE.PlaneGeometry(flg_.Siz.x, flg_.Siz.y, flg_.Seg.x, flg_.Seg.y);
 		flg_.Geo.rotateY(180*DegRad);
 		flg_.Ptr = new THREE.Mesh(flg_.Geo, flg_.Mat);
@@ -1706,15 +1735,15 @@ function moveAirObj() {
 
 //	Load Bullets
 function loadBullet() {
-	let mesh = new THREE.BoxGeometry(0.5,0.5,0.5);	// big bullets = visible
-	let material = new THREE.MeshBasicMaterial({color: 0xffffff});
+	let BltGeo = new THREE.BoxGeometry(0.5,0.5,0.5);	// big bullets = visible
+	let BltMat = new THREE.MeshBasicMaterial({color: 0xffffff});
 	let xp = 8;
 	for (let i = 0; i < BulNum; i ++) {
 		BulPtr[i] = new THREE.Object3D();
-		let left = new THREE.Mesh(mesh, material);
+		let left = new THREE.Mesh(BltGeo,BltMat);
 		left.position.x = -xp;
 		BulPtr[i].add(left);
-		let rite = new THREE.Mesh(mesh, material);
+		let rite = new THREE.Mesh(BltGeo,BltMat);
 		rite.position.x = xp;
 		BulPtr[i].add(rite);
 		scene.add(BulPtr[i]);

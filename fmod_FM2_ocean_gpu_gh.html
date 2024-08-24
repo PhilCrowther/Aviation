@@ -60,7 +60,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 
 // Basic Modules
 import * as THREE from "three";
-import {color,float,MeshStandardNodeMaterial,normalMap,positionLocal,texture,vec2} from 'three/tsl';
+import {MeshBasicNodeMaterial,MeshStandardNodeMaterial,SpriteNodeMaterial,color,texture,normalMap} from 'three/tsl';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
@@ -75,9 +75,9 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
 //= STARTING VALUES ============================================================
 //- MY CAMERA ------------------------------------------------------------------
-let CamSel = 0;					// Camera Seletion (0 = linked to grid, 1 = linked to Airplane)
-let CamLat = -10;				// Camera Direction - Vert (+/- 90)
-let CamLon = 240;				// Camera Direction - Horz (0->360)
+let CamSel = 0;				// Camera Seletion (0 = linked to grid, 1 = linked to Airplane)
+let CamLat = -10;			// Camera Direction - Vert (+/- 90)
+let CamLon = 240;			// Camera Direction - Horz (0->360)
 //- AIRPLANE: Start ------------------------------------------------------------
 let USorSI = "US";			// Starting Units of Measurement (US or SI)
 let PwrPct = 0.8;			// Initial Power
@@ -251,7 +251,7 @@ let wav_ = {
 		// Animated Maps
 		Dsp: 0,				// The Displacement Map
 		Nrm: 0,				// The Normal Map
-		NMS: vec2(1.0,1.0),	// Normal Map Scale (flip Y for left-handed maps)
+		NMS: new THREE.Vector2(1,1),	// Normal Map Scale (flip Y for left-handed maps)
 	};
 let wavSpd = 1;				// Animation speed - use in main program (lower is faster)
 let wavTim = 0;
@@ -273,7 +273,7 @@ let grd_ = {
 		Col: WtrCol,		// Color
 		Dsp: 0,				// Grid 0 Displacement Map (from Ocean)
 		Nrm: 0,				// Grid 0-1 Normal Map (from Ocean)
-		NMS: vec2(),		// Grid 0-1 Normal Map Scale (from Ocean)
+		NMS: new THREE.Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
 		Df0: [],			// Grid 0-1 Diffuse Maps
 		Rf0: [],			// Grid 0-1 Roughness Maps
 		Mt0: [],			// Grid 0 Materials
@@ -635,19 +635,19 @@ function loadAll() {
 	WaitScreen();						// load loading screen
 	loadSkyBox();
 	if (SnFFlg) loadSFlare();			// SunFlare
-	loadClouds();
 	loadGeoMat(grd_);
 	loadAirObj();
 }
 
 //= Wait Screen ================================================================
+
 function WaitScreen() {
 	// Set up the loading screen scene.
 	// It can be treated just like our main scene.
-	let geometry = new THREE.PlaneGeometry(1,1);
-	let texture = txtrLoader.load("https://PhilCrowther.github.io/Aviation/textures/wait/prop.jpg");
-	let material = new THREE.MeshBasicMaterial({map: texture});
-	loadingScreen.box = new THREE.Mesh(geometry, material);
+	let BoxGeo = new THREE.PlaneGeometry(1,1);
+	let BoxTxt = txtrLoader.load("https://PhilCrowther.github.io/Aviation/textures/wait/prop.jpg");
+	let BoxMat = new THREE.MeshBasicNodeMaterial({colorNode: texture(BoxTxt)});
+	loadingScreen.box = new THREE.Mesh(BoxGeo,BoxMat);
 	loadingScreen.box.rotation.set(Math.PI,0,0);
 	loadingScreen.box.position.set(0,0,5);
 	loadingScreen.camera.lookAt(loadingScreen.box.position);
@@ -655,6 +655,7 @@ function WaitScreen() {
 }
 
 //= 1 Initialize ===============================================================
+
 function initAll() {
 	initSkyBox();
 	waves = new Ocean(renderer,wav_);	// Init Ocean
@@ -663,7 +664,6 @@ function initAll() {
 	grd_.NMS = wav_.NMS;
 	grids = new GrdMap(grd_,scene);
 	if (SnFFlg) initSFlare(scene,camera,SnF_);	// SunFlare
-//	initClouds();
 	// Other
 	initCamera(camera,cam_);		// position camera
 	prntHUDval();						// print HUD values
@@ -699,7 +699,6 @@ function rendAll() {
 		waves.render(wavTim); // Render Ocean
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update(grd_);	// Grids
-//		moveClouds();
 		// Other
 		moveSounds(air_);
 		prntHUDval();		// print HUD values
@@ -738,11 +737,11 @@ function loadSFlare() {
 	let SnFtxt,SnFmat;
 	for (let i = 0; i < SnF_.num; i++) {
 		SnFtxt = txtrLoader.load(SnFsrc[i]);
-		SnFmat = new THREE.SpriteMaterial({
-			color: 0xffffff,
-			map: SnFtxt,
+		SnFmat = new THREE.SpriteNodeMaterial({
+			colorNode: color(0xffffff),
+			colorNode: texture(SnFtxt),
 			transparent:true,
-			opacity: SnFopa[i], // Opacity
+			opacityNode: SnFopa[i], // Opacity
 			depthTest:false,
 			depthWrite:false
 		});
@@ -792,69 +791,6 @@ function moveSFlare(SnF_) {
 		}
 	}
 };
-
-//= CLOUDS =====================================================================
-
-function loadClouds() {
-	CldTxt = txtrLoader.load(CldSrc);
-}
-
-function initClouds() {
-	let sprite,posx,posy,posz,dist,indx,scale;
-	for (var n = 0; n < cloudn; n++) {	// for each cloud
-		clouds[n] = new THREE.Group;
-		cloudt[n] = new THREE.SpriteMaterial({	// light above
-			color: 0xd0d0d0,	// lighter color
-			map: CldTxt,
-			transparent:true,
-			depthWrite:false
-		});
-		cloudb[n] = new THREE.SpriteMaterial({	// dark below
-			color: 0x808080,	// darker color
-			map: CldTxt,
-			transparent:true,
-			depthWrite:false
-		});	
-		for (var r = 0; r < 360; r ++) {	// for each sprite
-			sprite = new THREE.Sprite(cloudt[n]);
-			dist = Math.random()*180+40;	// basic size (40 prevents crowding in center)
-			posx = dist*Math.sin(r*DegRad)*1.75;	// creates oval shape
-			posz = dist*Math.cos(r*DegRad);
-			dist = Math.sqrt(posx*posx+posz*posz);	// distance
-			indx = (1000-dist)/1000;	// ratio 1 to 0			
-			posy = (Math.random()-0.5)*25*indx;	// lens shape
-			if (posy < -.9) sprite.material = cloudb[n]; // dark
-			sprite.position.set(posx,posy,posz);
-			sprite.scale.set(150, 90*indx, 90); // sprites smaller at edge
-			clouds[n].add(sprite);	// add sprite to cloud
-		}
-		scale = 2*Math.random()+1;	// Range = 1 to 2
-		clouds[n].scale.set(scale,scale,scale)
-		clouds[n].position.set(cloudx[n],cloudy[n],cloudz[n]);
-		scene.add(clouds[n]);
-	}
-}
-
-function moveClouds() {
-	let dist;	// xz distance
-	for (var n = 0; n < cloudn; n++) {
-		// Compute new relative position: air_.MapSPS = xspd,ypos,zspd
-		cloudx[n] = cloudx[n]-air_.MapSPS.x;
-		let heighty = cloudy[n]-air_.MapSPS.y;
-		cloudz[n] = cloudz[n]+air_.MapSPS.z;
-		// Reset position if out of bounds
-		if (cloudx[n] > cloudm) cloudx[n] = -cloudm;
-		if (cloudx[n] < -cloudm) cloudx[n] = cloudm;
-		if (cloudz[n] > cloudm) cloudz[n] = -cloudm;
-		if (cloudz[n] < -cloudm) cloudz[n] = cloudm;
-		// Set 
-		clouds[n].position.set(cloudx[n],heighty,cloudz[n]);
-		// Fade out based on distance
-		dist = Math.sqrt(cloudx[n]*cloudx[n]+cloudz[n]*cloudz[n]);
-		cloudt[n].opacity = cloudo*(1.5*cloudm-dist)/(1.5*cloudm);
-		cloudb[n].opacity = cloudo*(1.5*cloudm-dist)/(1.5*cloudm);
-	}
-}
 
 //= GEOMAT =====================================================================
 // Can't be exported since uses html context to split images

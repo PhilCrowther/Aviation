@@ -6,12 +6,11 @@ Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 Version dated 15 Aug 2024
 
-This demo program uses included versions of the Ocean and GrdMap modules.
-
+A WebGPU demo of the GrdWtr4a, Ocean4a and SunFlare2 modules.
 -->
 
 <head>
-<title>fdem_ocean_gpu</title>
+<title>FDem: Ocean GPU r167</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
@@ -52,8 +51,8 @@ This demo program uses included versions of the Ocean and GrdMap modules.
 
 <script type="module">
 import * as THREE from "three";
-import {color,MeshBasicNodeMaterial,MeshStandardNodeMaterial,mix,positionLocal,
-		range,SpriteNodeMaterial,texture,timerLocal,uv,vec2} from 'three/tsl';
+import {MeshBasicNodeMaterial,MeshStandardNodeMaterial,SpriteNodeMaterial,
+		color,texture,timerLocal,range,positionLocal,uv,mix} from 'three/tsl';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
@@ -194,7 +193,7 @@ let wav_ = {
 		// Animated Maps
 		Dsp: 0,					// The Displacement Map
 		Nrm: 0,					// The Normal Map
-		NMS: vec2(1.0,1.0),		// Normal Map Scale (flip Y for left-handed maps)
+		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
 	};
 let wavTim = 0;
 // External Values
@@ -207,7 +206,7 @@ let wavSpd = 1;					// Animation speed - use in main program (lower is faster)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
 let grids = 0;
 let grd_ = {
-		MSP: new THREE.Vector3 (),	// MSX, MPY, MSZ (meters) (from Flight)
+		MSP: new THREE.Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,				// Squares in each of first 2 grids
 		Siz: GrdSiz,			// Size of smallest square
 		Stp: 4,					// Squares in each of first 2 grids
@@ -217,7 +216,7 @@ let grd_ = {
 		Col: new THREE.Color(WtrCol), // Color
 		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
 		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
-		NMS: vec2(),			// Grid 0-1 Normal Map Scale (from Ocean)		
+		NMS: new THREE.Vector2(), // Grid 0-1 Normal Map Scale (from Ocean)		
 		Df0: [],				// Grid 0-1 Diffuse Maps
 		Rf0: [],				// Grid 0-1 Roughness Maps
 		Mt0: [],				// Grid 0 Materials
@@ -435,7 +434,7 @@ function loadAll() {
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad;		// Heading
 	air_.MapSPS.y = air_.MapPos.y;
 	loadSkyBox();
-	if (SnFFlg) loadSunFlr();			// SunFlare
+	if (SnFFlg) loadSunFlr(SnF_);		// SunFlare
 	loadGeoMat(grd_);
 	loadJetExh();
 }
@@ -486,7 +485,7 @@ function rendAll() {
 		SnF_.cam.copy(cam_.llz); // Camera LLZ		
 		sunflare.update(SnF_);	// SunFlare
 	}
-	renderer.render(scene, camera); // Render
+	renderer.renderAsync(scene, camera); // Render
 }
 
 //= SKY BOX ====================================================================
@@ -509,15 +508,15 @@ function initSkyBox() {
 
 //= SUNFLARE ===================================================================
 
-function loadSunFlr() {
+function loadSunFlr(SnF_) {
 	let SnFtxt,SnFmat;
 	for (let i = 0; i < SnF_.num; i++) {
 		SnFtxt = txtrLoader.load(SnFsrc[i]);
-		SnFmat = new THREE.SpriteMaterial({
-			color: 0xffffff,
-			map: SnFtxt,
+		SnFmat = new THREE.SpriteNodeMaterial({
+			colorNode: color(0xffffff),
+			colorNode: texture(SnFtxt),
 			transparent:true,
-			opacity: SnFopa[i], // Opacity
+			opacityNode: SnFopa[i], // Opacity
 			depthTest:false,
 			depthWrite:false
 		});
@@ -806,7 +805,7 @@ return deg;}
 //- Make Simple Mesh -----------------------------------------------------------
 function makMsh() {
 	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicNodeMaterial({transparent:true,opacity:0});
+	let material = new MeshBasicNodeMaterial({transparent:true,opacityNode:0});
 	let mesh = new THREE.Mesh(geometry, material);
 return mesh;}
 
