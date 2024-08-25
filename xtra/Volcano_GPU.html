@@ -9,7 +9,7 @@ Version dated 23 Aug 2024
 -->
 
 <head>
-<title>Scenery Viewer</title>
+<title>Volcano with Smoke - GPU</title>
 <style>
 	body {background:#000; padding:0; margin:0; width:240px; overflow:hidden;}
 	.overlay1 {position: absolute; top: 1%; left: 1%; width: 240px; height: 12px;
@@ -54,10 +54,8 @@ import Stats from "three/addons/libs/stats.module.js";
 let	DegRad = Math.PI/180;		// Convert Degrees to Radians
 let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 //- Sun
-let SunLat = 23;				// Direction - Vert (+/- 90)
-let SunLon = 312;				// Direction - Horz (0->360)
-let SunDst = 10000;				// Distance (for shadows and lensflare)
-let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let SunLLD = new THREE.Vector3(23,312,1000); // Lat (+/- 90), Lon (0->360), Distance
+let SunSph = new THREE.Spherical(SunLLD.z,(90-SunLLD.x)*DegRad,Mod360(180-SunLLD.y)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //- Island
 let	IslObj = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";		// Object file
@@ -67,12 +65,10 @@ let	Island = 0;
 let SmkAdr = "https://threejs.org/examples/textures/opengameart/smoke1.png";
 let SmkMap = 0;
 let smokeInstancedSprite;
-let SmkPos = new THREE.Vector3(0,50,0);
+let SmkPos = new THREE.Vector3(50,0,-25);
 //- Camera
-let	camdst = 1609;				// Distance from model
-let	camlat = 20;				// Camera Latitude
-let	camlon = 120;				// Camera Heading (direction the camera is pointing)
-let CamSph = new THREE.Spherical(camdst,Mod360(90-camlat)*DegRad,Mod360(180-camlon)*DegRad);
+let CamLLD = new THREE.Vector3(20,120,1609); // Lat (+/- 90), Lon (0->360), Distance
+let CamSph = new THREE.Spherical(CamLLD.z,Mod360(90-CamLLD.x)*DegRad,Mod360(180-CamLLD.y)*DegRad);
 let	CamPos = new THREE.Vector3().setFromSpherical(CamSph);	
 let OrbCon = 1;					// Used by OrbitControls
 //- Mouse
@@ -154,14 +150,15 @@ function initAll() {
 //= RENDER =====================================================================
 
 function rendAll() {
-	if (LodFlg) {
+	if (LodFlg>10) {
 		OrbCon.update();		// Camera
-		camlat = OrbCon.getPolarAngle()*RadDeg-90;
-		camlon = Mod360(360-OrbCon.getAzimuthalAngle()*RadDeg);
+		CamLLD.x = OrbCon.getPolarAngle()*RadDeg-90;
+		CamLLD.y = Mod360(360-OrbCon.getAzimuthalAngle()*RadDeg);
 		prntHUDval();
 		if (StatOn) StatOn.update(); // update stats
 		renderer.renderAsync(scene, camera);	// Render
 	}
+	LodFlg++;
 }
 
 //= ISLAND =====================================================================
@@ -195,31 +192,33 @@ function loadVulkan() {
 
 //- Init Smoke ---------------------------------------------------------------
 function initVulkan() {	
-	// create nodes
-	let lifeRange = range(.1,1);
-//	let offsetRange = range(new THREE.Vector3(-2,3,-2), new THREE.Vector3(2,5,2));
-	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));
-//	let timer = timerLocal(.2,1);
-	let timer = timerLocal(.02,.1);		// Lower = slower
+	//- Timer
+	let timer = timerLocal(.02,1);		// leave 2nd value = 1
+	//- Life
+	let lifeRange = range(.1,1);		// original
 	let lifeTime = timer.mul(lifeRange).mod(1);
-	let scaleRange = range(.3,2);
-	let rotateRange = range(.1,4);
 	let life = lifeTime.div(lifeRange);
+	//- Rotation Range
+	let rotateRange = range(.1,4);
+	let textureNode = texture(SmkMap,uv().rotateUV(timer.mul(rotateRange)));
+	let opacityNode = textureNode.a.mul(life.oneMinus());	// decrease Opacity with life
+	//- Lateral Offset	
+	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));
+	//- Size Range
+	let scaleRange = range(.3,1.5);		// smaller
 	//
 	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-	let textureNode = texture(SmkMap, uv().rotateUV(timer.mul(rotateRange)));
-	let opacityNode = textureNode.a.mul(life.oneMinus());
 	// Smoke
-	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0),positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
-		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.colorNode = mix(color(0x808080),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
 		smokeNodeMaterial.opacityNode = opacityNode;
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
 		smokeNodeMaterial.depthRead = false;
 		smokeNodeMaterial.depthWrite = false;
 		smokeNodeMaterial.transparent = true;
-	smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1,1), smokeNodeMaterial);
+	smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1,1),smokeNodeMaterial);
 		smokeInstancedSprite.scale.setScalar(300);
 		smokeInstancedSprite.isInstancedMesh = true;
 		smokeInstancedSprite.count = 500;
@@ -232,9 +231,9 @@ function initVulkan() {
 
 // Print HUD Values
 function prntHUDval() {
-	Cam_Lat = camlat;		// Cam Lat
+	Cam_Lat = CamLLD.x;		// Cam Lat
 	Cam_LatNode.nodeValue = Cam_Lat.toFixed(0);
-	Cam_Lon = camlon;		// Cam Lon
+	Cam_Lon = CamLLD.y;		// Cam Lon
 	Cam_LonNode.nodeValue = Cam_Lon.toFixed(0);
 }
 
