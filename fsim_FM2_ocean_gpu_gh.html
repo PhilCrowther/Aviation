@@ -1508,12 +1508,11 @@ function initVulkan() {
 //- Move Volcano ---------------------------------------------------------------
 function moveVulkan() {
 	// Compute New Relative Position (Using fraction does not Work)
-	let x = 0.95*(VlkPos.x-air_.MapPos.x);
-	let y = 0.95*(VlkPos.y-air_.MapPos.y);
-	let z = 0.95*(air_.MapPos.z-VlkPos.z);
+	let x = VlkPos.x-air_.MapPos.x;
+	let y = (VlkPos.y-air_.MapPos.y)*0.95;
+	let z = air_.MapPos.z-VlkPos.z;
 	smokeInstancedSprite.position.set(x,y,z);
 }
-
 
 //= HARDENED SURFACES ==========================================================
 //	Home Airfield and CVE Deck (moving)
