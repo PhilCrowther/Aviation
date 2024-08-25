@@ -588,7 +588,7 @@ let VlkAdr = "https://threejs.org/examples/textures/opengameart/smoke1.png";
 let VlkMap = 0;
 //
 let smokeInstancedSprite;
-let VlkPos = new THREE.Vector3(610,50,275);
+let VlkPos = new THREE.Vector3(660,75,300);
 
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
@@ -1429,7 +1429,8 @@ function loadShpWak() {
 function initShpWak() {
 	let lifeRange = range(0.1,1);
 	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
-	let timer = timerLocal(.001,.0011);		// Lower = slower
+//	let timer = timerLocal(.001,.0011);		// Lower = slower
+	let timer = timerLocal(.001,1);			// Lower = slower
 	let lifeTime = timer.mul(lifeRange).mod(.05);
 	let scaleRange = range(.01,.02);
 //	let rotateRange = range(.1,4);
@@ -1466,36 +1467,41 @@ function loadVulkan() {
 
 //- Init Volcano ---------------------------------------------------------------
 function initVulkan() {	
-	// create nodes
-	let lifeRange = range(.1,1);
-//	let offsetRange = range(new THREE.Vector3(-2,3,-2), new THREE.Vector3(2,5,2));
-	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));
-//	let timer = timerLocal(.2,1);
-	let timer = timerLocal(.02,.1);		// Lower = slower
+	//- Timer
+//	let timer = timerLocal(.02,.1);
+	let timer = timerLocal(.02,1);
+	//- Life
+	let lifeRange = range(0,1);
 	let lifeTime = timer.mul(lifeRange).mod(1);
-	let scaleRange = range(.3,2);
-	let rotateRange = range(.1,4);
 	let life = lifeTime.div(lifeRange);
+	//- Lateral Offset	
+	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));
+	//- Size Range
+	let scaleRange = range(.3,1.5);
+	//- Rotation Range
+//	let rotateRange = range(.1,4);
+	let rotateRange = range(.1,2);
+	let textureNode = texture(VlkMap,uv().rotateUV(timer.mul(rotateRange)));
+	let opacityNode = textureNode.a.mul(life.oneMinus());	// decrease Opacity with life
 	//
 	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-	let textureNode = texture(VlkMap, uv().rotateUV(timer.mul(rotateRange)));
-	let opacityNode = textureNode.a.mul(life.oneMinus());
 	// Smoke
-	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0),positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
-		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+//		smokeNodeMaterial.colorNode = mix(color(0xffffff),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.colorNode = mix(color(0x808080),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
 		smokeNodeMaterial.opacityNode = opacityNode;
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
 		smokeNodeMaterial.depthRead = false;
 		smokeNodeMaterial.depthWrite = false;
 		smokeNodeMaterial.transparent = true;
-	smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
+	smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1,1),smokeNodeMaterial);
 		smokeInstancedSprite.scale.setScalar(300);
 		smokeInstancedSprite.isInstancedMesh = true;
 		smokeInstancedSprite.count = 500;
 		smokeInstancedSprite.position.copy(VlkPos);
-		smokeInstancedSprite.renderOrder = 1;
+		smokeInstancedSprite.renderOrder = 1;	// This allows the transparent smoke to work with transparent island
 		scene.add(smokeInstancedSprite);
 }
 
