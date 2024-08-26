@@ -42,7 +42,7 @@ canvas {
 	top: 10%;
 	left: 2%;
 	width: 10%;
-	height: 50%;
+	height: 30%;
 	font-family: "Courier New";
 	font-size: 14pt; 
 	color: white;
@@ -54,9 +54,9 @@ canvas {
 /* Instructions */
 .overlay3 {
     position: absolute;
-	top: 50%;
+	top: 30%;
 	left: 2%;
-	width: 10%;
+	width: 30%;
 	height: 50%;
 	font-family: "Courier New";
     font-size: 12pt;
