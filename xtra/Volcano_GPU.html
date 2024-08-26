@@ -53,6 +53,7 @@ import Stats from "three/addons/libs/stats.module.js";
 //- Math Predefined
 let	DegRad = Math.PI/180;		// Convert Degrees to Radians
 let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let MtrMil = 1609.34;			// Meters per Mile
 //- Sun
 let SunLLD = new THREE.Vector3(23,312,1000); // Lat (+/- 90), Lon (0->360), Distance
 let SunSph = new THREE.Spherical(SunLLD.z,(90-SunLLD.x)*DegRad,Mod360(180-SunLLD.y)*DegRad);
@@ -60,14 +61,14 @@ let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //- Island
 let	IslObj = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";		// Object file
 let	IslSrc = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";	// Texture file
-let	Island = 0;
+let	IslPtr= 0;
 //- Smoke
 let SmkAdr = "https://threejs.org/examples/textures/opengameart/smoke1.png";
 let SmkMap = 0;
 let smokeInstancedSprite;
-let SmkPos = new THREE.Vector3(50,0,-25);
+let SmkPos = new THREE.Vector3(50,75,-25);
 //- Camera
-let CamLLD = new THREE.Vector3(20,120,1609); // Lat (+/- 90), Lon (0->360), Distance
+let CamLLD = new THREE.Vector3(20,120,MtrMil); // Lat (+/- 90), Lon (0->360), Distance
 let CamSph = new THREE.Spherical(CamLLD.z,Mod360(90-CamLLD.x)*DegRad,Mod360(180-CamLLD.y)*DegRad);
 let	CamPos = new THREE.Vector3().setFromSpherical(CamSph);	
 let OrbCon = 1;					// Used by OrbitControls
@@ -122,6 +123,11 @@ let Cam_LonElement = document.getElementById("Cam_Lon");	// Cam Lon
 let Cam_LonNode = document.createTextNode("");
 	Cam_LonElement.appendChild(Cam_LonNode);
 let Cam_Lat,Cam_Lon;
+//= GROUPS =====================================================================
+let VlkGrp = new THREE.Group();
+	VlkGrp.rotation.order = "YXZ";
+	VlkGrp.position.set(0,0,0);
+	scene.add(VlkGrp);
 
 //= MAIN =======================================================================
 	loadAll();
@@ -173,11 +179,12 @@ function loadIsland() {
 				// Note: Blender object must include a UV map
 				if (child.isMesh) child.material = IslMat;				
 			});
-			Island = gltf.scene;
-			let s = 1609;		// 1 unit = 1 mile (meters)
-			Island.scale.set(s,s,s);
-//			Island.renderOrder = 0;	// No reason to set since default = 0
-			scene.add(Island);
+			IslPtr= gltf.scene;
+			let s = MtrMil;		// 1 unit = 1 mile (meters)
+			IslPtr.scale.set(s,s,s);
+//			IslPtr.renderOrder = 0;	// No reason to set since default = 0
+//			scene.add(IslPtr);
+			VlkGrp.add(IslPtr);
 		},
 		null, null				// OnProgress/OnError functions
 	);
@@ -190,41 +197,44 @@ function loadVulkan() {
 	SmkMap = txtrLoader.load(SmkAdr);
 }
 
-//- Init Smoke ---------------------------------------------------------------
-function initVulkan() {	
+//- Init Smoke -----------------------------------------------------------------
+//- (Based on Ship Wake - this somehow eliminates frustum culling problem when
+//	 used as part of a group.)
+function initVulkan() {
 	//- Timer
-	let timer = timerLocal(.02,1);		// leave 2nd value = 1
+	let timer = timerLocal(.001,1);
 	//- Life
-	let lifeRange = range(.1,1);		// original
-	let lifeTime = timer.mul(lifeRange).mod(1);
+	let lifeRange = range(0.1,1);
+	let lifeTime = timer.mul(lifeRange).mod(.05);
 	let life = lifeTime.div(lifeRange);
 	//- Rotation Range
 	let rotateRange = range(.1,4);
-	let textureNode = texture(SmkMap,uv().rotateUV(timer.mul(rotateRange)));
-	let opacityNode = textureNode.a.mul(life.oneMinus());	// decrease Opacity with life
+	let textureNode = texture(SmkMap, uv().rotateUV(timer.mul(rotateRange)));
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 	//- Lateral Offset	
-	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));
+//	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
+	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// cone shaped
 	//- Size Range
-	let scaleRange = range(.3,1.5);		// smaller
+//	let scaleRange = range(.01,.02);
+	let scaleRange = range(.1,.2);
 	//
-	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-	// Smoke
-	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0),positionLocal.y.mul(3).clamp());
+	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
+	// Wake
+	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
-		smokeNodeMaterial.colorNode = mix(color(0x808080),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 		smokeNodeMaterial.opacityNode = opacityNode;
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
-		smokeNodeMaterial.depthRead = false;
 		smokeNodeMaterial.depthWrite = false;
 		smokeNodeMaterial.transparent = true;
-	smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1,1),smokeNodeMaterial);
-		smokeInstancedSprite.scale.setScalar(300);
+	let smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
+		smokeInstancedSprite.scale.setScalar(4000);		// Makes Visible (was 400)
 		smokeInstancedSprite.isInstancedMesh = true;
-		smokeInstancedSprite.count = 500;
+		smokeInstancedSprite.count = 600;				// Increases continuity (was 100)
 		smokeInstancedSprite.position.copy(SmkPos);
 		smokeInstancedSprite.renderOrder = 1;	// This allows the transparent smoke to work with transparent island
-		scene.add(smokeInstancedSprite);
+		VlkGrp.add(smokeInstancedSprite);
 }
 
 //= OUTPUTS ====================================================================
