@@ -21,46 +21,43 @@ canvas {
 	height: 100%;
 	z-index: 0;
 }
-/* Title */
+/* Data */
 .overlay1 {
 	position: absolute;
-	top: 0;
+	top: 2%;
 	left: 2%;
-	width: 90%;
-	height: 10%;
-	font-family: Courier;
-	font-size: 24pt; 
-	color: white;
-	-webkit-text-stroke-width: 1px;
-	-webkit-text-stroke-color: black;
+	width: 220px;
+	height: 110px;
+	color: black;
+	font-family: "Courier New";
+	font-size: 14pt;
 	font-weight: bold;
 	z-index: 1;
 }
-/* Data */
+/* Toggle */
 .overlay2 {
 	position: absolute;
-	top: 10%;
-	left: 2%;
-	width: 10%;
-	height: 30%;
+	top: 2%;
+	left: 88%;
+	width: 220px;
+	height: 110px;
+	color: black;
 	font-family: "Courier New";
-	font-size: 14pt; 
-	color: white;
-	-webkit-text-stroke-width: 1px;
-	-webkit-text-stroke-color: black;
+	font-size: 14pt;
 	font-weight: bold;
 	z-index: 1;
 }
 /* Instructions */
 .overlay3 {
-    position: absolute;
-	top: 30%;
+	position: absolute;
+	top: 40%;
 	left: 2%;
-	width: 30%;
-	height: 50%;
+	width: 35%;
+	height: 500px;
+	color: black;
 	font-family: "Courier New";
-    font-size: 12pt;
-    color: black;
+	font-size: 14pt;
+	font-weight: bold;
 	z-index: 1;
 }
 #blocker {
