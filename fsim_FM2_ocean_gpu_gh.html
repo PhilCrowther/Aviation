@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Aug 2024
+Version dated 26 Aug 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -107,8 +107,6 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
 //=	TO DO:
 //-	Program:
-//	* Change all materials to Node Materials.
-//	* Improve Volcano Smoke
 //	* Improve Airplane Shadows
 //	* Fix Bullets
 //	* Fix Carrier Landing
@@ -155,6 +153,7 @@ let Ft2Mtr = 0.3048;				// Convert Feet to Meters
 let Mtr2Ft = 1/0.3048;
 let Km2Mil = 0.621371;
 let Mil2Km = 1.60934;
+let MtrMil = 1609.34;				// Meters per Mile
 //	Default Constants
 let	GrvMPS = 9.80665; 				// Gravity (mps)
 //	Starting Constants per frame
@@ -184,7 +183,7 @@ let StatOn = 1;					// Stats ((0 = off, 1 = on)
 //	Program Flags
 let LodFlg = 0;
 //	Altitude Adjustment
-let AltAdj = 0.96;				// Raises objects above map as altitude increases
+let AltAdj = 0.99;				// Raises objects above map as altitude increases
 //	Animations
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
@@ -334,19 +333,19 @@ let ObjIdx = 0;
 	ObjTxt[ObjIdx] = 0;
 	ObjPos[ObjIdx] = new THREE.Vector3(60,9,640);		// meters
 	ObjIdx++;
-// Homebase
-	ObjTyp[ObjIdx] = 1;			// 1 = Fixed large object
-	ObjNam[ObjIdx] = "homebase";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";
-	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";
-	ObjPos[ObjIdx] = new THREE.Vector3(610,30,275);		// meters
-	ObjIdx++;
 // Giaros Island
 	ObjTyp[ObjIdx] = 1;			// 1 = Fixed - large feature
 	ObjNam[ObjIdx] = "giaro";
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb";
 	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png";
 	ObjPos[ObjIdx] = new THREE.Vector3(-1610,1,2440);	// meters
+	ObjIdx++;
+// Home Island
+	ObjTyp[ObjIdx] = 2;			// 2 = Fixed large group
+	ObjNam[ObjIdx] = "homebase";
+	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";
+	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";
+	ObjPos[ObjIdx] = new THREE.Vector3(610,30,275);		// meters
 	ObjIdx++;
 
 //= MY AIRPLANE ================================================================
@@ -586,9 +585,9 @@ let WakMap = 0;
 //= VOLCANO ====================================================================
 let VlkAdr = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png";
 let VlkMap = 0;
-//
 let smokeInstancedSprite;
-let VlkPos = new THREE.Vector3(660,75,300);
+//let VlkPos = new THREE.Vector3(660,75,300);
+let VlkPos = new THREE.Vector3(50,75,25);
 
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
@@ -874,6 +873,10 @@ let On_Paws, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, O
 let CVEGrp = new THREE.Group();			// To hold AirExt and AirInt
 	CVEGrp.rotation.order = "YXZ";
 	scene.add(CVEGrp);					// CVEGrp => (CVE + WakPtr)
+//	Island Group
+let IslGrp = new THREE.Group();			// To hold AirExt and AirInt
+	IslGrp.rotation.order = "YXZ";
+	scene.add(IslGrp);					// CVEGrp => (CVE + WakPtr)
 
 //= MAIN PROGRAMS ==============================================================
 
@@ -918,7 +921,7 @@ function initAll() {
 	initSkyBox();
 	if (SnFFlg) initSunFlr(scene,camera,SnF_);	// SunFlare
 	// Objects
-	initVulkan();						// Volcano
+//	initVulkan();						// Volcano
 	initObject();						// Determine relative XZ location of all objects, including CVE
 	moveMinAlt();						// Determine if over CVE - resulting is special handling
 	flight = Flight(air_);				// position airplane using air_.GrdZed
@@ -972,10 +975,10 @@ function rendAll() {
 		}
 		// Move Objects
 		moveAirObj();					// Move aircaft
-		moveBullet();
+//		moveBullet();
 		moveObject();					// Move objects
 		moveShpFlg();
-		moveVulkan();					// Volcano
+//		moveVulkan();					// Volcano
 		// Move Grids
 		waves.render(wavTim);			// Render Ocean
 		grd_.MSP.copy(air_.MapSPS);
@@ -1184,6 +1187,7 @@ function loadFixed() {
 				ObjPtr[i] = gltf.scene;
 				ObjPtr[i].scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);		// object in feet
 				ObjPtr[i].rotation.order = "ZXY";
+				scene.add(ObjPtr[i]);
 			});
 		}
 		// Island
@@ -1195,13 +1199,36 @@ function loadFixed() {
 					// Note: Blender object must include a UV map
 						if (child.isMesh) {
 							child.material = mat;		// temporary variable prevents cross-contamination				
-							child.receiveShadow = true;	// works but creates problems with smoke
+							child.receiveShadow = true;
 						}
 					});
 					ObjPtr[i] = gltf.scene;
-					let s = 1609;						// meters
+					let s = MtrMil;						// meters
 					ObjPtr[i].scale.set(s,s,s);
 					ObjPtr[i].rotation.order = "ZXY";	// Bank, Pitch, Heading
+					scene.add(ObjPtr[i]);
+				});
+			});
+		}
+		// Island Group
+		if (ObjTyp[i] == 2) {
+			txtrLoader.load(ObjTxt[i], function (IslTxt) {	
+				let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(IslTxt), transparent: true});
+				gltfLoader.load(ObjMdl[i], function (gltf) {
+					gltf.scene.traverse(function (child) {
+					// Note: Blender object must include a UV map
+						if (child.isMesh) {
+							child.material = mat;		// temporary variable prevents cross-contamination				
+							child.receiveShadow = true;
+						}
+					});
+					ObjPtr[i] = gltf.scene;
+					let s = MtrMil;						// meters
+					ObjPtr[i].scale.set(s,s,s);
+					ObjPtr[i].rotation.order = "ZXY";	// Bank, Pitch, Heading
+					IslGrp.add(ObjPtr[i]);
+					// Init Smoke
+					initVulkan();
 				});
 			});
 		}
@@ -1214,22 +1241,23 @@ function initFixed() {
 		// Set Relative Position
 		// (cause Objects to elevate above water as we climb to prevent flicker)
 		let X = ObjPos[i].x-air_.MapPos.x;
-		let Y = ObjPos[i].y-air_.MapPos.y*.99;
+		let Y = ObjPos[i].y-air_.MapPos.y*AltAdj;
 		let Z = air_.MapPos.z-ObjPos[i].z;
-		ObjPtr[i].position.set(X,Y,Z);
-		scene.add(ObjPtr[i]);
+		if (ObjTyp[i] == 2) IslGrp.position.set(X,Y,Z);
+		else {ObjPtr[i].position.set(X,Y,Z);}
 	}
 }
 
 //	Move Objects
 function moveFixed() {
-	// Cause Objects to elevate by 0.01 of my altitude to avoid flicker.
 	for (let i = 0; i < ObjNum; i ++) {
 		// Compute New Relative Position
+		// (cause Objects to elevate above water as we climb to prevent flicker)
 		let X = ObjPos[i].x-air_.MapPos.x;
-		let Y = ObjPos[i].y-air_.MapPos.y*.99;
+		let Y = ObjPos[i].y-air_.MapPos.y*AltAdj;
 		let Z = air_.MapPos.z-ObjPos[i].z;
-		ObjPtr[i].position.set(X,Y,Z);
+		if (ObjTyp[i] == 2) IslGrp.position.set(X,Y,Z);
+		else {ObjPtr[i].position.set(X,Y,Z);}
 	}
 }
 
@@ -1272,7 +1300,7 @@ function initPlane() {
 	// Compute Relative Position
 	// (cause Objects to elevate above water as we climb to prevent flicker)
 	let X = xac_.MpP.x-air_.MapPos.x;
-	let Y = xac_.MpP.y-air_.MapPos.y*.99;
+	let Y = xac_.MpP.y-air_.MapPos.y*AltAdj;
 	let Z = air_.MapPos.z-xac_.MpP.z;
 	xac_.Ptr.position.set(X,Y,Z);
 	scene.add(xac_.Ptr);
@@ -1296,7 +1324,7 @@ function movePlane() {
 	if (xac_.MxS) xac_.MxS.setTime(anm_.spnprp/anmfps);
 	// Compute New Relative Position
 	let X = xac_.MpP.x-air_.MapPos.x;
-	let Y = xac_.MpP.y-air_.MapPos.y*.99;
+	let Y = xac_.MpP.y-air_.MapPos.y*AltAdj;
 	let Z = air_.MapPos.z-xac_.MpP.z;
 	xac_.Ptr.position.set(X,Y,Z);
 }
@@ -1324,7 +1352,6 @@ function loadShips() {
 		//
 		xsh_.Ptr.position.set(0,0,0);	// position within group is always 0,0,0
 		// Ship Wake
-//		initShpWak(xwk_);
 		initShpWak();
 	});
 }
@@ -1334,7 +1361,7 @@ function initShips() {
 	// Compute Relative Position
 	// (cause Objects to elevate above water as we climb to prevent flicker)
 	let X = xsh_.MpP.x-air_.MapPos.x;
-	let Y = xsh_.MpP.y-air_.MapPos.y*.99;
+	let Y = xsh_.MpP.y-air_.MapPos.y*AltAdj;
 	let Z = air_.MapPos.z-xsh_.MpP.z;
 	CVEGrp.position.set(X,Y,Z);
 	CVEGrp.add(xsh_.Ptr);
@@ -1360,7 +1387,7 @@ function moveShips() {
 	if (xsh_.Mx0) xsh_.Mx0.setTime(xsh_.An0/anmfps);
 	// Compute New Relative Position
 	let X = xsh_.MpP.x-air_.MapPos.x;
-	let Y = xsh_.MpP.y-air_.MapPos.y*.99;
+	let Y = xsh_.MpP.y-air_.MapPos.y*AltAdj;
 	let Z = air_.MapPos.z-xsh_.MpP.z;
 	CVEGrp.position.set(X,Y,Z);
 	// Compute Distance (for Viz Tests)
@@ -1427,19 +1454,24 @@ function loadShpWak() {
 
 //- Init Ship Wake -------------------------------------------------------------
 function initShpWak() {
-	let lifeRange = range(0.1,1);
-	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
-//	let timer = timerLocal(.001,.0011);		// Lower = slower
+	//- Timer
 	let timer = timerLocal(.001,1);			// Lower = slower
-	let lifeTime = timer.mul(lifeRange).mod(.05);
-	let scaleRange = range(.01,.02);
+	//- Life
+	let lifeRange = range(0.1,1);
+	let lifeTime = timer.mul(lifeRange).mod(.05);	
+	let life = lifeTime.div(lifeRange);
+	//- Rotation Range
 //	let rotateRange = range(.1,4);
 	let rotateRange = range(.1,.2);			// No apparent change
-	let life = lifeTime.div(lifeRange);
+	let textureNode = texture(WakMap, uv().rotateUV(timer.mul(rotateRange)));
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
+	//- Lateral Offset	
+	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
+	//- Size Range
+	let scaleRange = range(.01,.02);
 	//
 	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
-	let textureNode = texture(WakMap, uv().rotateUV(timer.mul(rotateRange)));
-	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
+	// Wake
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
 		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
@@ -1452,13 +1484,13 @@ function initShpWak() {
 		smokeInstancedSprite.scale.setScalar(4000);		// Makes Visible (was 400)
 		smokeInstancedSprite.isInstancedMesh = true;
 		smokeInstancedSprite.count = 600;				// Increases continuity (was 100)
-		smokeInstancedSprite.rotation.x = Math.PI/2;
+		smokeInstancedSprite.rotation.x = Math.PI/2;	// Set Flat
 		smokeInstancedSprite.position.z = 75;			// Increased
 		smokeInstancedSprite.position.y = -5;			// Added
 		CVEGrp.add(smokeInstancedSprite);
 }
 
-//= VOLCANO ====================================================================
+//= VOLCANO SMOKE ==============================================================
 
 //- Load Volcano ---------------------------------------------------------------
 function loadVulkan() {
@@ -1468,50 +1500,48 @@ function loadVulkan() {
 //- Init Volcano ---------------------------------------------------------------
 function initVulkan() {	
 	//- Timer
-//	let timer = timerLocal(.02,.1);
-	let timer = timerLocal(.02,1);
+	let timer = timerLocal(.001,1);
 	//- Life
-	let lifeRange = range(0,1);
-	let lifeTime = timer.mul(lifeRange).mod(1);
+	let lifeRange = range(0.1,1);
+	let lifeTime = timer.mul(lifeRange).mod(.05);
 	let life = lifeTime.div(lifeRange);
-	//- Lateral Offset	
-	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));
-	//- Size Range
-	let scaleRange = range(.3,1.5);
 	//- Rotation Range
-//	let rotateRange = range(.1,4);
-	let rotateRange = range(.1,2);
-	let textureNode = texture(VlkMap,uv().rotateUV(timer.mul(rotateRange)));
-	let opacityNode = textureNode.a.mul(life.oneMinus());	// decrease Opacity with life
+	let rotateRange = range(.1,4);
+	let textureNode = texture(VlkMap, uv().rotateUV(timer.mul(rotateRange)));
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
+	//- Lateral Offset	
+//	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
+	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// cone shaped
+	//- Size Range
+//	let scaleRange = range(.01,.02);
+	let scaleRange = range(.1,.2);
 	//
 	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-	// Smoke
-	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0),positionLocal.y.mul(3).clamp());
+	// Wake
+	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
-//		smokeNodeMaterial.colorNode = mix(color(0xffffff),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
-		smokeNodeMaterial.colorNode = mix(color(0x808080),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 		smokeNodeMaterial.opacityNode = opacityNode;
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
-		smokeNodeMaterial.depthRead = false;
 		smokeNodeMaterial.depthWrite = false;
 		smokeNodeMaterial.transparent = true;
-	smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1,1),smokeNodeMaterial);
-		smokeInstancedSprite.scale.setScalar(300);
+	let smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
+		smokeInstancedSprite.scale.setScalar(4000);		// Makes Visible (was 400)
 		smokeInstancedSprite.isInstancedMesh = true;
-		smokeInstancedSprite.count = 500;
+		smokeInstancedSprite.count = 600;				// Increases continuity (was 100)
 		smokeInstancedSprite.position.copy(VlkPos);
 		smokeInstancedSprite.renderOrder = 1;	// This allows the transparent smoke to work with transparent island
-		scene.add(smokeInstancedSprite);
+		IslGrp.add(smokeInstancedSprite);
 }
 
 //- Move Volcano ---------------------------------------------------------------
 function moveVulkan() {
 	// Compute New Relative Position (Using fraction does not Work)
-	let x = VlkPos.x-air_.MapPos.x;
-	let y = (VlkPos.y-air_.MapPos.y)*0.95;
-	let z = air_.MapPos.z-VlkPos.z;
-	smokeInstancedSprite.position.set(x,y,z);
+	let X = VlkPos.x-air_.MapPos.x;
+	let Y = (VlkPos.y-air_.MapPos.y)*AltAdj;
+	let Z = air_.MapPos.z-VlkPos.z;
+	smokeInstancedSprite.position.set(X,Y,Z);
 }
 
 //= HARDENED SURFACES ==========================================================
@@ -1598,7 +1628,7 @@ function loadAirExt() {
 		// Initialize
 		mxr_.Adr.visible = false;
 		// Load Related Objects only after mxr_.Adr known
-		loadBullet();
+//		loadBullet();
 		loadSounds();
 	});		
 }
