@@ -218,7 +218,7 @@ function initVulkan() {
 //	let scaleRange = range(.01,.02);
 	let scaleRange = range(.1,.2);
 	//
-	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
+	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
 	// Wake
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
