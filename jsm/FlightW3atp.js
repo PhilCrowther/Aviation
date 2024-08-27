@@ -86,10 +86,10 @@ let typ_ = 0;
 
 //  Initialize Rotation and Vectors*/
 let Flight = function (air_) {				// Only works with Air0 now
-	console.log("d4");						// Print Version
+	console.log("d5");						// Print Version
 	// Basic Flight Data (SI Adjustments)
 	typ_ = idx[air_.AirIDN];				// Get Aircraft Type
-	// Transfer Fixed Values air_ to typ_
+	// Transfer Shader Fixed Values air_ to typ_
 	air_.ACMass = typ_.ACMass;
 	air_.Weight = air_.ACMass*air_.GrvMPS;
 	air_.FlpCfL = typ_.FlpCfL;
@@ -160,6 +160,7 @@ let Flight = function (air_) {				// Only works with Air0 now
 
 Flight.update = function (air_) {
 	// 1. COMPUTE VECTORS ------------------------------------------------------
+	typ_ = idx[air_.AirIDN];				// Get Aircraft Type
 	// Inputs: air_.SpdMPS, air_.GrvMPS
 	// Comps
 	let DLTim2 = air_.DLTime*air_.DLTime;
@@ -174,20 +175,20 @@ Flight.update = function (air_) {
 	let LftMax = typ_.GrvMax*GrvDLT;		// Maximum G-accel
 	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;	// ### ATP
 	// Compute Max Bank (### ATP)
-	let GrvMaxF = typ_.GrvMax*typ_.Weight;	// Max G-Force 
-	let LftMaxF = typ_.CfLMax*DynPrs*typ_.WingAr;	// Max Lift at this Speed
+	let GrvMaxF = typ_.GrvMax*air_.Weight;	// Max G-Force 
+	let LftMaxF = air_.CfLMax*DynPrs*typ_.WingAr;	// Max Lift at this Speed
 	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
-	air_.MaxBnk = Math.acos(typ_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
+	air_.MaxBnk = Math.acos(air_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
 	// a. COMPUTE LIFT ROTATION ................................................
 	// Lift = DynPres*typ_.WingArea*Cl
 	air_.CfLift = air_.CfLift+air_.CfFlap;
-//	if (air_.AutoOn) {	// ### ATP (err)
-//		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*typ_.Weight);
-//		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
-//		air_.CfLift = air_.CfLift+air_.CfLDif;
-//	}
-	if (air_.CfLift > typ_.CfLMax) air_.CfLift = typ_.CfLMax;
-	if (air_.CfLift < -typ_.CfLMax) air_.CfLift = -typ_.CfLMax;
+	if (air_.AutoOn) {	// ### ATP (err)
+		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*air_.Weight);
+		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
+		air_.CfLift = air_.CfLift+air_.CfLDif;
+	}
+	if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
+	if (air_.CfLift < -air_.CfLMax) air_.CfLift = -air_.CfLMax;
 	let CfLftT = air_.CfLift;
 	//
 	let ACLftF = CfLftT*QSTval;				// Lift[ft-lbs] - can be positive or negative
