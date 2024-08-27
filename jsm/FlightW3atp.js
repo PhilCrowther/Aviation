@@ -86,7 +86,7 @@ let typ_ = 0;
 
 //  Initialize Rotation and Vectors*/
 let Flight = function (air_) {				// Only works with Air0 now
-	console.log("d6");						// Print Version
+	console.log("AutoPilot - add variables to air_");
 	// Basic Flight Data (SI Adjustments)
 	typ_ = idx[air_.AirIDN];				// Store address of Aircraft Type
 	// Transfer Shader Fixed Values air_ to typ_
