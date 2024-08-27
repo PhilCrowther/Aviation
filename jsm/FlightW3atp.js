@@ -146,7 +146,7 @@ let Flight = function (air_) {				// Only works with Air0 now
 		let CfDB = air_.BrkPct*typ_.DrgCdb;	// Coefficient of Parasitic Drag - Air Brake
 		let CfDS = air_.SplPct*typ_.DrgCds;	// Coefficient of Parasitic Drag - Spoiler
 		let DrgCdp = typ_.DrgCd0+CfDF+CfDG+CfDB+CfDS;	// Total Coefficient of Parasitic Drag
-		let ACDrPF = DrgCdp*QSTval;				// Parasitic Drag =  Cd0*DynPres*WingA
+		let ACDrPF = DrgCdp*QSTval;			// Parasitic Drag =  Cd0*DynPres*WingA
 		// Power
 		air_.PwrPct = (ACDrPF+ACDrIF)/(EnThrF*typ_.PwrMax);
 		if (air_.PwrPct > 1) air_.PwrPct = 1;
@@ -170,20 +170,20 @@ Flight.update = function (air_) {
 	let QSTval = DynPrs*typ_.WingAr;
 	// Compute Max Lift
 	let LftMax = typ_.GrvMax*GrvDLT;		// Maximum G-accel
-	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;	// ### ATP
+//	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;	// ### ATP
 	// Compute Max Bank (### ATP)
-	let GrvMaxF = typ_.GrvMax*typ_.Weight;	// Max G-Force 
-	let LftMaxF = typ_.CfLMax*DynPrs*typ_.WingAr;	// Max Lift at this Speed
-	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
-	air_.MaxBnk = Math.acos(typ_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
+//	let GrvMaxF = typ_.GrvMax*typ_.Weight;	// Max G-Force 
+//	let LftMaxF = typ_.CfLMax*DynPrs*typ_.WingAr;	// Max Lift at this Speed
+//	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
+//	air_.MaxBnk = Math.acos(typ_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
 	// a. COMPUTE LIFT ROTATION ................................................
 	// Lift = DynPres*typ_.WingArea*Cl
 	let CfLftT = air_.CfLift+air_.CfFlap;
-	if (air_.AutoOn) {	// ### ATP
-		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*typ_.Weight);
-		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
-		air_.CfLftT = air_.CfLift + air_.CfLDif;
-	}
+//	if (air_.AutoOn) {	// ### ATP
+//		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*typ_.Weight);
+//		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
+//		air_.CfLftT = air_.CfLift + air_.CfLDif;
+//	}
 	let ACLftF =  CfLftT*QSTval;			// Lift[ft-lbs] - can be positive or negative
 	let ACLift = ACLftF*FrcAcc;				// Acceleration (DLT)
 	if (ACLift > 0 && ACLift > LftMax) ACLift = LftMax;	// Limit to Max Gs (pos)
@@ -295,25 +295,25 @@ Flight.update = function (air_) {
 	air_.OldRot.y = air_.AirRot.y;					// Save old heading	
 	// Bank --------------------------------------------------------------------
 	// ### ATP
-	if (air_.AutoOn && air_.InpKey.z == 0) {
+//	if (air_.AutoOn && air_.InpKey.z == 0) {
 		// Keep Same Bank
-		air_.AirObj.rotation.z = air_.OldRot.z;
+//		air_.AirObj.rotation.z = air_.OldRot.z;
 		// Self-Center .........................................................
-		if (air_.AirRot.z > 0 && air_.AirRot.z < 2) air_.OldRot.z = 0.000001*air_.AirRot.z*DegRad;
-		if (air_.AirRot.z < 360 && air_.AirRot.z > (360-2)) air_.OldRot.z = -0.000001*(360-air_.AirRot.z)*DegRad;
-	}
-	else {air_.OldRot.z = air_.AirObj.rotation.z;}
+//		if (air_.AirRot.z > 0 && air_.AirRot.z < 2) air_.OldRot.z = 0.000001*air_.AirRot.z*DegRad;
+//		if (air_.AirRot.z < 360 && air_.AirRot.z > (360-2)) air_.OldRot.z = -0.000001*(360-air_.AirRot.z)*DegRad;
+//	}
+//	else {air_.OldRot.z = air_.AirObj.rotation.z;}
 	//
 	air_.AirRot.z = Mod360(-air_.AirObj.rotation.z*RadDeg);
 	// Limit to Max Bank (### ATP) .............................................
-	if (air_.AutoOn && (air_.AirRot.z > 270 || air_.AirRot.z < 90)) {	// Only if Flag Set and Not Upside Down
-		let ACBnew = air_.AirRot.z;	// 270 to 90
-		if (ACBnew > 180) ACBnew = ACBnew-360;	// -90 to 90
-		if (ACBnew >  air_.MaxBnk) ACBnew = air_.MaxBnk;	// Limit Pos Bank
-		if (ACBnew < -air_.MaxBnk) ACBnew = -air_.MaxBnk;	// Limit Neg Bank
-		air_.AirRot.z = Mod360(ACBnew+360); 		// 270 to 90
-		air_.AirObj.rotation.z = -air_.AirRot.z*DegRad;
-	}	
+//	if (air_.AutoOn && (air_.AirRot.z > 270 || air_.AirRot.z < 90)) {	// Only if Flag Set and Not Upside Down
+//		let ACBnew = air_.AirRot.z;	// 270 to 90
+//		if (ACBnew > 180) ACBnew = ACBnew-360;	// -90 to 90
+//		if (ACBnew >  air_.MaxBnk) ACBnew = air_.MaxBnk;	// Limit Pos Bank
+//		if (ACBnew < -air_.MaxBnk) ACBnew = -air_.MaxBnk;	// Limit Neg Bank
+//		air_.AirRot.z = Mod360(ACBnew+360); 		// 270 to 90
+//		air_.AirObj.rotation.z = -air_.AirRot.z*DegRad;
+//	}	
 	// 3. COMPUTE MAP SPEED ----------------------------------------------------
 	// Inputs:	air_.SpdMPF, ACThrG, ACPtch, ACHead, air_.MapPos
 	// Results:	air_.SpdKPH, PSpdZV, PSpdYV, ACPtch, air_.MapSpd, air_.MapPos
@@ -351,8 +351,8 @@ Flight.update = function (air_) {
 		ACPrad = DegRad*Mod360(typ_.Ax2CGA-ACP); 	// Use ACP
 		let Flor = typ_.Ax2CGD*Math.cos(ACPrad)+typ_.WheelR+air_.GrdZed;
 		if (air_.MapPos.y <= Flor) {
-			air_.GrdFlg = 1;				// Set Flag
-			air_.MapPos.y = Flor;				// Set Height
+			air_.GrdFlg = 1;			// Set Flag
+			air_.MapPos.y = Flor;		// Set Height
 			air_.CfLift = air_.CfLift+0.1*air_.AirRot.x;	// Set air_.CfLift
 		}
 	}
