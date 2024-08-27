@@ -32,7 +32,6 @@ let	ACDrGF = 0.08;			// Rolling Drag s/b firm turf (.02 concrete, .06 soft turf)
 let	WingAs = 0;				// Wing Aspect Ratio
 let FrcAcc = 0;				// Convert Force to Acceleration
 let ThrstK = 0;				// Thrust Constant
-
 // Flags
 let AuFlag = 0;				// Flag for Auto Tail Up/Down
 
@@ -168,18 +167,19 @@ Flight.update = function (air_) {
 	// Compute Dynamic Pressure
 	let DynPrs = (air_.SpdMPS*air_.SpdMPS)*air_.AirDSL/2;	// Dynamic Pressure
 	let ACPrad = air_.AirRot.x*DegRad;
-	let LftMax = typ_.GrvMax*GrvDLT;		// Maximum G-accel
-	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;	// ###ATP
 	let QSTval = DynPrs*typ_.WingAr;
+	// Compute Max Lift
+	let LftMax = typ_.GrvMax*GrvDLT;		// Maximum G-accel
+	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;	// ### ATP
 	// Compute Max Bank (### ATP)
 	let GrvMaxF = typ_.GrvMax*typ_.Weight;	// Max G-Force 
 	let LftMaxF = typ_.CfLMax*DynPrs*typ_.WingAr;	// Max Lift at this Speed
 	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
-	air_.BnkMax = Math.acos(typ_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
+	air_.MaxBnk = Math.acos(typ_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
 	// a. COMPUTE LIFT ROTATION ................................................
 	// Lift = DynPres*typ_.WingArea*Cl
 	let CfLftT = air_.CfLift+air_.CfFlap;
-	if (air_.AtpFlg) {	// Autopilot
+	if (air_.AtpFlg) {	// ### Autopilot
 		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*typ_.Weight);
 		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
 		air_.CfLftT = air_.CfLift + air_.CfLDif;
@@ -294,7 +294,8 @@ Flight.update = function (air_) {
 	air_.HdgDif = (air_.AirRot.y-air_.OldRot.y)/air_.DLTime;	// Change in Heading (display)
 	air_.OldRot.y = air_.AirRot.y;					// Save old heading	
 	// Bank --------------------------------------------------------------------
-	if (air_.AtpFlg && air_.InpKey.z == 0) {	// ### ATP
+	// ### ATP
+	if (air_.AtpFlg && air_.InpKey.z == 0) {
 		// Keep Same Bank
 		air_.AirObj.rotation.z = air_.OldRot.z;
 		// Self-Center .........................................................
@@ -308,8 +309,8 @@ Flight.update = function (air_) {
 	if (air_.AtpFlg && (air_.AirRot.z > 270 || air_.AirRot.z < 90)) {	// Only if Flag Set and Not Upside Down
 		let ACBnew = air_.AirRot.z;	// 270 to 90
 		if (ACBnew > 180) ACBnew = ACBnew-360;	// -90 to 90
-		if (ACBnew >  air_.BnkMax) ACBnew = air_.BnkMax;	// Limit Pos Bank
-		if (ACBnew < -air_.BnkMax) ACBnew = -air_.BnkMax;	// Limit Neg Bank
+		if (ACBnew >  air_.MaxBnk) ACBnew = air_.MaxBnk;	// Limit Pos Bank
+		if (ACBnew < -air_.MaxBnk) ACBnew = -air_.MaxBnk;	// Limit Neg Bank
 		air_.AirRot.z = Mod360(ACBnew+360); 		// 270 to 90
 		air_.AirObj.rotation.z = -air_.AirRot.z*DegRad;
 	}	
