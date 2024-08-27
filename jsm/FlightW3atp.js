@@ -170,12 +170,12 @@ Flight.update = function (air_) {
 	let QSTval = DynPrs*typ_.WingAr;
 	// Compute Max Lift
 	let LftMax = typ_.GrvMax*GrvDLT;		// Maximum G-accel
-//	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;	// ### ATP
+	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;	// ### ATP
 	// Compute Max Bank (### ATP)
-//	let GrvMaxF = typ_.GrvMax*typ_.Weight;	// Max G-Force 
-//	let LftMaxF = typ_.CfLMax*DynPrs*typ_.WingAr;	// Max Lift at this Speed
-//	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
-//	air_.MaxBnk = Math.acos(typ_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
+	let GrvMaxF = typ_.GrvMax*typ_.Weight;	// Max G-Force 
+	let LftMaxF = typ_.CfLMax*DynPrs*typ_.WingAr;	// Max Lift at this Speed
+	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
+	air_.MaxBnk = Math.acos(typ_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
 	// a. COMPUTE LIFT ROTATION ................................................
 	// Lift = DynPres*typ_.WingArea*Cl
 	let CfLftT = air_.CfLift+air_.CfFlap;
