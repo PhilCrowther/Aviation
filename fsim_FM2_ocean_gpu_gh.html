@@ -11,27 +11,25 @@ A flight simulation of an animated airplane model over an animated ocean using W
 
 <head>
 <title>FSim: FM2 Ocean GPU r167</title>
-<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
 </head>
 
 <body oncontextmenu="return false;">
 
 <div id="container">
 	<div class="overlay1">
-		<p>Flight Model Demo</p>
-	</div>
-	<div class="overlay2">
 		<div>Throttle: <span id="Air_Pwr"></span></div>
 		<div>AirSpeed: <span id="Air_Spd"></span> mph</div>	
 		<div>Altitude: <span id="Air_Alt"></span> ft</div>
 		<div>Heading : <span id="Air_Hdg"></span> deg</div>
 		<div>CoefLift: <span id="Air_CfL"></span></div>
 	</div>
-	<div class="overlay3">
-		<p>
+	<div class="overlay2">
 		<div><span id="On_Paws"></span></div>
+		<div><span id="Air_AtP"></span></div>
 		<div><span id="On_Info01"></span></div>
-		<br>
+	</div>
+	<div class="overlay3">
 		<div><span id="On_Info02"></span></div>
 		<div><span id="On_Info03"></span></div>
 		<div><span id="On_Info04"></span></div>
@@ -73,7 +71,7 @@ import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,Spri
 import Stats from "three/addons/libs/stats.module.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3.js";
+import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3atp.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
@@ -107,13 +105,13 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
 //=	TO DO:
 //-	Program:
+//	* Add Auto-Pilot Info
 //	* Improve Airplane Shadows
 //	* Fix Bullets
 //	* Fix Carrier Landing
 //	* Improve Appearance of Prop (use NodeMaterials?)
 //	* Add Exhaust Flashes
 //-	Flight Module:
-//	* Add Auto-Pilot
 //	* Add change in Air Density
 //	* Add lag to tail leaving/returning to ground
 
@@ -125,8 +123,6 @@ let BegPwr = 0;					// Initial Power Percent
 let BegSpd = 0;					// Speed (mph)
 let BegPos = new THREE.Vector3(0,0,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
-let KeyVal = new THREE.Vector3(1,.05,1);	// Key Values (Yaw = turn rate in 15 deg bank)
-let InpKey = new THREE.Vector3(); // Inputs - Keys
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
 let PwrMul = 0.0001;			// Power % Input - Mouse Multiplier
 let PwrDif = 0;					// Power % Input - Value
@@ -135,12 +131,15 @@ let InpBrk = 0;					// Brakes
 //- (x = diverted, y = released, z = stored)
 let PwrMsD = new THREE.Vector3(1-1/30,1/15,0); // Power
 let CfLMsD = new THREE.Vector3(1-1/30,1/15,0); // CfL
+let CfLApD = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
 let BnkMsD = new THREE.Vector3(1-1/30,1/15,0); // Bank
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 let InpMos = new THREE.Vector2(); // Inputs - Mouse
 let _changeEvent = {type: 'change'};
 let _lockEvent = {type: 'lock'};
 let _unlockEvent = {type: 'unlock'};
+//- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
+let	KeyVal = new THREE.Vector3(0.5,0.25,1.0); // (Yaw = turn rate in 15 deg bank)
 
 //= CONSTANTS ==================================================================
 //	Time
@@ -391,9 +390,17 @@ let air_ = {
 		CfLMax: 0,				// Maximum Coefficient of Lift
 		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
 		ACMass: 0,				// Airplane Mass
-		Weight: 0,				// Used by autopilots
+		Weight: 0,				// Used by AutoPilot
 		PYBmul: new THREE.Vector3(0,0,0), // Airplane Pitch/Yaw/Bank Multiplier
 		BnkMax: 0,				// Maximum bank rate
+		// AutoPilot
+		AutoOn: 0,				// Autopilot Flag
+		InpKey: new THREE.Vector3(), // Inputs - Keys
+		OldRot: new THREE.Vector3(), // Old Rotation (radians)
+		CfLDif: 0,				// ATP
+		// Optional
+		MaxBnk: 0,				// Max Bank (display only)
+		HdgDif: 0				// Horizontal Turn Rate (display only)
 	}
 // 
 // Adjustments
@@ -671,8 +678,9 @@ let K_VL90 = 34;	// Left 90 degrees
 let K_VR90 = 46;	// Right 90 degrees
 let K_Look = 16;	// Pan (shift)
 let K_Soun = 83;	// Toggle sound (s)
-let K_Info = 73;	// Info (i)
 let K_Paws = 80;	// Pause (p)
+let K_Auto = 65;	// Autopilot (a)
+let K_Info = 73;	// Info (i)
 
 //= STANDARD SETUP =============================================================
 // 	Display
@@ -836,6 +844,9 @@ let Air_CfLNode = document.createTextNode("");
 let On_PawsElement = document.getElementById("On_Paws");	// Pause
 let On_PawsNode = document.createTextNode("");
 	On_PawsElement.appendChild(On_PawsNode);
+let Air_AtPElement = document.getElementById("Air_AtP");	// Autopilot
+let Air_AtPNode = document.createTextNode("");
+Air_AtPElement.appendChild(Air_AtPNode);
 let On_Info01Element = document.getElementById("On_Info01"); // Info
 let On_Info01Node = document.createTextNode("");
 	On_Info01Element.appendChild(On_Info01Node);
@@ -865,7 +876,7 @@ let On_Info09Node = document.createTextNode("");
 	On_Info09Element.appendChild(On_Info09Node);
 //
 let Air_Pwr, Air_Spd, Air_Hdg, Air_Alt, Air_CfL;
-let On_Paws, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, On_Info07, On_Info08;
+let On_Paws, Air_AtP, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, On_Info07, On_Info08;
 
 //= 3D OBJECTS AND LINKS =======================================================
 	scene.add(air_.AirObj);			// Airplane
@@ -938,8 +949,9 @@ function initAll() {
 	// Other
 	initCamera(camera,cam_);	// position camera
 	prntHUDval();				// print HUD values
-	noPause();
-	noInfo();
+	PawsText();
+	AutoText();
+	InfoText();
 	// Show stats
 	if (StatOn) {				// show stats
 		StatOn = new Stats();
@@ -1676,34 +1688,49 @@ function moveAirObj() {
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
 	PwrDif = 0;							// Reset
 	// Coefficient of Lift
-	let CfLDif = (InpMos.y + InpKey.x) * air_.PYBmul.x ;	// Input Coefficient of Lift
-	// Add Delay to Lift
-	gal = CfLDif * CfLMsD.x;			// Current input delayed
-	lag = CfLMsD.z * CfLMsD.y;			// Released from Cumulator
-	CfLMsD.z = CfLMsD.z + gal - lag;	// Change in Cumulator
-	CfLDif = CfLDif - gal + lag;
-	air_.CfLift = air_.CfLift + CfLDif;	// New Coefficient of Lift	
+	if (air_.AutoOn) {						// Autopilot
+		air_.CfLDif = air_.InpKey.x;
+		// Add Delay to Lift
+		gal = air_.CfLDif * CfLApD.x;		// Current input delayed
+		lag = CfLMsD.z * CfLApD.y;			// Released from Cumulator
+		CfLMsD.z = CfLMsD.z + gal - lag; 	// Change in Cumulator
+	}
+	else {
+		air_.CfLDif = (InpMos.y)*air_.PYBmul.x;	// Input Coefficient of Lift
+		// Add Delay to Lift
+		gal = air_.CfLDif * CfLMsD.x;		// Current input delayed
+		lag = CfLMsD.z * CfLMsD.y;			// Released from Cumulator
+		CfLMsD.z = CfLMsD.z + gal - lag;	// Change in Cumulator
+	}
+	air_.CfLDif = air_.CfLDif - gal + lag;
+	air_.CfLift = air_.CfLift + air_.CfLDif;	// New Coefficient of Lift	
 	if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 	if (air_.CfLift < -air_.CfLMax) air_.CfLift = -air_.CfLMax;
-	anm_.stkpit = InpMos.y;				// Joystick pitch animation
-	InpMos.y = 0;						// Reset
+	anm_.stkpit = InpMos.y;					// Joystick pitch animation
+	InpMos.y = 0;							// Reset
 	// Coefficient of Lift - Flaps
-	air_.CfFlap = air_.FlpCfL * (180 - anm_.flppos) / 180; 	// [FLAP]
+	air_.CfFlap = air_.FlpCfL*(180-anm_.flppos)/180; 	// [FLAP]
 	// Bank
-	// Add Delay to Change in Bank Rate due to Mouse
-	let BnkDif = InpMos.x * air_.PYBmul.z;
-	gal = BnkDif * BnkMsD.x;			// Current input delayed
-	lag = BnkMsD.z * BnkMsD.y;			// Released from Cumulator
-	BnkMsD.z = BnkMsD.z + gal - lag;	// Change in Cumulator
-	BnkDif = BnkDif - gal + lag;
-	air_.RotDif.z = air_.RotDif.z + BnkDif;	
-	air_.RotDif.z = MaxVal(air_.RotDif.z,air_.BnkMax);	// Max values
-	if (air_.RotDif.z == air_.BnkMax && BnkDif < 0) air_.RotDif.z = BnkDif;
-	if (air_.RotDif.z == -air_.BnkMax && BnkDif > 0) air_.RotDif.z = BnkDif;
-	air_.RotDif.z = air_.RotDif.z + InpKey.z; // Inputs are +/-
-	air_.AGBank = air_.RotDif.z;
-	anm_.stkbnk = InpMos.x;				// Joystick bank animation
-	InpMos.x = 0;						// Reset
+	if (air_.AutoOn) {
+		air_.RotDif.z = air_.InpKey.z;
+		air_.OldRot.z = air_.OldRot.z + air_.RotDif.z*DegRad;
+	}
+	else {
+		// Add Delay to Change in Bank Rate due to Mouse
+		let BnkDif = InpMos.x * air_.PYBmul.z;
+		gal = BnkDif * BnkMsD.x;			// Current input delayed
+		lag = BnkMsD.z * BnkMsD.y;			// Released from Cumulator
+		BnkMsD.z = BnkMsD.z + gal - lag;	// Change in Cumulator
+		BnkDif = BnkDif - gal + lag;
+		air_.RotDif.z = air_.RotDif.z + BnkDif;	
+		air_.RotDif.z = MaxVal(air_.RotDif.z,air_.BnkMax);	// Max values
+		if (air_.RotDif.z == air_.BnkMax && BnkDif < 0) air_.RotDif.z = BnkDif;
+		if (air_.RotDif.z == -air_.BnkMax && BnkDif > 0) air_.RotDif.z = BnkDif;
+		air_.RotDif.z = air_.RotDif.z;		// Inputs are +/-
+		air_.AGBank = air_.RotDif.z;
+		anm_.stkbnk = InpMos.x;				// Joystick bank animation
+		InpMos.x = 0;						// Reset
+	}
 	// Input Yaw
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
 	// Input Brakes
@@ -1966,21 +1993,23 @@ function prntHUDval() {
 }
 
 //	Paused On
-function onPause(){
-	On_PawsNode.nodeValue = "Paused";
+function PawsText(){
+	if (PawsOn) On_PawsNode.nodeValue = "Paused";
+	else {On_PawsNode.nodeValue = "Pause: Press P";}
 }
 
-//	Paused Off
-function noPause(){
-	On_PawsNode.nodeValue = "Press P to Pause";
+//	Autopilot Text
+function AutoText(){
+	if (air_.AutoOn) Air_AtPNode.nodeValue = "Autopilot On";
+	else {Air_AtPNode.nodeValue = "AutoP: Press A";}
 }
 
 //	Info On
 function onInfo1(){
 	On_Info01Node.nodeValue = "";
 	//
-	On_Info02Node.nodeValue = "CONTROLS";
-	On_Info03Node.nodeValue = "Use Mouse or Arrow Keys to change Pitch and Bank";
+	On_Info02Node.nodeValue = "CONTROLS (Free Flight)";
+	On_Info03Node.nodeValue = "Use Mouse to change Pitch and Bank";
 	On_Info04Node.nodeValue = "Use Mouse Buttons or Z/X Keys to change Yaw";
 	On_Info05Node.nodeValue = "Use Mouse Wheel or -/= Keys to change Throttle";
 	On_Info06Node.nodeValue = "Press G to retract/extend landing gear";
@@ -2004,8 +2033,8 @@ function onInfo2(){
 }
 
 //	Info Off
-function noInfo(){
-	On_Info01Node.nodeValue = "Press I for Info";
+function InfoText(){
+	On_Info01Node.nodeValue = "Info : Press I";
 	On_Info02Node.nodeValue = "";
 	On_Info03Node.nodeValue = "";
 	On_Info04Node.nodeValue = "";
@@ -2055,10 +2084,10 @@ function onDocumentMouseWheel(event) {
 //- Keyboard (Down) ------------------------------------------------------------
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
-	if (event.keyCode == K_BnkL) InpKey.z = -KeyVal.z;	// Bank Left
-	if (event.keyCode == K_BnkR) InpKey.z = KeyVal.z;	// Bank Right
-	if (event.keyCode == K_PitU) InpKey.x = KeyVal.x;	// Pitch Up
-	if (event.keyCode == K_PitD) InpKey.x = -KeyVal.x;	// Pitch Down
+	if (event.keyCode == K_BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left
+	if (event.keyCode == K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right
+	if (event.keyCode == K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up
+	if (event.keyCode == K_PitD) air_.InpKey.x = -KeyVal.x;	// Pitch Down
 	if (event.keyCode == K_Gear) anm_.lngflg = 1;		// Gear
 	if (event.keyCode == K_Flap) anm_.flpflg = 1;		// Flaps
 	if (event.keyCode == K_Canp) anm_.canflg = 1;		// Canopy
@@ -2074,6 +2103,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_Vizz) toggleCamera();			// Switch View
 	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
 	if (event.keyCode == K_Paws) toglPaws();			// Toggle Pause
+	if (event.keyCode == K_Auto) toglAuto();			// Toggle AutoPilot
 	if (event.keyCode == K_Info) toglInfo();			// Toggle Information
 	if (event.keyCode == K_Guns) {						// Guns
 		sound3.play();
@@ -2084,10 +2114,10 @@ function onDocumentKeyDown(event) {
 //-	Keyboard (Up) --------------------------------------------------------------
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
-	if (event.keyCode == K_BnkL) InpKey.z = 0;			// Bank Left
-	if (event.keyCode == K_BnkR) InpKey.z = 0;			// Bank Right	
-	if (event.keyCode == K_PitU) InpKey.x = 0;			// Pitch Up
-	if (event.keyCode == K_PitD) InpKey.x = 0;			// Pitch Down
+	if (event.keyCode == K_BnkL) air_.InpKey.z = 0;		// Bank Left
+	if (event.keyCode == K_BnkR) air_.InpKey.z = 0;		// Bank Right	
+	if (event.keyCode == K_PitU) air_.InpKey.x = 0;		// Pitch Up
+	if (event.keyCode == K_PitD) air_.InpKey.x = 0;		// Pitch Down
 	if (event.keyCode == K_Gear) anm_.lngflg = 0;		// Gear
 	if (event.keyCode == K_Flap) anm_.flpflg = 0;		// Flaps
 	if (event.keyCode == K_Canp) anm_.canflg = 0;		// Canopy
@@ -2108,45 +2138,7 @@ function onDocumentKeyUp(event) {
 
 //- Subroutines ----------------------------------------------------------------
 
-//. ToggleView .................................................................
-function toggleCameraX() {
-	if (cam_.flg) {		// Switch from Internal View to External View
-		// Flaps
-		if (mxr_.FlL) mxr_.FlL.setTime(anm_.flppos/anmfps);
-		if (mxr_.FlR) mxr_.FlR.setTime(anm_.flppos/anmfps);
-		// Gear
-		if (mxr_.WHL) mxr_.WHL.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WHR) mxr_.WHR.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WBL) mxr_.WBL.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WBR) mxr_.WBR.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WTL) mxr_.WTL.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WTR) mxr_.WTR.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WSL) mxr_.WSL.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WSR) mxr_.WSR.setTime(anm_.lngpos/anmfps);
-		// Canopy
-		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anmfps);
-		// Tailhook
-		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anmfps);
-	}
-	else {				// Switch from External View to Internal View
-		// Canopy
-		if (vxr_.Cnp) vxr_.Cnp.setTime(anm_.canpos/anmfps);
-	}
-	// Advance to New View
-	cam_.Sel = cam_.Sel+1;
-	if (cam_.Sel == 2) cam_.Sel = 0;
-	//
-	if (cam_.Sel) {	// Internal View		
-		camera.position.z = -cam_.lld.z; // length of armature
-		cam_.flg = 1;
-	}
-	else {			// External View
-		camera.position.z = -cam_.lld.z; // length of armature
-		cam_.flg = 0;
-	}
-}
-
-// Change Camera View (3-Way)
+//. Toggle Camera View (3-Way) -------------------------------------------------
 function toggleCamera() {
 	// Old CamSel
 	cam_.par.remove(cam_.rot);			// Unlink Old Parent
@@ -2194,7 +2186,6 @@ function toggleCamera() {
 	cam_.lnk = CamLnk[cam_.sel];			// 1 = Linked to Airplane
 }
 
-
 //. Toggle Sound ...............................................................
 function toglSoun() {
 	if (SndFlg < 1) {
@@ -2213,14 +2204,14 @@ function toglSoun() {
 
 //. Toggle Pause ...............................................................
 function toglPaws() {
-	if (PawsOn < 1) {
-		PawsOn = 1;
-		onPause();
-	}
-	else {
-		PawsOn = 0;
-		noPause();
-	}
+	PawsOn = 1 - PawsOn;
+	PawsText();
+}
+
+//. Toggle AutoPilot ...........................................................
+function toglAuto() {
+	air_.AutoOn = 1 - air_.AutoOn;
+	AutoText();
 }
 
 //. Toggle Info ................................................................
@@ -2235,7 +2226,7 @@ function toglInfo() {
 	}
 	else {
 		InfoOn = 0;
-		noInfo();
+		InfoText();
 	}
 }
 
