@@ -86,7 +86,7 @@ let typ_ = 0;
 
 //  Initialize Rotation and Vectors*/
 let Flight = function (air_) {				// Only works with Air0 now
-	console.log("d5a");						// Print Version
+	console.log("d6");						// Print Version
 	// Basic Flight Data (SI Adjustments)
 	typ_ = idx[air_.AirIDN];				// Store address of Aircraft Type
 	// Transfer Shader Fixed Values air_ to typ_
@@ -127,8 +127,8 @@ let Flight = function (air_) {				// Only works with Air0 now
 	/* If Starting in Flight, Compute Starting air_.CfLift and Power for Level Flight and Given Bank */
 	if (air_.GrdFlg == 0) {
 		// Coefficient of Lift for Level Flight
-		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.cos(air_.AirRot.z*DegRad));		
-//		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirRot.z*DegRad)));	// USE ABS?		
+//		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.cos(air_.AirRot.z*DegRad));		
+		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirRot.z*DegRad)));	// USE ABS?		
 		if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 		// Power Setting for Level Flight
 		let QSTval = DynPrs*typ_.WingAr;
