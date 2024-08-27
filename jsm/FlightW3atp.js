@@ -86,6 +86,7 @@ let typ_ = 0;
 
 //  Initialize Rotation and Vectors*/
 let Flight = function (air_) {				// Only works with Air0 now
+	console.log("d");
 	// Basic Flight Data (SI Adjustments)
 	typ_ = idx[air_.AirIDN];				// Get Aircraft Type
 	// Transfer Fixed Values air_ to typ_
@@ -179,11 +180,11 @@ Flight.update = function (air_) {
 	// a. COMPUTE LIFT ROTATION ................................................
 	// Lift = DynPres*typ_.WingArea*Cl
 	let CfLftT = air_.CfLift+air_.CfFlap;
-//	if (air_.AutoOn) {	// ### ATP
-//		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*typ_.Weight);
-//		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
-//		air_.CfLftT = air_.CfLift + air_.CfLDif;
-//	}
+	if (air_.AutoOn) {	// ### ATP
+		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*typ_.Weight);
+		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
+		air_.CfLftT = air_.CfLift + air_.CfLDif;
+	}
 	let ACLftF =  CfLftT*QSTval;			// Lift[ft-lbs] - can be positive or negative
 	let ACLift = ACLftF*FrcAcc;				// Acceleration (DLT)
 	if (ACLift > 0 && ACLift > LftMax) ACLift = LftMax;	// Limit to Max Gs (pos)
