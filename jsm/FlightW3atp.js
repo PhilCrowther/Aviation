@@ -169,10 +169,8 @@ Flight.update = function (air_) {
 	let DynPrs = (air_.SpdMPS*air_.SpdMPS)*air_.AirDSL/2;	// Dynamic Pressure
 	let ACPrad = air_.AirRot.x*DegRad;
 	let LftMax = typ_.GrvMax*GrvDLT;		// Maximum G-accel
+	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;	// ###ATP
 	let QSTval = DynPrs*typ_.WingAr;
-	// Compute Max Lift (### ATP)
-	let LftMax = typ_.GrvMax*GrvDLT;	// Maximum G-accel
-	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;
 	// Compute Max Bank (### ATP)
 	let GrvMaxF = typ_.GrvMax*typ_.Weight;	// Max G-Force 
 	let LftMaxF = typ_.CfLMax*DynPrs*typ_.WingAr;	// Max Lift at this Speed
