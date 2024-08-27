@@ -86,9 +86,9 @@ let typ_ = 0;
 
 //  Initialize Rotation and Vectors*/
 let Flight = function (air_) {				// Only works with Air0 now
-	console.log("d5");						// Print Version
+	console.log("d5a");						// Print Version
 	// Basic Flight Data (SI Adjustments)
-	typ_ = idx[air_.AirIDN];				// Get Aircraft Type
+	typ_ = idx[air_.AirIDN];				// Store address of Aircraft Type
 	// Transfer Shader Fixed Values air_ to typ_
 	air_.ACMass = typ_.ACMass;
 	air_.Weight = air_.ACMass*air_.GrvMPS;
@@ -160,7 +160,6 @@ let Flight = function (air_) {				// Only works with Air0 now
 
 Flight.update = function (air_) {
 	// 1. COMPUTE VECTORS ------------------------------------------------------
-	typ_ = idx[air_.AirIDN];				// Get Aircraft Type
 	// Inputs: air_.SpdMPS, air_.GrvMPS
 	// Comps
 	let DLTim2 = air_.DLTime*air_.DLTime;
