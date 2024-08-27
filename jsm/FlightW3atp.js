@@ -86,10 +86,11 @@ let typ_ = 0;
 
 //  Initialize Rotation and Vectors*/
 let Flight = function (air_) {				// Only works with Air0 now
-	console.log("AutoPilot - add variables to air_");
+	console.log("AUTOPILOT VERSION:");
+	console.log("Add items to air_ variable in main program");
 	// Basic Flight Data (SI Adjustments)
 	typ_ = idx[air_.AirIDN];				// Store address of Aircraft Type
-	// Transfer Shader Fixed Values air_ to typ_
+	// typ_ variable saved to air_
 	air_.ACMass = typ_.ACMass;
 	air_.Weight = air_.ACMass*air_.GrvMPS;
 	air_.FlpCfL = typ_.FlpCfL;
