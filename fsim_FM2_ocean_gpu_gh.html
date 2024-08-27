@@ -115,6 +115,10 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 //	* Add change in Air Density
 //	* Add lag to tail leaving/returning to ground
 
+
+//= NOTICE =====================================================================
+	console.log("Uses FlightW3atp module - must add variables to air_");
+//= INPUTS =====================================================================
 //- CAMERA ---------------------------------------------------------------------
 let CamSel = 1;					// Camera Seletion (0 = External; 1 = Internal)
 //- AIRPLANE: Start ------------------------------------------------------------
@@ -393,12 +397,11 @@ let air_ = {
 		Weight: 0,				// Used by AutoPilot
 		PYBmul: new THREE.Vector3(0,0,0), // Airplane Pitch/Yaw/Bank Multiplier
 		BnkMax: 0,				// Maximum bank rate
-		// AutoPilot
+		// AutoPilot - Additional Variables
 		AutoOn: 0,				// Autopilot Flag
-		InpKey: new THREE.Vector3(), // Inputs - Keys
+		InpKey: new THREE.Vector3(), // Inputs - Keys (replace InpKey)
 		OldRot: new THREE.Vector3(), // Old Rotation (radians)
-		CfLDif: 0,				// ATP
-		// Optional
+		CfLDif: 0,				// Change in CfL
 		MaxBnk: 0,				// Max Bank (display only)
 		HdgDif: 0				// Horizontal Turn Rate (display only)
 	}
