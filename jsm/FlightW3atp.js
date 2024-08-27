@@ -86,7 +86,7 @@ let typ_ = 0;
 
 //  Initialize Rotation and Vectors*/
 let Flight = function (air_) {				// Only works with Air0 now
-	console.log("d2");						// Print Version
+	console.log("d3");						// Print Version
 	// Basic Flight Data (SI Adjustments)
 	typ_ = idx[air_.AirIDN];				// Get Aircraft Type
 	// Transfer Fixed Values air_ to typ_
@@ -127,7 +127,8 @@ let Flight = function (air_) {				// Only works with Air0 now
 	/* If Starting in Flight, Compute Starting air_.CfLift and Power for Level Flight and Given Bank */
 	if (air_.GrdFlg == 0) {
 		// Coefficient of Lift for Level Flight
-		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.cos(air_.AirRot.z*DegRad));
+		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.cos(air_.AirRot.z*DegRad));		
+//		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirRot.z*DegRad)));	// USE ABS?		
 		if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 		// Power Setting for Level Flight
 		let QSTval = DynPrs*typ_.WingAr;
@@ -179,13 +180,18 @@ Flight.update = function (air_) {
 	air_.MaxBnk = Math.acos(typ_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
 	// a. COMPUTE LIFT ROTATION ................................................
 	// Lift = DynPres*typ_.WingArea*Cl
-	let CfLftT = air_.CfLift+air_.CfFlap;
+	air_.CfLift = air_.CfLift+air_.CfFlap;
 	if (air_.AutoOn) {	// ### ATP (err)
 		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*typ_.Weight);
 		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
-		CfLftT = air_.CfLift + air_.CfLDif;
+//		air_.CfLift = air_.CfLift + air_.InpKey.x;
+		air_.CfLift = air_.CfLift+air_.CfLDif;
 	}
-	let ACLftF =  CfLftT*QSTval;			// Lift[ft-lbs] - can be positive or negative
+	if (air_.CfLift > typ_.CfLMax) air_.CfLift = typ_.CfLMax;
+	if (air_.CfLift < -typ_.CfLMax) air_.CfLift = -typ_.CfLMax;
+	let CfLftT = air_.CfLift;
+	//
+	let ACLftF = CfLftT*QSTval;				// Lift[ft-lbs] - can be positive or negative
 	let ACLift = ACLftF*FrcAcc;				// Acceleration (DLT)
 	if (ACLift > 0 && ACLift > LftMax) ACLift = LftMax;	// Limit to Max Gs (pos)
 	if (ACLift < 0 && ACLift < -LftMax) ACLift = -LftMax;	// Limit to Max Gs (neg)
