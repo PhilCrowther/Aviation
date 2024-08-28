@@ -30,7 +30,8 @@ let Mil2Km = 1.60934;
 //= LOAD =======================================================================
 
 // Load Aircraft Model Animations
-function loadACanimX(air_, mxr_,anm_) {			
+function loadACanimX(air_, mxr_,anm_) {
+	console.log("2a");
 	// Animations --------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(mxr_.GLT.animations, "propellerAction");
