@@ -82,7 +82,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
 //=	FEATURES
 //-	Flight Smulation
-//	* Realistic Flight Simulation (Flight Module)
+//	* Realistic Flight Simulation and AutoPilot (Flight Module)
 //	* Taildragger landing
 //	* Static and Moving Landing Surfaces
 //-	My Airplane:
@@ -105,7 +105,6 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 
 //=	TO DO:
 //-	Program:
-//	* Add Auto-Pilot Info
 //	* Improve Airplane Shadows
 //	* Fix Bullets
 //	* Fix Carrier Landing
@@ -114,7 +113,6 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 //-	Flight Module:
 //	* Add change in Air Density
 //	* Add lag to tail leaving/returning to ground
-
 
 //= NOTICE =====================================================================
 	console.log("USES AUTOPILOT FLIGHT MODULE");
@@ -2008,36 +2006,14 @@ function AutoText(){
 	else {Air_AtPNode.nodeValue = "AutoP: Press A";}
 }
 
-//	Info On
-function onInfo1(){
-	On_Info01Node.nodeValue = "";
-	//
-	On_Info02Node.nodeValue = "CONTROLS (Free Flight)";
-	On_Info03Node.nodeValue = "Use Mouse to change Pitch and Bank";
-	On_Info04Node.nodeValue = "Use Mouse Buttons or Z/X Keys to change Yaw";
-	On_Info05Node.nodeValue = "Use Mouse Wheel or -/= Keys to change Throttle";
-	On_Info06Node.nodeValue = "Press G to retract/extend landing gear";
-	On_Info07Node.nodeValue = "Press F to extend/retract flaps"
-	On_Info08Node.nodeValue = "Press Spacebar to fire guns";
-	On_Info09Node.nodeValue = "Press S to toggle sound";
-}
-
-//	Info On
-function onInfo2(){
-	On_Info01Node.nodeValue = "";
-	//
-	On_Info02Node.nodeValue = "VIEW KEYS";
-	On_Info03Node.nodeValue = "Press V to toggle internal/external views";
-	On_Info04Node.nodeValue = "Hold Shift and use Mouse to pan around airplane";
-	On_Info05Node.nodeValue = "Press END to look down into cockpit";
-	On_Info06Node.nodeValue = "Press DELETE or PAGE DOWN to look left/right";
-	On_Info07Node.nodeValue = "Press HOME and the above to look up";
-	On_Info08Node.nodeValue = "Press END and DELETE or PAGE DOWN to look back";
-	On_Info09Node.nodeValue = "Press all 3 keys to look back";
+function InfoText() {
+	if (InfoOn == 0) onInfo0();
+	else if (InfoOn == 1) onInfo1();
+	else if (InfoOn == 2) onInfo2();
 }
 
 //	Info Off
-function InfoText(){
+function onInfo0(){
 	On_Info01Node.nodeValue = "Info : Press I";
 	On_Info02Node.nodeValue = "";
 	On_Info03Node.nodeValue = "";
@@ -2047,6 +2023,32 @@ function InfoText(){
 	On_Info07Node.nodeValue = "";
 	On_Info08Node.nodeValue = "";
 	On_Info09Node.nodeValue = "";
+}
+
+//	Info On
+function onInfo1(){
+	On_Info01Node.nodeValue = "";
+	On_Info02Node.nodeValue = "CONTROLS";
+	On_Info03Node.nodeValue = "Mouse changes Pitch/Bank and Yaw (bottons)";
+	On_Info04Node.nodeValue = "AutoPilot: Arrow Key change Pitch and Bank";
+	On_Info05Node.nodeValue = "Mouse Wheel or -/= Keys change Throttle";
+	On_Info06Node.nodeValue = "G Key toggles landing gear";
+	On_Info07Node.nodeValue = "F Key toggles flaps"
+	On_Info08Node.nodeValue = "S Key toggles sound";
+	On_Info09Node.nodeValue = "Spacebar fires guns (INOP)";
+}
+
+//	Info On
+function onInfo2(){
+	On_Info01Node.nodeValue = "";
+	On_Info02Node.nodeValue = "VIEW KEYS";
+	On_Info03Node.nodeValue = "V Key toggles views";
+	On_Info04Node.nodeValue = "Shift Key and Mouse pans around airplane";
+	On_Info05Node.nodeValue = "END Key looks down";
+	On_Info06Node.nodeValue = "DELETE or PAGE DOWN Keys look left/right";
+	On_Info07Node.nodeValue = "HOME Key and above Keys look up";
+	On_Info08Node.nodeValue = "END Key and DELETE or PAGE DOWN Keys look back";
+	On_Info09Node.nodeValue = "All 3 Keys look back";
 }
 
 //= INPUTS =====================================================================
@@ -2220,18 +2222,9 @@ function toglAuto() {
 
 //. Toggle Info ................................................................
 function toglInfo() {
-	if (InfoOn == 0) {
-		InfoOn = 1;
-		onInfo1();
-	}
-	else if (InfoOn == 1) {
-		InfoOn = 2;
-		onInfo2();
-	}
-	else {
-		InfoOn = 0;
-		InfoText();
-	}
+	InfoOn++
+	if (InfoOn == 3) InfoOn = 0;
+	InfoText();
 }
 
 //= WINDOW RESIZE ==============================================================
