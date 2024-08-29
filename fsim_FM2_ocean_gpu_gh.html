@@ -118,6 +118,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 //= NOTICE =====================================================================
 	console.log("USES AUTOPILOT FLIGHT MODULE");
 	console.log("Must add variables to air_");
+	console.log("rev 240829a");
 //= INPUTS =====================================================================
 //- CAMERA ---------------------------------------------------------------------
 let CamSel = 1;					// Camera Seletion (0 = External; 1 = Internal)
@@ -128,15 +129,15 @@ let BegSpd = 0;					// Speed (mph)
 let BegPos = new THREE.Vector3(0,0,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-let PwrMul = 0.0001;			// Power % Input - Mouse Multiplier
+let PwrMul = 0.001;				// Power % Input - Mouse Multiplier
 let PwrDif = 0;					// Power % Input - Value
 let InpBrk = 0;					// Brakes
 //- Mouse Delays ...............................................................
 //- (x = diverted, y = released, z = stored)
-let PwrMsD = new THREE.Vector3(1-1/30,1/15,0); // Power
-let CfLMsD = new THREE.Vector3(1-1/30,1/15,0); // CfL
+let PwrMsD = new THREE.Vector3(1-1/30,1/15,0);	// Power
+let CfLMsD = new THREE.Vector3(1-1/30,1/15,0);	// CfL
 let CfLApD = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
-let BnkMsD = new THREE.Vector3(1-1/30,1/15,0); // Bank
+let BnkMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 let InpMos = new THREE.Vector2(); // Inputs - Mouse
 let _changeEvent = {type: 'change'};
