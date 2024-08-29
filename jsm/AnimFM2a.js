@@ -31,7 +31,7 @@ let Mil2Km = 1.60934;
 
 // Load Aircraft Model Animations
 function loadACanimX(air_, mxr_,anm_) {
-	console.log("2a3");
+	console.log("2a4");
 	// Animations --------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(mxr_.GLT.animations, "propellerAction");
@@ -336,6 +336,7 @@ function moveACanimX(air_,mxr_,anm_) {
 //	anm_.elvatr = 180 - 75*(1.75*CfLift-TrmAdj)				// only works down
 //	anm_.elvatr = 180 - 10 * air_.ACPAdj;					// estimated adjustment
 	anm_.elvatr = 180 - 20 * air_.ACPAdj;					// estimated adjustment [TEST-no diff!!!]
+	console.log(air_.ACPAdj);
 	if (anm_.elvatr < 150) anm_.elvatr = 150;				// Range = 00 to 60
 	else if (anm_.elvatr > 209) anm_.elvatr = 209;
 	if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
