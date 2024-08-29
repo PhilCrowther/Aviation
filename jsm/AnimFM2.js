@@ -1,6 +1,6 @@
 /*
- * AnimFM2.js (vers 24.04.24)
- * Copyright 2022-2023, Phil Crowther
+ * AnimFM2.js (vers 24.08.28)
+ * Copyright 2022-2024, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
 
@@ -30,7 +30,7 @@ let Mil2Km = 1.60934;
 //= LOAD =======================================================================
 
 // Load Aircraft Model Animations
-function loadACanimX(air_, mxr_,anm_) {			
+function loadACanimX(air_, mxr_,anm_) {
 	// Animations --------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(mxr_.GLT.animations, "propellerAction");
@@ -331,9 +331,7 @@ function moveACanimX(air_,mxr_,anm_) {
 	anm_.rudder = 180+air_.RotDif.y*100;
 	if (mxr_.Rdr) mxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
 	// Elevator
-//	anm_.elvatr = 180 - anm_.stkpit;						// stkpit = mosYdif (too twitchy!)
-//	anm_.elvatr = 180 - 75*(1.75*CfLift-TrmAdj)				// only works down
-	anm_.elvatr = 180 - 10 * air_.ACPAdj;					// estimated adjustment
+	anm_.elvatr = 180 - 10 * (air_.ACPAdj+2.5);				// estimated adjustment
 	if (anm_.elvatr < 150) anm_.elvatr = 150;				// Range = 00 to 60
 	else if (anm_.elvatr > 209) anm_.elvatr = 209;
 	if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
