@@ -110,6 +110,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
 //	* Fix Carrier Landing
 //	* Improve Appearance of Prop (use NodeMaterials?)
 //	* Add Exhaust Flashes
+//	* Convert waving flag to GPU shader
 //-	Flight Module:
 //	* Add change in Air Density
 //	* Add lag to tail leaving/returning to ground
@@ -705,7 +706,6 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.position.copy(SunPos).normalize();
 	sunLight.castShadow = true;
 	sunLight.target.position.set(0,0,0);
-	sunLight.shadow.bias = -0.00005;	// Default = 0 - causes lines;
 	sunLight.shadow.mapSize.width = 8192;
 	sunLight.shadow.mapSize.height = 8192;
 	sunLight.shadow.camera.near = 0.001;
@@ -714,6 +714,8 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.shadow.camera.right = LgtBox;
 	sunLight.shadow.camera.top = LgtBox;
 	sunLight.shadow.camera.bottom = -LgtBox;
+	sunLight.shadow.bias = -0.00005;	// Default = 0 - causes lines;
+//	sunLight.shadow.bias = -0.0001;		// best
 	scene.add(sunLight);
 // 	Sounds
 let SndFlg = 0;
