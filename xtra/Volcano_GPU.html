@@ -30,9 +30,9 @@ Version dated 23 Aug 2024
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.167.1/examples/jsm/"
+			"three": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/"
 		}
 	}
 </script>
@@ -41,7 +41,7 @@ Version dated 23 Aug 2024
 
 import * as THREE from "three";
 import {MeshLambertNodeMaterial,color,texture,float,vec2,attribute,
-		timerLocal,range,positionLocal,uv,mix,SpriteNodeMaterial
+		timerLocal,range,positionLocal,uv,mix,rotateUV,SpriteNodeMaterial	
 } from 'three/tsl';
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
@@ -75,7 +75,7 @@ let OrbCon = 1;					// Used by OrbitControls
 //- Mouse
 let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
 //- Stats
-let StatOn = 1;					// Stats ((0 = off, 1 = on)
+let StatOn = 0;					// Stats ((0 = off, 1 = on)
 let LodFlg = 0;
 
 //= STANDARD ===================================================================
@@ -202,18 +202,20 @@ function loadVulkan() {
 //	 used as part of a group.)
 function initVulkan() {
 	//- Timer
-	let timer = timerLocal(.001,1);
+	let timer = timerLocal(.001,1);	// First variable controls speed. Second variable = 1.
 	//- Life
-	let lifeRange = range(0.1,1);
+	let lifeRange = range(.1,1);
 	let lifeTime = timer.mul(lifeRange).mod(.05);
 	let life = lifeTime.div(lifeRange);
 	//- Rotation Range
 	let rotateRange = range(.1,4);
-	let textureNode = texture(SmkMap, uv().rotateUV(timer.mul(rotateRange)));
+//	let textureNode = texture(SmkMap, uv().rotateUV(timer.mul(rotateRange)));
+	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange)));
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
-	//- Lateral Offset	
-//	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
-	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// cone shaped
+	//- Lateral Offset (XZ = Horizontal, Y = vertical)	
+//	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));	// Vertical
+	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// Cone Shaped
+//	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(2,5,-2));	// Leaning Cone Shaped
 	//- Size Range
 //	let scaleRange = range(.01,.02);
 	let scaleRange = range(.1,.2);
@@ -229,9 +231,9 @@ function initVulkan() {
 		smokeNodeMaterial.depthWrite = false;
 		smokeNodeMaterial.transparent = true;
 	let smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
-		smokeInstancedSprite.scale.setScalar(4000);		// Makes Visible (was 400)
+		smokeInstancedSprite.scale.setScalar(4000);
 		smokeInstancedSprite.isInstancedMesh = true;
-		smokeInstancedSprite.count = 600;				// Increases continuity (was 100)
+		smokeInstancedSprite.count = 600;
 		smokeInstancedSprite.position.copy(SmkPos);
 		smokeInstancedSprite.renderOrder = 1;	// This allows the transparent smoke to work with transparent island
 		VlkGrp.add(smokeInstancedSprite);
