@@ -36,7 +36,7 @@ import {color,texture,normalMap,float,vec2,attribute,positionLocal,MeshStandardN
 		textureStore,wgslFn,instanceIndex,code,uniform,timerLocal
 } from 'three/tsl';
 // Custom Modules
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 /*= VARIABLES ================================================================*/
 //-	Math Predefined
@@ -87,7 +87,6 @@ let wav_ = {
 		Dsp: 0,					// The Displacement Map
 		Nrm: 0,					// The Normal Map
 	};
-let wavTim = 0;
 //- External Values
 let wavSpd = 1;					// Animation speed - use in main program (lower is faster)
 let normalMapScale = vec2(1.0,1.0);
@@ -179,13 +178,7 @@ function rendAll() {
 		if(camera.position.y < 0.0) {
 			camera.position.y = 2.0;
 		}
-		// Update time
-		nowTim = clock.getElapsedTime();
-		difTim = nowTim-oldTim;
-		wavTim += difTim*wavSpd || 0.0;	// ### WebGPU changed to +=
-		oldTim = nowTim;
-		//
-		waves.render(wavTim); 			// Render Ocean
+		waves.render(); 				// Render Ocean
 		controls.update();				// Controls
 		if (StatOn) StatOn.update();	// Stats
 	}
