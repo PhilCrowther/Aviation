@@ -64,7 +64,7 @@ class Ocean {
 	}
 
 	render() {
-		this.update = this.Render);
+		this.update = this.Render();
 	}
 
 //= Initialize Ocean ===========================================================
