@@ -498,7 +498,7 @@ Ocean(renderer,wav_) {
 		w_tphs: textureStore(this.pingPhaseTexture),
 		u_indx: instanceIndex,
 //		u_time: this.WavTim,
-		u_time: timerLocal,
+		u_time: timerLocal(),
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	this.pongPhaseComp = this.compPhase({
@@ -507,7 +507,7 @@ Ocean(renderer,wav_) {
 		w_tphs: textureStore(this.pongPhaseTexture),
 		u_indx: instanceIndex,
 //		u_time: this.WavTim,
-		u_time: timerLocal,
+		u_time: timerLocal(),
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	//- Shader 3. New Phase
