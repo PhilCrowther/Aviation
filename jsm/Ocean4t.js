@@ -80,7 +80,6 @@ Ocean(renderer,wav_) {
 	this.Chp = wav_.Chp;
 	// Initialize Program Variables
 	this.stepBF = uniform(0);
-//	this.WavTim = uniform(0);
 	this.initPhase = true;
 	this.pingPhase = true;
 	//- Create Buffers ---------------------------------------------------------	
@@ -497,7 +496,6 @@ Ocean(renderer,wav_) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pingPhaseTexture),
 		u_indx: instanceIndex,
-//		u_time: this.WavTim,
 		u_time: timerLocal(),
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
@@ -506,7 +504,6 @@ Ocean(renderer,wav_) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pongPhaseTexture),
 		u_indx: instanceIndex,
-//		u_time: this.WavTim,
 		u_time: timerLocal(),
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
@@ -603,7 +600,6 @@ Ocean(renderer,wav_) {
 
 // = OCEAN.RENDER = (called by Main Program) ====================
 Render() {
-//	this.WavTim.value = wavTim;
 	// 2. Initial
 	if (this.initPhase) {
 		this.renderer.compute(this.pingPhaseComp);
