@@ -93,7 +93,7 @@ class GrdMap {
 
 //let GrdMap = function (grd_, scene) {
 GrdMap(grd_, scene) {
-	console.log("a3");
+	console.log("a4");
 
 //- Grid 0 ---------------------------------------------------------------------
 	grd_.Grx[0] = {
@@ -155,15 +155,6 @@ GrdMap(grd_, scene) {
 	init1GrMap(grd_.Grx[0], grd_, scene);
 	init1GrMap(grd_.Grx[1], grd_, scene);
 	init1GrMap(grd_.Grx[2], grd_, scene);
-}
-
-//GrdMap.prototype.update = function (grd_) {
-Update(grd_) {
-	move1GrMap(grd_.Grx[0], grd_);
-	move1GrMap(grd_.Grx[1], grd_);
-	move1GrMap(grd_.Grx[2], grd_);
-}
-
 }
 
 function initGeoMat(grd_, scene) {
@@ -287,6 +278,14 @@ function init1GrMap(grx_, grd_, scene) {
 			n++;
 		}
 	}
+}
+
+
+//GrdMap.prototype.update = function (grd_) {
+Update(grd_) {
+	move1GrMap(grd_.Grx[0], grd_);
+	move1GrMap(grd_.Grx[1], grd_);
+	move1GrMap(grd_.Grx[2], grd_);
 }
 
 //- Move Moving Map ------------------------------------------------------------
@@ -420,6 +419,8 @@ function move1GrMap(grx_, grd_) {
 			if (r > grx_.RCi) r = r - grx_.RCs;
 		}
 	}
+}
+
 }
 
 export {GrdMap};
