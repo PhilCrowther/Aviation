@@ -93,7 +93,7 @@ class GrdMap {
 
 //let GrdMap = function (grd_, scene) {
 GrdMap(grd_, scene) {
-	console.log("a1"):
+	console.log("a1");
 
 //- Grid 0 ---------------------------------------------------------------------
 	grd_.Grx[0] = {
