@@ -93,7 +93,7 @@ class GrdMap {
 
 //let GrdMap = function (grd_, scene) {
 GrdMap(grd_, scene) {
-	console.log("a2");
+	console.log("a3");
 
 //- Grid 0 ---------------------------------------------------------------------
 	grd_.Grx[0] = {
@@ -158,7 +158,7 @@ GrdMap(grd_, scene) {
 }
 
 //GrdMap.prototype.update = function (grd_) {
-Update() {
+Update(grd_) {
 	move1GrMap(grd_.Grx[0], grd_);
 	move1GrMap(grd_.Grx[1], grd_);
 	move1GrMap(grd_.Grx[2], grd_);
