@@ -93,7 +93,7 @@ class GrdMap {
 
 //let GrdMap = function (grd_, scene) {
 GrdMap(grd_, scene) {
-	console.log("a4");
+	console.log("a5");
 
 //- Grid 0 ---------------------------------------------------------------------
 	grd_.Grx[0] = {
@@ -151,13 +151,13 @@ GrdMap(grd_, scene) {
 	}
 	grd_.Nrm.repeat.set(grd_.Stp,grd_.Stp);
 	grd_.Dsp.repeat.set(grd_.Stp,grd_.Stp);
-	initGeoMat(grd_,scene);			// Init Grid Materials
+	this.initGeoMat(grd_,scene);			// Init Grid Materials
 	init1GrMap(grd_.Grx[0], grd_, scene);
 	init1GrMap(grd_.Grx[1], grd_, scene);
 	init1GrMap(grd_.Grx[2], grd_, scene);
 }
 
-function initGeoMat(grd_, scene) {
+this.initGeoMat = function(grd_, scene) {
 // Define Geometries and Materials Referenced in grd_.Geo and grd_.Mat
 	// Grid0 ------------------------------------------------------------------
 	// For Grid0, using geometry = siz*stp since flip over stp at a time
