@@ -71,6 +71,7 @@ import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 //= NOTES ======================================================================
+//	* Fix Horizontal Tail Angle
 //	* Improve Shadows
 
 //= STARTING VALUES ============================================================
@@ -685,9 +686,9 @@ function rendAll() {
 		// Move Objects
 		moveAirObj();		// Move aircaft
 		// Move Grids
-		waves.render(); // Render Ocean
+		waves.update(); 	// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
-		grids.update(grd_);	// Grids
+		grids.update(grd_);	// MoveGrids
 		// Other
 		moveSounds(air_);
 		prntHUDval();		// print HUD values
