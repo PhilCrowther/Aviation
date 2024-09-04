@@ -66,7 +66,6 @@ import {color,texture,normalMap,positionLocal,MeshStandardNodeMaterial} from 'th
 class GrdMap {
 
 constructor(grd_,scene) {
-	console.log("GrdWtr4a");
 	this.grd_ = grd_;
 	this.scene = scene;
 
