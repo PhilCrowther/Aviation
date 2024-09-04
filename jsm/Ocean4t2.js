@@ -57,6 +57,7 @@ class Ocean {
 
 //= Initialize Ocean ===========================================================
 constructor(renderer,wav_) {
+	console.log("t2");
 	// flag used to trigger parameter changes
 	this.renderer = renderer;
 	this.wav_ = wav_;
@@ -588,6 +589,7 @@ constructor(renderer,wav_) {
 	// Static Targets
 	this.wav_.Dsp = this.dispMapTexture;
 	this.wav_.Nrm = this.normMapTexture;
+	this.render();
 };	// End of Initialize
 
 // = OCEAN.RENDER = (called by Main Program) ====================
