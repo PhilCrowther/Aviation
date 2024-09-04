@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================
 
-// Version 4t (updated 1 Sep 2024)
+// Version 4t (updated 4 Sep 2024)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -112,11 +112,6 @@ constructor(renderer,wav_) {
 	this.pongTransformTexture.wrapS = this.pongTransformTexture.wrapT = ClampToEdgeWrapping;
 	this.dispMapTexture.wrapS = this.dispMapTexture.wrapT = RepeatWrapping;
 	this.normMapTexture.wrapS = this.normMapTexture.wrapT = RepeatWrapping;
-	//- Other WebGL Adjustments - Required?
-//		format: RGBAFormat,
-//		stencilBuffer: false,
-//		depthBuffer: false,
-//		premultiplyAlpha: false,
 	//- Create Initial Phase Array ---------------------------------------------
 	this.phaseArray = new window.Float32Array(4*(this.Res**2));
 	for (let y = 0; y < this.Res; y++) {
@@ -130,7 +125,6 @@ constructor(renderer,wav_) {
 	this.phaseArrayTexture = new DataTexture(this.phaseArray,this.Res,this.Res,RGBAFormat);
 	this.phaseArrayTexture.type = FloatType;
 	this.phaseArrayTexture.minFilter = this.phaseArrayTexture.magFilter = NearestFilter;
-//	this.phaseArrayTexture.wrapS = this.phaseArrayTexture.wrapT = ClampToEdgeWrapping;	// causses line
 	this.phaseArrayTexture.needsUpdate = true;
 	//= Shaders ================================================================
 	//- Common Subroutines -----------------------------------------------------
@@ -257,7 +251,6 @@ constructor(renderer,wav_) {
 			u_chop: f32,
 		) -> void {
 			// Variables
-//			var u_choppy: f32 = 1.6;
 			//- Compute vUv(u) and neg vUv(u)
 			var posX = f32(u_indx) % u_tsiz;	// width
 			var posY = f32(u_indx) / u_tsiz;	// height
@@ -460,12 +453,7 @@ constructor(renderer,wav_) {
 			let botRgt = vec3<f32>(cross(bot,rgt));
 			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
 			//
-//			let tmp2: vec3<f32> = nrm3;
-//			nrm3.z = tmp2.y;	// flip to create correct colors
-//			nrm3.y = tmp2.z;	// for nomal map
-//			nrm3 = vec3<f32>(nrm3) * 0.5 + 0.5;
-//			textureStore(w_norm,idx,vec4f(nrm3.x,nrm3.y,nrm3.z,1));
-			nrm3 = vec3<f32>(nrm3) * 0.5 + 0.5;	// ### NEW
+			nrm3 = vec3<f32>(nrm3) * 0.5 + 0.5;
 			textureStore(w_norm,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 		}
 	`, [subroutines]);
@@ -633,3 +621,4 @@ export {Ocean};
 // 240719: Version 4	: Converted to WebGPU module
 // 240811: Version 4a	: Updated to r167 and cleaned up imports
 // 240901: Version 4t	: Uses localTimer instead of wavTim.
+// 240904:				: Changed Module format
