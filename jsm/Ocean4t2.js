@@ -59,13 +59,14 @@ class Ocean {
 constructor(renderer,wav_) {
 	// flag used to trigger parameter changes
 	this.renderer = renderer;
+	this.wav_ = wav_;
 	// Load Variables
-	this.Res = wav_.Res;
-	this.Siz = wav_.Siz;
-	this.windX = wav_.WSp*Math.sin(wav_.WHd*Math.PI/180);
-	this.windY = wav_.WSp*Math.cos(wav_.WHd*Math.PI/180);
+	this.Res = this.wav_.Res;
+	this.Siz = this.wav_.Siz;
+	this.windX = this.wav_.WSp*Math.sin(this.wav_.WHd*Math.PI/180);
+	this.windY = this.wav_.WSp*Math.cos(this.wav_.WHd*Math.PI/180);
 	this.Wnd = vec2(this.windX,this.windY);
-	this.Chp = wav_.Chp;
+	this.Chp = this.wav_.Chp;
 	// Initialize Program Variables
 	this.stepBF = uniform(0);
 //	this.WavTim = uniform(0);
@@ -585,8 +586,8 @@ constructor(renderer,wav_) {
 	this.renderer.compute(this.initSpectrumComp);
 	this.renderer.compute(this.butterflyComp,[1,8,1]);
 	// Static Targets
-	wav_.Dsp = this.dispMapTexture;
-	wav_.Nrm = this.normMapTexture;
+	this.wav_.Dsp = this.dispMapTexture;
+	this.wav_.Nrm = this.normMapTexture;
 };	// End of Initialize
 
 // = OCEAN.RENDER = (called by Main Program) ====================
