@@ -1,7 +1,7 @@
 //= GRID MAP MODULE ============================================================
 
 // GrdWtr variation
-// Version 3.0 (dated 10 Feb 2024)
+// Version 3.0 (dated 3 Sep 2024)
 // Copyright 2022-2024, Phil Crowther
 // Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 //
@@ -58,29 +58,20 @@
 //	WMx: WavMax,			// Max wave height, used to lower outer squares
 //};
 
-import {
-	Mesh,
-	MeshStandardMaterial,
-	PlaneGeometry,
-	Vector2
-} from 'three';
-import {
-		color,
-		texture,
-		normalMap,
-		float,
-		vec2,
-		attribute,
-		positionLocal,
-		MeshStandardNodeMaterial,
-} from 'three/tsl';
+import {Mesh,PlaneGeometry} from 'three';
+import {color,texture,normalMap,positionLocal,MeshStandardNodeMaterial} from 'three/tsl';
 
 /*= PROGRAM ==================================================================*/
 
-let GrdMap = function (grd_, scene) {
+class GrdMap {
+
+constructor(grd_,scene) {
+	console.log("GrdWtr4a");
+	this.grd_ = grd_;
+	this.scene = scene;
 
 //- Grid 0 ---------------------------------------------------------------------
-	grd_.Grx[0] = {
+	this.grd_.Grx[0] = {
 		Typ:	0,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs/grd_.Stp,	// Since each square is 4x4, only need 4x4 
 		Siz:	grd_.Siz*grd_.Stp,	// Size of square = Sizx4
@@ -98,7 +89,7 @@ let GrdMap = function (grd_, scene) {
 		EWA:	0,					// N/A
 	}
 //- Grid 1 ---------------------------------------------------------------------
-	grd_.Grx[1] = {
+	this.grd_.Grx[1] = {
 		Typ:	1,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,			// Rows and Columns - use odd number
 		Siz:	grd_.Grx[0].Siz,	// Size of square = same as Grid0
@@ -116,7 +107,7 @@ let GrdMap = function (grd_, scene) {
 		EWA:	0,					// Shared East/West Adjustment (updated)
 	}
 //- Grid 2 ---------------------------------------------------------------------
-	grd_.Grx[2] = {
+	this.grd_.Grx[2] = {
 		Typ:	2,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,			// Rows and Columns - use odd number (for now = divisible by 3)
 		Siz:	grd_.Grx[1].Siz*grd_.Grx[1].Stp,	// Size of square
@@ -133,21 +124,16 @@ let GrdMap = function (grd_, scene) {
 		NSA:	0,					// Shared North/South Adjustment (updated)
 		EWA:	0,					// Shared East/West Adjustment (updated)
 	}
-	grd_.Nrm.repeat.set(grd_.Stp,grd_.Stp);
-	grd_.Dsp.repeat.set(grd_.Stp,grd_.Stp);
-	initGeoMat(grd_,scene);			// Init Grid Materials
-	init1GrMap(grd_.Grx[0], grd_, scene);
-	init1GrMap(grd_.Grx[1], grd_, scene);
-	init1GrMap(grd_.Grx[2], grd_, scene);
+	this.grd_.Nrm.repeat.set(this.grd_.Stp,this.grd_.Stp);
+	this.grd_.Dsp.repeat.set(this.grd_.Stp,this.grd_.Stp);
+	this._initGeoMat(this.grd_,this.scene);	// Init Grid Materials
+	this._init1GrMap(this.grd_.Grx[0], grd_,this.scene);
+	this._init1GrMap(this.grd_.Grx[1], grd_,this.scene);
+	this._init1GrMap(this.grd_.Grx[2], grd_,this.scene);
 }
 
-GrdMap.prototype.update = function (grd_) {
-	move1GrMap(grd_.Grx[0], grd_);
-	move1GrMap(grd_.Grx[1], grd_);
-	move1GrMap(grd_.Grx[2], grd_);
-}
-
-function initGeoMat(grd_, scene) {
+//function initGeoMat(grd_,scene) {		// ### ERR
+_initGeoMat(grd_,scene) {	// ### ERR
 // Define Geometries and Materials Referenced in grd_.Geo and grd_.Mat
 	// Grid0 ------------------------------------------------------------------
 	// For Grid0, using geometry = siz*stp since flip over stp at a time
@@ -164,7 +150,6 @@ function initGeoMat(grd_, scene) {
 				metalness: 0.5,			// 1 for max reflection
 				roughness: 0.5,			// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx],
-//				normalMap: grd_.Nrm,	// Animated normalMap
 				normalNode: normalMap(texture(grd_.Nrm),normalMapScale),
 				positionNode: positionLocal.add(texture(grd_.Dsp)),
 				envMap: scene.background,			
@@ -191,7 +176,6 @@ function initGeoMat(grd_, scene) {
 				metalness: 0.5,		// 1 for max reflection
 				roughness: 0.5,		// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx],
-//				normalMap: grd_.Nrm,	// Animated normalMap
 				normalNode: normalMap(texture(grd_.Nrm),normalMapScale),
 				envMap: scene.background,
 				envMapIntensity: 0.5,	// max reflection suggested = 5	
@@ -224,7 +208,7 @@ function initGeoMat(grd_, scene) {
 
 //- Init Moving Map (Ocean) ----------------------------------------------------
 
-function init1GrMap(grx_, grd_, scene) {
+_init1GrMap(grx_, grd_, scene) {
 	// Load Variables
 	grx_.RCi = grx_.RCs-1;					// Max Index Value
 	grx_.MZV[grx_.RCi] = 0;					// Z-Values
@@ -270,9 +254,17 @@ function init1GrMap(grx_, grd_, scene) {
 	}
 }
 
+//= UPDATE =====================================================================
+
+update() {
+	this._move1GrMap(this.grd_.Grx[0],this.grd_);
+	this._move1GrMap(this.grd_.Grx[1],this.grd_);
+	this._move1GrMap(this.grd_.Grx[2],this.grd_);
+}
+
 //- Move Moving Map ------------------------------------------------------------
 
-function move1GrMap(grx_, grd_) {
+_move1GrMap(grx_, grd_) {
 	let grd1_ = grd_.Grx[1];
 	let grd2_ = grd_.Grx[2];
 	let j, v = 0;
@@ -403,6 +395,8 @@ function move1GrMap(grx_, grd_) {
 	}
 }
 
+}
+
 export {GrdMap};
 
 /*= REVISIONS ================================================================*/
@@ -410,3 +404,4 @@ export {GrdMap};
 //			and routines for creating Geometries and Materials into this Module
 //- 240108	This version 2 initalizes large-sized diffuse and roughness maps
 //			grx_ changed to grd_ and, in subroutines, grx_.Grd[] to grd_.Grx[]
+//- 240903	Converted to Class
