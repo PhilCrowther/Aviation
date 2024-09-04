@@ -68,7 +68,7 @@ import Stats from "three/addons/libs/stats.module.js";
 import {Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 //= NOTES ======================================================================
 //	* Improve Shadows
@@ -148,32 +148,32 @@ let ShdDst = 10000;			// Distance for shadow
 let ShdBox = 25;			// Size of shadow box 
 
 //=	SUNFLARE ===================================================================
-let SnFFlg = 1;					// 1 = SunFlare On
+let SnFFlg = 1;				// 1 = SunFlare On
 let sunflare = 0;
 //- Textures
 let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
 //- Sprites
-let SnFsrc = [SnFhex,SnFhex]	// Spreit Texture Source
-let SnFsiz = [300,800];			// Sprite Size
-	SnFsiz = [300,1500];		// Sprite Size
-let SnFopa = [0.1,0.025];		// Sprite Opacity
-	SnFopa = [0.25,0.025];		// Sprite Opacity
-let SnFmlt = [0.3,-0.4];		// Offset Multiplier (1 = centered on Sun)
-let SnFdst = SunDst;			// Distance (default = 10000)
+let SnFsrc = [SnFhex,SnFhex]; // Spreit Texture Source
+let SnFsiz = [300,800];		// Sprite Size
+	SnFsiz = [300,1500];	// Sprite Size
+let SnFopa = [0.1,0.025];	// Sprite Opacity
+	SnFopa = [0.25,0.025];	// Sprite Opacity
+let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
+let SnFdst = SunDst;		// Distance (default = 10000)
 //- Parameters
 let SnF_ = {
 		//- Sprites
-		num: 2,					// Number of Sprites
-		spr: [],				// Sprite Address
-		mlt: SnFmlt,			// Offset Multiplier
+		num: 2,				// Number of Sprites
+		spr: [],			// Sprite Address
+		mlt: SnFmlt,		// Offset Multiplier
 		//- Rotators
-		msh: [],				// Rotators
-		par: 0,					// Parent (Camera Clone) [OrbCon Only]
+		msh: [],			// Rotators
+		par: 0,				// Parent (Camera Clone) [OrbCon Only]
 		//- Heading Offset
 		cam: new THREE.Vector3(CamLat,CamLon,0),	// Camera Direction
 		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
 		off: new THREE.Vector2(),	// Sun Offset (lat/lon) [shared]
-		asp: 0,					// Camera Aspect
+		asp: 0,				// Camera Aspect
 	}
 
 //= CLOUDS =====================================================================
@@ -218,9 +218,8 @@ let GrdRes = 512;
 let GrdSeg = 256;			// Segments per Plane (256 = OK, 512 = too much)
 
 //= ANIMATED OCEAN =============================================================
-let WtrCol = 0x102080;		// Water
-	WtrCol = 0x1060ff;		// Water (Nodes)
-//	WtrCol = 0x081080;		// Water (Navy) ### Ocean_GPU
+//let WtrCol = 0x081080;		// Water (Navy) ### Ocean_GPU
+let WtrCol = 0x1060ff;		// Water (Nodes)
 //- Ocean
 let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
 let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
@@ -253,8 +252,6 @@ let wav_ = {
 		Nrm: 0,				// The Normal Map
 		NMS: new THREE.Vector2(1,1),	// Normal Map Scale (flip Y for left-handed maps)
 	};
-let wavSpd = 1;				// Animation speed - use in main program (lower is faster)
-let wavTim = 0;
 
 //= GRID MODULE ================================================================
 //	This ocean map has 3 nested grids of squares.
@@ -556,9 +553,6 @@ let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(45,CamAsp,0.1,100000);
 	camera.add(listener);
 	scene.add(CamCtr);		// Camera
-//- Clock
-let clock = new THREE.Clock();
-let oldTim, nowTim, difTim = 0;
 //- Inputs
 	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -612,16 +606,16 @@ let loadingScreen = {
 let boxrot = 0;		//keep = 0
 
 //= 3D OBJECTS AND LINKS =======================================================
-	scene.add(air_.AirObj);		// Airplane
+	scene.add(air_.AirObj);	// Airplane
 
 //= HTML OVERLAY TEXT ==========================================================
-let Air_SpdElement = document.getElementById("Air_Spd");	// Airspeed
+let Air_SpdElement = document.getElementById("Air_Spd"); // Airspeed
 let Air_SpdNode = document.createTextNode("");
 	Air_SpdElement.appendChild(Air_SpdNode);
-let Air_AltElement = document.getElementById("Air_Alt");	// Altitude
+let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
 let Air_AltNode = document.createTextNode("");
 	Air_AltElement.appendChild(Air_AltNode);
-let Air_HdgElement = document.getElementById("Air_Hdg");	// Heading
+let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
 let Air_HdgNode = document.createTextNode("");
 	Air_HdgElement.appendChild(Air_HdgNode);
 let Air_Spd, Air_Alt,Air_Hdg;
@@ -632,9 +626,9 @@ let Air_Spd, Air_Alt,Air_Hdg;
 //=	0 Load All =================================================================
 function loadAll() {
 	// Load Values Used to initialize my Aircraft and Objects		
-	WaitScreen();						// load loading screen
+	WaitScreen();			// load loading screen
 	loadSkyBox();
-	if (SnFFlg) loadSFlare();			// SunFlare
+	if (SnFFlg) loadSFlare(); // SunFlare
 	loadGeoMat(grd_);
 	loadAirObj();
 }
@@ -658,19 +652,19 @@ function WaitScreen() {
 
 function initAll() {
 	initSkyBox();
-	waves = new Ocean(renderer,wav_);	// Init Ocean
+	waves = new Ocean(renderer,wav_); // Init Ocean
 	grd_.Dsp = wav_.Dsp;
 	grd_.Nrm = wav_.Nrm;
 	grd_.NMS = wav_.NMS;
 	grids = new GrdMap(grd_,scene);
-	if (SnFFlg) initSFlare(scene,camera,SnF_);	// SunFlare
+	if (SnFFlg) initSFlare(scene,camera,SnF_); // SunFlare
 	// Other
-	initCamera(camera,cam_);		// position camera
-	prntHUDval();						// print HUD values
+	initCamera(camera,cam_); // position camera
+	prntHUDval();			// print HUD values
 	// Show stats
-	if (StatOn) {						// show stats
+	if (StatOn) {			// show stats
 		StatOn = new Stats();
-		StatOn.setMode(0);				// FPS only
+		StatOn.setMode(0);	// FPS only
 		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
 		container.appendChild(StatOn.dom);
 	}
@@ -688,15 +682,10 @@ function rendAll() {
 		return;							// Stop the function here.
 	}
 	if (PawsOn == 0 && LodFlg > 0) {
-		// Update time
-		nowTim = clock.getElapsedTime();
-		difTim = nowTim-oldTim;
-		wavTim += difTim*wavSpd || 0.0;	// ### GPU
-		oldTim = nowTim;
 		// Move Objects
 		moveAirObj();		// Move aircaft
 		// Move Grids
-		waves.render(wavTim); // Render Ocean
+		waves.render(); // Render Ocean
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update(grd_);	// Grids
 		// Other
@@ -796,10 +785,10 @@ function moveSFlare(SnF_) {
 // Can't be exported since uses html context to split images
 
 function loadGeoMat(grd_) {
-	// Load Diffuse Texture
+	// Diffuse Texture
 	if (DifSrc) {
-		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		imagLoader.load(DifSrc, function(image) {	// Load, Split and Save Textures
+		// Grid0 and Grid1 - Load Image, Split into 4 and Save Textures
+		imagLoader.load(DifSrc, function(image) {
 			context.drawImage(image,0,0,ImgSiz,ImgSiz);
 			let idx = 0;
 			let siz = ImgSiz/4;
@@ -817,8 +806,8 @@ function loadGeoMat(grd_) {
 				}
 			}
 		});
-		// Grid2 - Static Color Map Texture
-		txtrLoader.load(DifSrc, function(texture) {	// Load and Save entire Texture
+		// Grid2 - Load and Save entire Texture
+		txtrLoader.load(DifSrc, function(texture) {
 			texture.format = THREE.RGBAFormat;
 			texture.magFilter = THREE.LinearFilter;
 			texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -829,10 +818,10 @@ function loadGeoMat(grd_) {
 			grd_.Dif = texture;
 		});
 	}
-	// Load Roughness Texture
+	// Roughness Texture
 	if (RufSrc) {
-		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		imagLoader.load(RufSrc, function(image) {	// Load, Split and Save Textures
+		// Grid0 and Grid1 - Load Image, Split into 4 and Save Textures
+		imagLoader.load(RufSrc, function(image) {
 			context.drawImage(image,0,0,ImgSiz,ImgSiz);
 			let idx = 0;
 			let siz = ImgSiz/4;
@@ -850,8 +839,8 @@ function loadGeoMat(grd_) {
 				}
 			}
 		});
-		// Grid2 - Static Color Map Texture
-		txtrLoader.load(RufSrc, function(texture) {	// Load and Save entire Texture
+		// Grid2 - Load and Save entire Texture
+		txtrLoader.load(RufSrc, function(texture) {
 			texture.format = THREE.RGBAFormat;
 			texture.magFilter = THREE.LinearFilter;
 			texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -862,7 +851,7 @@ function loadGeoMat(grd_) {
 			grd_.Ruf = texture;
 		});
 	}
-	// Grid2 - Static Normal Map
+	// Normal Texture - Grid2 Only
 	txtrLoader.load(NrmSrc, function(texture) {
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;

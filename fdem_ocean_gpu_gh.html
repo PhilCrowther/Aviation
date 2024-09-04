@@ -52,7 +52,9 @@ A WebGPU demo of the GrdWtr4a, Ocean4a and SunFlare2 modules.
 <script type="module">
 import * as THREE from "three";
 import {MeshBasicNodeMaterial,MeshStandardNodeMaterial,SpriteNodeMaterial,
-		color,texture,timerLocal,range,positionLocal,uv,mix} from 'three/tsl';
+		color,texture,timerLocal,range,positionLocal,uv,mix,
+		normalMap} from 'three/tsl';
+
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
@@ -461,7 +463,7 @@ function rendAll() {
 		moveAirObj(air_);
 		grd_.MSP.copy(air_.MapSPS);
 		waves.render(); 	// Render Ocean
-		grids.update(grd_);	// Grids
+		grids.update();		// Move Grids
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval(air_);

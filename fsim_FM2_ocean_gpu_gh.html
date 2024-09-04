@@ -74,7 +74,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3atp.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4a.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 //= GENERAL ===================================================================
 
@@ -129,7 +129,7 @@ let BegSpd = 0;					// Speed (mph)
 let BegPos = new THREE.Vector3(0,0,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-let PwrMul = 0.001;				// Power % Input - Mouse Multiplier
+let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
 let PwrDif = 0;					// Power % Input - Value
 let InpBrk = 0;					// Brakes
 //- Mouse Delays ...............................................................
@@ -310,8 +310,6 @@ let wav_ = {
 		Nrm: 0,					// The Normal Map
 		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
 	};
-let wavSpd = 0.5;				// Animation speed - use in main program (lower is faster)
-let wavTim = 0;
 
 //= STATIC OBJECTS =============================================================
 let ObjNum = 3;					// number of objects
@@ -981,7 +979,6 @@ function rendAll() {
 		// Update time
 		nowTim = clock.getElapsedTime();
 		difTim = nowTim-oldTim;
-		wavTim += difTim*wavSpd || 0.0;
 		flg_.Tim = nowTim;
 		oldTim = nowTim;
 		moveCamera(camera,cam_);
@@ -997,7 +994,7 @@ function rendAll() {
 		moveShpFlg();
 //		moveVulkan();			// Volcano
 		// Move Grids
-		waves.render(wavTim);	// Render Ocean
+		waves.render();			// Render Ocean
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update(grd_);		// Grids
 		// Other
