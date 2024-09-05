@@ -342,17 +342,17 @@ let ambLight = new THREE.AmbientLight(SunCol, 1.0);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.position.copy(SunPos).normalize();	
-	sunLight.castShadow = true;
-	sunLight.shadow.mapSize.width = 4096;
-	sunLight.shadow.mapSize.height = 4096;
-	sunLight.shadow.camera.near = 0.001;	
-	sunLight.shadow.camera.far = SunDst+ShdBox;
-	sunLight.shadow.camera.left = -ShdBox;
-	sunLight.shadow.camera.right = ShdBox;
-	sunLight.shadow.camera.top = ShdBox;
-	sunLight.shadow.camera.bottom = -ShdBox;
-	sunLight.shadow.bias = - 0.0005; // ### WebGPU
-	sunLight.target.position.set(0,0,0);
+//	sunLight.castShadow = true;
+//	sunLight.shadow.mapSize.width = 4096;
+//	sunLight.shadow.mapSize.height = 4096;
+//	sunLight.shadow.camera.near = 0.001;	
+//	sunLight.shadow.camera.far = SunDst+ShdBox;
+//	sunLight.shadow.camera.left = -ShdBox;
+//	sunLight.shadow.camera.right = ShdBox;
+//	sunLight.shadow.camera.top = ShdBox;
+//	sunLight.shadow.camera.bottom = -ShdBox;
+//	sunLight.shadow.bias = - 0.0005; // ### WebGPU
+//	sunLight.target.position.set(0,0,0);
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
