@@ -341,18 +341,18 @@ let	maxAnisotropy = 16;		// ### WebGPU
 let ambLight = new THREE.AmbientLight(SunCol, 1.0);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
-	sunLight.position.copy(SunPos).normalize();	
-//	sunLight.castShadow = true;
-//	sunLight.shadow.mapSize.width = 4096;
-//	sunLight.shadow.mapSize.height = 4096;
-//	sunLight.shadow.camera.near = 0.001;	
-//	sunLight.shadow.camera.far = SunDst+ShdBox;
-//	sunLight.shadow.camera.left = -ShdBox;
-//	sunLight.shadow.camera.right = ShdBox;
-//	sunLight.shadow.camera.top = ShdBox;
-//	sunLight.shadow.camera.bottom = -ShdBox;
-//	sunLight.shadow.bias = - 0.0005; // ### WebGPU
-//	sunLight.target.position.set(0,0,0);
+	sunLight.position.copy(SunPos).normalize();	// ### ok with r168
+	sunLight.castShadow = true;
+	sunLight.shadow.camera.near = 0.1;
+	sunLight.shadow.camera.far = 500;
+	sunLight.shadow.camera.right = 17;
+	sunLight.shadow.camera.left = - 17;
+	sunLight.shadow.camera.top	= 17;
+	sunLight.shadow.camera.bottom = - 17;
+	sunLight.shadow.mapSize.width = 2048;	// ### r168
+	sunLight.shadow.mapSize.height = 2048;	// ### r168
+	sunLight.shadow.radius = 10;
+	sunLight.shadow.bias = - 0.0001;		// best
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -607,6 +607,7 @@ function initAirObj(air_) {
 	mesh.rotation.x = -Math.PI/2;
 	mesh.position.z = -5;
 	mesh.castShadow = true;
+	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// Back
 	mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
@@ -614,24 +615,28 @@ function initAirObj(air_) {
 	mesh.rotation.y = Math.PI;
 	mesh.position.z = 15;
 	mesh.castShadow = true;
+	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// Wing
 	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 2.5;
 	mesh.castShadow = true;
+	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// HTail
 	mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
+	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// VTail
 	mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.position.y = 2.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
+	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	air_.AirPBY.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);
 }
