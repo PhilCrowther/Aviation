@@ -116,12 +116,13 @@ let SunInt = 3;				// Intensity
 //- Rotation and Position (fixed)
 let SunLat = 23;			// Direction - Vert (+/- 90)
 let SunLon = 312;			// Direction - Horz (0->360)
-let SunDst = 10000;			// Distance (for shadows and lensflare)
+let SunDst = 10000;			// Distance (for lensflare)
 //- New
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //-	Shadows
-let ShdBox = 100;			// Size of shadow box
+let ShdBox = 50;			// Size of shadow box
+let ShdDst = 5000;			// Distance (for shadows)
 
 //=	SUNFLARE ===================================================================
 let SnFFlg = 1;				// 1 = SunFlare On
@@ -344,16 +345,15 @@ let ambLight = new THREE.AmbientLight(SunCol, 1.0);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.position.copy(SunPos).normalize();	
 	sunLight.castShadow = true;
-	sunLight.shadow.mapSize.width = 2048;
-	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.camera.near = 0.001;	
-	sunLight.shadow.camera.far = SunDst+ShdBox;
 	sunLight.shadow.camera.left = -ShdBox;
 	sunLight.shadow.camera.right = ShdBox;
 	sunLight.shadow.camera.top = ShdBox;
 	sunLight.shadow.camera.bottom = -ShdBox;
+	sunLight.shadow.camera.near = 0.001;	
+	sunLight.shadow.camera.far = ShdDst+ShdBox;
+	sunLight.shadow.mapSize.width = 2048;
+	sunLight.shadow.mapSize.height = 2048;
 	sunLight.shadow.bias = - 0.0005; // ### WebGPU
-	sunLight.target.position.set(0,0,0);
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
