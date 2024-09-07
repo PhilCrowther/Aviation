@@ -10,7 +10,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 -->
 
 <head>
-<title>FMod: FM2 Ocean GPU r167</title>
+<title>FMod: FM2 Ocean GPU r168</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_fm2.css">
 </head>
@@ -49,9 +49,9 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.167.1/examples/jsm/",
+			"three": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -231,7 +231,8 @@ let ImgSiz = 512;			// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
-let	context = canvas.getContext('2d');
+//let context = canvas.getContext('2d');
+let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
 //- Constants
@@ -652,17 +653,17 @@ function WaitScreen() {
 
 function initAll() {
 	initSkyBox();
-	waves = new Ocean(renderer,wav_);	// Init Ocean
+	waves = new Ocean(renderer,wav_); // Init Ocean
 	grd_.Dsp = wav_.Dsp;
 	grd_.Nrm = wav_.Nrm;
 	grd_.NMS = wav_.NMS;
 	grids = new GrdMap(grd_,scene);
 	if (SnFFlg) initSFlare(scene,camera,SnF_); // SunFlare
 	// Other
-	initCamera(camera,cam_);			// position camera
-	prntHUDval();						// print HUD values
+	initCamera(camera,cam_);		// position camera
+	prntHUDval();					// print HUD values
 	// Show stats
-	if (StatOn) {						// show stats
+	if (StatOn) {					// show stats
 		StatOn = new Stats({
 			precision: 3,
 			horizontal: false
@@ -702,7 +703,7 @@ function rendAll() {
 		SnF_.cam.copy(cam_.llz); // Camera LLZ		
 		moveSFlare(SnF_);	// SunFlare
 	}
-	renderer.renderAsync(scene, camera);	// ## WebGOU requires Async
+	renderer.renderAsync(scene, camera);	// ### WebGPU requires Async
 }
 
 //= SKY BOX ====================================================================
