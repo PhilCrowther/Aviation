@@ -342,18 +342,18 @@ let	maxAnisotropy = 16;		// ### WebGPU
 let ambLight = new THREE.AmbientLight(SunCol, 1.0);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
-	sunLight.position.copy(SunPos).normalize();	// ### ok with r168
+	sunLight.position.copy(SunPos).normalize();	
 	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = 0.1;
-	sunLight.shadow.camera.far = 500;
-	sunLight.shadow.camera.right = 17;
-	sunLight.shadow.camera.left = - 17;
-	sunLight.shadow.camera.top	= 17;
-	sunLight.shadow.camera.bottom = - 17;
-	sunLight.shadow.mapSize.width = 2048;	// ### r168
-	sunLight.shadow.mapSize.height = 2048;	// ### r168
-	sunLight.shadow.radius = 1;
-	sunLight.shadow.bias = - 0.0001;		// best
+	sunLight.shadow.mapSize.width = 2048;
+	sunLight.shadow.mapSize.height = 2048;
+	sunLight.shadow.camera.near = 0.001;	
+	sunLight.shadow.camera.far = SunDst+ShdBox;
+	sunLight.shadow.camera.left = -ShdBox;
+	sunLight.shadow.camera.right = ShdBox;
+	sunLight.shadow.camera.top = ShdBox;
+	sunLight.shadow.camera.bottom = -ShdBox;
+	sunLight.shadow.bias = - 0.0005; // ### WebGPU
+	sunLight.target.position.set(0,0,0);
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
