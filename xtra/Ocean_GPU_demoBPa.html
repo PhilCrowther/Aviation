@@ -158,11 +158,11 @@ function loadAll() {
 
 /*= 1 INITIALIZE =============================================================*/
 function initAll() {
-	initOceans(renderer,wav_);			// Initialize Ocean
+	initOceans(renderer,wav_);				// Initialize Ocean
 	// Show stats
-	if (StatOn) {						// show stats
+	if (StatOn) {							// show stats
 		StatOn = new Stats();
-		StatOn.setMode(0);				// FPS only
+		StatOn.setMode(0);					// FPS only
 		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
 		container.appendChild(StatOn.dom);
 	}
@@ -177,11 +177,11 @@ function rendAll() {
 		if(camera.position.y < 0.0) {
 			camera.position.y = 2.0;
 		}
-		waves.update(); 				// Move Ocean
-		controls.update();				// Controls
-		if (StatOn) StatOn.update();	// Stats
+		waves.update(); 					// Move Ocean
+		controls.update();					// Controls
+		if (StatOn) StatOn.update();		// Stats
 	}
-	renderer.render(scene, camera);		// Render
+	renderer.renderAsync(scene, camera);	// Render
 }
 
 /*= SKY BOX ==================================================================*/

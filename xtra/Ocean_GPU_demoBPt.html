@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="en">
 
-<title>Ocean GPU DemoBP</title>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Ocean GPU DemoBPa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <style>
 body {
@@ -22,7 +24,8 @@ body {
 		"imports": {
 			"three": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
 			"three/tsl": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/"
+			"three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
 </script>
@@ -30,11 +33,12 @@ body {
 <script type="module">
 
 import * as THREE from "three";
-import {OrbitControls} from "three/addons/controls/OrbitControls.js";
-import Stats from "three/addons/libs/stats.module.js";
+//import Stats from "three/addons/libs/stats.module.js";
 import {color,texture,normalMap,float,vec2,attribute,positionLocal,MeshStandardNodeMaterial,
 		textureStore,wgslFn,instanceIndex,code,uniform,timerLocal
 } from 'three/tsl';
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import Stats from 'stats-gl';
 // Custom Modules
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
@@ -128,9 +132,6 @@ let sunLight = new THREE.DirectionalLight(SunCol, 3.0);
 	scene.add(sunLight);
 //- Controls
 let	controls = new OrbitControls(camera, renderer.domElement);
-//- Clock
-let clock = new THREE.Clock();
-let oldTim, nowTim, difTim = 0;
 //- Inputs
 	document.addEventListener("keydown", onDocumentKeyDown, false);
 //	document.addEventListener("keyup", onDocumentKeyUp, false);
@@ -159,12 +160,15 @@ function loadAll() {
 
 /*= 1 INITIALIZE =============================================================*/
 function initAll() {
-	initOceans(renderer,wav_);			// Initialize Ocean
+	initOceans(renderer,wav_);				// Initialize Ocean
 	// Show stats
-	if (StatOn) {						// show stats
-		StatOn = new Stats();
-		StatOn.setMode(0);				// FPS only
-		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+	if (StatOn) {							// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(StatOn.dom);
 	}
 	LodFlg = 1;
@@ -178,11 +182,11 @@ function rendAll() {
 		if(camera.position.y < 0.0) {
 			camera.position.y = 2.0;
 		}
-		waves.render(); 				// Render Ocean
-		controls.update();				// Controls
-		if (StatOn) StatOn.update();	// Stats
+		waves.update(); 					// Move Ocean
+		controls.update();					// Controls
+		if (StatOn) StatOn.update();		// Stats
 	}
-	renderer.render(scene, camera);		// Render
+	renderer.renderAsync(scene, camera);	// ### WebGPU requires Async
 }
 
 /*= SKY BOX ==================================================================*/
