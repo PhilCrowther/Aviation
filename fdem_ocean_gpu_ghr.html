@@ -44,7 +44,8 @@ A WebGPU demo of the GrdWtr4a, Ocean4a and SunFlare2 modules.
 		"imports": {
 			"three": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
 			"three/tsl": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/"
+			"three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
 </script>
@@ -55,7 +56,7 @@ import {MeshBasicNodeMaterial,MeshStandardNodeMaterial,SpriteNodeMaterial,
 		color,texture,timerLocal,range,positionLocal,uv,mix,normalMap,
 		rotateUV} from 'three/tsl';		// ### r168 rotateUV 
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
-import Stats from "three/addons/libs/stats.module.js";
+import Stats from 'stats-gl';
 // Custom Modules
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
@@ -351,7 +352,7 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.shadow.camera.bottom = - 17;
 	sunLight.shadow.mapSize.width = 2048;	// ### r168
 	sunLight.shadow.mapSize.height = 2048;	// ### r168
-	sunLight.shadow.radius = 10;
+	sunLight.shadow.radius = 1;
 	sunLight.shadow.bias = - 0.0001;		// best
 	scene.add(sunLight);
 //- Camera
@@ -447,10 +448,13 @@ function initAll() {
 	initJetExh();
 	prntHUDval(air_);
 	// Show stats
-	if (StatOn) {			// show stats
-		StatOn = new Stats();
-		StatOn.setMode(0);	// FPS only
-		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+	if (StatOn) {						// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(StatOn.dom);
 	}
 	LodFlg = 1;
