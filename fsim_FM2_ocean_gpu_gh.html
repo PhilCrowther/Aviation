@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Sep 2024
+Version dated 7 Sep 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -56,7 +56,8 @@ A flight simulation of an animated airplane model over an animated ocean using W
 		"imports": {
 			"three": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
 			"three/tsl": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.167.1/examples/jsm/"
+			"three/addons/": "https://unpkg.com/three@0.167.1/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
 </script>
@@ -68,8 +69,8 @@ import * as THREE from "three";
 import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,SpriteNodeMaterial,
 		color,texture,attribute,timerLocal,range,positionLocal,uv,mix
 } from 'three/tsl';
-import Stats from "three/addons/libs/stats.module.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import Stats from 'stats-gl';
 // Special Modules
 import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3atp.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
@@ -112,14 +113,9 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 //	* Add Exhaust Flashes
 //	* Convert waving flag to GPU shader
 //-	Flight Module:
-//	* Fix Flap Lift 
 //	* Add change in Air Density
 //	* Add lag to tail leaving/returning to ground
 
-//= NOTICE =====================================================================
-	console.log("USES AUTOPILOT FLIGHT MODULE");
-	console.log("Must add variables to air_");
-	console.log("rev 240829a");
 //= INPUTS =====================================================================
 //- CAMERA ---------------------------------------------------------------------
 let CamSel = 1;					// Camera Seletion (0 = External; 1 = Internal)
@@ -252,7 +248,7 @@ let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
-let	context = canvas.getContext('2d');
+let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
 let WavMax = 5;					// Maximum wave height (set height of outer waves)
@@ -705,15 +701,14 @@ let ambLight = new THREE.AmbientLight(SunCol, 0.2);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.position.copy(SunPos).normalize();
 	sunLight.castShadow = true;
-	sunLight.target.position.set(0,0,0);
-	sunLight.shadow.mapSize.width = 8192;
-	sunLight.shadow.mapSize.height = 8192;
-	sunLight.shadow.camera.near = 0.001;
-	sunLight.shadow.camera.far = LgtDst+LgtBox;
 	sunLight.shadow.camera.left = -LgtBox;
 	sunLight.shadow.camera.right = LgtBox;
 	sunLight.shadow.camera.top = LgtBox;
 	sunLight.shadow.camera.bottom = -LgtBox;
+	sunLight.shadow.camera.near = 0.001;
+	sunLight.shadow.camera.far = LgtDst+LgtBox;
+	sunLight.shadow.mapSize.width = 8192;
+	sunLight.shadow.mapSize.height = 8192;
 	sunLight.shadow.bias = -0.00005;	// Default = 0 - causes lines;
 //	sunLight.shadow.bias = -0.0001;		// best
 	scene.add(sunLight);
@@ -958,9 +953,12 @@ function initAll() {
 	InfoText();
 	// Show stats
 	if (StatOn) {				// show stats
-		StatOn = new Stats();
-		StatOn.setMode(0);		// FPS only
-		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(StatOn.dom);
 	}
 	LodFlg = 1;
@@ -1004,7 +1002,7 @@ function rendAll() {
 		prntHUDval();			// print HUD values
 		if (StatOn) StatOn.update(); // update stats
 	}
-	renderer.render(scene, camera);
+	renderer.renderAsync(scene, camera);
 }
 
 //= SKYBOX =====================================================================
