@@ -4,9 +4,9 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Sep 2024
+Version dated 8 Sep 2024
 
-A WebGPU demo of the GrdWtr4a, Ocean4a and SunFlare2 modules.
+A WebGPU demo of the GrdWtr4a, Ocean4t and SunFlare2 modules.
 -->
 
 <head>
@@ -333,9 +333,6 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
     renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
-	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.autoUpdate = true;
-	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.BasicShadowMap;
 	document.body.appendChild(renderer.domElement);
 let	maxAnisotropy = 16;		// ### WebGPU
@@ -353,7 +350,7 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.shadow.camera.far = ShdDst+ShdBox;
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.bias = - 0.0005; // ### WebGPU
+	sunLight.shadow.bias = -0.00001; // ### WebGPU
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -436,19 +433,19 @@ function loadAll() {
 //= 1 INITIALIZE (called by loading manager) ===================================
 function initAll() {
 	initCamera(camera,cam_);
-	initSkyBox();			// Sky, Fog and Sun
+	initSkyBox();							// Sky, Fog and Sun
 	if (SnFFlg) sunflare = new SunFlare(scene,camera,SnF_);	// SunFlare
-	waves = new Ocean(renderer,wav_);	// Initialize Ocean
+	waves = new Ocean(renderer,wav_);		// Initialize Ocean
 	grd_.Dsp = wav_.Dsp;
 	grd_.Nrm = wav_.Nrm;
 	grd_.NMS = wav_.NMS;
 	grd_.MSP.copy(air_.MapSPS);
 	grids = new GrdMap(grd_,scene);
-	initAirObj(air_);		// Load Aircraft
+	initAirObj(air_);						// Load Aircraft
 	initJetExh();
 	prntHUDval(air_);
 	// Show stats
-	if (StatOn) {						// show stats
+	if (StatOn) {							// show stats
 		StatOn = new Stats({
 			precision: 3,
 			horizontal: false
@@ -466,18 +463,18 @@ function rendAll() {
 		// Move Things
 		moveAirObj(air_);
 		grd_.MSP.copy(air_.MapSPS);
-		waves.update(); 	// Move Ocean
-		grids.update();		// Move Grids
-		if (StatOn) StatOn.update(); // update stats
+		waves.update(); 					// Move Ocean
+		grids.update();						// Move Grids
+		if (StatOn) StatOn.update();		// update stats
 	}
 	prntHUDval(air_);
 	moveCamera(camera,cam_);
-	if (SnFFlg) {			// SunFlare
-		SnF_.asp = CamAsp;	// Camera Aspect
-		SnF_.cam.copy(cam_.llz); // Camera LLZ		
-		sunflare.update(SnF_);	// SunFlare
+	if (SnFFlg) {							// SunFlare
+		SnF_.asp = CamAsp;					// Camera Aspect
+		SnF_.cam.copy(cam_.llz);			// Camera LLZ		
+		sunflare.update(SnF_);				// SunFlare
 	}
-	renderer.renderAsync(scene, camera); // Render
+	renderer.renderAsync(scene, camera);	// ### WebGPU requires Async
 }
 
 //= SKY BOX ====================================================================
