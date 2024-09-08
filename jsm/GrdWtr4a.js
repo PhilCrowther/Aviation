@@ -100,7 +100,7 @@ constructor(grd_,scene) {
 		Est:	0,					// Max East Square (updated)
 		Num:	0,					// Size of array (computed)
 		Ptr:	[0],				// Ground Address
-		Shd:	1,					// Shadow enabled
+		Shd:	0,					// Shadow enabled
 		RCF:	grd_.Grx[0].RCs/grd_.Grx[0].Stp,	// Cut-Out Area (4x4)
 		NSA:	0,					// Shared North/South Adjustment (updated)
 		EWA:	0,					// Shared East/West Adjustment (updated)
@@ -118,7 +118,7 @@ constructor(grd_,scene) {
 		Est:	0,					// Max East Square (updated)
 		Num:	0,					// Size of array (computed)
 		Ptr:	[0],				// Ground Address
-		Shd:	1,					// Shadow enabled
+		Shd:	0,					// Shadow enabled
 		RCF:	grd_.Grx[1].RCs/grd_.Grx[1].Stp,	// Cut-Out Area (16x16)
 		NSA:	0,					// Shared North/South Adjustment (updated)
 		EWA:	0,					// Shared East/West Adjustment (updated)
