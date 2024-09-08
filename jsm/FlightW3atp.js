@@ -85,7 +85,6 @@ let typ_ = 0;
 //= INITIALIZE VALUES ==========================================================
 
 //- Initialize Rotation and Vectors --------------------------------------------
-	console.log("7b");
 let Flight = function (air_) {				// Only works with Air0 now
 	// Basic Flight Data (SI Adjustments)
 	typ_ = idx[air_.AirIDN];				// Store address of Aircraft Type
