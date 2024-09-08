@@ -85,7 +85,7 @@ let typ_ = 0;
 //= INITIALIZE VALUES ==========================================================
 
 //- Initialize Rotation and Vectors --------------------------------------------
-	console.log("7a");
+	console.log("7b");
 let Flight = function (air_) {				// Only works with Air0 now
 	// Basic Flight Data (SI Adjustments)
 	typ_ = idx[air_.AirIDN];				// Store address of Aircraft Type
@@ -180,15 +180,16 @@ Flight.update = function (air_) {
 	air_.MaxBnk = Math.acos(air_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
 	// a. COMPUTE LIFT ROTATION ................................................
 	// Lift = DynPres*typ_.WingArea*Cl
-	if (air_.AutoOn) {	// ### ATP (err)
+	let CfLftT = air_.CfLift+air_.CfFlap;	// Default
+	if (air_.AutoOn) {
 		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*air_.Weight);
 		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
 		air_.CfLift = air_.CfLift+air_.CfLDif;
+		CfLftT = air_.CfLift;
 	}
-	else {air_.CfLift = air_.CfLift+air_.CfFlap;}
+	// Limit Range of Mouse and AutoPilot
 	if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 	if (air_.CfLift < -air_.CfLMax) air_.CfLift = -air_.CfLMax;
-	let CfLftT = air_.CfLift;
 	//
 	let ACLftF = CfLftT*QSTval;				// Lift[ft-lbs] - can be positive or negative
 	let ACLift = ACLftF*FrcAcc;				// Acceleration (DLT)
