@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Sep 2024
+Version dated 4 Sep 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -707,8 +707,8 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.shadow.camera.bottom = -LgtBox;
 	sunLight.shadow.camera.near = 0.001;
 	sunLight.shadow.camera.far = LgtDst+LgtBox;
-	sunLight.shadow.mapSize.width = 8192;
-	sunLight.shadow.mapSize.height = 8192;
+	sunLight.shadow.mapSize.width = 2048;
+	sunLight.shadow.mapSize.height = 2048;
 	sunLight.shadow.bias = -0.00005;	// Default = 0 - causes lines;
 //	sunLight.shadow.bias = -0.0001;		// best
 	scene.add(sunLight);
@@ -964,7 +964,7 @@ function initAll() {
 	LodFlg = 1;
 }
 
-//= 2 RENDER ===================//==============================================
+//= 2 RENDER ===================================================================
 
 function rendAll() {
 	// This block runs while resources are loading.
@@ -1002,7 +1002,7 @@ function rendAll() {
 		prntHUDval();			// print HUD values
 		if (StatOn) StatOn.update(); // update stats
 	}
-	renderer.renderAsync(scene, camera);
+	renderer.renderAsync(scene, camera);	// ### WebGOU requires Async
 }
 
 //= SKYBOX =====================================================================
