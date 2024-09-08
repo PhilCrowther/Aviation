@@ -131,8 +131,8 @@ constructor(grd_,scene) {
 	this._init1GrMap(this.grd_.Grx[2], grd_,this.scene);
 }
 
-//function initGeoMat(grd_,scene) {		// ### ERR
-_initGeoMat(grd_,scene) {	// ### ERR
+_initGeoMat(grd_,scene) {
+	console.log("8a");
 // Define Geometries and Materials Referenced in grd_.Geo and grd_.Mat
 	// Grid0 ------------------------------------------------------------------
 	// For Grid0, using geometry = siz*stp since flip over stp at a time
