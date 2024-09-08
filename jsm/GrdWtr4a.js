@@ -100,7 +100,7 @@ constructor(grd_,scene) {
 		Est:	0,					// Max East Square (updated)
 		Num:	0,					// Size of array (computed)
 		Ptr:	[0],				// Ground Address
-		Shd:	0,					// Shadow enabled
+		Shd:	0,					// Shadow enabled ### off for outergrids
 		RCF:	grd_.Grx[0].RCs/grd_.Grx[0].Stp,	// Cut-Out Area (4x4)
 		NSA:	0,					// Shared North/South Adjustment (updated)
 		EWA:	0,					// Shared East/West Adjustment (updated)
@@ -118,7 +118,7 @@ constructor(grd_,scene) {
 		Est:	0,					// Max East Square (updated)
 		Num:	0,					// Size of array (computed)
 		Ptr:	[0],				// Ground Address
-		Shd:	0,					// Shadow enabled
+		Shd:	0,					// Shadow enabled ### off for outergrids
 		RCF:	grd_.Grx[1].RCs/grd_.Grx[1].Stp,	// Cut-Out Area (16x16)
 		NSA:	0,					// Shared North/South Adjustment (updated)
 		EWA:	0,					// Shared East/West Adjustment (updated)
@@ -132,7 +132,6 @@ constructor(grd_,scene) {
 }
 
 _initGeoMat(grd_,scene) {
-	console.log("8a");
 // Define Geometries and Materials Referenced in grd_.Geo and grd_.Mat
 	// Grid0 ------------------------------------------------------------------
 	// For Grid0, using geometry = siz*stp since flip over stp at a time
@@ -394,13 +393,14 @@ _move1GrMap(grx_, grd_) {
 	}
 }
 
-}
+}	// END OF MODULE
 
 export {GrdMap};
 
-/*= REVISIONS ================================================================*/
+//= REVISIONS ==================================================================
 //- 230530	Created this simplified version of GrdMap by moving Grid Definitions 
 //			and routines for creating Geometries and Materials into this Module
 //- 240108	This version 2 initalizes large-sized diffuse and roughness maps
 //			grx_ changed to grd_ and, in subroutines, grx_.Grd[] to grd_.Grx[]
 //- 240903	Converted to Class
+//- 240908	Turned off shadows for outer grids (due to changes made by r168)
