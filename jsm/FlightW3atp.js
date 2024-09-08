@@ -1,6 +1,6 @@
 /*
  * Flight.js
- * Version 3 (vers 24.04.24)
+ * Version 3atp (vers 24.09.07)
  * Copyright 2017-24, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -429,4 +429,5 @@ export {Flight, Mod360, PoM360, MaxVal, rotLLD, makMsh};
  * 240310:  Deleted "shared" variables
  * 240420:	Converted to SI units
  * 240424:	Changed all air_ variables to 8 character names
+ * 240824:	Added AutoPilot function
 */
