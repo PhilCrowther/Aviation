@@ -84,10 +84,9 @@ let typ_ = 0;
 
 //= INITIALIZE VALUES ==========================================================
 
-//  Initialize Rotation and Vectors*/
+//- Initialize Rotation and Vectors --------------------------------------------
+	console.log("7a");
 let Flight = function (air_) {				// Only works with Air0 now
-	console.log("AUTOPILOT VERSION:");
-	console.log("Add items to air_ variable in main program");
 	// Basic Flight Data (SI Adjustments)
 	typ_ = idx[air_.AirIDN];				// Store address of Aircraft Type
 	// typ_ variable saved to air_
@@ -125,7 +124,7 @@ let Flight = function (air_) {				// Only works with Air0 now
 		air_.MapPos.y = typ_.Ax2CGD*Math.cos(XRad)+typ_.WheelR+air_.GrdZed;	// Set Height
 	}
 	// Compute Vectors
-	/* If Starting in Flight, Compute Starting air_.CfLift and Power for Level Flight and Given Bank */
+	// If Starting in Flight, Compute Starting air_.CfLift and Power for Level Flight and Given Bank
 	if (air_.GrdFlg == 0) {
 		// Coefficient of Lift for Level Flight
 //		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.cos(air_.AirRot.z*DegRad));		
@@ -186,9 +185,9 @@ Flight.update = function (air_) {
 		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
 		air_.CfLift = air_.CfLift+air_.CfLDif;
 	}
+	else {air_.CfLift = air_.CfLift+air_.CfFlap;}
 	if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 	if (air_.CfLift < -air_.CfLMax) air_.CfLift = -air_.CfLMax;
-	if (air_.AutoOn == 0) air_.CfLift = air_.CfLift+air_.CfFlap;
 	let CfLftT = air_.CfLift;
 	//
 	let ACLftF = CfLftT*QSTval;				// Lift[ft-lbs] - can be positive or negative
