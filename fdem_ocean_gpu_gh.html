@@ -10,7 +10,7 @@ A WebGPU demo of the GrdWtr4a, Ocean4t and SunFlare2 modules.
 -->
 
 <head>
-<title>FDem: Ocean GPU r167</title>
+<title>FDem: Ocean GPU r168</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
@@ -42,9 +42,9 @@ A WebGPU demo of the GrdWtr4a, Ocean4t and SunFlare2 modules.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.167.1/examples/jsm/",
+			"three": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -53,9 +53,8 @@ A WebGPU demo of the GrdWtr4a, Ocean4t and SunFlare2 modules.
 <script type="module">
 import * as THREE from "three";
 import {MeshBasicNodeMaterial,MeshStandardNodeMaterial,SpriteNodeMaterial,
-		color,texture,timerLocal,range,positionLocal,uv,mix,
-		normalMap} from 'three/tsl';
-
+		color,texture,timerLocal,range,positionLocal,uv,mix,normalMap,
+		rotateUV} from 'three/tsl';		// ### r168 rotateUV 
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import Stats from 'stats-gl';
 // Custom Modules
@@ -173,7 +172,7 @@ let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
 //let context = canvas.getContext('2d');
-let context = canvas.getContext('2d',{willReadFrequently: true});
+let context = canvas.getContext('2d',{ willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
 //- Constants
@@ -617,6 +616,7 @@ function initAirObj(air_) {
 	mesh.rotation.y = Math.PI;
 	mesh.position.z = 15;
 	mesh.castShadow = true;
+	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// Wing
 	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
@@ -724,7 +724,7 @@ function loadJetExh() {
 //- Init Jet Exhaust ----------------------------------------------------------
 function initJetExh() {
 	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
-	let textureNode = texture(SmkMap, uv().rotateUV(timer.mul(rotateRange)));
+	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange)));	// ### r168
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
