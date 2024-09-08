@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Sep 2024
+Version dated 8 Sep 2024
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
 
 <head>
-<title>FMod: FM2 Ocean GPU r167</title>
+<title>FMod: FM2 Ocean GPU r168</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_fm2.css">
 </head>
@@ -49,9 +49,9 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.167.1/examples/jsm/",
+			"three": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -231,7 +231,7 @@ let ImgSiz = 512;			// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
-let	context = canvas.getContext('2d');
+let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
 //- Constants
@@ -506,7 +506,6 @@ let K_Soun = 83;			// Toggle Sound (s)
 let K_Paws = 80;			// Pause (p)
 
 //= STANDARD SETUP =============================================================
-//	document.body.appendChild(container);	// required?
 //- Display
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x000000);
@@ -514,27 +513,30 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
-	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.autoUpdate = true;
-	renderer.receiveShadow = true;	
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
-let	maxAnisotropy = 16;									// ### WebGPU
+let	maxAnisotropy = 16;										// ### WebGPU
 //- Light
 let ambLight = new THREE.AmbientLight(SunCol, 0.5);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
-	sunLight.position.copy(SunPos).normalize();	
+//	sunLight.position.copy(SunPos).normalize();
+	sunLight.position.copy(SunPos);							// ### SunDst
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.left = -ShdBox;
 	sunLight.shadow.camera.right = ShdBox;
 	sunLight.shadow.camera.top = ShdBox;
 	sunLight.shadow.camera.bottom = -ShdBox;
-	sunLight.shadow.camera.near = 0.1;	
-	sunLight.shadow.camera.far = ShdDst+ShdBox;
+	sunLight.shadow.camera.near = SunDst-ShdBox;			// ### SunDst	
+	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;		// ### SunDst
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.bias = - 0.0005; // ### WebGPU
+	// Bias ### WebGPU
+//	sunLight.shadow.bias = -0.0005;		// No Shadow
+//	sunLight.shadow.bias = -0.0002;		// Gap
+//	sunLight.shadow.bias = -0.0001;		// RWing Gap
+//	sunLight.shadow.bias = -0.00005;	// RTail Gap
+	sunLight.shadow.bias = -0.00001;	// LWing Moire
+	//
 	scene.add(sunLight);
 //- Sounds
 let	listener = new THREE.AudioListener();
@@ -652,17 +654,17 @@ function WaitScreen() {
 
 function initAll() {
 	initSkyBox();
-	waves = new Ocean(renderer,wav_);	// Init Ocean
+	waves = new Ocean(renderer,wav_); // Init Ocean
 	grd_.Dsp = wav_.Dsp;
 	grd_.Nrm = wav_.Nrm;
 	grd_.NMS = wav_.NMS;
 	grids = new GrdMap(grd_,scene);
 	if (SnFFlg) initSFlare(scene,camera,SnF_); // SunFlare
 	// Other
-	initCamera(camera,cam_);			// position camera
-	prntHUDval();						// print HUD values
+	initCamera(camera,cam_);		// position camera
+	prntHUDval();					// print HUD values
 	// Show stats
-	if (StatOn) {						// show stats
+	if (StatOn) {					// show stats
 		StatOn = new Stats({
 			precision: 3,
 			horizontal: false
@@ -702,7 +704,7 @@ function rendAll() {
 		SnF_.cam.copy(cam_.llz); // Camera LLZ		
 		moveSFlare(SnF_);	// SunFlare
 	}
-	renderer.renderAsync(scene, camera);	// ## WebGOU requires Async
+	renderer.renderAsync(scene, camera);	// ### WebGPU requires Async
 }
 
 //= SKY BOX ====================================================================
