@@ -181,7 +181,6 @@ Flight.update = function (air_) {
 	air_.MaxBnk = Math.acos(air_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
 	// a. COMPUTE LIFT ROTATION ................................................
 	// Lift = DynPres*typ_.WingArea*Cl
-	air_.CfLift = air_.CfLift+air_.CfFlap;
 	if (air_.AutoOn) {	// ### ATP (err)
 		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*air_.Weight);
 		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
@@ -189,6 +188,7 @@ Flight.update = function (air_) {
 	}
 	if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 	if (air_.CfLift < -air_.CfLMax) air_.CfLift = -air_.CfLMax;
+	if (air_.AutoOn == 0) air_.CfLift = air_.CfLift+air_.CfFlap;
 	let CfLftT = air_.CfLift;
 	//
 	let ACLftF = CfLftT*QSTval;				// Lift[ft-lbs] - can be positive or negative
