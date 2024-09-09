@@ -155,12 +155,7 @@ let SnF_ = {
 		asp: 0,				// Camera Aspect
 	}
 
-//= GRID DATA ==================================================================
-let GrdSiz = 3200;			// Smallest Grid Square (3200 meters = 2 miles)
-let GrdRes = 512;
-let GrdSeg = 256;			// Segments per Plane (256 = OK, 512 = too much)
-
-//= ANIMATED OCEAN =============================================================
+//= GRDWTR TEXTURES ============================================================
 let WtrCol = 0x1060ff;		// Water (Nodes)
 //- Textures
 let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
@@ -174,34 +169,16 @@ let canvas = document.createElement("canvas");
 let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
-//- Constants
-let WndSpd = 20.0;
-let WndHdg = 0.0;
-//let Choppy = 1.6;
-let Choppy = 2.0;			// ### Ocean_GPU
 let WavMax = 5;				// Maximum wave height (set height of outer waves)
-//- Variables
-let waves = 0;
-let wav_ = {
-		// Sources
-		Res: GrdRes,		// Resolution - segments per square (default = 512)
-		Siz: GrdSiz,		// Size of Smallest Square = default = 3200m = 2 miles
-		WSp: WndSpd,		// Wind Speed
-		WHd: WndHdg,		// Wind Heading
-		Chp: Choppy,		// default = 1
-		// Animated Maps
-		Dsp: 0,				// The Displacement Map
-		Nrm: 0,				// The Normal Map
-		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
-	};
-// External Values
-let wavSpd = 1;				// Animation speed - use in main program (lower is faster)
 
-//= GRID MODULE ================================================================
+//= GRDWTR MODULE ==============================================================
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
+let GrdSiz = 3200;			// Smallest Grid Square (3200 meters = 2 miles)
+let GrdRes = 512;
+let GrdSeg = 256;			// Segments per Plane (256 = OK, 512 = too much)
 let grids = 0;
 let grd_ = {
 		MSP: new THREE.Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
@@ -228,6 +205,35 @@ let grd_ = {
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
+
+//= OCEAN MODULE ===============================================================
+//- Constants
+let WndSpd = 20.0;
+let WndHdg = 0.0;
+//let Choppy = 1.6;
+let Choppy = 2.0;			// ### Ocean_GPU
+let AnmSpd = 1;				// Animation Speed (can vary with GrdSiz)
+//- Variables
+let waves = 0;
+let wav_ = {
+		// Sources
+		Res: GrdRes,		// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,		// Size of Smallest Square = default = 3200m = 2 miles
+		WSp: WndSpd,		// Wind Speed
+		WHd: WndHdg,		// Wind Heading
+		Chp: Choppy,		// default = 1
+		// Animated Maps
+		Dsp: 0,				// The Displacement Map
+		Nrm: 0,				// The Normal Map
+		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
+		Spd: AnmSpd
+	};
+
+//= GRID MODULE ================================================================
+//	This ocean map has 3 nested grids of squares.
+//	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
+//	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
+//	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
 
 //= AIROBJ ===================================================================
 let air_ = {
