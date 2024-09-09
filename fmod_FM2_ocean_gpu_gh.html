@@ -74,6 +74,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 //= NOTES ======================================================================
 //	* Fix Horizontal Tail Angle
 //	* Improve Shadows
+//	* Colors seem different for middle and outer grids
 
 //= STARTING VALUES ============================================================
 //- MY CAMERA ------------------------------------------------------------------
@@ -220,7 +221,6 @@ let GrdRes = 512;
 let GrdSeg = 256;			// Segments per Plane (256 = OK, 512 = too much)
 
 //= ANIMATED OCEAN =============================================================
-//let WtrCol = 0x081080;		// Water (Navy) ### Ocean_GPU
 let WtrCol = 0x1060ff;		// Water (Nodes)
 //- Ocean
 let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
@@ -237,8 +237,8 @@ let context = canvas.getContext('2d',{willReadFrequently: true});
 //- Constants
 let WndSpd = 20.0;
 let WndHdg = 0.0;
-//let Choppy = 1.6;
-let Choppy = 2.0;			// ### Ocean_GPU
+let Choppy = 1.6;
+//let Choppy = 2.0;			// ### Ocean_GPU
 let WavMax = 5;				// Maximum wave height (set height of outer waves)
 //- Variables
 let waves = 0;
@@ -269,7 +269,8 @@ let grd_ = {
 		Seg: GrdSeg,		// Segments for smallest square
 		Grx: [],			// Index of Grids (0-2)
 		Geo: [],			// Master Index of Basic Geometries
-		Col: WtrCol,		// Color
+//		Col: WtrCol,		// Color
+		Col: new THREE.Color(WtrCol), // Color
 		Dsp: 0,				// Grid 0 Displacement Map (from Ocean)
 		Nrm: 0,				// Grid 0-1 Normal Map (from Ocean)
 		NMS: new THREE.Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
@@ -509,17 +510,20 @@ let K_Paws = 80;			// Pause (p)
 //- Display
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x000000);
+//- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
+	// Shadow
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	// ToneMapping (tends to accentuate tiling)
 	document.body.appendChild(renderer.domElement);
 let	maxAnisotropy = 16;										// ### WebGPU
 //- Light
 let ambLight = new THREE.AmbientLight(SunCol, 0.5);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
-//	sunLight.position.copy(SunPos).normalize();
 	sunLight.position.copy(SunPos);							// ### SunDst
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.left = -ShdBox;
@@ -530,6 +534,7 @@ let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
 	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;		// ### SunDst
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
+//	sunLight.shadow.radius = 1;				// > 1 = blur
 	// Bias ### WebGPU
 //	sunLight.shadow.bias = -0.0005;		// No Shadow
 //	sunLight.shadow.bias = -0.0002;		// Gap
@@ -870,7 +875,7 @@ function loadGeoMat(grd_) {
 	});
 }
 
-//= MY AIRCRAFT ================================================================
+//= AIROBJ =====================================================================
 
 function loadAirObj() {
 	loadAirExt();
