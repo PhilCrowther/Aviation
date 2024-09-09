@@ -72,8 +72,7 @@ import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 //= NOTES ======================================================================
-//	* Fix Horizontal Tail Angle
-//	* Improve Shadows
+//	* Improve Shadows (bias is key)
 //	* Colors seem different for middle and outer grids
 
 //= STARTING VALUES ============================================================
@@ -325,7 +324,7 @@ let air_ = {
 		BrkVal: 0,			// Brakes
 		GrdZed: 0,			// Ground level (default)
 		GrdFlg: 0,			// Ground Flag (1 = on ground)
-		ACPAdj: 0,			// Aircraft pitch adjustment
+		ACPAdj: -2.5,		// Aircraft pitch adjustment [### anm_ ad])
 		MovFlg: 0,			// If Sitting on a Moving Object
 		// Fixed Values Obtained from Flight
 		CfLMax: 0,			// Maximum Coefficient of Lift
@@ -999,14 +998,14 @@ function moveAirObj() {
 	air_.MapPos.set(air_.MapPos.x+air_.MapSpd.x,air_.MapPos.y+air_.MapSpd.y,air_.MapPos.z+air_.MapSpd.z); // Map Position (meters)
 	air_.MapSPS.set(air_.MapSpd.x,air_.MapPos.y,air_.MapSpd.z);	// data for grids in meters
 	// Run Animtions
-	if (cam_.flg) {
-		//anm_.stkpit = air_.MosYDf;		// Joystick pitch animation
-		//anm_.stkbnk = air_.MosXDf;		// Joystick bank animation
-		anm_.stkpit = InpKey.x*100;		// Joystick pitch animation
-		anm_.stkbnk = InpKey.z*100;		// Joystick bank animation
-		moveACanimV(air_,vxr_,anm_,cam_.lld);	// VC
+	if (cam_.flg) {						// Internal View
+		// Right Arm Bank
+		anm_.stkbcm = 0;				// Reset Cumulative	
+		anm_.stkbnk = 180+InpKey.z*200;	// Joystick bank animation (range = 0 to 360)
+		//
+		moveACanimV(air_,vxr_,anm_,cam_.lld); // VC
 	}	
-	else moveACanimX(air_,mxr_,anm_);				// External
+	else moveACanimX(air_,mxr_,anm_);	// External
 }
 
 //= SOUNDS =====================================================================
