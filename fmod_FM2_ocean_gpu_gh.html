@@ -120,7 +120,6 @@ let RefDst = 25;			// Reference distance for Positional Sound
 //-	Flags
 let PawsOn = 0;				// Pause
 let LodFlg = 0;
-
 //-	Stats
 let StatOn = 1;				// Stats ((0 = off, 1 = on)
 //-	Altitude Adjustment
@@ -247,11 +246,10 @@ let grd_ = {
 		Seg: GrdSeg,		// Segments for smallest square
 		Grx: [],			// Index of Grids (0-2)
 		Geo: [],			// Master Index of Basic Geometries
-//		Col: WtrCol,		// Color
 		Col: new THREE.Color(WtrCol), // Color
 		Dsp: 0,				// Grid 0 Displacement Map (from Ocean)
 		Nrm: 0,				// Grid 0-1 Normal Map (from Ocean)
-		NMS: new THREE.Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
+		NMS: new THREE.Vector2(), // Grid 0-1 Normal Map Scale (from Ocean)
 		Df0: [],			// Grid 0-1 Diffuse Maps
 		Rf0: [],			// Grid 0-1 Roughness Maps
 		Mt0: [],			// Grid 0 Materials
@@ -265,7 +263,6 @@ let grd_ = {
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and geometry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
-//	grd_.MSP.copy(BegPos);	// Init altitude (meters)
 
 //= OCEAN MODULE ===============================================================
 //- Constants
@@ -285,7 +282,7 @@ let wav_ = {
 		// Animated Maps
 		Dsp: 0,				// The Displacement Map
 		Nrm: 0,				// The Normal Map
-		NMS: new THREE.Vector2(1,1),	// Normal Map Scale (flip Y for left-handed maps)
+		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
 		Spd: AnmSpd
 	};
 
@@ -519,28 +516,28 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	// ToneMapping (tends to accentuate tiling)
 	document.body.appendChild(renderer.domElement);
-let	maxAnisotropy = 16;										// ### WebGPU
+let	maxAnisotropy = 16;						// ### WebGPU
 //- Light
 let ambLight = new THREE.AmbientLight(SunCol, 0.5);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
-	sunLight.position.copy(SunPos);							// ### SunDst
+	sunLight.position.copy(SunPos);			// ### SunDst
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.left = -ShdBox;
 	sunLight.shadow.camera.right = ShdBox;
 	sunLight.shadow.camera.top = ShdBox;
 	sunLight.shadow.camera.bottom = -ShdBox;
-	sunLight.shadow.camera.near = SunDst-ShdBox;			// ### SunDst	
-	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;		// ### SunDst
+	sunLight.shadow.camera.near = SunDst-ShdBox; // ### SunDst	
+	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox; // ### SunDst
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
 //	sunLight.shadow.radius = 1;				// > 1 = blur
 	// Bias ### WebGPU
-//	sunLight.shadow.bias = -0.0005;		// No Shadow
-//	sunLight.shadow.bias = -0.0002;		// Gap
-//	sunLight.shadow.bias = -0.0001;		// RWing Gap
-//	sunLight.shadow.bias = -0.00005;	// RTail Gap
-	sunLight.shadow.bias = -0.00001;	// LWing Moire
+//	sunLight.shadow.bias = -0.0005;			// No Shadow
+//	sunLight.shadow.bias = -0.0002;			// Gap
+//	sunLight.shadow.bias = -0.0001;			// RWing Gap
+//	sunLight.shadow.bias = -0.00005;		// RTail Gap
+	sunLight.shadow.bias = -0.00001;		// LWing Moire
 	//
 	scene.add(sunLight);
 //- Sounds

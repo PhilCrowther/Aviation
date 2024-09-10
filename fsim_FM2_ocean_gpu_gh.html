@@ -117,17 +117,17 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 //= INPUTS =====================================================================
 //- CAMERA ---------------------------------------------------------------------
-let CamSel = 1;					// Camera Seletion (0 = External; 1 = Internal)
+let CamSel = 1;				// Camera Seletion (0 = External; 1 = Internal)
 //- AIRPLANE: Start ------------------------------------------------------------
-let USorSI = "US";				// Units of Measurement (US or SI)
-let BegPwr = 0;					// Initial Power Percent
-let BegSpd = 0;					// Speed (mph)
+let USorSI = "US";			// Units of Measurement (US or SI)
+let BegPwr = 0;				// Initial Power Percent
+let BegSpd = 0;				// Speed (mph)
 let BegPos = new THREE.Vector3(0,0,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
-let PwrDif = 0;					// Power % Input - Value
-let InpBrk = 0;					// Brakes
+let PwrMul = 0.0005;		// Power % Input - Mouse Multiplier
+let PwrDif = 0;				// Power % Input - Value
+let InpBrk = 0;				// Brakes
 //- Mouse Delays ...............................................................
 //- (x = diverted, y = released, z = stored)
 let PwrMsD = new THREE.Vector3(1-1/30,1/15,0);	// Power
@@ -144,22 +144,22 @@ let	KeyVal = new THREE.Vector3(0.5,0.25,1.0); // (Yaw = turn rate in 15 deg bank
 
 //= CONSTANTS ==================================================================
 //	Time
-let	DLTime = 1/60;				// Delta Time (1/60 seconds)
+let	DLTime = 1/60;			// Delta Time (1/60 seconds)
 let DLTim2 = DLTime*DLTime;
 //	Conversions
-let DegRad = Math.PI / 180;		// Convert Degrees to Radians
-let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
-let Ft2Mtr = 0.3048;			// Convert Feet to Meters
+let DegRad = Math.PI / 180;	// Convert Degrees to Radians
+let RadDeg = 180/Math.PI;	// Convert Radians to Degrees
+let Ft2Mtr = 0.3048;		// Convert Feet to Meters
 let Mtr2Ft = 1/0.3048;
 let Km2Mil = 0.621371;
 let Mil2Km = 1.60934;
-let MtrMil = 1609.34;			// Meters per Mile
+let MtrMil = 1609.34;		// Meters per Mile
 //	Default Constants
-let	GrvMPS = 9.80665; 			// Gravity (mps)
+let	GrvMPS = 9.80665; 		// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
 //	Starting Air Density				
-let	AirDSL = 1.225;				// Density - Sea Level (kg/m3)
+let	AirDSL = 1.225;			// Density - Sea Level (kg/m3)
 //- Convert Starting Values
 if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
@@ -168,72 +168,72 @@ if (USorSI = "US") {
 
 //= INPUTS =====================================================================
 //-	VIEW KEYS ------------------------------------------------------------------
-let U45flg = 0;					// Up 45 degrees
-let D45flg = 0;					// Down 45 degrees
-let	L45flg = 0;					// Left 45 degrees
-let R45flg = 0;					// Right 45 degrees
-let L90flg = 0;					// Left 90 degrees
-let R90flg = 0;					// Right 90 degrees
+let U45flg = 0;				// Up 45 degrees
+let D45flg = 0;				// Down 45 degrees
+let	L45flg = 0;				// Left 45 degrees
+let R45flg = 0;				// Right 45 degrees
+let L90flg = 0;				// Left 90 degrees
+let R90flg = 0;				// Right 90 degrees
 
 //= INPUT VALUES ==============================================================
 //- Display
-let PawsOn = 0;					// Pause
-let InfoOn = 0;					// Info
-let StatOn = 1;					// Stats ((0 = off, 1 = on)
+let PawsOn = 0;				// Pause
+let InfoOn = 0;				// Info
+let StatOn = 1;				// Stats ((0 = off, 1 = on)
 //	Program Flags
 let LodFlg = 0;
 //	Altitude Adjustment
-let AltAdj = 0.99;				// Raises objects above map as altitude increases
+let AltAdj = 0.99;			// Raises objects above map as altitude increases
 //	Animations
-let anmfps = 24;				// Blender FPS
-let aoarng = 20;				// AoA range (model)
+let anmfps = 24;			// Blender FPS
+let aoarng = 20;			// AoA range (model)
 
 //= SKYBOX =====================================================================
 let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 
 //= SUN ========================================================================
-let SunCol = 0xffffff;			// Sun
-let SunInt = 3;					// Default intensity of light/sun
+let SunCol = 0xffffff;		// Sun
+let SunInt = 3;				// Default intensity of light/sun
 //- Rotation and Position (fixed)
-let SunLat = 23;				// Direction - Vert (+/- 90)
-let SunLon = 312;				// Direction - Horz (0->360)
-let SunDst = 10000;				// Distance (for shadows and lensflare)
+let SunLat = 23;			// Direction - Vert (+/- 90)
+let SunLon = 312;			// Direction - Horz (0->360)
+let SunDst = 10000;			// Distance (for shadows and lensflare)
 //- New
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let LgtDst = 5000;				// [feet] for shadow
-let LgtBox = 25;				// Size of shadow box
+let LgtDst = 5000;			// [feet] for shadow
+let LgtBox = 25;			// Size of shadow box
 
 //= FOG ========================================================================
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
 
 //=	SUNFLARE ===================================================================
-let SnFFlg = 1;					// 1 = SunFlare On
+let SnFFlg = 1;				// 1 = SunFlare On
 //- Textures
 let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
 //- Sprites
-let SnFsrc = [SnFhex,SnFhex]	// Spreit Texture Source
-let SnFsiz = [300,800];			// Sprite Size
-	SnFsiz = [300,1500];		// Sprite Size
-let SnFopa = [0.1,0.025];		// Sprite Opacity
-	SnFopa = [0.25,0.025];		// Sprite Opacity
-let SnFmlt = [0.3,-0.4];		// Offset Multiplier (1 = centered on Sun)
-let SnFdst = SunDst;			// Distance (default = 10000)
+let SnFsrc = [SnFhex,SnFhex]; // Spreit Texture Source
+let SnFsiz = [300,800];		// Sprite Size
+	SnFsiz = [300,1500];	// Sprite Size
+let SnFopa = [0.1,0.025];	// Sprite Opacity
+	SnFopa = [0.25,0.025];	// Sprite Opacity
+let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
+let SnFdst = SunDst;		// Distance (default = 10000)
 //- Parameters
 let SnF_ = {
 		//- Sprites
-		num: 2,					// Number of Sprites
-		spr: [],				// Sprite Address
-		mlt: SnFmlt,			// Offset Multiplier
+		num: 2,				// Number of Sprites
+		spr: [],			// Sprite Address
+		mlt: SnFmlt,		// Offset Multiplier
 		//- Rotators
-		msh: [],				// Rotators
-		par: 0,					// Parent (Camera Clone) [OrbCon Only]
+		msh: [],			// Rotators
+		par: 0,				// Parent (Camera Clone) [OrbCon Only]
 		//- Heading Offset
 		cam: new THREE.Vector3(), // Camera Direction
 		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
 		off: new THREE.Vector2(), // Sun Offset (lat/lon) [shared]
-		asp: 0,					// Camera Aspect
+		asp: 0,				// Camera Aspect
 	}
 
 //= GRDWTR TEXTURES ============================================================
@@ -243,46 +243,46 @@ let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1
 let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
-let ImgSiz = 512;				// !!! Change this for each image
+let ImgSiz = 512;			// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
 let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
-let WavMax = 5;					// Maximum wave height (set height of outer waves)
+let WavMax = 5;				// Maximum wave height (set height of outer waves)
 
 //= GRDWTR MODULE ==============================================================
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-let grids = 0;
-let GrdSiz = 1600;				// 1600 = 1 mile
+let GrdSiz = 1600;			// 1600 = 1 mile
 let GrdRes = 512;
-let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
+let GrdSeg = 256;			// Segments per Plane (256 = OK, 512 = too much)
 // Common Variables
+let grids = 0;
 let grd_ = {
-		MSP: new THREE.Vector3(),	// MSX, MPY, MSZ (meters) (from Flight)
-		RCs: 16,				// Squares in each of first 2 grids
-		Siz: GrdSiz,			// Size of smallest square
-		Stp: 4,					// Squares in each of first 2 grids
-		Seg: GrdSeg,			// Segments for smallest square
-		Grx: [],				// Index of Grids (0-2)
-		Geo: [],				// Master Index of Basic Geometries
+		MSP: new THREE.Vector3().copy(BegPos), // MSX, MPY, MSZ (meters) (from Flight)
+		RCs: 16,			// Squares in each of first 2 grids
+		Siz: GrdSiz,		// Size of smallest square
+		Stp: 4,				// Squares in each of first 2 grids
+		Seg: GrdSeg,		// Segments for smallest square
+		Grx: [],			// Index of Grids (0-2)
+		Geo: [],			// Master Index of Basic Geometries
 		Col: new THREE.Color(WtrCol), // Color
-		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
-		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
+		Dsp: 0,				// Grid 0 Displacement Map (from Ocean)
+		Nrm: 0,				// Grid 0-1 Normal Map (from Ocean)
 		NMS: new THREE.Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
-		Df0: [],				// Grid 0-1 Diffuse Maps
-		Rf0: [],				// Grid 0-1 Roughness Maps
-		Mt0: [],				// Grid 0 Materials
-		Mt1: [],				// Grid 1 Materials
-		Dif: 0,					// Grid 2 Diffuse Map
-		Ruf: 0,					// Grid 2 Roughness Maps
-		Gr2: 0,					// Grid 2 Normal Map
-		Mat: [],				// Grid 2 Materials
-		WMx: WavMax,			// Max wave height, used to lower outer squares
+		Df0: [],			// Grid 0-1 Diffuse Maps
+		Rf0: [],			// Grid 0-1 Roughness Maps
+		Mt0: [],			// Grid 0 Materials
+		Mt1: [],			// Grid 1 Materials
+		Dif: 0,				// Grid 2 Diffuse Map
+		Ruf: 0,				// Grid 2 Roughness Maps
+		Gr2: 0,				// Grid 2 Normal Map
+		Mat: [],			// Grid 2 Materials
+		WMx: WavMax,		// Max wave height, used to lower outer squares
 	};
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
@@ -292,58 +292,58 @@ let grd_ = {
 let WndSpd = 10.0;
 let WndHdg = 30.0;
 let Choppy = 1.5;
-let AnmSpd = 1.0;				// Can vary with GrdSiz
+let AnmSpd = 1.0;			// Can vary with GrdSiz
 //
 let waves = 0;
 let wav_ = {
 		// Sources
-		Res: GrdRes,			// Resolution - segments per square (default = 512)
-		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
-		WSp: WndSpd,			// Wind Speed
-		WHd: WndHdg,			// Wind Heading
-		Chp: Choppy,			// default = 1
+		Res: GrdRes,		// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,		// Size of Smallest Square = default = 3200m = 2 miles
+		WSp: WndSpd,		// Wind Speed
+		WHd: WndHdg,		// Wind Heading
+		Chp: Choppy,		// default = 1
 		// Animated Maps
-		Dsp: 0,					// The Displacement Map
-		Nrm: 0,					// The Normal Map
+		Dsp: 0,				// The Displacement Map
+		Nrm: 0,				// The Normal Map
 		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
 		Spd: AnmSpd
 	};
-let wavSpd = 0.5;				// Animation speed - use in main program (lower is faster)
+let wavSpd = 0.5;			// Animation speed - use in main program (lower is faster)
 let wavTim = 0;
 
 //= STATIC OBJECTS =============================================================
-let ObjNum = 3;					// number of objects
+let ObjNum = 3;				// number of objects
 //- Should allow for fast update of position
-let ObjTyp = [0];				// Object Type
+let ObjTyp = [0];			// Object Type
 	ObjTyp[ObjNum - 1] = 0;
-let ObjNam = [0];				// Object Name
+let ObjNam = [0];			// Object Name
 	ObjNam[ObjNum - 1] = 0;
-let ObjMdl = [0];				// Model source
+let ObjMdl = [0];			// Model source
 	ObjMdl[ObjNum - 1] = 0;
-let ObjTxt = [0];				// Model texture
+let ObjTxt = [0];			// Model texture
 	ObjTxt[ObjNum - 1] = 0;
-let ObjPos = [0];				// Map Position
+let ObjPos = [0];			// Map Position
 	ObjPos[3*(ObjNum - 1)] = 0;
-let ObjPtr = [0];				// Object Address
+let ObjPtr = [0];			// Object Address
 	ObjPtr[ObjNum - 1] = 0;
 //	List of Objects (allow for expanding list of objects)
 //	Hangars
 let ObjIdx = 0;
-	ObjTyp[ObjIdx] = 0;			// 0 = Fixed standard object
+	ObjTyp[ObjIdx] = 0;		// 0 = Fixed standard object
 	ObjNam[ObjIdx] = "hangar";
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/hangar.glb";
 	ObjTxt[ObjIdx] = 0;
 	ObjPos[ObjIdx] = new THREE.Vector3(60,9,640);		// meters
 	ObjIdx++;
 // Giaros Island
-	ObjTyp[ObjIdx] = 1;			// 1 = Fixed - large feature
+	ObjTyp[ObjIdx] = 1;		// 1 = Fixed - large feature
 	ObjNam[ObjIdx] = "giaro";
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb";
 	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png";
 	ObjPos[ObjIdx] = new THREE.Vector3(-1610,1,2440);	// meters
 	ObjIdx++;
 // Home Island
-	ObjTyp[ObjIdx] = 2;			// 2 = Fixed large group
+	ObjTyp[ObjIdx] = 2;		// 2 = Fixed large group
 	ObjNam[ObjIdx] = "homebase";
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";
 	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";
@@ -355,54 +355,54 @@ let ObjIdx = 0;
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: DLTime,			// Seconds per frame (can vary)
-		GrvMPS: GrvMPS,			// Gravity (ups)
-		AirDSL: AirDSL,			// Air Density (varies with altitude)
+		DLTime: DLTime,		// Seconds per frame (can vary)
+		GrvMPS: GrvMPS,		// Gravity (ups)
+		AirDSL: AirDSL,		// Air Density (varies with altitude)
 		// Designators
-		AirIDN: 0,				// Aircraft Type: 0 = FM2
+		AirIDN: 0,			// Aircraft Type: 0 = FM2
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
-		AirRot: new THREE.Vector3(0,0,0),	// Rotation (in degrees)
-		AirObj: makMsh(),		// Airplane Object 
-		AirPBY: makMsh(),		// Changes in radians
+		AirRot: new THREE.Vector3(0,0,0), // Rotation (in degrees)
+		AirObj: makMsh(),	// Airplane Object 
+		AirPBY: makMsh(),	// Changes in radians
 		// Changes to Airplane Pitch Bank and Yaw
-		RotDif: new THREE.Vector3(0,0,0),	// Change
+		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
-		SpdKPH: BegSpd,			// Speed in KPH
-		SpdMPS: BegSpd/3.6,		// Speed - meters per second
+		SpdKPH: BegSpd,		// Speed in KPH
+		SpdMPS: BegSpd/3.6,	// Speed - meters per second
 		SpdMPF: (BegSpd/3.6)*DLTime,	// Speed - meters per frame	
 		// Airplane Map Speed and Position		
 		MapSpd: new THREE.Vector3(), // Map Speed (meters)
 		MapPos: new THREE.Vector3().copy(BegPos), // Map Position (meters)
 		MapSPS: new THREE.Vector3(0,BegPos.y,0), // MSX, MPY, MSZ (meters)	
 		// Variables Obtained from Flight
-		PwrPct: BegPwr,			// % of Primary Power (0 to 1) (Main and Flight)
-		SupPct: 0,				// Percent of Supplemental Power (War Enmergency or Afterburner)
-		CfLift: 0,				// Coefficient of Lift (user input) - determines lift
-		CfFlap: 0,				// Coefficient of Lift due to flaps (user input)
-		FlpPct: 0,				// Percent of Flaps
-		LngPct: 0,				// Percent of Landing Gear
-		BrkPct: 0,				// Percent of Air Brakes
-		SplPct: 0,				// Percent of Spoiler
-		AGBank: 0,				// Aileron Bank on Ground
-		BrkVal: 0,				// Brakes
-		GrdZed: 0,				// Ground level (default)
-		GrdFlg: 0,				// Ground Flag (1 = on ground)
-		ACPAdj: 0,				// Airplane pitch adjustment
-		MovFlg: 0,				// If Sitting on a Moving Object
+		PwrPct: BegPwr,		// % of Primary Power (0 to 1) (Main and Flight)
+		SupPct: 0,			// Percent of Supplemental Power (War Enmergency or Afterburner)
+		CfLift: 0,			// Coefficient of Lift (user input) - determines lift
+		CfFlap: 0,			// Coefficient of Lift due to flaps (user input)
+		FlpPct: 0,			// Percent of Flaps
+		LngPct: 0,			// Percent of Landing Gear
+		BrkPct: 0,			// Percent of Air Brakes
+		SplPct: 0,			// Percent of Spoiler
+		AGBank: 0,			// Aileron Bank on Ground
+		BrkVal: 0,			// Brakes
+		GrdZed: 0,			// Ground level (default)
+		GrdFlg: 0,			// Ground Flag (1 = on ground)
+		ACPAdj: 0,			// Airplane pitch adjustment
+		MovFlg: 0,			// If Sitting on a Moving Object
 		// Values for the Selected Airplane Type (obtained from Flight)
-		CfLMax: 0,				// Maximum Coefficient of Lift
-		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
-		ACMass: 0,				// Airplane Mass
-		Weight: 0,				// Used by AutoPilot
+		CfLMax: 0,			// Maximum Coefficient of Lift
+		FlpCfL: 0,			// Max Flap Cfl (0.2*CfLMax)
+		ACMass: 0,			// Airplane Mass
+		Weight: 0,			// Used by AutoPilot
 		PYBmul: new THREE.Vector3(0,0,0), // Airplane Pitch/Yaw/Bank Multiplier
-		BnkMax: 0,				// Maximum bank rate
+		BnkMax: 0,			// Maximum bank rate
 		// AutoPilot - Additional Variables
-		AutoOn: 0,				// Autopilot Flag
+		AutoOn: 0,			// Autopilot Flag
 		InpKey: new THREE.Vector3(), // Inputs - Keys (replace InpKey)
 		OldRot: new THREE.Vector3(), // Old Rotation (radians)
-		CfLDif: 0,				// Change in CfL
-		MaxBnk: 0,				// Max Bank (display only)
-		HdgDif: 0				// Horizontal Turn Rate (display only)
+		CfLDif: 0,			// Change in CfL
+		MaxBnk: 0,			// Max Bank (display only)
+		HdgDif: 0			// Horizontal Turn Rate (display only)
 	}
 // 
 // Adjustments
@@ -692,39 +692,32 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
-	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.autoUpdate = true;
-	renderer.receiveShadow = true;
-//	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-	renderer.shadowMap.type = THREE.BasicShadowMap;
+	// Shadow
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	// ToneMapping (tends to accentuate tiling)
 	document.body.appendChild(renderer.domElement);
 let	maxAnisotropy = 16;						// ### WebGPU
 // 	Light
 let ambLight = new THREE.AmbientLight(SunCol, 0.2);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
-//	sunLight.position.copy(SunPos).normalize();
-	sunLight.position.copy(SunPos);
+	sunLight.position.copy(SunPos);			// ### SunDst
 	sunLight.castShadow = true;
-//	sunLight.shadow.camera.near = 0.1;
-//	sunLight.shadow.camera.far = 1;
-//	sunLight.shadow.camera.right = 17;
-//	sunLight.shadow.camera.left = -17;
-//	sunLight.shadow.camera.top	= 17;
-//	sunLight.shadow.camera.bottom = -17;
-	sunLight.shadow.camera.near = SunDst-LgtBox;	// 10000 - 50
-	sunLight.shadow.camera.far = SunDst+LgtDst+LgtBox;	// 10000 + 5000 + 50
-	sunLight.shadow.camera.left = -LgtBox;
-	sunLight.shadow.camera.right = LgtBox;
-	sunLight.shadow.camera.top = LgtBox;
-	sunLight.shadow.camera.bottom = -LgtBox;
-//	sunLight.shadow.mapSize.width = 2048;	// ### r168
-//	sunLight.shadow.mapSize.height = 2048;	// ### ri68
-	sunLight.shadow.mapSize.width = 1024;	// ### r168
-	sunLight.shadow.mapSize.height = 1024;	// ### ri68
+	sunLight.shadow.camera.left = -ShdBox;
+	sunLight.shadow.camera.right = ShdBox;
+	sunLight.shadow.camera.top = ShdBox;
+	sunLight.shadow.camera.bottom = -ShdBox;
+	sunLight.shadow.camera.near = SunDst-ShdBox; // ### SunDst	
+	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox; // ### SunDst
+	sunLight.shadow.mapSize.width = 2048;
+	sunLight.shadow.mapSize.height = 2048;
 //	sunLight.shadow.radius = 1;				// > 1 = blur
-//	sunLight.shadow.bias = -0.0001;			// best
-	sunLight.shadow.bias = -0.00005;		// Default = 0 - causes lines;
+	// Bias ### WebGPU
+//	sunLight.shadow.bias = -0.0005;			// No Shadow
+//	sunLight.shadow.bias = -0.0002;			// Gap
+//	sunLight.shadow.bias = -0.0001;			// RWing Gap
+//	sunLight.shadow.bias = -0.00005;		// RTail Gap
+	sunLight.shadow.bias = -0.00001;		// LWing Moire
 	scene.add(sunLight);
 // 	Sounds
 let SndFlg = 0;
