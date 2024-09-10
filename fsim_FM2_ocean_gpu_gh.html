@@ -202,8 +202,8 @@ let SunDst = 10000;			// Distance (for shadows and lensflare)
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let LgtDst = 5000;			// [feet] for shadow
-let LgtBox = 25;			// Size of shadow box
+let ShdBox = 25;			// Size of shadow box
+let ShdDst = 5000;			// [feet] for shadow
 
 //= FOG ========================================================================
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
