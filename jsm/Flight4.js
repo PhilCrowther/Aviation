@@ -29,20 +29,20 @@ let ThrstK = 0;				// Thrust Constant
 let AuFlag = 0;				// Flag for Auto Tail Up/Down
 
 //= AIRPLANE DATA ==============================================================
-let typ_ = 0;
+let dat_ = 0;
 
 //= INITIALIZE VALUES ==========================================================
 
 //- Initialize Rotation and Vectors --------------------------------------------
 let Flight = function (air_) {				// Only works with Air0 now
 	// Basic Flight Data (SI Adjustments)
-	typ_ = air_.AirIDN;						// Store address of Aircraft Type
-	// typ_ variable saved to air_
-	air_.ACMass = typ_.ACMass;
+	dat_ = air_.AirDat;						// Store address of Aircraft Type
+	// dat_ variable saved to air_
+	air_.ACMass = dat_.ACMass;
 	air_.Weight = air_.ACMass*air_.GrvMPS;
-	air_.FlpCfL = typ_.FlpCfL;
-	air_.CfLMax = typ_.CfLMax;
-	air_.BnkMax = typ_.BnkMax;
+	air_.FlpCfL = dat_.FlpCfL;
+	air_.CfLMax = dat_.CfLMax;
+	air_.BnkMax = dat_.BnkMax;
 	// Comps
 	let DLTim2 = air_.DLTime*air_.DLTime;
 	let GrvDLT = air_.GrvMPS*DLTim2;
@@ -52,10 +52,10 @@ let Flight = function (air_) {				// Only works with Air0 now
 	air_.AirObj.rotation.x = Mod360(air_.AirRot.x)*DegRad;	// Pitch
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y)*DegRad;	// Heading
 	// Constants
-	if (typ_.JetMax == 0) ThrstK = 1000*typ_.PropEf;	// (SI units)
-	WingAs = typ_.WingSp*typ_.WingSp/typ_.WingAr;		// Wing Aspect Ratio
+	if (dat_.JetMax == 0) ThrstK = 1000*dat_.PropEf;	// (SI units)
+	WingAs = dat_.WingSp*dat_.WingSp/dat_.WingAr;		// Wing Aspect Ratio
 	let ACPMax = air_.CfLMax*10;			// Max aircraft pitch adjustment (+/- 15)
-	let ACPInc = ACPMax-typ_.AngInc;		// Net max aircraft pitch adjustment (10)
+	let ACPInc = ACPMax-dat_.AngInc;		// Net max aircraft pitch adjustment (10)
 	// Speed
 	if (air_.SpdKPH <= 0) air_.SpdKPH = SmallV;	// Avoid division by zero 211031
 	air_.SpdMPS = air_.SpdKPH*1000/3600 ;		// (MPS)
@@ -64,40 +64,40 @@ let Flight = function (air_) {				// Only works with Air0 now
 	let DynPrs = (air_.SpdMPS*air_.SpdMPS)*air_.AirDSL/2;	// Dynamic Pressure	
 	// If Starting on Ground
 	if (air_.GrdFlg) {
-		air_.CfLift = 0.1*typ_.AngInc;		// Level lift
+		air_.CfLift = 0.1*dat_.AngInc;		// Level lift
 		air_.PwrPct = 0;
-		if (typ_.TDrAng) air_.ACPAdj = typ_.TDrAng;	// Taildragger
-		let XRad = DegRad*Mod360(typ_.Ax2CGA-air_.ACPAdj);
-		air_.MapPos.y = typ_.Ax2CGD*Math.cos(XRad)+typ_.WheelR+air_.GrdZed;	// Set Height
+		if (dat_.TDrAng) air_.ACPAdj = dat_.TDrAng;	// Taildragger
+		let XRad = DegRad*Mod360(dat_.Ax2CGA-air_.ACPAdj);
+		air_.MapPos.y = dat_.Ax2CGD*Math.cos(XRad)+dat_.WheelR+air_.GrdZed;	// Set Height
 	}
 	// Compute Vectors
 	// If Starting in Flight, Compute Starting air_.CfLift and Power for Level Flight and Given Bank
 	if (air_.GrdFlg == 0) {
 		// Coefficient of Lift for Level Flight
-//		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.cos(air_.AirRot.z*DegRad));		
-		air_.CfLift = air_.Weight/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirRot.z*DegRad)));	// USE ABS?		
+//		air_.CfLift = air_.Weight/(DynPrs*dat_.WingAr*Math.cos(air_.AirRot.z*DegRad));		
+		air_.CfLift = air_.Weight/(DynPrs*dat_.WingAr*Math.abs(Math.cos(air_.AirRot.z*DegRad)));	// USE ABS?		
 		if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 		// Power Setting for Level Flight
-		let QSTval = DynPrs*typ_.WingAr;
+		let QSTval = DynPrs*dat_.WingAr;
 		let CfLftT = air_.CfLift+air_.CfFlap;
 		let ACLftF =  CfLftT*QSTval;		// Lift[ft-lbs] - can be positive or negative
 		// Thrust (Default = Prop)
-		let EnThrF = ThrstK*(typ_.PwrMax*air_.PwrPct+typ_.WEPMax*air_.SupPct)/air_.SpdMPS;
+		let EnThrF = ThrstK*(dat_.PwrMax*air_.PwrPct+dat_.WEPMax*air_.SupPct)/air_.SpdMPS;
 		if (air_.SpdMPS < 4.572) {			// Set Cap on Initial Thrust
-			EnThrF = ThrstK*(typ_.PwrMax*air_.PwrPct+typ_.WEPMax*air_.SupPct)/4.572;
+			EnThrF = ThrstK*(dat_.PwrMax*air_.PwrPct+dat_.WEPMax*air_.SupPct)/4.572;
 		}
-		if (typ_.JetMax) EnThrF = typ_.JetMax*air_.PwrPct+typ_.AftMax*air_.SupPct;	// Jet
+		if (dat_.JetMax) EnThrF = dat_.JetMax*air_.PwrPct+dat_.AftMax*air_.SupPct;	// Jet
 		// Drag
-		let DrgCdi = (CfLftT*CfLftT)/(WingAs*typ_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
-		let ACDrIF = DrgCdi*QSTval;			// Induced Drag = ACLftF^2/(DynPrs*WingSp^2*typ_.WingEf*PI)
-		let CfDF = air_.FlpPct*typ_.DrgCdf;	// Coefficient of Parasitic Drag - Flaps
-		let CfDG = air_.LngPct*typ_.DrgCdg;	// Coefficient of Parasitic Drag - Landing Gear
-		let CfDB = air_.BrkPct*typ_.DrgCdb;	// Coefficient of Parasitic Drag - Air Brake
-		let CfDS = air_.SplPct*typ_.DrgCds;	// Coefficient of Parasitic Drag - Spoiler
-		let DrgCdp = typ_.DrgCd0+CfDF+CfDG+CfDB+CfDS;	// Total Coefficient of Parasitic Drag
+		let DrgCdi = (CfLftT*CfLftT)/(WingAs*dat_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
+		let ACDrIF = DrgCdi*QSTval;			// Induced Drag = ACLftF^2/(DynPrs*WingSp^2*dat_.WingEf*PI)
+		let CfDF = air_.FlpPct*dat_.DrgCdf;	// Coefficient of Parasitic Drag - Flaps
+		let CfDG = air_.LngPct*dat_.DrgCdg;	// Coefficient of Parasitic Drag - Landing Gear
+		let CfDB = air_.BrkPct*dat_.DrgCdb;	// Coefficient of Parasitic Drag - Air Brake
+		let CfDS = air_.SplPct*dat_.DrgCds;	// Coefficient of Parasitic Drag - Spoiler
+		let DrgCdp = dat_.DrgCd0+CfDF+CfDG+CfDB+CfDS;	// Total Coefficient of Parasitic Drag
 		let ACDrPF = DrgCdp*QSTval;			// Parasitic Drag =  Cd0*DynPres*WingA
 		// Power
-		air_.PwrPct = (ACDrPF+ACDrIF)/(EnThrF*typ_.PwrMax);
+		air_.PwrPct = (ACDrPF+ACDrIF)/(EnThrF*dat_.PwrMax);
 		if (air_.PwrPct > 1) air_.PwrPct = 1;
 	}
 	Flight.update(air_);
@@ -116,21 +116,21 @@ Flight.update = function (air_) {
 	// Compute Dynamic Pressure
 	let DynPrs = (air_.SpdMPS*air_.SpdMPS)*air_.AirDSL/2;	// Dynamic Pressure
 	let ACPrad = air_.AirRot.x*DegRad;
-	let QSTval = DynPrs*typ_.WingAr;
+	let QSTval = DynPrs*dat_.WingAr;
 	// Compute Max Lift
-	let LftMax = typ_.GrvMax*GrvDLT;		// Maximum G-accel
-	LftMax = (LftMax + typ_.GrvMax)*GrvDLT;	// ### ATP
+	let LftMax = dat_.GrvMax*GrvDLT;		// Maximum G-accel
+	LftMax = (LftMax + dat_.GrvMax)*GrvDLT;	// ### ATP
 	// Compute Max Bank (### ATP)
-	let GrvMaxF = typ_.GrvMax*air_.Weight;	// Max G-Force 
-	let LftMaxF = air_.CfLMax*DynPrs*typ_.WingAr;	// Max Lift at this Speed
+	let GrvMaxF = dat_.GrvMax*air_.Weight;	// Max G-Force 
+	let LftMaxF = air_.CfLMax*DynPrs*dat_.WingAr;	// Max Lift at this Speed
 	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
 	air_.MaxBnk = Math.acos(air_.Weight/LftMaxF)*RadDeg;	// Max Bank Angle for Max Lift
 	// a. COMPUTE LIFT ROTATION ................................................
-	// Lift = DynPres*typ_.WingArea*Cl
+	// Lift = DynPres*dat_.WingArea*Cl
 	let CfLftT = air_.CfLift+air_.CfFlap;	// Default
 	if (air_.AutoOn) {
 		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*air_.Weight);
-		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
+		air_.CfLift = LftReq/(DynPrs*dat_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
 		air_.CfLift = air_.CfLift+air_.CfLDif;
 		CfLftT = air_.CfLift;
 	}
@@ -151,19 +151,19 @@ Flight.update = function (air_) {
 	let GrvACD = (GrvACP/air_.SpdMPF)*RadDeg;	// Degrees = (GrvACP/V)*(180/(PI()) = (GrvACP/V)*RadDeg
 	// c. COMPUTE NET THRUST ACCELERATION ......................................
 	// Thrust (Default = Prop)
-	let EnThrF = ThrstK*(typ_.PwrMax*air_.PwrPct+typ_.WEPMax*air_.SupPct)/air_.SpdMPS;
+	let EnThrF = ThrstK*(dat_.PwrMax*air_.PwrPct+dat_.WEPMax*air_.SupPct)/air_.SpdMPS;
 	if (air_.SpdMPS < 4.572) {				// Set Cap on Initial Thrust
-		EnThrF = ThrstK*(typ_.PwrMax*air_.PwrPct+typ_.WEPMax*air_.SupPct)/4.572;
+		EnThrF = ThrstK*(dat_.PwrMax*air_.PwrPct+dat_.WEPMax*air_.SupPct)/4.572;
 	}
-	if (typ_.JetMax) EnThrF = typ_.JetMax*air_.PwrPct+typ_.AftMax*air_.SupPct;	// Jet
+	if (dat_.JetMax) EnThrF = dat_.JetMax*air_.PwrPct+dat_.AftMax*air_.SupPct;	// Jet
 	// Drag
-	let DrgCdi = (CfLftT*CfLftT)/(WingAs*typ_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
-	let ACDrIF = DrgCdi*QSTval;					// Induced Drag = ACLftF^2/(DynPrs*WingSp^2*typ_.WingEf*PI)
-	let CfDF = air_.FlpPct*typ_.DrgCdf;		// Coefficient of Parasitic Drag - Flaps
-	let CfDG = air_.LngPct*typ_.DrgCdg;		// Coefficient of Parasitic Drag - Landing Gear
-	let CfDB = air_.BrkPct*typ_.DrgCdb;		// Coefficient of Parasitic Drag - Air Brake
-	let CfDS = air_.SplPct*typ_.DrgCds;		// Coefficient of Parasitic Drag - Spoiler
-	let DrgCdp = typ_.DrgCd0+CfDF+CfDG+CfDB+CfDS;	// Total Coefficient of Parasitic Drag
+	let DrgCdi = (CfLftT*CfLftT)/(WingAs*dat_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
+	let ACDrIF = DrgCdi*QSTval;					// Induced Drag = ACLftF^2/(DynPrs*WingSp^2*dat_.WingEf*PI)
+	let CfDF = air_.FlpPct*dat_.DrgCdf;		// Coefficient of Parasitic Drag - Flaps
+	let CfDG = air_.LngPct*dat_.DrgCdg;		// Coefficient of Parasitic Drag - Landing Gear
+	let CfDB = air_.BrkPct*dat_.DrgCdb;		// Coefficient of Parasitic Drag - Air Brake
+	let CfDS = air_.SplPct*dat_.DrgCds;		// Coefficient of Parasitic Drag - Spoiler
+	let DrgCdp = dat_.DrgCd0+CfDF+CfDG+CfDB+CfDS;	// Total Coefficient of Parasitic Drag
 	let ACDrPF = DrgCdp*QSTval;					// Parasitic Drag =  Cd0*DynPres*WingA
 	let ACDrRF = 0;								// Rolling Friction (default)
 	if (air_.GrdFlg) ACDrRF = air_.ACMass*air_.GrvMPS*ACDrGF;	// Rolling Friction on Ground
@@ -191,18 +191,18 @@ Flight.update = function (air_) {
 	// Compute Aircraft Pitch Adjustment
 	// air_.ACPAdj is an adjustment to ACPtch that allows the aircraft to pitch relative to the direction of flight
 	// to match pitch required to produce specified lift; or, if on ground, to pitch around main wheel axis
-	air_.ACPAdj = (air_.CfLift*10)-typ_.AngInc;				// Default (1.3 = 13)
+	air_.ACPAdj = (air_.CfLift*10)-dat_.AngInc;				// Default (1.3 = 13)
 	// Override if on Ground
 	if (air_.GrdFlg) {
 		// If Taildragger
-		if (typ_.TDrAng) {
+		if (dat_.TDrAng) {
 			// If Starting/Restarting
 			if (air_.SpdKPH < 1 || air_.MovFlg > 0) {
 				AuFlag = 1;					// Accelerating
-				air_.ACPAdj = typ_.TDrAng;	// Full Pitch
+				air_.ACPAdj = dat_.TDrAng;	// Full Pitch
 			}
 			// If Decelerating Through MinSpd
-			if (air_.SpdKPH < typ_.TDrSpd && AuFlag == 0) {
+			if (air_.SpdKPH < dat_.TDrSpd && AuFlag == 0) {
 				AuFlag = 2;					// Decelerating
 			}
 			// If Decelerating then Accelerating
@@ -210,16 +210,16 @@ Flight.update = function (air_) {
 				AuFlag = 1;					// Accelerating
 			}
 			// Either Way
-			if (air_.SpdKPH < typ_.TDrSpd) {
+			if (air_.SpdKPH < dat_.TDrSpd) {
 			// air_.CfLift is irrelevant at low speeds.
-			// At 0, air_.ACPAdj = typ_.TDrAng; At MinSpd, air_.ACPAdj = 0
+			// At 0, air_.ACPAdj = dat_.TDrAng; At MinSpd, air_.ACPAdj = 0
 			// At MinSpd set air_.CfLift so that air_.ACPAdj = 0.
-				air_.ACPAdj = typ_.TDrAng-(typ_.TDrAng*air_.SpdKPH/typ_.TDrSpd);
+				air_.ACPAdj = dat_.TDrAng-(dat_.TDrAng*air_.SpdKPH/dat_.TDrSpd);
 			}
 			// If Accelerate Through MinSpd then AuFlag = 0
-			if ((air_.SpdKPH >= typ_.TDrSpd) && AuFlag > 0) {	//211031
+			if ((air_.SpdKPH >= dat_.TDrSpd) && AuFlag > 0) {	//211031
 				AuFlag = 0;
-				air_.CfLift = (typ_.AngInc+air_.FlpPct*typ_.FlpAIn)/10;
+				air_.CfLift = (dat_.AngInc+air_.FlpPct*dat_.FlpAIn)/10;
 			}
 		}
 	}
@@ -296,14 +296,14 @@ Flight.update = function (air_) {
 	air_.MapPos.x = air_.MapPos.x+air_.MapSpd.x;
 	// If On Ground, Set Height
 	if (air_.GrdFlg) {
-		let XRad = DegRad*Mod360(typ_.Ax2CGA-air_.ACPAdj);
-		air_.MapPos.y = typ_.Ax2CGD*Math.cos(XRad)+typ_.WheelR+air_.GrdZed;
+		let XRad = DegRad*Mod360(dat_.Ax2CGA-air_.ACPAdj);
+		air_.MapPos.y = dat_.Ax2CGD*Math.cos(XRad)+dat_.WheelR+air_.GrdZed;
 	}
 	// If Hit Ground, Limit Descent and Compute ACPAng and Height
 	if (air_.GrdFlg == 0 && air_.MapPos.y < air_.GrdZed+10) {	// If close to ground, check ...
 		let ACP = Mod360(air_.AirRot.x+air_.ACPAdj);	// air_.ACPAdj relative to ground
-		ACPrad = DegRad*Mod360(typ_.Ax2CGA-ACP); 	// Use ACP
-		let Flor = typ_.Ax2CGD*Math.cos(ACPrad)+typ_.WheelR+air_.GrdZed;
+		ACPrad = DegRad*Mod360(dat_.Ax2CGA-ACP); 	// Use ACP
+		let Flor = dat_.Ax2CGD*Math.cos(ACPrad)+dat_.WheelR+air_.GrdZed;
 		if (air_.MapPos.y <= Flor) {
 			air_.GrdFlg = 1;			// Set Flag
 			air_.MapPos.y = Flor;		// Set Height
