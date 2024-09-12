@@ -50,6 +50,8 @@ A flight simulation of an animated airplane model over an animated ocean using W
 	</div>
 </div>
 
+<script src="https://PhilCrowther.github.io/Aviation/models/fm2/data/data.js"></script>
+
 <script type="importmap">
 	{
 		"imports": {
@@ -71,7 +73,7 @@ import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,Spri
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from 'stats-gl';
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/FlightW3atp.js";
+import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
@@ -124,6 +126,7 @@ let BegPwr = 0;				// Initial Power Percent
 let BegSpd = 0;				// Speed (mph)
 let BegPos = new THREE.Vector3(0,0,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
+let PYBmul = new THREE.Vector3(0.004,1.0,0.001);	// Control Multiplier
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
 let PwrMul = 0.0005;		// Power % Input - Mouse Multiplier
 let PwrDif = 0;				// Power % Input - Value
@@ -359,7 +362,7 @@ let air_ = {
 		GrvMPS: GrvMPS,		// Gravity (ups)
 		AirDSL: AirDSL,		// Air Density (varies with altitude)
 		// Designators
-		AirIDN: 0,			// Aircraft Type: 0 = FM2
+		AirDat: data_,		// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(0,0,0), // Rotation (in degrees)
 		AirObj: makMsh(),	// Airplane Object 
@@ -394,7 +397,7 @@ let air_ = {
 		FlpCfL: 0,			// Max Flap Cfl (0.2*CfLMax)
 		ACMass: 0,			// Airplane Mass
 		Weight: 0,			// Used by AutoPilot
-		PYBmul: new THREE.Vector3(0,0,0), // Airplane Pitch/Yaw/Bank Multiplier
+		PYBmul: new THREE.Vector3().copy(PYBmul), // Airplane Pitch/Yaw/Bank Multiplier
 		BnkMax: 0,			// Maximum bank rate
 		// AutoPilot - Additional Variables
 		AutoOn: 0,			// Autopilot Flag

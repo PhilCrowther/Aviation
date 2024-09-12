@@ -11,7 +11,7 @@ A flight simulation of an animated airplane model over procedural land using
 
 <head>
 <title>FlightSim Pup Land Nodes WebGPU</title>
-<link rel="stylesheet" href="styles/body2.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -55,6 +55,8 @@ A flight simulation of an animated airplane model over procedural land using
 	</div>
 </div>
 
+<script src="https://PhilCrowther.github.io/Aviation/models/pup/data/data.js"></script>
+
 <script type="importmap">
 	{
 		"imports": {
@@ -82,7 +84,7 @@ import {Lensflare, LensflareElement} from "three/addons/objects/Lensflare.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 // Special Modules
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3.js";
-import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight3.js";
+import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4.js";
 
 //= GENERAL ===================================================================
 //- AIRPLANE: Start -----------------------------------------------------------
@@ -93,6 +95,7 @@ let BegAlt = 2000;					// Altitude (feet)
 let BegNSP = 0;						// NS Position (feet)
 let BegPwr = 0;						// Initial Power Percent
 //- AIRPLANE: Flight -----------------------------------------------------------
+let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Basic airplane values
 let KeyVal = new THREE.Vector3(1,.05,1);	// Key Values (Yaw = turn rate in 15 deg bank)
 let InpKey = new THREE.Vector3();	// Inputs - Keys
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
@@ -189,7 +192,7 @@ let air_ = {
 		GrvMPS: GrvMPS,				// Gravity (ups)
 		AirDSL: AirDSL,				// Air Density (varies with altitude)
 		// Designators
-		AirIDN: 1,					// Aircraft Type: 1 = Pup
+		AirDat: data_,					// Aircraft Type: 1 = Pup
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(0,0,0),	// Rotation (in degrees)
 		AirObj: makMsh(),			// Airplane Object 
@@ -224,8 +227,15 @@ let air_ = {
 		FlpCfL: 0,					// Max Flap Cfl (0.2*CfLMax)
 		ACMass: 0,					// Airplane Mass
 		Weight: 0,					// Used by autopilots
-		PYBmul: new THREE.Vector3(0,0,0), // Airplane Pitch/Yaw/Bank Multiplier
+		PYBmul: new THREE.Vector3().copy(PYBmul), // Airplane Pitch/Yaw/Bank Multiplier
 		BnkMax: 0,					// Maximum bank rate
+		// AutoPilot - Additional Variables
+		AutoOn: 0,			// Autopilot Flag
+		InpKey: new THREE.Vector3(), // Inputs - Keys (replace InpKey)
+		OldRot: new THREE.Vector3(), // Old Rotation (radians)
+		CfLDif: 0,			// Change in CfL
+		MaxBnk: 0,			// Max Bank (display only)
+		HdgDif: 0			// Horizontal Turn Rate (display only)
 	}
 // 
 // Adjustments
