@@ -39,7 +39,7 @@ void main() {
 }`;
 
 //* Inputs (fire)
-let P_File = "../3js/common/textures/fire.png";
+let P_File = "https://PhilCrowther.github.io/Aviation/textures/fx/fire.png";
 let P_Blnd = AdditiveBlending;
 let P_Size = 4.0;					// Size [4.0]
 let P_Dist = P_Size/4;				// XYZ Distance 
@@ -56,7 +56,7 @@ let P_Spl1 = 0xFF8080;				// Beg Color [0xFF8080]
 
 //* Inputs (Smoke)
 let	P_Mult = 8;						// Multiplier	
-	P_File = "../3js/common/textures/cloud10.png";
+	P_File = "https://PhilCrowther.github.io/Aviation/textures/fx/cloud10.png";
 	P_Blnd = NormalBlending;
 	P_Size = P_Mult*P_Size;			// makes it wider
 	P_Dist = P_Size/4;				// XYZ Distance 
