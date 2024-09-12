@@ -85,25 +85,22 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 //=	FEATURES
 //-	Flight Smulation
 //	* Realistic Flight Simulation and AutoPilot (Flight Module)
-//	* Taildragger landing
+//	* Taildragger takeoff and landing
 //	* Static and Moving Landing Surfaces
-//-	My Airplane:
-//	* Detailed Airplane Model - External and Internal (created in Blender)
-//	* Animated Controls and Gauges - External and Internal (AnimFM2 Module)
-//	* Animated Pilot
 //-	Scenery:
 //	* Animated and Textured iFFT Ocean (Ocean and GrdMap Modules)
 //	* Islands, including Volcano with Animated Smoke
 //	* SunFlare
+//-	My Airplane:
+//	* Detailed Airplane Model - External and Internal (created in Blender)
+//	* Animated Controls and Gauges - External and Internal (AnimFM2 Module)
+//	* Animated Pilot
+//	* 3D Sounds
 //-	Traffic:
 //	* Animated Traffic - Airplane and Carrier
-//	* Landable Moving Carrier
-//	* Animated Ship Flag
-//	* Animated Ship Wake
+//	* Landable Moving Carrier with animated Flag and Wake
 //-	Controls:
 //	* Multi-Positional Camera
-//-	Sounds:
-//	* 3D Sounds
 
 //=	TO DO:
 //-	Program:
@@ -126,7 +123,7 @@ let BegPwr = 0;				// Initial Power Percent
 let BegSpd = 0;				// Speed (mph)
 let BegPos = new THREE.Vector3(0,0,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
-let PYBmul = new THREE.Vector3(0.004,1.0,0.001);	// Control Multiplier
+let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
 let PwrMul = 0.0005;		// Power % Input - Mouse Multiplier
 let PwrDif = 0;				// Power % Input - Value
@@ -169,16 +166,7 @@ if (USorSI = "US") {
 	BegPos.multiplyScalar(Ft2Mtr);
 }
 
-//= INPUTS =====================================================================
-//-	VIEW KEYS ------------------------------------------------------------------
-let U45flg = 0;				// Up 45 degrees
-let D45flg = 0;				// Down 45 degrees
-let	L45flg = 0;				// Left 45 degrees
-let R45flg = 0;				// Right 45 degrees
-let L90flg = 0;				// Left 90 degrees
-let R90flg = 0;				// Right 90 degrees
-
-//= INPUT VALUES ==============================================================
+//= INPUT VALUES ===============================================================
 //- Display
 let PawsOn = 0;				// Pause
 let InfoOn = 0;				// Info
@@ -191,10 +179,7 @@ let AltAdj = 0.99;			// Raises objects above map as altitude increases
 let anmfps = 24;			// Blender FPS
 let aoarng = 20;			// AoA range (model)
 
-//= SKYBOX =====================================================================
-let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
-
-//= SUN ========================================================================
+//= SUN VALUES =================================================================
 let SunCol = 0xffffff;		// Sun
 let SunInt = 3;				// Default intensity of light/sun
 //- Rotation and Position (fixed)
@@ -207,6 +192,78 @@ let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
 let ShdBox = 25;			// Size of shadow box
 let ShdDst = 5000;			// [feet] for shadow
+
+//= STANDARD SETUP =============================================================
+// 	Display
+let scene = new THREE.Scene();
+	scene.background = new THREE.Color(0x000000);
+let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	// Shadow
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	// ToneMapping (tends to accentuate tiling)
+	document.body.appendChild(renderer.domElement);
+let	maxAnisotropy = 16;						// ### WebGPU
+// 	Light
+let ambLight = new THREE.AmbientLight(SunCol,0.2);
+	scene.add(ambLight);
+let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+	sunLight.position.copy(SunPos);			// ### SunDst
+	sunLight.castShadow = true;
+	sunLight.shadow.camera.left = -ShdBox;
+	sunLight.shadow.camera.right = ShdBox;
+	sunLight.shadow.camera.top = ShdBox;
+	sunLight.shadow.camera.bottom = -ShdBox;
+	sunLight.shadow.camera.near = SunDst-ShdBox; // ### SunDst	
+	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox; // ### SunDst
+	sunLight.shadow.mapSize.width = 2048;
+	sunLight.shadow.mapSize.height = 2048;
+//	sunLight.shadow.radius = 1;				// > 1 = blur
+	// Bias ### WebGPU
+//	sunLight.shadow.bias = -0.0005;			// No Shadow
+//	sunLight.shadow.bias = -0.0002;			// Gap
+//	sunLight.shadow.bias = -0.0001;			// RWing Gap
+//	sunLight.shadow.bias = -0.00005;		// RTail Gap
+	sunLight.shadow.bias = -0.00001;		// LWing Moire
+	scene.add(sunLight);
+// 	Camera
+let	CamAsp = window.innerWidth/window.innerHeight;
+let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
+// 	Clock
+let clock = new THREE.Clock();
+let oldTim, nowTim, difTim = 0;
+// 	Inputs
+	document.addEventListener("mousedown", onDocumentMouseDown, false);
+	document.addEventListener("mouseup", onDocumentMouseUp, false);
+	document.addEventListener('mousewheel', onDocumentMouseWheel, {capture: false, passive: false});
+	document.addEventListener("keydown", onDocumentKeyDown, false);
+	document.addEventListener("keyup", onDocumentKeyUp, false);
+	window.addEventListener("resize", onWindowResize, false);
+// 	Loading Manager
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let imagLoader = new THREE.ImageLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+let gltfLoader = new GLTFLoader(loadingManager);
+let audioLoader = new THREE.AudioLoader(loadingManager);
+// 	Wait Screen
+let loadingScreen = {
+	scene: new THREE.Scene(),
+	camera: new THREE.PerspectiveCamera(90, window.innerWidth/window.innerHeight, 0.1, 100),
+	box: 0
+};
+let boxrot = 0;
+
+//= SKYBOX =====================================================================
+let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 
 //= FOG ========================================================================
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
@@ -353,8 +410,30 @@ let ObjIdx = 0;
 	ObjPos[ObjIdx] = new THREE.Vector3(610,30,275);		// meters
 	ObjIdx++;
 
+//= VOLCANO ====================================================================
+let VlkAdr = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png";
+let VlkMap = 0;
+let smokeInstancedSprite;
+//let VlkPos = new THREE.Vector3(660,75,300);
+let VlkPos = new THREE.Vector3(50,75,25);
+
+//= MINIMUM ALTITUDE (Base and CVE) ============================================
+//	Base (Centered at 0,0)
+let BasAlt = 8.8392;			// 29 ft
+	BasAlt = 8.25;				// 
+let BasXlf = -61;				// 200 ft
+let BasXrt = 61;				// 200 ft
+let BasZfr = 2260;				// 7420 ft
+let BasZbk = -154;				// -505 ft
+//	Ship (Centered at CVEGrp)
+let CVEAlt = 13.2;				// 43.267 ft
+let CVEXlf = -13.2;				// 43.267 ft
+let CVEXrt = 13.2;				// 43.267 ft
+let CVEZfr = 70.5;				// ?? ft
+let CVEZbk = -70.5;				// ?? ft
+
 //= MY AIRPLANE ================================================================
-//	Airplane Data
+//- Flight Module --------------------------------------------------------------
 let	flight = 0;
 let air_ = {
 		// General Variables
@@ -412,7 +491,6 @@ let air_ = {
 	air_.AirObj.rotation.order = "YXZ";
 	air_.AirPBY.rotation.order = "YXZ";
 	air_.AirObj.add(air_.AirPBY);				// PBY includes air_.ACPAdj
-
 //- Load Models and Animations -------------------------------------------------
 //	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
@@ -456,11 +534,25 @@ let vxr_ = {
 		// Camera Distance from Reference Point
 		Cam: -0.1
 	}
-//	Sounds
+//-	Sounds ---------------------------------------------------------------------
 let acsnd1 = "fm2.wav";				// File (my engine)
 let acvol1 = 0.1;					// Volume
 let acsnd2 = "fm2_prop.wav";		// File (my prop)
 let acvol2 = 0.5;					// Volume
+let SndFlg = 0;
+let	listener = new THREE.AudioListener();
+let RefDst = 25;	// Reference distance for Positional Audio
+let sound1 = new THREE.PositionalAudio(listener);
+let sound2 = new THREE.PositionalAudio(listener);
+let sound3 = new THREE.PositionalAudio(listener);
+let sound4 = new THREE.PositionalAudio(listener);
+let EngObj = new THREE.Object3D();	// Airplane Engine
+	EngObj.add(sound1);				// Engine
+	EngObj.add(sound2);				// Guns
+	EngObj.add(sound3);				// Prop
+	EngObj.position.z = -5;
+	air_.AirObj.add(EngObj);
+	camera.add(listener);
 //- Play Animations ------------------------------------------------------------
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm8ac, anm8vr = 0;
@@ -531,7 +623,7 @@ let BulTim = [0];				// Time in flight
 let acsnd3 = "fm2_gun.mp3";		// File (my guns)
 let acvol3 = 0.5;				// Volume
 	
-//= MOVING PLANE ===============================================================
+//= OTHER AIRPLANE =============================================================
 let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 let XPFile = "fm2_flyt_xp1.glb";	// Name of airplane model file (rotated blender file)
 //	Data
@@ -551,7 +643,7 @@ let xac_ = {
 let xpsnd1 = "fm2_prop.wav";	// File (xp prop)
 let xpvol1 = 1.0;				// Volume
 
-//= MOVING SHIP ================================================================
+//= AIRCRAFT CARRIER ===========================================================
 let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
 let XSFile = "CVE_noflag.glb";
 //	Data
@@ -567,7 +659,7 @@ let xsh_ = {
 		An0: 0
 	}
 
-//= SHIP FLAG ==================================================================
+//= AIRCRAFT CARRIER FLAG ======================================================
 let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
 //
 let	flg_ = {
@@ -590,189 +682,11 @@ let	flg_ = {
 		Viz: 152.4				// (meters)
 	}
 
-//= SHIP WAKE ==================================================================
+//= AIRCRAFT CARRIER WAKE ======================================================
 let WakSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
 let WakMap = 0;
 
-//= VOLCANO ====================================================================
-let VlkAdr = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png";
-let VlkMap = 0;
-let smokeInstancedSprite;
-//let VlkPos = new THREE.Vector3(660,75,300);
-let VlkPos = new THREE.Vector3(50,75,25);
-
-//= MINIMUM ALTITUDE (Base and CVE) ============================================
-//	Base (Centered at 0,0)
-let BasAlt = 8.8392;			// 29 ft
-	BasAlt = 8.25;				// 
-let BasXlf = -61;				// 200 ft
-let BasXrt = 61;				// 200 ft
-let BasZfr = 2260;				// 7420 ft
-let BasZbk = -154;				// -505 ft
-//	Ship (Centered at CVEGrp)
-let CVEAlt = 13.2;				// 43.267 ft
-let CVEXlf = -13.2;				// 43.267 ft
-let CVEXrt = 13.2;				// 43.267 ft
-let CVEZfr = 70.5;				// ?? ft
-let CVEZbk = -70.5;				// ?? ft
-
-//= MY CAMERA =====================================================================
-//- Create Cockpit Attach Point
-let	CamPVC = makMsh();
-	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
-	air_.AirPBY.add(CamPVC); 		// Attach CamPVC to AirPBY (### not AirObj)
-//- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
-let CamNum = 2;
-let CamLLD = [new THREE.Vector3(-10,0,30),
-			  new THREE.Vector3(0,0,0.001)];
-let CamAdj = [180,0];				// 180 = Looking In
-let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
-			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
-let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
-			  new THREE.Vector3(45,110,0.5)];
-let CamPar = [air_.AirObj,CamPVC];
-let CamFlg = [0,1];				// 1 = cockpit view
-let CamLnk = [1,1];				// 1 = Linked to Airplane
-//- Shared Variables
-let cam_ = {
-		sel: CamSel,			// View Selector (0 = External, 1 = Internal)
-		num: CamNum,
-		pan: 0,					// Pan Flag (1 = panning)
-		// Camera
-		lld: new THREE.Vector3().copy(CamLLD[CamSel]),	// cam_.rot Lat, Lon, Dst
-		llz: new THREE.Vector3(), // External LLZ
-		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
-		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
-		// Rotator
-		rot: makMsh(),			// Camera Rotator
-		mmr: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
-		// Center of Rotation
-		par: CamPar[CamSel],	// Center of Rotation	
-		flg: CamFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
-		// Linked Airplane
-		lnk: CamLnk[CamSel],
-		qat: new THREE.Quaternion(),
-		obj: makMsh(),
-		deg: makMsh()
-	}
-//- Adjustments
-	cam_.rot.rotation.order = "YXZ";
-	cam_.par.add(cam_.rot);			// Attach Rotator
-	cam_.obj.rotation.order = "YXZ";
-	cam_.deg.rotation.order = "YXZ";
-	cam_.obj.add(cam_.deg);
-
-//= DEFAULT KEY BINDINGS =======================================================
-let K_BnkL = 37;	// Bank Left (left arrow)
-let K_BnkR = 39;	// Bank Right (right arrow)
-let K_PitU = 40;	// Pitch up (down arrow)
-let K_PitD = 38;	// Pitch down (up arrow)
-let K_Flap = 70;	// Flaps (f)
-let K_Gear = 71;	// Landing gear (g)
-let K_Hook = 72;	// Tailhook (h)
-let K_Canp = 67;	// Canopy (c)
-let K_Brak = 66;	// Brakes (b)
-let K_Guns = 32;	// Guns (spacebar)
-let K_Vizz = 86;	// Toggle visibility (v)
-let K_VU45 = 36;	// View Up (alone or modifier)
-let K_VD45 = 35;	// View Down (alone or modifier)
-let K_VL45 = 33;	// Left 45 degrees
-let K_VR45 = 45;	// Right 45 degrees
-let K_VL90 = 34;	// Left 90 degrees
-let K_VR90 = 46;	// Right 90 degrees
-let K_Look = 16;	// Pan (shift)
-let K_Soun = 83;	// Toggle sound (s)
-let K_Paws = 80;	// Pause (p)
-let K_Auto = 65;	// Autopilot (a)
-let K_Info = 73;	// Info (i)
-
-//= STANDARD SETUP =============================================================
-// 	Display
-let scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x000000);
-let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
-	renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setSize(window.innerWidth,window.innerHeight);
-	renderer.setAnimationLoop(rendAll);
-	// Shadow
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-	// ToneMapping (tends to accentuate tiling)
-	document.body.appendChild(renderer.domElement);
-let	maxAnisotropy = 16;						// ### WebGPU
-// 	Light
-let ambLight = new THREE.AmbientLight(SunCol, 0.2);
-	scene.add(ambLight);
-let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
-	sunLight.position.copy(SunPos);			// ### SunDst
-	sunLight.castShadow = true;
-	sunLight.shadow.camera.left = -ShdBox;
-	sunLight.shadow.camera.right = ShdBox;
-	sunLight.shadow.camera.top = ShdBox;
-	sunLight.shadow.camera.bottom = -ShdBox;
-	sunLight.shadow.camera.near = SunDst-ShdBox; // ### SunDst	
-	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox; // ### SunDst
-	sunLight.shadow.mapSize.width = 2048;
-	sunLight.shadow.mapSize.height = 2048;
-//	sunLight.shadow.radius = 1;				// > 1 = blur
-	// Bias ### WebGPU
-//	sunLight.shadow.bias = -0.0005;			// No Shadow
-//	sunLight.shadow.bias = -0.0002;			// Gap
-//	sunLight.shadow.bias = -0.0001;			// RWing Gap
-//	sunLight.shadow.bias = -0.00005;		// RTail Gap
-	sunLight.shadow.bias = -0.00001;		// LWing Moire
-	scene.add(sunLight);
-// 	Sounds
-let SndFlg = 0;
-let	listener = new THREE.AudioListener();
-let RefDst = 25;	// Reference distance for Positional Audio
-let sound1 = new THREE.PositionalAudio(listener);
-let sound2 = new THREE.PositionalAudio(listener);
-let sound3 = new THREE.PositionalAudio(listener);
-let sound4 = new THREE.PositionalAudio(listener);
-let EngObj = new THREE.Object3D();	// Airplane Engine
-	EngObj.add(sound1);				// Engine
-	EngObj.add(sound2);				// Guns
-	EngObj.add(sound3);				// Prop
-	EngObj.position.z = -5;
-	air_.AirObj.add(EngObj);
-// 	Camera
-let	CamAsp = window.innerWidth/window.innerHeight;
-let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
-	camera.add(listener);
-// 	Clock
-let clock = new THREE.Clock();
-let oldTim, nowTim, difTim = 0;
-// 	Inputs
-	document.addEventListener("mousedown", onDocumentMouseDown, false);
-	document.addEventListener("mouseup", onDocumentMouseUp, false);
-	document.addEventListener('mousewheel', onDocumentMouseWheel, {capture: false, passive: false});
-	document.addEventListener("keydown", onDocumentKeyDown, false);
-	document.addEventListener("keyup", onDocumentKeyUp, false);
-	window.addEventListener("resize", onWindowResize, false);
-// 	Loading Manager
-let loadingManager = new THREE.LoadingManager();
-let RESOURCES_LOADED = false;
-	loadingManager.onLoad = function(){
-		console.log("loaded all resources");
-		RESOURCES_LOADED = true;
-		initAll();
-	};
-let txtrLoader = new THREE.TextureLoader(loadingManager);
-let imagLoader = new THREE.ImageLoader(loadingManager);
-let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
-let gltfLoader = new GLTFLoader(loadingManager);
-let audioLoader = new THREE.AudioLoader(loadingManager);
-// 	Wait Screen
-let loadingScreen = {
-	scene: new THREE.Scene(),
-	camera: new THREE.PerspectiveCamera(90, window.innerWidth/window.innerHeight, 0.1, 100),
-	box: 0
-};
-let boxrot = 0;		//keep = 0
-
 //= PPOINTER LOCK CONTROL ======================================================
-
 class PointerLockControls extends THREE.EventDispatcher {
 	constructor(camera, domElement, plc_) {
 		super();
@@ -833,6 +747,85 @@ let instructions = document.getElementById('instructions');
 		blocker.style.display = 'block';
 		instructions.style.display = '';
 	});
+
+//= DEFAULT KEY BINDINGS =======================================================
+let K_BnkL = 37;	// Bank Left (left arrow)
+let K_BnkR = 39;	// Bank Right (right arrow)
+let K_PitU = 40;	// Pitch up (down arrow)
+let K_PitD = 38;	// Pitch down (up arrow)
+let K_Flap = 70;	// Flaps (f)
+let K_Gear = 71;	// Landing gear (g)
+let K_Hook = 72;	// Tailhook (h)
+let K_Canp = 67;	// Canopy (c)
+let K_Brak = 66;	// Brakes (b)
+let K_Guns = 32;	// Guns (spacebar)
+let K_Vizz = 86;	// Toggle visibility (v)
+let K_VU45 = 36;	// View Up (alone or modifier)
+let K_VD45 = 35;	// View Down (alone or modifier)
+let K_VL45 = 33;	// Left 45 degrees
+let K_VR45 = 45;	// Right 45 degrees
+let K_VL90 = 34;	// Left 90 degrees
+let K_VR90 = 46;	// Right 90 degrees
+let K_Look = 16;	// Pan (shift)
+let K_Soun = 83;	// Toggle sound (s)
+let K_Paws = 80;	// Pause (p)
+let K_Auto = 65;	// Autopilot (a)
+let K_Info = 73;	// Info (i)
+
+//=	VIEW KEYS ==================================================================
+let U45flg = 0;				// Up 45 degrees
+let D45flg = 0;				// Down 45 degrees
+let	L45flg = 0;				// Left 45 degrees
+let R45flg = 0;				// Right 45 degrees
+let L90flg = 0;				// Left 90 degrees
+let R90flg = 0;				// Right 90 degrees
+
+//= CAMERA =====================================================================
+//- Create Cockpit Attach Point
+let	CamPVC = makMsh();
+	CamPVC.rotation.order = "YXZ";
+	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
+	air_.AirPBY.add(CamPVC); 		// Attach CamPVC to AirPBY (### not AirObj)
+//- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
+let CamNum = 2;
+let CamLLD = [new THREE.Vector3(-10,0,30),
+			  new THREE.Vector3(0,0,0.001)];
+let CamAdj = [180,0];				// 180 = Looking In
+let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
+			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
+let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
+			  new THREE.Vector3(45,110,0.5)];
+let CamPar = [air_.AirObj,CamPVC];
+let CamFlg = [0,1];				// 1 = cockpit view
+let CamLnk = [1,1];				// 1 = Linked to Airplane
+//- Shared Variables
+let cam_ = {
+		sel: CamSel,			// View Selector (0 = External, 1 = Internal)
+		num: CamNum,
+		pan: 0,					// Pan Flag (1 = panning)
+		// Camera
+		lld: new THREE.Vector3().copy(CamLLD[CamSel]),	// cam_.rot Lat, Lon, Dst
+		llz: new THREE.Vector3(), // External LLZ
+		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
+		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
+		// Rotator
+		rot: makMsh(),			// Camera Rotator
+		mmr: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
+		// Center of Rotation
+		par: CamPar[CamSel],	// Center of Rotation	
+		flg: CamFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
+		// Linked Airplane
+		lnk: CamLnk[CamSel],
+		qat: new THREE.Quaternion(),
+		obj: makMsh(),
+		deg: makMsh()
+	}
+//- Adjustments
+	cam_.rot.rotation.order = "YXZ";
+	cam_.par.add(cam_.rot);			// Attach Rotator
+	cam_.obj.rotation.order = "YXZ";
+	cam_.deg.rotation.order = "YXZ";
+	cam_.obj.add(cam_.deg);
 
 //= HTML OVERLAY TEXT ==========================================================
 let Air_PwrElement = document.getElementById("Air_Pwr");	// Power
