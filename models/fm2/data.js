@@ -1,4 +1,5 @@
-﻿let data_ = {
+﻿<script type="module">
+let data_ = {
 		// Lift
 		WingSp: 11.58,		// Wing Span (m)
 		WingAr: 24.15,		// Wing Area (m2)
@@ -39,4 +40,4 @@
 		CfLMax: 1.4,		// Maximum Coefficient of Lift
 		BnkMax: 1,			// Maximum bank rate	
 	}
-
+</script>
