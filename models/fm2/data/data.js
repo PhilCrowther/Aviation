@@ -36,7 +36,6 @@ let data_ = {
 		// Optional: Airbrake	
 		DrgCdb: 0,			// Coefficient of Drag - Airbrake
 		// Controls (shared with air_. and main program)
-		PYBmul: new Vector3(0.004,1.0,0.001),	// Basic airplane values
 		CfLMax: 1.4,		// Maximum Coefficient of Lift
 		BnkMax: 1,			// Maximum bank rate	
 	}
