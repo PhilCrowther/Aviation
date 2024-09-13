@@ -22,10 +22,10 @@ class Flight {
 	// Initialize
 	_init(air_) {
 		this.flight = this.Flight(air_);
-		render();
+		update();
 	}
 
-	render() {
+	update() {
 		this.update = this.Update();
 	}
 
