@@ -827,10 +827,11 @@ let cam_ = {
 		deg: makMsh()
 	}
 //- Adjustments
+	camera.rotation.order = "YXZ";
 	cam_.rot.rotation.order = "YXZ";
-	cam_.par.add(cam_.rot);			// Attach Rotator
 	cam_.obj.rotation.order = "YXZ";
 	cam_.deg.rotation.order = "YXZ";
+	cam_.par.add(cam_.rot);		// Attach Rotator
 	cam_.obj.add(cam_.deg);
 
 //= HTML OVERLAY TEXT ==========================================================
@@ -1922,10 +1923,49 @@ function moveSounds() {
 //= CAMERA =====================================================================
 
 function initCamera(camera,cam_) {
-	camera.rotation.order = "YXZ";
 	camera.position.z = -cam_.lld.z;
 	camera.rotation.y = cam_.adj*DegRad;
 	cam_.rot.add(camera);		// Attach to rotator
+	//
+	if (cam_.sel == 0) {
+		mxr_.Adr.visible = true;
+		vxr_.Adr.visible = false;
+		// Flaps
+		if (mxr_.FlL) mxr_.FlL.setTime(anm_.flppos/anmfps);
+		if (mxr_.FlR) mxr_.FlR.setTime(anm_.flppos/anmfps);
+		// Gear
+		if (mxr_.WHL) mxr_.WHL.setTime(anm_.lngpos/anmfps);
+		if (mxr_.WHR) mxr_.WHR.setTime(anm_.lngpos/anmfps);
+		if (mxr_.WBL) mxr_.WBL.setTime(anm_.lngpos/anmfps);
+		if (mxr_.WBR) mxr_.WBR.setTime(anm_.lngpos/anmfps);
+		if (mxr_.WTL) mxr_.WTL.setTime(anm_.lngpos/anmfps);
+		if (mxr_.WTR) mxr_.WTR.setTime(anm_.lngpos/anmfps);
+		if (mxr_.WSL) mxr_.WSL.setTime(anm_.lngpos/anmfps);
+		if (mxr_.WSR) mxr_.WSR.setTime(anm_.lngpos/anmfps);
+		// Canopy
+		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anmfps);
+		// Tailhook
+		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anmfps);
+	}	
+	// 1 = Internal View
+	if (cam_.sel) {
+		mxr_.Adr.visible = false;	
+		vxr_.Adr.visible = true;
+		// Canopy
+		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anmfps);
+	}
+	// Common Changes
+	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
+	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
+	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
+	camera.rotation.y = cam_.adj*DegRad;	// 180 = Looking in
+	cam_.mmr.copy(CamMMR[cam_.sel]);		// Rotation min, max, spd
+	cam_.par = CamPar[cam_.sel]				// Load New Parent
+	cam_.par.add(cam_.rot);					// Attach Rotators
+	cam_.flg = CamFlg[cam_.sel];			// 1 = cockpit
+	cam_.lnk = CamLnk[cam_.sel];			// 1 = Linked to Airplane
+	//
+	moveCamera(camera,cam_);
 }
 
 function moveCamera(camera,cam_) {
@@ -2150,44 +2190,7 @@ function toggleCamera() {
 	// New CamSel
 	cam_.sel++
 	if (cam_.sel == cam_.num) cam_.sel = 0;
-	// 0 = External View
-	if (cam_.sel == 0) {
-		mxr_.Adr.visible = true;
-		vxr_.Adr.visible = false;
-		// Flaps
-		if (mxr_.FlL) mxr_.FlL.setTime(anm_.flppos/anmfps);
-		if (mxr_.FlR) mxr_.FlR.setTime(anm_.flppos/anmfps);
-		// Gear
-		if (mxr_.WHL) mxr_.WHL.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WHR) mxr_.WHR.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WBL) mxr_.WBL.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WBR) mxr_.WBR.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WTL) mxr_.WTL.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WTR) mxr_.WTR.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WSL) mxr_.WSL.setTime(anm_.lngpos/anmfps);
-		if (mxr_.WSR) mxr_.WSR.setTime(anm_.lngpos/anmfps);
-		// Canopy
-		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anmfps);
-		// Tailhook
-		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anmfps);
-	}	
-	// 1 = Internal View
-	if (cam_.sel) {
-		mxr_.Adr.visible = false;	
-		vxr_.Adr.visible = true;
-		// Canopy
-		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anmfps);
-	}
-	// Common Changes
-	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
-	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
-	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
-	camera.rotation.y = cam_.adj*DegRad;	// 180 = Looking in
-	cam_.mmr.copy(CamMMR[cam_.sel]);		// Rotation min, max, spd
-	cam_.par = CamPar[cam_.sel]				// Load New Parent
-	cam_.par.add(cam_.rot);					// Attach Rotators
-	cam_.flg = CamFlg[cam_.sel];			// 1 = cockpit
-	cam_.lnk = CamLnk[cam_.sel];			// 1 = Linked to Airplane
+	initCamera(camera,cam_)
 }
 
 //. Toggle Sound ...............................................................
