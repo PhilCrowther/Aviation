@@ -13,10 +13,24 @@
 
 import {Quaternion,BoxGeometry,MeshBasicMaterial,Mesh} from 'three';
 
+
 class Flight {
+	constructor(air_) {
+		this._init(air_);
+	}
+
+	// Initialize
+	_init(air_) {
+		this.flight = this.Flight(air_);
+		render();
+	}
+
+	render() {
+		this.update = this.Update();
+	}
 
 //= Initialize Ocean ===========================================================
-constructor(air_) {
+Flight(air_) {
 	this.air_ = air_;
 	//- Internal Variables -----------------------------------------------------
 	//	Standard Conversions
@@ -98,11 +112,10 @@ constructor(air_) {
 		this.air_.PwrPct = (ACDrPF+ACDrIF)/(EnThrF*this.dat_.PwrMax);
 		if (this.air_.PwrPct > 1) this.air_.PwrPct = 1;
 	}
-	Flight.update();
 };	// End of Initialize
 
 // = FLIGHT.RENDER = (called by Main Program) ==================================
-update() {
+Update() {
 	// 1. COMPUTE VECTORS ------------------------------------------------------
 	// Inputs: this.air_.SpdMPS, this.air_.GrvMPS
 	// Comps
