@@ -1253,17 +1253,12 @@ function initRoad2(Rod) {
 			Rod.MXV[i] = zx;
 			zx = zx + Rod.Siz;
 		}
-		let geometry = new THREE.PlaneGeometry(20*Ft2Mtr, Rod.Siz);	// N/S Road;
+		let geometry = new THREE.PlaneGeometry(25*Ft2Mtr,Rod.Siz);	// N/S Road;
 		let DatTxt = Rod.Txt;
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = maxAnisotropy;		// ###
 		DatTxt.needsUpdate = true;
-		let material = new THREE.MeshLambertNodeMaterial();
-			material.colorNode = texture(DatTxt);
-//			material.opacityNode = 1;
-			material.depthWrite = false;
-//			material.depthRead = false;
-//			material.transparent = true;
+		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		for (let n = 0; n < Rod.Num; n++) {	// Source
 			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
 			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
@@ -1278,17 +1273,12 @@ function initRoad2(Rod) {
 			Rod.MXV[i] = zx;
 			zx = zx + Rod.Siz;
 		}
-		let geometry = new THREE.PlaneGeometry(Rod.Siz, 20*Ft2Mtr);	// E/W Road;
+		let geometry = new THREE.PlaneGeometry(Rod.Siz,25*Ft2Mtr);	// E/W Road;
 		let DatTxt = Rod.Txt;
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = maxAnisotropy;		// ###
 		DatTxt.needsUpdate = true;
-		let material = new THREE.MeshLambertNodeMaterial();
-			material.colorNode = texture(DatTxt);
-//			material.opacityNode = 1;
-			material.depthWrite = false;
-//			material.depthRead = false;
-//			material.transparent = true;
+		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		for (let n = 0; n < Rod.Num; n++) {	// Source
 			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
 			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
@@ -1301,7 +1291,8 @@ function initRoad2(Rod) {
 		for (let x = 0; x < Rod.RCs; x++) {	// Column
 			Rod.Ptr[n].rotation.x = -90*DegRad;
 			scene.add(Rod.Ptr[n]);
-			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*.999+0.01,-Rod.MZV[z]);
+			Rod.Ptr[n].renderOrder = 1;
+			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*.99+0.01,-Rod.MZV[z]);
 			n++;
 		}
 	}
@@ -1382,7 +1373,6 @@ function moveRoad2(Rod) {
 	let n = 0;
 	for (let z = 0; z < Rod.RCs; z++) {	// Row
 		for (let x = 0; x < Rod.RCs; x++) {	// Col
-//			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*.999+0.01,-Rod.MZV[z]);
 			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*.99+0.01,-Rod.MZV[z]);
 			n++;
 		}
