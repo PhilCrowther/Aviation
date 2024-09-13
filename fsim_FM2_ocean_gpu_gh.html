@@ -932,7 +932,8 @@ function initAll() {
 	// Objects
 	initObject();				// Determine relative XZ location of all objects, including CVE
 	moveMinAlt();				// Determine if over CVE - resulting is special handling
-	flight = Flight(air_);		// position airplane using air_.GrdZed
+	flight = new Flight(air_);	// position airplane using air_.GrdZed
+	flight.update();
 	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 	moveObject();				// recompute Y location of all objects
@@ -1737,7 +1738,7 @@ function moveAirObj() {
 	// Input Brakes
 	air_.BrkVal = InpBrk;				// Brakes
 	// Compute Rotation and Vectors --------------------------------------------
-	Flight.update(air_);
+	flight.update();
 	// View Keys ---------------------------------------------------------------
 	if (cam_.pan < 1) {					// Only If Not Panning		
 		// If No Keys Pressed, Set Default View

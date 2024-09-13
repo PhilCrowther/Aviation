@@ -794,7 +794,8 @@ function WaitScreen() {
 function initAll() {
 	initSkyBox();						// load skybox
 	if (SnFFlg) initSunFlr(scene,camera,SnF_);	// SunFlare
-	flight = Flight(air_);				// position airplane using air_.GrdZed
+	flight = new Flight(air_);			// position airplane using air_.GrdZed
+	flight.update;
 	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 	initGrdTxt();
@@ -805,12 +806,12 @@ function initAll() {
 //	makeTrees();
 	initObject();						// Stationary Objects
 	// Other
-	initCamera(camera,cam_);	// position camera
+	initCamera(camera,cam_);			// position camera
 	PawsText();
 	AutoText();
 	InfoText();
 	// Show stats
-	if (StatOn) {				// show stats
+	if (StatOn) {						// show stats
 		StatOn = new Stats({
 			precision: 3,
 			horizontal: false
@@ -1673,7 +1674,7 @@ function moveAirObj() {
 	// Input Brakes
 	air_.BrkVal = InpBrk;				// Brakes
 	// Compute Rotation and Vectors --------------------------------------------
-	Flight.update(air_);
+	flight.update();
 	// Animate -----------------------------------------------------------------	
 	// Propeller
 	let prpspd =  4 * (air_.PwrPct - 0.6);					// Range = -2.4 to + 1.6
