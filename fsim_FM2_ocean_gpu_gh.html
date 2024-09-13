@@ -1,9 +1,10 @@
 ﻿<!DOCTYPE html>
+<html>
 
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Sep 2024
+Version dated 12 Sep 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -18,7 +19,7 @@ A flight simulation of an animated airplane model over an animated ocean using W
 <div id="container">
 	<div class="overlay1">
 		<div>Throttle: <span id="Air_Pwr"></span></div>
-		<div>AirSpeed: <span id="Air_Spd"></span> mph</div>	
+		<div>AirSpeed: <span id="Air_Spd"></span> mph</div>
 		<div>Altitude: <span id="Air_Alt"></span> ft</div>
 		<div>Heading : <span id="Air_Hdg"></span> deg</div>
 		<div>CoefLift: <span id="Air_CfL"></span></div>
@@ -37,7 +38,6 @@ A flight simulation of an animated airplane model over an animated ocean using W
 		<div><span id="On_Info07"></span></div>
 		<div><span id="On_Info08"></span></div>
 		<div><span id="On_Info09"></span></div>
-		</p>
 	</div>
 </div>
 
@@ -69,9 +69,9 @@ A flight simulation of an animated airplane model over an animated ocean using W
 import * as THREE from "three";
 import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,SpriteNodeMaterial,
 		color,texture,attribute,timerLocal,range,positionLocal,uv,mix,rotateUV
-} from 'three/tsl';
+} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import Stats from 'stats-gl';
+import Stats from "stats-gl";
 // Special Modules
 import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
@@ -409,13 +409,16 @@ let ObjIdx = 0;
 	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";
 	ObjPos[ObjIdx] = new THREE.Vector3(610,30,275);		// meters
 	ObjIdx++;
-
-//= VOLCANO ====================================================================
+//- Volcano Smoke --------------------------------------------------------------
 let VlkAdr = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png";
 let VlkMap = 0;
 let smokeInstancedSprite;
 //let VlkPos = new THREE.Vector3(660,75,300);
 let VlkPos = new THREE.Vector3(50,75,25);
+//-	Island Group ---------------------------------------------------------------
+let IslGrp = new THREE.Group();		// To hold AirExt and AirInt
+	IslGrp.rotation.order = "YXZ";
+	scene.add(IslGrp);				// CVEGrp => (CVE + WakPtr)
 
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
@@ -490,7 +493,8 @@ let air_ = {
 // Adjustments
 	air_.AirObj.rotation.order = "YXZ";
 	air_.AirPBY.rotation.order = "YXZ";
-	air_.AirObj.add(air_.AirPBY);				// PBY includes air_.ACPAdj
+	air_.AirObj.add(air_.AirPBY); // PBY includes air_.ACPAdj
+	scene.add(air_.AirObj);	// Airplane
 //- Load Models and Animations -------------------------------------------------
 //	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
@@ -622,8 +626,9 @@ let BulTim = [0];				// Time in flight
 //	Sounds
 let acsnd3 = "fm2_gun.mp3";		// File (my guns)
 let acvol3 = 0.5;				// Volume
-	
-//= OTHER AIRPLANE =============================================================
+
+//= TRAFFIC ====================================================================
+//- Airplane -------------------------------------------------------------------
 let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 let XPFile = "fm2_flyt_xp1.glb";	// Name of airplane model file (rotated blender file)
 //	Data
@@ -642,8 +647,7 @@ let xac_ = {
 //	Sounds
 let xpsnd1 = "fm2_prop.wav";	// File (xp prop)
 let xpvol1 = 1.0;				// Volume
-
-//= AIRCRAFT CARRIER ===========================================================
+//- Aircraft Carrier -----------------------------------------------------------
 let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
 let XSFile = "CVE_noflag.glb";
 //	Data
@@ -658,8 +662,7 @@ let xsh_ = {
 		Mx0: 0,
 		An0: 0
 	}
-
-//= AIRCRAFT CARRIER FLAG ======================================================
+//. Flag .......................................................................
 let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
 //
 let	flg_ = {
@@ -681,10 +684,13 @@ let	flg_ = {
 		// Viz Test
 		Viz: 152.4				// (meters)
 	}
-
-//= AIRCRAFT CARRIER WAKE ======================================================
+//. Wake .......................................................................
 let WakSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
 let WakMap = 0;
+//.	CVE Group ..................................................................
+let CVEGrp = new THREE.Group();		// To hold AirExt and AirInt
+	CVEGrp.rotation.order = "YXZ";
+	scene.add(CVEGrp);				// CVEGrp => (CVE + WakPtr)
 
 //= PPOINTER LOCK CONTROL ======================================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -773,12 +779,12 @@ let K_Auto = 65;	// Autopilot (a)
 let K_Info = 73;	// Info (i)
 
 //=	VIEW KEYS ==================================================================
-let U45flg = 0;				// Up 45 degrees
-let D45flg = 0;				// Down 45 degrees
-let	L45flg = 0;				// Left 45 degrees
-let R45flg = 0;				// Right 45 degrees
-let L90flg = 0;				// Left 90 degrees
-let R90flg = 0;				// Right 90 degrees
+let U45flg = 0;		// Up 45 degrees
+let D45flg = 0;		// Down 45 degrees
+let	L45flg = 0;		// Left 45 degrees
+let R45flg = 0;		// Right 45 degrees
+let L90flg = 0;		// Left 90 degrees
+let R90flg = 0;		// Right 90 degrees
 
 //= CAMERA =====================================================================
 //- Create Cockpit Attach Point
@@ -848,7 +854,7 @@ let On_PawsNode = document.createTextNode("");
 	On_PawsElement.appendChild(On_PawsNode);
 let Air_AtPElement = document.getElementById("Air_AtP");	// Autopilot
 let Air_AtPNode = document.createTextNode("");
-Air_AtPElement.appendChild(Air_AtPNode);
+	Air_AtPElement.appendChild(Air_AtPNode);
 let On_Info01Element = document.getElementById("On_Info01"); // Info
 let On_Info01Node = document.createTextNode("");
 	On_Info01Element.appendChild(On_Info01Node);
@@ -879,17 +885,6 @@ let On_Info09Node = document.createTextNode("");
 //
 let Air_Pwr, Air_Spd, Air_Hdg, Air_Alt, Air_CfL;
 let On_Paws, Air_AtP, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, On_Info07, On_Info08;
-
-//= 3D OBJECTS AND LINKS =======================================================
-	scene.add(air_.AirObj);			// Airplane
-//	CVE Group
-let CVEGrp = new THREE.Group();		// To hold AirExt and AirInt
-	CVEGrp.rotation.order = "YXZ";
-	scene.add(CVEGrp);				// CVEGrp => (CVE + WakPtr)
-//	Island Group
-let IslGrp = new THREE.Group();		// To hold AirExt and AirInt
-	IslGrp.rotation.order = "YXZ";
-	scene.add(IslGrp);				// CVEGrp => (CVE + WakPtr)
 
 //= MAIN PROGRAMS ==============================================================
 
@@ -2038,7 +2033,7 @@ function onInfo1(){
 	On_Info06Node.nodeValue = "G Key toggles landing gear";
 	On_Info07Node.nodeValue = "F Key toggles flaps"
 	On_Info08Node.nodeValue = "S Key toggles sound";
-	On_Info09Node.nodeValue = "Spacebar fires guns (INOP)";
+	On_Info09Node.nodeValue = "Spacebar fires guns";
 }
 
 //	Info On
@@ -2082,7 +2077,6 @@ function onDocumentMouseUp(event) {
 }
 
 //- Mousewheel -----------------------------------------------------------------
-//  Throttle (Internal - No Pan) /View Distance (External - Pan)
 function onDocumentMouseWheel(event) {
 	event.preventDefault();
 	PwrDif = - event.deltaY * PwrMul;	// Increment = 1%
@@ -2109,15 +2103,16 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VL90) L90flg = 1;			// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
-	if (event.keyCode == K_Vizz) toggleCamera();			// Switch View
-	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
-	if (event.keyCode == K_Paws) toglPaws();			// Toggle Pause
-	if (event.keyCode == K_Auto) toglAuto();			// Toggle AutoPilot
-	if (event.keyCode == K_Info) toglInfo();			// Toggle Information
 	if (event.keyCode == K_Guns) {						// Guns
 		sound3.play();
 		BulFlg = 1;
 	}
+	// Toggle
+	if (event.keyCode == K_Vizz) toggleCamera();		// Switch View
+	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
+	if (event.keyCode == K_Paws) toglPaws();			// Toggle Pause
+	if (event.keyCode == K_Auto) toglAuto();			// Toggle AutoPilot
+	if (event.keyCode == K_Info) toglInfo();			// Toggle Information
 }
 
 //-	Keyboard (Up) --------------------------------------------------------------
@@ -2197,16 +2192,16 @@ function toggleCamera() {
 
 //. Toggle Sound ...............................................................
 function toglSoun() {
-	if (SndFlg < 1) {
-		SndFlg = 1;
+	SndFlg = 1 - SndFlg;
+	if (SndFlg) {	// Off to On
 		sound1.play();
 		sound2.play();
 		sound4.play();
 	}
-	else {
-		SndFlg = 0;
+	else {			// On to Off
 		sound1.stop();
 		sound2.stop();
+		sound3.stop();
 		sound4.stop();
 	}
 }
