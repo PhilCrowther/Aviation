@@ -17,6 +17,7 @@ class Flight {
 
 //= Initialize Ocean ===========================================================
 constructor(air_) {
+	console.log("4b");
 	this.air_ = air_;
 	//- Internal Variables -----------------------------------------------------
 	//	Standard Conversions
@@ -97,9 +98,8 @@ constructor(air_) {
 		// Power
 		this.air_.PwrPct = (ACDrPF+ACDrIF)/(EnThrF*this.dat_.PwrMax);
 		if (this.air_.PwrPct > 1) this.air_.PwrPct = 1;
-		update();
 	}
-//	Flight.update(this.air_);
+	this.update();
 };	// End of Initialize
 
 // = FLIGHT.RENDER = (called by Main Program) ==================================
