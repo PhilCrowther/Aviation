@@ -933,7 +933,7 @@ function initAll() {
 	initObject();				// Determine relative XZ location of all objects, including CVE
 	moveMinAlt();				// Determine if over CVE - resulting is special handling
 	flight = new Flight(air_);	// position airplane using air_.GrdZed
-	flight.update();
+//	flight.update();
 	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 	moveObject();				// recompute Y location of all objects

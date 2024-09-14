@@ -795,7 +795,7 @@ function initAll() {
 	initSkyBox();						// load skybox
 	if (SnFFlg) initSunFlr(scene,camera,SnF_);	// SunFlare
 	flight = new Flight(air_);			// position airplane using air_.GrdZed
-	flight.update;
+//	flight.update;
 	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 	initGrdTxt();
