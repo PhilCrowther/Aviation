@@ -17,7 +17,6 @@ class Flight {
 
 //= Initialize Ocean ===========================================================
 constructor(air_) {
-	console.log("4b");
 	this.air_ = air_;
 	//- Internal Variables -----------------------------------------------------
 	//	Standard Conversions
