@@ -106,7 +106,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 //=	TO DO:
 //-	Program:
 //	* Improve Airplane Shadows
-//	* Fix Bullets
+//	* Fix Error Message when Sound On and Fire Bullets
 //	* Fix Carrier Landing
 //	* Improve Appearance of Prop (use NodeMaterials?)
 //	* Add Exhaust Flashes
@@ -603,10 +603,10 @@ let anm_ = {
 //- Bullets --------------------------------------------------------------------
 //	M2 Browning .50 caliber
 let BulFlg = 0;
-let BulNum = 4;					// Number of bullets
+let BulNum = 16;				// Number of bullets
 let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
-let BulDLT = .5;				// Life of bullet
-let BulSpc = BulDLT/BulNum;		// Bullet spacing
+let BulDLT = 0.5;				// Life of bullet
+let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
 let BulSp2 = BulSpc;			// Bullet spacing time remaining
 let BulPtr = [0];				// Addresses of bullet objects
 	BulPtr[BulNum-1] = 0;
@@ -934,7 +934,6 @@ function initAll() {
 	initObject();				// Determine relative XZ location of all objects, including CVE
 	moveMinAlt();				// Determine if over CVE - resulting is special handling
 	flight = new Flight(air_);	// position airplane using air_.GrdZed
-//	flight.update();
 	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 	moveObject();				// recompute Y location of all objects
@@ -989,7 +988,7 @@ function rendAll() {
 		}
 		// Move Objects
 		moveAirObj();			// Move aircaft
-//		moveBullet();
+		moveBullet();
 		moveObject();			// Move objects
 		moveShpFlg();
 		// Move Grids
@@ -1643,7 +1642,7 @@ function loadAirExt() {
 		// Initialize
 		mxr_.Adr.visible = false;
 		// Load Related Objects only after mxr_.Adr known
-//		loadBullet();
+		loadBullet();
 		loadSounds();
 	});		
 }
@@ -1800,11 +1799,12 @@ function moveAirObj() {
 
 //	Load Bullets
 function loadBullet() {
-	let BltGeo = new THREE.BoxGeometry(0.5,0.5,0.5);	// big bullets = visible
-	let BltMat = new THREE.MeshBasicMaterial({color: 0xffffff});
-	let xp = 8;
+//	let BltGeo = new THREE.BoxGeometry(0.25,0.25,0.25);	// big bullets = visible
+	let BltGeo = new THREE.CircleGeometry(0.15,16);
+	let BltMat = new THREE.MeshBasicNodeMaterial({color: 0xffffff});
+	let xp = 4;
 	for (let i = 0; i < BulNum; i ++) {
-		BulPtr[i] = new THREE.Object3D();
+		BulPtr[i] = makMsh();	//###
 		let left = new THREE.Mesh(BltGeo,BltMat);
 		left.position.x = -xp;
 		BulPtr[i].add(left);
@@ -1818,6 +1818,7 @@ function loadBullet() {
 
 //	Fire Bullets
 function moveBullet() {
+	let tempV3 = new THREE.Vector3();
 	let	BulSpT = BulSpd * DLTime;
 	BulSp2 = BulSp2 - DLTime;
 	if (BulSp2 < 0) BulSp2 = 0;
@@ -1825,15 +1826,15 @@ function moveBullet() {
 		for (let i = 0; i < BulNum; i ++) {
 			// Start New Bullets
 			if (BulTim[i] == 0 && BulSp2 == 0) {
+				// Set Initial Rotation (Position is 0,0,0)
+				BulPtr[i].rotation.copy(air_.AirObj.rotation); //###
 				// Set Initial Speed
-				let tempV3 = rotLLD(new THREE.Vector3(air_.AirRot.x*DegRad, Mod360(-air_.AirRot.y)*DegRad, BulSpT));
+				tempV3 = rotLLD(new THREE.Vector3(air_.AirRot.x, Mod360(-air_.AirRot.y), BulSpT));	//###
 				BullSX[i] = tempV3.x;
 				BullSY[i] = tempV3.y;
 				BullSZ[i] = tempV3.z;
+				//
 				BulTim[i] = DLTime;
-				// Set Initial Rotation
-				BulPtr[i].rotation.z = air_.AirRot.z*DegRad;
-				// Position is 0,0,0
 				BulSp2 = BulSpc;
 				BulPtr[i].visible = true;
 			}
@@ -2146,7 +2147,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
 	if (event.keyCode == K_Guns) {						// Guns
-		sound3.play();
+		if (SndFlg) sound3.play();
 		BulFlg = 1;
 	}
 	// Toggle
@@ -2177,7 +2178,7 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_VR90) R90flg = 0;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
 	if (event.keyCode == K_Guns) {						// Guns
-		sound3.stop();
+		if (SndFlg) sound3.stop();
 		BulFlg = 0;
 	}
 }
@@ -2206,7 +2207,6 @@ function toglSoun() {
 	else {			// On to Off
 		sound1.stop();
 		sound2.stop();
-		sound3.stop();
 		sound4.stop();
 	}
 }
