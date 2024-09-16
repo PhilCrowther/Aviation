@@ -106,7 +106,6 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 //=	TO DO:
 //-	Program:
 //	* Improve Airplane Shadows
-//	* Fix Error Message when Sound On and Fire Bullets
 //	* Fix Carrier Landing
 //	* Improve Appearance of Prop (use NodeMaterials?)
 //	* Add Exhaust Flashes
@@ -544,35 +543,34 @@ let EngSrc = "fm2.wav";				// File (my engine)
 let EngVol = 0.1;					// Volume
 let PrpSrc = "fm2_prop.wav";		// File (my prop)
 let PrpVol = 0.5;					// Volume
-let GunSrc = "fm2_gun.mp3";		// File (my guns)
-let GunVol = 0.5;				// Volume
+let GunSrc = "fm2_gun.mp3";			// File (my guns)
+let GunVol = 0.5;					// Volume
 //
+let	listener = new THREE.AudioListener();
+	camera.add(listener);
 let SndFlg = 0;
 let RefDst = 25;	// Reference distance for Positional Audio
 //- My Engine and Prop
-let	listener1 = new THREE.AudioListener();
-	camera.add(listener1);
-let EngSnd = new THREE.PositionalAudio(listener1);
-let PrpSnd = new THREE.PositionalAudio(listener1);
-let soundXA = new THREE.PositionalAudio(listener1);
+let EngSnd = new THREE.PositionalAudio(listener);
+let PrpSnd = new THREE.PositionalAudio(listener);
 let EngMsh = makMsh();				// Airplane Engine
 	EngMsh.add(EngSnd);				// Engine
 	EngMsh.add(PrpSnd);				// Prop
 	EngMsh.position.z = -5;
 	air_.AirObj.add(EngMsh);
 //- My Guns
-let	listener2 = new THREE.AudioListener();
-	camera.add(listener2);
-let GnLSnd = new THREE.PositionalAudio(listener2);
+let GnLSnd = new THREE.PositionalAudio(listener);
 let GnLMsh = makMsh();				// Gun Left
-	GnLMsh.add(GnLSnd);			// Gun
+	GnLMsh.add(GnLSnd);				// Gun
 	GnLMsh.position.x = -5;
 	air_.AirObj.add(GnLMsh);
-let GnRSnd = new THREE.PositionalAudio(listener2);
+let GnRSnd = new THREE.PositionalAudio(listener);
 let GnRMsh = makMsh();				// Gun Right
-	GnRMsh.add(GnRSnd);			// Gun
+	GnRMsh.add(GnRSnd);				// Gun
 	GnRMsh.position.x = 5;
 	air_.AirObj.add(GnRMsh);
+//- Other Airplane
+let soundXP = new THREE.PositionalAudio(listener);
 //- Play Animations ------------------------------------------------------------
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm8ac, anm8vr = 0;
@@ -1315,7 +1313,7 @@ function loadPlane() {
 		xac_.Ptr.rotation.order = "YXZ";	// Heading, Pitch, Bank
 		xac_.Ptr.rotation.y = xac_.Rot.y*DegRad;
 		//
-		xac_.Ptr.add(soundXA);				// Engine sound
+		xac_.Ptr.add(soundXP);				// Engine sound
 	});
 }
 
@@ -1814,7 +1812,7 @@ function loadBullet() {
 //	let BltGeo = new THREE.BoxGeometry(0.25,0.25,0.25);	// big bullets = visible
 	let BltGeo = new THREE.CircleGeometry(0.15,16);
 	let BltMat = new THREE.MeshBasicNodeMaterial({color: 0xffffff});
-	let xp = 4;
+	let xp = 2;
 	for (let i = 0; i < BulNum; i ++) {
 		BulPtr[i] = makMsh();	//###
 		let left = new THREE.Mesh(BltGeo,BltMat);
@@ -1921,11 +1919,11 @@ function loadSounds() {
 	// XP Engine ---------------------------------------------------------------
 	fname = XPPath + "sounds/" + xpsnd1;
 	audioLoader.load(fname, function(buffer) {
-		soundXA.setBuffer(buffer);
-		soundXA.setRefDistance(RefDst);	// Distance at which sound is full volume
-		soundXA.setLoop(true);
-		soundXA.setVolume(0);
-		soundXA.playbackRate = 1.3;
+		soundXP.setBuffer(buffer);
+		soundXP.setRefDistance(RefDst);	// Distance at which sound is full volume
+		soundXP.setLoop(true);
+		soundXP.setVolume(0);
+		soundXP.playbackRate = 1.3;
 	});
 }
 
@@ -1941,7 +1939,7 @@ function moveSounds() {
 	GnLSnd.setVolume(GunVol);
 	GnRSnd.setVolume(GunVol);
 	// XP Engine
-	soundXA.setVolume(xpvol1);
+	soundXP.setVolume(xpvol1);
 }
 
 //= CAMERA =====================================================================
@@ -2168,8 +2166,8 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
 	if (event.keyCode == K_Guns) {						// Guns
-		if (SndFlg) GnLSnd.play();
-		if (SndFlg) GnRSnd.play();
+		if (SndFlg && !GnLSnd.isPlaying) GnLSnd.play();
+		if (SndFlg && !GnRSnd.isPlaying) GnRSnd.play();
 		BulFlg = 1;
 	}
 	// Toggle
@@ -2229,7 +2227,7 @@ function toglSoun() {
 			GnLSnd.play();
 			GnRSnd.play();
 		}
-		soundXA.play();
+		soundXP.play();
 	}
 	else {			// On to Off
 		EngSnd.stop();
@@ -2238,7 +2236,7 @@ function toglSoun() {
 			GnLSnd.stop();
 			GnRSnd.stop();
 		}
-		soundXA.stop();
+		soundXP.stop();
 	}
 }
 
