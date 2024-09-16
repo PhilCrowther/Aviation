@@ -540,24 +540,39 @@ let vxr_ = {
 		Cam: -0.1
 	}
 //-	Sounds ---------------------------------------------------------------------
-let acsnd1 = "fm2.wav";				// File (my engine)
-let acvol1 = 0.1;					// Volume
-let acsnd2 = "fm2_prop.wav";		// File (my prop)
-let acvol2 = 0.5;					// Volume
+let EngSrc = "fm2.wav";				// File (my engine)
+let EngVol = 0.1;					// Volume
+let PrpSrc = "fm2_prop.wav";		// File (my prop)
+let PrpVol = 0.5;					// Volume
+let GunSrc = "fm2_gun.mp3";		// File (my guns)
+let GunVol = 0.5;				// Volume
+//
 let SndFlg = 0;
-let	listener = new THREE.AudioListener();
 let RefDst = 25;	// Reference distance for Positional Audio
-let sound1 = new THREE.PositionalAudio(listener);
-let sound2 = new THREE.PositionalAudio(listener);
-let sound3 = new THREE.PositionalAudio(listener);
-let sound4 = new THREE.PositionalAudio(listener);
-let EngObj = new THREE.Object3D();	// Airplane Engine
-	EngObj.add(sound1);				// Engine
-	EngObj.add(sound2);				// Guns
-	EngObj.add(sound3);				// Prop
-	EngObj.position.z = -5;
-	air_.AirObj.add(EngObj);
-	camera.add(listener);
+//- My Engine and Prop
+let	listener1 = new THREE.AudioListener();
+	camera.add(listener1);
+let EngSnd = new THREE.PositionalAudio(listener1);
+let PrpSnd = new THREE.PositionalAudio(listener1);
+let soundXA = new THREE.PositionalAudio(listener1);
+let EngMsh = makMsh();				// Airplane Engine
+	EngMsh.add(EngSnd);				// Engine
+	EngMsh.add(PrpSnd);				// Prop
+	EngMsh.position.z = -5;
+	air_.AirObj.add(EngMsh);
+//- My Guns
+let	listener2 = new THREE.AudioListener();
+	camera.add(listener2);
+let GnLSnd = new THREE.PositionalAudio(listener2);
+let GnLMsh = makMsh();				// Gun Left
+	GnLMsh.add(GnLSnd);			// Gun
+	GnLMsh.position.x = -5;
+	air_.AirObj.add(GnLMsh);
+let GnRSnd = new THREE.PositionalAudio(listener2);
+let GnRMsh = makMsh();				// Gun Right
+	GnRMsh.add(GnRSnd);			// Gun
+	GnRMsh.position.x = 5;
+	air_.AirObj.add(GnRMsh);
 //- Play Animations ------------------------------------------------------------
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm8ac, anm8vr = 0;
@@ -624,9 +639,6 @@ let BullPZ = [0];
 	BullPZ[BulNum-1] = 0;
 let BulTim = [0];				// Time in flight
 	BulTim[BulNum-1] = 0;
-//	Sounds
-let acsnd3 = "fm2_gun.mp3";		// File (my guns)
-let acvol3 = 0.5;				// Volume
 
 //= TRAFFIC ====================================================================
 //- Airplane -------------------------------------------------------------------
@@ -1303,7 +1315,7 @@ function loadPlane() {
 		xac_.Ptr.rotation.order = "YXZ";	// Heading, Pitch, Bank
 		xac_.Ptr.rotation.y = xac_.Rot.y*DegRad;
 		//
-		xac_.Ptr.add(sound4);				// Engine sound
+		xac_.Ptr.add(soundXA);				// Engine sound
 	});
 }
 
@@ -1875,52 +1887,61 @@ function moveBullet() {
 // Load Sounds
 function loadSounds() {	
 	// My Engine ---------------------------------------------------------------
-	let fname = AirSrc + "sounds/" + acsnd1;
+	let fname = AirSrc + "sounds/" + EngSrc;
 	audioLoader.load(fname, function(buffer) {
-		sound1.setBuffer(buffer);
-		sound1.setRefDistance(RefDst);
-		sound1.setLoop(true);
-		sound1.setVolume(0);
+		EngSnd.setBuffer(buffer);
+		EngSnd.setRefDistance(RefDst);
+		EngSnd.setLoop(true);
+		EngSnd.setVolume(0);
 	});
 	// My Prop -----------------------------------------------------------------
-	fname = AirSrc + "sounds/" + acsnd2;
+	fname = AirSrc + "sounds/" + PrpSrc;
 	audioLoader.load(fname, function(buffer) {
-		sound2.setBuffer(buffer);
-		sound2.setRefDistance(RefDst);
-		sound2.setLoop(true);
-		sound2.setVolume(0);
+		PrpSnd.setBuffer(buffer);
+		PrpSnd.setRefDistance(RefDst);
+		PrpSnd.setLoop(true);
+		PrpSnd.setVolume(0);
 	});
-	// My Guns -----------------------------------------------------------------
-	fname = AirSrc + "sounds/" + acsnd3;
+	// GunL -----------------------------------------------------------------
+	fname = AirSrc + "sounds/" + GunSrc;
 	audioLoader.load(fname, function(buffer) {
-		sound3.setBuffer(buffer);
-		sound3.setRefDistance(RefDst);
-		sound3.setLoop(true);
-		sound3.setVolume(0);
+		GnLSnd.setBuffer(buffer);
+		GnLSnd.setRefDistance(RefDst);
+		GnLSnd.setLoop(true);
+		GnLSnd.setVolume(0);
+	});
+	// GunR -----------------------------------------------------------------
+	fname = AirSrc + "sounds/" + GunSrc;
+	audioLoader.load(fname, function(buffer) {
+		GnRSnd.setBuffer(buffer);
+		GnRSnd.setRefDistance(RefDst);
+		GnRSnd.setLoop(true);
+		GnRSnd.setVolume(0);
 	});
 	// XP Engine ---------------------------------------------------------------
 	fname = XPPath + "sounds/" + xpsnd1;
 	audioLoader.load(fname, function(buffer) {
-		sound4.setBuffer(buffer);
-		sound4.setRefDistance(RefDst);	// Distance at which sound is full volume
-		sound4.setLoop(true);
-		sound4.setVolume(0);
-		sound4.playbackRate = 1.3;
+		soundXA.setBuffer(buffer);
+		soundXA.setRefDistance(RefDst);	// Distance at which sound is full volume
+		soundXA.setLoop(true);
+		soundXA.setVolume(0);
+		soundXA.playbackRate = 1.3;
 	});
 }
 
 // Change Sounds
 function moveSounds() {
 	// My Engine
-	sound1.setVolume(acvol1 + air_.PwrPct * 0.05);	// Range = .1 to .2
-	sound1.setPlaybackRate(1 + air_.PwrPct * 0.5);	// Range = 1 to 1.5
+	EngSnd.setVolume(EngVol + air_.PwrPct * 0.05);	// Range = .1 to .2
+	EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5);	// Range = 1 to 1.5
 	// My Props
-	sound2.setVolume(acvol2 + air_.PwrPct * 0.15);	// Range = .1 to .4
-	sound2.setPlaybackRate(1 + air_.PwrPct * 0.5);	// Range = 1 to 1.5
+	PrpSnd.setVolume(PrpVol + air_.PwrPct * 0.15);	// Range = .1 to .4
+	PrpSnd.setPlaybackRate(1 + air_.PwrPct * 0.5);	// Range = 1 to 1.5
 	// My Guns
-	sound3.setVolume(acvol3);
+	GnLSnd.setVolume(GunVol);
+	GnRSnd.setVolume(GunVol);
 	// XP Engine
-	sound4.setVolume(xpvol1);
+	soundXA.setVolume(xpvol1);
 }
 
 //= CAMERA =====================================================================
@@ -2147,7 +2168,8 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
 	if (event.keyCode == K_Guns) {						// Guns
-		if (SndFlg) sound3.play();
+		if (SndFlg) GnLSnd.play();
+		if (SndFlg) GnRSnd.play();
 		BulFlg = 1;
 	}
 	// Toggle
@@ -2178,7 +2200,8 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_VR90) R90flg = 0;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
 	if (event.keyCode == K_Guns) {						// Guns
-		if (SndFlg) sound3.stop();
+		GnLSnd.stop();
+		GnRSnd.stop();
 		BulFlg = 0;
 	}
 }
@@ -2200,14 +2223,22 @@ function toggleCamera() {
 function toglSoun() {
 	SndFlg = 1 - SndFlg;
 	if (SndFlg) {	// Off to On
-		sound1.play();
-		sound2.play();
-		sound4.play();
+		EngSnd.play();
+		PrpSnd.play();
+		if (BulFlg) {
+			GnLSnd.play();
+			GnRSnd.play();
+		}
+		soundXA.play();
 	}
 	else {			// On to Off
-		sound1.stop();
-		sound2.stop();
-		sound4.stop();
+		EngSnd.stop();
+		PrpSnd.stop();
+		if (BulFlg) {
+			GnLSnd.stop();
+			GnRSnd.stop();
+		}
+		soundXA.stop();
 	}
 }
 
