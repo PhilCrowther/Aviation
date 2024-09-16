@@ -570,7 +570,7 @@ let GnRMsh = makMsh();				// Gun Right
 	GnRMsh.position.x = 5;
 	air_.AirObj.add(GnRMsh);
 //- Other Airplane
-let soundXP = new THREE.PositionalAudio(listener);
+let XPESnd = new THREE.PositionalAudio(listener);
 //- Play Animations ------------------------------------------------------------
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm8ac, anm8vr = 0;
@@ -615,7 +615,7 @@ let anm_ = {
 	}
 //- Bullets --------------------------------------------------------------------
 //	M2 Browning .50 caliber
-let BulFlg = 0;
+let GunFlg = 0;
 let BulNum = 16;				// Number of bullets
 let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
 let BulDLT = 0.5;				// Life of bullet
@@ -1011,6 +1011,10 @@ function rendAll() {
 		prntHUDval();			// print HUD values
 		if (StatOn) StatOn.update(); // update stats
 	}
+	if (controls.isLocked === false) {
+		stopSounds();
+		SndFlg = GunFlg = 0;
+	}
 	renderer.renderAsync(scene, camera);	// ### WebGOU requires Async
 }
 
@@ -1313,7 +1317,7 @@ function loadPlane() {
 		xac_.Ptr.rotation.order = "YXZ";	// Heading, Pitch, Bank
 		xac_.Ptr.rotation.y = xac_.Rot.y*DegRad;
 		//
-		xac_.Ptr.add(soundXP);				// Engine sound
+		xac_.Ptr.add(XPESnd);				// Engine sound
 	});
 }
 
@@ -1832,7 +1836,7 @@ function moveBullet() {
 	let	BulSpT = BulSpd * DLTime;
 	BulSp2 = BulSp2 - DLTime;
 	if (BulSp2 < 0) BulSp2 = 0;
-	if (BulFlg) {
+	if (GunFlg) {
 		for (let i = 0; i < BulNum; i ++) {
 			// Start New Bullets
 			if (BulTim[i] == 0 && BulSp2 == 0) {
@@ -1919,11 +1923,11 @@ function loadSounds() {
 	// XP Engine ---------------------------------------------------------------
 	fname = XPPath + "sounds/" + xpsnd1;
 	audioLoader.load(fname, function(buffer) {
-		soundXP.setBuffer(buffer);
-		soundXP.setRefDistance(RefDst);	// Distance at which sound is full volume
-		soundXP.setLoop(true);
-		soundXP.setVolume(0);
-		soundXP.playbackRate = 1.3;
+		XPESnd.setBuffer(buffer);
+		XPESnd.setRefDistance(RefDst);	// Distance at which sound is full volume
+		XPESnd.setLoop(true);
+		XPESnd.setVolume(0);
+		XPESnd.playbackRate = 1.3;
 	});
 }
 
@@ -1939,7 +1943,27 @@ function moveSounds() {
 	GnLSnd.setVolume(GunVol);
 	GnRSnd.setVolume(GunVol);
 	// XP Engine
-	soundXP.setVolume(xpvol1);
+	XPESnd.setVolume(xpvol1);
+}
+
+//- Play Sounds
+function playSounds() {
+	// This leaves SndFlg and GunFlg unchanged.
+	if (!EngSnd.isPlaying) EngSnd.play();
+	if (!PrpSnd.isPlaying) PrpSnd.play();
+	if (GunFlg && !GnLSnd.isPlaying) GnLSnd.play();
+	if (GunFlg && !GnRSnd.isPlaying) GnRSnd.play();
+	if (!XPESnd.isPlaying) XPESnd.play();
+}
+
+//- Stop Sounds
+function stopSounds() {
+	// This leaves SndFlg and GunFlg unchanged.
+	if (EngSnd.isPlaying) EngSnd.stop();
+	if (PrpSnd.isPlaying) PrpSnd.stop();
+	if (GnLSnd.isPlaying) GnLSnd.stop();
+	if (GnRSnd.isPlaying) GnRSnd.stop();
+	if (XPESnd.isPlaying) XPESnd.stop();
 }
 
 //= CAMERA =====================================================================
@@ -2166,9 +2190,11 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
 	if (event.keyCode == K_Guns) {						// Guns
-		if (SndFlg && !GnLSnd.isPlaying) GnLSnd.play();
-		if (SndFlg && !GnRSnd.isPlaying) GnRSnd.play();
-		BulFlg = 1;
+		if (PawsOn == 0) {
+			if (SndFlg && !GnLSnd.isPlaying) GnLSnd.play();
+			if (SndFlg && !GnRSnd.isPlaying) GnRSnd.play();
+		};
+		GunFlg = 1;
 	}
 	// Toggle
 	if (event.keyCode == K_Vizz) toggleCamera();		// Switch View
@@ -2199,8 +2225,11 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
 	if (event.keyCode == K_Guns) {						// Guns
 		GnLSnd.stop();
-		GnRSnd.stop();
-		BulFlg = 0;
+		if (PawsOn == 0) {
+			if (GnLSnd.isPlaying) GnLSnd.stop();
+			if (GnRSnd.isPlaying) GnRSnd.stop();
+		};
+		GunFlg = 0;
 	}
 }
 
@@ -2219,30 +2248,26 @@ function toggleCamera() {
 
 //. Toggle Sound ...............................................................
 function toglSoun() {
-	SndFlg = 1 - SndFlg;
-	if (SndFlg) {	// Off to On
-		EngSnd.play();
-		PrpSnd.play();
-		if (BulFlg) {
-			GnLSnd.play();
-			GnRSnd.play();
+	if (PawsOn == 0) {
+		SndFlg = 1 - SndFlg;
+		if (SndFlg) {	// Off to On
+			playSounds();
 		}
-		soundXP.play();
-	}
-	else {			// On to Off
-		EngSnd.stop();
-		PrpSnd.stop();
-		if (BulFlg) {
-			GnLSnd.stop();
-			GnRSnd.stop();
+		else {			// On to Off
+			stopSounds();
 		}
-		soundXP.stop();
 	}
 }
 
 //. Toggle Pause ...............................................................
 function toglPaws() {
 	PawsOn = 1 - PawsOn;
+	if (PawsOn && SndFlg) { //On to Off
+		stopSounds();
+	}
+	if (PawsOn == 0 && SndFlg) { // Off to On
+		playSounds();
+	}
 	PawsText();
 }
 
