@@ -983,7 +983,7 @@ function rendAll() {
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;							// Stop the function here.
 	}
-	if (PawsOn == 0 && LodFlg > 0 && controls.isLocked === true) {
+	if (!PawsOn && LodFlg && controls.isLocked === true) {
 		// Update time
 		nowTim = clock.getElapsedTime();
 		difTim = nowTim-oldTim;
@@ -1588,29 +1588,33 @@ function moveMinAlt() {
 	let PZ = CVEGrp.position.z;
 	// Compare to my Position (All in Positive Units)
 	if (CVEXlf < PX && CVEXrt > PX && CVEZfr > PZ && CVEZbk < PZ) {
-		air_.GrdZed = CVEAlt;				// If Above
+		air_.GrdZed = CVEAlt;			// If Above
 		InpBrk = 0;						// Default = no brake
 		if (air_.GrdFlg) {				// If Landed
-			if (air_.PwrPct < 0.5) InpBrk = 0.01;	// Auto-braking if landed and power < 50%
-			let CVEUPH = xsh_.Spd * 3600 / 5280;	// CVE speed
-			if (air_.MovFlg == 0) {
-				if (air_.SpdKPH <= CVEUPH) {	// If airplane speed <= CVE speed, lock to deck	
-					air_.MovFlg = 1;			// Flag
+			if (air_.PwrPct < 0.5) InpBrk = 0.01; // Auto-braking if power < 50%
+			let CVEKPH = xsh_.Spd*3.6;	// CVE speed
+			if (!air_.MovFlg) {
+				if (air_.SpdKPH <= CVEKPH) { // If airplane speed <= CVE speed, lock to deck	
+					air_.MovFlg = 1;	// Flag
 					InpBrk = 0;			// Brake off
 					if (anm.thkpos < 180) anm.thkspd = 1;	// Retract tailhook
 				}
 			}
-			if (air_.MovFlg > 0 && air_.SpdKPH > CVEUPH) air_.MovFlg = 0;	// Unlock from deck if moving faster than CVE
+			if (air_.MovFlg && air_.SpdKPH > CVEKPH) air_.MovFlg = 0;	// Unlock from deck if moving faster than CVE
 			if (air_.MovFlg) {			// Otherwise remain locked to deck
-				air_.SpdKPH = air_.MovFlg;
 				// Recompute Speed and Position
 				air_.MapSpd.z = -xsh_.MpS.z;
 				air_.MapSpd.x = -xsh_.MpS.x;
 				air_.MapPos.z = air_.MapPos.z + air_.MapSpd.z;
 				air_.MapPos.x = air_.MapPos.x + air_.MapSpd.x;
-				// Recompute SpdDLT
-				air_.SpdKPH = CVEUPH;					// (MPH)
-				air_.SpdMPS = air_.SpdKPH * 5280 / 3600;		// (fps)
+				air_.MapSPS.x = air_.MapSpd.x;
+				air_.MapSPS.z = air_.MapSpd.z;			
+				// Recompute air_.Spd
+				if (air_.PwrPct < 0.5) air_.SpdKPH = air_.SpdMPS = 0;
+				else {
+					air_.SpdKPH = CVEKPH;	// (KPH)
+					air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
+				}
 				// Point Same Direction as Carrier
 				// [WIP]
 			}
@@ -1779,7 +1783,7 @@ function moveAirObj() {
 		// Up 45
 		else if (U45flg) {
 			cam_.lld.x = 315;
-			if (cam_.flg == 0 && (air_.GrdFlg)) cam_.lld.x = 0;
+			if (!cam_.flg && (air_.GrdFlg)) cam_.lld.x = 0;
 			// Look Up Left 45
 			if (L45flg) cam_.lld.y = 45;
 			// Look Up Right 45
@@ -1813,12 +1817,15 @@ function moveAirObj() {
 
 //	Load Bullets
 function loadBullet() {
-//	let BltGeo = new THREE.BoxGeometry(0.25,0.25,0.25);	// big bullets = visible
 	let BltGeo = new THREE.CircleGeometry(0.15,16);
-	let BltMat = new THREE.MeshBasicNodeMaterial({color: 0xffffff});
+	let BltMat = new THREE.MeshBasicNodeMaterial({
+		colorNode: color(0xffffff),	// s/b red, but white more visible
+		transparent:true,
+		opacityNode: 0.8 // Opacity
+	});
 	let xp = 2;
 	for (let i = 0; i < BulNum; i ++) {
-		BulPtr[i] = makMsh();	//###
+		BulPtr[i] = makMsh();
 		let left = new THREE.Mesh(BltGeo,BltMat);
 		left.position.x = -xp;
 		BulPtr[i].add(left);
@@ -1832,21 +1839,21 @@ function loadBullet() {
 
 //	Fire Bullets
 function moveBullet() {
-	let tempV3 = new THREE.Vector3();
+	let BulSV3 = new THREE.Vector3();
 	let	BulSpT = BulSpd * DLTime;
 	BulSp2 = BulSp2 - DLTime;
 	if (BulSp2 < 0) BulSp2 = 0;
 	if (GunFlg) {
 		for (let i = 0; i < BulNum; i ++) {
 			// Start New Bullets
-			if (BulTim[i] == 0 && BulSp2 == 0) {
+			if (!BulTim[i] && !BulSp2) {
 				// Set Initial Rotation (Position is 0,0,0)
 				BulPtr[i].rotation.copy(air_.AirObj.rotation); //###
 				// Set Initial Speed
-				tempV3 = rotLLD(new THREE.Vector3(air_.AirRot.x, Mod360(-air_.AirRot.y), BulSpT));	//###
-				BullSX[i] = tempV3.x;
-				BullSY[i] = tempV3.y;
-				BullSZ[i] = tempV3.z;
+				BulSV3 = rotLLD(new THREE.Vector3(air_.AirRot.x,Mod360(-air_.AirRot.y),BulSpT));
+				BullSX[i] = BulSV3.x;
+				BullSY[i] = BulSV3.y;
+				BullSZ[i] = BulSV3.z;
 				//
 				BulTim[i] = DLTime;
 				BulSp2 = BulSpc;
@@ -1873,12 +1880,8 @@ function moveBullet() {
 	for (let i = 0; i < BulNum; i ++) {
 		if (BulTim[i] > BulDLT) {
 			BulTim[i] = 0;
-			BullSX[i] = 0;
-			BullSY[i] = 0;
-			BullSZ[i] = 0;
-			BullPX[i] = 0;
-			BullPY[i] = 0;
-			BullPZ[i] = 0;
+			BullSX[i] = BullSY[i] = BullSZ[i] = 0;
+			BullPX[i] = BullPY[i] = BullPZ[i] = 0;
 			BulPtr[i].visible = false;
 		}
 	}
@@ -2029,7 +2032,7 @@ function moveCamera(camera,cam_) {
 		}
 		// External View
 		else {
-			if (air_.GrdFlg > 0 && cam_.lld.x > -12.5) cam_.lld.x = -12.5;
+			if (air_.GrdFlg && cam_.lld.x > -12.5) cam_.lld.x = -12.5;
 		}
 		InpMos.x = 0;
 		InpMos.y = 0;
@@ -2190,7 +2193,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
 	if (event.keyCode == K_Guns) {						// Guns
-		if (PawsOn == 0) {
+		if (!PawsOn) {
 			if (SndFlg && !GnLSnd.isPlaying) GnLSnd.play();
 			if (SndFlg && !GnRSnd.isPlaying) GnRSnd.play();
 		};
@@ -2225,7 +2228,7 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
 	if (event.keyCode == K_Guns) {						// Guns
 		GnLSnd.stop();
-		if (PawsOn == 0) {
+		if (!PawsOn) {
 			if (GnLSnd.isPlaying) GnLSnd.stop();
 			if (GnRSnd.isPlaying) GnRSnd.stop();
 		};
@@ -2248,7 +2251,7 @@ function toggleCamera() {
 
 //. Toggle Sound ...............................................................
 function toglSoun() {
-	if (PawsOn == 0) {
+	if (!PawsOn) {
 		SndFlg = 1 - SndFlg;
 		if (SndFlg) {	// Off to On
 			playSounds();
@@ -2265,7 +2268,7 @@ function toglPaws() {
 	if (PawsOn && SndFlg) { //On to Off
 		stopSounds();
 	}
-	if (PawsOn == 0 && SndFlg) { // Off to On
+	if (!PawsOn && SndFlg) { // Off to On
 		playSounds();
 	}
 	PawsText();
