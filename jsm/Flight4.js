@@ -44,7 +44,7 @@ constructor(air_) {
 	// Comps
 	let DLTim2 = this.air_.DLTime*this.air_.DLTime;
 	let GrvDLT = this.air_.GrvMPS*DLTim2;
-	this.FrcAcc = DLTim2/this.air_.ACMass; // Convert Force to Acceleration
+	this.FrcAcc = DLTim2/this.air_.ACMass; 		// Convert Force to Acceleration
 	// Orientation
 	this.air_.AirObj.rotation.z = Mod360(360-this.air_.AirRot.z)*this.DegRad; // Bank
 	this.air_.AirObj.rotation.x = Mod360(this.air_.AirRot.x)*this.DegRad;	// Pitch
@@ -56,7 +56,7 @@ constructor(air_) {
 	let ACPInc = ACPMax-this.dat_.AngInc;		// Net max aircraft pitch adjustment (10)
 	// Speed
 	if (this.air_.SpdKPH <= 0) this.air_.SpdKPH = this.SmallV;	// Avoid division by zero 211031
-	this.air_.SpdMPS = this.air_.SpdKPH*1000/3600 ;		// (MPS)
+	this.air_.SpdMPS = this.air_.SpdKPH/3.6;	// (MPS)
 	this.air_.SpdMPF = this.air_.SpdMPS*this.air_.DLTime;	// Aircraft Speed (DLT)
 	// DynPres
 	let DynPrs = (this.air_.SpdMPS*this.air_.SpdMPS)*this.air_.AirDSL/2;	// Dynamic Pressure	
@@ -78,7 +78,7 @@ constructor(air_) {
 		// Power Setting for Level Flight
 		let QSTval = DynPrs*this.dat_.WingAr;
 		let CfLftT = this.air_.CfLift+this.air_.CfFlap;
-		let ACLftF =  CfLftT*QSTval;		// Lift[ft-lbs] - can be positive or negative
+		let ACLftF =  CfLftT*QSTval;			// Lift[ft-lbs] - can be positive or negative
 		// Thrust (Default = Prop)
 		let EnThrF = this.ThrstK*(this.dat_.PwrMax*this.air_.PwrPct+this.dat_.WEPMax*this.air_.SupPct)/this.air_.SpdMPS;
 		if (this.air_.SpdMPS < 4.572) {			// Set Cap on Initial Thrust
@@ -87,19 +87,18 @@ constructor(air_) {
 		if (this.dat_.JetMax) EnThrF = this.dat_.JetMax*this.air_.PwrPct+this.dat_.AftMax*this.air_.SupPct;	// Jet
 		// Drag
 		let DrgCdi = (CfLftT*CfLftT)/(this.WingAs*this.dat_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
-		let ACDrIF = DrgCdi*QSTval;			// Induced Drag = ACLftF^2/(DynPrs*WingSp^2*this.dat_.WingEf*PI)
-		let CfDF = this.air_.FlpPct*this.dat_.DrgCdf;	// Coefficient of Parasitic Drag - Flaps
-		let CfDG = this.air_.LngPct*this.dat_.DrgCdg;	// Coefficient of Parasitic Drag - Landing Gear
-		let CfDB = this.air_.BrkPct*this.dat_.DrgCdb;	// Coefficient of Parasitic Drag - Air Brake
-		let CfDS = this.air_.SplPct*this.dat_.DrgCds;	// Coefficient of Parasitic Drag - Spoiler
-		let DrgCdp = this.dat_.DrgCd0+CfDF+CfDG+CfDB+CfDS;	// Total Coefficient of Parasitic Drag
-		let ACDrPF = DrgCdp*QSTval;			// Parasitic Drag =  Cd0*DynPres*WingA
+		let ACDrIF = DrgCdi*QSTval;				// Induced Drag = ACLftF^2/(DynPrs*WingSp^2*this.dat_.WingEf*PI)
+		let CfDF = this.air_.FlpPct*this.dat_.DrgCdf; // Coefficient of Parasitic Drag - Flaps
+		let CfDG = this.air_.LngPct*this.dat_.DrgCdg; // Coefficient of Parasitic Drag - Landing Gear
+		let CfDB = this.air_.BrkPct*this.dat_.DrgCdb; // Coefficient of Parasitic Drag - Air Brake
+		let CfDS = this.air_.SplPct*this.dat_.DrgCds; // Coefficient of Parasitic Drag - Spoiler
+		let DrgCdp = this.dat_.DrgCd0+CfDF+CfDG+CfDB+CfDS; // Total Coefficient of Parasitic Drag
+		let ACDrPF = DrgCdp*QSTval;				// Parasitic Drag =  Cd0*DynPres*WingA
 		// Power
 		this.air_.PwrPct = (ACDrPF+ACDrIF)/(EnThrF*this.dat_.PwrMax);
 		if (this.air_.PwrPct > 1) this.air_.PwrPct = 1;
 	}
 	this.update();
-//	Flight.update(this.air_);
 };	// End of Initialize
 
 // = FLIGHT.RENDER = (called by Main Program) ==================================
@@ -109,7 +108,7 @@ update() {
 	// Comps
 	let DLTim2 = this.air_.DLTime*this.air_.DLTime;
 	let GrvDLT = this.air_.GrvMPS*DLTim2;
-	this.FrcAcc = DLTim2/this.air_.ACMass;			// Convert Force to Acceleration
+	this.FrcAcc = DLTim2/this.air_.ACMass;		// Convert Force to Acceleration
 	this.air_.SpdMPF = this.air_.SpdMPS*this.air_.DLTime;
 	// Compute Dynamic Pressure
 	let DynPrs = (this.air_.SpdMPS*this.air_.SpdMPS)*this.air_.AirDSL/2;	// Dynamic Pressure
@@ -117,9 +116,9 @@ update() {
 	let QSTval = DynPrs*this.dat_.WingAr;
 	// Compute Max Lift
 	let LftMax = this.dat_.GrvMax*GrvDLT;		// Maximum G-accel
-	LftMax = (LftMax + this.dat_.GrvMax)*GrvDLT;	// ### ATP
+	LftMax = (LftMax + this.dat_.GrvMax)*GrvDLT; // AutoPilot
 	// Compute Max Bank (### ATP)
-	let GrvMaxF = this.dat_.GrvMax*this.air_.Weight;	// Max G-Force 
+	let GrvMaxF = this.dat_.GrvMax*this.air_.Weight; // Max G-Force 
 	let LftMaxF = this.air_.CfLMax*DynPrs*this.dat_.WingAr;	// Max Lift at this Speed
 	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
 	this.air_.MaxBnk = Math.acos(this.air_.Weight/LftMaxF)*this.RadDeg;	// Max Bank Angle for Max Lift
@@ -136,13 +135,13 @@ update() {
 	if (this.air_.CfLift > this.air_.CfLMax) this.air_.CfLift = this.air_.CfLMax;
 	if (this.air_.CfLift < -this.air_.CfLMax) this.air_.CfLift = -this.air_.CfLMax;
 	//
-	let ACLftF = CfLftT*QSTval;				// Lift[ft-lbs] - can be positive or negative
-	let ACLift = ACLftF*this.FrcAcc;				// Acceleration (DLT)
+	let ACLftF = CfLftT*QSTval;					// Lift[ft-lbs] - can be positive or negative
+	let ACLift = ACLftF*this.FrcAcc;			// Acceleration (DLT)
 	if (ACLift > 0 && ACLift > LftMax) ACLift = LftMax;	// Limit to Max Gs (pos)
 	if (ACLift < 0 && ACLift < -LftMax) ACLift = -LftMax;	// Limit to Max Gs (neg)
 	let ACLftD = (ACLift/this.air_.SpdMPF)*this.RadDeg;	// Degrees = ACLift*180/(PI()*V) = (ACLift/V)*this.RadDeg
 	// Compute this.air_.RotDif.x
-	this.air_.RotDif.x = ACLftD;					// Pitch Degrees (before Gravity)
+	this.air_.RotDif.x = ACLftD;				// Pitch Degrees (before Gravity)
 	// b. COMPUTE GRAVITY CHANGES ..............................................
 	let GrvThr = GrvDLT*Math.sin(this.air_.AirObj.rotation.x);	// Gravity opposing Thrust = Grav * sin(ACPrad)
 	let GrvACP = GrvDLT*Math.cos(this.air_.AirObj.rotation.x);	// Vertical Gravity
@@ -157,17 +156,17 @@ update() {
 	// Drag
 	let DrgCdi = (CfLftT*CfLftT)/(this.WingAs*this.dat_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
 	let ACDrIF = DrgCdi*QSTval;					// Induced Drag = ACLftF^2/(DynPrs*WingSp^2*this.dat_.WingEf*PI)
-	let CfDF = this.air_.FlpPct*this.dat_.DrgCdf;	// Coefficient of Parasitic Drag - Flaps
-	let CfDG = this.air_.LngPct*this.dat_.DrgCdg;	// Coefficient of Parasitic Drag - Landing Gear
-	let CfDB = this.air_.BrkPct*this.dat_.DrgCdb;	// Coefficient of Parasitic Drag - Air Brake
-	let CfDS = this.air_.SplPct*this.dat_.DrgCds;	// Coefficient of Parasitic Drag - Spoiler
+	let CfDF = this.air_.FlpPct*this.dat_.DrgCdf; // Coefficient of Parasitic Drag - Flaps
+	let CfDG = this.air_.LngPct*this.dat_.DrgCdg; // Coefficient of Parasitic Drag - Landing Gear
+	let CfDB = this.air_.BrkPct*this.dat_.DrgCdb; // Coefficient of Parasitic Drag - Air Brake
+	let CfDS = this.air_.SplPct*this.dat_.DrgCds; // Coefficient of Parasitic Drag - Spoiler
 	let DrgCdp = this.dat_.DrgCd0+CfDF+CfDG+CfDB+CfDS; // Total Coefficient of Parasitic Drag
 	let ACDrPF = DrgCdp*QSTval;					// Parasitic Drag =  Cd0*DynPres*WingA
 	let ACDrRF = 0;								// Rolling Friction (default)
 	if (this.air_.GrdFlg) ACDrRF = this.air_.ACMass*this.air_.GrvMPS*this.ACDrGF;	// Rolling Friction on Ground
 	// Net
 	let ACThrF = EnThrF-ACDrPF-ACDrIF-ACDrRF;	// Net Thrust Force
-	let ACTrst = ACThrF*this.FrcAcc;				// Net Thrust Accel
+	let ACTrst = ACThrF*this.FrcAcc;			// Net Thrust Accel
 	let ACThrG = ACTrst-GrvThr;					// Net Thrust after Gravity +/-
 	// GrdFlg
 	if (this.air_.GrdFlg) {
@@ -183,7 +182,7 @@ update() {
 //	temp	this.air_.AGBank = MaxVal(this.air_.AGBank,this.air_.BnkMax);		// Max values	
 			this.air_.RotDif.z = -this.air_.AirRot.z;		// Wheels on ground
 			this.air_.RotDif.x = -this.air_.AirRot.x;		// Direction of flight = 0
-			GrvACD = 0;						// No pitch down due to gravity
+			GrvACD = 0;							// No pitch down due to gravity
 		}
 	}	
 	// Compute Aircraft Pitch Adjustment
@@ -201,11 +200,11 @@ update() {
 			}
 			// If Decelerating Through MinSpd
 			if (this.air_.SpdKPH < this.dat_.TDrSpd && this.AuFlag == 0) {
-				this.AuFlag = 2;					// Decelerating
+				this.AuFlag = 2;				// Decelerating
 			}
 			// If Decelerating then Accelerating
 			if (this.AuFlag == 2 && ACThrG > 0) {
-				this.AuFlag = 1;					// Accelerating
+				this.AuFlag = 1;				// Accelerating
 			}
 			// Either Way
 			if (this.air_.SpdKPH < this.dat_.TDrSpd) {
@@ -272,8 +271,8 @@ update() {
 	// a. Compute Speed
 	this.air_.SpdMPF = this.air_.SpdMPF+ACThrG;
 	if (this.air_.SpdMPF <= 0) this.air_.SpdMPF = 0.0001;	// Set Minimum Speed to avoid division by zero  211031
-	this.air_.SpdKPH = this.air_.SpdMPF*3600/(1000*this.air_.DLTime);	// (KPH)
-	this.air_.SpdMPS = this.air_.SpdKPH*1000/3600 ;	// (MPS)
+	this.air_.SpdKPH = this.air_.SpdMPF*3.6/this.air_.DLTime;	// (KPH)
+	this.air_.SpdMPS = this.air_.SpdKPH/3.6;	// (MPS)
 	// b1. Compute PSpd (before gravity)
 	ACPrad = this.air_.AirRot.x*this.DegRad;
 	let PSpdZV = this.air_.SpdMPF*Math.abs(Math.cos(ACPrad));
@@ -322,8 +321,8 @@ update() {
 
 //  Converts degrees to 360
 function Mod360(deg) {
-	while (deg < 0) deg = deg+360;			// Make deg a positive number
-	deg = deg % 360;						// Compute remainder of any number divided by 360
+	while (deg < 0) deg = deg+360;				// Make deg a positive number
+	deg = deg % 360;							// Compute remainder of any number divided by 360
 return deg;}
 
 //  Converts 360 degrees to +/- 180
