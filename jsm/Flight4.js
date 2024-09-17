@@ -98,6 +98,7 @@ constructor(air_) {
 		this.air_.PwrPct = (ACDrPF+ACDrIF)/(EnThrF*this.dat_.PwrMax);
 		if (this.air_.PwrPct > 1) this.air_.PwrPct = 1;
 	}
+	this.update();
 //	Flight.update(this.air_);
 };	// End of Initialize
 
