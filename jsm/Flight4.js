@@ -56,7 +56,7 @@ constructor(air_) {
 	let ACPInc = ACPMax-this.dat_.AngInc;		// Net max aircraft pitch adjustment (10)
 	// Speed
 	if (this.air_.SpdKPH <= 0) this.air_.SpdKPH = this.SmallV;	// Avoid division by zero 211031
-	this.air_.SpdMPS = this.air_.SpdKPH*1000/3600 ;		// (MPS)
+	this.air_.SpdMPS = this.air_.SpdKPH/3.6;	// (MPS)
 	this.air_.SpdMPF = this.air_.SpdMPS*this.air_.DLTime;	// Aircraft Speed (DLT)
 	// DynPres
 	let DynPrs = (this.air_.SpdMPS*this.air_.SpdMPS)*this.air_.AirDSL/2;	// Dynamic Pressure	
@@ -271,8 +271,8 @@ update() {
 	// a. Compute Speed
 	this.air_.SpdMPF = this.air_.SpdMPF+ACThrG;
 	if (this.air_.SpdMPF <= 0) this.air_.SpdMPF = 0.0001;	// Set Minimum Speed to avoid division by zero  211031
-	this.air_.SpdKPH = this.air_.SpdMPF*3600/(1000*this.air_.DLTime);	// (KPH)
-	this.air_.SpdMPS = this.air_.SpdKPH*1000/3600 ;	// (MPS)
+	this.air_.SpdKPH = this.air_.SpdMPF*3.6*this.air_.DLTime;	// (KPH)
+	this.air_.SpdMPS = this.air_.SpdKPH/3.6;	// (MPS)
 	// b1. Compute PSpd (before gravity)
 	ACPrad = this.air_.AirRot.x*this.DegRad;
 	let PSpdZV = this.air_.SpdMPF*Math.abs(Math.cos(ACPrad));
