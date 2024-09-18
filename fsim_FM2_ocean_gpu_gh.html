@@ -1816,42 +1816,32 @@ function moveAirObj() {
 
 //	Load Bullets
 function loadBullet() {
-	let BltGeo = new THREE.CircleGeometry(0.15,16);
-//	let BltMat = new THREE.MeshBasicNodeMaterial({
-//		colorNode: color(0xffffff),	// s/b red, but white more visible
-//		transparent:true,
-//		opacityNode: 0.8 // Opacity
-//	});
-	let BltMat = new THREE.MeshStandardNodeMaterial({
-		color: 0xffffff,	// s/b red, but white more visible
-		colorNode: color(0xffffff),	// s/b red, but white more visible
-		emissiveNode: color(0xffffff),
-		emissiveIntensity: 100,
-		blending: THREE.AdditiveBlending,
-//		metalnessNode: 1,
-//		transparent:true,
-//		opacityNode: 0.8 // Opacity
-	});
-//	let BltMat = new THREE.PointsMaterial({
-//		color: 0xffffff,	// s/b red, but white more visible
-//		blending: THREE.AdditiveBlending,
-//		blending: THREE.MultiplyBlending
-//		colorNode: color(0x000000),	// s/b red, but white more visible
-//		emissiveNode: color(0xffffff),
-//		emissiveIntensity: 100,
-//		metalnessNode: 1,
-//		transparent:true,
-//		opacityNode: 0.8 // Opacity
-//	});
+	let line = 0
+	let points = [];
+		points.push(new THREE.Vector3(0,0,-10));
+		points.push(new THREE.Vector3(0,0,10));
+	let BltGeo = new THREE.BufferGeometry().setFromPoints(points);
+	let BlWMat = new THREE.LineBasicMaterial({color: 0xffffff});
+	let BlBMat = new THREE.LineBasicMaterial({color: 0x000000});
+	// Note: MeshBasicNodeMaterial not allow envMap
 	let xp = 2;
 	for (let i = 0; i < BulNum; i ++) {
 		BulPtr[i] = makMsh();
-		let left = new THREE.Mesh(BltGeo,BltMat);
-		left.position.x = -xp;
-		BulPtr[i].add(left);
-		let rite = new THREE.Mesh(BltGeo,BltMat);
-		rite.position.x = xp;
-		BulPtr[i].add(rite);
+		// Left
+		line = new THREE.Line(BltGeo,BlWMat);
+		line.position.x = -xp-0.1;
+		BulPtr[i].add(line);
+		line = new THREE.Line(BltGeo,BlBMat);
+		line.position.x = -xp;
+		BulPtr[i].add(line);
+		// Rite
+		line = new THREE.Line(BltGeo,BlWMat);
+		line.position.x = xp+0.1;
+		BulPtr[i].add(line);
+		line = new THREE.Line(BltGeo,BlBMat);
+		line.position.x = xp;
+		BulPtr[i].add(line);
+		//
 		scene.add(BulPtr[i]);
 		BulPtr[i].visible = false;
 	}
