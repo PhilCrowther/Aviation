@@ -1590,13 +1590,13 @@ function moveMinAlt() {
 		air_.GrdZed = CVEAlt;			// If Above
 		InpBrk = 0;						// Default = no brake
 		if (air_.GrdFlg) {				// If Landed
-			if (air_.PwrPct < 0.5) InpBrk = 0.01; // Auto-braking if power < 50%
+			if (air_.PwrPct < 0.5 && anm_.thkpos < 180) InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
 			let CVEKPH = xsh_.Spd*3.6;	// CVE speed
 			if (!air_.MovFlg) {
 				if (air_.SpdKPH <= CVEKPH) { // If airplane speed <= CVE speed, lock to deck	
 					air_.MovFlg = 1;	// Flag
 					InpBrk = 0;			// Brake off
-					if (anm.thkpos < 180) anm.thkspd = 1;	// Retract tailhook
+					if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
 				}
 			}
 			if (air_.MovFlg && air_.SpdKPH > CVEKPH) air_.MovFlg = 0;	// Unlock from deck if moving faster than CVE
