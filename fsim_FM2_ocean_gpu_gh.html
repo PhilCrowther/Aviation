@@ -67,7 +67,8 @@ A flight simulation of an animated airplane model over an animated ocean using W
 
 // Basic Modules
 import * as THREE from "three";
-import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,MeshStandardNodeMaterial,SpriteNodeMaterial,
+import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,
+		MeshStandardNodeMaterial,SpriteNodeMaterial,LineBasicNodeMaterial,
 		color,texture,attribute,timerLocal,range,positionLocal,uv,mix,
 //		rotateUV	//r168
 } from "three/tsl";
@@ -105,12 +106,12 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 //=	TO DO:
 //-	Program:
-//	* Improve Airplane Shadows
+//	* Change AirSpeed indicator to read IAS not TAS
 //	* Improve Appearance of Prop (use NodeMaterials?)
 //	* Add Exhaust Flashes
 //	* Convert waving flag to GPU shader
+//	* Improve Airplane Shadows (after r168?)
 //-	Flight Module:
-//	* Add change in Air Density
 //	* Add lag to tail leaving/returning to ground
 
 //= INPUTS =====================================================================
@@ -157,8 +158,12 @@ let MtrMil = 1609.34;		// Meters per Mile
 let	GrvMPS = 9.80665; 		// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
-//	Starting Air Density				
-let	AirDSL = 1.225;			// Density - Sea Level (kg/m3)
+//	Starting Air Density
+let AirDns = 1.225			// Density - Sea Level (kg/m3)
+let	AirTmp = 288.15;		// Temperature - Sea Level (K)
+//	AirDSL = 1.225*(((288.15-0.0065*H)/288.15)^4.25587971)
+//let AirDSL = AirDns*Math.exp(((AirTmp-0.0065*BegPos.y)/AirTmp),4.25587971);
+let AirDSL = AirDns*Math.pow(((AirTmp-0.0065*BegPos.y)/AirTmp),4.25587971);
 //- Convert Starting Values
 if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
@@ -179,7 +184,7 @@ let anmfps = 24;			// Blender FPS
 let aoarng = 20;			// AoA range (model)
 
 //= SUN VALUES =================================================================
-let SunCol = 0xffffff;		// Sun
+let SunCol = "white";		// Sun
 let SunInt = 3;				// Default intensity of light/sun
 //- Rotation and Position (fixed)
 let SunLat = 23;			// Direction - Vert (+/- 90)
@@ -195,7 +200,7 @@ let ShdDst = 5000;			// [feet] for shadow
 //= STANDARD SETUP =============================================================
 // 	Display
 let scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x000000);
+	scene.background = new THREE.Color("black");
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
@@ -265,7 +270,7 @@ let boxrot = 0;
 let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 
 //= FOG ========================================================================
-let FogCol = 0xbab4a6;			// Sky (for Fog only)
+let FogCol = 0xbab4a6;		// Sky (for Fog only)
 
 //=	SUNFLARE ===================================================================
 let SnFFlg = 1;				// 1 = SunFlare On
@@ -1042,7 +1047,7 @@ function loadSunFlr(SnF_) {
 	for (let i = 0; i < SnF_.num; i++) {
 		SnFtxt = txtrLoader.load(SnFsrc[i]);
 		SnFmat = new THREE.SpriteNodeMaterial({
-			colorNode: color(0xffffff),
+			colorNode: color("white"),
 			colorNode: texture(SnFtxt),
 			transparent:true,
 			opacityNode: SnFopa[i], // Opacity
@@ -1500,7 +1505,7 @@ function initShpWak() {
 	// Wake
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
-		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 		smokeNodeMaterial.opacityNode = opacityNode;
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
@@ -1547,7 +1552,7 @@ function initVulkan() {
 	// Wake
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
-		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 		smokeNodeMaterial.opacityNode = opacityNode;
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
@@ -1754,6 +1759,8 @@ function moveAirObj() {
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
 	// Input Brakes
 	air_.BrkVal = InpBrk;				// Brakes
+	// Air Density
+	air_.AirDSL = AirDns*Math.pow(((AirTmp-0.0065*air_.MapSPS.y)/AirTmp),4.25587971); // ###
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
 	// View Keys ---------------------------------------------------------------
@@ -1821,24 +1828,24 @@ function loadBullet() {
 		points.push(new THREE.Vector3(0,0,-10));
 		points.push(new THREE.Vector3(0,0,10));
 	let BltGeo = new THREE.BufferGeometry().setFromPoints(points);
-	let BlWMat = new THREE.LineBasicMaterial({color: 0xffffff});
-	let BlBMat = new THREE.LineBasicMaterial({color: 0x000000});
+	let BlLMat = new THREE.LineBasicNodeMaterial({colorNode: color(0xff80ff)});
+	let BlDMat = new THREE.LineBasicNodeMaterial({colorNode: color(0x804080)});
 	// Note: MeshBasicNodeMaterial not allow envMap
 	let xp = 2;
 	for (let i = 0; i < BulNum; i ++) {
 		BulPtr[i] = makMsh();
 		// Left
-		line = new THREE.Line(BltGeo,BlWMat);
+		line = new THREE.Line(BltGeo,BlLMat);
 		line.position.x = -xp-0.1;
 		BulPtr[i].add(line);
-		line = new THREE.Line(BltGeo,BlBMat);
+		line = new THREE.Line(BltGeo,BlDMat);
 		line.position.x = -xp;
 		BulPtr[i].add(line);
 		// Rite
-		line = new THREE.Line(BltGeo,BlWMat);
+		line = new THREE.Line(BltGeo,BlLMat);
 		line.position.x = xp+0.1;
 		BulPtr[i].add(line);
-		line = new THREE.Line(BltGeo,BlBMat);
+		line = new THREE.Line(BltGeo,BlDMat);
 		line.position.x = xp;
 		BulPtr[i].add(line);
 		//
