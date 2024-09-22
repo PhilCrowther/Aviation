@@ -107,6 +107,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 //=	TO DO:
 //-	Program:
 //	* Change AirSpeed indicator to read IAS not TAS
+//	* In cockpit view, foot does not raise from neutral, only pushes.
 //	* Improve Appearance of Prop (use NodeMaterials?)
 //	* Add Exhaust Flashes
 //	* Convert waving flag to GPU shader
@@ -158,12 +159,13 @@ let MtrMil = 1609.34;		// Meters per Mile
 let	GrvMPS = 9.80665; 		// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
-//	Starting Air Density
-let AirDns = 1.225			// Density - Sea Level (kg/m3)
-let	AirTmp = 288.15;		// Temperature - Sea Level (K)
+//	Starting Temperature and Air Density (Standard = 15C and 1.225kg/m3)
+let StdTmp = 288.15			// 15C = 288.15K
+let BegTmp = 300;			// 80F
+let StdDns = 1.225			// Density - Sea Level (kg/m3)
+let BegDns = StdDns-0.004*(BegTmp-StdTmp);	// Rough calculation
 //	AirDSL = 1.225*(((288.15-0.0065*H)/288.15)^4.25587971)
-//let AirDSL = AirDns*Math.exp(((AirTmp-0.0065*BegPos.y)/AirTmp),4.25587971);
-let AirDSL = AirDns*Math.pow(((AirTmp-0.0065*BegPos.y)/AirTmp),4.25587971);
+let AirDSL = BegDns*Math.pow(((BegTmp-0.0065*BegPos.y)/BegTmp),4.25587971);
 //- Convert Starting Values
 if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
@@ -1760,7 +1762,9 @@ function moveAirObj() {
 	// Input Brakes
 	air_.BrkVal = InpBrk;				// Brakes
 	// Air Density
-	air_.AirDSL = AirDns*Math.pow(((AirTmp-0.0065*air_.MapSPS.y)/AirTmp),4.25587971); // ###
+//	air_.AirDSL = AirDns*Math.pow(((AirTmp-0.0065*air_.MapSPS.y)/AirTmp),4.25587971); // ### BegTmp = 288.15K
+	air_.AirDSL = BegDns*Math.pow(((BegTmp-0.0065*air_.MapSPS.y)/BegTmp),4.25587971); // ### BegTmp = 300.00K
+	console.log(air_.AirDSL);
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
 	// View Keys ---------------------------------------------------------------
