@@ -55,20 +55,6 @@ let SnFopa = [0.1,0.025];	// Sprite Opacity
 	SnFopa = [0.25,0.025];	// Sprite Opacity
 let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
 let SnFdst = SunDst;		// Distance (default = 10000)
-let SnF_ = {
-		//- Sprites
-		num: 2,				// Number of Sprites
-		spr: [],			// Sprite Address
-		mlt: SnFmlt,		// Offset Multiplier
-		//- Rotators
-		msh: [],			// Rotators
-		par: 0,				// Parent (Camera Clone) [OrbCon Only]
-		//- Heading Offset
-		cam: new THREE.Vector3(), // Camera Direction
-		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
-		off: new THREE.Vector2(), // Sun Offset (lat/lon) [shared]
-		asp: 0,				// Camera Aspect
-	}
 
 //= GRDWTR TEXTURES ============================================================
 let WtrCol = 0x1060ff;		// Water (Nodes)
@@ -101,6 +87,35 @@ let AnmSpd = 1.0;			// Can vary with GrdSiz
 // Common Variables
 let waves = 0;
 
+//= STATIC OBJECTS =============================================================
+//- Should allow for fast update of position
+let ObjTyp = [0];			// Object Type
+	ObjTyp[ObjNum - 1] = 0;
+let ObjNam = [0];			// Object Name
+	ObjNam[ObjNum - 1] = 0;
+let ObjMdl = [0];			// Model source
+	ObjMdl[ObjNum - 1] = 0;
+let ObjTxt = [0];			// Model texture
+	ObjTxt[ObjNum - 1] = 0;
+let ObjPos = [0];			// Map Position
+	ObjPos[3*(ObjNum - 1)] = 0;
+let ObjPtr = [0];			// Object Address
+	ObjPtr[ObjNum - 1] = 0;
+
+//= MINIMUM ALTITUDE (Base and CVE) ============================================
+//	Base (Centered at 0,0)
+let BasAlt = 8.8392;				// 29 ft
+	BasAlt = 8.25;					// 
+let BasXlf = -61;					// 200 ft
+let BasXrt = 61;					// 200 ft
+let BasZfr = 2260;					// 7420 ft
+let BasZbk = -154;					// -505 ft
+//	Ship (Centered at CVEGrp)
+let CVEAlt = 13.2;					// 43.267 ft
+let CVEXlf = -13.2;					// 43.267 ft
+let CVEXrt = 13.2;					// 43.267 ft
+let CVEZfr = 70.5;					// ?? ft
+let CVEZbk = -70.5;					// ?? ft
 
 //= FM2 WILDCAT DATA ===========================================================
 let data_ = {
@@ -143,6 +158,124 @@ let data_ = {
 		CfLMax: 1.4,		// Maximum Coefficient of Lift
 		BnkMax: 1,			// Maximum bank rate	
 	}
+
+//- Load Models and Animations -------------------------------------------------
+//	File Path
+let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
+//	Animation Mixers - External Model
+let AirFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
+let mxr_ = {
+		// File Name
+		FNm: AirSrc + AirFNm,
+		// GLTF
+		GLT: 0,
+		// Address
+		Adr: makMsh,
+		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
+		Prp:0, Rdr:0, Elv:0, AiL:0, AiR:0, FlL:0, FlR:0,
+		// Wheel: HingeL, HingeR, StrutBL, StrutBR, StrutTL, StrutTR, ShockL, ShockR, UpperL, UpperR
+		WHL:0, WHR:0, WBL:0, WBR:0, WTL:0, WTR:0, WSL:0, WSR:0, WUL:0, WUR:0,
+		// Canopy, Tailhook, SpinProp XP
+		Cnp:0, THk:0
+	}
+//	Animation Mixers - Internal Model
+let VCFile = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
+let vxr_ = {
+		// File Name
+		FNm: AirSrc + VCFile,
+		// GLTF
+		GLT: 0,
+		// Address
+		Adr: makMsh,
+		// Propeller, AileronL, AileronR, Canopy
+		Prp:0, AiL:0, AiR:0, Cnp:0,
+		// Gauge: Compass Heading, AI Arrow, AI Bank, AI Pitch, ManPrs
+		GaH:0, GaA:0, GaB:0, GaP:0, GaM:0,
+		// Pointer: Alt, Alt*1k, MPH, TrnInd, Ball, VSI, RPM, Heading
+		PtA:0, PtB:0, PtS:0, PtT:0, PtC:0, PtV:0, PtR:0, PtH:0,
+		// ArmL (T), ArmR (PB), HandL (T), HandR (P), HandR (B), 
+		ArL:0, ArR:0, HLT:0, HRP:0, HRB:0,
+		// LegL, LegR, RudderL, RudderR, Head
+		LgL:0, LgR:0, RdL:0, RdR:0, Hed:0,
+		// Old Heading, Old Altitude
+		HdO:0, AlO:0,
+		// Camera Distance from Reference Point
+		Cam: -0.1
+	}
+
+//- Play Animations ------------------------------------------------------------
+//	Animation Positions (all range from 0 to 360 with center at 180)
+let anm8ac = anm8vr = 0;
+let anm_ = {
+		anmfps: anmfps,			// Blender FPS
+		spnprp: 180,			// SpinProp 	degrees = 0 to 360
+		rudder: 180,			// Rudder 		degrees = +/- 360
+		elvatr: 180,			// Elevator 	degrees = +/- 360
+		aillft: 180,			// AileronL 	degrees = +/- 360
+		ailrgt: 180,			// AileronR 	degrees = +/- 360
+		flppos: 180,			// Flaps 		degrees = 0 to 180
+		lngpos: 0,				// Landing Gear degrees = 0 to 180
+		canpos: 180,			// Canopy 		degrees = 0 to 180
+		thkpos: 180,			// Tailhook 	degrees = 0 to 180
+		cmphdg: 0,				// Compass Heading
+		atiarr: 180,			// Attitude - Arrow
+		atibnk: 0,				// Attitude - Bank
+		atipit: 180,			// Attitude - Pitch
+		altft0: 0,				// Altitude - feet
+		altft1: 0,				// Altitude - feet X 1000
+		spdmph: 0,				// Speed - MPH
+		vsifpm: 0,				// Vertical Speed - fpm
+		manprs: 0,				// Manifold Pressure
+		rpmprp: 0,				// Propeller RPM
+		hdgdif: 180,			// Change in heading
+		yawval: 180,			// Slip indicator
+		stkpit: 180,			// Joystick pitch
+		stkpcm: 0,				// cumulative
+		stkbnk: 180,			// Joystick bank
+		stkbcm: 0,				// cumulative
+		vchead: 0,				// Pilot head
+		// Gear and Flap				
+		lngspd: 0,				// Change in Gear
+		flpspd: 0,				// Change in Flaps
+		canspd: 0,				// Change in Canopy
+		thkspd: 0,				// Change in Canopy
+		// Flags
+		lngflg: 0,				// Gear (up.down)
+		flpflg: 0,				// Flap (up/down)
+		canflg: 0,				// Canopy (up/down)
+		thkflg: 0,				// Tailhook (up/down)
+	}
+//- Bullets --------------------------------------------------------------------
+//	M2 Browning .50 caliber
+let GunFlg = 0;
+let BulNum = 16;				// Number of bullets
+let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
+let BulDLT = 0.5;				// Life of bullet
+let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
+let BulSp2 = BulSpc;			// Bullet spacing time remaining
+let BulPtr = [0];				// Addresses of bullet objects
+	BulPtr[BulNum-1] = 0;
+let BullSX = [0];				// Speed
+	BullSX[BulNum-1] = 0;
+let BullSY = [0];
+	BullSY[BulNum-1] = 0;
+let BullSZ = [0];
+	BullSZ[BulNum-1] = 0;
+let BullPX = [0];				// Position
+	BullPX[BulNum-1] = 0;
+let BullPY = [0];
+	BullPY[BulNum-1] = 0;
+let BullPZ = [0];
+	BullPZ[BulNum-1] = 0;
+let BulTim = [0];				// Time in flight
+	BulTim[BulNum-1] = 0;
+//-	Sounds ---------------------------------------------------------------------
+let EngSrc = "fm2.wav";				// File (my engine)
+let EngVol = 0.1;					// Volume
+let PrpSrc = "fm2_prop.wav";		// File (my prop)
+let PrpVol = 0.5;					// Volume
+let GunSrc = "fm2_gun.mp3";			// File (my guns)
+let GunVol = 0.5;					// Volume
 
 //= DEFAULT KEY BINDINGS =======================================================
 let K_BnkL = 37;	// Bank Left (left arrow)
