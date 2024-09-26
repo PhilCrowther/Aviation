@@ -27,22 +27,19 @@ let AltAdj = 0.99;			// Raises objects above map as altitude increases
 let anmfps = 24;			// Blender FPS
 let aoarng = 20;			// AoA range (model)
 
-//= SUN VALUES =================================================================
-let SunCol = "white";		// Sun
-let SunInt = 3;				// Default intensity of light/sun
-//- Rotation and Position (fixed)
+//= SKY VALUES =================================================================
+//- SkyBox
+let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
+let FogCol = 0xbab4a6;		// Sky (for Fog only)
+//- Sun
 let SunLat = 23;			// Direction - Vert (+/- 90)
 let SunLon = 312;			// Direction - Horz (0->360)
+let SunCol = "white";		// Sun
+let SunInt = 3;				// Default intensity of light/sun
 let SunDst = 10000;			// Distance (for shadows and lensflare)
-//	Shadows
+//-	Shadows
 let ShdBox = 25;			// Size of shadow box
 let ShdDst = 5000;			// [feet] for shadow
-
-//= SKYBOX =====================================================================
-let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
-
-//= FOG ========================================================================
-let FogCol = 0xbab4a6;		// Sky (for Fog only)
 
 //=	SUNFLARE ===================================================================
 //- Textures
@@ -57,7 +54,6 @@ let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
 let SnFdst = SunDst;		// Distance (default = 10000)
 
 //= GRDWTR TEXTURES ============================================================
-
 //- Textures
 let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
 let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
@@ -71,29 +67,37 @@ let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
 
-//= GRDWTR MODULE ==============================================================
-// Common Variables
-let grids = 0;
-
-//= OCEAN MODULE ===============================================================
-// Common Variables
-let waves = 0;
+//= OCEAN ======================================================================
+let grids = 0;						// GrdWtr Module
+let waves = 0;						// Ocean Module
 
 //= STATIC OBJECTS =============================================================
-let ObjNum = 3;				// number of objects
+let ObjNum = 3;						// number of objects
 //- Should allow for fast update of position
-let ObjTyp = [0];			// Object Type
+let ObjTyp = [0];					// Object Type
 	ObjTyp[ObjNum - 1] = 0;
-let ObjNam = [0];			// Object Name
+let ObjNam = [0];					// Object Name
 	ObjNam[ObjNum - 1] = 0;
-let ObjMdl = [0];			// Model source
+let ObjMdl = [0];					// Model source
 	ObjMdl[ObjNum - 1] = 0;
-let ObjTxt = [0];			// Model texture
+let ObjTxt = [0];					// Model texture
 	ObjTxt[ObjNum - 1] = 0;
-let ObjPos = [0];			// Map Position
+let ObjPos = [0];					// Map Position
 	ObjPos[3*(ObjNum - 1)] = 0;
-let ObjPtr = [0];			// Object Address
+let ObjPtr = [0];					// Object Address
 	ObjPtr[ObjNum - 1] = 0;
+//	Hangars
+let HgrSrc = "https://PhilCrowther.github.io/Aviation/models/scenery/hangar.glb";
+//	Giaros Island
+let GiaSrc = "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb";
+let GiaSrT = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png";
+//	Home Island
+let HomSrc = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";
+let HomSrT = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";
+//	Volcano
+let VlkAdr = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png";
+let VlkMap = 0;
+let smokeInstancedSprite;
 
 //= TRAFFIC ====================================================================
 //- Airplane -------------------------------------------------------------------
