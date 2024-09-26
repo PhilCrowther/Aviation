@@ -1,6 +1,6 @@
 /*
  * Flight.js
- * Version 4 (vers 24.09.12)
+ * Version 4 (vers 24.09.15)
  * Copyright 2017-24, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -32,7 +32,10 @@ constructor(air_) {
 	this.ThrstK = 0;			// Thrust Constant
 	//- Flags
 	this.AuFlag = 0;			// Flag for Auto Tail Up/Down
-	//- Initialize Rotation and Vectors --------------------------------------------
+	//- Air Density and IAS Computations ---------------------------------------
+	this.air_.AirDSL = AirDns(this.air_.BegTmp,this.air_.MapSPS.y);	//###
+	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.air_.SpdKPH);
+	//- Initialize Rotation and Vectors ----------------------------------------
 	// Basic Flight Data (SI Adjustments)
 	this.dat_ = this.air_.AirDat; // Store address of Aircraft Type
 	// this.dat_ variable saved to this.air_
@@ -110,12 +113,15 @@ update() {
 	let GrvDLT = this.air_.GrvMPS*DLTim2;
 	this.FrcAcc = DLTim2/this.air_.ACMass;		// Convert Force to Acceleration
 	this.air_.SpdMPF = this.air_.SpdMPS*this.air_.DLTime;
+	// Compute air_.AirDSL and air_.AirIAS
+	this.air_.AirDSL = AirDns(this.air_.BegTmp,this.air_.MapSPS.y);
+	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.air_.SpdKPH);
 	// Compute Dynamic Pressure
 	let DynPrs = (this.air_.SpdMPS*this.air_.SpdMPS)*this.air_.AirDSL/2;	// Dynamic Pressure
 	let ACPrad = this.air_.AirRot.x*this.DegRad;
 	let QSTval = DynPrs*this.dat_.WingAr;
 	// Compute Max Lift
-	let LftMax = this.dat_.GrvMax*GrvDLT;		// Maximum G-accel
+	let LftMax = this.dat_.GrvMax*GrvDLT; // Maximum G-accel
 	LftMax = (LftMax + this.dat_.GrvMax)*GrvDLT; // AutoPilot
 	// Compute Max Bank (### ATP)
 	let GrvMaxF = this.dat_.GrvMax*this.air_.Weight; // Max G-Force 
@@ -317,6 +323,25 @@ update() {
 
 //= MISCELLANOUS SUBROUTINES ===================================================
 
+// Compute Air Density and Indcated Airspeed
+function AirDns(BegTmp,Height) {
+	//- Altitude Index
+	let AltIdx = Height/1000;
+	//- Standard Temperature and Pressure Ratios at Altitude
+	let StdTmR = (288.15-6.5*AltIdx)/288.15;
+	let StdPrR = Math.pow(StdTmR,5.2559);
+	let AltTmp = BegTmp-6.5*AltIdx;	// Actual Temperature (using standard lapse rate)
+	let AltTmR = AltTmp/288.15;	// Actual Temperature Ratio	
+	//- Air Density Value
+	let	AirDSL = 1.225*StdPrR/AltTmR;
+return AirDSL}
+
+// Compute Indicated Airspeed
+function AirIAS(AirDSL,SpdKPH) {
+	let AirDnR = AirDSL/1.225;
+	let SpdIAS = SpdKPH*Math.sqrt(AirDnR);
+return SpdIAS}
+
 //- Geometric Conversions ------------------------------------------------------
 
 //  Converts degrees to 360
@@ -379,4 +404,5 @@ export {Flight, Mod360, PoM360, MaxVal, rotLLD, makMsh};
  * 240424:	Changed all air_ variables to 8 character names
  * 240815:	Added Autopilot
  * 240913:	Converted to Class.
+ * 240925:	Added Air Density and IAS comps
 */
