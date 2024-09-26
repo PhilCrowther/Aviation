@@ -18,6 +18,32 @@ let	GrvMPS = 9.80665; 		// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
 
+//= INPUT VALUES ===============================================================
+//	Program Flags
+let LodFlg = 0;
+//	Altitude Adjustment
+let AltAdj = 0.99;			// Raises objects above map as altitude increases
+//	Animations
+let anmfps = 24;			// Blender FPS
+let aoarng = 20;			// AoA range (model)
+
+//= SUN VALUES =================================================================
+let SunCol = "white";		// Sun
+let SunInt = 3;				// Default intensity of light/sun
+//- Rotation and Position (fixed)
+let SunLat = 23;			// Direction - Vert (+/- 90)
+let SunLon = 312;			// Direction - Horz (0->360)
+let SunDst = 10000;			// Distance (for shadows and lensflare)
+//	Shadows
+let ShdBox = 25;			// Size of shadow box
+let ShdDst = 5000;			// [feet] for shadow
+
+//= SKYBOX =====================================================================
+let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
+
+//= FOG ========================================================================
+let FogCol = 0xbab4a6;		// Sky (for Fog only)
+
 //= FM2 WILDCAT DATA ===========================================================
 let data_ = {
 		// Lift
