@@ -33,10 +33,8 @@ constructor(air_) {
 	//- Flags
 	this.AuFlag = 0;			// Flag for Auto Tail Up/Down
 	//- Air Density and IAS Computations ---------------------------------------
-	this.StdTmp = 288.15		// Standard Temperature (K) = 15C
-	this.StdDns = 1.225			// Standard Density (kg/m3)
-	this.air_.AirDSL = AirDSL(this.air_.SpdMPS,this.air_.BegTmp,this.StdTmp,this.StdDns);
-	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.StdDns,this.air_.SpdKPH);
+	this.air_.AirDSL = AirDns(this.air_.BegTmp,this.air_.MapSPS.y);	//###
+	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.air_.SpdKPH);
 	//- Initialize Rotation and Vectors ----------------------------------------
 	// Basic Flight Data (SI Adjustments)
 	this.dat_ = this.air_.AirDat; // Store address of Aircraft Type
@@ -116,8 +114,8 @@ update() {
 	this.FrcAcc = DLTim2/this.air_.ACMass;		// Convert Force to Acceleration
 	this.air_.SpdMPF = this.air_.SpdMPS*this.air_.DLTime;
 	// Compute air_.AirDSL and air_.AirIAS
-	this.air_.AirDSL = AirDSL(this.air_.SpdMPS,this.air_.BegTmp,this.StdTmp,this.StdDns);
-	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.StdDns,this.air_.SpdKPH);
+	this.air_.AirDSL = AirDns(this.air_.BegTmp,this.air_.MapSPS.y);
+	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.air_.SpdKPH);
 	// Compute Dynamic Pressure
 	let DynPrs = (this.air_.SpdMPS*this.air_.SpdMPS)*this.air_.AirDSL/2;	// Dynamic Pressure
 	let ACPrad = this.air_.AirRot.x*this.DegRad;
@@ -326,21 +324,21 @@ update() {
 //= MISCELLANOUS SUBROUTINES ===================================================
 
 // Compute Air Density and Indcated Airspeed
-function AirDns(Height,BegTmp,StdTmp,StdDns) {
+function AirDns(BegTmp,Height) {
 	//- Altitude Index
 	let AltIdx = Height/1000;
 	//- Standard Temperature and Pressure Ratios at Altitude
-	let StdTmR = (StdTmp-6.5*AltIdx)/StdTmp;
+	let StdTmR = (288.15-6.5*AltIdx)/288.15;
 	let StdPrR = Math.pow(StdTmR,5.2559);
 	let AltTmp = BegTmp-6.5*AltIdx;	// Actual Temperature (using standard lapse rate)
-	let AltTmR = AltTmp/StdTmp;	// Actual Temperature Ratio	
+	let AltTmR = AltTmp/288.15;	// Actual Temperature Ratio	
 	//- Air Density Value
-	let	AirDSL = StdDns*StdPrR/AltTmR;
+	let	AirDSL = 1.225*StdPrR/AltTmR;
 return AirDSL}
 
 // Compute Indicated Airspeed
-function AirIAS(AirDSL,StdDns,SpdKPH) {
-	let AirDnR = AirDSL/StdDns;
+function AirIAS(AirDSL,SpdKPH) {
+	let AirDnR = AirDSL/1.225;
 	let SpdIAS = SpdKPH*Math.sqrt(AirDnR);
 return SpdIAS}
 
