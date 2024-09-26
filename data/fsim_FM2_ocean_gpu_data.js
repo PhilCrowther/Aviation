@@ -175,50 +175,13 @@ let data_ = {
 		CfLMax: 1.4,		// Maximum Coefficient of Lift
 		BnkMax: 1,			// Maximum bank rate	
 	}
-
 //- Load Models and Animations -------------------------------------------------
 //	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
 //	Animation Mixers - External Model
 let AirFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
-let mxr_ = {
-		// File Name
-		FNm: AirSrc + AirFNm,
-		// GLTF
-		GLT: 0,
-		// Address
-		Adr: makMsh,
-		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
-		Prp:0, Rdr:0, Elv:0, AiL:0, AiR:0, FlL:0, FlR:0,
-		// Wheel: HingeL, HingeR, StrutBL, StrutBR, StrutTL, StrutTR, ShockL, ShockR, UpperL, UpperR
-		WHL:0, WHR:0, WBL:0, WBR:0, WTL:0, WTR:0, WSL:0, WSR:0, WUL:0, WUR:0,
-		// Canopy, Tailhook, SpinProp XP
-		Cnp:0, THk:0
-	}
 //	Animation Mixers - Internal Model
 let VCFile = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
-let vxr_ = {
-		// File Name
-		FNm: AirSrc + VCFile,
-		// GLTF
-		GLT: 0,
-		// Address
-		Adr: makMsh,
-		// Propeller, AileronL, AileronR, Canopy
-		Prp:0, AiL:0, AiR:0, Cnp:0,
-		// Gauge: Compass Heading, AI Arrow, AI Bank, AI Pitch, ManPrs
-		GaH:0, GaA:0, GaB:0, GaP:0, GaM:0,
-		// Pointer: Alt, Alt*1k, MPH, TrnInd, Ball, VSI, RPM, Heading
-		PtA:0, PtB:0, PtS:0, PtT:0, PtC:0, PtV:0, PtR:0, PtH:0,
-		// ArmL (T), ArmR (PB), HandL (T), HandR (P), HandR (B), 
-		ArL:0, ArR:0, HLT:0, HRP:0, HRB:0,
-		// LegL, LegR, RudderL, RudderR, Head
-		LgL:0, LgR:0, RdL:0, RdR:0, Hed:0,
-		// Old Heading, Old Altitude
-		HdO:0, AlO:0,
-		// Camera Distance from Reference Point
-		Cam: -0.1
-	}
 
 //- Play Animations ------------------------------------------------------------
 //	Animation Positions (all range from 0 to 360 with center at 180)
