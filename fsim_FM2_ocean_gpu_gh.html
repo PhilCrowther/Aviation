@@ -164,25 +164,7 @@ if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
 	BegPos.multiplyScalar(Ft2Mtr);
 }
-
-//= ALTITUDE RATIOS ============================================================
-//- Inputs
 let BegTmp = 303.15;		// K = 86F
-//- Standard Temperature and Density Values at Sea Level
-let StdTmp = 288.15			// Temperature (K) = 15C
-let StdDns = 1.225			// Density (kg/m3)
-//- Altitude Index
-let AltIdx = BegPos.y/1000;
-//- Standard Temperature and Pressure Ratios at Altitude
-let StdTmR = (288.15-6.5*AltIdx)/288.15;
-let StdPrR = Math.pow(StdTmR,5.2559);
-let AltTmp = BegTmp-6.5*AltIdx;	// Actual Temperature (using standard lapse rate)
-let AltTmR = AltTmp/288.15;	// Actual Temperature Ratio	
-//- Density Value and Ratio
-let AirDSL = StdDns*StdPrR/AltTmR;
-let AirDnR = AirDSL/StdDns;
-//- TAS to IAS
-let SpdIAS = BegSpd*Math.sqrt(AirDnR);
 
 //= INPUT VALUES ===============================================================
 //- Display
@@ -440,72 +422,76 @@ let IslGrp = new THREE.Group();		// To hold AirExt and AirInt
 
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
-let BasAlt = 8.8392;			// 29 ft
-	BasAlt = 8.25;				// 
-let BasXlf = -61;				// 200 ft
-let BasXrt = 61;				// 200 ft
-let BasZfr = 2260;				// 7420 ft
-let BasZbk = -154;				// -505 ft
+let BasAlt = 8.8392;				// 29 ft
+	BasAlt = 8.25;					// 
+let BasXlf = -61;					// 200 ft
+let BasXrt = 61;					// 200 ft
+let BasZfr = 2260;					// 7420 ft
+let BasZbk = -154;					// -505 ft
 //	Ship (Centered at CVEGrp)
-let CVEAlt = 13.2;				// 43.267 ft
-let CVEXlf = -13.2;				// 43.267 ft
-let CVEXrt = 13.2;				// 43.267 ft
-let CVEZfr = 70.5;				// ?? ft
-let CVEZbk = -70.5;				// ?? ft
+let CVEAlt = 13.2;					// 43.267 ft
+let CVEXlf = -13.2;					// 43.267 ft
+let CVEXrt = 13.2;					// 43.267 ft
+let CVEZfr = 70.5;					// ?? ft
+let CVEZbk = -70.5;					// ?? ft
 
 //= MY AIRPLANE ================================================================
 //- Flight Module --------------------------------------------------------------
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: DLTime,		// Seconds per frame (can vary)
-		GrvMPS: GrvMPS,		// Gravity (ups)
-		AirDSL: AirDSL,		// Air Density (varies with altitude)
+		DLTime: DLTime,				// Seconds per frame (can vary)
+		GrvMPS: GrvMPS,				// Gravity (ups)
+		AirDSL: 0,					// Air Density (varies with altitude)
 		// Designators
-		AirDat: data_,		// Aircraft Data
+		AirDat: data_,				// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(0,0,0), // Rotation (in degrees)
-		AirObj: makMsh(),	// Airplane Object 
-		AirPBY: makMsh(),	// Changes in radians
+		AirObj: makMsh(),			// Airplane Object 
+		AirPBY: makMsh(),			// Changes in radians
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
-		SpdKPH: BegSpd,		// Speed in KPH
-		SpdMPS: BegSpd/3.6,	// Speed - meters per second
-		SpdMPF: (BegSpd/3.6)*DLTime,	// Speed - meters per frame	
+		SpdKPH: BegSpd,				// Speed in KPH
+		SpdMPS: BegSpd/3.6,			// Speed - meters per second
+		SpdMPF: (BegSpd/3.6)*DLTime, // Speed - meters per frame	
 		// Airplane Map Speed and Position		
 		MapSpd: new THREE.Vector3(), // Map Speed (meters)
 		MapPos: new THREE.Vector3().copy(BegPos), // Map Position (meters)
 		MapSPS: new THREE.Vector3(0,BegPos.y,0), // MSX, MPY, MSZ (meters)	
 		// Variables Obtained from Flight
-		PwrPct: BegPwr,		// % of Primary Power (0 to 1) (Main and Flight)
-		SupPct: 0,			// Percent of Supplemental Power (War Enmergency or Afterburner)
-		CfLift: 0,			// Coefficient of Lift (user input) - determines lift
-		CfFlap: 0,			// Coefficient of Lift due to flaps (user input)
-		FlpPct: 0,			// Percent of Flaps
-		LngPct: 0,			// Percent of Landing Gear
-		BrkPct: 0,			// Percent of Air Brakes
-		SplPct: 0,			// Percent of Spoiler
-		AGBank: 0,			// Aileron Bank on Ground
-		BrkVal: 0,			// Brakes
-		GrdZed: 0,			// Ground level (default)
-		GrdFlg: 0,			// Ground Flag (1 = on ground)
-		ACPAdj: 0,			// Airplane pitch adjustment
-		MovFlg: 0,			// If Sitting on a Moving Object
+		PwrPct: BegPwr,				// % of Primary Power (0 to 1) (Main and Flight)
+		SupPct: 0,					// Percent of Supplemental Power (War Enmergency or Afterburner)
+		CfLift: 0,					// Coefficient of Lift (user input) - determines lift
+		CfFlap: 0,					// Coefficient of Lift due to flaps (user input)
+		FlpPct: 0,					// Percent of Flaps
+		LngPct: 0,					// Percent of Landing Gear
+		BrkPct: 0,					// Percent of Air Brakes
+		SplPct: 0,					// Percent of Spoiler
+		AGBank: 0,					// Aileron Bank on Ground
+		BrkVal: 0,					// Brakes
+		GrdZed: 0,					// Ground level (default)
+		GrdFlg: 0,					// Ground Flag (1 = on ground)
+		ACPAdj: 0,					// Airplane pitch adjustment
+		MovFlg: 0,					// If Sitting on a Moving Object
 		// Values for the Selected Airplane Type (obtained from Flight)
-		CfLMax: 0,			// Maximum Coefficient of Lift
-		FlpCfL: 0,			// Max Flap Cfl (0.2*CfLMax)
-		ACMass: 0,			// Airplane Mass
-		Weight: 0,			// Used by AutoPilot
+		CfLMax: 0,					// Maximum Coefficient of Lift
+		FlpCfL: 0,					// Max Flap Cfl (0.2*CfLMax)
+		ACMass: 0,					// Airplane Mass
+		Weight: 0,					// Used by AutoPilot
 		PYBmul: new THREE.Vector3().copy(PYBmul), // Airplane Pitch/Yaw/Bank Multiplier
-		BnkMax: 0,			// Maximum bank rate
+		BnkMax: 0,					// Maximum bank rate
 		// AutoPilot - Additional Variables
-		AutoOn: 0,			// Autopilot Flag
+		AutoOn: 0,					// Autopilot Flag
 		InpKey: new THREE.Vector3(), // Inputs - Keys (replace InpKey)
 		OldRot: new THREE.Vector3(), // Old Rotation (radians)
-		CfLDif: 0,			// Change in CfL
-		MaxBnk: 0,			// Max Bank (display only)
-		HdgDif: 0			// Horizontal Turn Rate (display only)
+		CfLDif: 0,					// Change in CfL
+		MaxBnk: 0,					// Max Bank (display only)
+		HdgDif: 0,					// Horizontal Turn Rate (display only)
+		// Air Density and IAS Comps
+		BegTmp: BegTmp,				// Beginning Sea Level Temperature (K)
+		BegPrs: 1013.25,			// Beginning Sea Level Air Pressure (mB) - not used
+		SpdIAS: 0					// Indicated Airspeed
 	}
 // 
 // Adjustments
@@ -517,7 +503,7 @@ let air_ = {
 //	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
 //	Animation Mixers - External Model
-let AirFNm = "fm2_flyt_caf_npa.glb";	// Name of airplane model file (rotated blender file)
+let AirFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
 let mxr_ = {
 		// File Name
 		FNm: AirSrc + AirFNm,
@@ -533,7 +519,7 @@ let mxr_ = {
 		Cnp:0, THk:0
 	}
 //	Animation Mixers - Internal Model
-let VCFile = "fm2_flyt_vcp_npa.glb";	// Name of airplane model file (rotated blender file)
+let VCFile = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
 let vxr_ = {
 		// File Name
 		FNm: AirSrc + VCFile,
@@ -1772,25 +1758,12 @@ function moveAirObj() {
 	// Input Yaw
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
 	// Input Brakes
-	air_.BrkVal = InpBrk;				// Brakes
-	//- Air Density ------------------------------------------------------------
-	AltIdx = air_.MapSPS.y/1000;
-//- Standard Temperature and Pressure Ratios at Altitude
-	StdTmR = (288.15-6.5*AltIdx)/288.15;
-	StdPrR = Math.pow(StdTmR,5.2559);
-	AltTmp = BegTmp-6.5*AltIdx;	// Actual Temperature (using standard lapse rate)
-	AltTmR = AltTmp/288.15;	// Actual Temperature Ratio
-//	console.log(AltIdx,AltTmp,AltTmR);
-//- Density Value and Ratio
-	air_.AirDSL = StdDns*StdPrR/AltTmR;
-	AirDnR = air_.AirDSL/StdDns;
-//- TAS to IAS
-	SpdIAS = air_.SpdKPH*Math.sqrt(AirDnR);
-	console.log(air_.AirDSL,SpdIAS*Km2Mil);
+	air_.BrkVal = InpBrk;					// Brakes
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
+//	console.log(air_.AirDSL,air_.SpdIAS*Km2Mil);	// new Air Density and IAS
 	// View Keys ---------------------------------------------------------------
-	if (cam_.pan < 1) {					// Only If Not Panning		
+	if (cam_.pan < 1) {						// Only If Not Panning		
 		// If No Keys Pressed, Set Default View
 		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
 			if (cam_.flg) cam_.lld.x = 0;	// Internal view
