@@ -179,7 +179,7 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox; // ### SunDst
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.bias = -0.0005;	// ### WebGPU
+	sunLight.shadow.bias = -0.00005;	// ### WebGPU
 	scene.add(sunLight);
 //- Sounds
 let	listener = new THREE.AudioListener();
