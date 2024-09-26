@@ -35,7 +35,8 @@ constructor(air_) {
 	//- Air Density and IAS Computations ---------------------------------------
 	this.StdTmp = 288.15		// Standard Temperature (K) = 15C
 	this.StdDns = 1.225			// Standard Density (kg/m3)
-	DnsIAS();					// Compute air_.AirDSL and air_.AirIAS
+	this.air_.AirDSL = AirDSL(this.air_.SpdMPS,this.air_.BegTmp,this.StdTmp,this.StdDns);
+	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.StdDns,this.air_.SpdKPH);
 	//- Initialize Rotation and Vectors ----------------------------------------
 	// Basic Flight Data (SI Adjustments)
 	this.dat_ = this.air_.AirDat; // Store address of Aircraft Type
@@ -114,8 +115,10 @@ update() {
 	let GrvDLT = this.air_.GrvMPS*DLTim2;
 	this.FrcAcc = DLTim2/this.air_.ACMass;		// Convert Force to Acceleration
 	this.air_.SpdMPF = this.air_.SpdMPS*this.air_.DLTime;
+	// Compute air_.AirDSL and air_.AirIAS
+	this.air_.AirDSL = AirDSL(this.air_.SpdMPS,this.air_.BegTmp,this.StdTmp,this.StdDns);
+	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.StdDns,this.air_.SpdKPH);
 	// Compute Dynamic Pressure
-	DnsIAS();					// Compute air_.AirDSL and air_.AirIAS
 	let DynPrs = (this.air_.SpdMPS*this.air_.SpdMPS)*this.air_.AirDSL/2;	// Dynamic Pressure
 	let ACPrad = this.air_.AirRot.x*this.DegRad;
 	let QSTval = DynPrs*this.dat_.WingAr;
@@ -318,26 +321,28 @@ update() {
 	this.air_.MapSPS.z = this.air_.MapSpd.z;
 };	// End of Update
 
-function DnsIAS() {
-//- Altitude Index
-	this.AltIdx = this.air_.MapSPS.y/1000;
-//- Standard Temperature and Pressure Ratios at Altitude
-	this.StdTmR = (this.StdTmp-6.5*this.AltIdx)/this.StdTmp;
-	this.StdPrR = Math.pow(StdTmR,5.2559);
-	this.AltTmp = this.air_.BegTmp-6.5*this.AltIdx;	// Actual Temperature (using standard lapse rate)
-	this.AltTmR = this.AltTmp/this.StdTmp;	// Actual Temperature Ratio	
-//- Density Value and Ratio
-	this.air_.AirDSL = this.StdDns*this.StdPrR/this.AltTmR;
-	this.AirDnR = this.air_.AirDSL/this.StdDns;
-//- TAS to IAS
-	this.air_.SpdIAS = this.air_.SpdKPH*Math.sqrt(AirDnR);
-}
-
 };	// End of Module
 
 //= MISCELLANOUS SUBROUTINES ===================================================
 
+// Compute Air Density and Indcated Airspeed
+function AirDns(Height,BegTmp,StdTmp,StdDns) {
+	//- Altitude Index
+	let AltIdx = Height/1000;
+	//- Standard Temperature and Pressure Ratios at Altitude
+	let StdTmR = (StdTmp-6.5*AltIdx)/StdTmp;
+	let StdPrR = Math.pow(StdTmR,5.2559);
+	let AltTmp = BegTmp-6.5*AltIdx;	// Actual Temperature (using standard lapse rate)
+	let AltTmR = AltTmp/StdTmp;	// Actual Temperature Ratio	
+	//- Air Density Value
+	let	AirDSL = StdDns*StdPrR/AltTmR;
+return AirDSL}
 
+// Compute Indicated Airspeed
+function AirIAS(AirDSL,StdDns,SpdKPH) {
+	let AirDnR = AirDSL/StdDns;
+	let SpdIAS = SpdKPH*Math.sqrt(AirDnR);
+return SpdIAS}
 
 //- Geometric Conversions ------------------------------------------------------
 
