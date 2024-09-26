@@ -1467,7 +1467,7 @@ function initVulkan() {
 	//- Rotation Range
 	let rotateRange = range(.1,4);
 	let textureNode = texture(VlkMap, rotateUV(uv(),timer.mul(rotateRange)));	//r168
-//	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 	//- Lateral Offset	
 //	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
 	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// cone shaped
