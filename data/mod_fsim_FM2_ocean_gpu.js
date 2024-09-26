@@ -26,14 +26,14 @@ let SnF_ = {
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
 let grd_ = {
-		MSP: new Vector3().copy(BegPos), // MSX, MPY, MSZ (meters) (from Flight)
+		MSP: new Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,			// Squares in each of first 2 grids
-		Siz: GrdSiz,		// Size of smallest square
+		Siz: 0,				// Size of smallest square
 		Stp: 4,				// Squares in each of first 2 grids
-		Seg: GrdSeg,		// Segments for smallest square
+		Seg: 0,				// Segments for smallest square
 		Grx: [],			// Index of Grids (0-2)
 		Geo: [],			// Master Index of Basic Geometries
-		Col: new Color(WtrCol), // Color
+		Col: new Color(0x000000), // Color
 		Dsp: 0,				// Grid 0 Displacement Map (from Ocean)
 		Nrm: 0,				// Grid 0-1 Normal Map (from Ocean)
 		NMS: new Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
@@ -45,7 +45,7 @@ let grd_ = {
 		Ruf: 0,				// Grid 2 Roughness Maps
 		Gr2: 0,				// Grid 2 Normal Map
 		Mat: [],			// Grid 2 Materials
-		WMx: WavMax,		// Max wave height, used to lower outer squares
+		WMx: 0,				// Max wave height, used to lower outer squares
 	};
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
