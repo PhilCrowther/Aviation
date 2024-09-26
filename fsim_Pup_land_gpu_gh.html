@@ -129,6 +129,7 @@ if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
 	BegPos.multiplyScalar(Ft2Mtr);
 }
+let BegTmp = 288.15;		// K = 59F
 
 //= SUN VALUES =================================================================
 let SunCol = 0xffffff;		// Sun
@@ -526,6 +527,10 @@ let air_ = {
 		CfLDif: 0,			// Change in CfL
 		MaxBnk: 0,			// Max Bank (display only)
 		HdgDif: 0			// Horizontal Turn Rate (display only)
+		// Air Density and IAS Comps
+		BegTmp: BegTmp,		// Beginning Sea Level Temperature (K)
+		BegPrs: 1013.25,	// Beginning Sea Level Air Pressure (mB) - not used
+		SpdIAS: 0			// Indicated Airspeed
 	}
 // 
 //- Adjustments
