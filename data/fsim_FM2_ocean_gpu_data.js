@@ -72,6 +72,22 @@ let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.scale(1,-1);
 let WavMax = 5;				// Maximum wave height (set height of outer waves)
 
+//= GRDWTR MODULE ==============================================================
+let GrdSiz = 1600;			// 1600 = 1 mile
+let GrdRes = 512;
+let GrdSeg = 256;			// Segments per Plane (256 = OK, 512 = too much)
+// Common Variables
+let grids = 0;
+
+//= OCEAN MODULE ===============================================================
+let WndSpd = 10.0;
+let WndHdg = 30.0;
+let Choppy = 1.5;
+let AnmSpd = 1.0;			// Can vary with GrdSiz
+// Common Variables
+let waves = 0;
+
+
 //= FM2 WILDCAT DATA ===========================================================
 let data_ = {
 		// Lift
