@@ -159,18 +159,12 @@ let MtrMil = 1609.34;		// Meters per Mile
 let	GrvMPS = 9.80665; 		// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
-//	Starting Temperature and Air Density (Standard = 15C and 1.225kg/m3)
-let StdTmp = 288.15			// 15C = 288.15K
-let BegTmp = 300;			// 80F
-let StdDns = 1.225			// Density - Sea Level (kg/m3)
-let BegDns = StdDns-0.004*(BegTmp-StdTmp);	// Rough calculation
-//	AirDSL = 1.225*(((288.15-0.0065*H)/288.15)^4.25587971)
-let AirDSL = BegDns*Math.pow(((BegTmp-0.0065*BegPos.y)/BegTmp),4.25587971);
 //- Convert Starting Values
 if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
 	BegPos.multiplyScalar(Ft2Mtr);
 }
+let BegTmp = 303.15;		// K = 86F
 
 //= INPUT VALUES ===============================================================
 //- Display
@@ -448,7 +442,7 @@ let air_ = {
 		// General Variables
 		DLTime: DLTime,		// Seconds per frame (can vary)
 		GrvMPS: GrvMPS,		// Gravity (ups)
-		AirDSL: AirDSL,		// Air Density (varies with altitude)
+		AirDSL: 0,			// Air Density (varies with altitude)
 		// Designators
 		AirDat: data_,		// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
@@ -493,7 +487,11 @@ let air_ = {
 		OldRot: new THREE.Vector3(), // Old Rotation (radians)
 		CfLDif: 0,			// Change in CfL
 		MaxBnk: 0,			// Max Bank (display only)
-		HdgDif: 0			// Horizontal Turn Rate (display only)
+		HdgDif: 0,			// Horizontal Turn Rate (display only)
+		// Air Density and IAS Comps
+		BegTmp: BegTmp,		// Beginning Sea Level Temperature (K)
+		BegPrs: 1013.25		// Beginning Sea Level Air Pressure (mB) - not used
+		SpdIAS: 0			// Indicated Airspeed
 	}
 // 
 // Adjustments
@@ -1760,15 +1758,12 @@ function moveAirObj() {
 	// Input Yaw
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
 	// Input Brakes
-	air_.BrkVal = InpBrk;				// Brakes
-	// Air Density
-//	air_.AirDSL = AirDns*Math.pow(((AirTmp-0.0065*air_.MapSPS.y)/AirTmp),4.25587971); // ### BegTmp = 288.15K
-	air_.AirDSL = BegDns*Math.pow(((BegTmp-0.0065*air_.MapSPS.y)/BegTmp),4.25587971); // ### BegTmp = 300.00K
-	console.log(air_.AirDSL);
+	air_.BrkVal = InpBrk;					// Brakes
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
+	console.log(air_.AirDSL,air_.SpdIAS*Km2Mil);
 	// View Keys ---------------------------------------------------------------
-	if (cam_.pan < 1) {					// Only If Not Panning		
+	if (cam_.pan < 1) {						// Only If Not Panning		
 		// If No Keys Pressed, Set Default View
 		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
 			if (cam_.flg) cam_.lld.x = 0;	// Internal view
