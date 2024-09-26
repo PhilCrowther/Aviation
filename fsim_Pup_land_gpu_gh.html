@@ -75,18 +75,18 @@ import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.gi
 
 //= INPUTS =====================================================================
 //- CAMERA ---------------------------------------------------------------------
-let CamSel = 0;				// Camera Seletion (0 = External; 1 = Internal)
+let CamSel = 0;						// Camera Seletion (0 = External; 1 = Internal)
 //- AIRPLANE: Start -----------------------------------------------------------
-let USorSI = "US";			// Units of Measurement (US or SI)
-let BegPwr = 0;				// Initial Power Percent
-let BegSpd = 100;			// Speed (mph)
+let USorSI = "US";					// Units of Measurement (US or SI)
+let BegPwr = 0;						// Initial Power Percent
+let BegSpd = 100;					// Speed (mph)
 let BegPos = new THREE.Vector3(0,2000,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Basic airplane values
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-let PwrMul = 0.0001;		// Power % Input - Mouse Multiplier
-let PwrDif = 0;				// Power % Input - Value
-let InpBrk = 0;				// Brakes
+let PwrMul = 0.0001;				// Power % Input - Mouse Multiplier
+let PwrDif = 0;						// Power % Input - Value
+let InpBrk = 0;						// Brakes
 //- Mouse Delays ...............................................................
 //- (x = diverted, y = released, z = stored)
 let PwrMsD = new THREE.Vector3(1-1/30,1/15,0);	// Power
@@ -129,21 +129,21 @@ if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
 	BegPos.multiplyScalar(Ft2Mtr);
 }
-let BegTmp = 288.15;		// K = 59F
+let BegTmp = 288.15;				// K = 59F
 
 //= SUN VALUES =================================================================
-let SunCol = 0xffffff;		// Sun
-let SunInt = 3;				// Default intensity of light/sun
+let SunCol = 0xffffff;				// Sun
+let SunInt = 3;						// Default intensity of light/sun
 //- Rotation and Position (fixed)
-let SunLat = 23;			// Direction - Vert (+/- 90)
-let SunLon = 312;			// Direction - Horz (0->360)
-let SunDst = 10000;			// Distance (for shadows and lensflare)
+let SunLat = 23;					// Direction - Vert (+/- 90)
+let SunLon = 312;					// Direction - Horz (0->360)
+let SunDst = 10000;					// Distance (for shadows and lensflare)
 //- New
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let ShdBox = 25;			// Size of shadow box
-let ShdDst = 5000;			// [feet] for shadow
+let ShdBox = 25;					// Size of shadow box
+let ShdDst = 5000;					// [feet] for shadow
 
 //= STANDARD SETUP =============================================================
 //- Display
@@ -181,9 +181,9 @@ let	listener = new THREE.AudioListener();
 let sound1 = new THREE.PositionalAudio(listener);
 let sound3 = new THREE.PositionalAudio(listener);
 let sound4 = new THREE.PositionalAudio(listener);
-let EngObj = new THREE.Object3D();		// Aircraft Engine
-	EngObj.add(sound1);					// Engine
-	EngObj.add(sound3);					// Guns
+let EngObj = new THREE.Object3D();	// Aircraft Engine
+	EngObj.add(sound1);				// Engine
+	EngObj.add(sound3);				// Guns
 	EngObj.position.z = -5;
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -225,34 +225,34 @@ let boxrot = 0;
 let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 
 //= FOG ========================================================================
-let FogCol = 0xbab4a6;		// Sky (for Fog only)
+let FogCol = 0xbab4a6;				// Sky (for Fog only)
 
 //=	SUNFLARE ===================================================================
-let SnFFlg = 1;				// 1 = SunFlare On
+let SnFFlg = 1;						// 1 = SunFlare On
 //- Textures
 let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
 //- Sprites
-let SnFsrc = [SnFhex,SnFhex]; // Spreit Texture Source
-let SnFsiz = [300,800];		// Sprite Size
-	SnFsiz = [300,1500];	// Sprite Size
-let SnFopa = [0.1,0.025];	// Sprite Opacity
-	SnFopa = [0.25,0.025];	// Sprite Opacity
-let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
-let SnFdst = SunDst;		// Distance (default = 10000)
+let SnFsrc = [SnFhex,SnFhex];		// Spreit Texture Source
+let SnFsiz = [300,800];				// Sprite Size
+	SnFsiz = [300,1500];			// Sprite Size
+let SnFopa = [0.1,0.025];			// Sprite Opacity
+	SnFopa = [0.25,0.025];			// Sprite Opacity
+let SnFmlt = [0.3,-0.4];			// Offset Multiplier (1 = centered on Sun)
+let SnFdst = SunDst;				// Distance (default = 10000)
 //- Parameters
 let SnF_ = {
 		//- Sprites
-		num: 2,				// Number of Sprites
-		spr: [],			// Sprite Address
-		mlt: SnFmlt,		// Offset Multiplier
+		num: 2,						// Number of Sprites
+		spr: [],					// Sprite Address
+		mlt: SnFmlt,				// Offset Multiplier
 		//- Rotators
-		msh: [],			// Rotators
-		par: 0,				// Parent (Camera Clone) [OrbCon Only]
+		msh: [],					// Rotators
+		par: 0,						// Parent (Camera Clone) [OrbCon Only]
 		//- Heading Offset
-		cam: new THREE.Vector3(), // Camera Direction
+		cam: new THREE.Vector3(),	// Camera Direction
 		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
-		off: new THREE.Vector2(), // Sun Offset (lat/lon) [shared]
-		asp: 0,				// Camera Aspect
+		off: new THREE.Vector2(),	// Sun Offset (lat/lon) [shared]
+		asp: 0,						// Camera Aspect
 	}
 
 //= GEOMAT =====================================================================
@@ -279,11 +279,11 @@ let grn = [0,0];
 let blu = [0,0];
 //- Colors
 let GrdDrt = "#1c160e";				// Color of underlying dirt (affects brightness)
-let drtclr = [0x8e6d3d,0x47361e];		// Dirt
-let pstclr = [0x00b000,0x005000];		// Pasture
-let cvrclr = [0x75b24c,0x466b2d];		// Green
-let whtclr = [0xfbf4e5,0xeabb63];		// Wheat
-let bnsclr = [0xacd193,0x5d8e3d];		// Beans
+let drtclr = [0x8e6d3d,0x47361e];	// Dirt
+let pstclr = [0x00b000,0x005000];	// Pasture
+let cvrclr = [0x75b24c,0x466b2d];	// Green
+let whtclr = [0xfbf4e5,0xeabb63];	// Wheat
+let bnsclr = [0xacd193,0x5d8e3d];	// Beans
 //	Tones of Dirt Brown Color | #836539 Monochromatic Color
 //	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
 //	Neutral Scheme (Brown to Green)
@@ -521,16 +521,16 @@ let air_ = {
 		PYBmul: new THREE.Vector3().copy(PYBmul), // Airplane Pitch/Yaw/Bank Multiplier
 		BnkMax: 0,					// Maximum bank rate
 		// AutoPilot - Additional Variables
-		AutoOn: 0,			// Autopilot Flag
+		AutoOn: 0,					// Autopilot Flag
 		InpKey: new THREE.Vector3(), // Inputs - Keys (replace InpKey)
 		OldRot: new THREE.Vector3(), // Old Rotation (radians)
-		CfLDif: 0,			// Change in CfL
-		MaxBnk: 0,			// Max Bank (display only)
-		HdgDif: 0			// Horizontal Turn Rate (display only)
+		CfLDif: 0,					// Change in CfL
+		MaxBnk: 0,					// Max Bank (display only)
+		HdgDif: 0,					// Horizontal Turn Rate (display only)
 		// Air Density and IAS Comps
-		BegTmp: BegTmp,		// Beginning Sea Level Temperature (K)
-		BegPrs: 1013.25,	// Beginning Sea Level Air Pressure (mB) - not used
-		SpdIAS: 0			// Indicated Airspeed
+		BegTmp: BegTmp,				// Beginning Sea Level Temperature (K)
+		BegPrs: 1013.25,			// Beginning Sea Level Air Pressure (mB) - not used
+		SpdIAS: 0					// Indicated Airspeed
 	}
 // 
 //- Adjustments
