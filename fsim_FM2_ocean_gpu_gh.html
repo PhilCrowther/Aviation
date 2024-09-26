@@ -171,15 +171,13 @@ let BegTmp = 303.15;			// K = 86F
 //- Display
 let PawsOn = 0;					// Pause
 let InfoOn = 0;					// Info
+let SndFlg = 0;
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 let LnFFlg = 1;					// Lensflare
 //	Program Flags
 let LodFlg = 0;
 //	Altitude Adjustment
 let AltAdj = 0.99;				// Raises objects above map as altitude increases
-//	Animations
-let anmfps = 24;				// Blender FPS
-let aoarng = 20;				// AoA range (model)
 
 //= SUN VALUES =================//==============================================
 let SunCol = "white";			// Sun
@@ -196,19 +194,20 @@ let ShdBox = 25;				// Size of shadow box
 let ShdDst = 5000;				// [feet] for shadow
 
 //= STANDARD SETUP =============//==============================================
-// 	Display
+// 	Scene
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
+//- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);	
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-	renderer.setAnimationLoop(rendAll);
 	document.body.appendChild(renderer.domElement);
-let	maxAnisotropy = 16;			// ### WebGPU
+let maxAnisotropy = renderer.getMaxAnisotropy();
 // 	Light
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
@@ -483,6 +482,10 @@ let air_ = {
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
 //	Animation Mixers - External Model
 let AirFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
+//- Aircraft Animations
+let anmfps = 24;					// Blender FPS
+let aoarng = 20;					// AoA range (model)
+//	Animation Mixers - External Model
 let mxr_ = {
 		// File Name
 		FNm: AirSrc + AirFNm,
@@ -531,7 +534,6 @@ let GunVol = 0.5;				// Volume
 //
 let	listener = new THREE.AudioListener();
 	camera.add(listener);
-let SndFlg = 0;
 let RefDst = 25;	// Reference distance for Positional Audio
 //- My Engine and Prop
 let EngSnd = new THREE.PositionalAudio(listener);

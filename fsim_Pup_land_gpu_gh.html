@@ -151,9 +151,10 @@ let ShdBox = 25;				// Size of shadow box
 let ShdDst = 5000;				// [feet] for shadow
 
 //= STANDARD SETUP =============================================================
-//- Display
+//- Scene
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x000000);
+//- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
@@ -163,8 +164,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.receiveShadow = true;	
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
-//let maxAnisotropy = renderer.capabilities.getMaxAnisotropy();	// ### Err
-let	maxAnisotropy = 16;	// ### WebgGPU
+let maxAnisotropy = renderer.getMaxAnisotropy();
 //- Light
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
