@@ -44,6 +44,34 @@ let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 //= FOG ========================================================================
 let FogCol = 0xbab4a6;		// Sky (for Fog only)
 
+//=	SUNFLARE ===================================================================
+//- Textures
+let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
+//- Sprites
+let SnFsrc = [SnFhex,SnFhex]; // Spreit Texture Source
+let SnFsiz = [300,800];		// Sprite Size
+	SnFsiz = [300,1500];	// Sprite Size
+let SnFopa = [0.1,0.025];	// Sprite Opacity
+	SnFopa = [0.25,0.025];	// Sprite Opacity
+let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
+let SnFdst = SunDst;		// Distance (default = 10000)
+
+//= GRDWTR TEXTURES ============================================================
+let WtrCol = 0x1060ff;		// Water (Nodes)
+//- Textures
+let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
+let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
+//- Canvas (for splitting up textures)
+let ImgSiz = 512;			// !!! Change this for each image
+let canvas = document.createElement("canvas");
+	canvas.width = ImgSiz;
+	canvas.height = ImgSiz;
+let context = canvas.getContext('2d',{willReadFrequently: true});
+	context.translate(0, ImgSiz); // Flips vertical for three.js
+	context.scale(1,-1);
+let WavMax = 5;				// Maximum wave height (set height of outer waves)
+
 //= FM2 WILDCAT DATA ===========================================================
 let data_ = {
 		// Lift
