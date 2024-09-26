@@ -57,7 +57,7 @@ let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
 let SnFdst = SunDst;		// Distance (default = 10000)
 
 //= GRDWTR TEXTURES ============================================================
-let WtrCol = 0x1060ff;		// Water (Nodes)
+
 //- Textures
 let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
 let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
@@ -70,20 +70,12 @@ let canvas = document.createElement("canvas");
 let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
-let WavMax = 5;				// Maximum wave height (set height of outer waves)
 
 //= GRDWTR MODULE ==============================================================
-let GrdSiz = 1600;			// 1600 = 1 mile
-let GrdRes = 512;
-let GrdSeg = 256;			// Segments per Plane (256 = OK, 512 = too much)
 // Common Variables
 let grids = 0;
 
 //= OCEAN MODULE ===============================================================
-let WndSpd = 10.0;
-let WndHdg = 30.0;
-let Choppy = 1.5;
-let AnmSpd = 1.0;			// Can vary with GrdSiz
 // Common Variables
 let waves = 0;
 
