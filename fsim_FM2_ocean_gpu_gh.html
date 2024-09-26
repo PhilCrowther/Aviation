@@ -73,6 +73,7 @@ import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,
 		rotateUV	//r168
 } from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
 import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4.js";
@@ -115,20 +116,20 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 //-	Flight Module:
 //	* Add lag to tail leaving/returning to ground
 
-//= INPUTS =====================================================================
+//= INPUTS =====================//==============================================
 //- CAMERA ---------------------------------------------------------------------
-let CamSel = 1;				// Camera Seletion (0 = External; 1 = Internal)
+let CamSel = 1;					// Camera Seletion (0 = External; 1 = Internal)
 //- AIRPLANE: Start ------------------------------------------------------------
-let USorSI = "US";			// Units of Measurement (US or SI)
-let BegPwr = 0;				// Initial Power Percent
-let BegSpd = 0;				// Speed (mph)
+let USorSI = "US";				// Units of Measurement (US or SI)
+let BegPwr = 0;					// Initial Power Percent
+let BegSpd = 0;					// Speed (mph)
 let BegPos = new THREE.Vector3(0,0,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-let PwrMul = 0.0005;		// Power % Input - Mouse Multiplier
-let PwrDif = 0;				// Power % Input - Value
-let InpBrk = 0;				// Brakes
+let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
+let PwrDif = 0;					// Power % Input - Value
+let InpBrk = 0;					// Brakes
 //- Mouse Delays ...............................................................
 //- (x = diverted, y = released, z = stored)
 let PwrMsD = new THREE.Vector3(1-1/30,1/15,0);	// Power
@@ -143,20 +144,20 @@ let _unlockEvent = {type: 'unlock'};
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
 let	KeyVal = new THREE.Vector3(0.5,0.25,1.0); // (Yaw = turn rate in 15 deg bank)
 
-//= CONSTANTS ==================================================================
+//= CONSTANTS ==================//==============================================
 //	Time
-let	DLTime = 1/60;			// Delta Time (1/60 seconds)
+let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 let DLTim2 = DLTime*DLTime;
 //	Conversions
-let DegRad = Math.PI / 180;	// Convert Degrees to Radians
-let RadDeg = 180/Math.PI;	// Convert Radians to Degrees
-let Ft2Mtr = 0.3048;		// Convert Feet to Meters
+let DegRad = Math.PI / 180;		// Convert Degrees to Radians
+let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let Ft2Mtr = 0.3048;			// Convert Feet to Meters
 let Mtr2Ft = 1/0.3048;
 let Km2Mil = 0.621371;
 let Mil2Km = 1.60934;
-let MtrMil = 1609.34;		// Meters per Mile
+let MtrMil = 1609.34;			// Meters per Mile
 //	Default Constants
-let	GrvMPS = 9.80665; 		// Gravity (mps)
+let	GrvMPS = 9.80665; 			// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
 //- Convert Starting Values
@@ -164,36 +165,37 @@ if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
 	BegPos.multiplyScalar(Ft2Mtr);
 }
-let BegTmp = 303.15;		// K = 86F
+let BegTmp = 303.15;			// K = 86F
 
-//= INPUT VALUES ===============================================================
+//= INPUT VALUES ===============//==============================================
 //- Display
-let PawsOn = 0;				// Pause
-let InfoOn = 0;				// Info
-let StatOn = 1;				// Stats ((0 = off, 1 = on)
+let PawsOn = 0;					// Pause
+let InfoOn = 0;					// Info
+let StatOn = 1;					// Stats ((0 = off, 1 = on)
+let LnFFlg = 1;					// Lensflare
 //	Program Flags
 let LodFlg = 0;
 //	Altitude Adjustment
-let AltAdj = 0.99;			// Raises objects above map as altitude increases
+let AltAdj = 0.99;				// Raises objects above map as altitude increases
 //	Animations
-let anmfps = 24;			// Blender FPS
-let aoarng = 20;			// AoA range (model)
+let anmfps = 24;				// Blender FPS
+let aoarng = 20;				// AoA range (model)
 
-//= SUN VALUES =================================================================
-let SunCol = "white";		// Sun
-let SunInt = 3;				// Default intensity of light/sun
+//= SUN VALUES =================//==============================================
+let SunCol = "white";			// Sun
+let SunInt = 3;					// Default intensity of light/sun
 //- Rotation and Position (fixed)
-let SunLat = 23;			// Direction - Vert (+/- 90)
-let SunLon = 312;			// Direction - Horz (0->360)
-let SunDst = 10000;			// Distance (for shadows and lensflare)
+let SunLat = 23;				// Direction - Vert (+/- 90)
+let SunLon = 312;				// Direction - Horz (0->360)
+let SunDst = 10000;				// Distance (for shadows and lensflare)
 //- New
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let ShdBox = 25;			// Size of shadow box
-let ShdDst = 5000;			// [feet] for shadow
+let ShdBox = 25;				// Size of shadow box
+let ShdDst = 5000;				// [feet] for shadow
 
-//= STANDARD SETUP =============================================================
+//= STANDARD SETUP =============//==============================================
 // 	Display
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
@@ -206,12 +208,12 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	renderer.setAnimationLoop(rendAll);
 	document.body.appendChild(renderer.domElement);
-let	maxAnisotropy = 16;						// ### WebGPU
+let	maxAnisotropy = 16;			// ### WebGPU
 // 	Light
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
-	sunLight.position.copy(SunPos);			// ### SunDst
+	sunLight.position.copy(SunPos);	// ### SunDst
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.left = -ShdBox;
 	sunLight.shadow.camera.right = ShdBox;
@@ -221,13 +223,13 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox; // ### SunDst
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-//	sunLight.shadow.radius = 1;				// > 1 = blur
+//	sunLight.shadow.radius = 1;	// > 1 = blur
 	// Bias ### WebGPU
-//	sunLight.shadow.bias = -0.0005;			// No Shadow
-//	sunLight.shadow.bias = -0.0002;			// Gap
-//	sunLight.shadow.bias = -0.0001;			// RWing Gap
-	sunLight.shadow.bias = -0.00005;		// RTail Gap
-//	sunLight.shadow.bias = -0.00001;		// LWing Moire
+//	sunLight.shadow.bias = -0.0005;	// No Shadow
+//	sunLight.shadow.bias = -0.0002;	// Gap
+//	sunLight.shadow.bias = -0.0001;	// RWing Gap
+	sunLight.shadow.bias = -0.00005; // RTail Gap
+//	sunLight.shadow.bias = -0.00001; // LWing Moire
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -263,148 +265,124 @@ let loadingScreen = {
 };
 let boxrot = 0;
 
-//= SKYBOX =====================================================================
+//= SKY ========================//==============================================
+//- SkyBox
 let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
+//- Fog
+let FogCol = 0xbab4a6;			// Sky (for Fog only)
+//-	LensFlare
+let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
+let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
+let LF0Txt, LF1Txt = 0;
 
-//= FOG ========================================================================
-let FogCol = 0xbab4a6;		// Sky (for Fog only)
-
-//=	SUNFLARE ===================================================================
-let SnFFlg = 1;				// 1 = SunFlare On
-//- Textures
-let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
-//- Sprites
-let SnFsrc = [SnFhex,SnFhex]; // Spreit Texture Source
-let SnFsiz = [300,800];		// Sprite Size
-	SnFsiz = [300,1500];	// Sprite Size
-let SnFopa = [0.1,0.025];	// Sprite Opacity
-	SnFopa = [0.25,0.025];	// Sprite Opacity
-let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
-let SnFdst = SunDst;		// Distance (default = 10000)
-//- Parameters
-let SnF_ = {
-		//- Sprites
-		num: 2,				// Number of Sprites
-		spr: [],			// Sprite Address
-		mlt: SnFmlt,		// Offset Multiplier
-		//- Rotators
-		msh: [],			// Rotators
-		par: 0,				// Parent (Camera Clone) [OrbCon Only]
-		//- Heading Offset
-		cam: new THREE.Vector3(), // Camera Direction
-		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
-		off: new THREE.Vector2(), // Sun Offset (lat/lon) [shared]
-		asp: 0,				// Camera Aspect
-	}
-
-//= GRDWTR TEXTURES ============================================================
+//= GRDWTR TEXTURES ============//==============================================
 let WtrCol = 0x1060ff;			// Water (Nodes)
 //- Textures
 let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
 let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
-let ImgSiz = 512;			// !!! Change this for each image
+let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
 let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
-let WavMax = 5;				// Maximum wave height (set height of outer waves)
+let WavMax = 5;					// Maximum wave height (set height of outer waves)
 
-//= GRDWTR MODULE ==============================================================
+//= GRDWTR MODULE ==============//==============================================
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-let GrdSiz = 1600;			// 1600 = 1 mile
+let GrdSiz = 1600;				// 1600 = 1 mile
 let GrdRes = 512;
-let GrdSeg = 256;			// Segments per Plane (256 = OK, 512 = too much)
+let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 // Common Variables
 let grids = 0;
 let grd_ = {
 		MSP: new THREE.Vector3().copy(BegPos), // MSX, MPY, MSZ (meters) (from Flight)
-		RCs: 16,			// Squares in each of first 2 grids
-		Siz: GrdSiz,		// Size of smallest square
-		Stp: 4,				// Squares in each of first 2 grids
-		Seg: GrdSeg,		// Segments for smallest square
-		Grx: [],			// Index of Grids (0-2)
-		Geo: [],			// Master Index of Basic Geometries
+		RCs: 16,				// Squares in each of first 2 grids
+		Siz: GrdSiz,			// Size of smallest square
+		Stp: 4,					// Squares in each of first 2 grids
+		Seg: GrdSeg,			// Segments for smallest square
+		Grx: [],				// Index of Grids (0-2)
+		Geo: [],				// Master Index of Basic Geometries
 		Col: new THREE.Color(WtrCol), // Color
-		Dsp: 0,				// Grid 0 Displacement Map (from Ocean)
-		Nrm: 0,				// Grid 0-1 Normal Map (from Ocean)
+		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
+		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
 		NMS: new THREE.Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
-		Df0: [],			// Grid 0-1 Diffuse Maps
-		Rf0: [],			// Grid 0-1 Roughness Maps
-		Mt0: [],			// Grid 0 Materials
-		Mt1: [],			// Grid 1 Materials
-		Dif: 0,				// Grid 2 Diffuse Map
-		Ruf: 0,				// Grid 2 Roughness Maps
-		Gr2: 0,				// Grid 2 Normal Map
-		Mat: [],			// Grid 2 Materials
-		WMx: WavMax,		// Max wave height, used to lower outer squares
+		Df0: [],				// Grid 0-1 Diffuse Maps
+		Rf0: [],				// Grid 0-1 Roughness Maps
+		Mt0: [],				// Grid 0 Materials
+		Mt1: [],				// Grid 1 Materials
+		Dif: 0,					// Grid 2 Diffuse Map
+		Ruf: 0,					// Grid 2 Roughness Maps
+		Gr2: 0,					// Grid 2 Normal Map
+		Mat: [],				// Grid 2 Materials
+		WMx: WavMax,			// Max wave height, used to lower outer squares
 	};
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
 
-//= OCEAN MODULE ===============================================================
+//= OCEAN MODULE ===============//==============================================
 let WndSpd = 10.0;
 let WndHdg = 30.0;
 let Choppy = 1.5;
-let AnmSpd = 1.0;			// Can vary with GrdSiz
+let AnmSpd = 1.0;				// Can vary with GrdSiz
 //
 let waves = 0;
 let wav_ = {
 		// Sources
-		Res: GrdRes,		// Resolution - segments per square (default = 512)
-		Siz: GrdSiz,		// Size of Smallest Square = default = 3200m = 2 miles
-		WSp: WndSpd,		// Wind Speed
-		WHd: WndHdg,		// Wind Heading
-		Chp: Choppy,		// default = 1
+		Res: GrdRes,			// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
+		WSp: WndSpd,			// Wind Speed
+		WHd: WndHdg,			// Wind Heading
+		Chp: Choppy,			// default = 1
 		// Animated Maps
-		Dsp: 0,				// The Displacement Map
-		Nrm: 0,				// The Normal Map
+		Dsp: 0,					// The Displacement Map
+		Nrm: 0,					// The Normal Map
 		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
 		Spd: AnmSpd
 	};
-let wavSpd = 0.5;			// Animation speed - use in main program (lower is faster)
+let wavSpd = 0.5;				// Animation speed - use in main program (lower is faster)
 let wavTim = 0;
 
-//= STATIC OBJECTS =============================================================
-let ObjNum = 3;				// number of objects
+//= STATIC OBJECTS =============//==============================================
+let ObjNum = 3;					// number of objects
 //- Should allow for fast update of position
-let ObjTyp = [0];			// Object Type
+let ObjTyp = [0];				// Object Type
 	ObjTyp[ObjNum - 1] = 0;
-let ObjNam = [0];			// Object Name
+let ObjNam = [0];				// Object Name
 	ObjNam[ObjNum - 1] = 0;
-let ObjMdl = [0];			// Model source
+let ObjMdl = [0];				// Model source
 	ObjMdl[ObjNum - 1] = 0;
-let ObjTxt = [0];			// Model texture
+let ObjTxt = [0];				// Model texture
 	ObjTxt[ObjNum - 1] = 0;
-let ObjPos = [0];			// Map Position
+let ObjPos = [0];				// Map Position
 	ObjPos[3*(ObjNum - 1)] = 0;
-let ObjPtr = [0];			// Object Address
+let ObjPtr = [0];				// Object Address
 	ObjPtr[ObjNum - 1] = 0;
 //	List of Objects (allow for expanding list of objects)
 //	Hangars
 let ObjIdx = 0;
-	ObjTyp[ObjIdx] = 0;		// 0 = Fixed standard object
+	ObjTyp[ObjIdx] = 0;			// 0 = Fixed standard object
 	ObjNam[ObjIdx] = "hangar";
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/hangar.glb";
 	ObjTxt[ObjIdx] = 0;
 	ObjPos[ObjIdx] = new THREE.Vector3(60,9,640);		// meters
 	ObjIdx++;
 // Giaros Island
-	ObjTyp[ObjIdx] = 1;		// 1 = Fixed - large feature
+	ObjTyp[ObjIdx] = 1;			// 1 = Fixed - large feature
 	ObjNam[ObjIdx] = "giaro";
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb";
 	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png";
 	ObjPos[ObjIdx] = new THREE.Vector3(-1610,1,2440);	// meters
 	ObjIdx++;
 // Home Island
-	ObjTyp[ObjIdx] = 2;		// 2 = Fixed large group
+	ObjTyp[ObjIdx] = 2;			// 2 = Fixed large group
 	ObjNam[ObjIdx] = "homebase";
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";
 	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";
@@ -417,82 +395,82 @@ let smokeInstancedSprite;
 //let VlkPos = new THREE.Vector3(660,75,300);
 let VlkPos = new THREE.Vector3(50,75,25);
 //-	Island Group ---------------------------------------------------------------
-let IslGrp = new THREE.Group();		// To hold AirExt and AirInt
+let IslGrp = new THREE.Group();	// To hold AirExt and AirInt
 	IslGrp.rotation.order = "YXZ";
-	scene.add(IslGrp);				// CVEGrp => (CVE + WakPtr)
+	scene.add(IslGrp);			// CVEGrp => (CVE + WakPtr)
 
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
-let BasAlt = 8.8392;				// 29 ft
-	BasAlt = 8.25;					// 
-let BasXlf = -61;					// 200 ft
-let BasXrt = 61;					// 200 ft
-let BasZfr = 2260;					// 7420 ft
-let BasZbk = -154;					// -505 ft
+let BasAlt = 8.8392;			// 29 ft
+	BasAlt = 8.25;				// 
+let BasXlf = -61;				// 200 ft
+let BasXrt = 61;				// 200 ft
+let BasZfr = 2260;				// 7420 ft
+let BasZbk = -154;				// -505 ft
 //	Ship (Centered at CVEGrp)
-let CVEAlt = 13.2;					// 43.267 ft
-let CVEXlf = -13.2;					// 43.267 ft
-let CVEXrt = 13.2;					// 43.267 ft
-let CVEZfr = 70.5;					// ?? ft
-let CVEZbk = -70.5;					// ?? ft
+let CVEAlt = 13.2;				// 43.267 ft
+let CVEXlf = -13.2;				// 43.267 ft
+let CVEXrt = 13.2;				// 43.267 ft
+let CVEZfr = 70.5;				// ?? ft
+let CVEZbk = -70.5;				// ?? ft
 
-//= MY AIRPLANE ================================================================
+//= MY AIRPLANE ================//==============================================
 //- Flight Module --------------------------------------------------------------
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: DLTime,				// Seconds per frame (can vary)
-		GrvMPS: GrvMPS,				// Gravity (ups)
-		AirDSL: 0,					// Air Density (varies with altitude)
+		DLTime: DLTime,			// Seconds per frame (can vary)
+		GrvMPS: GrvMPS,			// Gravity (ups)
+		AirDSL: 0,				// Air Density (varies with altitude)
 		// Designators
-		AirDat: data_,				// Aircraft Data
+		AirDat: data_,			// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(0,0,0), // Rotation (in degrees)
-		AirObj: makMsh(),			// Airplane Object 
-		AirPBY: makMsh(),			// Changes in radians
+		AirObj: makMsh(),		// Airplane Object 
+		AirPBY: makMsh(),		// Changes in radians
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
-		SpdKPH: BegSpd,				// Speed in KPH
-		SpdMPS: BegSpd/3.6,			// Speed - meters per second
+		SpdKPH: BegSpd,			// Speed in KPH
+		SpdMPS: BegSpd/3.6,		// Speed - meters per second
 		SpdMPF: (BegSpd/3.6)*DLTime, // Speed - meters per frame	
 		// Airplane Map Speed and Position		
 		MapSpd: new THREE.Vector3(), // Map Speed (meters)
 		MapPos: new THREE.Vector3().copy(BegPos), // Map Position (meters)
 		MapSPS: new THREE.Vector3(0,BegPos.y,0), // MSX, MPY, MSZ (meters)	
 		// Variables Obtained from Flight
-		PwrPct: BegPwr,				// % of Primary Power (0 to 1) (Main and Flight)
-		SupPct: 0,					// Percent of Supplemental Power (War Enmergency or Afterburner)
-		CfLift: 0,					// Coefficient of Lift (user input) - determines lift
-		CfFlap: 0,					// Coefficient of Lift due to flaps (user input)
-		FlpPct: 0,					// Percent of Flaps
-		LngPct: 0,					// Percent of Landing Gear
-		BrkPct: 0,					// Percent of Air Brakes
-		SplPct: 0,					// Percent of Spoiler
-		AGBank: 0,					// Aileron Bank on Ground
-		BrkVal: 0,					// Brakes
-		GrdZed: 0,					// Ground level (default)
-		GrdFlg: 0,					// Ground Flag (1 = on ground)
-		ACPAdj: 0,					// Airplane pitch adjustment
-		MovFlg: 0,					// If Sitting on a Moving Object
+		PwrPct: BegPwr,			// % of Primary Power (0 to 1) (Main and Flight)
+		SupPct: 0,				// Percent of Supplemental Power (War Enmergency or Afterburner)
+		CfLift: 0,				// Coefficient of Lift (user input) - determines lift
+		CfFlap: 0,				// Coefficient of Lift due to flaps (user input)
+		FlpPct: 0,				// Percent of Flaps
+		LngPct: 0,				// Percent of Landing Gear
+		BrkPct: 0,				// Percent of Air Brakes
+		SplPct: 0,				// Percent of Spoiler
+		AGBank: 0,				// Aileron Bank on Ground
+		BrkVal: 0,				// Brakes
+		GrdZed: 0,				// Ground level (default)
+		GrdFlg: 0,				// Ground Flag (1 = on ground)
+		ACPAdj: 0,				// Airplane pitch adjustment
+		MovFlg: 0,				// If Sitting on a Moving Object
 		// Values for the Selected Airplane Type (obtained from Flight)
-		CfLMax: 0,					// Maximum Coefficient of Lift
-		FlpCfL: 0,					// Max Flap Cfl (0.2*CfLMax)
-		ACMass: 0,					// Airplane Mass
-		Weight: 0,					// Used by AutoPilot
+		CfLMax: 0,				// Maximum Coefficient of Lift
+		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
+		ACMass: 0,				// Airplane Mass
+		Weight: 0,				// Used by AutoPilot
 		PYBmul: new THREE.Vector3().copy(PYBmul), // Airplane Pitch/Yaw/Bank Multiplier
-		BnkMax: 0,					// Maximum bank rate
+		BnkMax: 0,				// Maximum bank rate
 		// AutoPilot - Additional Variables
-		AutoOn: 0,					// Autopilot Flag
+		AutoOn: 0,				// Autopilot Flag
 		InpKey: new THREE.Vector3(), // Inputs - Keys (replace InpKey)
 		OldRot: new THREE.Vector3(), // Old Rotation (radians)
-		CfLDif: 0,					// Change in CfL
-		MaxBnk: 0,					// Max Bank (display only)
-		HdgDif: 0,					// Horizontal Turn Rate (display only)
+		CfLDif: 0,				// Change in CfL
+		MaxBnk: 0,				// Max Bank (display only)
+		HdgDif: 0,				// Horizontal Turn Rate (display only)
 		// Air Density and IAS Comps
-		BegTmp: BegTmp,				// Beginning Sea Level Temperature (K)
-		BegPrs: 1013.25,			// Beginning Sea Level Air Pressure (mB) - not used
-		SpdIAS: 0					// Indicated Airspeed
+		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
+		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
+		SpdIAS: 0				// Indicated Airspeed
 	}
 // 
 // Adjustments
@@ -544,12 +522,12 @@ let vxr_ = {
 		Cam: -0.1
 	}
 //-	Sounds ---------------------------------------------------------------------
-let EngSrc = "fm2.wav";				// File (my engine)
-let EngVol = 0.1;					// Volume
-let PrpSrc = "fm2_prop.wav";		// File (my prop)
-let PrpVol = 0.5;					// Volume
-let GunSrc = "fm2_gun.mp3";			// File (my guns)
-let GunVol = 0.5;					// Volume
+let EngSrc = "fm2.wav";			// File (my engine)
+let EngVol = 0.1;				// Volume
+let PrpSrc = "fm2_prop.wav";	// File (my prop)
+let PrpVol = 0.5;				// Volume
+let GunSrc = "fm2_gun.mp3";		// File (my guns)
+let GunVol = 0.5;				// Volume
 //
 let	listener = new THREE.AudioListener();
 	camera.add(listener);
@@ -558,20 +536,20 @@ let RefDst = 25;	// Reference distance for Positional Audio
 //- My Engine and Prop
 let EngSnd = new THREE.PositionalAudio(listener);
 let PrpSnd = new THREE.PositionalAudio(listener);
-let EngMsh = makMsh();				// Airplane Engine
-	EngMsh.add(EngSnd);				// Engine
-	EngMsh.add(PrpSnd);				// Prop
+let EngMsh = makMsh();			// Airplane Engine
+	EngMsh.add(EngSnd);			// Engine
+	EngMsh.add(PrpSnd);			// Prop
 	EngMsh.position.z = -5;
 	air_.AirObj.add(EngMsh);
 //- My Guns
 let GnLSnd = new THREE.PositionalAudio(listener);
-let GnLMsh = makMsh();				// Gun Left
-	GnLMsh.add(GnLSnd);				// Gun
+let GnLMsh = makMsh();			// Gun Left
+	GnLMsh.add(GnLSnd);			// Gun
 	GnLMsh.position.x = -5;
 	air_.AirObj.add(GnLMsh);
 let GnRSnd = new THREE.PositionalAudio(listener);
-let GnRMsh = makMsh();				// Gun Right
-	GnRMsh.add(GnRSnd);				// Gun
+let GnRMsh = makMsh();			// Gun Right
+	GnRMsh.add(GnRSnd);			// Gun
 	GnRMsh.position.x = 5;
 	air_.AirObj.add(GnRMsh);
 //- Other Airplane
@@ -607,7 +585,7 @@ let anm_ = {
 		stkbnk: 180,			// Joystick bank
 		stkbcm: 0,				// cumulative
 		vchead: 0,				// Pilot head
-		// Gear and Flap				
+		// Gear and Flap					
 		lngspd: 0,				// Change in Gear
 		flpspd: 0,				// Change in Flaps
 		canspd: 0,				// Change in Canopy
@@ -643,7 +621,7 @@ let BullPZ = [0];
 let BulTim = [0];				// Time in flight
 	BulTim[BulNum-1] = 0;
 
-//= TRAFFIC ====================================================================
+//= TRAFFIC ====================//==============================================
 //- Airplane -------------------------------------------------------------------
 let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 let XPFile = "fm2_flyt_xp1.glb";	// Name of airplane model file (rotated blender file)
@@ -651,8 +629,8 @@ let XPFile = "fm2_flyt_xp1.glb";	// Name of airplane model file (rotated blender
 let xac_ = {
 		FNm: XPPath + XPFile,
 		Ptr: 0,
-		Spd: 91.5,					// meters
-		MpP: new THREE.Vector3 (180,100,300),	// meters
+		Spd: 91.5,				// meters
+		MpP: new THREE.Vector3 (180,100,300), // meters
 		Rot: new THREE.Vector3 (0,0,30),
 		MxS: 0,
 		MxP: 0,
@@ -704,11 +682,11 @@ let	flg_ = {
 let WakSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
 let WakMap = 0;
 //.	CVE Group ..................................................................
-let CVEGrp = new THREE.Group();		// To hold AirExt and AirInt
+let CVEGrp = new THREE.Group();	// To hold AirExt and AirInt
 	CVEGrp.rotation.order = "YXZ";
-	scene.add(CVEGrp);				// CVEGrp => (CVE + WakPtr)
+	scene.add(CVEGrp);			// CVEGrp => (CVE + WakPtr)
 
-//= PPOINTER LOCK CONTROL ======================================================
+//= PPOINTER LOCK CONTROL ======//==============================================
 class PointerLockControls extends THREE.EventDispatcher {
 	constructor(camera, domElement, plc_) {
 		super();
@@ -802,17 +780,17 @@ let R45flg = 0;		// Right 45 degrees
 let L90flg = 0;		// Left 90 degrees
 let R90flg = 0;		// Right 90 degrees
 
-//= CAMERA =====================================================================
+//= CAMERA =====================//==============================================
 //- Create Cockpit Attach Point
 let	CamPVC = makMsh();
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
-	air_.AirPBY.add(CamPVC); 		// Attach CamPVC to AirPBY (### not AirObj)
+	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
 let CamNum = 2;
 let CamLLD = [new THREE.Vector3(-10,0,30),
 			  new THREE.Vector3(0,0,0.001)];
-let CamAdj = [180,0];				// 180 = Looking In
+let CamAdj = [180,0];			// 180 = Looking In
 let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
 			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
 let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
@@ -847,7 +825,7 @@ let cam_ = {
 	cam_.rot.rotation.order = "YXZ";
 	cam_.obj.rotation.order = "YXZ";
 	cam_.deg.rotation.order = "YXZ";
-	cam_.par.add(cam_.rot);		// Attach Rotator
+	cam_.par.add(cam_.rot);			// Attach Rotator
 	cam_.obj.add(cam_.deg);
 
 //= HTML OVERLAY TEXT ==========================================================
@@ -907,22 +885,21 @@ let On_Paws, Air_AtP, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_
 
 	loadAll();
 	
-//=	0 LOAD ALL =================================================================
+//=	0 LOAD ALL =================//==============================================
 
 function loadAll() {
 	// Load Values Used to initialize my Airplane and Objects
 	if (air_.MapPos.y == 0) air_.GrdFlg = 1;
 	if (BasXlf < air_.MapPos.x && BasXrt > air_.MapPos.x && BasZfr > air_.MapPos.z && BasZbk < air_.MapPos.z) air_.GrdZed = BasAlt*.92;
-	grd_.MSP.y = air_.MapPos.y;		// Use to initialize objects
-	WaitScreen();					// load loading screen
+	grd_.MSP.y = air_.MapPos.y; // Use to initialize objects
+	WaitScreen();				// load loading screen
 	loadSkyBox();
-	if (SnFFlg) loadSunFlr(SnF_);	// SunFlare
 	loadGeoMat();
 	loadAirObj();
-	loadObject();					// load objects	
+	loadObject();				// load objects	
 	loadShpFlg();
-	loadShpWak();					// Ship Wake
-	loadVulkan();					// Volcano
+	loadShpWak();				// Ship Wake
+	loadVulkan();				// Volcano
 }
 
 //= WAIT SCREEN ================================================================
@@ -944,7 +921,6 @@ function WaitScreen() {
 
 function initAll() {
 	initSkyBox();
-	if (SnFFlg) initSunFlr(scene,camera,SnF_);	// SunFlare
 	// Objects
 	initObject();				// Determine relative XZ location of all objects, including CVE
 	moveMinAlt();				// Determine if over CVE - resulting is special handling
@@ -986,7 +962,7 @@ function rendAll() {
 		boxrot = Mod360(boxrot - 3);
 		loadingScreen.box.rotation.set(Math.PI,0,boxrot * DegRad);
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
-		return;							// Stop the function here.
+		return;					// Stop the function here.
 	}
 	if (!PawsOn && LodFlg && controls.isLocked === true) {
 		// Update time
@@ -996,11 +972,6 @@ function rendAll() {
 		flg_.Tim = nowTim;
 		oldTim = nowTim;
 		moveCamera(camera,cam_);
-		if (SnFFlg) {			// SunFlare
-			SnF_.asp = CamAsp;	// Camera Aspect
-			SnF_.cam.copy(cam_.llz); // Camera LLZ		
-			moveSunFlr(SnF_);	// SunFlare
-		}
 		// Move Objects
 		moveAirObj();			// Move aircaft
 		moveBullet();
@@ -1020,18 +991,23 @@ function rendAll() {
 		stopSounds();
 		SndFlg = GunFlg = 0;
 	}
-	renderer.renderAsync(scene, camera);	// ### WebGOU requires Async
+	renderer.renderAsync(scene, camera); // ### WebGOU requires Async
 }
 
-//= SKYBOX =====================================================================
+//= SKYBOX =====================//==============================================
 
 function loadSkyBox() {
 	let envMap = cubeLoader
 		.setPath(SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
-	envMap.colorSpace = THREE.SRGBColorSpace;	// ### r152
+	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = envMap;
+	// LensFlare
+	if (LnFFlg) {				// SunFlare	
+		LF0Txt = txtrLoader.load(LF0Src);
+		LF1Txt = txtrLoader.load(LF1Src);
+	}
 }
 
 function initSkyBox() {
@@ -1039,70 +1015,20 @@ function initSkyBox() {
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
 	// Fog (doesn't work with Normal Material)
 	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
-}
-
-//= SUNFLARE ===================================================================
-
-function loadSunFlr(SnF_) {
-	let SnFtxt,SnFmat;
-	for (let i = 0; i < SnF_.num; i++) {
-		SnFtxt = txtrLoader.load(SnFsrc[i]);
-		SnFmat = new THREE.SpriteNodeMaterial({
-			colorNode: color("white"),
-			colorNode: texture(SnFtxt),
-			transparent:true,
-			opacityNode: SnFopa[i], // Opacity
-			depthTest:false,
-			depthWrite:false
-		});
-		SnF_.spr[i] = new THREE.Sprite(SnFmat);
-		SnF_.spr[i].scale.set(SnFsiz[i],SnFsiz[i],1);
-		SnF_.spr[i].position.z = -SnFdst;		// Make Negative
+	// Lensflare
+	if (LnFFlg) {				// SunFlare		
+		let	spotLight = new THREE.PointLight(0xffffff);
+		scene.add(spotLight);
+		spotLight.position.copy(SunPos).normalize;
+		let LF = new LensflareMesh();
+			LF.addElement(new LensflareElement(LF0Txt,256,0));
+			LF.addElement(new LensflareElement(LF1Txt,32,0.2));
+			LF.addElement(new LensflareElement(LF1Txt,256,0.9));
+		spotLight.add(LF);
 	}
 }
 
-function initSunFlr(scene,camera,SnF_) {
-	SnF_.par = camera;
-	// Get Sprites
-	for (let i = 0; i < SnF_.num; i++) {
-		// Sprite Rotators
-		SnF_.msh[i] = makMsh();			// Make Rotators
-		SnF_.msh[i].add(SnF_.spr[i]);	// Add Sprite to Rotator
-		scene.add(SnF_.msh[i]);			// Make Visible
-		SnF_.par.add(SnF_.msh[i]);		// Add to Parent
-	}
-};
-
-function moveSunFlr(SnF_) {
-	// Get Difference Between Sun and Camera Directions
-	SnF_.off.x = SnF_.sun.x-SnF_.cam.x;				// Camera Lat Offset
-	SnF_.off.y = PoM360(Mod360(SnF_.sun.y-SnF_.cam.y));	// Camera Lon Offset
-	if (SnF_.cam.z) {	// If the Camera is banked
-		let radius = Math.sqrt(SnF_.off.x*SnF_.off.x+SnF_.off.y*SnF_.off.y);
-		let angle0 = Mod360(Math.atan2(SnF_.off.y,SnF_.off.x)*RadDeg);	// Angle to Sun
-		let angle1 = Mod360(angle0-SnF_.cam.z);			// Subtract Bank
-		SnF_.off.x = radius*Math.cos(angle1*DegRad);	// Recompute offsets
-		SnF_.off.y = radius*Math.sin(angle1*DegRad);
-	}
-	// Test Visibility
-	let VisFlg = 0;
-	if (Math.abs(SnF_.off.x) > 45 || Math.abs(SnF_.off.y) > 45*SnF_.asp) VisFlg = 1;
-	if (VisFlg || cam_.sel == 1) {
-		for (let i = 0; i < SnF_.num; i++) {
-			SnF_.spr[i].visible = false;	
-		}
-	}
-	// If visible, Compute Displacement
-	else {
-		for (let i = 0; i < SnF_.num; i++) {
-			SnF_.spr[i].visible = true;
-			SnF_.msh[i].rotation.x = SnF_.off.x*SnF_.mlt[i]*DegRad;
-			SnF_.msh[i].rotation.y = -SnF_.off.y*SnF_.mlt[i]*DegRad;
-		}
-	}
-};
-
-//= GEOMAT =====================================================================
+//= GEOMAT =====================//==============================================
 // Can't be exported since uses html context to split images
 
 function loadGeoMat() {
@@ -2061,22 +1987,7 @@ function moveCamera(camera,cam_) {
 	// In external view, the camera is facing in and the armature is pointing out:
 	else {
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
-		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;
-		//= Determine Camera Rotation (for SunFlare - always linked)
-		if (SnFFlg) {
-			// Load Parent Rotation
-			cam_.obj.rotation.copy(cam_.par.rotation);
-			// Load Camera Adjustments
-			cam_.deg.rotation.x = cam_.lld.x*DegRad;
-			cam_.deg.rotation.y = -cam_.lld.y*DegRad;	
-			// Combine and Transfer Combined Rotation to cam_.obj
-			cam_.deg.getWorldQuaternion(cam_.qat);
-			cam_.obj.setRotationFromQuaternion(cam_.qat);	
-			// Load Resulting Values into Variables (for display)
-			cam_.llz.x = cam_.obj.rotation.x*RadDeg;
-			cam_.llz.y = Mod360(-cam_.obj.rotation.y*RadDeg);
-			cam_.llz.z = Mod360(-cam_.obj.rotation.z*RadDeg);
-		}		
+		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;	
 	}
 }
 
