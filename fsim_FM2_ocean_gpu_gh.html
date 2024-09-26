@@ -10,7 +10,7 @@ A flight simulation of an animated airplane model over an animated ocean using W
 -->
 
 <head>
-<title>FSim: FM2 Ocean GPU r167</title>
+<title>FSim: FM2 Ocean GPU r169</title>
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
 </head>
 
@@ -55,9 +55,9 @@ A flight simulation of an animated airplane model over an animated ocean using W
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.167.1/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.167.1/examples/jsm/",
+			"three": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -70,7 +70,7 @@ import * as THREE from "three";
 import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,
 		MeshStandardNodeMaterial,SpriteNodeMaterial,LineBasicNodeMaterial,
 		color,texture,attribute,timerLocal,range,positionLocal,uv,mix,
-//		rotateUV	//r168
+		rotateUV	//r168
 } from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "stats-gl";
@@ -200,10 +200,11 @@ let scene = new THREE.Scene();
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
-	renderer.setAnimationLoop(rendAll);
-	// Shadow
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.autoUpdate = true;
+	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-	// ToneMapping (tends to accentuate tiling)
+	renderer.setAnimationLoop(rendAll);
 	document.body.appendChild(renderer.domElement);
 let	maxAnisotropy = 16;						// ### WebGPU
 // 	Light
@@ -225,8 +226,8 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 //	sunLight.shadow.bias = -0.0005;			// No Shadow
 //	sunLight.shadow.bias = -0.0002;			// Gap
 //	sunLight.shadow.bias = -0.0001;			// RWing Gap
-//	sunLight.shadow.bias = -0.00005;		// RTail Gap
-	sunLight.shadow.bias = -0.00001;		// LWing Moire
+	sunLight.shadow.bias = -0.00005;		// RTail Gap
+//	sunLight.shadow.bias = -0.00001;		// LWing Moire
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -1493,8 +1494,7 @@ function initShpWak() {
 	//- Rotation Range
 //	let rotateRange = range(.1,4);
 	let rotateRange = range(.1,.2);			// No apparent change
-	let textureNode = texture(WakMap, uv().rotateUV(timer.mul(rotateRange)));	//r167
-//	let textureNode = texture(WakMap, rotateUV(uv(),timer.mul(rotateRange)));	//r168
+	let textureNode = texture(WakMap, rotateUV(uv(),timer.mul(rotateRange)));	//r168
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 	//- Lateral Offset	
 	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
@@ -1538,9 +1538,8 @@ function initVulkan() {
 	let life = lifeTime.div(lifeRange);
 	//- Rotation Range
 	let rotateRange = range(.1,4);
-	let textureNode = texture(VlkMap, uv().rotateUV(timer.mul(rotateRange)));	//r167
-//	let textureNode = texture(VlkMap, rotateUV(uv(),timer.mul(rotateRange)));	//r168
-	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
+	let textureNode = texture(VlkMap, rotateUV(uv(),timer.mul(rotateRange)));	//r168
+//	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 	//- Lateral Offset	
 //	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
 	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// cone shaped
