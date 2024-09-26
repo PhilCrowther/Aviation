@@ -1,4 +1,24 @@
-﻿// FM2 Wildcat
+﻿//= PRE-LOAD DATA ==============================================================
+//	No three.js routines allowed since three.js has not been loaded yet.
+
+//= CONSTANTS ==================================================================
+//	Time
+let	DLTime = 1/60;			// Delta Time (1/60 seconds)
+let DLTim2 = DLTime*DLTime;
+//	Conversions
+let DegRad = Math.PI / 180;	// Convert Degrees to Radians
+let RadDeg = 180/Math.PI;	// Convert Radians to Degrees
+let Ft2Mtr = 0.3048;		// Convert Feet to Meters
+let Mtr2Ft = 1/0.3048;
+let Km2Mil = 0.621371;
+let Mil2Km = 1.60934;
+let MtrMil = 1609.34;		// Meters per Mile
+//	Default Constants
+let	GrvMPS = 9.80665; 		// Gravity (mps)
+//	Starting Constants per frame
+let GrvDLT = GrvMPS*DLTim2;
+
+//= FM2 WILDCAT DATA ===========================================================
 let data_ = {
 		// Lift
 		WingSp: 11.58,		// Wing Span (m)
