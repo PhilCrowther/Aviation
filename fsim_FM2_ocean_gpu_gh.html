@@ -222,13 +222,7 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox; // ### SunDst
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-//	sunLight.shadow.radius = 1;	// > 1 = blur
-	// Bias ### WebGPU
-//	sunLight.shadow.bias = -0.0005;	// No Shadow
-//	sunLight.shadow.bias = -0.0002;	// Gap
-//	sunLight.shadow.bias = -0.0001;	// RWing Gap
-	sunLight.shadow.bias = -0.00005; // RTail Gap
-//	sunLight.shadow.bias = -0.00001; // LWing Moire
+	sunLight.shadow.bias = -0.0005; // ### WebGPU
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -244,6 +238,8 @@ let oldTim, nowTim, difTim = 0;
 	document.addEventListener("keyup", onDocumentKeyUp, false);
 	window.addEventListener("resize", onWindowResize, false);
 // 	Loading Manager
+	// Create a loading manager to set RESOURCES_LOADED when appropriate.
+	// Pass loadingManager to all resource loaders.
 let loadingManager = new THREE.LoadingManager();
 let RESOURCES_LOADED = false;
 	loadingManager.onLoad = function(){

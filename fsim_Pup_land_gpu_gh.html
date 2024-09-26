@@ -150,15 +150,15 @@ let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 let ShdBox = 25;				// Size of shadow box
 let ShdDst = 5000;				// [feet] for shadow
 
-//= STANDARD SETUP =============================================================
+//= STANDARD SETUP =============//==============================================
 //- Scene
 let scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x000000);
+	scene.background = new THREE.Color("black");
 //- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
-	renderer.setAnimationLoop(rendAll); // ### nodes
+	renderer.setAnimationLoop(rendAll);
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;	
@@ -187,8 +187,8 @@ let sound1 = new THREE.PositionalAudio(listener);
 let sound3 = new THREE.PositionalAudio(listener);
 let sound4 = new THREE.PositionalAudio(listener);
 let EngObj = new THREE.Object3D();	// Aircraft Engine
-	EngObj.add(sound1);				// Engine
-	EngObj.add(sound3);				// Guns
+	EngObj.add(sound1);			// Engine
+	EngObj.add(sound3);			// Guns
 	EngObj.position.z = -5;
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
