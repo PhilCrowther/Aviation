@@ -55,6 +55,20 @@ let SnFopa = [0.1,0.025];	// Sprite Opacity
 	SnFopa = [0.25,0.025];	// Sprite Opacity
 let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
 let SnFdst = SunDst;		// Distance (default = 10000)
+let SnF_ = {
+		//- Sprites
+		num: 2,				// Number of Sprites
+		spr: [],			// Sprite Address
+		mlt: SnFmlt,		// Offset Multiplier
+		//- Rotators
+		msh: [],			// Rotators
+		par: 0,				// Parent (Camera Clone) [OrbCon Only]
+		//- Heading Offset
+		cam: new THREE.Vector3(), // Camera Direction
+		sun: new THREE.Vector2(SunLat,SunLon),	// Sun Position (fixed)
+		off: new THREE.Vector2(), // Sun Offset (lat/lon) [shared]
+		asp: 0,				// Camera Aspect
+	}
 
 //= GRDWTR TEXTURES ============================================================
 let WtrCol = 0x1060ff;		// Water (Nodes)
