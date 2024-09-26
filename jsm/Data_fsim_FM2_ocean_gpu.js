@@ -14,9 +14,9 @@ let SnF_ = {
 		msh: [],			// Rotators
 		par: 0,				// Parent (Camera Clone) [OrbCon Only]
 		//- Heading Offset
-		cam: new THREE.Vector3(), // Camera Direction
-		sun: new THREE.Vector2(0,0),	// Sun Position (fixed)
-		off: new THREE.Vector2(), // Sun Offset (lat/lon) [shared]
+		cam: new Vector3(), // Camera Direction
+		sun: new Vector2(0,0),	// Sun Position (fixed)
+		off: new Vector2(), // Sun Offset (lat/lon) [shared]
 		asp: 0,				// Camera Aspect
 	}
 
