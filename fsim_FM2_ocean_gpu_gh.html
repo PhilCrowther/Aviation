@@ -164,7 +164,25 @@ if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
 	BegPos.multiplyScalar(Ft2Mtr);
 }
+
+//= ALTITUDE RATIOS ============================================================
+//- Inputs
 let BegTmp = 303.15;		// K = 86F
+//- Standard Temperature and Density Values at Sea Level
+let StdTmp = 288.15			// Temperature (K) = 15C
+let StdDns = 1.225			// Density (kg/m3)
+//- Altitude Index
+let AltIdx = BegPos.y/1000;
+//- Standard Temperature and Pressure Ratios at Altitude
+let StdTmR = (288.15-6.5*AltIdx)/288.15;
+let StdPrR = Math.pow(StdTmR,5.2559);
+let AltTmp = BegTmp-6.5*AltIdx;	// Actual Temperature (using standard lapse rate)
+let AltTmR = AltTmp/288.15;	// Actual Temperature Ratio	
+//- Density Value and Ratio
+let AirDSL = StdDns*StdPrR/AltTmR;
+let AirDnR = AirDSL/StdDns;
+//- TAS to IAS
+let SpdIAS = BegSpd*Math.sqrt(AirDnR);
 
 //= INPUT VALUES ===============================================================
 //- Display
@@ -442,7 +460,7 @@ let air_ = {
 		// General Variables
 		DLTime: DLTime,		// Seconds per frame (can vary)
 		GrvMPS: GrvMPS,		// Gravity (ups)
-		AirDSL: 0,			// Air Density (varies with altitude)
+		AirDSL: AirDSL,		// Air Density (varies with altitude)
 		// Designators
 		AirDat: data_,		// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
@@ -487,11 +505,7 @@ let air_ = {
 		OldRot: new THREE.Vector3(), // Old Rotation (radians)
 		CfLDif: 0,			// Change in CfL
 		MaxBnk: 0,			// Max Bank (display only)
-		HdgDif: 0,			// Horizontal Turn Rate (display only)
-		// Air Density and IAS Comps
-		BegTmp: BegTmp,		// Beginning Sea Level Temperature (K)
-		BegPrs: 1013.25,	// Beginning Sea Level Air Pressure (mB) - not used
-		SpdIAS: 0			// Indicated Airspeed
+		HdgDif: 0			// Horizontal Turn Rate (display only)
 	}
 // 
 // Adjustments
@@ -1758,12 +1772,25 @@ function moveAirObj() {
 	// Input Yaw
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
 	// Input Brakes
-	air_.BrkVal = InpBrk;					// Brakes
+	air_.BrkVal = InpBrk;				// Brakes
+	//- Air Density ------------------------------------------------------------
+	AltIdx = air_.MapSPS.y/1000;
+//- Standard Temperature and Pressure Ratios at Altitude
+	StdTmR = (288.15-6.5*AltIdx)/288.15;
+	StdPrR = Math.pow(StdTmR,5.2559);
+	AltTmp = BegTmp-6.5*AltIdx;	// Actual Temperature (using standard lapse rate)
+	AltTmR = AltTmp/288.15;	// Actual Temperature Ratio
+//	console.log(AltIdx,AltTmp,AltTmR);
+//- Density Value and Ratio
+	air_.AirDSL = StdDns*StdPrR/AltTmR;
+	AirDnR = air_.AirDSL/StdDns;
+//- TAS to IAS
+	SpdIAS = air_.SpdKPH*Math.sqrt(AirDnR);
+	console.log(air_.AirDSL,SpdIAS*Km2Mil);
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
-	console.log(air_.AirDSL,air_.SpdIAS*Km2Mil);
 	// View Keys ---------------------------------------------------------------
-	if (cam_.pan < 1) {						// Only If Not Panning		
+	if (cam_.pan < 1) {					// Only If Not Panning		
 		// If No Keys Pressed, Set Default View
 		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
 			if (cam_.flg) cam_.lld.x = 0;	// Internal view
