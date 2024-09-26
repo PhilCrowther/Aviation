@@ -2,7 +2,7 @@
 
 //	Updated: Sep 26 2024
 
-import {Vector2,Vector3} from 'three';
+import {Color,Vector2,Vector3} from 'three';
 
 //=	SUNFLARE ===================================================================
 let SnF_ = {
@@ -26,17 +26,17 @@ let SnF_ = {
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
 let grd_ = {
-		MSP: new THREE.Vector3().copy(BegPos), // MSX, MPY, MSZ (meters) (from Flight)
+		MSP: new Vector3().copy(BegPos), // MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,			// Squares in each of first 2 grids
 		Siz: GrdSiz,		// Size of smallest square
 		Stp: 4,				// Squares in each of first 2 grids
 		Seg: GrdSeg,		// Segments for smallest square
 		Grx: [],			// Index of Grids (0-2)
 		Geo: [],			// Master Index of Basic Geometries
-		Col: new THREE.Color(WtrCol), // Color
+		Col: new Color(WtrCol), // Color
 		Dsp: 0,				// Grid 0 Displacement Map (from Ocean)
 		Nrm: 0,				// Grid 0-1 Normal Map (from Ocean)
-		NMS: new THREE.Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
+		NMS: new Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
 		Df0: [],			// Grid 0-1 Diffuse Maps
 		Rf0: [],			// Grid 0-1 Roughness Maps
 		Mt0: [],			// Grid 0 Materials
@@ -50,7 +50,6 @@ let grd_ = {
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
-
 
 //= EXPORT =====================================================================
 
