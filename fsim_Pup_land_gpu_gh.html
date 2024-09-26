@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Sep 2024
+Version dated 26 Sep 2024
 
 A flight simulation of an animated airplane model over procedural land using
 -->
 
 <head>
-<title>FSim: Pup Land GPU r168</title>
+<title>FSim: Pup Land GPU r169</title>
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
 </head>
 
@@ -55,9 +55,9 @@ A flight simulation of an animated airplane model over procedural land using
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.168.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/",
+			"three": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -152,7 +152,7 @@ let scene = new THREE.Scene();
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
-	renderer.setAnimationLoop(rendAll);					// ### nodes
+	renderer.setAnimationLoop(rendAll); // ### nodes
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;	
@@ -164,7 +164,7 @@ let	maxAnisotropy = 16;	// ### WebgGPU
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
-	sunLight.position.copy(SunPos);			// ### SunDst
+	sunLight.position.copy(SunPos);	// ### SunDst
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.left = -ShdBox;
 	sunLight.shadow.camera.right = ShdBox;
@@ -174,7 +174,7 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox; // ### SunDst
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.bias = - 0.0005;		// ### WebGPU
+	sunLight.shadow.bias = -0.0005;	// ### WebGPU
 	scene.add(sunLight);
 //- Sounds
 let	listener = new THREE.AudioListener();
@@ -345,12 +345,12 @@ let G1MPtr = [];
 // Used by G0 to position squares
 // And by G1 to create textures
 let G1Indx = [
-		 0, 1, 2, 3, 4, 5, 6, 7, 8,		//value of 9-15 in first row causes white space 
+		 0, 1, 2, 3, 4, 5, 6, 7, 8,	//value of 9-15 in first row causes white space 
 		10, 2, 4,15,10,12,10, 9, 5,
 		 3,12,11, 8,13, 3, 1, 0,14,
 		 0, 7,10,14,12,10,11, 2, 4,
-		 9,14, 5, 4, 9,13, 8,12, 7,		// 9 = over
-		 4, 7,15,12, 3,11, 9,13, 4,		// 3 = Airport
+		 9,14, 5, 4, 9,13, 8,12, 7,	// 9 = over
+		 4, 7,15,12, 3,11, 9,13, 4,	// 3 = Airport
 		11,12, 8, 5,13, 2,10,15,13,
 		 6,10, 7, 9,15,14,12, 5,11,
 		 0,13, 6,10, 3, 2,14, 4, 8
