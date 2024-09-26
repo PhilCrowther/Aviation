@@ -88,6 +88,7 @@ let AnmSpd = 1.0;			// Can vary with GrdSiz
 let waves = 0;
 
 //= STATIC OBJECTS =============================================================
+let ObjNum = 3;				// number of objects
 //- Should allow for fast update of position
 let ObjTyp = [0];			// Object Type
 	ObjTyp[ObjNum - 1] = 0;
@@ -101,6 +102,22 @@ let ObjPos = [0];			// Map Position
 	ObjPos[3*(ObjNum - 1)] = 0;
 let ObjPtr = [0];			// Object Address
 	ObjPtr[ObjNum - 1] = 0;
+
+//= TRAFFIC ====================================================================
+//- Airplane -------------------------------------------------------------------
+let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
+let XPFile = "fm2_flyt_xp1.glb";	// Name of airplane model file (rotated blender file)
+//	Sounds
+let xpsnd1 = "fm2_prop.wav";	// File (xp prop)
+let xpvol1 = 1.0;				// Volume
+//- Aircraft Carrier -----------------------------------------------------------
+let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
+let XSFile = "CVE_noflag.glb";
+//. Flag .......................................................................
+let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
+//. Wake .......................................................................
+let WakSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
+let WakMap = 0;
 
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
