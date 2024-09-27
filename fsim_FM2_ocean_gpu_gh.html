@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 29 Sep 2024
+Version dated 27 Sep 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -76,7 +76,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,rotLLD,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4.js";
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
@@ -197,7 +197,7 @@ let ShdDst = 5000;				// [feet] for shadow
 // 	Scene
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
-//- Renderer
+//	Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
@@ -212,17 +212,25 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
-	sunLight.position.copy(SunPos);	// ### SunDst
+	// r163
+//	sunLight.position.copy(SunPos).normalize;
+//	sunLight.shadow.camera.near = 0.001;
+//	sunLight.shadow.camera.near = SunDst+ShdBox;
+//	sunLight.shadow.mapSize.width = 8192;
+//	sunLight.shadow.mapSize.height = 8192;
+	// r169
+	sunLight.position.copy(SunPos);
+	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
+	sunLight.shadow.camera.near = SunDst-ShdBox;
+	sunLight.shadow.bias = -0.00005; // ### WebGPU (0 flashing; -0.0001 no wheels)
+	sunLight.shadow.mapSize.width = 2048
+	sunLight.shadow.mapSize.height = 2048;
+	//
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.left = -ShdBox;
 	sunLight.shadow.camera.right = ShdBox;
 	sunLight.shadow.camera.top = ShdBox;
 	sunLight.shadow.camera.bottom = -ShdBox;
-	sunLight.shadow.camera.near = SunDst-ShdBox; // ### SunDst	
-	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox; // ### SunDst
-	sunLight.shadow.mapSize.width = 2048;
-	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.bias = -0.00005; // ### WebGPU
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -1788,8 +1796,9 @@ function moveBullet() {
 			if (!BulTim[i] && !BulSp2) {
 				// Set Initial Rotation (Position is 0,0,0)
 				BulPtr[i].rotation.copy(air_.AirObj.rotation); //###
-				// Set Initial Speed
-				BulSV3 = rotLLD(new THREE.Vector3(air_.AirRot.x,Mod360(-air_.AirRot.y),BulSpT));
+				// Set Initial Speed			
+				BulSV3 = new THREE.Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
+				BulSV3 = new THREE.Vector3().setFromSpherical(BulSV3);			
 				BullSX[i] = BulSV3.x;
 				BullSY[i] = BulSV3.y;
 				BullSZ[i] = BulSV3.z;
