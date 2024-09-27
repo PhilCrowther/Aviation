@@ -321,7 +321,7 @@ update() {
 
 };	// End of Module
 
-//= MISCELLANOUS SUBROUTINES ===================================================
+//= MISCELLANOUS SUBROUTINES ===//==============================================
 
 // Compute Air Density and Indcated Airspeed
 function AirDns(BegTmp,Height) {
@@ -346,8 +346,8 @@ return SpdIAS}
 
 //  Converts degrees to 360
 function Mod360(deg) {
-	while (deg < 0) deg = deg+360;				// Make deg a positive number
-	deg = deg % 360;							// Compute remainder of any number divided by 360
+	while (deg < 0) deg = deg+360; // Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
 return deg;}
 
 //  Converts 360 degrees to +/- 180
@@ -355,30 +355,11 @@ function PoM360(deg) {
 	if (deg > 180) deg = deg-360;
 return deg;}
 
-//- Min Max --------------------------------------------------------------------
-
 //- Limit Maximum +/- Value
 function MaxVal(x, max) {
 	if (x > 0 && x >  max) x =  max;
 	if (x < 0 && x < -max) x = -max;
 return x;}
-
-//- Rotate Vector --------------------------------------------------------------
-//	Input: vector3: LLD.x = lat; LLD.y = lon; LLD.z = dst
-//  Exput: vector3: position(xyz)
-
-function rotLLD(LLD) {
-	let DegRad = Math.PI/180;
-	let lat = LLD.x*DegRad;
-	let lon = LLD.y*DegRad;
-	// Latitude
-	LLD.y = LLD.z * Math.sin(lat);
-	LLD.z = LLD.z * Math.cos(lat);
-	// Longitude
-	LLD.x = LLD.z * Math.sin(lon);
-	LLD.z = LLD.z * Math.cos(lon);
-	return LLD;
-}
 
 //- Make Mesh ------------------------------------------------------------------
 function makMsh() {
@@ -405,4 +386,5 @@ export {Flight, Mod360, PoM360, MaxVal, rotLLD, makMsh};
  * 240815:	Added Autopilot
  * 240913:	Converted to Class.
  * 240925:	Added Air Density and IAS comps
+ * 240927	Deleted rotLLD (since can used spherical to rotate vector)
 */
