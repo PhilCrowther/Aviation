@@ -1,6 +1,6 @@
 /*
  * Flight.js
- * Version 4 (vers 24.09.15)
+ * Version 4 (vers 24.09.27)
  * Copyright 2017-24, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -104,7 +104,7 @@ constructor(air_) {
 	this.update();
 };	// End of Initialize
 
-// = FLIGHT.RENDER = (called by Main Program) ==================================
+// = FLIGHT.UPDATE = (called by Main Program) ==================================
 update() {
 	// 1. COMPUTE VECTORS ------------------------------------------------------
 	// Inputs: this.air_.SpdMPS, this.air_.GrvMPS
@@ -368,7 +368,7 @@ function makMsh() {
 	let mesh = new Mesh(geometry, material);
 return mesh;}
 
-export {Flight, Mod360, PoM360, MaxVal, rotLLD, makMsh};
+export {Flight, Mod360, PoM360, MaxVal, makMsh};
 
 /*= REVISIONS ==================================================================
  * 211216:	This new EZ version uses three.js rotations to compute orientation.
