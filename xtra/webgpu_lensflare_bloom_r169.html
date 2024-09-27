@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgpu - bloom selective</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body>
+
+		<div id="info">
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgpu - bloom selective
+		</div>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from 'three';
+import { pass, mrt, output, float, uniform, color, LineBasicNodeMaterial, bloom } from 'three/tsl';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
+
+//= CONSTANTS ==================//==============================================
+let DegRad = Math.PI / 180;		// Convert Degrees to Radians
+
+//= SUN VALUES =================//==============================================
+let SunCol = "white";			// Sun
+let SunInt = 3;					// Default intensity of light/sun
+//- Rotation and Position (fixed)
+let SunLat = 23;				// Direction - Vert (+/- 90)
+let SunLon = 312;				// Direction - Horz (0->360)
+let SunDst = 10000;				// Distance (for shadows and lensflare)
+//- New
+let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+//- SkyBox
+let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
+//-	LensFlare
+let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
+let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
+let LF0Txt, LF1Txt = 0;
+
+//= STANDARD SETUP =============//==============================================
+//	scene
+let	scene = new THREE.Scene();
+//	camera
+let	camera = new THREE.PerspectiveCamera(40, window.innerWidth/window.innerHeight,1,200);
+	camera.position.set(0,0,50);
+	camera.lookAt(0,0,0);
+// 	Light
+let ambLight = new THREE.AmbientLight(SunCol,0.2);
+	scene.add(ambLight);
+let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+	sunLight.position.copy(SunPos);
+//	renderer
+let	renderer = new THREE.WebGPURenderer();
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setAnimationLoop(animate);
+	document.body.appendChild(renderer.domElement);
+//	Controls
+let	controls = new OrbitControls(camera, renderer.domElement);
+//	Loaders
+let cubeLoader = new THREE.CubeTextureLoader();
+let txtrLoader = new THREE.TextureLoader();
+
+//	BEG BLOOM
+//	post processing
+let	scenePass = pass(scene,camera);
+	scenePass.setMRT(mrt({
+		output,
+		bloomIntensity: float(0) // default bloom intensity
+	}));
+let outputPass = scenePass.getTextureNode();
+let bloomIntensityPass = scenePass.getTextureNode('bloomIntensity');
+let bloomPass = bloom( outputPass.mul( bloomIntensityPass ) );	//r169
+let postProcessing = new THREE.PostProcessing(renderer);
+	postProcessing.outputColorTransform = false;
+	postProcessing.outputNode = outputPass.add(bloomPass).renderOutput();
+//	END BLOOM
+
+//=	0 LOAD ALL =================//==============================================
+	loadSkyBox();
+
+//= 1 INIT ALL =================//==============================================
+	initSkyBox();
+//	Lines
+let points = [];
+	points.push(new THREE.Vector3(0,0,-10));
+	points.push(new THREE.Vector3(0,0,10));
+let geo = new THREE.BufferGeometry().setFromPoints(points);
+// Line A
+// BEG BLOOM
+let	bloomIntensity = 1;
+let	matA = new LineBasicNodeMaterial({colorNode: color(0xff60ff)});
+	matA.mrtNode = mrt({bloomIntensity: uniform(bloomIntensity)});
+/// END BLOOM
+let lineA = new THREE.Line(geo,matA);
+	lineA.position.set(-10,0,0);
+	scene.add(lineA);
+//	Line B
+let matB = new THREE.LineBasicMaterial({color: 0xff60ff});
+let lineB = new THREE.Line(geo,matB);
+	lineB.position.set(10,0,0);
+	scene.add(lineB);
+
+//= 2 RENDER ===================//==============================================
+//	animate
+function animate() {
+	// BEG BLOOM
+	postProcessing.render();
+	// END BLOOM
+}
+
+//= SKYBOX =====================//==============================================
+
+function loadSkyBox() {
+	let envMap = cubeLoader
+		.setPath(SBxSrc)
+		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
+	envMap.format = THREE.RGBAFormat;
+	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
+	scene.background = envMap;
+	// LensFlare
+	LF0Txt = txtrLoader.load(LF0Src);
+	LF1Txt = txtrLoader.load(LF1Src);
+}
+
+function initSkyBox() {
+	// Lensflare
+	let	spotLight = new THREE.PointLight(0xffffff);
+	scene.add(spotLight);
+	spotLight.position.copy(SunPos).normalize;
+	let LF = new LensflareMesh();
+		LF.addElement(new LensflareElement(LF0Txt,256,0));
+		LF.addElement(new LensflareElement(LF1Txt,32,0.2));
+		LF.addElement(new LensflareElement(LF1Txt,256,0.9));
+	spotLight.add(LF);
+}
+
+//  Converts degrees to 360
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360; // Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
+return deg;}
+
+// events
+window.onresize = function () {
+	let width = window.innerWidth;
+	let height = window.innerHeight;
+	camera.aspect = width / height;
+	camera.updateProjectionMatrix();
+	renderer.setSize( width, height );
+};
+</script>
+</body>
+</html>
