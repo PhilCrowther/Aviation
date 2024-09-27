@@ -30,28 +30,21 @@ let aoarng = 20;			// AoA range (model)
 //= SKY VALUES =================================================================
 //- SkyBox
 let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
-let FogCol = 0xbab4a6;		// Sky (for Fog only)
+//- Fog
+let FogCol = 0xbab4a6;			// Sky (for Fog only)
 //- Sun
 let SunLat = 23;			// Direction - Vert (+/- 90)
 let SunLon = 312;			// Direction - Horz (0->360)
 let SunCol = "white";		// Sun
 let SunInt = 3;				// Default intensity of light/sun
 let SunDst = 10000;			// Distance (for shadows and lensflare)
+//-	LensFlare
+let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
+let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
+let LF0Txt, LF1Txt = 0;
 //-	Shadows
 let ShdBox = 25;			// Size of shadow box
 let ShdDst = 5000;			// [feet] for shadow
-
-//=	SUNFLARE ===================================================================
-//- Textures
-let SnFhex = "https://PhilCrowther.github.io/Aviation/textures/fx/hex.png";
-//- Sprites
-let SnFsrc = [SnFhex,SnFhex]; // Spreit Texture Source
-let SnFsiz = [300,800];		// Sprite Size
-	SnFsiz = [300,1500];	// Sprite Size
-let SnFopa = [0.1,0.025];	// Sprite Opacity
-	SnFopa = [0.25,0.025];	// Sprite Opacity
-let SnFmlt = [0.3,-0.4];	// Offset Multiplier (1 = centered on Sun)
-let SnFdst = SunDst;		// Distance (default = 10000)
 
 //= GRDWTR TEXTURES ============================================================
 //- Textures
