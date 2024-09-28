@@ -185,7 +185,7 @@ let SunInt = 3;					// Default intensity of light/sun
 //- Rotation and Position (fixed)
 let SunLat = 23;				// Direction - Vert (+/- 90)
 let SunLon = 312;				// Direction - Horz (0->360)
-let SunDst = 10000;				// Distance (for shadows and lensflare)
+let SunDst = 1000;				// Distance (for shadows and lensflare)
 //- New
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
@@ -212,25 +212,17 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
-	// r163
-//	sunLight.position.copy(SunPos).normalize;
-//	sunLight.shadow.camera.near = 0.001;
-//	sunLight.shadow.camera.near = SunDst+ShdBox;
-//	sunLight.shadow.mapSize.width = 8192;
-//	sunLight.shadow.mapSize.height = 8192;
-	// r169
-	sunLight.position.copy(SunPos);
-	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
-	sunLight.shadow.camera.near = SunDst-ShdBox;
-	sunLight.shadow.bias = -0.00005; // ### WebGPU (0 flashing; -0.0001 no wheels)
-	sunLight.shadow.mapSize.width = 2048
-	sunLight.shadow.mapSize.height = 2048;
-	//
+	sunLight.position.copy(SunPos); // normalized value
 	sunLight.castShadow = true;
+	sunLight.shadow.camera.near = 0.001;
+	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
+	sunLight.shadow.mapSize.width = 8192;
+	sunLight.shadow.mapSize.height = 8192;
 	sunLight.shadow.camera.left = -ShdBox;
 	sunLight.shadow.camera.right = ShdBox;
 	sunLight.shadow.camera.top = ShdBox;
 	sunLight.shadow.camera.bottom = -ShdBox;
+	sunLight.shadow.bias = -0.00001; // ### WebGPU (0 flashing; -0.0001 no wheels)
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -1798,7 +1790,7 @@ function moveBullet() {
 				BulPtr[i].rotation.copy(air_.AirObj.rotation); //###
 				// Set Initial Speed			
 				BulSV3 = new THREE.Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
-				BulSV3 = new THREE.Vector3().setFromSpherical(BulSV3);			
+				BulSV3 = new THREE.Vector3().setFromSpherical(BulSV3);
 				BullSX[i] = BulSV3.x;
 				BullSY[i] = BulSV3.y;
 				BullSZ[i] = BulSV3.z;
