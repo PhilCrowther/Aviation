@@ -455,9 +455,9 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 	// Pilot - Right Arm - Bank
 	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps);
 	// Pilot - Rudder
-	if (vxr_.RdL) vxr_.RdL.setTime(Mod360(360-anm_.yawval)/anm_.anmfps);
+	if (vxr_.RdL) vxr_.RdL.setTime(-anm_.yawval/anm_.anmfps);
 	if (vxr_.RdR) vxr_.RdR.setTime(360-anm_.yawval/anm_.anmfps);
-	if (vxr_.LgL) vxr_.LgL.setTime(Mod360(360-anm_.yawval)/anm_.anmfps);
+	if (vxr_.LgL) vxr_.LgL.setTime(-anm_.yawval/anm_.anmfps);
 	if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
 	// Pilot - Head
 	anm_.vchead = Mod360(CamRot.y+180);
