@@ -247,28 +247,40 @@ let GunSrc = "fm2_gun.mp3";			// File (my guns)
 let GunVol = 0.5;					// Volume
 
 //= DEFAULT KEY BINDINGS =======================================================
-let K_BnkL = 37;	// Bank Left (left arrow)
-let K_BnkR = 39;	// Bank Right (right arrow)
-let K_PitU = 40;	// Pitch up (down arrow)
-let K_PitD = 38;	// Pitch down (up arrow)
-let K_Flap = 70;	// Flaps (f)
-let K_Gear = 71;	// Landing gear (g)
-let K_Hook = 72;	// Tailhook (h)
-let K_Canp = 67;	// Canopy (c)
-let K_Brak = 66;	// Brakes (b)
-let K_Guns = 32;	// Guns (spacebar)
-let K_Vizz = 86;	// Toggle visibility (v)
-let K_VU45 = 36;	// View Up (alone or modifier)
-let K_VD45 = 35;	// View Down (alone or modifier)
-let K_VL45 = 33;	// Left 45 degrees
-let K_VR45 = 45;	// Right 45 degrees
-let K_VL90 = 34;	// Left 90 degrees
-let K_VR90 = 46;	// Right 90 degrees
-let K_Look = 16;	// Pan (shift)
-let K_Soun = 83;	// Toggle sound (s)
-let K_Paws = 80;	// Pause (p)
-let K_Auto = 65;	// Autopilot (a)
-let K_Info = 73;	// Info (i)
+//	Basic
+let K_PwLU =  87;	// Power Up (w) - keyboard left
+let K_PwLD =  81;	// Power Down (q) - keyboard left
+let K_PwRU = 187;	// Power Up (=) - keyboard right
+let K_PwRD = 189;	// Power Down (-) - keyboard right
+let K_BnkL =  37;	// Bank Left (left arrow) - autopilot only
+let K_BnkR =  39;	// Bank Right (right arrow) - autopilot only
+let K_PitU =  40;	// Pitch Up (down arrow) - autopilot only
+let K_PitD =  38;	// Pitch Down (up arrow) - autopilot only
+let K_YwLL =  90;	// Yaw Left (z) - keyboard left
+let K_YwLR =  88;	// Yaw Left (x) - keyboard left
+let K_YwRL = 188;	// Yaw Left (,) - keyboard right
+let K_YwRR = 190;	// Yaw Left (.) - keyboard right
+let K_Brak =  66;	// Brakes (b)
+let K_Guns =  32;	// Guns (spacebar)
+//	Additional
+let K_Flap =  70;	// Flaps (f)
+let K_Gear =  71;	// Landing Gear (g)
+let K_Hook =  72;	// Tailhook (h)
+let K_Canp =  67;	// Canopy (c)
+//	Views
+let K_Look =  16;	// Pan (shift)
+let K_VU45 =  36;	// View Up (alone or modifier)
+let K_VD45 =  35;	// View Down (alone or modifier)
+let K_VL45 =  33;	// Left 45 degrees
+let K_VR45 =  45;	// Right 45 degrees
+let K_VL90 =  34;	// Left 90 degrees
+let K_VR90 =  46;	// Right 90 degrees
+//	Toggle
+let K_Vizz =  86;	// Toggle Visibility (v)
+let K_Soun =  83;	// Toggle sound (s)
+let K_Paws =  80;	// Pause (p)
+let K_Auto =  65;	// Autopilot (a)
+let K_Info =  73;	// Info (i)
 
 //=	VIEW KEYS ==================================================================
 let U45flg = 0;		// Up 45 degrees
