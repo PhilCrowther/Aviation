@@ -107,18 +107,19 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 //=	TO DO:
 //-	Program:
-//	* Change AirSpeed indicator to read IAS not TAS
-//	* In cockpit view, foot does not raise from neutral, only pushes.
+//	* In cockpit view, foot does not raise from neutral, only pushes (Blender)
 //	* Improve Appearance of Prop (use NodeMaterials?)
 //	* Add Exhaust Flashes
 //	* Convert waving flag to GPU shader
-//	* Improve Airplane Shadows (after r168?)
+//	* Add effects of change in SL air pressure
 //-	Flight Module:
 //	* Add lag to tail leaving/returning to ground
 
 //= INPUTS =====================//==============================================
 //- CAMERA ---------------------------------------------------------------------
 let CamSel = 1;					// Camera Seletion (0 = External; 1 = Internal)
+//- ENVIRONMENT ----------------------------------------------------------------
+let BegTmp = 303.15;			// K = 86F
 //- AIRPLANE: Start ------------------------------------------------------------
 let USorSI = "US";				// Units of Measurement (US or SI)
 let BegPwr = 0;					// Initial Power Percent
@@ -165,13 +166,12 @@ if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
 	BegPos.multiplyScalar(Ft2Mtr);
 }
-let BegTmp = 303.15;			// K = 86F
 
 //= INPUT VALUES ===============//==============================================
 //- Display
 let PawsOn = 0;					// Pause
 let InfoOn = 0;					// Info
-let SndFlg = 0;
+let SndFlg = 0;					// Sound
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 let LnFFlg = 1;					// Lensflare
 //	Program Flags
@@ -183,31 +183,20 @@ let AltAdj = 0.99;				// Raises objects above map as altitude increases
 let SunCol = "white";			// Sun
 let SunInt = 3;					// Default intensity of light/sun
 //- Rotation and Position (fixed)
-let SunLat = 23;				// Direction - Vert (+/- 90)
-let SunLon = 312;				// Direction - Horz (0->360)
-let SunDst = 1000;				// Distance (for shadows and lensflare)
-//- New
+let SunLat = 23;				// Direction - Vert (+/- 90) deg
+let SunLon = 312;				// Direction - Horz (0->360) deg
+let SunDst = 50;				// Distance (for shadows)
+//- Computations
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
 let ShdBox = 25;				// Size of shadow box
-let ShdDst = 5000;				// [feet] for shadow
+let ShdDst = 5000;				// Shadow Distance (meters)
 
 //= STANDARD SETUP =============//==============================================
 // 	Scene
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
-//	Renderer
-let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
-	renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setSize(window.innerWidth,window.innerHeight);
-	renderer.setAnimationLoop(rendAll);	
-	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.autoUpdate = true;
-	renderer.receiveShadow = true;
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-	document.body.appendChild(renderer.domElement);
-let maxAnisotropy = renderer.getMaxAnisotropy();
 // 	Light
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
@@ -227,6 +216,17 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
+//	Renderer
+let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);	
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.autoUpdate = true;
+	renderer.receiveShadow = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;	
+	document.body.appendChild(renderer.domElement);
+let maxAnisotropy = renderer.getMaxAnisotropy();
 // 	Clock
 let clock = new THREE.Clock();
 let oldTim, nowTim, difTim = 0;
@@ -342,8 +342,6 @@ let wav_ = {
 		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
 		Spd: AnmSpd
 	};
-let wavSpd = 0.5;				// Animation speed - use in main program (lower is faster)
-let wavTim = 0;
 
 //= STATIC OBJECTS =============//==============================================
 let ObjNum = 3;					// number of objects
@@ -966,7 +964,6 @@ function rendAll() {
 		// Update time
 		nowTim = clock.getElapsedTime();
 		difTim = nowTim-oldTim;
-		wavTim += difTim*wavSpd || 0.0;
 		flg_.Tim = nowTim;
 		oldTim = nowTim;
 		moveCamera(camera,cam_);
