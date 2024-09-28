@@ -742,32 +742,37 @@ let instructions = document.getElementById('instructions');
 	});
 
 //= DEFAULT KEY BINDINGS =======================================================
+//	Basic
 let K_PwLU =  87;	// Power Up (w) - keyboard left
 let K_PwLD =  81;	// Power Down (q) - keyboard left
 let K_PwRU = 187;	// Power Up (=) - keyboard right
 let K_PwRD = 189;	// Power Down (-) - keyboard right
-let K_BnkL =  37;	// Bank Left (left arrow)
-let K_BnkR =  39;	// Bank Right (right arrow)
-let K_PitU =  40;	// Pitch Up (down arrow)
-let K_PitD =  38;	// Pitch Down (up arrow)
+let K_BnkL =  37;	// Bank Left (left arrow) - autopilot only
+let K_BnkR =  39;	// Bank Right (right arrow) - autopilot only
+let K_PitU =  40;	// Pitch Up (down arrow) - autopilot only
+let K_PitD =  38;	// Pitch Down (up arrow) - autopilot only
 let K_YwLL =  90;	// Yaw Left (z) - keyboard left
 let K_YwLR =  88;	// Yaw Left (x) - keyboard left
 let K_YwRL = 188;	// Yaw Left (,) - keyboard right
 let K_YwRR = 190;	// Yaw Left (.) - keyboard right
+let K_Brak =  66;	// Brakes (b)
+let K_Guns =  32;	// Guns (spacebar)
+//	Additional
 let K_Flap =  70;	// Flaps (f)
 let K_Gear =  71;	// Landing Gear (g)
 let K_Hook =  72;	// Tailhook (h)
 let K_Canp =  67;	// Canopy (c)
-let K_Brak =  66;	// Brakes (b)
-let K_Guns =  32;	// Guns (spacebar)
+//	External/Internal Views
 let K_Vizz =  86;	// Toggle Visibility (v)
+//	Views
+let K_Look =  16;	// Pan (shift)
 let K_VU45 =  36;	// View Up (alone or modifier)
 let K_VD45 =  35;	// View Down (alone or modifier)
 let K_VL45 =  33;	// Left 45 degrees
 let K_VR45 =  45;	// Right 45 degrees
 let K_VL90 =  34;	// Left 90 degrees
 let K_VR90 =  46;	// Right 90 degrees
-let K_Look =  16;	// Pan (shift)
+//	Toggle
 let K_Soun =  83;	// Toggle sound (s)
 let K_Paws =  80;	// Pause (p)
 let K_Auto =  65;	// Autopilot (a)
@@ -2103,23 +2108,26 @@ function onDocumentMouseWheel(event) {
 //- Keyboard (Down) ------------------------------------------------------------
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
+	// Basic
 	if (event.keyCode == K_PwLU) PwrDif = 0.1;			// Power Up - keyboard left
 	if (event.keyCode == K_PwLD) PwrDif = -0.1;			// Power Down - keyboard left
-	if (event.keyCode == K_PwRU) PwrDif = 0.1;			// Power Up
-	if (event.keyCode == K_PwRD) PwrDif = -0.1;			// Power Down
-	if (event.keyCode == K_BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left
-	if (event.keyCode == K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right
-	if (event.keyCode == K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up
-	if (event.keyCode == K_PitD) air_.InpKey.x = -KeyVal.x;	// Pitch Down
+	if (event.keyCode == K_PwRU) PwrDif = 0.1;			// Power Up - keyboard right
+	if (event.keyCode == K_PwRD) PwrDif = -0.1;			// Power Down - keyboard right
+	if (event.keyCode == K_BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left - autopilot only
+	if (event.keyCode == K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right - autopilot only
+	if (event.keyCode == K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up - autopilot only
+	if (event.keyCode == K_PitD) air_.InpKey.x = -KeyVal.x;	// Pitch Down - autopilot only
 	if (event.keyCode == K_YwLL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard left
 	if (event.keyCode == K_YwLR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard left
 	if (event.keyCode == K_YwRL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard right
 	if (event.keyCode == K_YwRR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard right
+	if (event.keyCode == K_Brak) InpBrk = 0.01;			// Brakes
+	// Additional
 	if (event.keyCode == K_Gear) anm_.lngflg = 1;		// Gear
 	if (event.keyCode == K_Flap) anm_.flpflg = 1;		// Flaps
 	if (event.keyCode == K_Canp) anm_.canflg = 1;		// Canopy
 	if (event.keyCode == K_Hook) anm_.thkflg = 1;		// Tailhook
-	if (event.keyCode == K_Brak) InpBrk = 0.01;			// Brakes
+	// Views
 	if (event.keyCode == K_VU45) D45flg = 1;			// View - 45 deg up
 	if (event.keyCode == K_VD45) U45flg = 1;			// View - 45 deg down
 	if (event.keyCode == K_VL45) L45flg = 1;			// View - 45 deg left
@@ -2145,23 +2153,26 @@ function onDocumentKeyDown(event) {
 //-	Keyboard (Up) --------------------------------------------------------------
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
+	// Basic
 	if (event.keyCode == K_PwLU) PwrDif = 0;			// Power Up - keyboard left
 	if (event.keyCode == K_PwLD) PwrDif = 0;			// Power Down - keyboard left
-	if (event.keyCode == K_PwRU) PwrDif = 0;			// Power Up
-	if (event.keyCode == K_PwRD) PwrDif = 0;			// Power Down
-	if (event.keyCode == K_BnkL) air_.InpKey.z = 0;		// Bank Left
-	if (event.keyCode == K_BnkR) air_.InpKey.z = 0;		// Bank Right	
-	if (event.keyCode == K_PitU) air_.InpKey.x = 0;		// Pitch Up
-	if (event.keyCode == K_PitD) air_.InpKey.x = 0;		// Pitch Down
+	if (event.keyCode == K_PwRU) PwrDif = 0;			// Power Up - keyboard right
+	if (event.keyCode == K_PwRD) PwrDif = 0;			// Power Down - keyboard right
+	if (event.keyCode == K_BnkL) air_.InpKey.z = 0;		// Bank Left - autopilot only
+	if (event.keyCode == K_BnkR) air_.InpKey.z = 0;		// Bank Right - autopilot only
+	if (event.keyCode == K_PitU) air_.InpKey.x = 0;		// Pitch Up - autopilot only
+	if (event.keyCode == K_PitD) air_.InpKey.x = 0;		// Pitch Down - autopilot only
 	if (event.keyCode == K_YwLL) air_.RotDif.y = 0;		// YawL - keyboard left
 	if (event.keyCode == K_YwLR) air_.RotDif.y = 0;		// YawR - keyboard left
 	if (event.keyCode == K_YwRL) air_.RotDif.y = 0;		// YawL - keyboard right
 	if (event.keyCode == K_YwRR) air_.RotDif.y = 0;		// YawR - keyboard right
+	if (event.keyCode == K_Brak) InpBrk = 0;			// Brakes
+	// Additional
 	if (event.keyCode == K_Gear) anm_.lngflg = 0;		// Gear
 	if (event.keyCode == K_Flap) anm_.flpflg = 0;		// Flaps
 	if (event.keyCode == K_Canp) anm_.canflg = 0;		// Canopy
 	if (event.keyCode == K_Hook) anm_.thkflg = 0;		// Taihook
-	if (event.keyCode == K_Brak) InpBrk = 0;			// Brakes
+	// Views
 	if (event.keyCode == K_VU45) D45flg = 0;			// View - 45 deg up
 	if (event.keyCode == K_VD45) U45flg = 0;			// View - 45 deg down
 	if (event.keyCode == K_VL45) L45flg = 0;			// View - 45 deg left
