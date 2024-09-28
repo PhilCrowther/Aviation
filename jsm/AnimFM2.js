@@ -460,7 +460,7 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 		if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
 	}
 	if (anm_.yawval > 0) {
-		if (vxr_.RdR) vxr_.RdR.setTime(360-anm_.yawval/anm_.anmfps);
+		if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
 	}
 	// Pilot - Head
