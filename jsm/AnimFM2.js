@@ -584,5 +584,5 @@ export {loadACanimX, loadACanimV, moveACanimX, moveACanimV};
 /*= REVISIONS ==================================================================
  * 240420:	Converted to SI units
  * 240424:	Changed all air_ variables to 8 character names
- * 240928:	Changed Airspeed Indicatator to IAS
+ * 240928:	Changed Airspeed Indicatator to IAS and Limit Rudder Travel
 */
