@@ -762,8 +762,6 @@ let K_Flap =  70;	// Flaps (f)
 let K_Gear =  71;	// Landing Gear (g)
 let K_Hook =  72;	// Tailhook (h)
 let K_Canp =  67;	// Canopy (c)
-//	External/Internal Views
-let K_Vizz =  86;	// Toggle Visibility (v)
 //	Views
 let K_Look =  16;	// Pan (shift)
 let K_VU45 =  36;	// View Up (alone or modifier)
@@ -773,6 +771,7 @@ let K_VR45 =  45;	// Right 45 degrees
 let K_VL90 =  34;	// Left 90 degrees
 let K_VR90 =  46;	// Right 90 degrees
 //	Toggle
+let K_Vizz =  86;	// Toggle Visibility (v)
 let K_Soun =  83;	// Toggle sound (s)
 let K_Paws =  80;	// Pause (p)
 let K_Auto =  65;	// Autopilot (a)
@@ -2128,13 +2127,14 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_Canp) anm_.canflg = 1;		// Canopy
 	if (event.keyCode == K_Hook) anm_.thkflg = 1;		// Tailhook
 	// Views
+	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
 	if (event.keyCode == K_VU45) D45flg = 1;			// View - 45 deg up
 	if (event.keyCode == K_VD45) U45flg = 1;			// View - 45 deg down
 	if (event.keyCode == K_VL45) L45flg = 1;			// View - 45 deg left
 	if (event.keyCode == K_VR45) R45flg = 1;			// View - 45 deg right
 	if (event.keyCode == K_VL90) L90flg = 1;			// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
-	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
+	// Guns
 	if (event.keyCode == K_Guns) {						// Guns
 		if (!PawsOn) {
 			if (SndFlg && !GnLSnd.isPlaying) GnLSnd.play();
@@ -2173,13 +2173,14 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_Canp) anm_.canflg = 0;		// Canopy
 	if (event.keyCode == K_Hook) anm_.thkflg = 0;		// Taihook
 	// Views
+	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
 	if (event.keyCode == K_VU45) D45flg = 0;			// View - 45 deg up
 	if (event.keyCode == K_VD45) U45flg = 0;			// View - 45 deg down
 	if (event.keyCode == K_VL45) L45flg = 0;			// View - 45 deg left
 	if (event.keyCode == K_VR45) R45flg = 0;			// View - 45 deg right
 	if (event.keyCode == K_VL90) L90flg = 0;			// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 0;			// View - 90 deg right
-	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
+	// Guns
 	if (event.keyCode == K_Guns) {						// Guns
 		GnLSnd.stop();
 		if (!PawsOn) {
