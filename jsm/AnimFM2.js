@@ -454,20 +454,19 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 	if (vxr_.HRB) vxr_.HRB.setTime(anm_.stkbcm/anm_.anmfps);
 	// Pilot - Right Arm - Bank
 	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps);
-	// Pilot - Rudder
+	// Pilot - Rudder (Only Push Down)
+	if (vxr_.RdL) vxr_.RdL.setTime(180/anm_.anmfps);
+	if (vxr_.LgL) vxr_.LgL.setTime(180/anm_.anmfps);
+	if (vxr_.RdR) vxr_.RdR.setTime(180/anm_.anmfps);
+	if (vxr_.LgR) vxr_.LgR.setTime(180/anm_.anmfps);
 	if (anm_.yawval < 180) {
 		if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
-		if (vxr_.RdR) vxr_.RdR.setTime(180/anm_.anmfps);
-		if (vxr_.LgR) vxr_.LgR.setTime(180/anm_.anmfps);
 	}
 	if (anm_.yawval > 180) {
 		if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
-		if (vxr_.RdL) vxr_.RdL.setTime(180/anm_.anmfps);
-		if (vxr_.LgL) vxr_.LgL.setTime(180/anm_.anmfps);
 	}
-	console.log(1,anm_.yawval);
 	// Pilot - Head
 	anm_.vchead = Mod360(CamRot.y+180);
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
