@@ -1,5 +1,5 @@
 /*
- * AnimFM2.js (vers 24.08.28)
+ * AnimFM2.js (vers 24.09.28)
  * Copyright 2022-2024, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -406,7 +406,7 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 	anm_.altft1 = (air_.MapSPS.y*Mtr2Ft/10000)*360;		
 	if (vxr_.PtB) vxr_.PtB.setTime(anm_.altft1/anm_.anmfps);
 	// Pointer - Speed
-	anm_.spdmph = (air_.SpdKPH*Km2Mil/600)*360;
+	anm_.spdmph = (air_.SpdIAS*Km2Mil/600)*360;
 	if (vxr_.PtS) vxr_.PtS.setTime(anm_.spdmph/anm_.anmfps);
 	// Pointer - Turn Coordinator
 	anm_.hdgdif = PoM360(Mod360(air_.AirRot.y - vxr_.HdO));	// Change in heading +/-
@@ -576,4 +576,5 @@ export {loadACanimX, loadACanimV, moveACanimX, moveACanimV};
 /*= REVISIONS ==================================================================
  * 240420:	Converted to SI units
  * 240424:	Changed all air_ variables to 8 character names
+ * 240928:	Changed Airspeed Indicatator to IAS
 */
