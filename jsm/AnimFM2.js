@@ -455,7 +455,7 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 	// Pilot - Right Arm - Bank
 	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps);
 	// Pilot - Rudder
-	if (anm_.yawval < 0) {	
+	if (anm_.yawval < 0) {
 		if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
 	}
@@ -463,6 +463,7 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 		if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
 	}
+	console.log(anm_.yawval);
 	// Pilot - Head
 	anm_.vchead = Mod360(CamRot.y+180);
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
