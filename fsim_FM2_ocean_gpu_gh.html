@@ -107,9 +107,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 //=	TO DO:
 //-	Program:
-//	* Add effects of change in SL air pressure
 //	* Improve Appearance of Prop (use NodeMaterials?)
-//	* Add Exhaust Flashes (maybe)
 //	* Convert waving flag to GPU shader
 //-	Flight Module:
 //	* Add lag to tail leaving/returning to ground
@@ -142,7 +140,7 @@ let _changeEvent = {type: 'change'};
 let _lockEvent = {type: 'lock'};
 let _unlockEvent = {type: 'unlock'};
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
-let	KeyVal = new THREE.Vector3(0.5,0.25,1.0); // (Yaw = turn rate in 15 deg bank)
+let	KeyVal = new THREE.Vector3(0.5,0.25,0.5); // (Yaw = turn rate in 15 deg bank)
 
 //= CONSTANTS ==================//==============================================
 //	Time
@@ -744,28 +742,36 @@ let instructions = document.getElementById('instructions');
 	});
 
 //= DEFAULT KEY BINDINGS =======================================================
-let K_BnkL = 37;	// Bank Left (left arrow)
-let K_BnkR = 39;	// Bank Right (right arrow)
-let K_PitU = 40;	// Pitch up (down arrow)
-let K_PitD = 38;	// Pitch down (up arrow)
-let K_Flap = 70;	// Flaps (f)
-let K_Gear = 71;	// Landing gear (g)
-let K_Hook = 72;	// Tailhook (h)
-let K_Canp = 67;	// Canopy (c)
-let K_Brak = 66;	// Brakes (b)
-let K_Guns = 32;	// Guns (spacebar)
-let K_Vizz = 86;	// Toggle visibility (v)
-let K_VU45 = 36;	// View Up (alone or modifier)
-let K_VD45 = 35;	// View Down (alone or modifier)
-let K_VL45 = 33;	// Left 45 degrees
-let K_VR45 = 45;	// Right 45 degrees
-let K_VL90 = 34;	// Left 90 degrees
-let K_VR90 = 46;	// Right 90 degrees
-let K_Look = 16;	// Pan (shift)
-let K_Soun = 83;	// Toggle sound (s)
-let K_Paws = 80;	// Pause (p)
-let K_Auto = 65;	// Autopilot (a)
-let K_Info = 73;	// Info (i)
+let K_PwLU =  87;	// Power Up (w) - keyboard left
+let K_PwLD =  81;	// Power Down (q) - keyboard left
+let K_PwRU = 187;	// Power Up (=) - keyboard right
+let K_PwRD = 189;	// Power Down (-) - keyboard right
+let K_BnkL =  37;	// Bank Left (left arrow)
+let K_BnkR =  39;	// Bank Right (right arrow)
+let K_PitU =  40;	// Pitch Up (down arrow)
+let K_PitD =  38;	// Pitch Down (up arrow)
+let K_YwLL =  90;	// Yaw Left (z) - keyboard left
+let K_YwLR =  88;	// Yaw Left (x) - keyboard left
+let K_YwRL = 188;	// Yaw Left (,) - keyboard right
+let K_YwRR = 190;	// Yaw Left (.) - keyboard right
+let K_Flap =  70;	// Flaps (f)
+let K_Gear =  71;	// Landing Gear (g)
+let K_Hook =  72;	// Tailhook (h)
+let K_Canp =  67;	// Canopy (c)
+let K_Brak =  66;	// Brakes (b)
+let K_Guns =  32;	// Guns (spacebar)
+let K_Vizz =  86;	// Toggle Visibility (v)
+let K_VU45 =  36;	// View Up (alone or modifier)
+let K_VD45 =  35;	// View Down (alone or modifier)
+let K_VL45 =  33;	// Left 45 degrees
+let K_VR45 =  45;	// Right 45 degrees
+let K_VL90 =  34;	// Left 90 degrees
+let K_VR90 =  46;	// Right 90 degrees
+let K_Look =  16;	// Pan (shift)
+let K_Soun =  83;	// Toggle sound (s)
+let K_Paws =  80;	// Pause (p)
+let K_Auto =  65;	// Autopilot (a)
+let K_Info =  73;	// Info (i)
 
 //=	VIEW KEYS ==================================================================
 let U45flg = 0;		// Up 45 degrees
@@ -2097,10 +2103,18 @@ function onDocumentMouseWheel(event) {
 //- Keyboard (Down) ------------------------------------------------------------
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
+	if (event.keyCode == K_PwLU) PwrDif = 0.1;			// Power Up - keyboard left
+	if (event.keyCode == K_PwLD) PwrDif = -0.1;			// Power Down - keyboard left
+	if (event.keyCode == K_PwRU) PwrDif = 0.1;			// Power Up
+	if (event.keyCode == K_PwRD) PwrDif = -0.1;			// Power Down
 	if (event.keyCode == K_BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left
 	if (event.keyCode == K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right
 	if (event.keyCode == K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up
 	if (event.keyCode == K_PitD) air_.InpKey.x = -KeyVal.x;	// Pitch Down
+	if (event.keyCode == K_YwLL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard left
+	if (event.keyCode == K_YwLR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard left
+	if (event.keyCode == K_YwRL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard right
+	if (event.keyCode == K_YwRR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard right
 	if (event.keyCode == K_Gear) anm_.lngflg = 1;		// Gear
 	if (event.keyCode == K_Flap) anm_.flpflg = 1;		// Flaps
 	if (event.keyCode == K_Canp) anm_.canflg = 1;		// Canopy
@@ -2131,10 +2145,18 @@ function onDocumentKeyDown(event) {
 //-	Keyboard (Up) --------------------------------------------------------------
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
+	if (event.keyCode == K_PwLU) PwrDif = 0;			// Power Up - keyboard left
+	if (event.keyCode == K_PwLD) PwrDif = 0;			// Power Down - keyboard left
+	if (event.keyCode == K_PwRU) PwrDif = 0;			// Power Up
+	if (event.keyCode == K_PwRD) PwrDif = 0;			// Power Down
 	if (event.keyCode == K_BnkL) air_.InpKey.z = 0;		// Bank Left
 	if (event.keyCode == K_BnkR) air_.InpKey.z = 0;		// Bank Right	
 	if (event.keyCode == K_PitU) air_.InpKey.x = 0;		// Pitch Up
 	if (event.keyCode == K_PitD) air_.InpKey.x = 0;		// Pitch Down
+	if (event.keyCode == K_YwLL) air_.RotDif.y = 0;		// YawL - keyboard left
+	if (event.keyCode == K_YwLR) air_.RotDif.y = 0;		// YawR - keyboard left
+	if (event.keyCode == K_YwRL) air_.RotDif.y = 0;		// YawL - keyboard right
+	if (event.keyCode == K_YwRR) air_.RotDif.y = 0;		// YawR - keyboard right
 	if (event.keyCode == K_Gear) anm_.lngflg = 0;		// Gear
 	if (event.keyCode == K_Flap) anm_.flpflg = 0;		// Flaps
 	if (event.keyCode == K_Canp) anm_.canflg = 0;		// Canopy
