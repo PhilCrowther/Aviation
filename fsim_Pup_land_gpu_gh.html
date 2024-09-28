@@ -100,7 +100,7 @@ let _changeEvent = {type: 'change'};
 let _lockEvent = {type: 'lock'};
 let _unlockEvent = {type: 'unlock'};
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
-let KeyVal = new THREE.Vector3(1,.05,1);	// Key Values (Yaw = turn rate in 15 deg bank)
+let KeyVal = new THREE.Vector3(1,.05,0.25);	// Key Values (Yaw = turn rate in 15 deg bank)
 
 //= CONSTANTS ==================//==============================================
 //	Time
@@ -563,6 +563,10 @@ let K_BnkL = 37;	// Bank Left (left arrow) - autopilot only
 let K_BnkR = 39;	// Bank Right (right arrow) - autopilot only
 let K_PitU = 40;	// Pitch up (down arrow) - autopilot only
 let K_PitD = 38;	// Pitch down (up arrow) - autopilot only
+let K_YwLL =  90;	// Yaw Left (z) - keyboard left
+let K_YwLR =  88;	// Yaw Left (x) - keyboard left
+let K_YwRL = 188;	// Yaw Left (,) - keyboard right
+let K_YwRR = 190;	// Yaw Left (.) - keyboard right
 let K_Brak = 66;	// Brakes (b)
 let K_Guns = 32;	// Guns (spacebar)
 //	Views
