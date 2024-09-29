@@ -113,15 +113,10 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 //	* Add lag to tail leaving/returning to ground
 
 //= INPUTS =====================//==============================================
-//- CAMERA ---------------------------------------------------------------------
-let CamSel = 1;					// Camera Seletion (0 = External; 1 = Internal)
-//- ENVIRONMENT ----------------------------------------------------------------
+let BegLoc = 1;					// Starting Location (0 = Base; 1 = CVE; 2 = Air)
+let CamSel = 1;					// Camera Selection (0 = External; 1 = Internal)
 let BegTmp = 303.15;			// K = 86F
 //- AIRPLANE: Start ------------------------------------------------------------
-let USorSI = "US";				// Units of Measurement (US or SI)
-let BegPwr = 0;					// Initial Power Percent
-let BegSpd = 0;					// Speed (mph)
-let BegPos = new THREE.Vector3(0,0,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
@@ -158,11 +153,6 @@ let MtrMil = 1609.34;			// Meters per Mile
 let	GrvMPS = 9.80665; 			// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
-//- Convert Starting Values
-if (USorSI = "US") {
-	BegSpd = BegSpd*Mil2Km;
-	BegPos.multiplyScalar(Ft2Mtr);
-}
 
 //= INPUT VALUES ===============//==============================================
 //- Display
@@ -294,7 +284,7 @@ let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 // Common Variables
 let grids = 0;
 let grd_ = {
-		MSP: new THREE.Vector3().copy(BegPos), // MSX, MPY, MSZ (meters) (from Flight)
+		MSP: new THREE.Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,				// Squares in each of first 2 grids
 		Siz: GrdSiz,			// Size of smallest square
 		Stp: 4,					// Squares in each of first 2 grids
@@ -389,6 +379,71 @@ let IslGrp = new THREE.Group();	// To hold AirExt and AirInt
 	IslGrp.rotation.order = "YXZ";
 	scene.add(IslGrp);			// CVEGrp => (CVE + WakPtr)
 
+//= TRAFFIC ====================//==============================================
+//- Airplane -------------------------------------------------------------------
+let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
+let XPFile = "fm2_flyt_xp1.glb";	// Name of airplane model file (rotated blender file)
+//	Data
+let xac_ = {
+		FNm: XPPath + XPFile,
+		Ptr: 0,
+		Spd: 91.5,				// meters
+		MpP: new THREE.Vector3 (180,100,300), // meters
+		Rot: new THREE.Vector3 (0,0,30),
+		MxS: 0,
+		MxP: 0,
+		MxB: 0,
+		AnP: 0,
+		AnB: 0
+	}
+//	Sounds
+let xpsnd1 = "fm2_prop.wav";	// File (xp prop)
+let xpvol1 = 1.0;				// Volume
+//- Aircraft Carrier -----------------------------------------------------------
+let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
+let XSFile = "CVE_noflag.glb";
+//	Data
+let xsh_ = {
+		FNm: XSPath + XSFile,
+		Ptr: 0,
+		Spd: 9,					// meters
+		MpP: new THREE.Vector3 (-3133,0.1,146),	// meters
+		Rot: new THREE.Vector3 (0,0,0),
+		MpS: new THREE.Vector3 (0,0,0),
+		Dst: 0,
+		Mx0: 0,
+		An0: 0
+	}
+//. Flag .......................................................................
+let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
+//
+let	flg_ = {
+		// Mesh
+		Ptr: 0,
+		MpP: new THREE.Vector3 (44.2,92.47,-58.93),	// Map Position
+		Rot: new THREE.Vector3 (0,270,0),
+		// Material and Geometry
+		Mat: 0,
+		Geo: 0,					// Geometry Address (can use this for all flags)
+		Siz: new THREE.Vector2 (3,1.8),	// Size ZY (meters)
+		Seg: new THREE.Vector2 (50,1),	// Segments ZY
+		// Animation
+		Tim: 0,
+		Wav: 1.5,				// Number of waves per Plane
+		Deg: 0,					// Degrees per segment (360/5 = 72)
+		Amp: 0.1524,			// Amplitude (meters = 0.5 ft)
+		Per: 2,					// Period (seconds) to complete cycle
+		// Viz Test
+		Viz: 152.4				// (meters)
+	}
+//. Wake .......................................................................
+let WakSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
+let WakMap = 0;
+//.	CVE Group ..................................................................
+let CVEGrp = new THREE.Group();	// To hold AirExt and AirInt
+	CVEGrp.rotation.order = "YXZ";
+	scene.add(CVEGrp);			// CVEGrp => (CVE + WakPtr)
+
 //= MINIMUM ALTITUDE (Base and CVE) ============================================
 //	Base (Centered at 0,0)
 let BasAlt = 8.8392;			// 29 ft
@@ -421,15 +476,15 @@ let air_ = {
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
-		SpdKPH: BegSpd,			// Speed in KPH
-		SpdMPS: BegSpd/3.6,		// Speed - meters per second
-		SpdMPF: (BegSpd/3.6)*DLTime, // Speed - meters per frame	
+		SpdKPH: 0,				// Speed in KPH
+		SpdMPS: 0,				// Speed - meters per second
+		SpdMPF: 0, 				// Speed - meters per frame	
 		// Airplane Map Speed and Position		
 		MapSpd: new THREE.Vector3(), // Map Speed (meters)
-		MapPos: new THREE.Vector3().copy(BegPos), // Map Position (meters)
-		MapSPS: new THREE.Vector3(0,BegPos.y,0), // MSX, MPY, MSZ (meters)	
+		MapPos: new THREE.Vector3(), // Map Position (meters)
+		MapSPS: new THREE.Vector3(), // MSX, MPY, MSZ (meters)	
 		// Variables Obtained from Flight
-		PwrPct: BegPwr,			// % of Primary Power (0 to 1) (Main and Flight)
+		PwrPct: 0,				// % of Primary Power (0 to 1) (Main and Flight)
 		SupPct: 0,				// Percent of Supplemental Power (War Enmergency or Afterburner)
 		CfLift: 0,				// Coefficient of Lift (user input) - determines lift
 		CfFlap: 0,				// Coefficient of Lift due to flaps (user input)
@@ -462,12 +517,12 @@ let air_ = {
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0				// Indicated Airspeed
 	}
-// 
-// Adjustments
+//	Adjustments
 	air_.AirObj.rotation.order = "YXZ";
 	air_.AirPBY.rotation.order = "YXZ";
 	air_.AirObj.add(air_.AirPBY); // PBY includes air_.ACPAdj
 	scene.add(air_.AirObj);	// Airplane
+
 //- Load Models and Animations -------------------------------------------------
 //	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
@@ -613,71 +668,6 @@ let BullPZ = [0];
 	BullPZ[BulNum-1] = 0;
 let BulTim = [0];				// Time in flight
 	BulTim[BulNum-1] = 0;
-
-//= TRAFFIC ====================//==============================================
-//- Airplane -------------------------------------------------------------------
-let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-let XPFile = "fm2_flyt_xp1.glb";	// Name of airplane model file (rotated blender file)
-//	Data
-let xac_ = {
-		FNm: XPPath + XPFile,
-		Ptr: 0,
-		Spd: 91.5,				// meters
-		MpP: new THREE.Vector3 (180,100,300), // meters
-		Rot: new THREE.Vector3 (0,0,30),
-		MxS: 0,
-		MxP: 0,
-		MxB: 0,
-		AnP: 0,
-		AnB: 0
-	}
-//	Sounds
-let xpsnd1 = "fm2_prop.wav";	// File (xp prop)
-let xpvol1 = 1.0;				// Volume
-//- Aircraft Carrier -----------------------------------------------------------
-let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
-let XSFile = "CVE_noflag.glb";
-//	Data
-let xsh_ = {
-		FNm: XSPath + XSFile,
-		Ptr: 0,
-		Spd: 9,					// meters
-		MpP: new THREE.Vector3 (-3133,0.1,146),	// meters
-		Rot: new THREE.Vector3 (0,0,0),
-		MpS: new THREE.Vector3 (0,0,0),
-		Dst: 0,
-		Mx0: 0,
-		An0: 0
-	}
-//. Flag .......................................................................
-let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
-//
-let	flg_ = {
-		// Mesh
-		Ptr: 0,
-		MpP: new THREE.Vector3 (44.2,92.47,-58.93),	// Map Position
-		Rot: new THREE.Vector3 (0,270,0),
-		// Material and Geometry
-		Mat: 0,
-		Geo: 0,					// Geometry Address (can use this for all flags)
-		Siz: new THREE.Vector2 (3,1.8),	// Size ZY (meters)
-		Seg: new THREE.Vector2 (50,1),	// Segments ZY
-		// Animation
-		Tim: 0,
-		Wav: 1.5,				// Number of waves per Plane
-		Deg: 0,					// Degrees per segment (360/5 = 72)
-		Amp: 0.1524,			// Amplitude (meters = 0.5 ft)
-		Per: 2,					// Period (seconds) to complete cycle
-		// Viz Test
-		Viz: 152.4				// (meters)
-	}
-//. Wake .......................................................................
-let WakSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
-let WakMap = 0;
-//.	CVE Group ..................................................................
-let CVEGrp = new THREE.Group();	// To hold AirExt and AirInt
-	CVEGrp.rotation.order = "YXZ";
-	scene.add(CVEGrp);			// CVEGrp => (CVE + WakPtr)
 
 //= PPOINTER LOCK CONTROL ======//==============================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -893,10 +883,6 @@ let On_Paws, Air_AtP, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_
 //=	0 LOAD ALL =================//==============================================
 
 function loadAll() {
-	// Load Values Used to initialize my Airplane and Objects
-	if (air_.MapPos.y == 0) air_.GrdFlg = 1;
-	if (BasXlf < air_.MapPos.x && BasXrt > air_.MapPos.x && BasZfr > air_.MapPos.z && BasZbk < air_.MapPos.z) air_.GrdZed = BasAlt*.92;
-	grd_.MSP.y = air_.MapPos.y; // Use to initialize objects
 	WaitScreen();				// load loading screen
 	loadSkyBox();
 	loadGeoMat();
@@ -927,11 +913,8 @@ function WaitScreen() {
 function initAll() {
 	initSkyBox();
 	// Objects
+	initAirObj();
 	initObject();				// Determine relative XZ location of all objects, including CVE
-	moveMinAlt();				// Determine if over CVE - resulting is special handling
-	flight = new Flight(air_);	// position airplane using air_.GrdZed
-	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
-	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 	moveObject();				// recompute Y location of all objects
 	// Grid
 	waves = new Ocean(renderer,wav_); // Init Ocean
@@ -1039,7 +1022,7 @@ function loadGeoMat() {
 	// Load Diffuse Texture
 	if (DifSrc) {
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		imagLoader.load(DifSrc, function(image) {	// Load, Split and Save Textures
+		imagLoader.load(DifSrc, function(image) { // Load, Split and Save Textures
 			context.drawImage(image,0,0,ImgSiz,ImgSiz);
 			let idx = 0;
 			let siz = ImgSiz/4;
@@ -1072,7 +1055,7 @@ function loadGeoMat() {
 	// Load Roughness Texture
 	if (RufSrc) {
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		imagLoader.load(RufSrc, function(image) {	// Load, Split and Save Textures
+		imagLoader.load(RufSrc, function(image) { // Load, Split and Save Textures
 			context.drawImage(image,0,0,ImgSiz,ImgSiz);
 			let idx = 0;
 			let siz = ImgSiz/4;
@@ -1116,8 +1099,8 @@ function loadGeoMat() {
 	});
 }
 
-//= LOAD, INIT AND MOVE OBJECTS ==============================================//
-//	These objects include the airfield, islands and hangar
+//= STATIC OBJECTS ==============//==============================================
+//	The airfield, islands and hangar
 
 function loadObject() {
 	loadFixed();
@@ -1137,7 +1120,7 @@ function moveObject() {
 	moveShips();
 }
 
-//= FIXED OBJECTS ==============================================================
+//= FIXED OBJECTS ==============//==============================================
 
 //	Load Objects
 function loadFixed() {
@@ -1146,7 +1129,7 @@ function loadFixed() {
 		if (ObjTyp[i] == 0) {
 			gltfLoader.load(ObjMdl[i], function (gltf) {
 				ObjPtr[i] = gltf.scene;
-				ObjPtr[i].scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);		// object in feet
+				ObjPtr[i].scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr); // object in feet
 				ObjPtr[i].rotation.order = "ZXY";
 				scene.add(ObjPtr[i]);
 			});
@@ -1159,14 +1142,14 @@ function loadFixed() {
 					gltf.scene.traverse(function (child) {
 					// Note: Blender object must include a UV map
 						if (child.isMesh) {
-							child.material = mat;		// temporary variable prevents cross-contamination				
+							child.material = mat; // temporary variable prevents cross-contamination				
 							child.receiveShadow = true;
 						}
 					});
 					ObjPtr[i] = gltf.scene;
-					let s = MtrMil;						// meters
+					let s = MtrMil; // meters
 					ObjPtr[i].scale.set(s,s,s);
-					ObjPtr[i].rotation.order = "ZXY";	// Bank, Pitch, Heading
+					ObjPtr[i].rotation.order = "ZXY"; // Bank, Pitch, Heading
 					scene.add(ObjPtr[i]);
 				});
 			});
@@ -1179,14 +1162,14 @@ function loadFixed() {
 					gltf.scene.traverse(function (child) {
 					// Note: Blender object must include a UV map
 						if (child.isMesh) {
-							child.material = mat;		// temporary variable prevents cross-contamination				
+							child.material = mat; // temporary variable prevents cross-contamination				
 							child.receiveShadow = true;
 						}
 					});
 					ObjPtr[i] = gltf.scene;
-					let s = MtrMil;						// meters
+					let s = MtrMil; // meters
 					ObjPtr[i].scale.set(s,s,s);
-					ObjPtr[i].rotation.order = "ZXY";	// Bank, Pitch, Heading
+					ObjPtr[i].rotation.order = "ZXY"; // Bank, Pitch, Heading
 					IslGrp.add(ObjPtr[i]);
 					// Init Smoke
 					initVulkan();
@@ -1222,14 +1205,14 @@ function moveFixed() {
 	}
 }
 
-//= PLANES =====================================================================
+//= PLANES =====================//==============================================
 
 //	Load Plane
 function loadPlane() {
 	gltfLoader.load(xac_.FNm, function (gltf) {
 		xac_.Ptr = gltf.scene;
 		// Convert from feet to meters
-		xac_.Ptr.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);		// model in feet
+		xac_.Ptr.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr); // model in feet
 		// Propeller
 		let clip = THREE.AnimationClip.findByName(gltf.animations, "propellerAction");
 		xac_.MxS = new THREE.AnimationMixer(xac_.Ptr);
@@ -1249,10 +1232,10 @@ function loadPlane() {
 		actun.play();
 		if (xac_.MxP) xac_.MxP.setTime(xac_.AnP/anmfps);
 		// Rotation
-		xac_.Ptr.rotation.order = "YXZ";	// Heading, Pitch, Bank
+		xac_.Ptr.rotation.order = "YXZ"; // Heading, Pitch, Bank
 		xac_.Ptr.rotation.y = xac_.Rot.y*DegRad;
 		//
-		xac_.Ptr.add(XPESnd);				// Engine sound
+		xac_.Ptr.add(XPESnd);	// Engine sound
 	});
 }
 
@@ -1275,7 +1258,7 @@ function movePlane() {
 	xac_.Rot.y = xac_.Rot.y + XPHSpd;
 	xac_.Ptr.rotation.set(0,xac_.Rot.y*DegRad,xac_.Rot.z*DegRad);
 	// Speed (Only Horizontal for Now)
-	let SpdTim = xac_.Spd * DLTime;		// Speed (u/t)
+	let SpdTim = xac_.Spd * DLTime; // Speed (u/t)
 	let SpeedZ = -SpdTim * Math.cos(xac_.Rot.y * DegRad);
 	let SpeedX = -SpdTim * Math.sin(xac_.Rot.y * DegRad);
 	// Recompute Map Position
@@ -1290,7 +1273,7 @@ function movePlane() {
 	xac_.Ptr.position.set(X,Y,Z);
 }
 
-//= SHIPS ======================================================================
+//= SHIPS ======================//==============================================
 
 //	Load Ship
 function loadShips() {
@@ -1303,7 +1286,7 @@ function loadShips() {
 		});
 		xsh_.Ptr = gltf.scene;
 		// Set Scale
-		xsh_.Ptr.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);		// model in feet
+		xsh_.Ptr.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr); // model in feet
 		// Animated Radar
 		let clip = THREE.AnimationClip.findByName(gltf.animations, "RadarAction");
 		xsh_.Mx0 = new THREE.AnimationMixer(xsh_.Ptr);
@@ -1311,7 +1294,7 @@ function loadShips() {
 		actun.play();
 		if (xsh_.Mx0) xsh_.Mx0.setTime(xsh_.An0/anmfps);
 		//
-		xsh_.Ptr.position.set(0,0,0);	// position within group is always 0,0,0
+		xsh_.Ptr.position.set(0,0,0); // position within group is always 0,0,0
 		// Ship Wake
 		initShpWak();
 	});
@@ -1331,12 +1314,12 @@ function initShips() {
 //	Move Ship
 function moveShips() {
 	// Change in Heading
-	let XSHSpd = 0;						// for now
+	let XSHSpd = 0;				// for now
 	XSHSpd = XSHSpd * DLTime;
 	xsh_.Rot.y = xsh_.Rot.y + XSHSpd;
 	CVEGrp.rotation.set(xsh_.Rot.x*DegRad,xsh_.Rot.y*DegRad,xsh_.Rot.z*DegRad);
 	// Speed (Only Horizontal)
-	let SpdTim = xsh_.Spd * DLTime;		// Speed (u/t)
+	let SpdTim = xsh_.Spd * DLTime; // Speed (u/t)
 	xsh_.MpS.z = -SpdTim * Math.cos(xsh_.Rot.y*DegRad);
 	xsh_.MpS.x = -SpdTim * Math.sin(xsh_.Rot.y*DegRad);
 	// Recompute Map Postion
@@ -1357,7 +1340,7 @@ function moveShips() {
 	xsh_.Dst = Math.sqrt(x*x+z*z);		// Compute distance
 }
 
-//= SHIP FLAG ==================================================================
+//= SHIP FLAG ==================//==============================================
 
 //	Load and Initialize Flag
 function loadShpFlg() {
@@ -1376,7 +1359,7 @@ function loadShpFlg() {
 		// Convert from feet to meters
 		CVEGrp.add(flg_.Ptr);
 		flg_.Ptr.visible = true;
-		flg_.Deg = 360/(flg_.Seg.x/flg_.Wav);		// Degrees per segment (360/5 = 72)
+		flg_.Deg = 360/(flg_.Seg.x/flg_.Wav); // Degrees per segment (360/5 = 72)
 	});
 }
 
@@ -1389,16 +1372,16 @@ function moveShpFlg() {
 		let idx, zd0, zd1;
 		let flgSgX = flg_.Seg.x+1;
 		let flgSgY = flg_.Seg.y+1;
-		let dg1 = 360*((flg_.Tim/flg_.Per)%flg_.Per);	// Location in Cycle
-		zd0 = flg_.Amp*Math.sin(dg1*DegRad);		// For x = 0
-		for (let x = 0; x < flgSgX; x++) {		// For each row
+		let dg1 = 360*((flg_.Tim/flg_.Per)%flg_.Per); // Location in Cycle
+		zd0 = flg_.Amp*Math.sin(dg1*DegRad); // For x = 0
+		for (let x = 0; x < flgSgX; x++) { // For each row
 			idx = x;
 			zd1 = flg_.Amp*Math.sin(dg1*DegRad)+zd0;
-			for (let y = 0; y < flgSgY; y++) {		// For each column
-				flg_.Geo.attributes.position.setZ(idx, zd1);		// Use getY to read position
-				idx = idx + flgSgX;					// e.g. 1+5
+			for (let y = 0; y < flgSgY; y++) { // For each column
+				flg_.Geo.attributes.position.setZ(idx, zd1); // Use getY to read position
+				idx = idx + flgSgX; // e.g. 1+5
 			}
-			dg1=(dg1+flg_.Deg)%360;					// New
+			dg1=(dg1+flg_.Deg)%360;
 			idx++;
 		}	
 		flg_.Geo.attributes.position.needsUpdate = true;
@@ -1406,7 +1389,7 @@ function moveShpFlg() {
 	}
 }
 
-//= SHIP WAKE ==================================================================
+//= SHIP WAKE ==================//==============================================
 
 //- Load Ship Wake -------------------------------------------------------------
 function loadShpWak() {
@@ -1416,15 +1399,15 @@ function loadShpWak() {
 //- Init Ship Wake -------------------------------------------------------------
 function initShpWak() {
 	//- Timer
-	let timer = timerLocal(.001,1);			// Lower = slower
+	let timer = timerLocal(.001,1); // Lower = slower
 	//- Life
 	let lifeRange = range(0.1,1);
 	let lifeTime = timer.mul(lifeRange).mod(.05);	
 	let life = lifeTime.div(lifeRange);
 	//- Rotation Range
 //	let rotateRange = range(.1,4);
-	let rotateRange = range(.1,.2);			// No apparent change
-	let textureNode = texture(WakMap, rotateUV(uv(),timer.mul(rotateRange)));	//r168
+	let rotateRange = range(.1,.2); // No apparent change
+	let textureNode = texture(WakMap, rotateUV(uv(),timer.mul(rotateRange))); //r168
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 	//- Lateral Offset	
 	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
@@ -1442,12 +1425,12 @@ function initShpWak() {
 		smokeNodeMaterial.depthWrite = false;
 		smokeNodeMaterial.transparent = true;
 	let smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
-		smokeInstancedSprite.scale.setScalar(4000);		// Makes Visible (was 400)
+		smokeInstancedSprite.scale.setScalar(4000); // Makes Visible (was 400)
 		smokeInstancedSprite.isInstancedMesh = true;
-		smokeInstancedSprite.count = 600;				// Increases continuity (was 100)
-		smokeInstancedSprite.rotation.x = Math.PI/2;	// Set Flat
-		smokeInstancedSprite.position.z = 75;			// Increased
-		smokeInstancedSprite.position.y = -5;			// Added
+		smokeInstancedSprite.count = 600; // Increases continuity (was 100)
+		smokeInstancedSprite.rotation.x = Math.PI/2; // Set Flat
+		smokeInstancedSprite.position.z = 75; // Increased
+		smokeInstancedSprite.position.y = -5; // Added
 		CVEGrp.add(smokeInstancedSprite);
 }
 
@@ -1471,10 +1454,8 @@ function initVulkan() {
 	let textureNode = texture(VlkMap, rotateUV(uv(),timer.mul(rotateRange)));	//r168
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 	//- Lateral Offset	
-//	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
 	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// cone shaped
 	//- Size Range
-//	let scaleRange = range(.01,.02);
 	let scaleRange = range(.1,.2);
 	//
 	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
@@ -1505,12 +1486,12 @@ function moveVulkan() {
 	smokeInstancedSprite.position.set(X,Y,Z);
 }
 
-//= HARDENED SURFACES ==========================================================
+//= HARDENED SURFACES ==========//==============================================
 //	Home Airfield and CVE Deck (moving)
 
 // Compute Minimum Altitude
 function moveMinAlt() {
-	air_.GrdZed = 0;							// Default
+	air_.GrdZed = 0;			// Default
 	// Home Airfield ------------------------------------
 	// Compare to my Position (All in Positive Units)
 	if (BasXlf < air_.MapPos.x && BasXrt > air_.MapPos.x && BasZfr > air_.MapPos.z && BasZbk < air_.MapPos.z) air_.GrdZed = BasAlt*.92;
@@ -1521,20 +1502,20 @@ function moveMinAlt() {
 	let PZ = CVEGrp.position.z;
 	// Compare to my Position (All in Positive Units)
 	if (CVEXlf < PX && CVEXrt > PX && CVEZfr > PZ && CVEZbk < PZ) {
-		air_.GrdZed = CVEAlt;			// If Above
-		InpBrk = 0;						// Default = no brake
-		if (air_.GrdFlg) {				// If Landed
+		air_.GrdZed = CVEAlt;	// If Above
+		InpBrk = 0;				// Default = no brake
+		if (air_.GrdFlg) {		// If Landed
 			if (air_.PwrPct < 0.5 && anm_.thkpos < 180) InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
 			let CVEKPH = xsh_.Spd*3.6;	// CVE speed
 			if (!air_.MovFlg) {
 				if (air_.SpdKPH <= CVEKPH) { // If airplane speed <= CVE speed, lock to deck	
-					air_.MovFlg = 1;	// Flag
-					InpBrk = 0;			// Brake off
+					air_.MovFlg = 1; // Flag
+					InpBrk = 0;	// Brake off
 					if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
 				}
 			}
 			if (air_.MovFlg && air_.SpdKPH > CVEKPH) air_.MovFlg = 0;	// Unlock from deck if moving faster than CVE
-			if (air_.MovFlg) {			// Otherwise remain locked to deck
+			if (air_.MovFlg) {	// Otherwise remain locked to deck
 				// Recompute Speed and Position
 				air_.MapSpd.z = -xsh_.MpS.z;
 				air_.MapSpd.x = -xsh_.MpS.x;
@@ -1628,41 +1609,76 @@ function loadAirInt() {
 	});
 }	
 
-//= Move Airplane Model / Virtual Cockpit ======================================
+//= Init Airplane ==============//==============================================
+function initAirObj() {
+	//	Beginning Location
+	if (BegLoc == 0) { // Base
+		air_.GrdFlg = 1;
+		air_.GrdZed = BasAlt*.92;
+		anm_.lngpos = 0; // Landing Gear Down
+	}
+	if (BegLoc == 1) { // CVE
+		air_.GrdFlg = air_.MovFlg = 1;
+		air_.MapPos.copy(xsh_.MpP);
+		air_.MapPos.y = air_.GrdZed = CVEAlt;
+		air_.MapPos.z = air_.MapPos.z - 50;
+		anm_.lngpos = 0; // Landing Gear Down
+	}
+	if (BegLoc == 2) { // Air
+		PwrDif = 1000;
+		air_.SpdKPH = 200;
+		air_.MapPos.y = air_.MapSPS.y = 200;
+		anm_.lngpos = 180; // Landing Gear Up
+	}
+	if (air_.SpdKPH) {
+		air_.SpdMPS = air_.SpdKPH/3.6; // Speed - meters per second
+		air_.SpdMPF = (air_.SpdKPH/3.6)*DLTime; // Speed - meters per frame
+	}
+	if (air_.MapPos.y == 0) air_.GrdFlg = 1;
+	grd_.MSP.y = air_.MapPos.y; // Use to initialize objects
+	//
+//	moveMinAlt();				// Determine if over CVE - resulting is special handling
+	//
+	flight = new Flight(air_);	// position airplane using air_.GrdZed
+	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
+	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
+}
+
+//= Move Airplane ==============//==============================================
 function moveAirObj() {
 	// Add Delay to Power
-	let gal = PwrDif * PwrMsD.x;		// Current input delayed
-	let lag = PwrMsD.z * PwrMsD.y;		// Released from Cumulator
-	PwrMsD.z = PwrMsD.z + gal - lag;	// Change in Cumulator
+	let gal = PwrDif * PwrMsD.x; // Current input delayed
+	let lag = PwrMsD.z * PwrMsD.y; // Released from Cumulator
+	PwrMsD.z = PwrMsD.z + gal - lag; // Change in Cumulator
 	PwrDif = PwrDif - gal + lag;
 	// Input Engine Power
 	air_.PwrPct = air_.PwrPct + PwrDif;
 	if (air_.PwrPct > 1) air_.PwrPct = 1;
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
-	PwrDif = 0;							// Reset
+	PwrDif = 0;					// Reset
 	// Coefficient of Lift
-	if (air_.AutoOn) {						// Autopilot
+	if (air_.AutoOn) {			// Autopilot
 		air_.CfLDif = air_.InpKey.x;
 		// Add Delay to Lift
-		gal = air_.CfLDif * CfLApD.x;		// Current input delayed
-		lag = CfLMsD.z * CfLApD.y;			// Released from Cumulator
-		CfLMsD.z = CfLMsD.z + gal - lag; 	// Change in Cumulator
+		gal = air_.CfLDif * CfLApD.x; // Current input delayed
+		lag = CfLMsD.z * CfLApD.y; // Released from Cumulator
+		CfLMsD.z = CfLMsD.z + gal - lag; // Change in Cumulator
 	}
 	else {
 		air_.CfLDif = (InpMos.y)*air_.PYBmul.x;	// Input Coefficient of Lift
 		// Add Delay to Lift
-		gal = air_.CfLDif * CfLMsD.x;		// Current input delayed
-		lag = CfLMsD.z * CfLMsD.y;			// Released from Cumulator
-		CfLMsD.z = CfLMsD.z + gal - lag;	// Change in Cumulator
+		gal = air_.CfLDif * CfLMsD.x; // Current input delayed
+		lag = CfLMsD.z * CfLMsD.y; // Released from Cumulator
+		CfLMsD.z = CfLMsD.z + gal - lag; // Change in Cumulator
 	}
 	air_.CfLDif = air_.CfLDif - gal + lag;
-	air_.CfLift = air_.CfLift + air_.CfLDif;	// New Coefficient of Lift	
+	air_.CfLift = air_.CfLift + air_.CfLDif; // New Coefficient of Lift	
 	if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 	if (air_.CfLift < -air_.CfLMax) air_.CfLift = -air_.CfLMax;
-	anm_.stkpit = InpMos.y;					// Joystick pitch animation
-	InpMos.y = 0;							// Reset
+	anm_.stkpit = InpMos.y;		// Joystick pitch animation
+	InpMos.y = 0;				// Reset
 	// Coefficient of Lift - Flaps
-	air_.CfFlap = air_.FlpCfL*(180-anm_.flppos)/180; 	// [FLAP]
+	air_.CfFlap = air_.FlpCfL*(180-anm_.flppos)/180; // [Flap]
 	// Bank
 	if (air_.AutoOn) {
 		air_.RotDif.z = air_.InpKey.z;
@@ -1671,32 +1687,32 @@ function moveAirObj() {
 	else {
 		// Add Delay to Change in Bank Rate due to Mouse
 		let BnkDif = InpMos.x * air_.PYBmul.z;
-		gal = BnkDif * BnkMsD.x;			// Current input delayed
-		lag = BnkMsD.z * BnkMsD.y;			// Released from Cumulator
-		BnkMsD.z = BnkMsD.z + gal - lag;	// Change in Cumulator
+		gal = BnkDif * BnkMsD.x; // Current input delayed
+		lag = BnkMsD.z * BnkMsD.y; // Released from Cumulator
+		BnkMsD.z = BnkMsD.z + gal - lag; // Change in Cumulator
 		BnkDif = BnkDif - gal + lag;
 		air_.RotDif.z = air_.RotDif.z + BnkDif;	
 		air_.RotDif.z = MaxVal(air_.RotDif.z,air_.BnkMax);	// Max values
 		if (air_.RotDif.z == air_.BnkMax && BnkDif < 0) air_.RotDif.z = BnkDif;
 		if (air_.RotDif.z == -air_.BnkMax && BnkDif > 0) air_.RotDif.z = BnkDif;
-		air_.RotDif.z = air_.RotDif.z;		// Inputs are +/-
+		air_.RotDif.z = air_.RotDif.z; // Inputs are +/-
 		air_.AGBank = air_.RotDif.z;
-		anm_.stkbnk = InpMos.x;				// Joystick bank animation
-		InpMos.x = 0;						// Reset
+		anm_.stkbnk = InpMos.x;		// Joystick bank animation
+		InpMos.x = 0;			// Reset
 	}
 	// Input Yaw
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
 	// Input Brakes
-	air_.BrkVal = InpBrk;					// Brakes
+	air_.BrkVal = InpBrk;		// Brakes
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
 //	console.log(air_.AirDSL,air_.SpdIAS*Km2Mil);	// new Air Density and IAS
 	// View Keys ---------------------------------------------------------------
-	if (cam_.pan < 1) {						// Only If Not Panning		
+	if (cam_.pan < 1) {			// Only If Not Panning		
 		// If No Keys Pressed, Set Default View
 		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
-			if (cam_.flg) cam_.lld.x = 0;	// Internal view
-			else cam_.lld.x = -12.5;		// External view
+			if (cam_.flg) cam_.lld.x = 0; // Internal view
+			else cam_.lld.x = -12.5; // External view
 			cam_.lld.y = 0;
 		}
 		// Down 45
@@ -1747,7 +1763,7 @@ function moveAirObj() {
 	else moveACanimX(air_,mxr_,anm_);				// External
 }
 
-//= Load and Fire Bullets ======================================================
+//= Load and Fire Bullets ======//==============================================
 
 //	Load Bullets
 function loadBullet() {
