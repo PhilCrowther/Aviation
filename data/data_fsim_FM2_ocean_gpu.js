@@ -64,33 +64,17 @@ let context = canvas.getContext('2d',{willReadFrequently: true});
 let grids = 0;						// GrdWtr Module
 let waves = 0;						// Ocean Module
 
-//= STATIC OBJECTS =============================================================
-let ObjNum = 3;						// number of objects
-//- Should allow for fast update of position
-let ObjTyp = [0];					// Object Type
-	ObjTyp[ObjNum - 1] = 0;
-let ObjNam = [0];					// Object Name
-	ObjNam[ObjNum - 1] = 0;
-let ObjMdl = [0];					// Model source
-	ObjMdl[ObjNum - 1] = 0;
-let ObjTxt = [0];					// Model texture
-	ObjTxt[ObjNum - 1] = 0;
-let ObjPos = [0];					// Map Position
-	ObjPos[3*(ObjNum - 1)] = 0;
-let ObjPtr = [0];					// Object Address
-	ObjPtr[ObjNum - 1] = 0;
-//	Hangars
-let HgrSrc = "https://PhilCrowther.github.io/Aviation/models/scenery/hangar.glb";
-//	Giaros Island
-let GiaSrc = "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb";
-let GiaSrT = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png";
-//	Home Island
-let HomSrc = "https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb";
-let HomSrT = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png";
-//	Volcano
-let VlkAdr = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png";
-let VlkMap = 0;
-let smokeInstancedSprite;
+//= ISLANDS ====================//==============================================
+
+
+//= MINIMUM ALTITUDE (Base) ====//==============================================
+//	Base (Centered at 0,0)
+let BasAlt = 8.8392;			// 29 ft
+	BasAlt = 8.25; 
+let BasXlf = -635;				
+let BasXrt = -585;
+let BasZfr =  410;
+let BasZbk = -335;
 
 //= TRAFFIC ====================================================================
 //- Airplane -------------------------------------------------------------------
@@ -108,20 +92,13 @@ let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/U
 let WakSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
 let WakMap = 0;
 
-//= MINIMUM ALTITUDE (Base and CVE) ============================================
-//	Base (Centered at 0,0)
-let BasAlt = 8.8392;				// 29 ft
-	BasAlt = 8.25;					// 
-let BasXlf = -61;					// 200 ft
-let BasXrt = 61;					// 200 ft
-let BasZfr = 2260;					// 7420 ft
-let BasZbk = -154;					// -505 ft
-//	Ship (Centered at CVEGrp)
-let CVEAlt = 13.2;					// 43.267 ft
-let CVEXlf = -13.2;					// 43.267 ft
-let CVEXrt = 13.2;					// 43.267 ft
-let CVEZfr = 70.5;					// ?? ft
-let CVEZbk = -70.5;					// ?? ft
+//= MINIMUM ALTITUDE (CVE) =====//==============================================
+//	(Centered at CVEMsh)
+let CVEAlt = 13.2;				// 43.267 ft
+let CVEXlf = -13.2;				// 43.267 ft
+let CVEXrt = 13.2;				// 43.267 ft
+let CVEZfr = 70.5;				// ?? ft
+let CVEZbk = -70.5;				// ?? ft
 
 //= FM2 WILDCAT DATA ===========================================================
 let data_ = {
