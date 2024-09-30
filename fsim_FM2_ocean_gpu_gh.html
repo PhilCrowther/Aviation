@@ -336,10 +336,9 @@ let IslMdl = ["https://PhilCrowther.github.io/Aviation/models/scenery/homebase_c
 			  "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb"];
 let IslTxt = ["https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png",
 			  "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png"];
-let IslMpX = [610,-1610];
-let IslMpY = [30,1];
-let IslMpZ = [275,2440];
-let IslPtr = [makMsh(),makMsh()];
+//let IslPos = [new THREE.Vector3 (610,30,275),new THREE.Vector3 (-1610,1,2440)];
+let IslPos = [new THREE.Vector3 (610,30,5275),new THREE.Vector3 (-1610,10,2440)];
+let IslMsh = [makMsh(),makMsh()];
 //- Volcano Smoke --------------------------------------------------------------
 let VlkSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png";
 let VlkMap = 0;					// Loaded Texture
@@ -350,6 +349,15 @@ let	HgrSrc = "https://PhilCrowther.github.io/Aviation/models/scenery/hangar.glb"
 let HgrObj = 0;					// Loaded Object
 let HgrPos = new THREE.Vector3(-572,-22.5,-363); // Relative Position
 
+//= MINIMUM ALTITUDE (Base) ====//==============================================
+//	Base (Centered at 0,0)
+let BasAlt = 8.8392;			// 29 ft
+	BasAlt = 8.25; 
+let BasXlf = -635;				
+let BasXrt = -585;
+let BasZfr =  410;
+let BasZbk = -335;
+
 //= TRAFFIC ====================//==============================================
 //- Airplane -------------------------------------------------------------------
 let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
@@ -359,7 +367,7 @@ let xac_ = {
 		FNm: XPPath + XPFile,
 		Ptr: 0,
 		Spd: 91.5,				// meters
-		MpP: new THREE.Vector3 (180,100,300), // meters
+		MpP: new THREE.Vector3 (180,100,5300), // meters
 		Rot: new THREE.Vector3 (0,0,30),
 		MxS: 0,
 		MxP: 0,
@@ -378,7 +386,8 @@ let xsh_ = {
 		FNm: XSPath + XSFile,
 		Ptr: 0,
 		Spd: 9,					// meters
-		MpP: new THREE.Vector3 (-3133,0.1,146),	// meters
+//		MpP: new THREE.Vector3 (-3133,0.1,146),	// meters
+		MpP: new THREE.Vector3 (-4133,0.1,146),	// meters
 		Rot: new THREE.Vector3 (0,0,0),
 		MpS: new THREE.Vector3 (0,0,0),
 		Dst: 0,
@@ -415,15 +424,8 @@ let CVEMsh = makMsh();			// To hold CVE and smoke
 	CVEMsh.rotation.order = "YXZ";
 	scene.add(CVEMsh);			// Uses position of CVE to compute relative position
 
-//= MINIMUM ALTITUDE (Base and CVE) ============================================
-//	Base (Centered at 0,0)
-let BasAlt = 8.8392;			// 29 ft
-	BasAlt = 8.25;				// 
-let BasXlf = -61;				// 200 ft
-let BasXrt = 61;				// 200 ft
-let BasZfr = 2260;				// 7420 ft
-let BasZbk = -154;				// -505 ft
-//	Ship (Centered at CVEMsh)
+//= MINIMUM ALTITUDE (CVE) =====================================================
+//	(Centered at CVEMsh)
 let CVEAlt = 13.2;				// 43.267 ft
 let CVEXlf = -13.2;				// 43.267 ft
 let CVEXrt = 13.2;				// 43.267 ft
@@ -1106,8 +1108,9 @@ function loadIsland() {
 				});
 				island = gltf.scene;
 				let s = MtrMil; // meters
+				if (i) s = 1.5*s; // make Island2 larger
 				island.scale.set(s,s,s);
-				IslPtr[i].add(island);
+				IslMsh[i].add(island);
 			});
 		});
 	}
@@ -1118,29 +1121,35 @@ function loadIsland() {
 
 //-	Init Islands ---------------------------------------------------------------
 function initIsland() {
+	let position = new THREE.Vector3();
+	let X,Y,Z;
 	for (let i = 0; i < IslNum; i++) {
 		// Set Relative Position
 		// (cause Objects to elevate above water as we climb to prevent flicker)
-		let X = IslMpX[i]-air_.MapPos.x;
-		let Y = IslMpY[i]-air_.MapPos.y*AltAdj;
-		let Z = air_.MapPos.z-IslMpZ[i];
-		IslPtr[i].position.set(X,Y,Z);
-		scene.add(IslPtr[i]);
+		position.copy(IslPos[i]);
+		X = position.x-air_.MapPos.x;
+		Y = position.y-air_.MapPos.y*AltAdj;
+		Z = air_.MapPos.z-position.z;
+		IslMsh[i].position.set(X,Y,Z);
+		scene.add(IslMsh[i]);
 	}
 	// Attached Objects
-	initVulkan(IslPtr[0]);		// Volcano Smoke
-	initHgrObj(IslPtr[0]);		// Hangar Object
+	initVulkan(IslMsh[0]);		// Volcano Smoke
+	initHgrObj(IslMsh[0]);		// Hangar Object
 }
 
 //-	Move Islands ---------------------------------------------------------------
 function moveIsland() {
+	let position = new THREE.Vector3();
+	let X,Y,Z;
 	for (let i = 0; i < IslNum; i ++) {
 		// Compute New Relative Position
 		// (cause Islands to elevate above water as we climb to prevent flicker)
-		let X = IslMpX[i]-air_.MapPos.x;
-		let Y = IslMpY[i]-air_.MapPos.y*AltAdj;
-		let Z = air_.MapPos.z-IslMpZ[i];
-		IslPtr[i].position.set(X,Y,Z);
+		position.copy(IslPos[i]);
+		X = position.x-air_.MapPos.x;
+		Y = position.y-air_.MapPos.y*AltAdj;
+		Z = air_.MapPos.z-position.z;
+		IslMsh[i].position.set(X,Y,Z);
 	}
 	// Attached Objects
 	moveHgrObj();				// Hangar Object
@@ -1154,7 +1163,7 @@ function loadVulkan() {
 }
 
 //- Init Volcano ---------------------------------------------------------------
-function initVulkan(IslPtr) {	
+function initVulkan(IslMsh) {	
 	//- Timer
 	let timer = timerLocal(.001,1);
 	//- Life
@@ -1186,7 +1195,7 @@ function initVulkan(IslPtr) {
 		smokeInstancedSprite.count = 600; // Increases continuity (was 100)
 		smokeInstancedSprite.position.copy(VlkPos);
 		smokeInstancedSprite.renderOrder = 1; // This allows the transparent smoke to work with transparent island
-		IslPtr.add(smokeInstancedSprite);
+		IslMsh.add(smokeInstancedSprite);
 }
 
 //= HANGAR =====================//==============================================
@@ -1195,19 +1204,19 @@ function initVulkan(IslPtr) {
 function loadHgrObj() {
 	gltfLoader.load(HgrSrc, function (gltf) {
 		HgrObj = gltf.scene;
-		let s = 1/4; // meters
+		let s = 0.4; // meters
 		HgrObj.scale.set(s,s,s);
 	});
 }
 
 //- Init Hangar ----------------------------------------------------------------
-function initHgrObj(IslPtr) {
+function initHgrObj(IslMsh) {
 	HgrObj.position.copy(HgrPos);
-	IslPtr.add(HgrObj);
+	IslMsh.add(HgrObj);
 }
 
 //- Move Hangar ----------------------------------------------------------------
-function moveHgrObj(IslPtr) {
+function moveHgrObj(IslMsh) {
 	HgrObj.position.y = HgrPos.y + air_.MapPos.y*AltAdj*0.01;
 }
 
@@ -1217,14 +1226,17 @@ function moveHgrObj(IslPtr) {
 // Compute Minimum Altitude
 function moveMinAlt() {
 	air_.GrdZed = 0;			// Default
+	let PX,PZ;
 	// Home Airfield ------------------------------------
 	// Compare to my Position (All in Positive Units)
-	if (BasXlf < air_.MapPos.x && BasXrt > air_.MapPos.x && BasZfr > air_.MapPos.z && BasZbk < air_.MapPos.z) air_.GrdZed = BasAlt*.92;
+	PX = -IslMsh[0].position.x;
+	PZ = IslMsh[0].position.z;
+	if (BasXlf < PX && BasXrt > PX && BasZfr > PZ && BasZbk < PZ) air_.GrdZed = BasAlt*.92; 
 	// CVE Group ----------------------------------------
 	// CVEMsh.position is relative to me; z and x axes are reversed
 	// air_.MapPos.z and air_.MapPos.x are actual positions on map
-	let PX = -CVEMsh.position.x;
-	let PZ = CVEMsh.position.z;
+	PX = -CVEMsh.position.x;
+	PZ = CVEMsh.position.z;
 	// Compare to my Position (All in Positive Units)
 	if (CVEXlf < PX && CVEXrt > PX && CVEZfr > PZ && CVEZbk < PZ) {
 		air_.GrdZed = CVEAlt;	// If Above
@@ -1572,6 +1584,8 @@ function loadAirInt() {
 function initAirObj() {
 	//	Starting Location
 	if (BegLoc == 0) { // Base
+		air_.MapPos.x = IslPos[0].x-610;
+		air_.MapPos.z = IslPos[0].z-275;	
 		air_.GrdFlg = 1;
 		air_.GrdZed = BasAlt*.92;
 		anm_.lngpos = 0; // Landing Gear Down
