@@ -142,10 +142,10 @@ let	KeyVal = new THREE.Vector3(0.5,0.25,0.25); // (Yaw = turn rate in 15 deg ban
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 let DLTim2 = DLTime*DLTime;
 //	Conversions
-let DegRad = Math.PI / 180;		// Convert Degrees to Radians
+let DegRad = Math.PI/180;		// Convert Degrees to Radians
 let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 let Ft2Mtr = 0.3048;			// Convert Feet to Meters
-let Mtr2Ft = 1/0.3048;
+let Mtr2Ft = 1/Ft2Mtr;
 let Km2Mil = 0.621371;
 let Mil2Km = 1.60934;
 let MtrMil = 1609.34;			// Meters per Mile
@@ -332,11 +332,10 @@ let wav_ = {
 
 //= ISLANDS ====================//==============================================
 let IslNum = 2;
-let IslMdl = ["https://PhilCrowther.github.io/Aviation/models/scenery/homebase_ctr0.glb",
-			  "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb"];
-let IslTxt = ["https://PhilCrowther.github.io/Aviation/models/scenery/textures/homebase.png",
-			  "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png"];
-//let IslPos = [new THREE.Vector3 (610,30,275),new THREE.Vector3 (-1610,1,2440)];
+let IslMdl = ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
+			  "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"];
+let IslTxt = ["https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.png",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png"];
 let IslPos = [new THREE.Vector3 (610,30,5275),new THREE.Vector3 (-1610,10,2440)];
 let IslMsh = [makMsh(),makMsh()];
 //- Volcano Smoke --------------------------------------------------------------
@@ -345,9 +344,16 @@ let VlkMap = 0;					// Loaded Texture
 let smokeInstancedSprite;		// Sprite Object
 let VlkPos = new THREE.Vector3(50,75,25); // Relative Position
 //- Hangar Object --------------------------------------------------------------
-let	HgrSrc = "https://PhilCrowther.github.io/Aviation/models/scenery/hangar.glb";
+let	HgrSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb";
 let HgrObj = 0;					// Loaded Object
 let HgrPos = new THREE.Vector3(-572,-22.5,-363); // Relative Position
+//- More Static Objects
+let FxdNum = 1;
+let FxdSrc = ["https://PhilCrowther.github.io/Aviation/scenery/models/tramp_noflag.glb"];
+let FxdPtr = [];
+let FxdSiz = [new THREE.Vector3 (1,1,1)];
+let FxdRot = [new THREE.Vector3 (0,0,0)];
+let FxdPos = [new THREE.Vector3 (-100,2.5,5800)];
 
 //= MINIMUM ALTITUDE (Base) ====//==============================================
 //	Base (Centered at 0,0)
@@ -386,7 +392,6 @@ let xsh_ = {
 		FNm: XSPath + XSFile,
 		Ptr: 0,
 		Spd: 9,					// meters
-//		MpP: new THREE.Vector3 (-3133,0.1,146),	// meters
 		MpP: new THREE.Vector3 (-4133,0.1,146),	// meters
 		Rot: new THREE.Vector3 (0,0,0),
 		MpS: new THREE.Vector3 (0,0,0),
@@ -424,7 +429,7 @@ let CVEMsh = makMsh();			// To hold CVE and smoke
 	CVEMsh.rotation.order = "YXZ";
 	scene.add(CVEMsh);			// Uses position of CVE to compute relative position
 
-//= MINIMUM ALTITUDE (CVE) =====================================================
+//= MINIMUM ALTITUDE (CVE) =====//==============================================
 //	(Centered at CVEMsh)
 let CVEAlt = 13.2;				// 43.267 ft
 let CVEXlf = -13.2;				// 43.267 ft
@@ -704,49 +709,49 @@ let instructions = document.getElementById('instructions');
 		instructions.style.display = '';
 	});
 
-//= DEFAULT KEY BINDINGS =======================================================
+//= DEFAULT KEY BINDINGS =======//==============================================
 //	Basic
-let K_PwLU =  87;	// Power Up (w) - keyboard left
-let K_PwLD =  81;	// Power Down (q) - keyboard left
-let K_PwRU = 187;	// Power Up (=) - keyboard right
-let K_PwRD = 189;	// Power Down (-) - keyboard right
-let K_BnkL =  37;	// Bank Left (left arrow) - autopilot only
-let K_BnkR =  39;	// Bank Right (right arrow) - autopilot only
-let K_PitU =  40;	// Pitch Up (down arrow) - autopilot only
-let K_PitD =  38;	// Pitch Down (up arrow) - autopilot only
-let K_YwLL =  90;	// Yaw Left (z) - keyboard left
-let K_YwLR =  88;	// Yaw Left (x) - keyboard left
-let K_YwRL = 188;	// Yaw Left (,) - keyboard right
-let K_YwRR = 190;	// Yaw Left (.) - keyboard right
-let K_Brak =  66;	// Brakes (b)
-let K_Guns =  32;	// Guns (spacebar)
+let K_PwLU =  87;				// Power Up (w) - keyboard left
+let K_PwLD =  81;				// Power Down (q) - keyboard left
+let K_PwRU = 187;				// Power Up (=) - keyboard right
+let K_PwRD = 189;				// Power Down (-) - keyboard right
+let K_BnkL =  37;				// Bank Left (left arrow) - autopilot only
+let K_BnkR =  39;				// Bank Right (right arrow) - autopilot only
+let K_PitU =  40;				// Pitch Up (down arrow) - autopilot only
+let K_PitD =  38;				// Pitch Down (up arrow) - autopilot only
+let K_YwLL =  90;				// Yaw Left (z) - keyboard left
+let K_YwLR =  88;				// Yaw Left (x) - keyboard left
+let K_YwRL = 188;				// Yaw Left (,) - keyboard right
+let K_YwRR = 190;				// Yaw Left (.) - keyboard right
+let K_Brak =  66;				// Brakes (b)
+let K_Guns =  32;				// Guns (spacebar)
 //	Additional
-let K_Flap =  70;	// Flaps (f)
-let K_Gear =  71;	// Landing Gear (g)
-let K_Hook =  72;	// Tailhook (h)
-let K_Canp =  67;	// Canopy (c)
+let K_Flap =  70;				// Flaps (f)
+let K_Gear =  71;				// Landing Gear (g)
+let K_Hook =  72;				// Tailhook (h)
+let K_Canp =  67;				// Canopy (c)
 //	Views
-let K_Look =  16;	// Pan (shift)
-let K_VU45 =  36;	// View Up (alone or modifier)
-let K_VD45 =  35;	// View Down (alone or modifier)
-let K_VL45 =  33;	// Left 45 degrees
-let K_VR45 =  45;	// Right 45 degrees
-let K_VL90 =  34;	// Left 90 degrees
-let K_VR90 =  46;	// Right 90 degrees
+let K_Look =  16;				// Pan (shift)
+let K_VU45 =  36;				// View Up (alone or modifier)
+let K_VD45 =  35;				// View Down (alone or modifier)
+let K_VL45 =  33;				// Left 45 degrees
+let K_VR45 =  45;				// Right 45 degrees
+let K_VL90 =  34;				// Left 90 degrees
+let K_VR90 =  46;				// Right 90 degrees
 //	Toggle
-let K_Vizz =  86;	// Toggle Visibility (v)
-let K_Soun =  83;	// Toggle sound (s)
-let K_Paws =  80;	// Pause (p)
-let K_Auto =  65;	// Autopilot (a)
-let K_Info =  73;	// Info (i)
+let K_Vizz =  86;				// Toggle Visibility (v)
+let K_Soun =  83;				// Toggle sound (s)
+let K_Paws =  80;				// Pause (p)
+let K_Auto =  65;				// Autopilot (a)
+let K_Info =  73;				// Info (i)
 
-//=	VIEW KEYS ==================================================================
-let U45flg = 0;		// Up 45 degrees
-let D45flg = 0;		// Down 45 degrees
-let	L45flg = 0;		// Left 45 degrees
-let R45flg = 0;		// Right 45 degrees
-let L90flg = 0;		// Left 90 degrees
-let R90flg = 0;		// Right 90 degrees
+//=	VIEW KEYS ==================//==============================================
+let U45flg = 0;					// Up 45 degrees
+let D45flg = 0;					// Down 45 degrees
+let	L45flg = 0;					// Left 45 degrees
+let R45flg = 0;					// Right 45 degrees
+let L90flg = 0;					// Left 90 degrees
+let R90flg = 0;					// Right 90 degrees
 
 //= CAMERA =====================//==============================================
 //- Create Cockpit Attach Point
@@ -929,7 +934,6 @@ function rendAll() {
 		moveCamera(camera,cam_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
-		moveBullet();
 		moveObject();			// Move objects
 		// Move Grids
 		waves.update();			// Move Ocean
@@ -1071,12 +1075,14 @@ function loadGeoMat() {
 
 function loadObject() {
 	loadIsland();
+//	loadFxdObj();				// Not yet
 	loadMovPln();
 	loadMovCVE();
 }
 
 function initObject() {
 	initIsland();
+//	moveFxdObj();				// Not yet
 	initMovPln();
 	initMovCVE();
 	moveObject();				// recompute Y location of all objects
@@ -1084,6 +1090,7 @@ function initObject() {
 
 function moveObject() {
 	moveIsland();
+//	moveFxdObj();				// Not yet
 	moveMovPln();
 	moveMovCVE();
 }
@@ -1220,56 +1227,30 @@ function moveHgrObj(IslMsh) {
 	HgrObj.position.y = HgrPos.y + air_.MapPos.y*AltAdj*0.01;
 }
 
-//= HARDENED SURFACES ==========//==============================================
-//	Home Airfield and CVE Deck (moving)
+//= OTHER OBJECTS ==============//==============================================
 
-// Compute Minimum Altitude
-function moveMinAlt() {
-	air_.GrdZed = 0;			// Default
-	let PX,PZ;
-	// Home Airfield ------------------------------------
-	// Compare to my Position (All in Positive Units)
-	PX = -IslMsh[0].position.x;
-	PZ = IslMsh[0].position.z;
-	if (BasXlf < PX && BasXrt > PX && BasZfr > PZ && BasZbk < PZ) air_.GrdZed = BasAlt*.92; 
-	// CVE Group ----------------------------------------
-	// CVEMsh.position is relative to me; z and x axes are reversed
-	// air_.MapPos.z and air_.MapPos.x are actual positions on map
-	PX = -CVEMsh.position.x;
-	PZ = CVEMsh.position.z;
-	// Compare to my Position (All in Positive Units)
-	if (CVEXlf < PX && CVEXrt > PX && CVEZfr > PZ && CVEZbk < PZ) {
-		air_.GrdZed = CVEAlt;	// If Above
-		InpBrk = 0;				// Default = no brake
-		if (air_.GrdFlg) {		// If Landed
-			if (air_.PwrPct < 0.5 && anm_.thkpos < 180) InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
-			let CVEKPH = xsh_.Spd*3.6;	// CVE speed
-			if (!air_.MovFlg) {
-				if (air_.SpdKPH <= CVEKPH) { // If airplane speed <= CVE speed, lock to deck	
-					air_.MovFlg = 1; // Flag
-					InpBrk = 0;	// Brake off
-					if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
-				}
-			}
-			if (air_.MovFlg && air_.SpdKPH > CVEKPH) air_.MovFlg = 0;	// Unlock from deck if moving faster than CVE
-			if (air_.MovFlg) {	// Otherwise remain locked to deck
-				// Recompute Speed and Position
-				air_.MapSpd.z = -xsh_.MpS.z;
-				air_.MapSpd.x = -xsh_.MpS.x;
-				air_.MapPos.z = air_.MapPos.z + air_.MapSpd.z;
-				air_.MapPos.x = air_.MapPos.x + air_.MapSpd.x;
-				air_.MapSPS.x = air_.MapSpd.x;
-				air_.MapSPS.z = air_.MapSpd.z;			
-				// Recompute air_.Spd
-				if (air_.PwrPct < 0.5) air_.SpdKPH = air_.SpdMPS = 0;
-				else {
-					air_.SpdKPH = CVEKPH;	// (KPH)
-					air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
-				}
-				// Point Same Direction as Carrier
-				// [WIP]
-			}
-		}
+//- Load Object ----------------------------------------------------------------
+function loadFxdObj() {
+	for (let i = 0; i < FxdNum; i++) {
+		gltfLoader.load(FxdSrc[i], function (gltf) {
+			FxdPtr[i] = gltf.scene;
+			FxdPtr[i].scale.copy(FxdSiz[i]);
+			FxdPtr[i].rotation.copy(FxdRot[i]);
+			FxdPtr[i].position.copy(FxdPos[i]);
+			scene.add(FxdPtr[i]);
+		});
+	}
+}
+
+//-	Move Object ----------------------------------------------------------------
+function moveFxdObj() {
+	let position = new THREE.Vector3();
+	let X,Y,Z;
+	for (let i = 0; i < FxdNum; i++) {
+		X = FxdPos[i].x-air_.MapPos.x;
+		Y = FxdPos[i].y-air_.MapPos.y*AltAdj;
+		Z = air_.MapPos.z-FxdPos[i].z;
+		FxdPtr[i].position.set(X,Y,Z);
 	}
 }
 
@@ -1354,7 +1335,7 @@ function loadMovCVE() {
 		});
 		xsh_.Ptr = gltf.scene;
 		// Set Scale
-		xsh_.Ptr.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr); // model in feet
+		xsh_.Ptr.scale.set(Ft2Mtr,Ft2Mtr,Ft2Mtr); // model in feet
 		// Animated Radar
 		let clip = THREE.AnimationClip.findByName(gltf.animations, "RadarAction");
 		xsh_.Mx0 = new THREE.AnimationMixer(xsh_.Ptr);
@@ -1507,6 +1488,59 @@ function moveShpFlg() {
 	}
 }
 
+//= HARDENED SURFACES ==========//==============================================
+//	Home Airfield and CVE Deck (moving)
+
+// Compute Minimum Altitude
+function moveMinAlt() {
+	air_.GrdZed = 0;			// Default
+	let PX,PZ;
+	// Home Airfield ------------------------------------
+	// Compare to my Position (All in Positive Units)
+	PX = -IslMsh[0].position.x;
+	PZ = IslMsh[0].position.z;
+	if (BasXlf < PX && BasXrt > PX && BasZfr > PZ && BasZbk < PZ) air_.GrdZed = BasAlt*.92; 
+	// CVE Group ----------------------------------------
+	// CVEMsh.position is relative to me; z and x axes are reversed
+	// air_.MapPos.z and air_.MapPos.x are actual positions on map
+	PX = -CVEMsh.position.x;
+	PZ = CVEMsh.position.z;
+	// Compare to my Position (All in Positive Units)
+	if (CVEXlf < PX && CVEXrt > PX && CVEZfr > PZ && CVEZbk < PZ) {
+		air_.GrdZed = CVEAlt;	// If Above
+		InpBrk = 0;				// Default = no brake
+		if (air_.GrdFlg) {		// If Landed
+			if (air_.PwrPct < 0.5 && anm_.thkpos < 180) InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
+			let CVEKPH = xsh_.Spd*3.6;	// CVE speed
+			if (!air_.MovFlg) {
+				if (air_.SpdKPH <= CVEKPH) { // If airplane speed <= CVE speed, lock to deck	
+					air_.MovFlg = 1; // Flag
+					InpBrk = 0;	// Brake off
+					if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
+				}
+			}
+			if (air_.MovFlg && air_.SpdKPH > CVEKPH) air_.MovFlg = 0;	// Unlock from deck if moving faster than CVE
+			if (air_.MovFlg) {	// Otherwise remain locked to deck
+				// Recompute Speed and Position
+				air_.MapSpd.z = -xsh_.MpS.z;
+				air_.MapSpd.x = -xsh_.MpS.x;
+				air_.MapPos.z = air_.MapPos.z + air_.MapSpd.z;
+				air_.MapPos.x = air_.MapPos.x + air_.MapSpd.x;
+				air_.MapSPS.x = air_.MapSpd.x;
+				air_.MapSPS.z = air_.MapSpd.z;			
+				// Recompute air_.Spd
+				if (air_.PwrPct < 0.5) air_.SpdKPH = air_.SpdMPS = 0;
+				else {
+					air_.SpdKPH = CVEKPH;	// (KPH)
+					air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
+				}
+				// Point Same Direction as Carrier
+				// [WIP]
+			}
+		}
+	}
+}
+
 //= MY AIRCRAFT ================//==============================================
 
 //= Load Airplane ==============================================================
@@ -1583,25 +1617,25 @@ function loadAirInt() {
 //= Init Airplane ==============//==============================================
 function initAirObj() {
 	//	Starting Location
-	if (BegLoc == 0) { // Base
+	if (BegLoc == 0) { 			// Base
 		air_.MapPos.x = IslPos[0].x-610;
 		air_.MapPos.z = IslPos[0].z-275;	
 		air_.GrdFlg = 1;
 		air_.GrdZed = BasAlt*.92;
 		anm_.lngpos = 0; // Landing Gear Down
 	}
-	if (BegLoc == 1) { // CVE
+	if (BegLoc == 1) { 			// CVE
 		air_.GrdFlg = air_.MovFlg = 1;
 		air_.MapPos.copy(xsh_.MpP);
 		air_.MapPos.y = air_.GrdZed = CVEAlt;
 		air_.MapPos.z = air_.MapPos.z - 50;
 		anm_.lngpos = 0; // Landing Gear Down
 	}
-	if (BegLoc == 2) { // Air
+	if (BegLoc == 2) { 			// Air
 		PwrDif = 1000;
 		air_.SpdKPH = 200;
 		air_.MapPos.y = air_.MapSPS.y = 200;
-		anm_.lngpos = 180; // Landing Gear Up
+		anm_.lngpos = 180; 		// Landing Gear Up
 	}
 	if (air_.SpdKPH) {
 		air_.SpdMPS = air_.SpdKPH/3.6; // Speed - meters per second
@@ -1609,8 +1643,6 @@ function initAirObj() {
 	}
 	if (air_.MapPos.y == 0) air_.GrdFlg = 1;
 	grd_.MSP.y = air_.MapPos.y; // Use to initialize objects
-	//
-//	moveMinAlt();				// Determine if over CVE - resulting is special handling
 	//
 	flight = new Flight(air_);	// position airplane using air_.GrdZed
 	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
@@ -1670,7 +1702,7 @@ function moveAirObj() {
 		if (air_.RotDif.z == -air_.BnkMax && BnkDif > 0) air_.RotDif.z = BnkDif;
 		air_.RotDif.z = air_.RotDif.z; // Inputs are +/-
 		air_.AGBank = air_.RotDif.z;
-		anm_.stkbnk = InpMos.x;		// Joystick bank animation
+		anm_.stkbnk = InpMos.x;	// Joystick bank animation
 		InpMos.x = 0;			// Reset
 	}
 	// Input Yaw
@@ -1733,7 +1765,9 @@ function moveAirObj() {
 	}
 	// Animate -----------------------------------------------------------------	
 	if (cam_.flg) moveACanimV(air_,vxr_,anm_,cam_.lld);	// VC		
-	else moveACanimX(air_,mxr_,anm_);				// External
+	else moveACanimX(air_,mxr_,anm_); // External
+	// Attadhced Objects
+	moveBullet();
 }
 
 //= BULLETS ====================//==============================================
