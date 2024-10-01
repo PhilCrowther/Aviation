@@ -113,10 +113,10 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 //	* Add lag to tail leaving/returning to ground
 
 //= INPUTS =====================//==============================================
+//- AIRPLANE: Start ------------------------------------------------------------
 let BegLoc = 1;					// Starting Location (0 = Base; 1 = CVE; 2 = Air)
 let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
 let BegTmp = 303.15;			// K = 86F
-//- AIRPLANE: Start ------------------------------------------------------------
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
@@ -314,7 +314,7 @@ let grd_ = {
 let WndSpd = 10.0;
 let WndHdg = 90;
 let Choppy = 1.5;
-let AnmSpd = 1.0;				// Can vary with GrdSiz
+let AnmSpd = 0.5;				// Can vary with GrdSiz
 //
 let waves = 0;
 let wav_ = {
@@ -382,7 +382,7 @@ let XPFile = "fm2_flyt_xp1.glb"; // Name of airplane model file (rotated blender
 let xac_ = {
 		FNm: XPPath + XPFile,
 		Ptr: 0,
-		Spd: 91.5,				// meters
+		Spd: 91.5,				// meters/second (91.5 ms = 329 kph = 205 mph)
 		MpP: new THREE.Vector3 (180,100,5300), // meters
 		Rot: new THREE.Vector3 (0,0,30),
 		MxS: 0,
@@ -404,7 +404,7 @@ let XSFile = "CVE_noflag.glb";
 let xsh_ = {
 		FNm: XSPath + XSFile,
 		Ptr: 0,
-		Spd: 9,					// meters
+		Spd: 9,					// meters/second (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
 		MpP: new THREE.Vector3 (-4133,0.1,146),	// meters
 		Rot: new THREE.Vector3 (0,0,0),
 		MpS: new THREE.Vector3 (0,0,0),
@@ -943,13 +943,13 @@ function rendAll() {
 		moveCamera(camera,cam_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
+		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
 		// Move Grids
 		waves.update();			// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update(grd_);		// Move Grids
 		// Other
-		moveMinAlt();
 		moveSounds();
 		prntHUDval();			// print HUD values
 		if (StatOn) StatOn.update(); // update stats	
@@ -1339,7 +1339,7 @@ function moveMovPln() {
 	xac_.Rot.y = xac_.Rot.y + XPHSpd;
 	xac_.Ptr.rotation.set(0,xac_.Rot.y*DegRad,xac_.Rot.z*DegRad);
 	// Speed (Only Horizontal for Now)
-	let SpdTim = xac_.Spd * DLTime; // Speed (u/t)
+	let SpdTim = xac_.Spd * DLTime; // Speed (m/t)
 	let SpeedZ = -SpdTim * Math.cos(xac_.Rot.y * DegRad);
 	let SpeedX = -SpdTim * Math.sin(xac_.Rot.y * DegRad);
 	// Recompute Map Position
