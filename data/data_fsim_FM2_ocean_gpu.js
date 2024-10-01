@@ -1,37 +1,35 @@
-﻿//= PRE-LOAD DATA ==============================================================
+﻿9//= PRE-LOAD DATA ==============================================================
 //	No three.js routines allowed since three.js has not been loaded yet.
 
-//= CONSTANTS ==================================================================
+//= CONSTANTS ==================//==============================================
 //	Time
-let	DLTime = 1/60;			// Delta Time (1/60 seconds)
+let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 let DLTim2 = DLTime*DLTime;
 //	Conversions
-let DegRad = Math.PI / 180;	// Convert Degrees to Radians
-let RadDeg = 180/Math.PI;	// Convert Radians to Degrees
-let Ft2Mtr = 0.3048;		// Convert Feet to Meters
+let DegRad = Math.PI / 180;		// Convert Degrees to Radians
+let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let Ft2Mtr = 0.3048;			// Convert Feet to Meters
 let Mtr2Ft = 1/0.3048;
 let Km2Mil = 0.621371;
 let Mil2Km = 1.60934;
-let MtrMil = 1609.34;		// Meters per Mile
+let MtrMil = 1609.34;			// Meters per Mile
 //	Default Constants
-let	GrvMPS = 9.80665; 		// Gravity (mps)
+let	GrvMPS = 9.80665; 			// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
 
-//= INPUT VALUES ===============================================================
+//= INPUT VALUES ===============//==============================================
 //	Program Flags
 let LodFlg = 0;
 //	Altitude Adjustment
-let AltAdj = 0.99;			// Raises objects above map as altitude increases
-//	Animations
-let anmfps = 24;			// Blender FPS
-let aoarng = 20;			// AoA range (model)
+let AltAdj = 0.99;				// Raises objects above map as altitude increases
+let AltDif = 0;
 
-//= SKY VALUES =================================================================
+//= SKY VALUES =================//==============================================
 //- SkyBox
 let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
 //- Fog
-let FogCol = 0xbab4a6;			// Sky (for Fog only)
+let FogCol = 0xbab4a6;		// Sky (for Fog only)
 //- Sun
 let SunLat = 23;			// Direction - Vert (+/- 90)
 let SunLon = 312;			// Direction - Horz (0->360)
@@ -60,12 +58,11 @@ let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
 
-//= OCEAN ======================================================================
-let grids = 0;						// GrdWtr Module
-let waves = 0;						// Ocean Module
+//= OCEAN ======================//==============================================
+let grids = 0;					// GrdWtr Module
+let waves = 0;					// Ocean Module
 
-//= ISLANDS ====================//==============================================
-
+//= STATIC AND MOVING OBJECTS ====================//============================
 
 //= MINIMUM ALTITUDE (Base) ====//==============================================
 //	Base (Centered at 0,0)
@@ -76,7 +73,7 @@ let BasXrt = -585;
 let BasZfr =  410;
 let BasZbk = -335;
 
-//= TRAFFIC ====================================================================
+//= TRAFFIC ====================//==============================================
 //- Airplane -------------------------------------------------------------------
 let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 let XPFile = "fm2_flyt_xp1.glb";	// Name of airplane model file (rotated blender file)
@@ -100,50 +97,53 @@ let CVEXrt = 13.2;				// 43.267 ft
 let CVEZfr = 70.5;				// ?? ft
 let CVEZbk = -70.5;				// ?? ft
 
-//= FM2 WILDCAT DATA ===========================================================
+//= FM2 WILDCAT DATA ===========//==============================================
 let data_ = {
 		// Lift
-		WingSp: 11.58,		// Wing Span (m)
-		WingAr: 24.15,		// Wing Area (m2)
-		WingEf: 0.75,		// Wing Efficiency
-		AngInc: 5,			// Angle of Incidence
-		GrvMax: 8,			// Maximum G-Force
-		TrmAdj: 2.5,		// Elevator Trim Adjustment (### - not used)
+		WingSp: 11.58,			// Wing Span (m)
+		WingAr: 24.15,			// Wing Area (m2)
+		WingEf: 0.75,			// Wing Efficiency
+		AngInc: 5,				// Angle of Incidence
+		GrvMax: 8,				// Maximum G-Force
+		TrmAdj: 2.5,			// Elevator Trim Adjustment (### - not used)
 		// Gravity
-		ACMass: 3400,		// Aircraft Mass (kg)
+		ACMass: 3400,			// Aircraft Mass (kg)
 		// Thrust: Prop
-		PwrMax: 1007,		// Prop Maximum Power (kW)
-		PropEf: 0.8,		// Prop Efficiency
-		WEPMax: 0,			// War Emergency Power (kW)
+		PwrMax: 1007,			// Prop Maximum Power (kW)
+		PropEf: 0.8,			// Prop Efficiency
+		WEPMax: 0,				// War Emergency Power (kW)
 		// Thrust: Jet
-		JetMax: 0,			// Jet Maximum Thrust (kW)
-		AftMax: 0,			// Jet Afterburner Maximum Thrust (kW)
+		JetMax: 0,				// Jet Maximum Thrust (kW)
+		AftMax: 0,				// Jet Afterburner Maximum Thrust (kW)
 		// Drag
-		DrgCd0: 0.0211,		// Coefficient of Drag
+		DrgCd0: 0.0211,			// Coefficient of Drag
 		// Taildragger Geometry and Speed
-		Ax2CGD: 1.6667,		// Axle to CG distance (m)
-		Ax2CGA: 330,		// Axle to CG angle (deg)
-		WheelR: 0.3048,		// Wheel radius (m)
-		TDrAng: 11,			// Taildragger Max Angle (deg)
-		TDrSpd: 11.176,		// Speed at which tail lifts (25 mph = 11.18 m/s)
+		Ax2CGD: 1.6667,			// Axle to CG distance (m)
+		Ax2CGA: 330,			// Axle to CG angle (deg)
+		WheelR: 0.3048,			// Wheel radius (m)
+		TDrAng: 11,				// Taildragger Max Angle (deg)
+		TDrSpd: 11.176,			// Speed at which tail lifts (25 mph = 11.18 m/s)
 		// Optional: Flaps
-		FlpCfL: 0.28,		// Max Flap Cfl (0.2*CfLMax) (shared with main program)
-		DrgCdf: 0.01,		// Coefficient of Drag - Flaps
-		FlpAIn: 10,			// Max Flap Angle of Incidence (2*AngInc)
+		FlpCfL: 0.28,			// Max Flap Cfl (0.2*CfLMax) (shared with main program)
+		DrgCdf: 0.01,			// Coefficient of Drag - Flaps
+		FlpAIn: 10,				// Max Flap Angle of Incidence (2*AngInc)
 		// Optional: Landing Gear Retractable
-		DrgCdg: 0.005,		// Coefficient of Drag - Gear
+		DrgCdg: 0.005,			// Coefficient of Drag - Gear
 		// Optional: Spoiler
-		SplCfL: 0,			// Max Spoiler CfL (### - not used)
-		DrgCds: 0,			// Coefficient of Drag - Spoiler
+		SplCfL: 0,				// Max Spoiler CfL (### - not used)
+		DrgCds: 0,				// Coefficient of Drag - Spoiler
 		// Optional: Airbrake	
-		DrgCdb: 0,			// Coefficient of Drag - Airbrake
+		DrgCdb: 0,				// Coefficient of Drag - Airbrake
 		// Controls (shared with air_. and main program)
-		CfLMax: 1.4,		// Maximum Coefficient of Lift
-		BnkMax: 1,			// Maximum bank rate	
+		CfLMax: 1.4,			// Maximum Coefficient of Lift
+		BnkMax: 1,				// Maximum bank rate	
 	}
 //- Load Models and Animations -------------------------------------------------
 //	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
+//- Aircraft Animations
+let anmfps = 24;				// Blender FPS
+let aoarng = 20;				// AoA range (model)
 //	Animation Mixers - External Model
 let AirFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
 //	Animation Mixers - Internal Model
@@ -216,56 +216,56 @@ let BullPZ = [0];
 let BulTim = [0];				// Time in flight
 	BulTim[BulNum-1] = 0;
 //-	Sounds ---------------------------------------------------------------------
-let EngSrc = "fm2.wav";				// File (my engine)
-let EngVol = 0.1;					// Volume
-let PrpSrc = "fm2_prop.wav";		// File (my prop)
-let PrpVol = 0.5;					// Volume
-let GunSrc = "fm2_gun.mp3";			// File (my guns)
-let GunVol = 0.5;					// Volume
+let EngSrc = "fm2.wav";			// File (my engine)
+let EngVol = 0.1;				// Volume
+let PrpSrc = "fm2_prop.wav";	// File (my prop)
+let PrpVol = 0.5;				// Volume
+let GunSrc = "fm2_gun.mp3";		// File (my guns)
+let GunVol = 0.5;				// Volume
 
-//= DEFAULT KEY BINDINGS =======================================================
+//= DEFAULT KEY BINDINGS =======//==============================================
 //	Basic
-let K_PwLU =  87;	// Power Up (w) - keyboard left
-let K_PwLD =  81;	// Power Down (q) - keyboard left
-let K_PwRU = 187;	// Power Up (=) - keyboard right
-let K_PwRD = 189;	// Power Down (-) - keyboard right
-let K_BnkL =  37;	// Bank Left (left arrow) - autopilot only
-let K_BnkR =  39;	// Bank Right (right arrow) - autopilot only
-let K_PitU =  40;	// Pitch Up (down arrow) - autopilot only
-let K_PitD =  38;	// Pitch Down (up arrow) - autopilot only
-let K_YwLL =  90;	// Yaw Left (z) - keyboard left
-let K_YwLR =  88;	// Yaw Left (x) - keyboard left
-let K_YwRL = 188;	// Yaw Left (,) - keyboard right
-let K_YwRR = 190;	// Yaw Left (.) - keyboard right
-let K_Brak =  66;	// Brakes (b)
-let K_Guns =  32;	// Guns (spacebar)
+let K_PwLU =  87;				// Power Up (w) - keyboard left
+let K_PwLD =  81;				// Power Down (q) - keyboard left
+let K_PwRU = 187;				// Power Up (=) - keyboard right
+let K_PwRD = 189;				// Power Down (-) - keyboard right
+let K_BnkL =  37;				// Bank Left (left arrow) - autopilot only
+let K_BnkR =  39;				// Bank Right (right arrow) - autopilot only
+let K_PitU =  40;				// Pitch Up (down arrow) - autopilot only
+let K_PitD =  38;				// Pitch Down (up arrow) - autopilot only
+let K_YwLL =  90;				// Yaw Left (z) - keyboard left
+let K_YwLR =  88;				// Yaw Left (x) - keyboard left
+let K_YwRL = 188;				// Yaw Left (,) - keyboard right
+let K_YwRR = 190;				// Yaw Left (.) - keyboard right
+let K_Brak =  66;				// Brakes (b)
+let K_Guns =  32;				// Guns (spacebar)
 //	Additional
-let K_Flap =  70;	// Flaps (f)
-let K_Gear =  71;	// Landing Gear (g)
-let K_Hook =  72;	// Tailhook (h)
-let K_Canp =  67;	// Canopy (c)
+let K_Flap =  70;				// Flaps (f)
+let K_Gear =  71;				// Landing Gear (g)
+let K_Hook =  72;				// Tailhook (h)
+let K_Canp =  67;				// Canopy (c)
 //	Views
-let K_Look =  16;	// Pan (shift)
-let K_VU45 =  36;	// View Up (alone or modifier)
-let K_VD45 =  35;	// View Down (alone or modifier)
-let K_VL45 =  33;	// Left 45 degrees
-let K_VR45 =  45;	// Right 45 degrees
-let K_VL90 =  34;	// Left 90 degrees
-let K_VR90 =  46;	// Right 90 degrees
+let K_Look =  16;				// Pan (shift)
+let K_VU45 =  36;				// View Up (alone or modifier)
+let K_VD45 =  35;				// View Down (alone or modifier)
+let K_VL45 =  33;				// Left 45 degrees
+let K_VR45 =  45;				// Right 45 degrees
+let K_VL90 =  34;				// Left 90 degrees
+let K_VR90 =  46;				// Right 90 degrees
 //	Toggle
-let K_Vizz =  86;	// Toggle Visibility (v)
-let K_Soun =  83;	// Toggle sound (s)
-let K_Paws =  80;	// Pause (p)
-let K_Auto =  65;	// Autopilot (a)
-let K_Info =  73;	// Info (i)
+let K_Vizz =  86;				// Toggle Visibility (v)
+let K_Soun =  83;				// Toggle sound (s)
+let K_Paws =  80;				// Pause (p)
+let K_Auto =  65;				// Autopilot (a)
+let K_Info =  73;				// Info (i)
 
-//=	VIEW KEYS ==================================================================
-let U45flg = 0;		// Up 45 degrees
-let D45flg = 0;		// Down 45 degrees
-let	L45flg = 0;		// Left 45 degrees
-let R45flg = 0;		// Right 45 degrees
-let L90flg = 0;		// Left 90 degrees
-let R90flg = 0;		// Right 90 degrees
+//=	VIEW KEYS ==================//==============================================
+let U45flg = 0;					// Up 45 degrees
+let D45flg = 0;					// Down 45 degrees
+let	L45flg = 0;					// Left 45 degrees
+let R45flg = 0;					// Right 45 degrees
+let L90flg = 0;					// Left 90 degrees
+let R90flg = 0;					// Right 90 degrees
 
 //= HTML OVERLAY TEXT ==========================================================
 let Air_PwrElement = document.getElementById("Air_Pwr");	// Power
