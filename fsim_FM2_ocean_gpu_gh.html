@@ -312,7 +312,7 @@ let grd_ = {
 
 //= OCEAN MODULE ===============//==============================================
 let WndSpd = 10.0;
-let WndHdg = 90.0;
+let WndHdg = 90;
 let Choppy = 1.5;
 let AnmSpd = 1.0;				// Can vary with GrdSiz
 //
@@ -322,7 +322,7 @@ let wav_ = {
 		Res: GrdRes,			// Resolution - segments per square (default = 512)
 		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
 		WSp: WndSpd,			// Wind Speed
-		WHd: WndHdg,			// Wind Heading
+		WHd: WndHdg,			// Wind Heading (0=0,Spd; 90=Spd,0; 180=0,-Spd; 270=-Spd,0)
 		Chp: Choppy,			// default = 1
 		// Animated Maps
 		Dsp: 0,					// The Displacement Map
@@ -331,9 +331,10 @@ let wav_ = {
 		Spd: AnmSpd
 	};
 
-//= ISLANDS ====================//==============================================
+//= STATIC AND MOVING OBJECTS ==//==============================================
+//- Islands --------------------------------------------------------------------
 let IslNum = 2;
-let IslMsh = [];
+let IslMsh = [makMsh(),makMsh()];
 let IslPos = [new THREE.Vector3 (610,30,5275),new THREE.Vector3 (-1610,10,2440)];
 //
 let IslMdl = ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
@@ -345,23 +346,24 @@ let IslSiz = [new THREE.Vector3(MtrMil,MtrMil,MtrMil),
 			  new THREE.Vector3(1.5*MtrMil,1.5*MtrMil,1.5*MtrMil)];
 //- Volcano Smoke --------------------------------------------------------------
 let VlkSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png";
-let VlkMap = 0;					// Loaded Texture
-let VlkPtr = 0;					// Sprite Object
+let VlkMap,VlkMat,VlkPtr;
 let VlkPos = new THREE.Vector3(50,75,25); // Relative Position
-let VlkOrd = 1;
-//- Hangar Object --------------------------------------------------------------
-let	HgrSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb";
-let HgrObj = 0;					// Loaded Object
-let HgrSiz = new THREE.Vector3(Ft2Mtr,Ft2Mtr,Ft2Mtr);
-let HgrPos = new THREE.Vector3(-572,-22.5,-363); // Relative Position
-let HgrOrd = 1;
+let VlkOrd = 1;					// renderOrder
+//- General Static Objects: Linked ---------------------------------------------
+let LnkNum = 1;
+let	LnkSrc = ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"];
+let LnkPtr = [];				// Loaded Object
+let LnkSiz = [new THREE.Vector3(Ft2Mtr,Ft2Mtr,Ft2Mtr)];
+let LnkPos = [new THREE.Vector3(-572,-22.5,-363)]; // Relative Position
+let LnkOrd = [1];				// renderOrder
+let LnkRef = [IslMsh[0]];
 //- General Static Objects: Unlinked -------------------------------------------
 let FxdNum = 0;
 let FxdSrc = ["https://PhilCrowther.github.io/Aviation/"];
 let FxdPtr = [];
 let FxdSiz = [new THREE.Vector3(1,1,1)];
 let FxdPos = [new THREE.Vector3(0,0,0)];
-let FxdOrd = [1];
+let FxdOrd = [1];				// renderOrder
 
 //= MINIMUM ALTITUDE (Base) ====//==============================================
 //	Base (Centered at 0,0)
@@ -412,8 +414,7 @@ let xsh_ = {
 	}
 //. Wake .......................................................................
 let WakSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
-let WakMap = 0;
-let WakPtr = 0;
+let WakMap,WakMat,WakPtr;
 //. Flag .......................................................................
 let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
 //
@@ -809,7 +810,7 @@ let cam_ = {
 	cam_.par.add(cam_.rot);			// Attach Rotator
 	cam_.obj.add(cam_.deg);
 
-//= HTML OVERLAY TEXT ==========================================================
+//= HTML OVERLAY TEXT ==========//==============================================
 let Air_PwrElement = document.getElementById("Air_Pwr");	// Power
 let Air_PwrNode = document.createTextNode("");
 	Air_PwrElement.appendChild(Air_PwrNode);
@@ -862,7 +863,7 @@ let On_Info09Node = document.createTextNode("");
 let Air_Pwr, Air_Spd, Air_Hdg, Air_Alt, Air_CfL;
 let On_Paws, Air_AtP, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, On_Info07, On_Info08;
 
-//= MAIN PROGRAMS ==============================================================
+//= MAIN PROGRAMS ==============//==============================================
 
 	loadAll();
 	
@@ -876,7 +877,7 @@ function loadAll() {
 	loadObject();				// load objects	
 }
 
-//= WAIT SCREEN ================================================================
+//= WAIT SCREEN ================//==============================================
 
 function WaitScreen() {
 	// Set up the loading screen scene - it can be treated just like our main scene.
@@ -919,7 +920,7 @@ function initAll() {
 		StatOn.init(renderer);
 		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(StatOn.dom);
-	}
+	}	
 	LodFlg = 1;
 }
 
@@ -951,7 +952,7 @@ function rendAll() {
 		moveMinAlt();
 		moveSounds();
 		prntHUDval();			// print HUD values
-		if (StatOn) StatOn.update(); // update stats
+		if (StatOn) StatOn.update(); // update stats	
 	}
 	if (controls.isLocked === false) {
 		stopSounds();
@@ -1082,25 +1083,55 @@ function loadGeoMat() {
 
 function loadObject() {
 	AltDif = air_.MapPos.y*AltAdj;
-	loadIsland();
-	if (FxdNum) loadFxdObj();
-	loadMovPln();
-	loadMovCVE();
+	loadStatic();
+	loadMoving();
 }
 
 function initObject() {
 	AltDif = air_.MapPos.y*AltAdj;
-	initIsland();
-	if (FxdNum) moveFxdObj();
-	initMovPln();
-	initMovCVE();
-	moveObject();				// recompute Y location of all objects
+	initStatic();
+	initMoving();
 }
 
 function moveObject() {
 	AltDif = air_.MapPos.y*AltAdj;
+	moveStatic();
+	moveMoving();
+}
+
+//- Static Objects -------------------------------------------------------------
+
+function loadStatic() {
+	loadIsland();
+	if (LnkNum) loadLnkObj();
+	if (FxdNum) loadFxdObj();
+}
+
+function initStatic() {
+	initIsland();
+	if (FxdNum) loadFxdObj();
+}
+
+function moveStatic() {
 	moveIsland();
+	if (LnkNum) moveLnkObj();
 	if (FxdNum) moveFxdObj();
+}
+
+//- Moving Objects -------------------------------------------------------------
+
+function loadMoving() {
+	loadMovPln();
+	loadMovCVE();
+}
+
+function initMoving() {
+	initMovPln();
+	initMovCVE();
+
+}
+
+function moveMoving() {
 	moveMovPln();
 	moveMovCVE();
 }
@@ -1110,7 +1141,6 @@ function moveObject() {
 //-	Load Islands ---------------------------------------------------------------
 function loadIsland() {
 	for (let i = 0; i < IslNum; i++) {
-		IslMsh[i] = makMsh();
 		IslMsh[i].position.copy(IslPos[i]);
 		scene.add(IslMsh[i]);
 	}
@@ -1132,9 +1162,8 @@ function loadIsland() {
 			});
 		});
 	}
-	// Atached Objects
+	// Specific Atached Objects
 	loadVulkan();				// Load Volcano Smoke
-	loadHgrObj(IslMsh[0]);		// Load and Init Hangar Object
 }
 
 //-	Init Islands ---------------------------------------------------------------
@@ -1148,7 +1177,7 @@ function initIsland() {
 		Z = air_.MapPos.z-IslPos[i].z;
 		IslMsh[i].position.set(X,Y,Z);
 	}
-	// Attached Objects
+	// Specific Attached Objects
 	initVulkan(IslMsh[0]);		// Init Volcano Smoke
 }
 
@@ -1163,8 +1192,6 @@ function moveIsland() {
 		Z = air_.MapPos.z-IslPos[i].z;
 		IslMsh[i].position.set(X,Y,Z);
 	}
-	// Attached Objects
-	moveHgrObj();				// Move Hangar Object
 }
 
 //= VOLCANO SMOKE ==============//==============================================
@@ -1194,7 +1221,7 @@ function initVulkan(IslMsh) {
 	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
 	// Wake
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-	let VlkMat = new SpriteNodeMaterial();
+	VlkMat = new SpriteNodeMaterial();
 		VlkMat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 		VlkMat.opacityNode = opacityNode;
 		VlkMat.positionNode = offsetRange.mul(lifeTime);
@@ -1210,27 +1237,32 @@ function initVulkan(IslMsh) {
 		IslMsh.add(VlkPtr);
 }
 
-//= HANGAR =====================//==============================================
+//= GENERAL STATIC OBJECTS: LINKED =============================================
 
-//- Load Hangar ----------------------------------------------------------------
-function loadHgrObj(IslMsh) {
-	gltfLoader.load(HgrSrc, function (gltf) {
-		HgrObj = gltf.scene;
-		HgrObj.scale.copy(HgrSiz);
-		HgrObj.renderOrder = HgrOrd;
-		HgrObj.position.copy(HgrPos);
-		IslMsh.add(HgrObj);
-	});
+//- Load Objects ---------------------------------------------------------------
+function loadLnkObj() {
+	let parent = 0;
+	for (let i = 0; i < LnkNum; i++) {
+		gltfLoader.load(LnkSrc[i], function (gltf) {
+			LnkPtr[i] = gltf.scene;
+			LnkPtr[i].scale.copy(LnkSiz[i]);
+			LnkPtr[i].position.copy(LnkPos[i]);
+			parent = LnkRef[i];
+			parent.add(LnkPtr[i]);
+		});
+	}
 }
 
-//- Move Hangar ----------------------------------------------------------------
-function moveHgrObj() {
-	HgrObj.position.y = HgrPos.y + AltDif*0.01;
+//- Move Objects ---------------------------------------------------------------
+function moveLnkObj() {
+	for (let i = 0; i < LnkNum; i++) {
+		LnkPtr[i].position.y = LnkPos[i].y + AltDif*0.01;
+	}
 }
 
 //= GENERAL STATIC OBJECTS: UNLINKED ===========================================
 
-//- Load Object ----------------------------------------------------------------
+//- Load Objects ---------------------------------------------------------------
 function loadFxdObj() {
 	for (let i = 0; i < FxdNum; i++) {
 		gltfLoader.load(FxdSrc[i], function (gltf) {
@@ -1242,7 +1274,7 @@ function loadFxdObj() {
 	}
 }
 
-//-	Move Object ----------------------------------------------------------------
+//-	Move Objects ---------------------------------------------------------------
 function moveFxdObj() {
 	let position = new THREE.Vector3();
 	let X,Y,Z;
@@ -1422,7 +1454,7 @@ function initShpWak() {
 	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
 	// Wake
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-	let WakMat = new SpriteNodeMaterial();
+	WakMat = new SpriteNodeMaterial();
 		WakMat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 		WakMat.opacityNode = opacityNode;
 		WakMat.positionNode = offsetRange.mul(lifeTime);
