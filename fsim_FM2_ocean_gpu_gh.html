@@ -11,6 +11,8 @@ A flight simulation of an animated airplane model over an animated ocean using W
 
 <head>
 <title>FSim: FM2 Ocean GPU r169</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
 </head>
 
@@ -178,8 +180,8 @@ let SunDst = 50;				// Distance (for shadows)
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let ShdBox = 25;				// Size of shadow box
-let ShdDst = 5000;				// Shadow Distance (meters)
+let ShdBox = 5;					// Size of shadow box
+let ShdDst = 1500;				// Shadow Distance (meters)
 
 //= STANDARD SETUP =============//==============================================
 // 	Scene
@@ -195,7 +197,8 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
 	sunLight.shadow.mapSize.width = 8192;
 	sunLight.shadow.mapSize.height = 8192;
-	sunLight.shadow.camera.left = -ShdBox;
+//	sunLight.shadow.camera.left = -20*ShdBox; // CVE shadow
+	sunLight.shadow.camera.left = -ShdBox; // no CVE shadow
 	sunLight.shadow.camera.right = ShdBox;
 	sunLight.shadow.camera.top = ShdBox;
 	sunLight.shadow.camera.bottom = -ShdBox;
@@ -350,11 +353,12 @@ let VlkMap,VlkMat,VlkPtr;
 let VlkPos = new THREE.Vector3(50,75,25); // Relative Position
 let VlkOrd = 1;					// renderOrder
 //- General Static Objects: Linked ---------------------------------------------
+//- 0 = Hangar
 let LnkNum = 1;
 let	LnkSrc = ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"];
 let LnkPtr = [];				// Loaded Object
 let LnkSiz = [new THREE.Vector3(Ft2Mtr,Ft2Mtr,Ft2Mtr)];
-let LnkPos = [new THREE.Vector3(-572,-22.5,-363)]; // Relative Position
+let LnkPos = [new THREE.Vector3(-562,-22.5,-363)]; // Relative Position
 let LnkOrd = [1];				// renderOrder
 let LnkRef = [IslMsh[0]];
 //- General Static Objects: Unlinked -------------------------------------------
@@ -513,12 +517,11 @@ let air_ = {
 //- Load Models and Animations -------------------------------------------------
 //	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
-//	Animation Mixers - External Model
-let AirFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
-//- Aircraft Animations
+//	Animation Mixers
 let anmfps = 24;					// Blender FPS
 let aoarng = 20;					// AoA range (model)
 //	Animation Mixers - External Model
+let AirFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
 let mxr_ = {
 		// File Name
 		FNm: AirSrc + AirFNm,
@@ -1654,20 +1657,23 @@ function initAirObj() {
 		air_.MapPos.z = IslPos[0].z-275;	
 		air_.GrdFlg = 1;
 		air_.GrdZed = BasAlt*.92;
-		anm_.lngpos = 0; // Landing Gear Down
+		anm_.lngpos = 0;		// Landing Gear Down
+		anm_.flppos = 180;		// Flaps Up
 	}
 	if (BegLoc == 1) { 			// CVE
 		air_.GrdFlg = air_.MovFlg = 1;
 		air_.MapPos.copy(xsh_.MpP);
 		air_.MapPos.y = air_.GrdZed = CVEAlt;
 		air_.MapPos.z = air_.MapPos.z - 45;
-		anm_.lngpos = 0; // Landing Gear Down
+		anm_.lngpos = 0;		// Landing Gear Down
+		anm_.flppos = 0;		// Flaps Down
 	}
 	if (BegLoc == 2) { 			// Air
 		PwrDif = 1000;
 		air_.SpdKPH = 200;
 		air_.MapPos.y = air_.MapSPS.y = 200;
 		anm_.lngpos = 180; 		// Landing Gear Up
+		anm_.flppos = 180;		// Flaps Up
 	}
 	if (air_.SpdKPH) {
 		air_.SpdMPS = air_.SpdKPH/3.6; // Speed - meters per second

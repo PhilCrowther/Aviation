@@ -2,9 +2,9 @@
 <html>
 
 <!--
-Copyright 2017-23, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Apr 2023
+Version dated 2 Oct 2024
 This program demonstrates how to simulate an aircraft in flight using a simplified vector-based method.
 The custom files are:
 AH205.txt - contains aircraft specifications which you can modify with a text editor.
@@ -14,6 +14,8 @@ PointerLockControls.mod.js - a modified version of PointerLockControls.js
 
 <head>
 <title>Flight</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2.css">
 </head>
 
@@ -161,10 +163,10 @@ let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles" + "/";		/
 let anmfps = 24;					// Blender FPS
 let aoarng = 20;					// AoA range (model)
 // Light
-let LgtClr = 0xffffff;				// Color of light/sun
-let LgtInt = 1;						// Default intensity of light/sun
-let LgtDst = 5000;					// [feet]
-let LgtBox = 25;					// Size of shadow box
+let SunClr = 0xffffff;				// Color of light/sun
+let SunInt = 1;						// Default intensity of light/sun
+let SunDst = 5000;					// [feet]
+let ShdBox = 5;						// Size of shadow box
 // Camera
 let CamDst = 25;					// Distance from model (default)
 // Input Delay
@@ -424,24 +426,21 @@ const renderer = new THREE.WebGLRenderer({antialias: true});
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
 // Light
-let DirLight = new THREE.DirectionalLight(LgtClr, LgtInt);
-	DirLight.castShadow = true;
-	DirLight.target.position.set(0,0,0);
-	DirLight.shadow.bias = -0.00005;					// Defaul = 0 - causes lines;
-	DirLight.shadow.mapSize.width = 8192;
-	DirLight.shadow.mapSize.height = 8192;
-	DirLight.shadow.camera.near = 0.001;
-	DirLight.shadow.camera.far = LgtDst+LgtBox;
-	DirLight.shadow.camera.left = -LgtBox;
-	DirLight.shadow.camera.right = LgtBox;
-	DirLight.shadow.camera.top = LgtBox;
-	DirLight.shadow.camera.bottom = -LgtBox;
-	scene.add(DirLight);
-const AmbLight = new THREE.AmbientLight(LgtClr, 0.075);
+let AmbLight = new THREE.AmbientLight(SunClr, 0.075);
 	scene.add(AmbLight);
-// const helper = new THREE.DirectionalLightHelper(light);
-// const helper = new THREE.CameraHelper(DirLight.shadow.camera);
-//	scene.add(helper);
+let SunLight = new THREE.DirectionalLight(SunClr, SunInt);
+	SunLight.castShadow = true;
+	SunLight.target.position.set(0,0,0);
+	SunLight.shadow.bias = -0.00005;					// Defaul = 0 - causes lines;
+	SunLight.shadow.mapSize.width = 8192;
+	SunLight.shadow.mapSize.height = 8192;
+	SunLight.shadow.camera.near = 0.001;
+	SunLight.shadow.camera.far = SunDst+ShdBox;
+	SunLight.shadow.camera.left = -ShdBox;
+	SunLight.shadow.camera.right = ShdBox;
+	SunLight.shadow.camera.top = ShdBox;
+	SunLight.shadow.camera.bottom = -ShdBox;
+	scene.add(SunLight);
 // Sounds
 let	listener = new THREE.AudioListener();
 let sound1 = new THREE.PositionalAudio(listener);
@@ -671,7 +670,7 @@ function initSkyBox() {
 	scene.fog = new THREE.Fog(fogColor, 0.25, 95000);	// less than camera distance, sky colored fog
 	// Sun Light
 	RotVec(1000,SunLat*DegRad,SunLon*DegRad);		// Set Position of Sun
-	DirLight.position.set(VectRX,VectRY,VectRZ);
+	SunLight.position.set(VectRX,VectRY,VectRZ);
 	// Sun Object
 	geometry = new THREE.SphereGeometry(64, 16, 16);
 	material = new THREE.MeshBasicMaterial({color: SunCol});
@@ -699,7 +698,7 @@ function initSkyBox() {
 	LF.addElement(new LensflareElement(LF1Txt, 32, 0.2));
 	LF.addElement(new LensflareElement(LF1Txt, 64, 0.5));
 	LF.addElement(new LensflareElement(LF1Txt, 256, 0.9));
-	DirLight.add(LF);
+	SunLight.add(LF);
 }
 
 /* Render ====================================================================*/

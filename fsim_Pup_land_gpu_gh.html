@@ -4,13 +4,15 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 26 Sep 2024
+Version dated 2 Oct 2024
 
 A flight simulation of an animated airplane model over procedural land using
 -->
 
 <head>
 <title>FSim: Pup Land GPU r169</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
 </head>
 
@@ -147,7 +149,7 @@ let SunDst = 10000;				// Distance (for shadows and lensflare)
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let ShdBox = 25;				// Size of shadow box
+let ShdBox = 5;					// Size of shadow box
 let ShdDst = 5000;				// [feet] for shadow
 
 //= STANDARD SETUP =============//==============================================
@@ -440,7 +442,7 @@ let ObjIdx = 0;
 //- Hangars
 	ObjTyp[ObjIdx] = 0;			// 0 = No separate texture
 	ObjNam[ObjIdx] = "hangar";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/hangar.glb";
+	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb";
 	ObjTxt[ObjIdx] = 0; 	
 	ObjMPX[ObjIdx] = 1000;		// [m]
 	ObjMPY[ObjIdx] = 0.3048;	// [m] 1 ft
@@ -449,8 +451,8 @@ let ObjIdx = 0;
 //- Giaros Island
 	ObjTyp[ObjIdx] = 1;			// 1 = Large feature
 	ObjNam[ObjIdx] = "giaros";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/giaros.glb";
-	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/models/scenery/textures/giaros.png";
+	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb";
+	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png";
 	ObjMPX[ObjIdx] = -1609.344;	// [m] 1 mile
 	ObjMPY[ObjIdx] = 2*Ft2Mtr;	// [m] 2 ft
 	ObjMPZ[ObjIdx] = 8046.72;	// [m] 5 miles
