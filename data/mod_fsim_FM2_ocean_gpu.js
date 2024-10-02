@@ -43,7 +43,7 @@ let grd_ = {
 let WndSpd = 10.0;
 let WndHdg = 30.0;
 let Choppy = 1.5;
-let AnmSpd = 1.0;			// Can vary with GrdSiz
+let AnmSpd = 0.5;			// Can vary with GrdSiz
 let wav_ = {
 		// Sources
 		Res: GrdRes,		// Resolution - segments per square (default = 512)
