@@ -41,7 +41,7 @@ let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
 let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
 let LF0Txt, LF1Txt = 0;
 //-	Shadows
-let ShdBox = 25;			// Size of shadow box
+let ShdBox = 5;				// Size of shadow box
 let ShdDst = 5000;			// [feet] for shadow
 
 //= GRDWTR TEXTURES ============================================================
