@@ -109,9 +109,9 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
 
 //=	TO DO:
 //-	Program:
-//	* Improve Appearance of Prop (use NodeMaterials?)
 //	* Convert waving flag to GPU shader
 //-	Flight Module:
+//	* Add supercharger/turbocharger effect
 //	* Add lag to tail leaving/returning to ground
 
 //= INPUTS =====================//==============================================
@@ -191,14 +191,13 @@ let scene = new THREE.Scene();
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
 let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
-	sunLight.position.copy(SunPos); // normalized value
+	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = 0.001;
 	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
 	sunLight.shadow.mapSize.width = 8192;
 	sunLight.shadow.mapSize.height = 8192;
-//	sunLight.shadow.camera.left = -20*ShdBox; // CVE shadow
-	sunLight.shadow.camera.left = -ShdBox; // no CVE shadow
+	sunLight.shadow.camera.left = -ShdBox;
 	sunLight.shadow.camera.right = ShdBox;
 	sunLight.shadow.camera.top = ShdBox;
 	sunLight.shadow.camera.bottom = -ShdBox;
@@ -1626,15 +1625,15 @@ function loadAirInt() {
 			if (child.isMesh) {
 				child.castShadow = true;
 				child.receiveShadow = true;
+				}
+			if (child.name == "propeller" ||
+					child.name == "glass")
+				{
+					child.castShadow = false;
+					child.receiveShadow = false;
+				}
 			}
-			if (
-				child.name == "propeller" ||
-				child.name == "glass")
-			{
-				child.castShadow = false;
-				child.receiveShadow = false;
-			}
-		});
+		);
 		vxr_.GLT = gltf;
 		vxr_.Adr = gltf.scene;
 		vxr_.Adr.rotation.order = "YXZ";
