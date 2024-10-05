@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 1 Oct 2024
+Version dated 5 Oct 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -137,7 +137,7 @@ let _changeEvent = {type: 'change'};
 let _lockEvent = {type: 'lock'};
 let _unlockEvent = {type: 'unlock'};
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
-let	KeyVal = new THREE.Vector3(0.5,0.25,0.25); // (Yaw = turn rate in 15 deg bank)
+let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
 
 //= CONSTANTS ==================//==============================================
 //	Time
@@ -335,7 +335,6 @@ let wav_ = {
 
 //= STATIC AND MOVING OBJECTS ==//==============================================
 //- Islands --------------------------------------------------------------------
-
 let isl_ = {
 		Num: 2,
 		Mdl: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
@@ -350,12 +349,16 @@ let isl_ = {
 		Ord: [0,0],				// renderOrder (not used)
 		Ref: [makMsh(),makMsh()]
 	};
-
 //- Volcano Smoke --------------------------------------------------------------
-let VlkSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png";
-let VlkMap,VlkMat,VlkPtr;
-let VlkPos = new THREE.Vector3(50,75,25); // Relative Position
-let VlkOrd = 1;					// renderOrder
+let vlk_ = {
+		Src: "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
+		Map: 0,
+		Mat: 0,
+		Ptr: 0,
+		Pos: new THREE.Vector3(50,75,25), // Relative Position
+		Ord: 1,					// renderOrder
+		Ref: isl_.Ref[0]
+	};
 //- General Static Objects: Linked ---------------------------------------------
 //- 0 = Hangar
 let lnk_ = {
@@ -368,7 +371,6 @@ let lnk_ = {
 		Ord: [1],				// renderOrder
 		Ref: [isl_.Ref[0]]
 	};
-
 //- General Static Objects: Unlinked -------------------------------------------
 //- Nothing yet
 let fxd_ = {
@@ -435,8 +437,6 @@ let wak_ = {
 		Ref: [xsh_.Ref[0]]
 		};
 //. Flag .......................................................................
-//let FlgSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"
-//
 let	flg_ = {
 		// Material and Geometry
 		Src: "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png",
@@ -1203,7 +1203,7 @@ function initIsland() {
 		isl_.Ref[i].position.set(X,Y,Z);
 	}
 	// Specific Attached Objects
-	initVulkan(isl_.Ref[0]);		// Init Volcano Smoke
+	initVulkan();				// Init Volcano Smoke
 }
 
 //-	Move Islands ---------------------------------------------------------------
@@ -1223,11 +1223,11 @@ function moveIsland() {
 
 //- Load Volcano ---------------------------------------------------------------
 function loadVulkan() {
-	VlkMap = txtrLoader.load(VlkSrc);
+	vlk_.Map = txtrLoader.load(vlk_.Src);
 }
 
 //- Init Volcano ---------------------------------------------------------------
-function initVulkan(IslMsh) {	
+function initVulkan() {	
 	//- Timer
 	let timer = timerLocal(.001,1);
 	//- Life
@@ -1236,7 +1236,7 @@ function initVulkan(IslMsh) {
 	let life = lifeTime.div(lifeRange);
 	//- Rotation Range
 	let rotateRange = range(.1,4);
-	let textureNode = texture(VlkMap, rotateUV(uv(),timer.mul(rotateRange)));	//r168
+	let textureNode = texture(vlk_.Map, rotateUV(uv(),timer.mul(rotateRange)));	//r168
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 	//- Lateral Offset	
 	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// cone shaped
@@ -1246,20 +1246,20 @@ function initVulkan(IslMsh) {
 	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
 	// Wake
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-	VlkMat = new SpriteNodeMaterial();
-		VlkMat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
-		VlkMat.opacityNode = opacityNode;
-		VlkMat.positionNode = offsetRange.mul(lifeTime);
-		VlkMat.scaleNode = scaleRange.mul(lifeTime.max(0.3));
-		VlkMat.depthWrite = false;
-		VlkMat.transparent = true;
-	VlkPtr = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), VlkMat);
-		VlkPtr.scale.setScalar(4000);
-		VlkPtr.isInstancedMesh = true;
-		VlkPtr.count = 600; // Increases continuity (was 100)
-		VlkPtr.position.copy(VlkPos);
-		VlkPtr.renderOrder = VlkOrd; // This allows the transparent smoke to work with transparent island
-		IslMsh.add(VlkPtr);
+	vlk_.Mat = new SpriteNodeMaterial();
+		vlk_.Mat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		vlk_.Mat.opacityNode = opacityNode;
+		vlk_.Mat.positionNode = offsetRange.mul(lifeTime);
+		vlk_.Mat.scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		vlk_.Mat.depthWrite = false;
+		vlk_.Mat.transparent = true;
+	vlk_.Ptr = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), vlk_.Mat);
+		vlk_.Ptr.scale.setScalar(4000);
+		vlk_.Ptr.isInstancedMesh = true;
+		vlk_.Ptr.count = 600; // Increases continuity (was 100)
+		vlk_.Ptr.position.copy(vlk_.Pos);
+		vlk_.Ptr.renderOrder = vlk_.Ord; // This allows the transparent smoke to work with transparent island
+		vlk_.Ref.add(vlk_.Ptr);
 }
 
 //= GENERAL STATIC OBJECTS: LINKED =============================================
