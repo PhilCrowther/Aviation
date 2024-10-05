@@ -58,7 +58,146 @@ let wav_ = {
 		Spd: AnmSpd
 	};
 
+//= STATIC AND MOVING OBJECTS ==//==============================================
+//- Islands --------------------------------------------------------------------
+let isl_ = {
+		Num: 2,
+		Mdl: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
+			  "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
+		Txt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.png",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png"],
+		Ptr: [],
+		Siz: [new THREE.Vector3(MtrMil,MtrMil,MtrMil),
+			  new THREE.Vector3(1.5*MtrMil,1.5*MtrMil,1.5*MtrMil)],
+		Rot: [new THREE.Euler()],
+		Pos: [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)],
+		Ord: [0,0],				// renderOrder (not used)
+		Ref: [makMsh(),makMsh()]
+	};
+//- Volcano Smoke --------------------------------------------------------------
+let vlk_ = {
+		Src: "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
+		Map: 0,
+		Mat: 0,
+		Ptr: 0,
+		Pos: new THREE.Vector3(50,75,25), // Relative Position
+		Ord: 1,					// renderOrder
+		Ref: isl_.Ref[0]
+	};
+//- General Static Objects: Linked ---------------------------------------------
+//- 0 = Hangar
+let lnk_ = {
+		Num: 1,
+		Src: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
+		Ptr: [],				// Loaded Object
+		Siz: [new THREE.Vector3(Ft2Mtr,Ft2Mtr,Ft2Mtr)],
+		Rot: [new THREE.Euler()],
+		Pos: [new THREE.Vector3(-562,-22.5,-363)], // Relative Position
+		Ord: [1],				// renderOrder
+		Ref: [isl_.Ref[0]]
+	};
+//- General Static Objects: Unlinked -------------------------------------------
+//- Nothing yet
+let fxd_ = {
+		Num: 0,
+		Src: ["https://PhilCrowther.github.io/Aviation/"],
+		Ptr: [],				// Loaded Object
+		Siz: [new THREE.Vector3(Ft2Mtr,Ft2Mtr,Ft2Mtr)],
+		Rot: [new THREE.Euler()],
+		Pos: [new THREE.Vector3()], // Relative Position
+		Ord: [1]				// renderOrder
+	};
+
+//= TRAFFIC ====================//==============================================
+//- Airplane -------------------------------------------------------------------
+let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
+let XPFile = "fm2_flyt_xp1.glb"; // Name of airplane model file (rotated blender file)
+//	Data
+let xac_ = {
+		Num: 1,					// Number of airplanes
+		FNm: [XPPath+XPFile],	// Source file
+		Ptr: [0],				// Object Address
+		Spd: [91.5],			// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+		Rot: [new THREE.Vector3(0,0,30)],
+		MpS: [new THREE.Vector3()], // not used
+		MpP: [new THREE.Vector3(180,100,5300)], // meters
+		Dst: [0],				// Object distance (meters) used to activate effects
+		// Animations
+		MxS: [0],				// Animation Mixer - Prop
+		MxP: [0],				// Animation Mixer - Pitch
+		MxB: [0],				// Animation Mixed - Bank
+		AnP: [0],				// Animation - Pitch
+		AnB: [0],				// Animation - Bank
+		// Sound
+		Snd: ["fm2_prop.wav"],	// Prop
+		Vol: [1]
+	}
+//- Aircraft Carrier -----------------------------------------------------------
+//let CVEMsh = makMsh();			// To hold CVE and smoke
+//	CVEMsh.rotation.order = "YXZ";
+//	scene.add(CVEMsh);			// Uses position of CVE to compute relative position
+let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
+let XSFile = "CVE_noflag.glb";
+//	Data
+let xsh_ = {
+		Num: 1,					// Number of ships
+		FNm: [XSPath+XSFile],	// Source File
+		Ptr: [0],				// Object Address
+		Spd: [9],				// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
+		Rot: [new THREE.Euler()], // Object Rotation
+		MpS: [new THREE.Vector3()], // Object Map Speed (mtr/sec) used by airplane if landed
+		MpP: [new THREE.Vector3(-4133,0.1,146)], // Object Map Position (meters) [used by Mesh]
+		Dst: [0],				// Object distance (meters) used to activate effects
+		Ref: [makMsh()],
+		// Animations
+		Mx0: [0],				// Animation Mixer - Radar
+		An0: [0]				// Animation - Radar
+	}
+//. Wake .......................................................................
+let wak_ = {
+		Src: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png"],
+		Map: [],
+		Mat: [],
+		Ptr: [],
+		Ref: [xsh_.Ref[0]]
+		};
+//. Flag .......................................................................
+let	flg_ = {
+		// Material and Geometry
+		Src: "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png",
+		Mat: 0,
+		Geo: 0,					// Geometry Address (can use this for all flags)
+		Siz: new THREE.Vector2(3,1.8), // Size ZY (meters)
+		Seg: new THREE.Vector2(50,1), // Segments ZY
+		// Mesh
+		Ptr: 0,
+		Rot: new THREE.Euler(0,270*DegRad,0),
+		MpP: new THREE.Vector3(44.2,92.47,-58.93), // Map Position		
+		// Animation
+		Tim: 0,
+		Wav: 1.5,				// Number of waves per Plane
+		Deg: 0,					// Degrees per segment (360/5 = 72)
+		Amp: 0.1524,			// Amplitude (meters = 0.5 ft)
+		Per: 2,					// Period (seconds) to complete cycle
+		// Viz Test
+		Viz: 152.4,				// (meters)
+		Ref: xsh_.Ref[0]
+	}
+
+//= MINIMUM ALTITUDE ===========//==============================================
+let alt_ = {
+		Num: 2,
+		Ref: [isl_.Ref[0],xsh_.Ref[0]],
+		Var: [0,xsh_],
+		Typ: [0,1], 			// 0 = stationary, 1 = movine
+		Alt: [7.59,13.1],
+		Lft: [-635,-13.2],
+		Rgt: [-585,13.2],
+		Fnt: [410,70.5],
+		Bak: [-335,-70.5],
+	}
+
 //= EXPORT =====================================================================
 
-export {grd_,wav_};
+export {grd_,wav_,isl_,vlk_,lnk_,fxd_,xac_,xsh_,wak_,flg_,alt_};
 
