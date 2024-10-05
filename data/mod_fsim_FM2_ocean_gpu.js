@@ -2,7 +2,7 @@
 
 //	Updated: 5 Oct 2024
 
-import {Color,Euler,Vector2,Vector3} from 'three';
+import {BoxGeometry,Color,Euler,Mesh,MeshBasicMaterial,Vector2,Vector3} from 'three';
 
 //= GRDWTR MODULE ==============//==============================================
 //	This ocean map has 3 nested grids of squares.
@@ -196,6 +196,15 @@ let alt_ = {
 		Fnt: [410,70.5],
 		Bak: [-335,-70.5],
 	}
+
+//= SUBROUTINES ================//==============================================
+
+//- Make Mesh ------------------------------------------------------------------
+function makMsh() {
+	let geometry = new BoxGeometry(0.01,0.01,0.01); 
+	let material = new MeshBasicMaterial({transparent:true,opacity:0}); 
+	let mesh = new Mesh(geometry, material);
+return mesh;}
 
 //= EXPORT =====================================================================
 
