@@ -246,6 +246,7 @@ update() {
 	this.air_.AirPBY.rotation.y = 0;
 	// Pitch -------------------------------------------------------------------
 	this.air_.AirRot.x = PoM360(this.air_.AirObj.rotation.x*this.RadDeg);
+	this.air_.AirRot.x = this.air_.AirRot.x + this.air_.ShpPit; // Add Ship Pitch
 	// Heading -----------------------------------------------------------------
 	this.air_.AirRot.y = Mod360(-this.air_.AirObj.rotation.y*this.RadDeg);
 	this.air_.HdgDif = (this.air_.AirRot.y-this.air_.OldRot.y)/this.air_.DLTime;	// Change in Heading (display)
@@ -386,5 +387,6 @@ export {Flight, Mod360, PoM360, MaxVal, makMsh};
  * 240815:	Added Autopilot
  * 240913:	Converted to Class.
  * 240925:	Added Air Density and IAS comps
- * 240927	Deleted rotLLD (since can used spherical to rotate vector)
+ * 240927:	Deleted rotLLD (since can used spherical to rotate vector)
+ * 241006:	Add adjustment for Ship Pitch
 */
