@@ -462,7 +462,8 @@ let xsh_ = {
 		// Animations
 		Dst: [0],				// Object distance (meters) used to activate effects
 		Mx0: [0],				// Animation Mixer - Radar
-		An0: [0]				// Animation - Radar
+		An0: [0],				// Animation - Radar
+		Pit: [0]				// Pitch
 	};
 //. Wake .......................................................................
 let wak_ = {
@@ -568,7 +569,9 @@ let air_ = {
 		// Air Density and IAS Comps
 		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
-		SpdIAS: 0				// Indicated Airspeed
+		SpdIAS: 0,				// Indicated Airspeed
+		// Ship Pitch (radians)
+		ShpPit: 0,
 	}
 //	Adjustments
 	air_.AirObj.rotation.order = "YXZ";
@@ -1460,9 +1463,14 @@ function initMovShp() {
 function moveMovShp() {
 	// Change in Heading
 	let XSHSpd = 0;				// for now
+	let XSHPit = 0;
 	XSHSpd = XSHSpd * DLTime;
-	xsh_.Rot[0].y = xsh_.Rot[0].y + XSHSpd;
-	xsh_.Ref[0].rotation.set(xsh_.Rot[0].x*DegRad,xsh_.Rot[0].y*DegRad,xsh_.Rot[0].z*DegRad);
+	xsh_.Rot[0].y = xsh_.Rot[0].y + XSHSpd;	
+	// Rock the boat
+	xsh_.Pit[0] = Mod360(xsh_.Pit[0] + 0.25);
+	let PitAdj = 1.5*DegRad*Math.sin(xsh_.Pit[0]*DegRad);
+	xsh_.Rot[0].x = PitAdj;
+	xsh_.Ref[0].rotation.copy(xsh_.Rot[0]);
 	// Speed (Only Horizontal)
 	let SpdTim = xsh_.Spd[0] * DLTime; // Speed (u/t)
 	xsh_.MpS[0].z = -SpdTim * Math.cos(xsh_.Rot[0].y*DegRad);
@@ -1603,6 +1611,12 @@ function moveMinAlt() {
 
 function moveShpAlt() {
 	InpBrk = 0;				// Default = no brake
+	air_.ShpPit = 0;		// Default
+	// Recompute GrdZed
+	let ZDst = xsh_.MpP[0].z - air_.MapPos.z; // Z-distance from ship center
+	let YDif = ZDst * Math.sin(xsh_.Rot[0].x); // Y-change caused by ship pitch
+	air_.GrdZed = alt_.Alt[1] - YDif;
+	//
 	if (air_.GrdFlg) {		// If Landed
 		if (air_.PwrPct < 0.5 && anm_.thkpos < 180) InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
 		let ShpKPH = xsh_.Spd[0]*3.6; // Ship speed
@@ -1623,10 +1637,13 @@ function moveShpAlt() {
 			air_.MapSPS.x = air_.MapSpd.x;
 			air_.MapSPS.z = air_.MapSpd.z;			
 			// Recompute air_.Spd
-			if (air_.PwrPct < 0.5) air_.SpdKPH = air_.SpdMPS = 0;
+			if (air_.PwrPct < 0.5) {
+				air_.SpdKPH = air_.SpdMPS = 0;
+				air_.ShpPit = xsh_.Rot[0].x;
+			}
 			else {
 				air_.SpdKPH = ShpKPH;	// (KPH)
-				air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
+				air_.SpdMPS = air_.SpdKPH/3.6; // (mps)	
 			}
 			// Point Same Direction as Carrier
 			// [WIP]
