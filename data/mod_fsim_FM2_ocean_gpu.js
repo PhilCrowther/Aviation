@@ -59,6 +59,27 @@ let wav_ = {
 	};
 
 //= STATIC AND MOVING OBJECTS ==//==============================================
+
+//- Sample Variable
+let var_ = {
+		Num: 1,					// Number of Objects
+		Mdl: [0],				// Source File
+		Txt: [0],				// Texture Source File
+		Ptr: [0],				// Object Address
+		Siz: [],				// Scale (e.g. Ft2Mtr)
+		Ord: [0],				// renderOrder
+		Rot: [new Euler(0,0,0)], // Object Rotation (in radians)
+		MpP: [new Vector3(0,0,0)], // Map Position - Absolute or Relative
+		Ref: [0],				// Parent Object
+		// Moving
+		Spd: [0],				// Speed - if Moving (mtr/sec)
+		MpS: [new Vector3()], // Map Speed (mtr/sec)
+		// Animations (Varies by Object)
+		Dst: [0],				// Object distance (meters) used to activate effects
+		Mx0: [0],				// Animation Mixer
+		An0: [0]				// Animation
+	};
+
 //- Islands --------------------------------------------------------------------
 let isl_ = {
 		Num: 2,
@@ -67,45 +88,51 @@ let isl_ = {
 		Txt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.png",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png"],
 		Ptr: [],
-		Siz: [new Vector3(MtrMil,MtrMil,MtrMil),
-			  new Vector3(1.5*MtrMil,1.5*MtrMil,1.5*MtrMil)],
-		Rot: [new Euler()],
-		Pos: [new Vector3(610,30,5275),new Vector3(-1610,10,2440)],
+		Siz: [MtrMil,1.5*MtrMil], // Scale
 		Ord: [0,0],				// renderOrder (not used)
-		Ref: [makMsh(),makMsh()]
+		Rot: [new Euler(),new Euler()], // Rotation
+		MpP: [new Vector3(610,30,5275),new Vector3(-1610,10,2440)],
+		Ref: [makMsh(),makMsh()],
 	};
 //- Volcano Smoke --------------------------------------------------------------
 let vlk_ = {
-		Src: "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
-		Map: 0,
-		Mat: 0,
-		Ptr: 0,
-		Pos: new Vector3(50,75,25), // Relative Position
-		Ord: 1,					// renderOrder
-		Ref: isl_.Ref[0]
+		Num: 1,
+		Mdl: [0],
+		Txt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png"],
+		Ptr: [0],
+		Siz: [4000],			// Scale
+		Ord: [1],				// renderOrder
+		Rot: [new Euler()], // Rotation (not used)
+		MpP: [new Vector3(50,75,25)], // Map Position
+		Ref: [isl_.Ref[0]],
+		// Moving	
+		Spd: [0],				// 0 = not moving
+		MpS: [new Vector3()]
 	};
 //- General Static Objects: Linked ---------------------------------------------
 //- 0 = Hangar
 let lnk_ = {
 		Num: 1,
-		Src: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
+		Mdl: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
+		Txt: [0],
 		Ptr: [],				// Loaded Object
-		Siz: [new Vector3(Ft2Mtr,Ft2Mtr,Ft2Mtr)],
-		Rot: [new Euler()],
-		Pos: [new Vector3(-562,-22.5,-363)], // Relative Position
-		Ord: [1],				// renderOrder
-		Ref: [isl_.Ref[0]]
+		Siz: [Ft2Mtr],			// Scale
+		Ord: [0],				// renderOrder
+		Rot: [new Euler()], // Rotation
+		MpP: [new Vector3(-562,-22.5,-363)], // Relative Position
+		Ref: [isl_.Ref[0]],
 	};
 //- General Static Objects: Unlinked -------------------------------------------
-//- Nothing yet
+//- 0 = Fletcher
 let fxd_ = {
-		Num: 0,
-		Src: ["https://PhilCrowther.github.io/Aviation/"],
+		Num: 1,
+		Mdl: ["https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"],
+		Txt: [0],
 		Ptr: [],				// Loaded Object
-		Siz: [new Vector3(Ft2Mtr,Ft2Mtr,Ft2Mtr)],
-		Rot: [new Euler()],
-		Pos: [new Vector3()],	// Relative Position
-		Ord: [1]				// renderOrder
+		Siz: [Ft2Mtr],			// Scale
+		Ord: [0],				// renderOrder
+		Rot: [new Euler()], // Rotation
+		MpP: [new Vector3(-300,0,5275)], // Absolute Position
 	};
 
 //= TRAFFIC ====================//==============================================
@@ -115,14 +142,19 @@ let XPFile = "fm2_flyt_xp1.glb"; // Name of airplane model file (rotated blender
 //	Data
 let xac_ = {
 		Num: 1,					// Number of airplanes
-		FNm: [XPPath+XPFile],	// Source file
+		Mdl: [XPPath+XPFile],	// Model Source file
+		Txt: [0],				// Texture Source File (not used)
 		Ptr: [0],				// Object Address
-		Spd: [91.5],			// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-		Rot: [new Vector3(0,0,30)],
-		MpS: [new Vector3()],	// not used
+		Siz: [Ft2Mtr],			// Scale
+		Ord: [0],				// renderOrder (not used)
+		Rot: [new Vector3(0,0,30)], // Rotation
 		MpP: [new Vector3(180,100,5300)], // meters
-		Dst: [0],				// Object distance (meters) used to activate effects
+		Ref: [0],				// 0 = not linked
+		// Moving
+		Spd: [91.5],			// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+		MpS: [new Vector3()], // not used
 		// Animations
+		Dst: [0],				// Object distance (meters) used to activate effects
 		MxS: [0],				// Animation Mixer - Prop
 		MxP: [0],				// Animation Mixer - Pitch
 		MxB: [0],				// Animation Mixed - Bank
@@ -131,60 +163,72 @@ let xac_ = {
 		// Sound
 		Snd: ["fm2_prop.wav"],	// Prop
 		Vol: [1]
-	}
+	};
 //- Aircraft Carrier -----------------------------------------------------------
-//let CVEMsh = makMsh();			// To hold CVE and smoke
-//	CVEMsh.rotation.order = "YXZ";
-//	scene.add(CVEMsh);			// Uses position of CVE to compute relative position
 let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
 let XSFile = "CVE_noflag.glb";
 //	Data
 let xsh_ = {
 		Num: 1,					// Number of ships
-		FNm: [XSPath+XSFile],	// Source File
+		Mdl: [XSPath+XSFile],	// Source File
+		Txt: [0],				// Texture Source File (not used)
 		Ptr: [0],				// Object Address
-		Spd: [9],				// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
-		Rot: [new Euler()], 	// Object Rotation
-		MpS: [new Vector3()],	// Object Map Speed (mtr/sec) used by airplane if landed
+		Siz: [Ft2Mtr],			// Scale
+		Ord: [0],				// renderOrder (not used)
+		Rot: [new Euler()], // Object Rotation
 		MpP: [new Vector3(-4133,0.1,146)], // Object Map Position (meters) [used by Mesh]
-		Dst: [0],				// Object distance (meters) used to activate effects
 		Ref: [makMsh()],
+		// Moving
+		Spd: [9],				// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
+		MpS: [new Vector3()], // Object Map Speed (mtr/sec) used by airplane if landed
 		// Animations
+		Dst: [0],				// Object distance (meters) used to activate effects
 		Mx0: [0],				// Animation Mixer - Radar
-		An0: [0]				// Animation - Radar
-	}
+		An0: [0],				// Animation - Radar
+		Pit: [0],				// Pitch
+		Lok: [makMsh()]			// Deck Lock
+	};
 //. Wake .......................................................................
 let wak_ = {
-		Src: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png"],
-		Map: [],
-		Mat: [],
-		Ptr: [],
-		Ref: [xsh_.Ref[0]]
-		};
+		Num: 1,
+		Mdl: [0],
+		Txt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png"],
+		Ptr: [0],
+		Siz: [4000],			// Scale
+		Ord: [1],				// renderOrder
+		Rot: [new Euler()], // Rotation (not used)
+		MpP: [new Vector3(50,75,25)], // Map Position
+		Ref: [xsh_.Ref[0]],
+	};
+
 //. Flag .......................................................................
 let	flg_ = {
+		Num:1,
 		// Material and Geometry
-		Src: "https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png",
-		Mat: 0,
-		Geo: 0,					// Geometry Address (can use this for all flags)
-		Siz: new Vector2(3,1.8), // Size ZY (meters)
-		Seg: new Vector2(50,1), // Segments ZY
-		// Mesh
-		Ptr: 0,
-		Rot: new Euler(0,270*DegRad,0),
-		MpP: new Vector3(44.2,92.47,-58.93), // Map Position		
+		Src: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"],
+		Mat: [0],
+		Geo: [0],				// Geometry Address (can use this for all flags)
+		Ptr: [0],
+		Siz: [1],				// Scale (not used)
+		Ord: [0],				// renderOrder (not used)
+		Rot: [new Euler(0,270*DegRad,0)],
+		MpP: [new Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
+		Ref: [xsh_.Ref[0]],	
 		// Animation
-		Tim: 0,
-		Wav: 1.5,				// Number of waves per Plane
-		Deg: 0,					// Degrees per segment (360/5 = 72)
-		Amp: 0.1524,			// Amplitude (meters = 0.5 ft)
-		Per: 2,					// Period (seconds) to complete cycle
-		// Viz Test
-		Viz: 152.4,				// (meters)
-		Ref: xsh_.Ref[0]
-	}
+		Dst: [152.4],			// Visibility Distance (meters)
+		Tim: [0],
+		Wav: [1.5],				// Number of waves per Plane
+		Deg: [0],				// Degrees per segment (360/5 = 72)
+		Amp: [0.1524],			// Amplitude (meters = 0.5 ft)
+		Per: [2],				// Period (seconds) to complete cycle
+	};
 
 //= MINIMUM ALTITUDE ===========//==============================================
+//- For pitching deck: compute resting angle and hypotenuse for given z and y distance from ship center
+//- If airplane is stationary: as ship pitches, hypotenuse will remain the same and angle will change, based on pitch angle
+//- Can compute new y distance = sin(base angle + ship pitch);
+//- Use three.js to compute?
+
 let alt_ = {
 		Num: 2,
 		Ref: [isl_.Ref[0],xsh_.Ref[0]],
@@ -194,8 +238,11 @@ let alt_ = {
 		Lft: [-635,-13.2],
 		Rgt: [-585,13.2],
 		Fnt: [410,70.5],
-		Bak: [-335,-70.5],
-	}
+		Bak: [-335,-70.5]
+	};
+//- Carrier Deck Lock Down
+	xsh_.Lok[0].position.y = 1.4+(alt_.Alt[1]-xsh_.MpP[0].y);
+	xsh_.Ref[0].add(xsh_.Lok[0]);
 
 //= SUBROUTINES ================//==============================================
 
