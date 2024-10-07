@@ -92,7 +92,7 @@ let isl_ = {
 		Ord: [0,0],				// renderOrder (not used)
 		Rot: [new Euler(),new Euler()], // Rotation
 		MpP: [new Vector3(610,30,5275),new Vector3(-1610,10,2440)],
-		Ref: [makMsh(),makMsh()],
+		Ref: [new makMsh(),new makMsh()],
 	};
 //- Volcano Smoke --------------------------------------------------------------
 let vlk_ = {
@@ -102,7 +102,7 @@ let vlk_ = {
 		Ptr: [0],
 		Siz: [4000],			// Scale
 		Ord: [1],				// renderOrder
-		Rot: [new Euler()], // Rotation (not used)
+		Rot: [new Euler()], 	// Rotation (not used)
 		MpP: [new Vector3(50,75,25)], // Map Position
 		Ref: [isl_.Ref[0]],
 		// Moving	
@@ -180,7 +180,7 @@ let xsh_ = {
 		Ref: [makMsh()],
 		// Moving
 		Spd: [9],				// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
-		MpS: [new Vector3()], // Object Map Speed (mtr/sec) used by airplane if landed
+		MpS: [new Vector3()],	// Object Map Speed (mtr/sec) used by airplane if landed
 		// Animations
 		Dst: [0],				// Object distance (meters) used to activate effects
 		Mx0: [0],				// Animation Mixer - Radar
@@ -196,7 +196,7 @@ let wak_ = {
 		Ptr: [0],
 		Siz: [4000],			// Scale
 		Ord: [1],				// renderOrder
-		Rot: [new Euler()], // Rotation (not used)
+		Rot: [new Euler()],		// Rotation (not used)
 		MpP: [new Vector3(50,75,25)], // Map Position
 		Ref: [xsh_.Ref[0]],
 	};
