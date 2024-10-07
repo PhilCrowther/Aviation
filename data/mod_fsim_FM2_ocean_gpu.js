@@ -208,17 +208,12 @@ let	flg_ = {
 		Ptr: [0],
 		Siz: [1],				// Scale (not used)
 		Ord: [0],				// renderOrder (not used)
-		Rot: [new Euler(0,270*DegRad,0)],
-		MpP: [new Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
-		Ref: [xsh_.Ref[0]],		// Link to Common Parent
+		Rot: [new THREE.Euler(0,270*DegRad,0)],
+		MpP: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
+		Ref: [xsh_.Ref[0]],	
 		// Animation
-		Mat: [0],
 		Dst: [152.4],			// Visibility Distance (meters)
 		Tim: [0],
-		Wav: [1.5],				// Number of waves per Plane
-		Deg: [0],				// Degrees per segment (360/5 = 72)
-		Amp: [0.1524],			// Amplitude (meters = 0.5 ft)
-		Per: [2],				// Period (seconds) to complete cycle
 	};
 
 //= MINIMUM ALTITUDE ===========//==============================================
