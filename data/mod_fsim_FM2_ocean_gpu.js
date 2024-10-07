@@ -208,8 +208,8 @@ let	flg_ = {
 		Ptr: [0],
 		Siz: [1],				// Scale (not used)
 		Ord: [0],				// renderOrder (not used)
-		Rot: [new THREE.Euler(0,270*DegRad,0)],
-		MpP: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
+		Rot: [new Euler(0,270*DegRad,0)],
+		MpP: [new Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
 		Ref: [xsh_.Ref[0]],	
 		// Animation
 		Dst: [152.4],			// Visibility Distance (meters)
