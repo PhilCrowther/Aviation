@@ -118,7 +118,7 @@ let lnk_ = {
 		Ptr: [],				// Loaded Object
 		Siz: [Ft2Mtr],			// Scale
 		Ord: [0],				// renderOrder
-		Rot: [new Euler()], // Rotation
+		Rot: [new Euler()],		// Rotation
 		MpP: [new Vector3(-562,-22.5,-363)], // Relative Position
 		Ref: [isl_.Ref[0]],
 	};
@@ -131,7 +131,7 @@ let fxd_ = {
 		Ptr: [],				// Loaded Object
 		Siz: [Ft2Mtr],			// Scale
 		Ord: [0],				// renderOrder
-		Rot: [new Euler()], // Rotation
+		Rot: [new Euler()],		// Rotation
 		MpP: [new Vector3(-300,0,5275)], // Absolute Position
 	};
 
@@ -177,7 +177,7 @@ let xsh_ = {
 		Ord: [0],				// renderOrder (not used)
 		Rot: [new Euler()], // Object Rotation
 		MpP: [new Vector3(-4133,0.1,146)], // Object Map Position (meters) [used by Mesh]
-		Ref: [makMsh()],
+		Ref: [new makMsh()],
 		// Moving
 		Spd: [9],				// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
 		MpS: [new Vector3()],	// Object Map Speed (mtr/sec) used by airplane if landed
@@ -186,7 +186,7 @@ let xsh_ = {
 		Mx0: [0],				// Animation Mixer - Radar
 		An0: [0],				// Animation - Radar
 		Pit: [0],				// Pitch
-		Lok: [makMsh()]			// Deck Lock
+		Lok: [new makMsh()]			// Deck Lock
 	};
 //. Wake .......................................................................
 let wak_ = {
