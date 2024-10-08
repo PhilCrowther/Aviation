@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Oct 2024
+Version dated 8 Oct 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -337,7 +337,7 @@ let wav_ = {
 
 //= STATIC AND MOVING OBJECTS ==//==============================================
 
-//- Prototype Variable
+//- Sample Variable
 let var_ = {
 		Num: 1,					// Number of Objects
 		Mdl: [0],				// Source File
@@ -357,7 +357,6 @@ let var_ = {
 		An0: [0]				// Animation
 	};
 
-
 //- Islands --------------------------------------------------------------------
 let isl_ = {
 		Num: 2,
@@ -370,7 +369,7 @@ let isl_ = {
 		Ord: [0,0],				// renderOrder (not used)
 		Rot: [new THREE.Euler(),new THREE.Euler()], // Rotation
 		MpP: [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)],
-		Ref: [makMsh(),makMsh()],
+		Ref: [new makMsh(),new makMsh()],
 	};
 //- Volcano Smoke --------------------------------------------------------------
 let vlk_ = {
@@ -455,7 +454,7 @@ let xsh_ = {
 		Ord: [0],				// renderOrder (not used)
 		Rot: [new THREE.Euler()], // Object Rotation
 		MpP: [new THREE.Vector3(-4133,0.1,146)], // Object Map Position (meters) [used by Mesh]
-		Ref: [makMsh()],
+		Ref: [new makMsh()],
 		// Moving
 		Spd: [9],				// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
 		MpS: [new THREE.Vector3()], // Object Map Speed (mtr/sec) used by airplane if landed
@@ -464,7 +463,7 @@ let xsh_ = {
 		Mx0: [0],				// Animation Mixer - Radar
 		An0: [0],				// Animation - Radar
 		Pit: [0],				// Pitch
-		Lok: [makMsh()]			// Deck Lock
+		Lok: [new makMsh()]			// Deck Lock
 	};
 //. Wake .......................................................................
 let wak_ = {
@@ -483,29 +482,20 @@ let wak_ = {
 let	flg_ = {
 		Num:1,
 		// Material and Geometry
-		Src: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"],
-		Mat: [0],
-		Geo: [0],				// Geometry Address (can use this for all flags)
+		Mdl: [0],				// Geometry Address (can use this for all flags)
+		Txt: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"],
 		Ptr: [0],
-		Siz: [1],				// Scale (not used)
+		Siz: [0.1],				// Scale
 		Ord: [0],				// renderOrder (not used)
-		Rot: [new THREE.Euler(0,270*DegRad,0)],
+		Rot: [new THREE.Euler(0,90*DegRad,0)],
 		MpP: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
 		Ref: [xsh_.Ref[0]],	
 		// Animation
 		Dst: [152.4],			// Visibility Distance (meters)
 		Tim: [0],
-		Wav: [1.5],				// Number of waves per Plane
-		Deg: [0],				// Degrees per segment (360/5 = 72)
-		Amp: [0.1524],			// Amplitude (meters = 0.5 ft)
-		Per: [2],				// Period (seconds) to complete cycle
 	};
 
 //= MINIMUM ALTITUDE ===========//==============================================
-//- For pitching deck: compute resting angle and hypotenuse for given z and y distance from ship center
-//- If airplane is stationary: as ship pitches, hypotenuse will remain the same and angle will change, based on pitch angle
-//- Can compute new y distance = sin(base angle + ship pitch);
-//- Use three.js to compute?
 
 let alt_ = {
 		Num: 2,
@@ -534,8 +524,8 @@ let air_ = {
 		AirDat: data_,			// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(0,0,0), // Rotation (in degrees)
-		AirObj: makMsh(),		// Airplane Object 
-		AirPBY: makMsh(),		// Changes in radians
+		AirObj: new makMsh(),	// Airplane Object 
+		AirPBY: new makMsh(),	// Changes in radians
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
@@ -602,7 +592,7 @@ let mxr_ = {
 		// GLTF
 		GLT: 0,
 		// Address
-		Adr: makMsh(),
+		Adr: new makMsh(),
 		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
 		Prp:0, Rdr:0, Elv:0, AiL:0, AiR:0, FlL:0, FlR:0,
 		// Wheel: HingeL, HingeR, StrutBL, StrutBR, StrutTL, StrutTR, ShockL, ShockR, UpperL, UpperR
@@ -618,7 +608,7 @@ let vxr_ = {
 		// GLTF
 		GLT: 0,
 		// Address
-		Adr: makMsh(),
+		Adr: new makMsh(),
 		// Propeller, AileronL, AileronR, Canopy
 		Prp:0, AiL:0, AiR:0, Cnp:0,
 		// Gauge: Compass Heading, AI Arrow, AI Bank, AI Pitch, ManPrs
@@ -715,19 +705,19 @@ let RefDst = 25;	// Reference distance for Positional Audio
 //- My Engine and Prop
 let EngSnd = new THREE.PositionalAudio(listener);
 let PrpSnd = new THREE.PositionalAudio(listener);
-let EngMsh = makMsh();			// Airplane Engine
+let EngMsh = new makMsh();		// Airplane Engine
 	EngMsh.add(EngSnd);			// Engine
 	EngMsh.add(PrpSnd);			// Prop
 	EngMsh.position.z = -5;
 	air_.AirObj.add(EngMsh);
 //- My Guns
 let GnLSnd = new THREE.PositionalAudio(listener);
-let GnLMsh = makMsh();			// Gun Left
+let GnLMsh = new makMsh();		// Gun Left
 	GnLMsh.add(GnLSnd);			// Gun
 	GnLMsh.position.x = -5;
 	air_.AirObj.add(GnLMsh);
 let GnRSnd = new THREE.PositionalAudio(listener);
-let GnRMsh = makMsh();			// Gun Right
+let GnRMsh = new makMsh();		// Gun Right
 	GnRMsh.add(GnRSnd);			// Gun
 	GnRMsh.position.x = 5;
 	air_.AirObj.add(GnRMsh);
@@ -842,7 +832,7 @@ let R90flg = 0;					// Right 90 degrees
 
 //= CAMERA =====================//==============================================
 //- Create Cockpit Attach Point
-let	CamPVC = makMsh();
+let	CamPVC = new makMsh();
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
@@ -869,7 +859,7 @@ let cam_ = {
 		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
-		rot: makMsh(),			// Camera Rotator
+		rot: new makMsh(),			// Camera Rotator
 		mmr: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
 		par: CamPar[CamSel],	// Center of Rotation	
@@ -877,8 +867,8 @@ let cam_ = {
 		// Linked Airplane
 		lnk: CamLnk[CamSel],
 		qat: new THREE.Quaternion(),
-		obj: makMsh(),
-		deg: makMsh()
+		obj: new makMsh(),
+		deg: new makMsh()
 	}
 //- Adjustments
 	camera.rotation.order = "YXZ";
@@ -1551,52 +1541,60 @@ function moveShpWak() {
 }
 
 //= SHIP FLAG ==================//==============================================
+//	Adapted from https://codepen.io/okada-web/pen/OJydGzy
 
 //	Load and Initialize Flag
 function loadShpFlg() {
-	txtrLoader.load(flg_.Src[0], function(FlgTxt) {
-		let FlgSgX =50;
+	txtrLoader.load(flg_.Txt[0], function(FlgTxt) {
+		let flgSzX = 30;
+		let flgSzY = 20;
+		let flgSgX = 30;
+		let flgSgY = 20;
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;
-		texture.needsUpdate = true
-		flg_.Mat[0] = new THREE.MeshPhongNodeMaterial({colorNode: texture(FlgTxt), side: THREE.DoubleSide});
-		flg_.Geo[0] = new THREE.PlaneGeometry(3,1.8,FlgSgX,1);
-		flg_.Geo[0].rotateY(180*DegRad);
-		flg_.Ptr[0] = new THREE.Mesh(flg_.Geo[0], flg_.Mat[0]);
+		texture.generateMipmaps = true;	
+		texture.needsUpdate = true;		
+//		let flgMat = new THREE.MeshPhongNodeMaterial({colorNode: texture(FlgTxt), side: THREE.DoubleSide});
+		let flgMat = new THREE.MeshStandardNodeMaterial({colorNode: texture(FlgTxt), side: THREE.DoubleSide});
+		flg_.Mdl[0] = new THREE.PlaneGeometry(flgSzX,flgSzY,flgSgX,flgSgY);
+		flg_.Mdl[0].rotateY(180*DegRad);
+		flg_.Ptr[0] = new THREE.Mesh(flg_.Mdl[0],flgMat);
 		flg_.Ptr[0].rotation.copy(flg_.Rot[0]);
 		flg_.Ptr[0].position.copy(flg_.MpP[0]);
 		flg_.Ptr[0].scale.setScalar(flg_.Siz[0]);
 		flg_.Ref[0].add(flg_.Ptr[0]);
 		flg_.Ptr[0].visible = true;
-		flg_.Deg[0] = 360/(FlgSgX/flg_.Wav[0]); // Degrees per segment (360/5 = 72)
 	});
 }
 
 //	Move Flag Mesh
 function moveShpFlg() {
-	if (xsh_.Dst[0]<flg_.Dst[0]) {	// Only if within range
-		// Vertex Order for 4X1
-		//		0,1,2,3,4,
-		//		5,6,7,8,9 
-		let idx, zd0, zd1;
-		let flgSgX = 50+1;
-		let flgSgY = 1+1;
-		let dg1 = 360*((flg_.Tim[0]/flg_.Per[0])%flg_.Per[0]); // Location in Cycle
-		zd0 = flg_.Amp[0]*Math.sin(dg1*DegRad); // For x = 0
-		for (let x = 0; x < flgSgX; x++) { // For each row
-			idx = x;
-			zd1 = flg_.Amp[0]*Math.sin(dg1*DegRad)+zd0;
-			for (let y = 0; y < flgSgY; y++) { // For each column
-				flg_.Geo[0].attributes.position.setZ(idx, zd1); // Use getY to read position
-				idx = idx + flgSgX; // e.g. 1+5
-			}
-			dg1=(dg1+flg_.Deg[0])%360;
-			idx++;
-		}	
-		flg_.Geo[0].attributes.position.needsUpdate = true;
-		flg_.Geo[0].computeVertexNormals();
+	let flgSgX = 50;			// Columns
+	let flgSgY = 2;				// Rows
+	let flgWav = 1.5;			// Number of waves per Plane
+	let flgDeg = 360/(flgSgX/flgWav); // Degrees per segment (360/5 = 72) 
+	let flgPer = 2;				// Period (seconds) to complete cycle
+	let flgAmp = 0.1524;		// Amplitude (meters = 0.5 ft)
+	if (xsh_.Dst[0]<flg_.Dst[0]) { // Only if within range
+		let flgSgX = 30;
+		let flgSgY = 20;
+		flgSgX = flgSgX+1;
+		flgSgY = flgSgY+1;		
+		let h = 0.5; //horizontal
+		let v = 0.3; //vertical
+		let w = 0.4; //swing
+		let s = 100; //speed
+		for (let y = 0; y < flgSgY; y++) {
+			for (let x = 0; x < flgSgX; x++) {
+            	let idx = x + y*(flgSgX);
+				let time = flg_.Tim[0] * s/50;
+				let zd1 = Math.sin(h*x+v*y-time)*w*x/4;
+				flg_.Mdl[0].attributes.position.setZ(idx,zd1);
+            }
+        }
+		flg_.Mdl[0].attributes.position.needsUpdate = true;
+		flg_.Mdl[0].computeVertexNormals();
 	}
 }
 
@@ -1913,7 +1911,7 @@ function loadBullet() {
 	// Note: MeshBasicNodeMaterial not allow envMap
 	let xp = 2;
 	for (let i = 0; i < BulNum; i ++) {
-		BulPtr[i] = makMsh();
+		BulPtr[i] = new makMsh();
 		// Left
 		line = new THREE.Line(BltGeo,BlLMat);
 		line.position.x = -xp-0.1;
