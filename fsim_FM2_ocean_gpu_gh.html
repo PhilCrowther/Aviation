@@ -487,7 +487,7 @@ let	flg_ = {
 		Ptr: [0],
 		Siz: [0.1],				// Scale
 		Ord: [0],				// renderOrder (not used)
-		Rot: [new THREE.Euler(0,90*DegRad,0)],
+		Rot: [new THREE.Euler(0,100*DegRad,0)],
 		MpP: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
 		Ref: [xsh_.Ref[0]],	
 		// Animation
@@ -1546,17 +1546,16 @@ function moveShpWak() {
 //	Load and Initialize Flag
 function loadShpFlg() {
 	txtrLoader.load(flg_.Txt[0], function(FlgTxt) {
-		let flgSzX = 30;
-		let flgSzY = 20;
-		let flgSgX = 30;
-		let flgSgY = 20;
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;	
-		texture.needsUpdate = true;		
-//		let flgMat = new THREE.MeshPhongNodeMaterial({colorNode: texture(FlgTxt), side: THREE.DoubleSide});
-		let flgMat = new THREE.MeshStandardNodeMaterial({colorNode: texture(FlgTxt), side: THREE.DoubleSide});
+		let flgSzX = 30;		// Size X
+		let flgSzY = 20;		// Size Y
+		let flgSgX = 30;		// Segments X
+		let flgSgY = 20;		// Segments Y
+		FlgTxt.format = THREE.RGBAFormat;
+		FlgTxt.magFilter = THREE.LinearFilter;
+		FlgTxt.minFilter = THREE.LinearMipMapLinearFilter;
+		FlgTxt.generateMipmaps = true;	
+		FlgTxt.needsUpdate = true;		
+		let flgMat = new THREE.MeshLambertNodeMaterial({colorNode: texture(FlgTxt), side: THREE.DoubleSide});
 		flg_.Mdl[0] = new THREE.PlaneGeometry(flgSzX,flgSzY,flgSgX,flgSgY);
 		flg_.Mdl[0].rotateY(180*DegRad);
 		flg_.Ptr[0] = new THREE.Mesh(flg_.Mdl[0],flgMat);
@@ -1570,27 +1569,22 @@ function loadShpFlg() {
 
 //	Move Flag Mesh
 function moveShpFlg() {
-	let flgSgX = 50;			// Columns
-	let flgSgY = 2;				// Rows
-	let flgWav = 1.5;			// Number of waves per Plane
-	let flgDeg = 360/(flgSgX/flgWav); // Degrees per segment (360/5 = 72) 
-	let flgPer = 2;				// Period (seconds) to complete cycle
-	let flgAmp = 0.1524;		// Amplitude (meters = 0.5 ft)
+	let flgSgX = 30;			// Segments X
+	let flgSgY = 20;			// Segments Y
 	if (xsh_.Dst[0]<flg_.Dst[0]) { // Only if within range
-		let flgSgX = 30;
-		let flgSgY = 20;
 		flgSgX = flgSgX+1;
 		flgSgY = flgSgY+1;		
-		let h = 0.5; //horizontal
-		let v = 0.3; //vertical
-		let w = 0.4; //swing
-		let s = 100; //speed
+		let h = 0.5; 			// Horizontal
+		let v = 0.3; 			// Vertical
+		let w = 0.075; 			// Swing
+		let s = 100; 			// Speed
+		let idx,val;
+		let tim = flg_.Tim[0]*s/50;
 		for (let y = 0; y < flgSgY; y++) {
 			for (let x = 0; x < flgSgX; x++) {
-            	let idx = x + y*(flgSgX);
-				let time = flg_.Tim[0] * s/50;
-				let zd1 = Math.sin(h*x+v*y-time)*w*x/4;
-				flg_.Mdl[0].attributes.position.setZ(idx,zd1);
+            	idx = x + y*(flgSgX);
+				val = Math.sin(h*x+v*y-tim)*w*x/4;
+				flg_.Mdl[0].attributes.position.setZ(idx,val);
             }
         }
 		flg_.Mdl[0].attributes.position.needsUpdate = true;
