@@ -207,8 +207,8 @@ let	flg_ = {
 		Ptr: [0],
 		Siz: [0.125],			// Scale (flag height = 2 meters)
 		Ord: [0],				// renderOrder (not used)
-		Rot: [new THREE.Euler(0,95*DegRad,0)], // Adjust to make the flag visible at start
-		MpP: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
+		Rot: [new Euler(0,95*DegRad,0)], // Adjust to make the flag visible at start
+		MpP: [new Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
 		Ref: [xsh_.Ref[0]],	
 		// Animation
 		Dst: [152.4],			// Visibility Distance (meters)
