@@ -166,7 +166,6 @@ let xac_ = {
 //- Aircraft Carrier -----------------------------------------------------------
 let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
 let XSFile = "CVE_noflag.glb";
-//	Data
 let xsh_ = {
 		Num: 1,					// Number of ships
 		Mdl: [XSPath+XSFile],	// Source File
@@ -204,16 +203,17 @@ let	flg_ = {
 		Num:1,
 		// Material and Geometry
 		Mdl: [0],				// Geometry Address (can use this for all flags)
-		Txt: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"],
+		Txt: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA_48.png"],
 		Ptr: [0],
-		Siz: [1],				// Scale (not used)
+		Siz: [0.125],			// Scale (flag height = 2 meters)
 		Ord: [0],				// renderOrder (not used)
-		Rot: [new Euler(0,270*DegRad,0)],
-		MpP: [new Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
+		Rot: [new THREE.Euler(0,95*DegRad,0)], // Adjust to make the flag visible at start
+		MpP: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
 		Ref: [xsh_.Ref[0]],	
 		// Animation
 		Dst: [152.4],			// Visibility Distance (meters)
 		Tim: [0],
+		Adj: [0],
 	};
 
 //= MINIMUM ALTITUDE ===========//==============================================
