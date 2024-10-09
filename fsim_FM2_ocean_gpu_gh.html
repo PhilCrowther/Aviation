@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Oct 2024
+Version dated 9 Oct 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -286,7 +286,6 @@ let WavMax = 5;					// Maximum wave height (set height of outer waves)
 let GrdSiz = 1600;				// 1600 = 1 mile
 let GrdRes = 512;
 let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
-// Common Variables
 let grids = 0;
 let grd_ = {
 		MSP: new THREE.Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
@@ -319,7 +318,6 @@ let WndSpd = 10.0;
 let WndHdg = 90;
 let Choppy = 1.5;
 let AnmSpd = 0.5;				// Can vary with GrdSiz
-//
 let waves = 0;
 let wav_ = {
 		// Sources
@@ -416,7 +414,6 @@ let fxd_ = {
 //- Airplane -------------------------------------------------------------------
 let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 let XPFile = "fm2_flyt_xp1.glb"; // Name of airplane model file (rotated blender file)
-//	Data
 let xac_ = {
 		Num: 1,					// Number of airplanes
 		Mdl: [XPPath+XPFile],	// Model Source file
@@ -444,7 +441,6 @@ let xac_ = {
 //- Aircraft Carrier -----------------------------------------------------------
 let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
 let XSFile = "CVE_noflag.glb";
-//	Data
 let xsh_ = {
 		Num: 1,					// Number of ships
 		Mdl: [XSPath+XSFile],	// Source File
@@ -463,7 +459,7 @@ let xsh_ = {
 		Mx0: [0],				// Animation Mixer - Radar
 		An0: [0],				// Animation - Radar
 		Pit: [0],				// Pitch
-		Lok: [new makMsh()]			// Deck Lock
+		Lok: [new makMsh()]		// Deck Lock
 	};
 //. Wake .......................................................................
 let wak_ = {
@@ -483,20 +479,20 @@ let	flg_ = {
 		Num:1,
 		// Material and Geometry
 		Mdl: [0],				// Geometry Address (can use this for all flags)
-		Txt: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA.png"],
+		Txt: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA_48.png"],
 		Ptr: [0],
-		Siz: [0.1],				// Scale
+		Siz: [0.125],			// Scale (flag height = 2 meters)
 		Ord: [0],				// renderOrder (not used)
-		Rot: [new THREE.Euler(0,100*DegRad,0)],
+		Rot: [new THREE.Euler(0,95*DegRad,0)], // Adjust to make the flag visible at start
 		MpP: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
 		Ref: [xsh_.Ref[0]],	
 		// Animation
 		Dst: [152.4],			// Visibility Distance (meters)
 		Tim: [0],
+		Adj: [0],
 	};
 
 //= MINIMUM ALTITUDE ===========//==============================================
-
 let alt_ = {
 		Num: 2,
 		Ref: [isl_.Ref[0],xsh_.Ref[0]],
@@ -859,7 +855,7 @@ let cam_ = {
 		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
-		rot: new makMsh(),			// Camera Rotator
+		rot: new makMsh(),		// Camera Rotator
 		mmr: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
 		par: CamPar[CamSel],	// Center of Rotation	
@@ -1541,15 +1537,15 @@ function moveShpWak() {
 }
 
 //= SHIP FLAG ==================//==============================================
-//	Adapted from https://codepen.io/okada-web/pen/OJydGzy
+//	Adapted from example at https://codepen.io/okada-web/pen/OJydGzy. Thanks!
 
 //	Load and Initialize Flag
 function loadShpFlg() {
 	txtrLoader.load(flg_.Txt[0], function(FlgTxt) {
 		let flgSzX = 30;		// Size X
-		let flgSzY = 20;		// Size Y
+		let flgSzY = 16;		// Size Y
 		let flgSgX = 30;		// Segments X
-		let flgSgY = 20;		// Segments Y
+		let flgSgY = 16;		// Segments Y
 		FlgTxt.format = THREE.RGBAFormat;
 		FlgTxt.magFilter = THREE.LinearFilter;
 		FlgTxt.minFilter = THREE.LinearMipMapLinearFilter;
@@ -1561,7 +1557,7 @@ function loadShpFlg() {
 		flg_.Ptr[0] = new THREE.Mesh(flg_.Mdl[0],flgMat);
 		flg_.Ptr[0].rotation.copy(flg_.Rot[0]);
 		flg_.Ptr[0].position.copy(flg_.MpP[0]);
-		flg_.Ptr[0].scale.setScalar(flg_.Siz[0]);
+		flg_.Ptr[0].scale.setScalar(flg_.Siz[0]); // Height = 2 meters
 		flg_.Ref[0].add(flg_.Ptr[0]);
 		flg_.Ptr[0].visible = true;
 	});
@@ -1570,7 +1566,7 @@ function loadShpFlg() {
 //	Move Flag Mesh
 function moveShpFlg() {
 	let flgSgX = 30;			// Segments X
-	let flgSgY = 20;			// Segments Y
+	let flgSgY = 16;			// Segments Y
 	if (xsh_.Dst[0]<flg_.Dst[0]) { // Only if within range
 		flgSgX = flgSgX+1;
 		flgSgY = flgSgY+1;		
@@ -1590,6 +1586,10 @@ function moveShpFlg() {
 		flg_.Mdl[0].attributes.position.needsUpdate = true;
 		flg_.Mdl[0].computeVertexNormals();
 	}
+	// Rotate Flag on Flagpole
+	flg_.Adj[0] = Mod360(flg_.Adj[0]+1); // Degrees
+	let FlgAdj = 5*DegRad*Math.sin(flg_.Adj[0]*DegRad); // Max Offset = 5 deg
+	flg_.Ptr[0].rotation.y = flg_.Rot[0].y+FlgAdj;
 }
 
 //= HARDENED SURFACES ==========//==============================================
@@ -1615,8 +1615,8 @@ function moveMinAlt() {
 }
 
 function moveShpAlt() {
-	InpBrk = 0;				// Default = no brake
-	air_.ShpPit = 0;		// Default
+	InpBrk = 0;					// Default = no brake
+	air_.ShpPit = 0;			// Default
 	// Recompute GrdZed
 	let ZDst = xsh_.MpP[0].z - air_.MapPos.z; // Z-distance from ship center
 	let YDif = ZDst * Math.sin(xsh_.Rot[0].x); // Y-change caused by ship pitch
@@ -1672,7 +1672,6 @@ function loadAirObj() {
 }
 
 //-	Load Airplane Model --------------------------------------------------------
-// Load Airplane
 function loadAirExt() {
 	gltfLoader.load(mxr_.FNm, function (gltf) {
 		gltf.scene.traverse(function (child) {
