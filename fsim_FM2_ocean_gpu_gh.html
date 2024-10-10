@@ -173,17 +173,19 @@ let AltDif = 0;
 let SunCol = "white";			// Sun
 let SunInt = 3;					// Default intensity of light/sun
 //- Rotation and Position (fixed)
+let SunDst = 50;				// Distance (for shadows)
 let SunLat = 23;				// Direction - Vert (+/- 90) deg
 let SunLon = 312;				// Direction - Horz (0->360) deg
-let SunDst = 50;				// Distance (for shadows)
 //- Computations
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
-//	Shadows
-let ShdBox = 6;					// Size of shadow box
-let ShdBLR = 6;
-let ShdBTB = 4;
-let ShdDst = 1500;				// Shadow Distance (meters)
+
+//= SHADOWS ====================//==============================================
+//	Use 2 Lights to cast shadows; 0 = external; 1 = internal
+let ShdDst = [1500,6];			// Shadow Distance (meters)
+let ShdMap = [8192,8192];		// mapSize ### why does external need to be 8192 for internal to work???
+let ShdBLR = [6,3];				// left/right
+let ShdBTB = [4,2];				// top/bottom
 
 //= STANDARD SETUP =============//==============================================
 // 	Scene
@@ -192,19 +194,33 @@ let scene = new THREE.Scene();
 // 	Light
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
-let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
-	sunLight.position.copy(SunPos);
-	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = 0.001;
-	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
-	sunLight.shadow.mapSize.width = 8192;
-	sunLight.shadow.mapSize.height = 8192;
-	sunLight.shadow.camera.left = -ShdBLR;
-	sunLight.shadow.camera.right = ShdBLR;
-	sunLight.shadow.camera.top = ShdBTB;
-	sunLight.shadow.camera.bottom = -ShdBTB;
-	sunLight.shadow.bias = -0.00001; // ### WebGPU (0 flashing; -0.0001 no wheels)
-	scene.add(sunLight);
+//- SunLight
+let sunLight = [new THREE.DirectionalLight(SunCol,SunInt),
+				new THREE.DirectionalLight(SunCol,SunInt)];
+	// SunLight (External)
+	sunLight[0].position.copy(SunPos);
+	sunLight[0].castShadow = true;
+	sunLight[0].shadow.camera.near = 0.001;
+	sunLight[0].shadow.camera.far = SunDst+ShdDst[0]+ShdBLR[0];
+	sunLight[0].shadow.mapSize.width = ShdMap[0];
+	sunLight[0].shadow.mapSize.height = ShdMap[0];
+	sunLight[0].shadow.camera.left = -ShdBLR[0];
+	sunLight[0].shadow.camera.right = ShdBLR[0];
+	sunLight[0].shadow.camera.top = ShdBTB[0];
+	sunLight[0].shadow.camera.bottom = -ShdBTB[0];
+	sunLight[0].shadow.bias = -0.00001; // WebGPU (0 flashing; -0.0001 no wheels)
+	// SunLight (Internal)
+	sunLight[1].position.copy(SunPos);
+	sunLight[1].castShadow = true;
+	sunLight[1].shadow.camera.near = 0.001;
+	sunLight[1].shadow.camera.far = SunDst+ShdDst[0]+ShdBLR[0];
+	sunLight[1].shadow.mapSize.width = ShdMap[1];
+	sunLight[1].shadow.mapSize.height = ShdMap[1];
+	sunLight[1].shadow.camera.left = -ShdBLR[1];
+	sunLight[1].shadow.camera.right = ShdBLR[1];
+	sunLight[1].shadow.camera.top = ShdBTB[1];
+	sunLight[1].shadow.camera.bottom = -ShdBTB[1];
+	sunLight[1].shadow.bias = -0.00001; // WebGPU (0 flashing; -0.0001 no wheels)
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
@@ -216,7 +232,8 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;	
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+//	ToneMapping does not seem helpful
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
 // 	Clock
@@ -333,8 +350,7 @@ let wav_ = {
 		Spd: AnmSpd
 	};
 
-//= STATIC AND MOVING OBJECTS ==//==============================================
-
+//= OBJECTS ====================//==============================================
 //- Sample Variable
 let var_ = {
 		Num: 1,					// Number of Objects
@@ -355,6 +371,7 @@ let var_ = {
 		An0: [0]				// Animation
 	};
 
+//= STATIC OBJECTS =============//==============================================
 //- Islands --------------------------------------------------------------------
 let isl_ = {
 		Num: 2,
@@ -410,7 +427,7 @@ let fxd_ = {
 		MpP: [new THREE.Vector3(-300,0,5275)], // Absolute Position
 	};
 
-//= TRAFFIC ====================//==============================================
+//= MOVING OBJECTS =============//==============================================
 //- Airplane -------------------------------------------------------------------
 let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 let XPFile = "fm2_flyt_xp1.glb"; // Name of airplane model file (rotated blender file)
@@ -473,7 +490,6 @@ let wak_ = {
 		MpP: [new THREE.Vector3(50,75,25)], // Map Position
 		Ref: [xsh_.Ref[0]],
 	};
-
 //. Flag .......................................................................
 let	flg_ = {
 		Num:1,
@@ -1462,7 +1478,7 @@ function moveMovShp() {
 	XSHSpd = XSHSpd * DLTime;
 	xsh_.Rot[0].y = xsh_.Rot[0].y + XSHSpd;	
 	// Rock the boat
-	xsh_.Pit[0] = Mod360(xsh_.Pit[0] + 0.25);
+	xsh_.Pit[0] = Mod360(xsh_.Pit[0] + 0.5);
 	let PitAdj = 1.5*DegRad*Math.sin(xsh_.Pit[0]*DegRad);
 	xsh_.Rot[0].x = PitAdj;
 	xsh_.Ref[0].rotation.copy(xsh_.Rot[0]);
@@ -2065,7 +2081,11 @@ function initCamera(camera,cam_) {
 	camera.rotation.y = cam_.adj*DegRad;
 	cam_.rot.add(camera);		// Attach to rotator
 	//
-	if (cam_.sel == 0) {
+	if (!cam_.sel) {
+//		sunLight[0].visible = true;
+//		sunLight[1].visible = false;
+		scene.add(sunLight[0]);
+		scene.remove(sunLight[1]);
 		mxr_.Adr.visible = true;
 		vxr_.Adr.visible = false;
 		// Flaps
@@ -2087,6 +2107,10 @@ function initCamera(camera,cam_) {
 	}	
 	// 1 = Internal View
 	if (cam_.sel) {
+//		sunLight[1].visible = true;
+//		sunLight[0].visible = false;
+		scene.add(sunLight[1]);
+		scene.remove(sunLight[0]);
 		mxr_.Adr.visible = false;	
 		vxr_.Adr.visible = true;
 		// Canopy
