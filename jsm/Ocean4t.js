@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================
 
-// Version 4t (updated 8 Sep 2024)
+// Version 4t (updated 10 Oct 2024)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -120,7 +120,7 @@ constructor(renderer,wav_) {
 			this.phaseArray[y*this.Res*4+x*4] = Math.random()*2.0*Math.PI;
 			this.phaseArray[y*this.Res*4+x*4+1] = 0.0;
 			this.phaseArray[y*this.Res*4+x*4+2] = 0.0;
-			this.phaseArray[y*this.Res*4+x*4+3] = 1.0;	// make visible
+			this.phaseArray[y*this.Res*4+x*4+3] = 0.0;
 		}
 	}
 	this.phaseArrayTexture = new DataTexture(this.phaseArray,this.Res,this.Res,RGBAFormat);
@@ -184,7 +184,7 @@ constructor(renderer,wav_) {
 			var dk: f32 = P2/u_gsiz;
 			var h: f32 = sqrt(S/2)*dk;
 			if (K.x == 0 && K.y == 0) {h = 0;}
-			textureStore(w_ispc,idx,vec4<f32>(h,0,0,1));	// use 1 for a value to make visible
+			textureStore(w_ispc,idx,vec4<f32>(h,0,0,0));
 		}
 		// Constants
 		const P2: f32 = 6.28318530718;
@@ -228,7 +228,7 @@ constructor(renderer,wav_) {
 			var phase: f32 = textureLoad(r_iphs,idx,0).r;
 			var deltaPhase: f32 = omega(length(waveVector))*u_time;
 			phase = (phase+deltaPhase)%P2;
-			textureStore(w_tphs,idx,vec4<f32>(phase,0,0,1));	// use 1 for a value to make visible
+			textureStore(w_tphs,idx,vec4<f32>(phase,0,0,0));
 		}
 		// Constants
 		const P2: f32 = 6.28318530718;
@@ -623,3 +623,4 @@ export {Ocean};
 // 240811: Version 4a	: Updated to r167 and cleaned up imports
 // 240901: Version 4t	: Uses localTimer instead of wavTim.
 // 240904:				: Changed Module format
+// 240410:				: Removed visibility helpers (alpha = 1)
