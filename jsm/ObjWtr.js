@@ -442,7 +442,7 @@ function loadMovPln(air_,gltfLoader,txtrLoader,scene) {
 		xac_.Ptr[0].rotation.order = "YXZ"; // Heading, Pitch, Bank
 		xac_.Ptr[0].rotation.y = xac_.Rot[0].y*DegRad;
 		//
-		xac_.Ptr[0].add(XPESnd);	// Engine sound
+//		xac_.Ptr[0].add(XPESnd);	// Engine sound
 	});
 }
 
