@@ -211,10 +211,10 @@ let alt_ = {
 
 //= OBJECTS ====================//==============================================
 
-function loadObject(air_,gltfLoader,txtrLoader) {
+function loadObject(air_,gltfLoader,txtrLoader,scene) {
 	AltDif = air_.MapPos.y*AltAdj;
-	loadStatic(air_,gltfLoader,txtrLoader);
-	loadMoving(air_,gltfLoader,txtrLoader);
+	loadStatic(air_,gltfLoader,txtrLoader,scene);
+	loadMoving(air_,gltfLoader,txtrLoader,scene);
 }
 
 function initObject(air_) {
@@ -231,10 +231,10 @@ function moveObject(air_) {
 
 //- Static Objects -------------------------------------------------------------
 
-function loadStatic(air_,gltfLoader,txtrLoader) {
-	loadIsland(air_,gltfLoader,txtrLoader);
-	if (lnk_.Num) loadLnkObj(air_,gltfLoader,txtrLoader);
-	if (fxd_.Num) loadFxdObj(air_,gltfLoader,txtrLoader);
+function loadStatic(air_,gltfLoader,txtrLoader,scene) {
+	loadIsland(air_,gltfLoader,txtrLoader,scene);
+	if (lnk_.Num) loadLnkObj(air_,gltfLoader,txtrLoader,scene);
+	if (fxd_.Num) loadFxdObj(air_,gltfLoader,txtrLoader,scene);
 }
 
 function initStatic(air_) {
@@ -249,9 +249,9 @@ function moveStatic(air_) {
 
 //- Moving Objects -------------------------------------------------------------
 
-function loadMoving(air_,gltfLoader,txtrLoader) {
-	loadMovPln(air_,gltfLoader,txtrLoader);
-	loadMovShp(air_,gltfLoader,txtrLoader);
+function loadMoving(air_,gltfLoader,txtrLoader,scene) {
+	loadMovPln(air_,gltfLoader,txtrLoader,scene);
+	loadMovShp(air_,gltfLoader,txtrLoader,scene);
 }
 
 function initMoving(air_) {
@@ -268,7 +268,7 @@ function moveMoving(air_) {
 //= ISLANDS ====================//==============================================
 
 //-	Load Islands ---------------------------------------------------------------
-function loadIsland(air_,gltfLoader,txtrLoader) {
+function loadIsland(air_,gltfLoader,txtrLoader,scene) {
 	for (let i = 0; i < isl_.Num; i++) {
 		isl_.Ref[i].position.copy(isl_.MpP[i]);
 		scene.add(isl_.Ref[i]);
@@ -293,7 +293,7 @@ function loadIsland(air_,gltfLoader,txtrLoader) {
 		});
 	}
 	// Specific Atached Objects
-	loadVulkan(air_,gltfLoader,txtrLoader); // Load Volcano Smoke
+	loadVulkan(air_,gltfLoader,txtrLoader,scene); // Load Volcano Smoke
 }
 
 //-	Init Islands ---------------------------------------------------------------
@@ -325,7 +325,7 @@ function moveIsland(air_) {
 //= VOLCANO SMOKE ==============//==============================================
 
 //- Load Volcano ---------------------------------------------------------------
-function loadVulkan(air_,gltfLoader,txtrLoader) {
+function loadVulkan(air_,gltfLoader,txtrLoader,scene) {
 	txtrLoader.load(vlk_.Txt[0], function (VlkTxt) {
 		//- Timer
 		let timer = timerLocal(.001,1);
@@ -365,7 +365,7 @@ function loadVulkan(air_,gltfLoader,txtrLoader) {
 //= GENERAL STATIC OBJECTS: LINKED =============================================
 
 //- Load Objects ---------------------------------------------------------------
-function loadLnkObj(air_,gltfLoader,txtrLoader) {
+function loadLnkObj(air_,gltfLoader,txtrLoader,scene) {
 	let parent = 0;
 	for (let i = 0; i < lnk_.Num; i++) {
 		gltfLoader.load(lnk_.Mdl[i], function (gltf) {
@@ -388,7 +388,7 @@ function moveLnkObj(air_) {
 //= GENERAL STATIC OBJECTS: UNLINKED ===========================================
 
 //- Load Objects ---------------------------------------------------------------
-function loadFxdObj(air_,gltfLoader,txtrLoader) {
+function loadFxdObj(air_,gltfLoader,txtrLoader,scene) {
 	for (let i = 0; i < fxd_.Num; i++) {
 		gltfLoader.load(fxd_.Mdl[i], function (gltf) {
 			fxd_.Ptr[i] = gltf.scene;
@@ -415,7 +415,7 @@ function moveFxdObj(air_) {
 //= MOVING AIRPLANES ===========//==============================================
 
 //	Load Plane
-function loadMovPln(air_,gltfLoader,txtrLoader) {
+function loadMovPln(air_,gltfLoader,txtrLoader,scene) {
 	gltfLoader.load(xac_.Mdl[0], function (gltf) {
 		xac_.Ptr[0] = gltf.scene;
 		// Convert from feet to meters
@@ -483,7 +483,7 @@ function moveMovPln(air_) {
 //= MOVING SHIPS ===============//==============================================
 
 //	Load Ship
-function loadMovShp(air_,gltfLoader,txtrLoader) {
+function loadMovShp(air_,gltfLoader,txtrLoader,scene) {
 	gltfLoader.load(xsh_.Mdl[0], function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
@@ -503,8 +503,8 @@ function loadMovShp(air_,gltfLoader,txtrLoader) {
 		xsh_.Ptr[0].position.set(0,0,0); // position within group is always 0,0,0
 	});
 	// Attached Objects
-	loadShpWak(air_,gltfLoader,txtrLoader); // Init Ship Wake
-	loadShpFlg(air_,gltfLoader,txtrLoader); // Load and Init Ship Flag
+	loadShpWak(air_,gltfLoader,txtrLoader,scene); // Init Ship Wake
+	loadShpFlg(air_,gltfLoader,txtrLoader,scene); // Load and Init Ship Flag
 }
 
 //	Init Ship
@@ -606,7 +606,7 @@ function moveShpWak(air_) {
 //	Adapted from example at https://codepen.io/okada-web/pen/OJydGzy. Thanks!
 
 //	Load and Initialize Flag
-function loadShpFlg(air_,gltfLoader,txtrLoader) {
+function loadShpFlg(air_,gltfLoader,txtrLoader,scene) {
 	txtrLoader.load(flg_.Txt[0], function(FlgTxt) {
 		let flgSzX = 30;		// Size X
 		let flgSzY = 16;		// Size Y
