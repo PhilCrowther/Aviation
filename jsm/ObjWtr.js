@@ -25,6 +25,8 @@ import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,
 } from "three/tsl";
 
 //= CONSTANTS ==================================================================
+let DegRad = Math.PI/180;		// Convert Degrees to Radians
+let Ft2Mtr = 0.3048;			// Convert Feet to Meters
 let MtrMil = 1609.34;			// Meters per Mile
 
 //= VARIABLES ==================================================================
