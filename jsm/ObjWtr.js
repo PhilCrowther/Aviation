@@ -24,6 +24,9 @@ import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,
 		rotateUV	//r168
 } from "three/tsl";
 
+//= CONSTANTS ==================================================================
+let MtrMil = 1609.34;			// Meters per Mile
+
 //= VARIABLES ==================================================================
 
 //- Sample Variable
