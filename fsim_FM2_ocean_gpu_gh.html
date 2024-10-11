@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Oct 2024
+Version dated 11 Oct 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -179,13 +179,11 @@ let SunLon = 312;				// Direction - Horz (0->360) deg
 //- Computations
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
-
-//= SHADOWS ====================//==============================================
-//	Use 2 Lights to cast shadows; 0 = external; 1 = internal
-let ShdDst = [1500,6];			// Shadow Distance (meters)
-let ShdMap = [8192,8192];		// mapSize ### why does external need to be 8192 for internal to work???
-let ShdBLR = [6,3];				// left/right
-let ShdBTB = [4,2];				// top/bottom
+//	Shadows
+let ShdBox = 6;					// Size of shadow box
+let ShdBLR = 6.5;
+let ShdBTB = 4;
+let ShdDst = 1500;				// Shadow Distance (meters)
 
 //= STANDARD SETUP =============//==============================================
 // 	Scene
@@ -195,35 +193,23 @@ let scene = new THREE.Scene();
 let ambLight = new THREE.AmbientLight(SunCol,0.2);
 	scene.add(ambLight);
 //- SunLight
-let sunLight = [new THREE.DirectionalLight(SunCol,SunInt),
-				new THREE.DirectionalLight(SunCol,SunInt)];
-	// SunLight (External)
-	sunLight[0].position.copy(SunPos);
-	sunLight[0].castShadow = true;
-	sunLight[0].shadow.camera.near = 0.001;
-	sunLight[0].shadow.camera.far = SunDst+ShdDst[0]+ShdBLR[0];
-	sunLight[0].shadow.mapSize.width = ShdMap[0];
-	sunLight[0].shadow.mapSize.height = ShdMap[0];
-	sunLight[0].shadow.camera.left = -ShdBLR[0];
-	sunLight[0].shadow.camera.right = ShdBLR[0];
-	sunLight[0].shadow.camera.top = ShdBTB[0];
-	sunLight[0].shadow.camera.bottom = -ShdBTB[0];
-	sunLight[0].shadow.bias = -0.00001; // WebGPU (0 flashing; -0.0001 no wheels)
-	// SunLight (Internal)
-	sunLight[1].position.copy(SunPos);
-	sunLight[1].castShadow = true;
-	sunLight[1].shadow.camera.near = 0.001;
-	sunLight[1].shadow.camera.far = SunDst+ShdDst[0]+ShdBLR[0];
-	sunLight[1].shadow.mapSize.width = ShdMap[1];
-	sunLight[1].shadow.mapSize.height = ShdMap[1];
-	sunLight[1].shadow.camera.left = -ShdBLR[1];
-	sunLight[1].shadow.camera.right = ShdBLR[1];
-	sunLight[1].shadow.camera.top = ShdBTB[1];
-	sunLight[1].shadow.camera.bottom = -ShdBTB[1];
-	sunLight[1].shadow.bias = -0.00001; // WebGPU (0 flashing; -0.0001 no wheels)
+let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+	sunLight.position.copy(SunPos);
+	sunLight.castShadow = true;
+	sunLight.shadow.camera.near = 0.001;
+	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
+	sunLight.shadow.mapSize.width = 2048;
+	sunLight.shadow.mapSize.height = 2048;
+	sunLight.shadow.camera.left = -ShdBLR;
+	sunLight.shadow.camera.right = ShdBLR;
+	sunLight.shadow.camera.top = ShdBTB;
+	sunLight.shadow.camera.bottom = -ShdBTB;
+	sunLight.shadow.bias = -0.00001; // WebGPU (0 flashing; -0.0001 no wheels)
+	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
+//	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //	Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
@@ -1032,7 +1018,10 @@ function rendAll() {
 		// Other
 		moveSounds();
 		prntHUDval();			// print HUD values
-		if (StatOn) StatOn.update(); // update stats	
+		if (StatOn) StatOn.update(); // update stats
+		// Shadow Tests (confirms that shadow values changed)
+		// console.log(sunLight.shadow.mapSize.width);
+		// console.log(sunLight.shadow.camera.far);
 	}
 	if (controls.isLocked === false) {
 		stopSounds();
@@ -1589,7 +1578,7 @@ function moveShpFlg() {
 		let h = 0.5; 			// Horizontal
 		let v = 0.3; 			// Vertical
 		let w = 0.075; 			// Swing
-		let s = 200; 			// Speed
+		let s = 400; 			// Speed
 		let idx,val;
 		let tim = flg_.Tim[0]*s/50;
 		for (let y = 0; y < flgSgY; y++) {
@@ -2074,18 +2063,17 @@ function stopSounds() {
 	if (XPESnd.isPlaying) XPESnd.stop();
 }
 
-//= CAMERA =====================================================================
+//= CAMERA =====================//==============================================
 
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
 	camera.rotation.y = cam_.adj*DegRad;
 	cam_.rot.add(camera);		// Attach to rotator
 	//
-	if (!cam_.sel) {
-//		sunLight[0].visible = true;
-//		sunLight[1].visible = false;
-		scene.add(sunLight[0]);
-		scene.remove(sunLight[1]);
+	if (!cam_.sel) {			// 0 = External View
+		sunLight.shadow.mapSize.set(2048,2048);
+		sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
+		sunLight.shadow.autoUpdate = true;	// might not be necessary
 		mxr_.Adr.visible = true;
 		vxr_.Adr.visible = false;
 		// Flaps
@@ -2105,12 +2093,10 @@ function initCamera(camera,cam_) {
 		// Tailhook
 		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anmfps);
 	}	
-	// 1 = Internal View
-	if (cam_.sel) {
-//		sunLight[1].visible = true;
-//		sunLight[0].visible = false;
-		scene.add(sunLight[1]);
-		scene.remove(sunLight[0]);
+	if (cam_.sel) {				// 1 = Internal View
+		sunLight.shadow.mapSize.set(8192,8192);
+		sunLight.shadow.camera.far = SunDst+ShdBox;
+		sunLight.shadow.autoUpdate = true;	// might not be necessary
 		mxr_.Adr.visible = false;	
 		vxr_.Adr.visible = true;
 		// Canopy
@@ -2135,11 +2121,11 @@ function moveCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
 	// PointerLockControls
 	if (cam_.pan) {
-		cam_.lld.x = cam_.lld.x - InpMos.y * cam_.mmr.z;				// Camera Position (Lat)
+		cam_.lld.x = cam_.lld.x - InpMos.y * cam_.mmr.z; // Camera Position (Lat)
 		cam_.lld.x = MaxVal(cam_.lld.x,cam_.mmr.x);
-		cam_.lld.y = Mod360(cam_.lld.y + InpMos.x * cam_.mmr.z);		// Camera Position (Lon)
+		cam_.lld.y = Mod360(cam_.lld.y + InpMos.x * cam_.mmr.z); // Camera Position (Lon)
 		// Internal View
-		if (cam_.flg) {											// Range: 250 to 360/0 to 110
+		if (cam_.flg) {			// Range: 250 to 360/0 to 110
 			if (cam_.lld.y > 180 && cam_.lld.y < (360-cam_.mmr.y)) cam_.lld.y = (360-cam_.mmr.y);
 			if (cam_.lld.y < 180 && cam_.lld.y > cam_.mmr.y) cam_.lld.y = cam_.mmr.y;
 		}
@@ -2163,7 +2149,7 @@ function moveCamera(camera,cam_) {
 	}
 }
 
-//= OUTPUTS ====================================================================
+//= OUTPUTS ====================//==============================================
 
 //	Print HUD Values
 function prntHUDval() {
