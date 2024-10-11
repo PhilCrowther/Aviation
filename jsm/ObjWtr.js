@@ -30,6 +30,9 @@ let Ft2Mtr = 0.3048;			// Convert Feet to Meters
 let MtrMil = 1609.34;			// Meters per Mile
 
 //= VARIABLES ==================================================================
+//	Altitude Adjustment
+let AltAdj = 0.99;				// Raises objects above map as altitude increases
+let AltDif = 0;
 
 //- Sample Variable
 let var_ = {
@@ -208,64 +211,64 @@ let alt_ = {
 
 //= OBJECTS ====================//==============================================
 
-function loadObject() {
+function loadObject(air_,gltfLoader,txtrLoader) {
 	AltDif = air_.MapPos.y*AltAdj;
-	loadStatic();
-	loadMoving();
+	loadStatic(air_,gltfLoader,txtrLoader);
+	loadMoving(air_,gltfLoader,txtrLoader);
 }
 
-function initObject() {
+function initObject(air_) {
 	AltDif = air_.MapPos.y*AltAdj;
-	initStatic();
-	initMoving();
+	initStatic(air_);
+	initMoving(air_);
 }
 
-function moveObject() {
+function moveObject(air_) {
 	AltDif = air_.MapPos.y*AltAdj;
-	moveStatic();
-	moveMoving();
+	moveStatic(air_);
+	moveMoving(air_);
 }
 
 //- Static Objects -------------------------------------------------------------
 
-function loadStatic() {
-	loadIsland();
-	if (lnk_.Num) loadLnkObj();
-	if (fxd_.Num) loadFxdObj();
+function loadStatic(air_,gltfLoader,txtrLoader) {
+	loadIsland(air_,gltfLoader,txtrLoader);
+	if (lnk_.Num) loadLnkObj(air_,gltfLoader,txtrLoader);
+	if (fxd_.Num) loadFxdObj(air_,gltfLoader,txtrLoader);
 }
 
-function initStatic() {
-	initIsland();
+function initStatic(air_) {
+	initIsland(air_);
 }
 
-function moveStatic() {
-	moveIsland();
-	if (lnk_.Num) moveLnkObj();
-	if (fxd_.Num) moveFxdObj();
+function moveStatic(air_) {
+	moveIsland(air_);
+	if (lnk_.Num) moveLnkObj(air_);
+	if (fxd_.Num) moveFxdObj(air_);
 }
 
 //- Moving Objects -------------------------------------------------------------
 
-function loadMoving() {
-	loadMovPln();
-	loadMovShp();
+function loadMoving(air_,gltfLoader,txtrLoader) {
+	loadMovPln(air_,gltfLoader,txtrLoader);
+	loadMovShp(air_,gltfLoader,txtrLoader);
 }
 
-function initMoving() {
-	initMovPln();
-	initMovShp();
+function initMoving(air_) {
+	initMovPln(air_);
+	initMovShp(air_);
 
 }
 
-function moveMoving() {
-	moveMovPln();
-	moveMovShp();
+function moveMoving(air_) {
+	moveMovPln(air_);
+	moveMovShp(air_);
 }
 
 //= ISLANDS ====================//==============================================
 
 //-	Load Islands ---------------------------------------------------------------
-function loadIsland() {
+function loadIsland(air_,gltfLoader,txtrLoader) {
 	for (let i = 0; i < isl_.Num; i++) {
 		isl_.Ref[i].position.copy(isl_.MpP[i]);
 		scene.add(isl_.Ref[i]);
@@ -290,11 +293,11 @@ function loadIsland() {
 		});
 	}
 	// Specific Atached Objects
-	loadVulkan();				// Load Volcano Smoke
+	loadVulkan(air_,gltfLoader,txtrLoader); // Load Volcano Smoke
 }
 
 //-	Init Islands ---------------------------------------------------------------
-function initIsland() {
+function initIsland(air_) {
 	let X,Y,Z;
 	for (let i = 0; i < isl_.Num; i++) {
 		// Set Relative Position
@@ -307,7 +310,7 @@ function initIsland() {
 }
 
 //-	Move Islands ---------------------------------------------------------------
-function moveIsland() {
+function moveIsland(air_) {
 	let X,Y,Z;
 	for (let i = 0; i < isl_.Num; i ++) {
 		// Compute New Relative Position
@@ -322,7 +325,7 @@ function moveIsland() {
 //= VOLCANO SMOKE ==============//==============================================
 
 //- Load Volcano ---------------------------------------------------------------
-function loadVulkan() {
+function loadVulkan(air_,gltfLoader,txtrLoader) {
 	txtrLoader.load(vlk_.Txt[0], function (VlkTxt) {
 		//- Timer
 		let timer = timerLocal(.001,1);
@@ -362,7 +365,7 @@ function loadVulkan() {
 //= GENERAL STATIC OBJECTS: LINKED =============================================
 
 //- Load Objects ---------------------------------------------------------------
-function loadLnkObj() {
+function loadLnkObj(air_,gltfLoader,txtrLoader) {
 	let parent = 0;
 	for (let i = 0; i < lnk_.Num; i++) {
 		gltfLoader.load(lnk_.Mdl[i], function (gltf) {
@@ -376,7 +379,7 @@ function loadLnkObj() {
 }
 
 //- Move Objects ---------------------------------------------------------------
-function moveLnkObj() {
+function moveLnkObj(air_) {
 	for (let i = 0; i < lnk_.Num; i++) {
 		lnk_.Ptr[i].position.y = lnk_.MpP[i].y + AltDif*0.01;
 	}
@@ -385,7 +388,7 @@ function moveLnkObj() {
 //= GENERAL STATIC OBJECTS: UNLINKED ===========================================
 
 //- Load Objects ---------------------------------------------------------------
-function loadFxdObj() {
+function loadFxdObj(air_,gltfLoader,txtrLoader) {
 	for (let i = 0; i < fxd_.Num; i++) {
 		gltfLoader.load(fxd_.Mdl[i], function (gltf) {
 			fxd_.Ptr[i] = gltf.scene;
@@ -398,7 +401,7 @@ function loadFxdObj() {
 }
 
 //-	Move Objects ---------------------------------------------------------------
-function moveFxdObj() {
+function moveFxdObj(air_) {
 	let position = new Vector3();
 	let X,Y,Z;
 	for (let i = 0; i < fxd_.Num; i++) {
@@ -412,7 +415,7 @@ function moveFxdObj() {
 //= MOVING AIRPLANES ===========//==============================================
 
 //	Load Plane
-function loadMovPln() {
+function loadMovPln(air_,gltfLoader,txtrLoader) {
 	gltfLoader.load(xac_.Mdl[0], function (gltf) {
 		xac_.Ptr[0] = gltf.scene;
 		// Convert from feet to meters
@@ -444,7 +447,7 @@ function loadMovPln() {
 }
 
 // Init Plane
-function initMovPln() {
+function initMovPln(air_) {
 	// Compute Relative Position
 	// (cause Objects to elevate above water as we climb to prevent flicker)
 	let X = xac_.MpP[0].x-air_.MapPos.x;
@@ -455,7 +458,7 @@ function initMovPln() {
 }
 
 // Move Plane
-function moveMovPln() {
+function moveMovPln(air_) {
 	// Rotation
 	let XPHSpd = Math.tan(xac_.Rot[0].z*DegRad)*xac_.Spd[0]/GrvMPS;
 	XPHSpd = XPHSpd * DLTime;
@@ -480,7 +483,7 @@ function moveMovPln() {
 //= MOVING SHIPS ===============//==============================================
 
 //	Load Ship
-function loadMovShp() {
+function loadMovShp(air_,gltfLoader,txtrLoader) {
 	gltfLoader.load(xsh_.Mdl[0], function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
@@ -500,12 +503,12 @@ function loadMovShp() {
 		xsh_.Ptr[0].position.set(0,0,0); // position within group is always 0,0,0
 	});
 	// Attached Objects
-	loadShpWak();				// Init Ship Wake
-	loadShpFlg();				// Load and Init Ship Flag
+	loadShpWak(air_,gltfLoader,txtrLoader); // Init Ship Wake
+	loadShpFlg(air_,gltfLoader,txtrLoader); // Load and Init Ship Flag
 }
 
 //	Init Ship
-function initMovShp() {
+function initMovShp(air_) {
 	xsh_.Ref[0].rotation.order = "YXZ";
 	// Compute Relative Position
 	// (cause Objects to elevate above water as we climb to prevent flicker)
@@ -518,7 +521,7 @@ function initMovShp() {
 }
 
 //	Move Ship
-function moveMovShp() {
+function moveMovShp(air_) {
 	// Change in Heading
 	let XSHSpd = 0;				// for now
 	let XSHPit = 0;
@@ -548,16 +551,16 @@ function moveMovShp() {
 	// Compute Distance (for Viz Tests)
 	let x = xsh_.Ref[0].position.x;
 	let z = xsh_.Ref[0].position.z;
-	xsh_.Dst[0] = Math.sqrt(x*x+z*z);		// Compute distance
+	xsh_.Dst[0] = Math.sqrt(x*x+z*z); // Compute distance
 	// Attached Objects
-	moveShpFlg();				// Move Ship Flag
-	moveShpWak();
+	moveShpFlg(air_);			// Move Ship Flag
+	moveShpWak(air_);
 }
 
 //= SHIP WAKE ==================//==============================================
 
 //- Load Ship Wake -------------------------------------------------------------
-function loadShpWak() {
+function loadShpWak(air_) {
 	txtrLoader.load(wak_.Txt[0], function (WakTxt) {
 		//- Timer
 		let timer = timerLocal(.001,1); // Lower = slower
@@ -595,7 +598,7 @@ function loadShpWak() {
 	})
 }
 
-function moveShpWak() {
+function moveShpWak(air_) {
 	wak_.Ptr[0].rotation.x = Math.PI/2-wak_.Ref[0].rotation.x;
 }
 
@@ -603,7 +606,7 @@ function moveShpWak() {
 //	Adapted from example at https://codepen.io/okada-web/pen/OJydGzy. Thanks!
 
 //	Load and Initialize Flag
-function loadShpFlg() {
+function loadShpFlg(air_,gltfLoader,txtrLoader) {
 	txtrLoader.load(flg_.Txt[0], function(FlgTxt) {
 		let flgSzX = 30;		// Size X
 		let flgSzY = 16;		// Size Y
@@ -627,7 +630,7 @@ function loadShpFlg() {
 }
 
 //	Move Flag Mesh
-function moveShpFlg() {
+function moveShpFlg(air_) {
 	let flgSgX = 30;			// Segments X
 	let flgSgY = 16;			// Segments Y
 	if (xsh_.Dst[0]<flg_.Dst[0]) { // Only if within range
@@ -662,7 +665,7 @@ function moveShpFlg() {
 // Use same approach for pitching deck?
 
 // Compute Minimum Altitude
-function moveMinAlt() {
+function moveMinAlt(air_) {
 	air_.GrdZed = 0;			// Default
 	let PX,PZ;
 	let Msh = 0;
@@ -672,7 +675,7 @@ function moveMinAlt() {
 		PZ = Msh.position.z;
 		if (alt_.Lft[i] < PX && alt_.Rgt[i] > PX && alt_.Fnt[i] > PZ && alt_.Bak[i] < PZ) {
 			air_.GrdZed = alt_.Alt[i];
-			if (alt_.Typ[i]) moveShpAlt();
+			if (alt_.Typ[i]) moveShpAlt(air_);
 		}
 	}
 }
@@ -748,7 +751,7 @@ return mesh;}
 
 //= EXPORTS ====================================================================
 
-export {loadObject, initObject, moveObject};
+export {initObject,moveObject,moveMinAlt};
 
 /*= REVISIONS ==================================================================
 
