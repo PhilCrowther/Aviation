@@ -14,7 +14,7 @@
 
 import {AnimationClip,AnimationMixer,
 		Euler,Vector3,
-		Mesh,BoxGeometry,PlaneGeometry,
+		Mesh,BoxGeometry,PlaneGeometry,MeshBasicMaterial,
 		DoubleSide,LinearFilter,LinearMipMapLinearFilter,RGBAFormat,
 } from 'three';
 
