@@ -751,7 +751,7 @@ return mesh;}
 
 //= EXPORTS ====================================================================
 
-export {loadObject,initObject,moveObject,moveMinAlt,isl_,xsh_};
+export {loadObject,initObject,moveObject,moveMinAlt,isl_,xac_,xsh_,alt_};
 
 /*= REVISIONS ==================================================================
 
