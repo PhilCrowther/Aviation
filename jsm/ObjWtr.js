@@ -743,7 +743,7 @@ return mesh;}
 
 //= EXPORTS ====================================================================
 
-export {loadObject, initObject moveObject};
+export {loadObject, initObject, moveObject};
 
 /*= REVISIONS ==================================================================
 
