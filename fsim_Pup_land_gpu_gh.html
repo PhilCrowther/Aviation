@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Oct 2024
+Version dated 12 Oct 2024
 
 A flight simulation of an animated airplane model over procedural land using
 -->
@@ -513,7 +513,9 @@ let air_ = {
 		// Air Density and IAS Comps
 		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
-		SpdIAS: 0				// Indicated Airspeed
+		SpdIAS: 0,				// Indicated Airspeed
+		// Ship Pitch (radians)
+		ShpPit: 0,
 	}
 // 
 //- Adjustments
