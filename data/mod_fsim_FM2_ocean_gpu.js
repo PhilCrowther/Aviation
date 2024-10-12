@@ -3,6 +3,7 @@
 //	Updated: 5 Oct 2024
 
 import {BoxGeometry,Color,Euler,Mesh,MeshBasicNodeMaterial,Vector2,Vector3} from 'three';
+import {color} from "three/tsl";
 
 //= GRDWTR MODULE ==============//==============================================
 //	This ocean map has 3 nested grids of squares.
