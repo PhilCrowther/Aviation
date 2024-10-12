@@ -2,7 +2,7 @@
 
 //	Updated: 5 Oct 2024
 
-import {BoxGeometry,Color,Euler,Mesh,MeshBasicMaterial,Vector2,Vector3} from 'three';
+import {BoxGeometry,Color,Euler,Mesh,MeshBasicNodeMaterial,Vector2,Vector3} from 'three';
 
 //= GRDWTR MODULE ==============//==============================================
 //	This ocean map has 3 nested grids of squares.
@@ -207,8 +207,8 @@ let	flg_ = {
 		Ptr: [0],
 		Siz: [0.125],			// Scale (flag height = 2 meters)
 		Ord: [0],				// renderOrder (not used)
-		Rot: [new THREE.Euler(0,97.5*DegRad,0)], // Adjust to make the flag visible at start
-		MpP: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
+		Rot: [new Euler(0,97.5*DegRad,0)], // Adjust to make the flag visible at start
+		MpP: [new Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
 		Ref: [xsh_.Ref[0]],	
 		// Animation
 		Dst: [152.4],			// Visibility Distance (meters)
@@ -237,7 +237,7 @@ let alt_ = {
 //- Make Mesh ------------------------------------------------------------------
 function makMsh() {
 	let geometry = new BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicMaterial({transparent:true,opacity:0}); 
+	let material = new MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
 	let mesh = new Mesh(geometry, material);
 return mesh;}
 
