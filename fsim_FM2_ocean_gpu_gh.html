@@ -196,7 +196,7 @@ let ambLight = new THREE.AmbientLight(SunCol,0.2);
 let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = 0.001;
+	sunLight.shadow.camera.near = SunDst*0.75;
 	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
@@ -853,7 +853,6 @@ let cam_ = {
 		pan: 0,					// Pan Flag (1 = panning)
 		// Camera
 		lld: new THREE.Vector3().copy(CamLLD[CamSel]),	// cam_.rot Lat, Lon, Dst
-		llz: new THREE.Vector3(), // External LLZ
 		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
@@ -1021,7 +1020,7 @@ function rendAll() {
 		if (StatOn) StatOn.update(); // update stats
 		// Shadow Tests (confirms that shadow values changed)
 		// console.log(sunLight.shadow.mapSize.width);
-		// console.log(sunLight.shadow.camera.far);
+		// console.log(sunLight.shadow.camera.far); // ### but this seems to have no effect!
 	}
 	if (controls.isLocked === false) {
 		stopSounds();
