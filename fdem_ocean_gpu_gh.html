@@ -52,8 +52,7 @@ A WebGPU demo of the GrdWtr4a, Ocean4t and Sunflare modules.
 
 <script type="module">
 import * as THREE from "three";
-import {MeshBasicNodeMaterial,MeshStandardNodeMaterial,SpriteNodeMaterial,
-		color,texture,timerLocal,range,positionLocal,uv,mix,normalMap,
+import {color,texture,timerLocal,range,positionLocal,uv,mix,normalMap,
 		rotateUV	// r168
 } from "three/tsl";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
@@ -139,7 +138,7 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.right = ShdBLR;
 	sunLight.shadow.camera.top = ShdBTB;
 	sunLight.shadow.camera.bottom = -ShdBTB;
-	sunLight.shadow.bias = -0.00001; // WebGPU
+	sunLight.shadow.bias = -0.00005; // WebGPU
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -571,14 +570,14 @@ function loadGeoMat(grd_) {
 //- Load AirObj ----------------------------------------------------------------
 function initAirObj(air_) {
 	// Front
-	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
+	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.rotation.x = -Math.PI/2;
 	mesh.position.z = -5;
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// Back
-	mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
+	mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.rotation.x = Math.PI/2;
 	mesh.rotation.y = Math.PI;
 	mesh.position.z = 15;
@@ -586,21 +585,21 @@ function initAirObj(air_) {
 	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// Wing
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new THREE.MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 2.5;
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// HTail
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new THREE.MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// VTail
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.position.y = 2.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
@@ -694,8 +693,8 @@ function initJetExh() {
 	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange)));	// ### r168
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-	let smokeNodeMaterial = new SpriteNodeMaterial();
-		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+	let smokeNodeMaterial = new THREE.SpriteNodeMaterial();
+		smokeNodeMaterial.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 		smokeNodeMaterial.opacityNode = opacityNode;
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
@@ -748,8 +747,8 @@ return deg;}
 //- Make Simple Mesh -----------------------------------------------------------
 function makMsh() {
 	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicNodeMaterial({transparent:true,opacityNode:0});
-	let mesh = new THREE.Mesh(geometry, material);
+	let material = new THREE.MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacityNode:0});
+	let mesh = new THREE.Mesh(geometry,material);
 return mesh;}
 
 //= OUTPUTS ====================================================================

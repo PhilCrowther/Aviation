@@ -69,16 +69,14 @@ A flight simulation of an animated airplane model over an animated ocean using W
 
 // Basic Modules
 import * as THREE from "three";
-import {MeshBasicNodeMaterial,MeshLambertNodeMaterial,MeshPhongNodeMaterial,
-		MeshStandardNodeMaterial,SpriteNodeMaterial,LineBasicNodeMaterial,
-		color,texture,attribute,timerLocal,range,positionLocal,uv,mix,
+import {color,texture,attribute,timerLocal,range,positionLocal,uv,mix,
 		rotateUV	//r168
 } from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4.js";
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
@@ -204,7 +202,7 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.right = ShdBLR;
 	sunLight.shadow.camera.top = ShdBTB;
 	sunLight.shadow.camera.bottom = -ShdBTB;
-	sunLight.shadow.bias = -0.00001; // WebGPU (0 flashing; -0.0001 no wheels)
+	sunLight.shadow.bias = -0.0005; // WebGPU
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -567,8 +565,9 @@ let air_ = {
 		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0,				// Indicated Airspeed
-		// Ship Pitch (radians)
+		// Ship Pitch and Bank (radians)
 		ShpPit: 0,
+		ShpBnk: 0,
 	}
 //	Adjustments
 	air_.AirObj.rotation.order = "YXZ";
@@ -1020,7 +1019,7 @@ function rendAll() {
 		if (StatOn) StatOn.update(); // update stats
 		// Shadow Tests (confirms that shadow values changed)
 		// console.log(sunLight.shadow.mapSize.width);
-		// console.log(sunLight.shadow.camera.far); // ### but this seems to have no effect!
+		// console.log(sunLight.shadow.camera.far);
 	}
 	if (controls.isLocked === false) {
 		stopSounds();
@@ -1055,6 +1054,7 @@ function initSkyBox() {
 		let	spotLight = new THREE.PointLight(0xffffff);
 		scene.add(spotLight);
 		spotLight.position.copy(SunPos).normalize;
+		spotLight.position.multiplyScalar(1000);
 		let LF = new LensflareMesh();
 			LF.addElement(new LensflareElement(LF0Txt,256,0));
 			LF.addElement(new LensflareElement(LF1Txt,32,0.2));
@@ -1283,7 +1283,7 @@ function loadVulkan() {
 		let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
 		// Wake
 		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-		let VlkMat = new SpriteNodeMaterial();
+		let VlkMat = new THREE.SpriteNodeMaterial();
 			VlkMat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 			VlkMat.opacityNode = opacityNode;
 			VlkMat.positionNode = offsetRange.mul(lifeTime);
@@ -1519,7 +1519,7 @@ function loadShpWak() {
 		let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
 		// Wake
 		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-		let	WakMat = new SpriteNodeMaterial();
+		let	WakMat = new THREE.SpriteNodeMaterial();
 			WakMat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 			WakMat.opacityNode = opacityNode;
 			WakMat.positionNode = offsetRange.mul(lifeTime);
@@ -1641,8 +1641,9 @@ function moveShpAlt() {
 				if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
 			}
 		}
-		if (air_.MovFlg && air_.SpdKPH > ShpKPH) air_.MovFlg = 0;	// Unlock from deck if moving faster than Ship
+		if (air_.MovFlg && air_.SpdKPH > ShpKPH) air_.MovFlg = 0; // Unlock from deck if moving faster than Ship
 		if (air_.MovFlg) {	// Otherwise remain locked to deck
+			sunLight.shadow.camera.far = SunDst+2*ShdBox; // Default on deck
 			// Recompute Speed and Position
 			air_.MapSpd.z = -xsh_.MpS[0].z;
 			air_.MapSpd.x = -xsh_.MpS[0].x;
@@ -1656,11 +1657,13 @@ function moveShpAlt() {
 				air_.ShpPit = -xsh_.Rot[0].x;
 			}
 			else {
-				air_.SpdKPH = ShpKPH;	// (KPH)
+				air_.SpdKPH = ShpKPH; // (KPH)
 				air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
 				xsh_.Lok[0].remove(air_.AirObj); // Unlock
 				scene.add(air_.AirObj); // Was detached from scene
+				if (!cam_.sel) sunLight.shadow.camera.far = SunDst+ShdBox+ShdDst;		
 			}
+			sunLight.shadow.camera.updateProjectionMatrix();
 			// Point Same Direction as Carrier
 			// [WIP]
 		}
@@ -2072,7 +2075,7 @@ function initCamera(camera,cam_) {
 	if (!cam_.sel) {			// 0 = External View
 		sunLight.shadow.mapSize.set(2048,2048);
 		sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
-		sunLight.shadow.autoUpdate = true;	// might not be necessary
+		sunLight.shadow.camera.updateProjectionMatrix();
 		mxr_.Adr.visible = true;
 		vxr_.Adr.visible = false;
 		// Flaps
@@ -2094,8 +2097,8 @@ function initCamera(camera,cam_) {
 	}	
 	if (cam_.sel) {				// 1 = Internal View
 		sunLight.shadow.mapSize.set(8192,8192);
-		sunLight.shadow.camera.far = SunDst+ShdBox;
-		sunLight.shadow.autoUpdate = true;	// might not be necessary
+		sunLight.shadow.camera.far = SunDst+2*ShdBox;
+		sunLight.shadow.camera.updateProjectionMatrix();
 		mxr_.Adr.visible = false;	
 		vxr_.Adr.visible = true;
 		// Canopy

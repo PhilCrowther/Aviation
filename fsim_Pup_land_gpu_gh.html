@@ -68,13 +68,13 @@ A flight simulation of an animated airplane model over procedural land using
 <script type="module">
 
 import * as THREE from "three";
-import {color,float,texture,MeshLambertNodeMaterial,MeshBasicNodeMaterial,SpriteNodeMaterial} from "three/tsl";
+import {color,float,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3a.js";
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4.js";
 
 //= INPUTS =====================================================================
 //- CAMERA ---------------------------------------------------------------------
@@ -509,8 +509,9 @@ let air_ = {
 		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0,				// Indicated Airspeed
-		// Ship Pitch (radians)
+		// Ship Pitch and Bank (radians)
 		ShpPit: 0,
+		ShpBnk: 0,
 	}
 // 
 //- Adjustments
@@ -921,9 +922,8 @@ function initGr0Txt() {
 		DatTxt.wrapS = DatTxt.wrapT = THREE.RepeatWrapping;
 		DatTxt.offset.set(0,0);
 		DatTxt.repeat.set(GrdMul,GrdMul);
-		DatTxt.anisotropy = maxAnisotropy;		// ###
-		DatTxt.needsUpdate = true;
-//		G0MPtr[n] = new THREE.MeshLambertMaterial({map: DatTxt});		
+		DatTxt.anisotropy = maxAnisotropy;
+		DatTxt.needsUpdate = true;		
 		G0MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
@@ -948,7 +948,6 @@ function initGr1Txt() {
 		idx = 0;
 		for (let ys1 = 0; ys1 < 3; ys1++) {	// Find source within 9x9 Square
 			for (let xs1 = 0; xs1 < 3; xs1++) {
-//				let ImgDat = G0DPtr[stIndx[idx]];
 				let ImgDat = G1SPtr[stIndx[idx]];	// Correct, but causes dirt lines
 				context.putImageData(ImgDat,Math.floor(xs1*fx),Math.floor(ys1*fx));
 				idx++;
@@ -960,9 +959,8 @@ function initGr1Txt() {
 		DatTxt.magFilter = THREE.LinearFilter;
 		DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
 		DatTxt.generateMipmaps = true;
-		DatTxt.anisotropy = maxAnisotropy;		// ###
+		DatTxt.anisotropy = maxAnisotropy;
 		DatTxt.needsUpdate = true;
-//		G1MPtr[n] = new THREE.MeshLambertMaterial({map: DatTxt});
 		G1MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 		// Gr6Source = Resized Gr5Data		
 		context.putImageData(G1DPtr[n],0,0);
@@ -994,9 +992,8 @@ function initGr6Txt() {
 			DatTxt.magFilter = THREE.LinearFilter;
 			DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
 			DatTxt.generateMipmaps = true;
-			DatTxt.anisotropy = maxAnisotropy;		// ###
+			DatTxt.anisotropy = maxAnisotropy;
 			DatTxt.needsUpdate = true;
-//			G2MPtr[n] = new THREE.MeshLambertMaterial({map: DatTxt});
 			G2MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 			n++;
 		}
@@ -1360,9 +1357,9 @@ function makeTrees() {
 	txttre.generateMipmaps = true;
 	txttre.anisotropy = maxAnisotropy;	// ###
 	txttre.needsUpdate = true;
-	let mtltre = new MeshLambertNodeMaterial({colorNode: texture(txttre)});
-	let mtltrn = new MeshLambertNodeMaterial({colorNode: color(0x161005)});
-	let mtlshd = new MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
+	let mtltre = new THREE.MeshLambertNodeMaterial({colorNode: texture(txttre)});
+	let mtltrn = new THREE.MeshLambertNodeMaterial({colorNode: color(0x161005)});
+	let mtlshd = new THREE.MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
 	// Make Prototype Tree
 	let tree0 = new THREE.Mesh(gomtre,mtltre);
 	let trnk = new THREE.Mesh(gomtrn,mtltrn);

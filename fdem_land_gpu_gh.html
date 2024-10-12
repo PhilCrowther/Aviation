@@ -53,8 +53,7 @@ This demo program uses included versions of the GrdMap module.
 
 <script type="module">
 import * as THREE from "three";
-import {MeshStandardNodeMaterial,MeshLambertNodeMaterial,MeshBasicNodeMaterial,SpriteNodeMaterial,
-		color,texture,timerLocal,range,positionLocal,uv,mix,normalMap,
+import {color,texture,timerLocal,range,positionLocal,uv,mix,normalMap,
 		rotateUV	// r168		
 } from "three/tsl";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
@@ -125,7 +124,7 @@ let ShdDst = 1500;				// Shadow Distance (meters)
 let	scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
 //- Lights
-let ambLight = new THREE.AmbientLight(SunCol, 0.5);
+let ambLight = new THREE.AmbientLight(SunCol,1);
 	scene.add(ambLight);
 //- SunLight
 let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
@@ -139,7 +138,7 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.right = ShdBLR;
 	sunLight.shadow.camera.top = ShdBTB;
 	sunLight.shadow.camera.bottom = -ShdBTB;
-	sunLight.shadow.bias = -0.00001; // WebGPU
+	sunLight.shadow.bias = -0.00005; // WebGPU
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -653,7 +652,7 @@ function makeGr0Txt() {
 		DatTxt.repeat.set(GrdMul,GrdMul);
 		DatTxt.anisotropy = maxAnisotropy;		// ###
 		DatTxt.needsUpdate = true;	
-		G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		G0MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
 		// e.g. If Repeat X10 and then divide by 10, result = Data
@@ -691,7 +690,7 @@ function makeGr1Txt() {
 		DatTxt.generateMipmaps = true;
 		DatTxt.anisotropy = maxAnisotropy;		// ###
 		DatTxt.needsUpdate = true;
-		G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+		G1MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 		// Gr6Source = Resized Gr5Data		
 		context.putImageData(G1DPtr[n],0,0);
 		context.drawImage(canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
@@ -724,7 +723,7 @@ function makeGr2Txt() {
 			DatTxt.generateMipmaps = true;
 			DatTxt.anisotropy = maxAnisotropy;		// ###
 			DatTxt.needsUpdate = true;
-			G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+			G2MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 			n++;
 		}
 	}	
@@ -945,7 +944,7 @@ function initRoad2(Rod) {
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = maxAnisotropy;		// ###
 		DatTxt.needsUpdate = true;
-		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		for (let n = 0; n < Rod.Num; n++) {	// Source
 			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
 			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
@@ -965,7 +964,7 @@ function initRoad2(Rod) {
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = maxAnisotropy;		// ###
 		DatTxt.needsUpdate = true;
-		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		for (let n = 0; n < Rod.Num; n++) {	// Source
 			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
 			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
@@ -1089,9 +1088,9 @@ function makeTrees() {
 	txttre.generateMipmaps = true;
 	txttre.anisotropy = maxAnisotropy;	// ###
 	txttre.needsUpdate = true;
-	let mtltre = new MeshLambertNodeMaterial({colorNode: texture(txttre)});
-	let mtltrn = new MeshLambertNodeMaterial({colorNode: color(0x161005)});
-	let mtlshd = new MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
+	let mtltre = new THREE.MeshLambertNodeMaterial({colorNode: texture(txttre)});
+	let mtltrn = new THREE.MeshLambertNodeMaterial({colorNode: color(0x161005)});
+	let mtlshd = new THREE.MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
 	// Make Prototype Tree
 	let tree0 = new THREE.Mesh(gomtre,mtltre);
 	let trnk = new THREE.Mesh(gomtrn,mtltrn);
@@ -1173,14 +1172,14 @@ function makeTClr(dtColr,dtData,Weight) {
 //- Load AirObj ----------------------------------------------------------------
 function initAirObj(air_) {
 	// Front
-	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
+	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.rotation.x = -Math.PI/2;
 	mesh.position.z = -5;
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// Back
-	mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
+	mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.rotation.x = Math.PI/2;
 	mesh.rotation.y = Math.PI;
 	mesh.position.z = 15;
@@ -1188,21 +1187,21 @@ function initAirObj(air_) {
 	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// Wing
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new THREE.MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 2.5;
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// HTail
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new THREE.MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
 	mesh.position.y = -.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
 	air_.AirPBY.add(mesh);
 	// VTail
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
 	mesh.position.y = 2.5;
 	mesh.position.z = 25;
 	mesh.castShadow = true;
@@ -1296,8 +1295,8 @@ function initJetExh() {
 	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange)));	// r168
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-	let smokeNodeMaterial = new SpriteNodeMaterial();
-		smokeNodeMaterial.colorNode = mix(color(0xffffff), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+	let smokeNodeMaterial = new THREE.SpriteNodeMaterial();
+		smokeNodeMaterial.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
 		smokeNodeMaterial.opacityNode = opacityNode;
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
@@ -1346,8 +1345,8 @@ return deg;}
 //- Make Simple Mesh -----------------------------------------------------------
 function makMsh() {
 	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicNodeMaterial({transparent:true,opacity:0});
-	let mesh = new THREE.Mesh(geometry, material);
+	let material = new THREE.MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
+	let mesh = new THREE.Mesh(geometry,material);
 return mesh;}
 
 //= OUTPUTS ====================================================================
