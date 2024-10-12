@@ -10,7 +10,7 @@ A WebGPU demo of the GrdWtr4a, Ocean4t and Sunflare modules.
 -->
 
 <head>
-<title>FlightDemo Ocean GPU r169</title>
+<title>FDem: Ocean GPU r169</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
@@ -61,7 +61,6 @@ import Stats from "stats-gl";
 // Custom Modules
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
-import {SunFlare} from "https://PhilCrowther.github.io/Aviation/jsm/SunFlare2.js";
 
 //= NOTES
 //- Sections relating to my Camera Rotator are designated MY CAMERA
@@ -105,6 +104,97 @@ let LodFlg = 0;					// Done initializing
 let WireOn = 0;					// Wireframe View
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 
+//= SUN VALUES =================//==============================================
+let SunCol = "white";			// Sun
+let SunInt = 3;					// Default intensity of light/sun
+//- Rotation and Position (fixed)
+let SunDst = 50;				// Distance (for shadows)
+let SunLat = 23;				// Direction - Vert (+/- 90) deg
+let SunLon = 312;				// Direction - Horz (0->360) deg
+//- Computations
+let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+//	Shadows
+let ShdBox = 6;					// Size of shadow box
+let ShdBLR = 6.5;
+let ShdBTB = 4;
+let ShdDst = 1500;				// Shadow Distance (meters)
+
+//= BASIC VALUES ===============//==============================================
+//- Display
+let	scene = new THREE.Scene();
+	scene.background = new THREE.Color("black");
+//- Lights
+let ambLight = new THREE.AmbientLight(SunCol, 0.5);
+	scene.add(ambLight);
+//- SunLight
+let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+	sunLight.position.copy(SunPos);
+	sunLight.castShadow = true;
+	sunLight.shadow.camera.near = SunDst*0.75;
+	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
+	sunLight.shadow.mapSize.width = 2048;
+	sunLight.shadow.mapSize.height = 2048;
+	sunLight.shadow.camera.left = -ShdBLR;
+	sunLight.shadow.camera.right = ShdBLR;
+	sunLight.shadow.camera.top = ShdBTB;
+	sunLight.shadow.camera.bottom = -ShdBTB;
+	sunLight.shadow.bias = -0.00001; // WebGPU
+	scene.add(sunLight);
+//- Camera
+let	CamAsp = window.innerWidth/window.innerHeight;
+let	camera = new THREE.PerspectiveCamera(55,CamAsp,1,100000);
+//	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
+//- Renderer
+let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+    renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.autoUpdate = true;
+	renderer.receiveShadow = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	document.body.appendChild(renderer.domElement);
+let maxAnisotropy = renderer.getMaxAnisotropy();
+//- Inputs
+	// Key Input
+	document.addEventListener("keydown", onDocumentKeyDown, false);
+	document.addEventListener("keyup", onDocumentKeyUp, false);
+	// MY CAMERA
+	renderer.domElement.addEventListener("mousedown", onMouseDown, false);
+	renderer.domElement.addEventListener("mouseup", onMouseUp, false);
+	renderer.domElement.addEventListener("mousemove", onMouseMove, false);
+	renderer.domElement.addEventListener('mousewheel', onMouseWheel, {capture: false, passive: false});
+	renderer.domElement.addEventListener("touchstart", onTouchStart, false);
+	renderer.domElement.addEventListener("touchmove", onTouchMove, false);
+	// Buttons
+	document.getElementById("PAW").addEventListener("click", togglePause, false);
+	document.getElementById("CAM").addEventListener("click", toggleCamera, false);
+	document.getElementById("FST").addEventListener("click", toggleSpdU, false);
+	document.getElementById("PTD").addEventListener("click", togglePitD, false);
+	document.getElementById("SLO").addEventListener("click", toggleSpdD, false);
+	document.getElementById("BKL").addEventListener("click", toggleBnkL, false);
+	document.getElementById("CTR").addEventListener("click", toggleCntr, false);
+	document.getElementById("BKR").addEventListener("click", toggleBnkR, false);
+	document.getElementById("PTU").addEventListener("click", togglePitU, false);
+	document.getElementById("YWL").addEventListener("click", toggleYawL, false);
+	document.getElementById("YWR").addEventListener("click", toggleYawR, false);
+	// Window Resize
+	window.addEventListener("resize", onWindowResize, false);
+//- Loading Manager
+	// Create a loading manager to set RESOURCES_LOADED when appropriate.
+	// Pass loadingManager to all resource loaders.
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let imagLoader = new THREE.ImageLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+
 //= SKYBOX =====================//==============================================
 let SkyCol = 0x1732c1;			// Sky
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
@@ -115,20 +205,6 @@ let LnFFlg = 1;					// 1 = LensFlare On
 let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
 let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
 let LF0Txt, LF1Txt = 0;
-
-//= SUN ========================//==============================================
-let SunCol = 0xffffff;			// Sun
-let SunInt = 3;					// Intensity
-//- Rotation and Position (fixed)
-let SunDst = 50;				// Distance (for shadows)
-let SunLat = 23;				// Direction - Vert (+/- 90)
-let SunLon = 312;				// Direction - Horz (0->360)
-//- New
-let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
-let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
-//-	Shadows
-let ShdDst = 1500;				// Distance (for shadows)
-let ShdBox = 100;				// Size of shadow box
 
 //= GRDWTR TEXTURES ============//==============================================
 let WtrCol = 0x1060ff;			// Water (Nodes)
@@ -241,6 +317,7 @@ let life = lifeTime.div(lifeRange);
 //- Create Default Center Mesh
 let	CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
+	scene.add(CamCtr);
 //- Camera Inputs (for 2 External Cameras, second linked to Airplane)
 let CamNum = 2;
 let CamLLD = [new THREE.Vector3(CamLat,CamLon,200),
@@ -294,81 +371,6 @@ let K_PitU = 40;				// Pitch up (down arrow)
 let K_YawR = 34;				// Yaw Right (page down)
 let K_Paws = 80;				// Pause (p)
 
-//= BASIC VALUES ===============//==============================================
-	document.body.appendChild(container);
-//- Display
-let	scene = new THREE.Scene();
-	scene.background = new THREE.Color(FogCol);
-let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
-    renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setSize(window.innerWidth,window.innerHeight);
-	renderer.setAnimationLoop(rendAll);
-	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.autoUpdate = true;
-	renderer.receiveShadow = true;
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-	document.body.appendChild(renderer.domElement);
-let	maxAnisotropy = 16;			// ### WebGPU
-//- Lights
-let ambLight = new THREE.AmbientLight(SunCol, 0.5);
-	scene.add(ambLight);
-let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
-	sunLight.position.copy(SunPos);
-	sunLight.castShadow = true;
-	sunLight.shadow.mapSize.width = 4096;
-	sunLight.shadow.mapSize.height = 4096;
-	sunLight.shadow.camera.near = SunDst*0.75;
-	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
-	sunLight.shadow.camera.left = -ShdBox;
-	sunLight.shadow.camera.right = ShdBox;
-	sunLight.shadow.camera.top = ShdBox;
-	sunLight.shadow.camera.bottom = -ShdBox;
-	sunLight.shadow.bias = - 0.0001;					// ### WebGPU
-	sunLight.target.position.set(0,0,0);
-	scene.add(sunLight);
-//- Camera
-let	CamAsp = window.innerWidth/window.innerHeight;
-let	camera = new THREE.PerspectiveCamera(55,CamAsp,1,100000);
-	scene.add(CamCtr);
-//	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
-//- Inputs
-	// Key Input
-	document.addEventListener("keydown", onDocumentKeyDown, false);
-	document.addEventListener("keyup", onDocumentKeyUp, false);
-	// MY CAMERA
-	renderer.domElement.addEventListener("mousedown", onMouseDown, false);
-	renderer.domElement.addEventListener("mouseup", onMouseUp, false);
-	renderer.domElement.addEventListener("mousemove", onMouseMove, false);
-	renderer.domElement.addEventListener('mousewheel', onMouseWheel, {capture: false, passive: false});
-	renderer.domElement.addEventListener("touchstart", onTouchStart, false);
-	renderer.domElement.addEventListener("touchmove", onTouchMove, false);
-	// Buttons
-	document.getElementById("PAW").addEventListener("click", togglePause, false);
-	document.getElementById("CAM").addEventListener("click", toggleCamera, false);
-	document.getElementById("FST").addEventListener("click", toggleSpdU, false);
-	document.getElementById("PTD").addEventListener("click", togglePitD, false);
-	document.getElementById("SLO").addEventListener("click", toggleSpdD, false);
-	document.getElementById("BKL").addEventListener("click", toggleBnkL, false);
-	document.getElementById("CTR").addEventListener("click", toggleCntr, false);
-	document.getElementById("BKR").addEventListener("click", toggleBnkR, false);
-	document.getElementById("PTU").addEventListener("click", togglePitU, false);
-	document.getElementById("YWL").addEventListener("click", toggleYawL, false);
-	document.getElementById("YWR").addEventListener("click", toggleYawR, false);
-	// Window Resize
-	window.addEventListener("resize", onWindowResize, false);
-//- Loading Manager
-	// Create a loading manager to set RESOURCES_LOADED when appropriate.
-	// Pass loadingManager to all resource loaders.
-let loadingManager = new THREE.LoadingManager();
-let RESOURCES_LOADED = false;
-	loadingManager.onLoad = function(){
-		console.log("loaded all resources");
-		RESOURCES_LOADED = true;
-		initAll();
-	};
-let txtrLoader = new THREE.TextureLoader(loadingManager);
-let imagLoader = new THREE.ImageLoader(loadingManager);
-let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
 //= HTML OVERLAY TEXT ==========================================================
 let Air_SpdElement = document.getElementById("Air_Spd"); // Airspeed
@@ -471,6 +473,7 @@ function initSkyBox() {
 		let	spotLight = new THREE.PointLight(0xffffff);
 		scene.add(spotLight);
 		spotLight.position.copy(SunPos).normalize;
+		spotLight.position.multiplyScalar(1000);
 		let LF = new LensflareMesh();
 			LF.addElement(new LensflareElement(LF0Txt,256,0));
 			LF.addElement(new LensflareElement(LF1Txt,32,0.2));
