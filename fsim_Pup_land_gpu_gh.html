@@ -882,6 +882,7 @@ function initSkyBox() {
 		let	spotLight = new THREE.PointLight(0xffffff);
 		scene.add(spotLight);
 		spotLight.position.copy(SunPos).normalize;
+		spotLight.position.multiplyScalar(1000);	
 		let LF = new LensflareMesh();
 			LF.addElement(new LensflareElement(LF0Txt,256,0));
 			LF.addElement(new LensflareElement(LF1Txt,32,0.2));
