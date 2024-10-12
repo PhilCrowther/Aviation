@@ -1,6 +1,6 @@
 /*
  * Flight.js
- * Version 4 (vers 24.09.27)
+ * Version 4a (vers 24.10.12)
  * Copyright 2017-24, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -11,7 +11,7 @@
  * See http://philcrowther.com/Aviation for more details.
 */
 
-import {Quaternion,BoxGeometry,MeshBasicMaterial,Mesh} from 'three';
+import {Quaternion,BoxGeometry,MeshBasicNodeMaterial,Mesh} from 'three';
 
 class Flight {
 
@@ -246,6 +246,7 @@ update() {
 	this.air_.AirPBY.rotation.y = 0;
 	// Pitch -------------------------------------------------------------------
 	this.air_.AirRot.x = PoM360(this.air_.AirObj.rotation.x*this.RadDeg);
+	this.air_.AirRot.x = this.air_.AirRot.x + this.air_.ShpPit; // Add Ship Pitch
 	// Heading -----------------------------------------------------------------
 	this.air_.AirRot.y = Mod360(-this.air_.AirObj.rotation.y*this.RadDeg);
 	this.air_.HdgDif = (this.air_.AirRot.y-this.air_.OldRot.y)/this.air_.DLTime;	// Change in Heading (display)
@@ -266,11 +267,12 @@ update() {
 	if (this.air_.AutoOn && (this.air_.AirRot.z > 270 || this.air_.AirRot.z < 90)) {	// Only if Flag Set and Not Upside Down
 		let ACBnew = this.air_.AirRot.z;	// 270 to 90
 		if (ACBnew > 180) ACBnew = ACBnew-360;	// -90 to 90
-		if (ACBnew >  this.air_.MaxBnk) ACBnew = this.air_.MaxBnk;	// Limit Pos Bank
+		if (ACBnew >  this.air_.MaxBnk) ACBnew = this.air_.MaxBnk;  // Limit Pos Bank
 		if (ACBnew < -this.air_.MaxBnk) ACBnew = -this.air_.MaxBnk;	// Limit Neg Bank
 		this.air_.AirRot.z = Mod360(ACBnew+360); 		// 270 to 90
 		this.air_.AirObj.rotation.z = -this.air_.AirRot.z*this.DegRad;
-	}	
+	}
+	this.air_.AirRot.z = this.air_.AirRot.z + this.air_.ShpBnk; // Add Ship Pitch		
 	// 3. COMPUTE MAP SPEED ----------------------------------------------------
 	// Inputs:	this.air_.SpdMPF, ACThrG, ACPtch, ACHead, this.air_.MapPos
 	// Results:	this.air_.SpdKPH, PSpdZV, PSpdYV, ACPtch, this.air_.MapSpd, this.air_.MapPos
@@ -364,8 +366,8 @@ return x;}
 //- Make Mesh ------------------------------------------------------------------
 function makMsh() {
 	let geometry = new BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicMaterial({transparent:true,opacity:0}); 
-	let mesh = new Mesh(geometry, material);
+	let material = new MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
+	let mesh = new Mesh(geometry,material);
 return mesh;}
 
 export {Flight, Mod360, PoM360, MaxVal, makMsh};
@@ -386,5 +388,8 @@ export {Flight, Mod360, PoM360, MaxVal, makMsh};
  * 240815:	Added Autopilot
  * 240913:	Converted to Class.
  * 240925:	Added Air Density and IAS comps
- * 240927	Deleted rotLLD (since can used spherical to rotate vector)
+ * 240927:	Deleted rotLLD (since can used spherical to rotate vector)
+ * 241006:	Add adjustment for Ship Pitch [REQUIRED VERSON CHANGE TO 4a]
+ * 241012:  Change makMsh to NodeMaterial and add color
+ * 241012:	Add adjustment for Ship Bank (just in case)
 */
