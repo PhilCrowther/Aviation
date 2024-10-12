@@ -12,6 +12,7 @@
 */
 
 import {Quaternion,BoxGeometry,MeshBasicNodeMaterial,Mesh} from 'three';
+import {color} from "three/tsl";
 
 class Flight {
 
