@@ -5,12 +5,13 @@
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 Version dated 7 May 2024, updated 13 Oct 2024
+NOTE: r165 is last version where NodeMaterials can be used with WebGL2
 
 This shows an animated model of an airplane in flight over an animated ocean using nodes.
 -->
 
 <head>
-<title>FlightModel B29 Ocean WebGLN</title>
+<title>fmod B29 ocean glN r165</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_b29n.css">
 </head>
@@ -743,6 +744,8 @@ function loadACMineX() {
 		air_.AirObj.add(ACMine);
 		ACMine.castShadow = true;
 		ACMine.receiveShadow = true;
+		// Louad Sounds
+		loadSounds();
 	});
 }
 
@@ -826,7 +829,7 @@ function moveACmine() {
 // Load Sounds
 function loadSounds() {	
 	//- My Engines -------------------------------------------------------------
-	let fname = ACPath + "/sounds/" + acsnd1;
+	let fname = ACPath + "sounds/" + acsnd1;
 	audioLoader.load(fname, function(buffer) {
 		EngSnd.setBuffer(buffer);
 		EngSnd.setRefDistance(RefDst);
