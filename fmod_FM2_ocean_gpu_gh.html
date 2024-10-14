@@ -10,7 +10,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 -->
 
 <head>
-<title>FMod: FM2 Ocean GPU r169</title>
+<title>fmod fm2 ocean gpu r169</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_fm2.css">
 </head>
@@ -84,8 +84,8 @@ let CamLon = 240;				// Camera Direction - Horz (0->360)
 //- AIRPLANE: Start ------------------------------------------------------------
 let USorSI = "US";				// Starting Units of Measurement (US or SI)
 let PwrPct = 0.8;				// Initial Power
-let BegSpd = 180;				// Speed (mph)
-let BegPos = new THREE.Vector3(0,5000,0); // Position (ft)
+let BegSpd = 290;				// Speed (180 mph)
+let BegPos = new THREE.Vector3(0,1525,0); // Position (5000 ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let	KeyVal = new THREE.Vector3(0.5,0.25,0.5);	// Key Values
 let InpKey = new THREE.Vector3(); // Inputs - Keys
@@ -109,11 +109,6 @@ let	GrvMPS = 9.80665; // (mps)
 let GrvDLT = GrvMPS * DLTim2;
 //-	Starting Air Density
 let	AirDSL = 1.225;				// Density - Sea Level (kg/m3)
-//- Convert Starting Values
-if (USorSI = "US") {
-	BegSpd = BegSpd*Mil2Km;
-	BegPos.multiplyScalar(Ft2Mtr);
-}
 
 //= INPUT VALUES ===============//=============================================
 //-	Display
@@ -350,7 +345,7 @@ let air_ = {
 		MovFlg: 0,				// If Sitting on a Moving Object
 		// Fixed Values Obtained from Flight
 		CfLMax: 0,				// Maximum Coefficient of Lift
-		FlpCfL: 0,					// Max Flap Cfl (0.2*CfLMax)
+		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
 		ACMass: 0,				// Airplane Mass
 		Weight: 0,				// Used by autopilots
 		PYBmul: new THREE.Vector3(0,0,0), // Airplane Pitch//Yaw/Bank Multiplier
@@ -384,11 +379,11 @@ let ACPath = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to l
 //-	Animation Mixers
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
-//-	Animation Mixers - External Model
+//-	External Model and Mixers
 let ACFile = "fm2_flyt_caf_npa.glb"; // Name of aircraft model file (rotated blender file)
 let mxr_ = {
 		// File Name
-		FNm: ACPath + ACFile,
+		Src: ACPath + ACFile,
 		// GLTF
 		GLT: 0,
 		// Address
@@ -400,11 +395,11 @@ let mxr_ = {
 		// Canopy, Tailhook, SpinProp XP
 		Cnp:0, THk:0,
 	}
-//	Animation Mixers - Internal Model
+//- Internal Model and Mixers
 let VCFile = "fm2_flyt_vcp_npa.glb"; // Name of aircraft model file (rotated blender file)
 let vxr_ = {
 		// File Name
-		FNm: ACPath + VCFile,
+		Src: ACPath + VCFile,
 		// GLTF
 		GLT: 0,
 		// Address
@@ -424,7 +419,6 @@ let vxr_ = {
 	}
 //- Play Animations ------------------------------------------------------------
 //-	Animation Positions (all range from 0 to 360 with center at 180)
-let anm8ac, anm8vr = 0;
 let anm_ = {
 		anmfps: anmfps,			// Blender FPS
 		spnprp: 180,			// SpinProp 	degrees = 0 to 360
@@ -479,7 +473,7 @@ let RefDst = 25;				// Reference distance for Positional Sound
 //- My Engine and Prop
 let EngSnd = new THREE.PositionalAudio(listener);
 let PrpSnd = new THREE.PositionalAudio(listener);
-let EngMsh = new makMsh(); // Aircraft Engine
+let EngMsh = new makMsh();		// Aircraft Engine
 	EngMsh.add(EngSnd);			// Engine
 	EngMsh.add(PrpSnd);			// Prop
 	EngMsh.position.z = -5;
@@ -775,9 +769,8 @@ function loadAirObj() {
 }
 
 //-	Load Airplane Model --------------------------------------------------------
-// Load Airplane
 function loadAirExt() {
-	gltfLoader.load(mxr_.FNm, function (gltf) {
+	gltfLoader.load(mxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -795,23 +788,20 @@ function loadAirExt() {
 		mxr_.GLT = gltf;
 		mxr_.Adr = gltf.scene;
 		mxr_.Adr.rotation.order = "YXZ";
-		// Convert from feet to meters
-//		mxr_.Adr.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);
 		mxr_.Adr.scale.setScalar(Ft2Mtr);
 		//
 		loadACanimX(air_, mxr_,anm_);
 		//
 		air_.AirObj.add(mxr_.Adr);
-		// Initialize
 		mxr_.Adr.visible = true;
-		// Load Related Objects only after mxr_.Adr known
+		// Load Sounds
 		loadSounds();
 	});		
 }
 
 //-	Load Virtual Cockpit -------------------------------------------------------
 function loadAirInt() {
-	gltfLoader.load(vxr_.FNm, function (gltf) {
+	gltfLoader.load(vxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -881,11 +871,10 @@ function moveAirObj() {
 	air_.AirRot.x = air_.AirObj.rotation.x*RadDeg;
 	air_.AirRot.z = Mod360(-air_.AirObj.rotation.z*RadDeg); // Mod360 required 
 	// SpeedDLT
-	air_.SpdMPS = air_.SpdKPH/3.6;	// Aircraft Speed (FPS)
-	air_.SpdMPF = air_.SpdMPS*DLTime;		// Aircraft Speed (DLT)
+	air_.SpdMPS = air_.SpdKPH / 3.6; // Aircraft Speed (FPS)
+	air_.SpdMPF = air_.SpdMPS*DLTime; // Aircraft Speed (DLT)
 	// Speed
 	let ACPrad = air_.AirRot.x*DegRad;
-//	let PSpdYV = air_.SpdMPF*Math.abs(Math.sin(ACPrad));
 	let PSpdYV = 0; // ### OVERRIDE for Static Display
 	let PSpdZV = air_.SpdMPF*Math.abs(Math.cos(ACPrad));
 	let ACH = air_.AirRot.y*DegRad; // Map Speed
@@ -893,17 +882,17 @@ function moveAirObj() {
 	air_.MapPos.set(air_.MapPos.x+air_.MapSpd.x,air_.MapPos.y+air_.MapSpd.y,air_.MapPos.z+air_.MapSpd.z); // Map Position (meters)
 	air_.MapSPS.set(air_.MapSpd.x,air_.MapPos.y,air_.MapSpd.z);	// data for grids in meters
 	// Run Animtions
-	if (cam_.flg) {						// Internal View
+	if (cam_.flg) {				// Internal View
 		// Right Arm Bank
-		anm_.stkbcm = 0;				// Reset Cumulative	
+		anm_.stkbcm = 0;		// Reset Cumulative	
 		anm_.stkbnk = 180+InpKey.z*200;	// Joystick bank animation (range = 0 to 360)
 		//
 		moveACanimV(air_,vxr_,anm_,cam_.lld); // VC
 	}	
-	else moveACanimX(air_,mxr_,anm_);	// External
+	else moveACanimX(air_,mxr_,anm_); // External
 }
 
-//= SOUNDS =====================================================================
+//= SOUNDS =====================//==============================================
 
 // Load Sounds
 function loadSounds() {	
