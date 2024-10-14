@@ -31,7 +31,6 @@ let Mil2Km = 1.60934;
 
 // Load Aircraft Model Animations
 function loadACanimX(air_, mxr_,anm_) {
-	// Animations --------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(mxr_.GLT.animations, "propellerAction");
 	mxr_.Prp = new AnimationMixer(mxr_.Adr);
@@ -152,8 +151,6 @@ function loadACanimX(air_, mxr_,anm_) {
 
 // Load Aircraft Model Animations
 function loadACanimV(vxr_,anm_) {		
-	// Load Animations	
-	// Animations --------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(vxr_.GLT.animations, "propellerAction");
 	vxr_.Prp = new AnimationMixer(vxr_.Adr);
@@ -318,9 +315,9 @@ function loadACanimV(vxr_,anm_) {
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.yawval/anm_.anmfps);	
 }
 
-//= MOVE =======================================================================
+//= MOVE =======================//==============================================
 
-// Move Aircraft Model Animations
+//- Move External Model Animations ---------------------------------------------
 function moveACanimX(air_,mxr_,anm_) {
 	// General
 	moveACanimA(air_,anm_);
@@ -366,7 +363,7 @@ function moveACanimX(air_,mxr_,anm_) {
 	}
 }
 
-// Move Virtual Cockpit Animations
+//- Move Internal Model Animations ---------------------------------------------
 function moveACanimV(air_,vxr_,anm_,CamRot) {
 	// General
 	moveACanimA(air_,anm_);
@@ -472,9 +469,9 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
 }
 
-// Move All Animations
+//- Move Common Model Animations -----------------------------------------------
+//  Animations which act in all views: Propeller, Ailerons, Gear, Flaps, Canopy, Tailhook
 function moveACanimA(air_,anm_) {
-	/* Animations ---------------------------------------------------------- */
 	// Propeller
 	let prpspd =  4*(air_.PwrPct-0.6);						// Range = -2.4 to + 1.6
 	anm_.spnprp = anm_.spnprp-prpspd;
@@ -585,4 +582,5 @@ export {loadACanimX, loadACanimV, moveACanimX, moveACanimV};
  * 240420:	Converted to SI units
  * 240424:	Changed all air_ variables to 8 character names
  * 240928:	Changed Airspeed Indicatator to IAS and Limit Rudder Travel
+ * 241013:	Cleanup
 */
