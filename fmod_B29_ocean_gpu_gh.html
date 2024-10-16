@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 29 Sep 2024
+Version dated 16 Oct 2024
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -27,14 +27,8 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 
 <button id="PAW" class="pauseButton">Paws</button>
 <button id="SND" class="soundButton">Sond</button>
-
 <button id="CAM" class="cameraButton">View</button>
-<button id="REF" class="reflinButton">RfLn</button>
 
-<button id="LGB" class="lgearButton">Gear</button>
-<button id="FLP" class="flapsButton">Flap</button>
-<button id="CAN" class="canopyButton">Cnpy</button>
-<button id="HUK" class="hookButton">Hook</button>
 
 <button id="SLO" class="spddButton">-</button>
 <button id="PTD" class="pitdButton">&uarr;</button>
@@ -696,6 +690,19 @@ function loadAirExt() {
 				child.material.envMap = scene.background;
 				child.castShadow = true;
 				child.receiveShadow = true;
+				if (
+					child.name == "glass_sleft" ||
+					child.name == "glass_srite" ||
+					child.name == "glass_top1" ||
+					child.name == "glass_top2" ||
+					child.name == "prop1" ||
+					child.name == "prop2" ||
+					child.name == "prop3" ||
+					child.name == "prop4")
+				{
+					child.castShadow = false;
+					child.receiveShadow = false;
+				}
 			}
 		});
 		mxr_.GLT = gltf;
