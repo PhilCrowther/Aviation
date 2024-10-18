@@ -215,6 +215,7 @@ let boxrot = 0;					//keep = 0
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
 //- Texture
 let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+let envMap = 0;
 //-	LensFlare
 let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
 let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
@@ -367,7 +368,7 @@ let ACPath = "https://PhilCrowther.github.io/Aviation/models/b29/";	// Used to l
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
 //-	External Model and Mixers
-let ACFile = "b29_flyt_6bg_npa42.glb";	// Name of aircraft model file (rotated blender file)
+let ACFile = "b29_flyt_6bg_npa42a.glb";	// Name of aircraft model file (rotated blender file)
 let mxr_ = {
 		Src: ACPath + ACFile,	// File Name
 		GLT: 0,					// GLTF scene
@@ -560,12 +561,13 @@ function rendAll() {
 //= SKYBOX =====================//==============================================
 
 function loadSkyBox() {
-	let envMap = cubeLoader
+	envMap = cubeLoader
 		.setPath(SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
-	envMap.format = THREE.RGBAFormat;
+	envMap.format = THREE.RGBAFormat; // ??? required?
 	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = envMap;
+	scene.environment = envMap; // ??? required?
 	// LensFlare
 	if (LnFFlg) {				// LensFlare	
 		LF0Txt = txtrLoader.load(LF0Src);
@@ -687,7 +689,7 @@ function loadAirExt() {
 	gltfLoader.load(mxr_.Src, function (gltf) {	// The OnLoad function
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
-				child.material.envMap = scene.background;
+				child.material.envMap = envMap; // ??? required?
 				child.castShadow = true;
 				child.receiveShadow = true;
 				if (
@@ -703,6 +705,7 @@ function loadAirExt() {
 					child.castShadow = false;
 					child.receiveShadow = false;
 				}
+				child.material.needsUpdate = true; // ??? required?
 			}
 		});
 		mxr_.GLT = gltf;
