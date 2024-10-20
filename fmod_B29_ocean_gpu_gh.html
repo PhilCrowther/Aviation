@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Oct 2024
+Version dated 19 Oct 2024
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -563,7 +563,7 @@ function rendAll() {
 function loadSkyBox() {
 	envMap = cubeLoader
 		.setPath(SBxSrc)
-		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
+		.load(["px2.jpg", "nx2.jpg", "py.jpg", "ny2.jpg", "pz2.jpg", "nz2.jpg"]);
 	envMap.format = THREE.RGBAFormat; // ??? required?
 	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = envMap;
