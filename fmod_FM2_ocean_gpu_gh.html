@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 29 Sep 2024
+Version dated 21 Oct 2024
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -380,7 +380,7 @@ let ACPath = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to l
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
 //-	External Model and Mixers
-let ACFile = "fm2_flyt_caf_npa.glb"; // Name of aircraft model file (rotated blender file)
+let ACFile = "fm2_flyt_caf_npa_42.glb"; // Name of aircraft model file (rotated blender file)
 let mxr_ = {
 		// File Name
 		Src: ACPath + ACFile,
@@ -396,7 +396,7 @@ let mxr_ = {
 		Cnp:0, THk:0,
 	}
 //- Internal Model and Mixers
-let VCFile = "fm2_flyt_vcp_npa.glb"; // Name of aircraft model file (rotated blender file)
+let VCFile = "fm2_flyt_vcp_npa_42.glb"; // Name of aircraft model file (rotated blender file)
 let vxr_ = {
 		// File Name
 		Src: ACPath + VCFile,
