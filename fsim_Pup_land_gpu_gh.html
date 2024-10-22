@@ -87,7 +87,7 @@ let BegPos = new THREE.Vector3(0,2000,0); // Position (ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Basic airplane values
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-let PwrMul = 0.0001;				// Power % Input - Mouse Multiplier
+let PwrMul = 0.0005;				// Power % Input - Mouse Multiplier
 let PwrDif = 0;						// Power % Input - Value
 let InpBrk = 0;						// Brakes
 //- Mouse Delays ...............................................................
@@ -526,7 +526,7 @@ let ACMine = 0;					// My Aircraft (loaded)
 //-	File Path
 let ACPath = "https://PhilCrowther.github.io/Aviation/models/pup/";	// Used to load models and sounds
 //-	Animation Mixers - External Model
-let ACFile = "pup_flyt_npa.glb"; // Name of aircraft model file (rotated blender file)
+let ACFile = "pup_flyt_npa_42.glb"; // Name of aircraft model file (rotated blender file)
 //- Aircraft Animations
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
