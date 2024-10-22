@@ -202,7 +202,8 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.right = ShdBLR;
 	sunLight.shadow.camera.top = ShdBTB;
 	sunLight.shadow.camera.bottom = -ShdBTB;
-	sunLight.shadow.bias = -0.0005; // WebGPU
+//	sunLight.shadow.bias = -0.0005; // WebGPU
+	sunLight.shadow.bias = -0.0001; // WebGPU
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
