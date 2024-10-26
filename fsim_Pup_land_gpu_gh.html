@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Oct 2024
+Version dated 26 Oct 2024
 
 A flight simulation of an animated airplane model over procedural land using
 -->
@@ -80,10 +80,9 @@ import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3a.js";
 //- CAMERA ---------------------------------------------------------------------
 let CamSel = 0;						// Camera Seletion (0 = External; 1 = Internal)
 //- AIRPLANE: Start -----------------------------------------------------------
-let USorSI = "US";					// Units of Measurement (US or SI)
 let BegPwr = 0;						// Initial Power Percent
-let BegSpd = 100;					// Speed (mph)
-let BegPos = new THREE.Vector3(0,2000,0); // Position (ft)
+let BegSpd = 161;					// Speed (kph = 100 mph)
+let BegPos = new THREE.Vector3(0,610,0); // Position (meters = 2000 ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Basic airplane values
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
@@ -109,7 +108,7 @@ let KeyVal = new THREE.Vector3(1,.05,0.25);	// Key Values (Yaw = turn rate in 15
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 let DLTim2 = DLTime*DLTime;		//
 //	Conversions
-var DegRad = Math.PI/180;		// Convert Degrees to Radians
+let DegRad = Math.PI/180;		// Convert Degrees to Radians
 let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 let Ft2Mtr = 0.3048;			// Convert Feet to Meters
 let Mtr2Ft = 1/0.3048;
@@ -119,11 +118,6 @@ let Mil2Km = 1.60934;
 let	GrvMPS = 9.80665; 			// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
-//- Convert Starting Values
-if (USorSI = "US") {
-	BegSpd = BegSpd*Mil2Km;
-	BegPos.multiplyScalar(Ft2Mtr);
-}
 let BegTmp = 288.15;			// K = 59F
 
 //= INPUT VALUES ===============//==============================================
@@ -531,20 +525,20 @@ let ACFile = "pup_flyt_npa.glb"; // Name of aircraft model file (rotated blender
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
 //	Animation Mixers - External Model
-var mxProp = 0;					// Propeller
-var mxRudr = 0;					// Rudder
-var mxElev = 0;					// Elevator
-var mxAlTL = 0;					// AileronTL
-var mxAlTR = 0;					// AileronTR
-var mxAlBL = 0;					// AileronTL
-var mxAlBR = 0;					// AileronTR
+let mxProp = 0;					// Propeller
+let mxRudr = 0;					// Rudder
+let mxElev = 0;					// Elevator
+let mxAlTL = 0;					// AileronTL
+let mxAlTR = 0;					// AileronTR
+let mxAlBL = 0;					// AileronTL
+let mxAlBR = 0;					// AileronTR
 //- All range from 0 to 360 with center at 180
-var elvatr = 180;				// Elevator 	degrees = +/- 360
-var rudder = 180;				// Rudder 		degrees = +/- 360
-var aillft = 180;				// AileronL 	degrees = +/- 360
-var ailrgt = 180;				// AileronR 	degrees = +/- 360
-var rotaoa = 180;				// AoA 			degrees = +/- 15
-var spnprp = 180;				// Taildrag 	degrees = 0 to 360
+let elvatr = 180;				// Elevator 	degrees = +/- 360
+let rudder = 180;				// Rudder 		degrees = +/- 360
+let aillft = 180;				// AileronL 	degrees = +/- 360
+let ailrgt = 180;				// AileronR 	degrees = +/- 360
+let rotaoa = 180;				// AoA 			degrees = +/- 15
+let spnprp = 180;				// Taildrag 	degrees = 0 to 360
 
 //=	SOUNDS =====================//==============================================
 let acsnd1 = "pup.mp3";			// File (my engine)
@@ -671,12 +665,12 @@ let R90flg = 0;					// Right 90 degrees
 let	CamPVC = makMsh();
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
-	air_.AirPBY.add(CamPVC); 		// Attach CamPVC to AirPBY (### not AirObj)
+	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
 let CamNum = 2;
 let CamLLD = [new THREE.Vector3(-10,0,30),
 			  new THREE.Vector3(0,0,0.001)];
-let CamAdj = [180,0];				// 180 = Looking In
+let CamAdj = [180,0];			// 180 = Looking In
 let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
 			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
 let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
@@ -711,10 +705,10 @@ let cam_ = {
 	cam_.rot.rotation.order = "YXZ";
 	cam_.obj.rotation.order = "YXZ";
 	cam_.deg.rotation.order = "YXZ";
-	cam_.par.add(cam_.rot);			// Attach Rotator
+	cam_.par.add(cam_.rot);		// Attach Rotator
 	cam_.obj.add(cam_.deg);
 
-//= HTML OVERLAY TEXT ==========================================================
+//= HTML OVERLAY TEXT ==========//==============================================
 let Air_PwrElement = document.getElementById("Air_Pwr");
 let Air_PwrNode = document.createTextNode("");
 	Air_PwrElement.appendChild(Air_PwrNode);
@@ -839,7 +833,7 @@ function rendAll() {
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;												// Stop the function here.
 	}
-	if (PawsOn == 0 && LodFlg > 0 && controls.isLocked === true) {
+	if (!PawsOn && LodFlg && controls.isLocked === true) {
 		moveCamera(camera,cam_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
@@ -1493,7 +1487,7 @@ function moveObject() {
 	}
 }
 
-//= AIRPLANE =============================================================*/
+//= AIRPLANE ===================================================================
 
 // Load Airplane
 function loadACMine() {
@@ -1565,7 +1559,7 @@ function loadACMine() {
 	});
 }
 
-//= Move Airplane Model / Virtual Cockpit ======================================
+//= Move Airplane Model ========================================================
 function moveAirObj() {
 	// Add Delay to Power
 	let gal = PwrDif * PwrMsD.x;		// Current input delayed
@@ -1785,7 +1779,7 @@ function moveCamera(camera,cam_) {
 		}
 		// External View
 		else {
-			if (air_.GrdFlg > 0 && cam_.lld.x > -12.5) cam_.lld.x = -12.5;
+			if (air_.GrdFlg && cam_.lld.x > -12.5) cam_.lld.x = -12.5;
 		}
 		InpMos.x = 0;
 		InpMos.y = 0;
@@ -1832,7 +1826,7 @@ function AutoText(){
 }
 
 function InfoText() {
-	if (InfoOn == 0) onInfo0();
+	if (!InfoOn) onInfo0();
 	else if (InfoOn == 1) onInfo1();
 	else if (InfoOn == 2) onInfo2();
 }
