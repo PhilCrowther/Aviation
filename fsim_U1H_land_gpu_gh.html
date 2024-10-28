@@ -78,13 +78,25 @@ import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3a.js";
 
 //= GENERAL ===================================================================
 
-/*	This flight simulation demo uses the most advanced version of three.js */
+//	This flight simulation demo uses the most advanced version of three.js
 
-//=	FEATURES
+//= CONTROLS
+//	This simulation primarily relies on mouse controls:
+//	* Mouse wheel sets altitude (like the throttle/collective control in a real helicopter)
+//	* Mouse movement changes direction (like the cyclic control in a real helicopter)
+//	* Mouse buttons cause yaw left/right (like tail rotor in real helicopter)
+
+//=	SIMPLIFICATIONS
+//	A Helicopter is extremely difficult to fly. Your "pilot personna" will handle the following:
+//	* Adjust power for changes in collective.
+//  * Adjust tail rotor to offset changes in power/collective.
 
 //=	TO DO:
 //-	Flight Module:
-//	* Fix YawAdj
+//	* Fix Weathervan adjustment (YawAdj)
+//	* Allow for greater pitch and bank adjustments where excess thrust available.
+//	* Reduce excess thrust available as altitude increases.
+//	* Reduce/increase excess thrust available as climb/descend
 
 //= INPUTS =====================//==============================================	
 //- CAMERA ---------------------------------------------------------------------
@@ -95,7 +107,7 @@ let BegSpd = 0;					// Speed (kph)
 let BegRot = new THREE.Euler(0,0,0); // Position (degrees) ### new
 let BegPos = new THREE.Vector3(0,0,0); // Position (meters)
 //- AIRPLANE: Inputs -----------------------------------------------------------
-let PYBmul = new THREE.Vector3(0.1,1,0.025); // Basic airplane values
+let PYBmul = new THREE.Vector3(0.1,1,0.1); // Basic airplane values
 let	MosMul = new THREE.Vector3(1,1,1); // Adjustment to PYBmul (default = 1)
 let AltMul = 0.0001;			// Power % Input - Mouse Multiplier
 let AltDif = 0;					// Power % Input - Value
@@ -1746,16 +1758,20 @@ function moveFlight() {
 		air_.AirRot.y = Mod360(air_.AirRot.y + air_.RotDif.y);
 		// Weather-Vane Adjustment
 		let YawAdj = 0;
-		if (Math.abs(air_.AirSpd.z) > 0 && Math.abs(air_.AirSpd.x) > 0) {
+		let TotSpd = Math.sqrt(air_.AirSpd.z*air_.AirSpd.z+air_.AirSpd.x*air_.AirSpd.x);
+		TotSpd = Math.abs(TotSpd);
+		if (TotSpd) { // if moving
 			air_.DirFlt = Mod360(Math.atan2(air_.MapSpd.x,air_.MapSpd.z) * RadDeg);
-			let YawDif = Mod360(air_.DirFlt-air_.AirRot.y);	// Difference
-			YawDif = PoM360(YawDif)
-			let YawAdj = YawDif*DegRad;
-			YawAdj = Math.cos(YawAdj); // Range = 0, +1, 0, -1
-			if (YawDif > 90) YawAdj = 1;
-			if (YawDif < -90) YawAdj = -1;
+			let DirDif = Mod360(air_.DirFlt-air_.AirRot.y);	// Difference
+			DirDif = PoM360(DirDif)*DegRad;
+			YawAdj = Math.sin(DirDif); // Range = 0, +1, 0, -1
+			if (DirDif > 90) YawAdj = 1;
+			if (DirDif < -90) YawAdj = -1;
+			YawAdj = YawAdj * TotSpd / air_.MaxKPH;
+			YawAdj = YawAdj * 10;
+			air_.AirRot.y = air_.AirRot.y + YawAdj;
 		}
-		air_.RotDif.y = air_.RotDif.y + YawAdj;
+//		air_.RotDif.y = air_.RotDif.y + YawAdj; // Why not work?
 //		console.log(YawAdj);
 	}
 	// Compute Map Pos (MapSpd = mpf)
