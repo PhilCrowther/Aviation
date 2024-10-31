@@ -21,7 +21,7 @@ import {
 	NearestFilter,
 	RepeatWrapping,
 	RGBAFormat,
-	StorageTexture
+	StorageTexture,
 } from 'three';
 import {
 	vec2,
@@ -31,7 +31,7 @@ import {
 	instanceIndex,
 	code,
 	uniform,
-	time						// r170 changed timerLocal to time
+	time,						// r170 changed timerLocal to time
 } from 'three/tsl';
 
 //= OCEAN MODULE ===============================================================
@@ -62,7 +62,8 @@ constructor(renderer,wav_) {
 	// Load Variables
 	this.Res = wav_.Res;
 	this.Siz = wav_.Siz;
-	this.Spd = wav_.Spd;
+//	this.Spd = wav_.Spd;
+	this.Spd = uniform(wav_.Spd);		// r170	
 	this.windX = wav_.WSp*Math.sin(wav_.WHd*Math.PI/180);
 	this.windY = wav_.WSp*Math.cos(wav_.WHd*Math.PI/180);
 	this.Wnd = vec2(this.windX,this.windY);
@@ -458,7 +459,7 @@ constructor(renderer,wav_) {
 			textureStore(w_norm,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 		}
 	`, [subroutines]);
-	//= Instructions ===========================================================
+	//= Instructions ===========//==============================================
 	//- Shader 1. Initial Frequency
 	this.initSpectrumComp = this.initSpectrum({
 		u_tsiz: this.Res,
@@ -473,7 +474,7 @@ constructor(renderer,wav_) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pingPhaseTexture),
 		u_indx: instanceIndex,
-		u_time: time().mul(this.Spd),
+		u_time: time.mul(this.Spd), // r170
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	this.pongPhaseComp = this.compPhase({
@@ -481,7 +482,7 @@ constructor(renderer,wav_) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pongPhaseTexture),
 		u_indx: instanceIndex,
-		u_time: time().mul(this.Spd),
+		u_time: time.mul(this.Spd), // r170
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	//- Shader 3. New Phase
