@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================
 
-// Version 4t (updated 8 Sep 2024)
+// Version 4t (updated 10 Oct 2024)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -31,10 +31,10 @@ import {
 	instanceIndex,
 	code,
 	uniform,
-	timerLocal
+	time						// r170 changed timerLocal to time
 } from 'three/tsl';
 
-//= OCEAN ========================================================
+//= OCEAN MODULE ===============================================================
 /*
  *	Don't Change After Initialization
  *	@param {float} Res		Resolution of Computation
@@ -55,7 +55,7 @@ import {
 
 class Ocean {
 
-//= Initialize Ocean ===========================================================
+//= Initialize Ocean ===========//==============================================
 constructor(renderer,wav_) {
 	// flag used to trigger parameter changes
 	this.renderer = renderer;
@@ -473,7 +473,7 @@ constructor(renderer,wav_) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pingPhaseTexture),
 		u_indx: instanceIndex,
-		u_time: timerLocal().mul(this.Spd),
+		u_time: time().mul(this.Spd),
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	this.pongPhaseComp = this.compPhase({
@@ -481,7 +481,7 @@ constructor(renderer,wav_) {
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pongPhaseTexture),
 		u_indx: instanceIndex,
-		u_time: timerLocal().mul(this.Spd),
+		u_time: time().mul(this.Spd),
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	//- Shader 3. New Phase
@@ -623,3 +623,5 @@ export {Ocean};
 // 240811: Version 4a	: Updated to r167 and cleaned up imports
 // 240901: Version 4t	: Uses localTimer instead of wavTim.
 // 240904:				: Changed Module format
+// 240410:				: Removed visibility helpers (alpha = 1)
+// 241031: Version4t2	: Replace timerLocal with time (r170)
