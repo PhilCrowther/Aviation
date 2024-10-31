@@ -4,14 +4,14 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Oct 2024
+Version dated 31 Oct 2024
 
 This demo program uses included versions of the GrdMap module.
 
 -->
 
 <head>
-<title>FlightDemo Land WebGPU</title>
+<title>fdem land gpu r170</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
@@ -43,9 +43,9 @@ This demo program uses included versions of the GrdMap module.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/",
+			"three": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -53,8 +53,9 @@ This demo program uses included versions of the GrdMap module.
 
 <script type="module">
 import * as THREE from "three";
-import {color,texture,timerLocal,range,positionLocal,uv,mix,normalMap,
-		rotateUV	// r168		
+import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
+		rotateUV,				// r168 added
+		time,					// r170 changed from timerLocal
 } from "three/tsl";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
@@ -200,32 +201,32 @@ let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 let SkyCol = 0x1732c1;			// Sky
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
 //- Texture
-let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
+let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 //-	LensFlare
 let LnFFlg = 1;					// 1 = LensFlare On
 let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
+let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 
 //= GROUND TEXTURES ============//==============================================
-// Canvas
+//- Canvas
 let canvas = document.createElement("canvas");
 	canvas.width = 1024;
 	canvas.height = 1024;
 let context = canvas.getContext('2d',{willReadFrequently: true});
-// Dimensions
+//- Dimensions
 let dqSize = 1024;				// For Sections
 let dqArea = dqSize*dqSize;
 let dtSize = 512;				// Default
 let dtArea = dtSize*dtSize;
 let dtData = 0;
 let txtTot = 6;					// Total Textures
-// Color Variables
+//- Color Variables
 let GrdMul = 10;
 let red = [0,0];
 let grn = [0,0];
 let blu = [0,0];
-// Colors
+//- Colors
 let GrdDrt = "#1c160e";			// Color of underlying dirt (affects brightness)
 let drtclr = [0x8e6d3d,0x47361e]; // Dirt
 let pstclr = [0x00b000,0x005000]; // Pasture
@@ -246,11 +247,11 @@ let bnsclr = [0xacd193,0x5d8e3d]; // Beans
 //- Grid 0 Data ----------------------------------------------------------------
 // 1/4 section squares (1/2 mile X 1/2 mile)
 
-// Image Data
+//- Image Data
 let G0DPtr = [];
 	G0DPtr[txtTot-1] = 0;
 
-// Materials
+//- Materials
 let G0MPtr = [];
 	G0MPtr[txtTot-1] = 0;
 
@@ -440,13 +441,15 @@ let SmkMat = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
 let SmkMap = 0;
 let lifeRange = range(0.1,1);
 let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
-let timer = timerLocal(.2,1);
-let lifeTime = timer.mul(lifeRange).mod(.05);
+//let timer = time(.2,1);
+let speed = uniform(.2);		// r170
+let scaledTime = time.add(5).mul(speed); // r170
+let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
 let scaleRange = range(.01,.02);
 let rotateRange = range(.1,4);
 let life = lifeTime.div(lifeRange);
 
-//= MY CAMERA ===================//=============================================
+//= MY CAMERA ==================//==============================================
 //let CamSel = 0;	// Starting Camera View (0 = attached to grid, 1 = attached to airplane)
 //- Create Default Center Mesh
 let	CamCtr = makMsh();
@@ -1292,7 +1295,8 @@ function loadJetExh() {
 //- Init Jet Exhaust ----------------------------------------------------------
 function initJetExh() {
 	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
-	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange)));	// r168
+//	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange)));	// r168
+	let textureNode = texture(SmkMap, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new THREE.SpriteNodeMaterial();
