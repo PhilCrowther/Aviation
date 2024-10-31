@@ -100,9 +100,10 @@ if (USorSI = "US") {
 let DLTime = 1/60;				// Frames per Second
 //-	Flags
 let PawsOn = 0;					// Pause
-let LodFlg = 0;					// Done initializing
-let WireOn = 0;					// Wireframe View
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
+let LnFFlg = 1;					// 1 = LensFlare On
+//	Program Flags
+let LodFlg = 0;
 
 //= SUN VALUES =================//==============================================
 let SunCol = "white";			// Sun
@@ -198,12 +199,10 @@ let imagLoader = new THREE.ImageLoader(loadingManager);
 let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
 //= SKYBOX =====================//==============================================
-let SkyCol = 0x1732c1;			// Sky
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
 //- Texture
 let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 //-	LensFlare
-let LnFFlg = 1;					// 1 = LensFlare On
 let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
 let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;

@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 Oct 2024
+Version dated 31 Oct 2024
 
 A flight simulation of an animated airplane model over procedural land using
 -->
 
 <head>
-<title>FSim: UH1 Land GPU r169</title>
+<title>fsim U1H land gpu r170</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
@@ -89,6 +89,7 @@ import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3a.js";
 //=	SIMPLIFICATIONS
 //	A Helicopter is extremely difficult to fly. Your "pilot personna" will handle the following:
 //	* Adjust power for changes in collective.
+//	* Adjust power/collective to maintain altitude in horizontal flight.
 //  * Adjust tail rotor to offset changes in power/collective.
 
 //=	TO DO:
@@ -244,17 +245,16 @@ let loadingScreen = {
 let boxrot = 0;
 
 //= SKY ========================//==============================================
-//- SkyBox
-let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
-//- Fog
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
+//- SkyBox
+let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 //-	LensFlare
 let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
+let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 
-//= GEOMAT =====================================================================
-//= Textures Data ==============================================================
+//= GEOMAT =====================//==============================================
+//= Textures Data ==============//==============================================
 //- All textures are 512X512
 let dqSize = 1024;
 let dqArea = dqSize*dqSize;
@@ -290,8 +290,8 @@ let bnsclr = [0xacd193,0x5d8e3d]; // Beans
 //	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
 //	[https://icolorpalette.com/color/dirt-brown
 let count0;
-//= MATERIALS ==================================================================
-//= Grid 0 Data ================================================================
+//= MATERIALS ==================//==============================================
+//= Grid 0 Data ================//==============================================
 //- Image Data
 let G0DPtr = [];
 	G0DPtr[txtTot-1] = 0;
@@ -327,7 +327,7 @@ let G0Indx = [
 		G0Id00,G0Id01,G0Id02,G0Id03,G0Id04,G0Id05,G0Id06,G0Id07,G0Id08,G0Id09,
 		G0Id10,G0Id11,G0Id12,G0Id13,G0Id14,G0Id15
 	];
-//= Grid 1 Data ================================================================
+//= Grid 1 Data ================//==============================================
 let Gr1Mul = 3;
 let Gr1Siz = Math.floor(dtSize/Gr1Mul);
 // Image Data (Source Data - Resized)
@@ -353,7 +353,7 @@ let G1Indx = [
 		 6,10, 7, 9,15,14,12, 5,11,
 		 0,13, 6,10, 3, 2,14, 4, 8
 	];
-//= Grid 2 Data ================================================================
+//= Grid 2 Data ================//==============================================
 let Gr2Mul = 3;
 let Gr2Siz = Math.floor(dtSize/Gr2Mul);
 // Image Data (Source Data - Resized)
@@ -419,7 +419,7 @@ let rodclr = [0xd0b894,0x8e6d3d];		// Colors
 let r0Size = 32;
 let r0Area = r0Size*r0Size;
 let r0Data = new Uint8Array(4*r0Area);
-//= Trees ======================================================================
+//= Trees ======================//==============================================
 let TreTot = 64;
 let t0Size = 128;
 let t0Area = t0Size*t0Size;
@@ -1703,41 +1703,52 @@ function moveFlight() {
 	let FrcAcc = DLTim2 / air_.ACMass;
 	if (air_.GrdFlg && air_.AltDif > 0) air_.GrdFlg = 0;	// If going to leave ground
 	if (!air_.GrdFlg) {			// Compute Change in mps, convert MapSpd to mpf
-		// 1. Vertical Speed (mpf) .............................................
-		air_.AirSpd.y = air_.AirSpd.y + air_.AltDif;
-		if (air_.AirSpd.y > KeyVal.y) air_.AirSpd.y = KeyVal.y; // Max Up
-		if (air_.AirSpd.y < -KeyVal.y) air_.AirSpd.y = -KeyVal.y; // Max Down
-		// 2. Horizontal Speed (mps) - Use mps so that DynPrs and Drag is correct
-		// AirSpd.xz recomputed since ACH (which redirects AirSpd.xz) may have changed
+		// 1. Recompute Horizontal Airspeed (mps) - since ACH (which redirects AirSpd.xz) may have changed
+		// Use mps so that DynPrs and Drag is correct
 		let ACHRad = air_.AirRot.y * DegRad;
 		let PSpdZS = air_.MapSpd.z * Math.cos(-ACHRad) - air_.MapSpd.x * Math.sin(-ACHRad);
 		let PSpdXS = air_.MapSpd.z * Math.sin(-ACHRad) + air_.MapSpd.x * Math.cos(-ACHRad);
 		air_.AirSpd.z = PSpdZS / air_.DLTime; // Convert to mps
 		air_.AirSpd.x = PSpdXS / air_.DLTime;
-		// 3. Lateral Speed (mps) ..............................................
-		// Thrust Force
-		let ACBRad = air_.AirRot.z * DegRad;
-		let PThrXF = air_.MaxThr * Math.sin(ACBRad); // Propeller Acceleration - Lateral
+		// 2. Compute Total Drag at Those Speeds ...............................
+		// Forward/Backwards Drag Force
+		let DynPrZ = 0.5 * air_.AirDSL * (air_.AirSpd.z * air_.AirSpd.z); // Dynamic Pressure (Absolute value)
+		let PDrgZF = DynPrZ * air_.FrntAr * air_.DrgCdz; // Parasitic Drag
+		if (PSpdZS < 0) PDrgZF = -DynPrZ * air_.DrgCdx/air_.DrgCdz; // Use large drag to limit max speed
+		// Lateral Drag Force
 		let DynPrX = (air_.AirSpd.x * air_.AirSpd.x) * air_.AirDSL / 2; // Dynamic Pressure
-		// Drag Force
 		let PDrgXF = DynPrX * air_.FrntAr * air_.DrgCdx; // Parasitic Drag
 		if (PSpdXS < 0) PDrgXF = -PDrgXF; // If going left, drag = right
-		// Net
-		let PnetXF = PThrXF - PDrgXF; // Net Force
-		let PnetXA = PnetXF * FrcAcc; // Net Acc (mpf)
-		PSpdXS = PSpdXS + PnetXA; // new Speed (mpf)
-		// 4. Forward Speed (mps) ..............................................
+		// Total Drag
+		let DrgTot = Math.abs(PDrgZF) + Math.abs(PDrgXF);
+		// Compute Excess Thrust Available
+		//	
+		// 3. Forward Speed (mps) ..............................................
+		// Compute Max Pitch Angle
+		//	
 		// Thrust Force
 		let ACPRad = -air_.AirRot.x * DegRad;
 		let PThrZF = air_.MaxThr * Math.sin(ACPRad); // Propeller Acceleration - Forward
-		let DynPrZ = 0.5 * air_.AirDSL * (air_.AirSpd.z * air_.AirSpd.z); // Dynamic Pressure (Absolute value)
-		// Drag Force
-		let PDrgZF = DynPrZ * air_.FrntAr * air_.DrgCdz; // Parasitic Drag
-		if (PSpdZS < 0) PDrgZF = -DynPrZ * air_.DrgCdx/air_.DrgCdz; // Use large drag to limit max speed
-		// Net
+		// Net Force -> Net Acceleration and Speed (mpf)
 		let PnetZF = PThrZF - PDrgZF; // Net Force
 		let PnetZA = PnetZF * FrcAcc; // Net Acc (mpf)
 		PSpdZS = PSpdZS + PnetZA; // new Speed (mpf)
+		// Compute Excess Thrust Available
+		//
+		// 4. Lateral Speed (mps) ..............................................
+		// Compute Max Bank Angle
+		//		
+		// Thrust Force
+		let ACBRad = air_.AirRot.z * DegRad;
+		let PThrXF = air_.MaxThr * Math.sin(ACBRad); // Propeller Acceleration - Lateral
+		// Net Force -> Net Acceleration and Speed (mpf)
+		let PnetXF = PThrXF - PDrgXF; // Net Force
+		let PnetXA = PnetXF * FrcAcc; // Net Acc (mpf)
+		PSpdXS = PSpdXS + PnetXA; // new Speed (mpf)
+		// 5. Vertical Speed (mpf) .............................................
+		air_.AirSpd.y = air_.AirSpd.y + air_.AltDif;
+		if (air_.AirSpd.y > KeyVal.y) air_.AirSpd.y = KeyVal.y; // Max Up
+		if (air_.AirSpd.y < -KeyVal.y) air_.AirSpd.y = -KeyVal.y; // Max Down
 		// 6. Compute MSpd (mps to mpf)
 		air_.MapSpd.z = PSpdZS * Math.cos(ACHRad) - PSpdXS * Math.sin(ACHRad);
 		air_.MapSpd.x = PSpdZS * Math.sin(ACHRad) + PSpdXS * Math.cos(ACHRad);
@@ -1745,7 +1756,7 @@ function moveFlight() {
 		//	Save for Display Only (mps)
 		air_.AirSpd.z = PSpdZS / DLTime;
 		air_.AirSpd.x = PSpdXS / DLTime;
-		//- Rotate Helicopter --------------------------------------------
+		//- Rotate Helicopter --------------------------------------------------
 		// ACPitch
 		air_.AirRot.x = air_.AirRot.x + air_.RotDif.x;
 		if (air_.AirRot.x > 15) air_.AirRot.x = 15;
