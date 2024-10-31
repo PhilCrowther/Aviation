@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 Oct 2024
+Version dated 31 Oct 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
 
 <head>
-<title>FSim: FM2 Ocean GPU r169</title>
+<title>fsim FM2 ocean gpu r170</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
@@ -57,9 +57,9 @@ A flight simulation of an animated airplane model over an animated ocean using W
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.169.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/",
+			"three": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -69,8 +69,9 @@ A flight simulation of an animated airplane model over an animated ocean using W
 
 // Basic Modules
 import * as THREE from "three";
-import {color,texture,attribute,timerLocal,range,positionLocal,uv,mix,
-		rotateUV	//r168
+import {color,texture,attribute,range,positionLocal,uv,mix,uniform,
+		rotateUV,	//r168
+		time,		// r170
 } from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
@@ -79,7 +80,7 @@ import Stats from "stats-gl";
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js";
 
 //= GENERAL ===================================================================
 
@@ -254,14 +255,14 @@ let loadingScreen = {
 let boxrot = 0;
 
 //= SKY ========================//==============================================
-//- SkyBox
-let SBxSrc = "https://threejs.org/examples/textures/cube/skyboxsun25deg/";
-//- Fog
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
+//- SkyBox
+let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 //-	LensFlare
 let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-let LF1Src = "https://threejs.org/examples/textures/lensflare/hexangle.png";
+let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
+let envMap = 0;
 
 //= GRDWTR TEXTURES ============//==============================================
 let WtrCol = 0x1060ff;			// Water (Nodes)
@@ -1029,7 +1030,7 @@ function rendAll() {
 //= SKYBOX =====================//==============================================
 
 function loadSkyBox() {
-	let envMap = cubeLoader
+	envMap = cubeLoader
 		.setPath(SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
@@ -1264,17 +1265,21 @@ function moveIsland() {
 function loadVulkan() {
 	txtrLoader.load(vlk_.Txt[0], function (VlkTxt) {
 		//- Timer
-		let timer = timerLocal(.001,1);
+//		let timer = timerLocal(.001,1);
+		let speed = uniform(.001); // r170
+		let scaledTime = time.add(5).mul(speed); // r170
 		//- Life
 		let lifeRange = range(0.1,1);
-		let lifeTime = timer.mul(lifeRange).mod(.05);
+//		let lifeTime = timer.mul(lifeRange).mod(.05);
+		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
 		let life = lifeTime.div(lifeRange);
 		//- Rotation Range
 		let rotateRange = range(.1,4);
-		let textureNode = texture(VlkTxt, rotateUV(uv(),timer.mul(rotateRange)));	//r168
+//		let textureNode = texture(VlkTxt, rotateUV(uv(),timer.mul(rotateRange))); // r168
+		let textureNode = texture(VlkTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
 		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 		//- Lateral Offset	
-		let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// cone shaped
+		let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1)); // cone shaped
 		//- Size Range
 		let scaleRange = range(.1,.2);
 		//
@@ -1499,15 +1504,19 @@ function moveMovShp() {
 function loadShpWak() {
 	txtrLoader.load(wak_.Txt[0], function (WakTxt) {
 		//- Timer
-		let timer = timerLocal(.001,1); // Lower = slower
+//		let timer = timerLocal(.001,1); // Lower = slower
+		let speed = uniform(.001); // r170
+		let scaledTime = time.add(5).mul(speed); // r170
 		//- Life
 		let lifeRange = range(0.1,1);
-		let lifeTime = timer.mul(lifeRange).mod(.05);	
+//		let lifeTime = timer.mul(lifeRange).mod(.05);
+		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
 		let life = lifeTime.div(lifeRange);
 		//- Rotation Range
 //		let rotateRange = range(.1,4);
 		let rotateRange = range(.1,.2); // No apparent change
-		let textureNode = texture(WakTxt, rotateUV(uv(),timer.mul(rotateRange))); //r168
+//		let textureNode = texture(WakTxt, rotateUV(uv(),timer.mul(rotateRange))); // r168
+		let textureNode = texture(WakTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
 		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 		//- Lateral Offset	
 		let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
@@ -1670,7 +1679,7 @@ function moveShpAlt() {
 
 //= MY AIRCRAFT ================//==============================================
 
-//= Load Airplane ==============================================================
+//= Load Airplane ==============//==============================================
 function loadAirObj() {
 	loadAirExt();
 	loadAirInt();
@@ -1681,6 +1690,7 @@ function loadAirExt() {
 	gltfLoader.load(mxr_.FNm, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
+				child.material.envMap = envMap; // ??? required?
 				child.castShadow = true;
 				child.receiveShadow = true;
 			}
