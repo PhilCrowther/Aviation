@@ -54,17 +54,17 @@ button {
 
 /* Right Side */
 
-.pauseButton {
+.pawsButton {
 	right: 20px;
 	top: 10px;
 }
 
-.soundButton {
+.sounButton {
 	right: 70px;
 	top: 10px;
 }
 
-.cameraButton {
+.viewButton {
 	right: 20px;
 	top: 40px;
 }
