@@ -488,7 +488,7 @@ let K_Flap = 70;				// Flaps (f)
 let K_Gear = 71;				// Landing gear (g)
 let K_Hook = 72;				// Tailhook (h)
 let K_Canp = 67;				// Canopy (c)
-let K_Vizz = 86;				// VC on/off (v)
+let K_View = 86;				// VC on/off (v)
 let K_Soun = 83;				// Toggle Sound (s)
 let K_Paws = 80;				// Pause (p)
 
@@ -977,7 +977,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_Hook) anm_.thkflg = 1; 		// Tailhook	
 	// Toggles
 	if (event.keyCode == K_Soun) toglSoun();			// Sound
-	if (event.keyCode == K_Vizz) toglView();			// View
+	if (event.keyCode == K_View) toglView();			// View
 	if (event.keyCode == K_Paws) toglPaws();			// Pause
 }
 
