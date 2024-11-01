@@ -25,20 +25,17 @@ This demo program uses included versions of the GrdMap module.
 		<div>Heading..: <span id="Air_Hdg"></span> deg</div>
 	</div>
 </div>
-
-<button id="PAW" class="pauseButton">Paws</button>
-
-<button id="CAM" class="cameraButton">View</button>
-
-<button id="SLO" class="spddButton">-</button>
-<button id="PTD" class="pitdButton">&uarr;</button>
-<button id="FST" class="spduButton">+</button>
-<button id="BKL" class="bnklButton">&larr;</button>
-<button id="CTR" class="cntrButton">X</button>
-<button id="BKR" class="bnkrButton">&rarr;</button>
-<button id="YWL" class="yawlButton">[</button>
-<button id="PTU" class="pituButton">&darr;</button>
-<button id="YWR" class="yawrButton">]</button>
+<button id="PAWS" class="pawsButton">Paws</button>
+<button id="VIEW" class="viewButton">View</button>
+<button id="SPD-" class="spddButton">-</button>
+<button id="PITD" class="pitdButton">&uarr;</button>
+<button id="SPD+" class="spduButton">+</button>
+<button id="BNKL" class="bnklButton">&larr;</button>
+<button id="CNTR" class="cntrButton">X</button>
+<button id="BNKR" class="bnkrButton">&rarr;</button>
+<button id="YAWL" class="yawlButton">[</button>
+<button id="PITU" class="pituButton">&darr;</button>
+<button id="YAWR" class="yawrButton">]</button>
 
 <script type="importmap">
 	{
@@ -102,7 +99,7 @@ let DLTime = 1/60;				// Frames per Second
 let PawsOn = 0;					// Pause
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 let LnFFlg = 1;					// 1 = LensFlare On
-//	Program Flags
+//-	Program Flags
 let LodFlg = 0;
 
 //= SUN VALUES =================//==============================================
@@ -172,17 +169,18 @@ let oldTim, nowTim, difTim = 0;
 	renderer.domElement.addEventListener("touchstart", onTouchStart, false);
 	renderer.domElement.addEventListener("touchmove", onTouchMove, false);
 	// Buttons
-	document.getElementById("PAW").addEventListener("click", togglePause, false);
-	document.getElementById("CAM").addEventListener("click", toggleCamera, false);
-	document.getElementById("FST").addEventListener("click", toggleSpdU, false);
-	document.getElementById("PTD").addEventListener("click", togglePitD, false);
-	document.getElementById("SLO").addEventListener("click", toggleSpdD, false);
-	document.getElementById("BKL").addEventListener("click", toggleBnkL, false);
-	document.getElementById("CTR").addEventListener("click", toggleCntr, false);
-	document.getElementById("BKR").addEventListener("click", toggleBnkR, false);
-	document.getElementById("PTU").addEventListener("click", togglePitU, false);
-	document.getElementById("YWL").addEventListener("click", toggleYawL, false);
-	document.getElementById("YWR").addEventListener("click", toggleYawR, false);
+	document.getElementById("PAWS").addEventListener("click", toglPaws, false);
+	document.getElementById("VIEW").addEventListener("click", toglView, false);
+	document.getElementById("SPD+").addEventListener("click", toglSpdU, false);
+	document.getElementById("PITD").addEventListener("click", toglPitD, false);
+	document.getElementById("SPD-").addEventListener("click", toglSpdD, false);
+	document.getElementById("BNKL").addEventListener("click", toglBnkL, false);
+	document.getElementById("CNTR").addEventListener("click", toglCntr, false);
+	document.getElementById("BNKR").addEventListener("click", toglBnkR, false);
+	document.getElementById("PITU").addEventListener("click", toglPitU, false);
+	document.getElementById("YAWL").addEventListener("click", toglYawL, false);
+	document.getElementById("YAWR").addEventListener("click", toglYawR, false);
+	// Window Resize
 	window.addEventListener("resize", onWindowResize, false);
 //- Loading Manager
 	// Create a loading manager to set RESOURCES_LOADED when appropriate.
@@ -1294,7 +1292,7 @@ function loadJetExh() {
 //- Init Jet Exhaust ----------------------------------------------------------
 function initJetExh() {
 	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
-//	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange)));	// r168
+//	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange))); // r168
 	let textureNode = texture(SmkMap, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
@@ -1377,10 +1375,10 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_BnkR) air_.InpRot.z = InpVal.z;	// Bank Right
 	if (event.keyCode == K_PitU) air_.InpRot.x = InpVal.x;	// Pitch Up
 	if (event.keyCode == K_PitD) air_.InpRot.x = -InpVal.x;	// Pitch Down
-	if (event.keyCode == K_Cntr) toggleCntr();				// Center
+	if (event.keyCode == K_Cntr) toglCntr();				// Center
 	if (event.keyCode == K_YawL) air_.InpRot.y = -InpVal.y;	// Yaw Left
 	if (event.keyCode == K_YawR) air_.InpRot.y = InpVal.y;	// Yaw Right
-	if (event.keyCode == K_Paws) togglePause();				// Pause
+	if (event.keyCode == K_Paws) toglPaws();				// Pause
 }
 
 //- Key Up
@@ -1453,12 +1451,12 @@ function onTouchMove(event) {
 //= Buttons Input ==============//==============================================
 
 //- Toggle Pause
-function togglePause() {
+function toglPaws() {
 	PawsOn = 1 - PawsOn;
 }
 
 //- Change Camera View
-function toggleCamera() {
+function toglView() {
 	// Old CamSel
 	cam_.par.remove(cam_.rot); // Unlink Old Parent
 	CamLLD[cam_.sel].copy(cam_.lld); // Save lld
@@ -1476,27 +1474,27 @@ function toggleCamera() {
 
 //- Flight Controls
 
-function toggleSpdU() {
+function toglSpdU() {
 	if (air_.InpSpd == 0) air_.InpSpd = 10;
 	else air_.InpSpd = 0;
 }
 
-function togglePitD() {
+function toglPitD() {
 	if (air_.InpRot.x == 0) air_.InpRot.x = -InpVal.x;
 	else air_.InpRot.x = 0;
 }
 
-function toggleSpdD() {
+function toglSpdD() {
 	if (air_.InpSpd == 0) air_.InpSpd = -10;
 	else air_.InpSpd = 0;
 }
 
-function toggleBnkL() {
+function toglBnkL() {
 	if (air_.InpRot.z == 0) air_.InpRot.z = -InpVal.z;
 	else air_.InpRot.z = 0;
 }
 
-function toggleCntr() {
+function toglCntr() {
 	air_.InpRot.z = 0;
 	air_.InpRot.x = 0;
 	air_.InpRot.y = 0;
@@ -1506,22 +1504,22 @@ function toggleCntr() {
 	air_.AirObj.rotation.x = 0; // No Pitch
 }
 
-function toggleBnkR() {
+function toglBnkR() {
 	if (air_.InpRot.z == 0) air_.InpRot.z = InpVal.z;
 	else air_.InpRot.z = 0;
 }
 
-function togglePitU() {
+function toglPitU() {
 	if (air_.InpRot.x == 0) air_.InpRot.x = InpVal.x;
 	else air_.InpRot.x = 0;
 }
 
-function toggleYawL() {
+function toglYawL() {
 	if (air_.InpRot.y == 0) air_.InpRot.y = -InpVal.y;
 	else air_.InpRot.y = 0;
 }
 
-function toggleYawR() {
+function toglYawR() {
 	if (air_.InpRot.y == 0) air_.InpRot.y = InpVal.y;
 	else air_.InpRot.y = 0;
 }
