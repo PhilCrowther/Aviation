@@ -27,9 +27,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 
 <button id="PAWS" class="pawsButton">Paws</button>
 <button id="SOUN" class="sounButton">Sond</button>
-
 <button id="VIEW" class="viewButton">View</button>
-<button id="RFLN" class="rflnButton">RfLn</button>
 
 <button id="GEAR" class="gearButton">Gear</button>
 <button id="FLAP" class="flapButton">Flap</button>
@@ -187,7 +185,6 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 	document.getElementById("PAWS").addEventListener("click", toglPaws, false);
 	document.getElementById("SOUN").addEventListener("click", toglSoun, false);
 	document.getElementById("VIEW").addEventListener("click", toglView, false);
-	document.getElementById("RFLN").addEventListener("click", toglRfLn, false);
 	document.getElementById("GEAR").addEventListener("click", toglGear, false);
 	document.getElementById("FLAP").addEventListener("click", toglFlap, false);
 	document.getElementById("CNPY").addEventListener("click", toglCnpy, false);
@@ -973,13 +970,14 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_PitD) InpKey.x = -KeyVal.x;	// Pitch Down
 	if (event.keyCode == K_YawL) InpKey.y = -0.1;		// Yaw Left
 	if (event.keyCode == K_YawR) InpKey.y = 0.1;		// Yaw Right
+	// Animation
+	if (event.keyCode == K_Gear) anm_.lngflg = 1; 		// Gear
+	if (event.keyCode == K_Flap) anm_.flpflg = 1; 		// Flaps
+	if (event.keyCode == K_Canp) anm_.canflg = 1; 		// Canopy
+	if (event.keyCode == K_Hook) anm_.thkflg = 1; 		// Tailhook	
 	// Toggles
-	if (event.keyCode == K_Gear) toglGear();			// Gear
-	if (event.keyCode == K_Flap) toglFlap();			// Flaps
-	if (event.keyCode == K_Canp) toglCanopy();		// Canopy
-	if (event.keyCode == K_Hook) toglHook();			// Tailhook
 	if (event.keyCode == K_Soun) toglSoun();			// Sound
-	if (event.keyCode == K_Vizz) toglView();		// View
+	if (event.keyCode == K_Vizz) toglView();			// View
 	if (event.keyCode == K_Paws) toglPaws();			// Pause
 }
 
@@ -1128,42 +1126,22 @@ function toglView() {
 	cam_.lnk = CamLnk[cam_.sel];			// 1 = Linked to Airplane
 }
 
-// Toggle Reference Lines
-function toglRfLn() {
-	if (!RefLOn) {
-		RefObj.visible = true;
-		HrzObj.visible = true;
-	}
-	else {
-		RefObj.visible = false;
-		HrzObj.visible = false;
-	}
-	RefLOn = 1 - RefLOn;
-}
+// Animations
 
-// Toggle Gear
 function toglGear() {
-//	if (anm_.lngflg) anm_.lngflg = 0;
-//	else anm_.lngflg = 1;
-	anm_.lngflg = 1 - anm_.lngflg;
+	anm_.lngflg = 1;
 }
 
-// Toggle Flaps
 function toglFlap() {
-	if (anm_.flpflg) anm_.flpflg = 0;
-	else anm_.flpflg = 1;
+	anm_.flpflg = 1;
 }
 
-// Toggle Canopy
 function toglCnpy() {
-	if (anm_.canflg) anm_.canflg = 0;
-	else anm_.canflg = 1;
+	anm_.canflg = 1;
 }
 
-// Toggle Tailhook
 function toglHook() {
-	if (anm_.thkflg) anm_.thkflg = 0;
-	else anm_.thkflg = 1;
+	anm_.thkflg = 1;
 }
 
 // Flight Controls

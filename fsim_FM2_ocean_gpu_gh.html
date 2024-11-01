@@ -29,17 +29,17 @@ A flight simulation of an animated airplane model over an animated ocean using W
 	<div class="overlay2">
 		<div><span id="On_Paws"></span></div>
 		<div><span id="Air_AtP"></span></div>
-		<div><span id="On_Info01"></span></div>
+		<div><span id="On_Inf0"></span></div>
 	</div>
 	<div class="overlay3">
-		<div><span id="On_Info02"></span></div>
-		<div><span id="On_Info03"></span></div>
-		<div><span id="On_Info04"></span></div>
-		<div><span id="On_Info05"></span></div>
-		<div><span id="On_Info06"></span></div>
-		<div><span id="On_Info07"></span></div>
-		<div><span id="On_Info08"></span></div>
-		<div><span id="On_Info09"></span></div>
+		<div><span id="On_Inf1"></span></div>
+		<div><span id="On_Inf2"></span></div>
+		<div><span id="On_Inf3"></span></div>
+		<div><span id="On_Inf4"></span></div>
+		<div><span id="On_Inf5"></span></div>
+		<div><span id="On_Inf6"></span></div>
+		<div><span id="On_Inf7"></span></div>
+		<div><span id="On_Inf8"></span></div>
 	</div>
 </div>
 
@@ -897,36 +897,36 @@ let On_PawsNode = document.createTextNode("");
 let Air_AtPElement = document.getElementById("Air_AtP");	// Autopilot
 let Air_AtPNode = document.createTextNode("");
 	Air_AtPElement.appendChild(Air_AtPNode);
-let On_Info01Element = document.getElementById("On_Info01"); // Info
-let On_Info01Node = document.createTextNode("");
-	On_Info01Element.appendChild(On_Info01Node);
-let On_Info02Element = document.getElementById("On_Info02");
-let On_Info02Node = document.createTextNode("");
-	On_Info02Element.appendChild(On_Info02Node);
-let On_Info03Element = document.getElementById("On_Info03");
-let On_Info03Node = document.createTextNode("");
-	On_Info03Element.appendChild(On_Info03Node);
-let On_Info04Element = document.getElementById("On_Info04");
-let On_Info04Node = document.createTextNode("");
-	On_Info04Element.appendChild(On_Info04Node);
-let On_Info05Element = document.getElementById("On_Info05");
-let On_Info05Node = document.createTextNode("");
-	On_Info05Element.appendChild(On_Info05Node);
-let On_Info06Element = document.getElementById("On_Info06");
-let On_Info06Node = document.createTextNode("");
-	On_Info06Element.appendChild(On_Info06Node);
-let On_Info07Element = document.getElementById("On_Info07");
-let On_Info07Node = document.createTextNode("");
-	On_Info07Element.appendChild(On_Info07Node);
-let On_Info08Element = document.getElementById("On_Info08");
-let On_Info08Node = document.createTextNode("");
-	On_Info08Element.appendChild(On_Info08Node);
-let On_Info09Element = document.getElementById("On_Info09");
-let On_Info09Node = document.createTextNode("");
-	On_Info09Element.appendChild(On_Info09Node);
+let On_Inf0Element = document.getElementById("On_Inf0"); // Info
+let On_Inf0Node = document.createTextNode("");
+	On_Inf0Element.appendChild(On_Inf0Node);
+let On_Inf1Element = document.getElementById("On_Inf1");
+let On_Inf1Node = document.createTextNode("");
+	On_Inf1Element.appendChild(On_Inf1Node);
+let On_Inf2Element = document.getElementById("On_Inf2");
+let On_Inf2Node = document.createTextNode("");
+	On_Inf2Element.appendChild(On_Inf2Node);
+let On_Inf3Element = document.getElementById("On_Inf3");
+let On_Inf3Node = document.createTextNode("");
+	On_Inf3Element.appendChild(On_Inf3Node);
+let On_Inf4Element = document.getElementById("On_Inf4");
+let On_Inf4Node = document.createTextNode("");
+	On_Inf4Element.appendChild(On_Inf4Node);
+let On_Inf5Element = document.getElementById("On_Inf5");
+let On_Inf5Node = document.createTextNode("");
+	On_Inf5Element.appendChild(On_Inf5Node);
+let On_Inf6Element = document.getElementById("On_Inf6");
+let On_Inf6Node = document.createTextNode("");
+	On_Inf6Element.appendChild(On_Inf6Node);
+let On_Inf7Element = document.getElementById("On_Inf7");
+let On_Inf7Node = document.createTextNode("");
+	On_Inf7Element.appendChild(On_Inf7Node);
+let On_Inf8Element = document.getElementById("On_Inf8");
+let On_Inf8Node = document.createTextNode("");
+	On_Inf8Element.appendChild(On_Inf8Node);
 //
 let Air_Pwr, Air_Spd, Air_Hdg, Air_Alt, Air_CfL;
-let On_Paws, Air_AtP, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, On_Info07, On_Info08;
+let On_Paws, Air_AtP, On_Inf0, On_Inf1, On_Inf2, On_Inf3, On_Inf4, On_Inf5, On_Inf6, On_Inf7, On_Inf8;
 
 //= MAIN PROGRAMS ==============//==============================================
 
@@ -2197,41 +2197,41 @@ function InfoText() {
 
 //	Info Off
 function onInfo0(){
-	On_Info01Node.nodeValue = "Info : Press I";
-	On_Info02Node.nodeValue = "";
-	On_Info03Node.nodeValue = "";
-	On_Info04Node.nodeValue = "";
-	On_Info05Node.nodeValue = "";
-	On_Info06Node.nodeValue = "";
-	On_Info07Node.nodeValue = "";
-	On_Info08Node.nodeValue = "";
-	On_Info09Node.nodeValue = "";
+	On_Inf0Node.nodeValue = "Info : Press I";
+	On_Inf1Node.nodeValue = "";
+	On_Inf2Node.nodeValue = "";
+	On_Inf3Node.nodeValue = "";
+	On_Inf4Node.nodeValue = "";
+	On_Inf5Node.nodeValue = "";
+	On_Inf6Node.nodeValue = "";
+	On_Inf7Node.nodeValue = "";
+	On_Inf8Node.nodeValue = "";
 }
 
 //	Info On
 function onInfo1(){
-	On_Info01Node.nodeValue = "";
-	On_Info02Node.nodeValue = "CONTROLS";
-	On_Info03Node.nodeValue = "Mouse changes Pitch/Bank and Yaw (bottons)";
-	On_Info04Node.nodeValue = "AutoPilot: Arrow Key change Pitch and Bank";
-	On_Info05Node.nodeValue = "Mouse Wheel or -/= Keys change Throttle";
-	On_Info06Node.nodeValue = "G Key toggles landing gear";
-	On_Info07Node.nodeValue = "F Key toggles flaps"
-	On_Info08Node.nodeValue = "S Key toggles sound";
-	On_Info09Node.nodeValue = "Spacebar fires guns";
+	On_Inf0Node.nodeValue = "";
+	On_Inf1Node.nodeValue = "CONTROLS";
+	On_Inf2Node.nodeValue = "Mouse changes Pitch/Bank and Yaw (bottons)";
+	On_Inf3Node.nodeValue = "AutoPilot: Arrow Key change Pitch and Bank";
+	On_Inf4Node.nodeValue = "Mouse Wheel or -/= Keys change Throttle";
+	On_Inf5Node.nodeValue = "G Key toggles landing gear";
+	On_Inf6Node.nodeValue = "F Key toggles flaps"
+	On_Inf7Node.nodeValue = "S Key toggles sound";
+	On_Inf8Node.nodeValue = "Spacebar fires guns";
 }
 
 //	Info On
 function onInfo2(){
-	On_Info01Node.nodeValue = "";
-	On_Info02Node.nodeValue = "VIEW KEYS";
-	On_Info03Node.nodeValue = "V Key toggles views";
-	On_Info04Node.nodeValue = "Shift Key and Mouse pans around airplane";
-	On_Info05Node.nodeValue = "END Key looks down";
-	On_Info06Node.nodeValue = "DELETE or PAGE DOWN Keys look left/right";
-	On_Info07Node.nodeValue = "HOME Key and above Keys look up";
-	On_Info08Node.nodeValue = "END Key and DELETE or PAGE DOWN Keys look back";
-	On_Info09Node.nodeValue = "All 3 Keys look back";
+	On_Inf0Node.nodeValue = "";
+	On_Inf1Node.nodeValue = "VIEW KEYS";
+	On_Inf2Node.nodeValue = "V Key toggles views";
+	On_Inf3Node.nodeValue = "Shift Key and Mouse pans around airplane";
+	On_Inf4Node.nodeValue = "END Key looks down";
+	On_Inf5Node.nodeValue = "DELETE or PAGE DOWN Keys look left/right";
+	On_Inf6Node.nodeValue = "HOME Key and above Keys look up";
+	On_Inf7Node.nodeValue = "END Key and DELETE or PAGE DOWN Keys look back";
+	On_Inf8Node.nodeValue = "All 3 Keys look back";
 }
 
 //= INPUTS =====================//==============================================
@@ -2273,10 +2273,10 @@ function onDocumentMouseWheel(event) {
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == K_PwLU) PwrDif = 0.1;	// Power Up - keyboard left
-	if (event.keyCode == K_PwLD) PwrDif = -0.1;	// Power Down - keyboard left
-	if (event.keyCode == K_PwRU) PwrDif = 0.1;	// Power Up - keyboard right
-	if (event.keyCode == K_PwRD) PwrDif = -0.1;	// Power Down - keyboard right
+	if (event.keyCode == K_PwLU) PwrDif = 0.1;		// Power Up - keyboard left
+	if (event.keyCode == K_PwLD) PwrDif = -0.1;		// Power Down - keyboard left
+	if (event.keyCode == K_PwRU) PwrDif = 0.1;		// Power Up - keyboard right
+	if (event.keyCode == K_PwRD) PwrDif = -0.1;		// Power Down - keyboard right
 	if (event.keyCode == K_BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left - autopilot only
 	if (event.keyCode == K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right - autopilot only
 	if (event.keyCode == K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up - autopilot only
@@ -2285,20 +2285,20 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_YwLR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard left
 	if (event.keyCode == K_YwRL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard right
 	if (event.keyCode == K_YwRR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard right
-	if (event.keyCode == K_Brak) InpBrk = 0.01;	// Brakes
+	if (event.keyCode == K_Brak) InpBrk = 0.01;		// Brakes
 	// Additional
-	if (event.keyCode == K_Gear) anm_.lngflg = 1; // Gear
-	if (event.keyCode == K_Flap) anm_.flpflg = 1; // Flaps
-	if (event.keyCode == K_Canp) anm_.canflg = 1; // Canopy
-	if (event.keyCode == K_Hook) anm_.thkflg = 1; // Tailhook
+	if (event.keyCode == K_Gear) anm_.lngflg = 1; 	// Gear
+	if (event.keyCode == K_Flap) anm_.flpflg = 1; 	// Flaps
+	if (event.keyCode == K_Canp) anm_.canflg = 1; 	// Canopy
+	if (event.keyCode == K_Hook) anm_.thkflg = 1; 	// Tailhook
 	// Views
-	if (event.keyCode == K_Look) cam_.pan = 1;	// Pan View
-	if (event.keyCode == K_VU45) D45flg = 1;	// View - 45 deg up
-	if (event.keyCode == K_VD45) U45flg = 1;	// View - 45 deg down
-	if (event.keyCode == K_VL45) L45flg = 1;	// View - 45 deg left
-	if (event.keyCode == K_VR45) R45flg = 1;	// View - 45 deg right
-	if (event.keyCode == K_VL90) L90flg = 1;	// View - 90 deg left
-	if (event.keyCode == K_VR90) R90flg = 1;	// View - 90 deg right
+	if (event.keyCode == K_Look) cam_.pan = 1;		// Pan View
+	if (event.keyCode == K_VU45) D45flg = 1;		// View - 45 deg up
+	if (event.keyCode == K_VD45) U45flg = 1;		// View - 45 deg down
+	if (event.keyCode == K_VL45) L45flg = 1;		// View - 45 deg left
+	if (event.keyCode == K_VR45) R45flg = 1;		// View - 45 deg right
+	if (event.keyCode == K_VL90) L90flg = 1;		// View - 90 deg left
+	if (event.keyCode == K_VR90) R90flg = 1;		// View - 90 deg right
 	// Guns
 	if (event.keyCode == K_Guns) { // Guns
 		if (!PawsOn) {
@@ -2308,45 +2308,45 @@ function onDocumentKeyDown(event) {
 		GunFlg = 1;
 	}
 	// Toggle
-	if (event.keyCode == K_Vizz) toggleCamera(); // Switch View
-	if (event.keyCode == K_Soun) toglSoun();	// Toggle Sound
-	if (event.keyCode == K_Paws) toglPaws();			// Toggle Pause
-	if (event.keyCode == K_Auto) toglAuto();			// Toggle AutoPilot
-	if (event.keyCode == K_Info) toglInfo();			// Toggle Information
+	if (event.keyCode == K_Vizz) toglView();		// Switch View
+	if (event.keyCode == K_Soun) toglSoun();		// Toggle Sound
+	if (event.keyCode == K_Paws) toglPaws();		// Toggle Pause
+	if (event.keyCode == K_Auto) toglAuto();		// Toggle AutoPilot
+	if (event.keyCode == K_Info) toglInfo();		// Toggle Information
 }
 
 //-	Keyboard (Up) --------------------------------------------------------------
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == K_PwLU) PwrDif = 0;			// Power Up - keyboard left
-	if (event.keyCode == K_PwLD) PwrDif = 0;			// Power Down - keyboard left
-	if (event.keyCode == K_PwRU) PwrDif = 0;			// Power Up - keyboard right
-	if (event.keyCode == K_PwRD) PwrDif = 0;			// Power Down - keyboard right
-	if (event.keyCode == K_BnkL) air_.InpKey.z = 0;		// Bank Left - autopilot only
-	if (event.keyCode == K_BnkR) air_.InpKey.z = 0;		// Bank Right - autopilot only
-	if (event.keyCode == K_PitU) air_.InpKey.x = 0;		// Pitch Up - autopilot only
-	if (event.keyCode == K_PitD) air_.InpKey.x = 0;		// Pitch Down - autopilot only
-	if (event.keyCode == K_YwLL) air_.RotDif.y = 0;		// YawL - keyboard left
-	if (event.keyCode == K_YwLR) air_.RotDif.y = 0;		// YawR - keyboard left
-	if (event.keyCode == K_YwRL) air_.RotDif.y = 0;		// YawL - keyboard right
-	if (event.keyCode == K_YwRR) air_.RotDif.y = 0;		// YawR - keyboard right
-	if (event.keyCode == K_Brak) InpBrk = 0;			// Brakes
+	if (event.keyCode == K_PwLU) PwrDif = 0;		// Power Up - keyboard left
+	if (event.keyCode == K_PwLD) PwrDif = 0;		// Power Down - keyboard left
+	if (event.keyCode == K_PwRU) PwrDif = 0;		// Power Up - keyboard right
+	if (event.keyCode == K_PwRD) PwrDif = 0;		// Power Down - keyboard right
+	if (event.keyCode == K_BnkL) air_.InpKey.z = 0;	// Bank Left - autopilot only
+	if (event.keyCode == K_BnkR) air_.InpKey.z = 0;	// Bank Right - autopilot only
+	if (event.keyCode == K_PitU) air_.InpKey.x = 0;	// Pitch Up - autopilot only
+	if (event.keyCode == K_PitD) air_.InpKey.x = 0;	// Pitch Down - autopilot only
+	if (event.keyCode == K_YwLL) air_.RotDif.y = 0;	// YawL - keyboard left
+	if (event.keyCode == K_YwLR) air_.RotDif.y = 0;	// YawR - keyboard left
+	if (event.keyCode == K_YwRL) air_.RotDif.y = 0;	// YawL - keyboard right
+	if (event.keyCode == K_YwRR) air_.RotDif.y = 0;	// YawR - keyboard right
+	if (event.keyCode == K_Brak) InpBrk = 0;		// Brakes
 	// Additional
-	if (event.keyCode == K_Gear) anm_.lngflg = 0;		// Gear
-	if (event.keyCode == K_Flap) anm_.flpflg = 0;		// Flaps
-	if (event.keyCode == K_Canp) anm_.canflg = 0;		// Canopy
-	if (event.keyCode == K_Hook) anm_.thkflg = 0;		// Taihook
+	if (event.keyCode == K_Gear) anm_.lngflg = 0;	// Gear
+	if (event.keyCode == K_Flap) anm_.flpflg = 0;	// Flaps
+	if (event.keyCode == K_Canp) anm_.canflg = 0;	// Canopy
+	if (event.keyCode == K_Hook) anm_.thkflg = 0;	// Taihook
 	// Views
-	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
-	if (event.keyCode == K_VU45) D45flg = 0;			// View - 45 deg up
-	if (event.keyCode == K_VD45) U45flg = 0;			// View - 45 deg down
-	if (event.keyCode == K_VL45) L45flg = 0;			// View - 45 deg left
-	if (event.keyCode == K_VR45) R45flg = 0;			// View - 45 deg right
-	if (event.keyCode == K_VL90) L90flg = 0;			// View - 90 deg left
-	if (event.keyCode == K_VR90) R90flg = 0;			// View - 90 deg right
+	if (event.keyCode == K_Look) cam_.pan = 0;		// Pan View
+	if (event.keyCode == K_VU45) D45flg = 0;		// View - 45 deg up
+	if (event.keyCode == K_VD45) U45flg = 0;		// View - 45 deg down
+	if (event.keyCode == K_VL45) L45flg = 0;		// View - 45 deg left
+	if (event.keyCode == K_VR45) R45flg = 0;		// View - 45 deg right
+	if (event.keyCode == K_VL90) L90flg = 0;		// View - 90 deg left
+	if (event.keyCode == K_VR90) R90flg = 0;		// View - 90 deg right
 	// Guns
-	if (event.keyCode == K_Guns) {						// Guns
+	if (event.keyCode == K_Guns) {					// Guns
 		GnLSnd.stop();
 		if (!PawsOn) {
 			if (GnLSnd.isPlaying) GnLSnd.stop();
@@ -2359,7 +2359,7 @@ function onDocumentKeyUp(event) {
 //- Subroutines ----------------//----------------------------------------------
 
 //. Toggle Camera View (3-Way) -------------------------------------------------
-function toggleCamera() {
+function toglView() {
 	// Old CamSel
 	cam_.par.remove(cam_.rot);			// Unlink Old Parent
 	CamLLD[cam_.sel].copy(cam_.lld);	// Save lld
