@@ -180,7 +180,7 @@ let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*De
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
 let ShdBox = 6;					// Size of shadow box
-let ShdBLR = 6.5;
+let ShdBLR = 5;
 let ShdBTB = 4;
 let ShdDst = 1500;				// Shadow Distance (meters)
 
@@ -200,10 +200,11 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
 	sunLight.shadow.camera.left = -ShdBLR;
-	sunLight.shadow.camera.right = ShdBLR;
+	sunLight.shadow.camera.right = ShdBLR+1;
 	sunLight.shadow.camera.top = ShdBTB;
 	sunLight.shadow.camera.bottom = -ShdBTB;
-	sunLight.shadow.bias = -0.0002; // WebGPU
+//	sunLight.shadow.bias = -0.0002; // WebGPU
+	sunLight.shadow.bias = -0.0005; // WebGPU
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
@@ -499,7 +500,8 @@ let alt_ = {
 		Ref: [isl_.Ref[0],xsh_.Ref[0]],
 		Var: [0,xsh_],
 		Typ: [0,1], 			// 0 = stationary, 1 = movine
-		Alt: [7.59,13.1],
+//		Alt: [7.59,13.1],
+		Alt: [7.57,13.1],
 		Lft: [-635,-13.2],
 		Rgt: [-585,13.2],
 		Fnt: [410,70.5],
