@@ -48,37 +48,37 @@ button {
 
 /* Right Side */
 
-.pauseButton {
+.pawsButton {
 	right: 20px;
 	top: 10px;
 }
 
-.soundButton {
+.sounButton {
 	right: 70px;
 	top: 10px;
 }
 
-.cameraButton {
+.viewButton {
 	right: 20px;
 	top: 40px;
 }
 
-.reflinButton {
+.rflnButton {
 	right: 70px;
 	top: 40px;
 }
 
-.lgearButton {
+.gearButton {
 	right: 20px;
 	top: 70px;
 }
 
-.flapsButton {
+.flapButton {
 	right: 70px;
 	top: 70px;
 }
 
-.canopyButton {
+.cnpyButton {
 	right: 20px;
 	top: 100px;
 }
