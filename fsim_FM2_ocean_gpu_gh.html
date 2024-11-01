@@ -815,7 +815,7 @@ let K_VR45 =  45;				// Right 45 degrees
 let K_VL90 =  34;				// Left 90 degrees
 let K_VR90 =  46;				// Right 90 degrees
 //	Toggle
-let K_Vizz =  86;				// Toggle Visibility (v)
+let K_View =  86;				// Toggle Visibility (v)
 let K_Soun =  83;				// Toggle sound (s)
 let K_Paws =  80;				// Pause (p)
 let K_Auto =  65;				// Autopilot (a)
@@ -2308,7 +2308,7 @@ function onDocumentKeyDown(event) {
 		GunFlg = 1;
 	}
 	// Toggle
-	if (event.keyCode == K_Vizz) toglView();		// Switch View
+	if (event.keyCode == K_View) toglView();		// Switch View
 	if (event.keyCode == K_Soun) toglSoun();		// Toggle Sound
 	if (event.keyCode == K_Paws) toglPaws();		// Toggle Pause
 	if (event.keyCode == K_Auto) toglAuto();		// Toggle AutoPilot
