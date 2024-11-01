@@ -25,26 +25,26 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 	</div>
 </div>
 
-<button id="PAW" class="pauseButton">Paws</button>
-<button id="SND" class="soundButton">Sond</button>
+<button id="PAWS" class="pawsButton">Paws</button>
+<button id="SOUN" class="sounButton">Sond</button>
 
-<button id="CAM" class="cameraButton">View</button>
-<button id="REF" class="reflinButton">RfLn</button>
+<button id="VIEW" class="viewButton">View</button>
+<button id="RFLN" class="rflnButton">RfLn</button>
 
-<button id="LGB" class="lgearButton">Gear</button>
-<button id="FLP" class="flapsButton">Flap</button>
-<button id="CAN" class="canopyButton">Cnpy</button>
-<button id="HUK" class="hookButton">Hook</button>
+<button id="GEAR" class="gearButton">Gear</button>
+<button id="FLAP" class="flapButton">Flap</button>
+<button id="CNPY" class="cnpyButton">Cnpy</button>
+<button id="HOOK" class="hookButton">Hook</button>
 
-<button id="SLO" class="spddButton">-</button>
-<button id="PTD" class="pitdButton">&uarr;</button>
-<button id="FST" class="spduButton">+</button>
-<button id="BKL" class="bnklButton">&larr;</button>
-<button id="CTR" class="cntrButton">X</button>
-<button id="BKR" class="bnkrButton">&rarr;</button>
-<button id="YWL" class="yawlButton">[</button>
-<button id="PTU" class="pituButton">&darr;</button>
-<button id="YWR" class="yawrButton">]</button>
+<button id="SPD-" class="spddButton">-</button>
+<button id="PITD" class="pitdButton">&uarr;</button>
+<button id="SPD+" class="spduButton">+</button>
+<button id="BNKL" class="bnklButton">&larr;</button>
+<button id="CNTR" class="cntrButton">X</button>
+<button id="BNKR" class="bnkrButton">&rarr;</button>
+<button id="YAWL" class="yawlButton">[</button>
+<button id="PITU" class="pituButton">&darr;</button>
+<button id="YAWR" class="yawrButton">]</button>
 
 <script type="importmap">
 	{
@@ -113,7 +113,7 @@ let	AirDSL = 1.225;				// Density - Sea Level (kg/m3)
 //= INPUT VALUES ===============//=============================================
 //-	Display
 let PawsOn = 0;					// Pause
-let SndFlg = 0;				// (1 = Sounds On)
+let SndFlg = 0;					// (1 = Sounds On)
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 let LnFFlg = 1;					// 1 = Lensflare On
 //	Program Flags
@@ -184,23 +184,23 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 	renderer.domElement.addEventListener("touchstart", onTouchStart, false);
 	renderer.domElement.addEventListener("touchmove", onTouchMove, false);
 	// Buttons
-	document.getElementById("PAW").addEventListener("click", togglePause, false);
-	document.getElementById("SND").addEventListener("click", toggleSound, false);
-	document.getElementById("CAM").addEventListener("click", toggleCamera, false);
-	document.getElementById("REF").addEventListener("click", toggleRefLin, false);
-	document.getElementById("LGB").addEventListener("click", toggleLGear, false);
-	document.getElementById("FLP").addEventListener("click", toggleFlaps, false);
-	document.getElementById("CAN").addEventListener("click", toggleCanopy, false);
-	document.getElementById("HUK").addEventListener("click", toggleHook, false);	
-	document.getElementById("FST").addEventListener("click", toggleSpdU, false);
-	document.getElementById("PTD").addEventListener("click", togglePitD, false);
-	document.getElementById("SLO").addEventListener("click", toggleSpdD, false);
-	document.getElementById("BKL").addEventListener("click", toggleBnkL, false);
-	document.getElementById("CTR").addEventListener("click", toggleCntr, false);
-	document.getElementById("BKR").addEventListener("click", toggleBnkR, false);
-	document.getElementById("PTU").addEventListener("click", togglePitU, false);
-	document.getElementById("YWL").addEventListener("click", toggleYawL, false);
-	document.getElementById("YWR").addEventListener("click", toggleYawR, false);
+	document.getElementById("PAWS").addEventListener("click", toglPaws, false);
+	document.getElementById("SOUN").addEventListener("click", toglSoun, false);
+	document.getElementById("VIEW").addEventListener("click", toglView, false);
+	document.getElementById("RFLN").addEventListener("click", toglRfLn, false);
+	document.getElementById("GEAR").addEventListener("click", toglGear, false);
+	document.getElementById("FLAP").addEventListener("click", toglFlap, false);
+	document.getElementById("CNPY").addEventListener("click", toglCnpy, false);
+	document.getElementById("HOOK").addEventListener("click", toglHook, false);	
+	document.getElementById("SPD+").addEventListener("click", toglSpdU, false);
+	document.getElementById("PITD").addEventListener("click", toglPitD, false);
+	document.getElementById("SPD-").addEventListener("click", toglSpdD, false);
+	document.getElementById("BNKL").addEventListener("click", toglBnkL, false);
+	document.getElementById("CNTR").addEventListener("click", toglCntr, false);
+	document.getElementById("BNKR").addEventListener("click", toglBnkR, false);
+	document.getElementById("PITU").addEventListener("click", toglPitU, false);
+	document.getElementById("YAWL").addEventListener("click", toglYawL, false);
+	document.getElementById("YAWR").addEventListener("click", toglYawR, false);
 	// Window Resize
 	window.addEventListener("resize", onWindowResize, false);
 //- Loading Manager
@@ -967,49 +967,31 @@ function prntHUDval() {
 // Key Down
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
-	// Bank Left
-	if (event.keyCode == K_BnkL) InpKey.z = -KeyVal.z;
-	// Bank Right
-	if (event.keyCode == K_BnkR) InpKey.z = KeyVal.z;
-	// Pitch Up
-	if (event.keyCode == K_PitU) InpKey.x = KeyVal.x;
-	// Pitch Down
-	if (event.keyCode == K_PitD) InpKey.x = -KeyVal.x;
-	// Yaw Left
-	if (event.keyCode == K_YawL) InpKey.y = -0.1;
-	// Yaw Right
-	if (event.keyCode == K_YawR) InpKey.y = 0.1;
-	// Gear
-	if (event.keyCode == K_Gear) toggleLGear();
-	// Flaps
-	if (event.keyCode == K_Flap) toggleFlaps();
-	// Canopy
-	if (event.keyCode == K_Canp) toggleCanopy();
-	// Tailhook
-	if (event.keyCode == K_Hook) toggleHook();
-	// Sound
-	if (event.keyCode == K_Soun) toggleSound();
-	// View
-	if (event.keyCode == K_Vizz) toggleCamera();
-	// Pause
-	if (event.keyCode == K_Paws) togglePause();	
+	if (event.keyCode == K_BnkL) InpKey.z = -KeyVal.z; 	// Bank Left
+	if (event.keyCode == K_BnkR) InpKey.z = KeyVal.z;	// Bank Right
+	if (event.keyCode == K_PitU) InpKey.x = KeyVal.x;	// Pitch Up
+	if (event.keyCode == K_PitD) InpKey.x = -KeyVal.x;	// Pitch Down
+	if (event.keyCode == K_YawL) InpKey.y = -0.1;		// Yaw Left
+	if (event.keyCode == K_YawR) InpKey.y = 0.1;		// Yaw Right
+	// Toggles
+	if (event.keyCode == K_Gear) toglGear();			// Gear
+	if (event.keyCode == K_Flap) toglFlap();			// Flaps
+	if (event.keyCode == K_Canp) toglCanopy();		// Canopy
+	if (event.keyCode == K_Hook) toglHook();			// Tailhook
+	if (event.keyCode == K_Soun) toglSoun();			// Sound
+	if (event.keyCode == K_Vizz) toglView();		// View
+	if (event.keyCode == K_Paws) toglPaws();			// Pause
 }
 
 // Key Up
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
-	// Bank Left
-	if (event.keyCode == K_BnkL) InpKey.z = 0;
-	// Bank Right
-	if (event.keyCode == K_BnkR) InpKey.z = 0;
-	// Pitch Up
-	if (event.keyCode == K_PitU) InpKey.x = 0;
-	// Pitch Down
-	if (event.keyCode == K_PitD) InpKey.x = 0;
-	// Yaw Left
-	if (event.keyCode == K_YawL) InpKey.y = 0;
-	// Yaw Right
-	if (event.keyCode == K_YawR) InpKey.y = 0;
+	if (event.keyCode == K_BnkL) InpKey.z = 0;			// Bank Left
+	if (event.keyCode == K_BnkR) InpKey.z = 0;			// Bank Right
+	if (event.keyCode == K_PitU) InpKey.x = 0;			// Pitch Up
+	if (event.keyCode == K_PitD) InpKey.x = 0;			// Pitch Down
+	if (event.keyCode == K_YawL) InpKey.y = 0;			// Yaw Left
+	if (event.keyCode == K_YawR) InpKey.y = 0;			// Yaw Right
 }
 
 //= Mouse Input [MY CAMERA] ====================================================
@@ -1076,26 +1058,25 @@ function onTouchMove(event) {
 //= Button Input ===============================================================
 
 //- Toggle Pause
-function togglePause() {
+function toglPaws() {
 	PawsOn = 1 - PawsOn;
 }
 
 // Toggle Sound
-function toggleSound() {
-	if (SndFlg == 0) {
-		SndFlg = 1;
+function toglSoun() {
+	if (!SndFlg) {
 		EngSnd.play();
 		PrpSnd.play();
 	}
 	else {
-		SndFlg = 0;
 		EngSnd.stop();
 		PrpSnd.stop();
 	}
+	SndFlg = 1 - SndFlg;
 }
 
 // Change Camera View (3-Way)
-function toggleCamera() {
+function toglView() {
 	// Old CamSel
 	cam_.par.remove(cam_.rot);			// Unlink Old Parent
 	CamLLD[cam_.sel].copy(cam_.lld);	// Save lld
@@ -1148,85 +1129,85 @@ function toggleCamera() {
 }
 
 // Toggle Reference Lines
-function toggleRefLin() {
-	if (RefLOn == 0) {
+function toglRfLn() {
+	if (!RefLOn) {
 		RefObj.visible = true;
 		HrzObj.visible = true;
-		RefLOn=1;
 	}
 	else {
 		RefObj.visible = false;
 		HrzObj.visible = false;
-		RefLOn=0;
 	}
+	RefLOn = 1 - RefLOn;
 }
 
 // Toggle Gear
-function toggleLGear() {
-	if (anm_.lngflg) anm_.lngflg = 0;
-	else anm_.lngflg = 1;
+function toglGear() {
+//	if (anm_.lngflg) anm_.lngflg = 0;
+//	else anm_.lngflg = 1;
+	anm_.lngflg = 1 - anm_.lngflg;
 }
 
 // Toggle Flaps
-function toggleFlaps() {
+function toglFlap() {
 	if (anm_.flpflg) anm_.flpflg = 0;
 	else anm_.flpflg = 1;
 }
 
 // Toggle Canopy
-function toggleCanopy() {
+function toglCnpy() {
 	if (anm_.canflg) anm_.canflg = 0;
 	else anm_.canflg = 1;
 }
 
 // Toggle Tailhook
-function toggleHook() {
+function toglHook() {
 	if (anm_.thkflg) anm_.thkflg = 0;
 	else anm_.thkflg = 1;
 }
 
 // Flight Controls
 
-function toggleSpdU() {
+function toglSpdU() {
 	InpPwr = 0.001;
 }
 
-function togglePitD() {
+function toglPitD() {
 	if (InpKey.x) InpKey.x = 0;
 	else InpKey.x = InpKey.x = -KeyVal.x;
 }
 
-function toggleSpdD() {
+function toglSpdD() {
 	InpPwr = -0.001;
 }
 
-function toggleBnkL() {
+function toglBnkL() {
 	if (InpKey.z) InpKey.z = 0;
 	else InpKey.z = -KeyVal.z;
 }
 
-function toggleCntr() {
+function toglCntr() {
 	InpKey.x = 0;
 	InpKey.z = 0;
 	InpKey.y = 0;
 }
 
-function toggleBnkR() {
+function toglBnkR() {
 	if (InpKey.z) InpKey.z = 0;
 	else InpKey.z = KeyVal.z;
 }
 
-function toggleYawL() {
+function toglYawL() {
 	if (InpKey.y) InpKey.y = 0;
 	else InpKey.y = -0.1;
 }
 
-function togglePitU() {
+function toglPitU() {
 	if (InpKey.x) InpKey.x = 0;
 	else InpKey.x = KeyVal.x;
 }
 
-function toggleYawR() {
+function toglYawR() {
 	if (InpKey.y) InpKey.y = 0;
 	else InpKey.y = 0.1;
 }
