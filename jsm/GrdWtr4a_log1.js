@@ -65,7 +65,7 @@ import {color,texture,normalMap,positionLocal,MeshStandardNodeMaterial} from 'th
 
 class GrdMap {
 
-constructor(grd_,scene,vertexShader,vertexShaderParams,vDepth,cameraNear,cameraFar) {
+constructor(grd_,scene,vertexShader(),vertexShaderParams,vDepth,cameraNear,cameraFar) {
 	this.grd_ = grd_;
 	this.scene = scene;
 
