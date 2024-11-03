@@ -59,7 +59,9 @@
 //};
 
 import {Mesh,PlaneGeometry} from 'three';
-import {color,texture,normalMap,positionLocal,MeshStandardNodeMaterial} from 'three/tsl';
+import {color,texture,normalMap,positionLocal,MeshStandardNodeMaterial,
+		perspectiveDepthToLogarithmicDepth,
+} from 'three/tsl';
 
 /*= PROGRAM ==================================================================*/
 
