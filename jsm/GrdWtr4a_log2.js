@@ -59,13 +59,15 @@
 //};
 
 import {Mesh,PlaneGeometry} from 'three';
-import {color,texture,normalMap,positionLocal,MeshStandardNodeMaterial} from 'three/tsl';
+import {color,texture,normalMap,positionLocal,MeshStandardNodeMaterial,
+		perspectiveDepthToLogarithmicDepth,linearDepth,cameraNear,cameraFar,
+} from 'three/tsl';
 
 /*= PROGRAM ==================================================================*/
 
 class GrdMap {
 
-constructor(grd_,scene,materialVertexNode,materialDepthNode) {
+constructor(grd_,scene,vertexShader,vertexShaderParams) {
 	this.grd_ = grd_;
 	this.scene = scene;
 
@@ -125,13 +127,13 @@ constructor(grd_,scene,materialVertexNode,materialDepthNode) {
 	}
 	this.grd_.Nrm.repeat.set(this.grd_.Stp,this.grd_.Stp);
 	this.grd_.Dsp.repeat.set(this.grd_.Stp,this.grd_.Stp);
-	this._initGeoMat(this.grd_,this.scene);	// Init Grid Materials
+	this._initGeoMat(this.grd_,this.scene,vertexShader,vertexShaderParams); // Init Grid Materials
 	this._init1GrMap(this.grd_.Grx[0], grd_,this.scene);
 	this._init1GrMap(this.grd_.Grx[1], grd_,this.scene);
 	this._init1GrMap(this.grd_.Grx[2], grd_,this.scene);
 }
 
-_initGeoMat(grd_,scene,materialVertexNode,materialDepthNode) {
+_initGeoMat(grd_,scene,vertexShader,vertexShaderParams,vDepth) {
 // Define Geometries and Materials Referenced in grd_.Geo and grd_.Mat
 	// Grid0 ------------------------------------------------------------------
 	// For Grid0, using geometry = siz*stp since flip over stp at a time
@@ -153,9 +155,9 @@ _initGeoMat(grd_,scene,materialVertexNode,materialDepthNode) {
 				envMap: scene.background,			
 				envMapIntensity: 0.5,		// max reflection suggested = 5
 			});
-			grd_.Mt0[idx].vertexNode = materialVertexNode; // ### log
-			grd_.Mt0[idx].depthNode = materialDepthNode; // ### log
-
+			grd_.Mt0[idx].vertexNode = vertexShader(vertexShaderParams); // ### log
+//			grd_.Mt0[idx].depthNode = perspectiveDepthToLogarithmicDepth(vDepth,cameraNear,cameraFar); // ### log
+			grd_.Mt0[idx].depthNode = perspectiveDepthToLogarithmicDepth(linearDepth(),cameraNear,cameraFar);	
 			idx++
 		}
 	}
@@ -182,8 +184,9 @@ _initGeoMat(grd_,scene,materialVertexNode,materialDepthNode) {
 				envMapIntensity: 0.5,	// max reflection suggested = 5	
 				premultipliedAlpha: true,
 			});
-			grd_.Mt1[idx].vertexNode = materialVertexNode; // ### log
-			grd_.Mt1[idx].depthNode = materialDepthNode; // ### log
+			grd_.Mt1[idx].vertexNode = vertexShader(vertexShaderParams); // ### log
+//			grd_.Mt1[idx].depthNode = perspectiveDepthToLogarithmicDepth(vDepth,cameraNear,cameraFar); // ### log
+			grd_.Mt1[idx].depthNode = perspectiveDepthToLogarithmicDepth(linearDepth(),cameraNear,cameraFar);	
 			idx++
 		}
 	}
@@ -203,8 +206,9 @@ _initGeoMat(grd_,scene,materialVertexNode,materialDepthNode) {
 		envMapIntensity: 0.5,		// max reflection suggested = 5
 		premultipliedAlpha: true,
 	});
-	grd_.Mat[n].vertexNode = materialVertexNode; // ### log
-	grd_.Mat[n].depthNode = materialDepthNode; // ### log
+	grd_.Mat[n].vertexNode = vertexShader(vertexShaderParams); // ### log
+//	grd_.Mat[n].depthNode = perspectiveDepthToLogarithmicDepth(vDepth,cameraNear,cameraFar); // ### log
+	grd_.Mat[n].depthNode = perspectiveDepthToLogarithmicDepth(linearDepth(),cameraNear,cameraFar);
 	// Single Geometry works for all
 	let sz1 = sz0*grd_.Stp;
 	grd_.Geo[n] = new PlaneGeometry(sz1,sz1);
