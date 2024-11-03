@@ -59,7 +59,7 @@
 //};
 
 import {Mesh,PlaneGeometry} from 'three';
-import {color,texture,normalMap,positionLocal,MeshStandardNodeMaterial
+import {color,texture,normalMap,positionLocal,MeshStandardNodeMaterial,
 		wgslFn,varyingProperty,cameraProjectionMatrix,cameraViewMatrix,modelWorldMatrix,vec4,
 		perspectiveDepthToLogarithmicDepth,cameraNear,cameraFar,attribute,
 } from 'three/tsl';
