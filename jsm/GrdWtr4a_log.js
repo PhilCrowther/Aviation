@@ -131,7 +131,7 @@ constructor(grd_,scene, vertexShader, vDepth, cameraNear, cameraFar) {
 	this._init1GrMap(this.grd_.Grx[2], grd_,this.scene);
 }
 
-_initGeoMat(grd_,scene, vertexShader, vDepth, cameraNear, cameraFar) {
+_initGeoMat(grd_,scene,vertexShader,vertexShaderParams,vDepth,cameraNear,cameraFar) {
 // Define Geometries and Materials Referenced in grd_.Geo and grd_.Mat
 	// Grid0 ------------------------------------------------------------------
 	// For Grid0, using geometry = siz*stp since flip over stp at a time
