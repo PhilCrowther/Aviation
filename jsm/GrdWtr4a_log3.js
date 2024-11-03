@@ -156,9 +156,8 @@ _initGeoMat(grd_,scene) {
 				envMap: scene.background,			
 				envMapIntensity: 0.5,		// max reflection suggested = 5
 			});
-			grd_.Mt0[idx].vertexNode = materialVertexNode; // ### log
-			grd_.Mt0[idx].depthNode = materialDepthNode; // ### log
-
+			grd_.Mt0[idx].vertexNode = vertexShader(vertexShaderParams); // ### log
+			grd_.Mt0[idx].depthNode = perspectiveDepthToLogarithmicDepth(vDepth,cameraNear,cameraFar); // ### log
 			idx++
 		}
 	}
@@ -185,8 +184,8 @@ _initGeoMat(grd_,scene) {
 				envMapIntensity: 0.5,	// max reflection suggested = 5	
 				premultipliedAlpha: true,
 			});
-			grd_.Mt1[idx].vertexNode = materialVertexNode; // ### log
-			grd_.Mt1[idx].depthNode = materialDepthNode; // ### log
+			grd_.Mt1[idx].vertexNode = vertexShader(vertexShaderParams); // ### log
+			grd_.Mt1[idx].depthNode = perspectiveDepthToLogarithmicDepth(vDepth,cameraNear,cameraFar); // ### log
 			idx++
 		}
 	}
@@ -206,8 +205,8 @@ _initGeoMat(grd_,scene) {
 		envMapIntensity: 0.5,		// max reflection suggested = 5
 		premultipliedAlpha: true,
 	});
-	grd_.Mat[n].vertexNode = materialVertexNode; // ### log
-	grd_.Mat[n].depthNode = materialDepthNode; // ### log
+	grd_.Mat[n].vertexNode = vertexShader(vertexShaderParams); // ### log
+	grd_.Mat[n].depthNode = perspectiveDepthToLogarithmicDepth(vDepth,cameraNear,cameraFar); // ### log
 	// Single Geometry works for all
 	let sz1 = sz0*grd_.Stp;
 	grd_.Geo[n] = new PlaneGeometry(sz1,sz1);
