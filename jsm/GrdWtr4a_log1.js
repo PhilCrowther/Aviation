@@ -125,7 +125,7 @@ constructor(grd_,scene,vertexShader,vertexShaderParams,vDepth,cameraNear,cameraF
 	}
 	this.grd_.Nrm.repeat.set(this.grd_.Stp,this.grd_.Stp);
 	this.grd_.Dsp.repeat.set(this.grd_.Stp,this.grd_.Stp);
-	this._initGeoMat(this.grd_,this.scene,,vertexShader,vertexShaderParams,vDepth,cameraNear,cameraFar); // Init Grid Materials
+	this._initGeoMat(this.grd_,this.scene,vertexShader,vertexShaderParams,vDepth,cameraNear,cameraFar); // Init Grid Materials
 	this._init1GrMap(this.grd_.Grx[0], grd_,this.scene);
 	this._init1GrMap(this.grd_.Grx[1], grd_,this.scene);
 	this._init1GrMap(this.grd_.Grx[2], grd_,this.scene);
