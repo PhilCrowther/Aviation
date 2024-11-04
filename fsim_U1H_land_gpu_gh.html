@@ -119,7 +119,7 @@ let AltDif = 0;					// Power % Input - Value
 //let BnkMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //let YawMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys -----------------------------------------------------------------------
-let KeyVal = new THREE.Vector3(0.1,0.4,0.1); // Key Values
+let KeyVal = new THREE.Vector3(0.5,0.4,0.5); // Key Values
 let InpAlt = 0;					// Input Altitude
 let InpACP = 0;					// Input Pitch
 let InpACB = 0;					// Input Bank
@@ -474,8 +474,9 @@ let ObjIdx = 0;
 //= MY AIRPLANE ================//==============================================
 let dat_ = {
 		MaxThr: 32620,			// Level Flight Thrust (N = 7333 lbs)
-		MaxAng: 15,				// Max Rotor and Body Angle (deg) [rotor moves +/-11 deg]
-		MaxKPH: 217.26,			// Max Speed (kph = 135 mph)
+		MaxAng: 30,				// Max Rotor and Body Angle (deg) [rotor moves +/-11 deg]
+		MaxKPH: 217.26,			// Max Speed (mph = 135 mph)
+		MinAng: 15,				// Min Rotor and Body Angle (deg) to main MaxKPH
 		ACMass: 3326,			// Aircraft Mass (kg = 7333 lb / 2.2)
 		FrntAr: 1.951,			// Frontal Area (m2 = 21 ft2)
 		DrgCdz: 1.94,			// Coefficient of Drag (z-direction)
@@ -515,6 +516,7 @@ let air_ = {
 		MaxThr: 0,				// Prop Maximum Power (kW = 17000 lbs X 4.445)
 		MaxAng: 0,				// Max Rotor and Body Angle (deg)
 		MaxKPH: 0,				// Max Speed (KPH)
+		MinAng: 0,
 		ACMass: 0,				// Airplane Mass
 		FrntAr: 0,				// Frontal Area
 		DrgCdz: 0,				// Coefficient of Drag (z-direction)
@@ -625,14 +627,17 @@ let instructions = document.getElementById('instructions');
 
 //= DEFAULT KEY BINDINGS =======//==============================================
 let	K_AltU = 81;				// Altitude Up (q)
-let	K_AltD = 87;				// Altitude Dn (w)
-let	K_PitU = 40;				// Pitch up (down arrow)
-let	K_PitD = 38;				// Pitch down (up arrow)
-let	K_BnkL = 37;				// Bank Left (left arrow)
-let	K_BnkR = 39;				// Bank Right (right arrow)
+let	K_AltD = 69;				// Altitude Dn (e)
+let	A_PitU = 40;				// Pitch up (down arrow)
+let	A_PitD = 38;				// Pitch down (up arrow)
+let	A_BnkL = 37;				// Bank Left (left arrow)
+let	A_BnkR = 39;				// Bank Right (right arrow)
+let	K_PitU = 88;				// Pitch up (w)
+let	K_PitD = 87;				// Pitch down (x)
+let	K_BnkL = 65;				// Bank Left (a)
+let	K_BnkR = 68;				// Bank Right (d)
 let	K_YawL = 90;				// Yaw Left (z)
-let	K_YawR = 88;				// Yaw Right (x)
-let	K_Door = 68;				// Door (d)
+let	K_YawR = 67;				// Yaw Right (c)
 //	Views
 let K_Look = 16;				// Pan (shift)
 let K_VU45 = 36;				// View Up (alone or modifier)
@@ -1683,6 +1688,7 @@ function initFlight() {
 	air_.MaxThr = dat_.MaxThr;	// Maximum Thrust
 	air_.MaxAng = dat_.MaxAng;	// Maximum Rotor and Body Angle
 	air_.MaxKPH = dat_.MaxKPH;	// Maximum Speed
+	air_.MinAng = dat_.MinAng;	// Minimum Rotor and Body Angle for Max Speed
 	air_.ACMass = dat_.ACMass;	// Airplane Mass
 	air_.FrntAr = dat_.FrntAr;	// Frontal Area
 	air_.DrgCdz = dat_.DrgCdz;	// Coefficient of Drag (z-direction)
@@ -1721,11 +1727,7 @@ function moveFlight() {
 		if (PSpdXS < 0) PDrgXF = -PDrgXF; // If going left, drag = right
 		// Total Drag
 		let DrgTot = Math.abs(PDrgZF) + Math.abs(PDrgXF);
-		// Compute Excess Thrust Available
-		//	
-		// 3. Forward Speed (mps) ..............................................
-		// Compute Max Pitch Angle
-		//	
+		// 3. Forward Speed (mps) ..............................................	
 		// Thrust Force
 		let ACPRad = -air_.AirRot.x * DegRad;
 		let PThrZF = air_.MaxThr * Math.sin(ACPRad); // Propeller Acceleration - Forward
@@ -1733,11 +1735,7 @@ function moveFlight() {
 		let PnetZF = PThrZF - PDrgZF; // Net Force
 		let PnetZA = PnetZF * FrcAcc; // Net Acc (mpf)
 		PSpdZS = PSpdZS + PnetZA; // new Speed (mpf)
-		// Compute Excess Thrust Available
-		//
 		// 4. Lateral Speed (mps) ..............................................
-		// Compute Max Bank Angle
-		//		
 		// Thrust Force
 		let ACBRad = air_.AirRot.z * DegRad;
 		let PThrXF = air_.MaxThr * Math.sin(ACBRad); // Propeller Acceleration - Lateral
@@ -1758,13 +1756,14 @@ function moveFlight() {
 		air_.AirSpd.x = PSpdXS / DLTime;
 		//- Rotate Helicopter --------------------------------------------------
 		// ACPitch
+		let MaxAng = air_.MinAng+(air_.MaxAng-air_.MinAng) * (1-air_.AirSpd.z/(air_.MaxKPH/3.6));
 		air_.AirRot.x = air_.AirRot.x + air_.RotDif.x;
-		if (air_.AirRot.x > 15) air_.AirRot.x = 15;
-		else if (air_.AirRot.x < -15) air_.AirRot.x = -15;
+		if (air_.AirRot.x > MaxAng) air_.AirRot.x = MaxAng;
+		else if (air_.AirRot.x < -MaxAng) air_.AirRot.x = -MaxAng;
 		// ACBank
 		air_.AirRot.z = Mod360(air_.AirRot.z + air_.RotDif.z);
-		if (air_.AirRot.z > 30 && air_.AirRot.z < 180) air_.AirRot.z = 30;
-		else if (air_.AirRot.z < 330 && air_.AirRot.z > 180) air_.AirRot.z = 330;
+		if (air_.AirRot.z > air_.MaxAng && air_.AirRot.z < 180) air_.AirRot.z = air_.MaxAng;
+		else if (air_.AirRot.z < (360-air_.MaxAng) && air_.AirRot.z > 180) air_.AirRot.z = (360-air_.MaxAng);
 		// ACYaw
 		air_.AirRot.y = Mod360(air_.AirRot.y + air_.RotDif.y);
 		// Weather-Vane Adjustment
@@ -1919,7 +1918,7 @@ function moveCamera(camera,cam_) {
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
 	else {
-		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
+		cam_.rot.rotation.x = Mod360(-cam_.lld.x+0.5*air_.AirRot.x)*DegRad;
 		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;		
 	}
 }
@@ -2039,13 +2038,16 @@ function onDocumentKeyDown(event) {
 	// Basic
 	if (event.keyCode == K_AltU) InpAlt = 0.001;		// Altitude Up
 	if (event.keyCode == K_AltD) InpAlt = -0.001;		// Altitude Down
+	if (event.keyCode == A_PitU) InpACP = KeyVal.x;		// Pitch Up
+	if (event.keyCode == A_PitD) InpACP = -KeyVal.x;	// Pitch Down
+	if (event.keyCode == A_BnkL) InpACB = -KeyVal.z;	// Bank Left
+	if (event.keyCode == A_BnkR) InpACB = KeyVal.z;		// Bank Right
 	if (event.keyCode == K_PitU) InpACP = KeyVal.x;		// Pitch Up
 	if (event.keyCode == K_PitD) InpACP = -KeyVal.x;	// Pitch Down
 	if (event.keyCode == K_BnkL) InpACB = -KeyVal.z;	// Bank Left
 	if (event.keyCode == K_BnkR) InpACB = KeyVal.z;		// Bank Right
 	if (event.keyCode == K_YawL) InpYaw = -KeyVal.y;	// Yaw Left
 	if (event.keyCode == K_YawR) InpYaw = KeyVal.y;		// Yaw Right
-	if (event.keyCode == K_Door) DrFlag = 1;			// Doors
 	// Views
 	if (event.keyCode == K_VU45) D45flg = 1;			// View - 45 deg up
 	if (event.keyCode == K_VD45) U45flg = 1;			// View - 45 deg down
@@ -2066,13 +2068,16 @@ function onDocumentKeyUp(event) {
 	// Basic
 	if (event.keyCode == K_AltU) InpAlt = 0;			// Altitude Up
 	if (event.keyCode == K_AltD) InpAlt = 0;			// Altitude Down
+	if (event.keyCode == A_PitU) InpACP = 0;			// Pitch Up
+	if (event.keyCode == A_PitD) InpACP = 0;			// Pitch Down
+	if (event.keyCode == A_BnkL) InpACB = 0;			// Bank Left
+	if (event.keyCode == A_BnkR) InpACB = 0;			// Bank Right
 	if (event.keyCode == K_PitU) InpACP = 0;			// Pitch Up
 	if (event.keyCode == K_PitD) InpACP = 0;			// Pitch Down
 	if (event.keyCode == K_BnkL) InpACB = 0;			// Bank Left
 	if (event.keyCode == K_BnkR) InpACB = 0;			// Bank Right
 	if (event.keyCode == K_YawL) InpYaw = 0;			// Yaw Left
 	if (event.keyCode == K_YawR) InpYaw = 0;			// Yaw Right
-	if (event.keyCode == K_Door) DrFlag = 0;			// Doors
 	// Views
 	if (event.keyCode == K_VU45) D45flg = 0;			// View - 45 deg up
 	if (event.keyCode == K_VD45) U45flg = 0;			// View - 45 deg down
@@ -2080,7 +2085,7 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_VR45) R45flg = 0;			// View - 45 deg right
 	if (event.keyCode == K_VL90) L90flg = 0;			// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 0;			// View - 90 deg right
-	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
+//	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
 }
 
 //- Subroutines ----------------------------------------------------------------
