@@ -7,7 +7,7 @@ Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unpor
 Version dated 6 Nov 2024
 
 This simplified flight demonstrator shows how to set up animated parts, including a virtual cockpit.
-It does does not use the Flight module.
+This demo uses a simplified version of the Flight module.
 -->
 
 <head>
@@ -119,14 +119,13 @@ if (USorSI = "US") {
 	BegPos.multiplyScalar(Ft2Mtr);
 }
 
-//= INPUT VALUES ===============//=============================================
-//	Background
-let BakClr = new THREE.Color("White"); // Background Color
-//- Flags
+//= INPUT VALUES ===============//==============================================
+//- Display
 let PawsOn = 0;					// Pause
-let LodFlg = 0;					// Set when initialized
 let SBxFlg = 1;					// SkyBox (1 = On)
 let LnFFlg = 1;					// Lensflare
+//	Program Flags
+let LodFlg = 0;					// Set when initialized
 
 //= SUN VALUES =================//==============================================
 let SunCol = "white";			// Sun
@@ -139,6 +138,41 @@ let SunLon = 312;				// Direction - Horz (0->360) deg
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 
+//= BASIC VALUES ===============================================================
+//- Display
+let scene = new THREE.Scene();
+let width  = window.innerWidth, height = window.innerHeight;
+//- Lights
+let ambLight = new THREE.AmbientLight(SunCol,0.1);
+	scene.add(ambLight);
+let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
+	scene.add(sunLight);
+//- Camera
+let camera = new THREE.PerspectiveCamera(70, width/height, 1, 50000);
+	camera.rotation.order = "YXZ";	// [1]
+//- Renderer
+let renderer = new THREE.WebGPURenderer({antialias: true});	// r168
+    renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(width, height);
+	renderer.setAnimationLoop(rendAll);	
+	document.body.appendChild(renderer.domElement);
+//- Inputs
+	document.addEventListener("keydown", onDocumentKeyDown, false);
+	document.addEventListener("keyup", onDocumentKeyUp, false);
+	renderer.domElement.addEventListener("mousedown", onMouseDown, false);	// [1]
+	renderer.domElement.addEventListener("mouseup", onMouseUp, false);		// [1]
+	renderer.domElement.addEventListener('mousewheel', onMouseWheel, {capture: false, passive: false});
+	window.addEventListener("resize", onWindowResize, false);
+// 	Loading Manager
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
 //= SKYBOX =====================//==============================================
 let FogCol = 0xbab4a6;			// Sky (for Fog only)
@@ -150,8 +184,106 @@ let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 let envMap = 0;
 
-//= AIRPLANE ===================================================================
-//= Air
+//= GROUND SQUARES =============//==============================================
+// Layer 1 constains smaller higher definition squares
+// Layer 2 contains larger lower definition squares (3X size of Layer 1 squares)
+//- All Grids ------------------------------------------------------------------
+let GrdSiz = 1609.33;			// Grid Size 1 Mile (1609.33m)
+// Used to Position Map
+let Grd0 = {
+		SPS: new THREE.Vector3().copy(BegPos), // Map XSpd, YPos, ZSpd
+	}
+//= Grid 4 ---------------------------------------------------------------------
+let Grd4 = {
+		Typ: 4,					// Type of Grid - Inner or Outer
+		RCs: 27,				// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz: GrdSiz,			// Size of square
+		Stp: 3,					// Steps
+		RCi: 0,					// Rows and Columns Index (computed)
+		MZV: [0],				// Ground Z Value
+		MXV: [0],				// Ground X Value
+		Nor: 0,					// Max North Square (updated)
+		Est: 0,					// Max East Square (updated)
+		Num: 0,					// Size of array (computed)
+		Ptr: [0],				// Ground Address
+		RCF: 0,					// N/A
+		NSA: 0,					// Shared North/South Adjustment (updated)
+		EWA: 0,					// Shared East/West Adjustment (updated)
+		Mat: 0					// Match Material of Outer and Inner Blocks
+	}
+//- Grid 5 ---------------------------------------------------------------------
+let Grd5 = {
+		Typ: 5,					// Type of Grid - Inner or Outer
+		RCs: 27,				// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz: Grd4.Siz*Grd4.Stp,	// Size of square
+		Stp: 3,					// Steps (### changed)
+		RCi: 0,					// Rows and Columns Index (computed)
+		MZV: [0],				// Ground Z Value
+		MXV: [0],				// Ground X Value
+		Nor: 0,					// Max North Square (updated)
+		Est: 0,					// Max East Square (updated)
+		Num: 0,					// Size of array (computed)
+		Ptr: [0],				// Ground Address
+		RCF: Grd4.RCs/Grd4.Stp,	// Cut-Out Area (27/3 = 9)
+		NSA: 0,					// Shared North/South Adjustment (updated)
+		EWA: 0,					// Shared East/West Adjustment (updated)
+		Mat: 0					// Match Material of Outer and Inner Blocks
+	}
+
+//= AIRPLANE ===================//==============================================
+//- FM2 Data -------------------------------------------------------------------
+let typ_ = {
+		// Lift
+		WingSp: 11.582,			// Wing Span (m)
+		WingAr: 24.155,			// Wing Area (m2)
+		WingEf: 0.75,			// Wing Efficiency
+		AngInc: 2,				// Angle of Incidence
+		GrvMax: 8,				// Maximum G-Force
+		TrmAdj: 2.5,			// Elevator Trim Adjustment (### - not used)
+		// Gravity
+		ACMass: 3400,			// Aircraft Mass (kg)
+		Weight: 0,				// Constant
+		// Thrust: Prop
+		PwrMax: 1007,			// Prop Maximum Power (kW)
+		PropEf: 0.8,			// Prop Efficiency
+		WEPMax: 0,				// War Emergency Power (kW)
+		// Thrust: Jet
+		JetMax: 0,				// Jet Maximum Thrust (kW)
+		AftMax: 0,				// Jet Afterburner Maximum Thrust (kW)	
+		// Drag
+		DrgCd0: 0.0211,			// Coefficient of Drag
+		// Landing Gear Geometry
+		Ax2CGD: 1.6667,			// Axle to CG distance (m)
+		Ax2CGA: 330,			// Axle to CG angle (deg)
+		WheelR: 0.3048,			// Wheel radius (m)
+		TDrAng: 11,				// Taildragger Max Angle (deg)
+		TDrSpd: 11.176,			// Speed at which tail lifts (m) 25mph
+		MinAGL: 5.3,			// Minimum Altitude (AC Level) (ft) (### - not used)
+		// Optional: Flaps
+		FlpCfL: 0.28,			// Max Flap Cfl (0.2*CfLMax) (shared with main program)
+		DrgCdf: 0.01,			// Coefficient of Drag - Flaps
+		FlpAIn: 10,				// Max Flap Angle of Incidence (2*AngInc)
+		// Optional: Landing Gear Retractable
+		DrgCdg: 0.005,			// Coefficient of Drag - Gear
+		// Optional: Spoiler
+		SplCfL: 0,				// Max Spoiler CfL (### - not used)
+		DrgCds: 0,				// Coefficient of Drag - Spoiler
+		// Optional: Airbrake
+		DrgCdb: 0,				// Coefficient of Drag - Airbrake
+		// Controls (shared with air_. and main program)
+		PitMul: 1/250,			// Standard pitch multiplie
+		CfLMax: 1.4,			// Maximum Coefficient of Lift
+		BnkMul: 1/250,			// Standard bank multiplier
+		MxBnkR: 1,				// Maximum bank rate
+	}
+//- Constants
+let ThrstK = 1000 * typ_.PropEf;	// Prop Only - Constant (prop only)
+	typ_.Weight = typ_.ACMass * GrvUPS; // Constant
+let WingAs = typ_.WingSp*typ_.WingSp/typ_.WingAr;	// Wing Aspect Ratio
+let	ACPMax = typ_.CfLMax * 10;		// Max Airplane pitch adjustment (+/- 15)
+let	ACPInc = ACPMax - typ_.AngInc;	// Net max Airplane pitch adjustment (10)
+
+//- Airplane -------------------------------------------------------------------
 let air_ = {
 		// General Variables
 		DLTime: DLTime,
@@ -214,7 +346,7 @@ let ani_ = {	// Internal
 		AiR: 0,	// Aileron Right
 		Spd: makeMesh(), // Speed Pointer
 	}
-//- Aircraft Textures ----------------------------------------------------------
+//- Airplane Textures ----------------------------------------------------------
 let	AirSrc = "https://threejs.org/examples/textures/roughness_map.jpg";
 let AirTxE, AirTxR;
 let PanSrc = "https://PhilCrowther.github.io/Aviation/textures/panels/panel.png";
@@ -254,59 +386,6 @@ let gau_ = {
 		VSIPtr: 0,									// Pointer Address
 	}
 
-//= Airplane Data ==============================================================
-//- FM2 ------------------------------------------------------------------------
-let typ_ = {
-		// Lift
-		WingSp: 11.582,	// Wing Span (m)
-		WingAr: 24.155,	// Wing Area (m2)
-		WingEf: 0.75,	// Wing Efficiency
-		AngInc: 2,		// Angle of Incidence
-		GrvMax: 8,		// Maximum G-Force
-		TrmAdj: 2.5,	// Elevator Trim Adjustment (### - not used)
-		// Gravity
-		ACMass: 3400,	// Aircraft Mass (kg)
-		Weight: 0,		// Constant
-		// Thrust: Prop
-		PwrMax: 1007,	// Prop Maximum Power (kW)
-		PropEf: 0.8,	// Prop Efficiency
-		WEPMax: 0,		// War Emergency Power (kW)
-		// Thrust: Jet
-		JetMax: 0,		// Jet Maximum Thrust (kW)
-		AftMax: 0,		// Jet Afterburner Maximum Thrust (kW)	
-		// Drag
-		DrgCd0: 0.0211,	// Coefficient of Drag
-		// Landing Gear Geometry
-		Ax2CGD: 1.6667,	// Axle to CG distance (m)
-		Ax2CGA: 330,	// Axle to CG angle (deg)
-		WheelR: 0.3048,	// Wheel radius (m)
-		TDrAng: 11,		// Taildragger Max Angle (deg)
-		TDrSpd: 11.176,	// Speed at which tail lifts (m) 25mph
-		MinAGL: 5.3,	// Minimum Altitude (AC Level) (ft) (### - not used)
-		// Optional: Flaps
-		FlpCfL: 0.28,	// Max Flap Cfl (0.2*CfLMax) (shared with main program)
-		DrgCdf: 0.01,	// Coefficient of Drag - Flaps
-		FlpAIn: 10,		// Max Flap Angle of Incidence (2*AngInc)
-		// Optional: Landing Gear Retractable
-		DrgCdg: 0.005,	// Coefficient of Drag - Gear
-		// Optional: Spoiler
-		SplCfL: 0,		// Max Spoiler CfL (### - not used)
-		DrgCds: 0,		// Coefficient of Drag - Spoiler
-		// Optional: Airbrake
-		DrgCdb: 0,		// Coefficient of Drag - Airbrake
-		// Controls (shared with air_. and main program)
-		PitMul: 1/250,	// Standard pitch multiplie
-		CfLMax: 1.4,	// Maximum Coefficient of Lift
-		BnkMul: 1/250,	// Standard bank multiplier
-		MxBnkR: 1,		// Maximum bank rate
-	}
-//- Constants
-let ThrstK = 1000 * typ_.PropEf;	// Prop Only - Constant (prop only)
-	typ_.Weight = typ_.ACMass * GrvUPS; // Constant
-let WingAs = typ_.WingSp*typ_.WingSp/typ_.WingAr;	// Wing Aspect Ratio
-let	ACPMax = typ_.CfLMax * 10;		// Max Airplane pitch adjustment (+/- 15)
-let	ACPInc = ACPMax - typ_.AngInc;	// Net max Airplane pitch adjustment (10)
-
 //= JET EXHAUST ================================================================
 let SmkPtr = 0;
 let SmkPts = 500;
@@ -318,51 +397,20 @@ let SmkSpd = 15;
 let SmkWid = .05;
 let SmkLim = 250;				// Max distance
 
-//= GROUND SQUARES =============================================================
-// Layer 1 constains smaller higher definition squares
-// Layer 2 contains larger lower definition squares (3X size of Layer 1 squares)
-//- All Grids ------------------------------------------------------------------
-let GrdSiz = 1609.33;					// Grid Size 1 Mile (1609.33m)
-// Used to Position Map
-let Grd0 = {
-		SPS: new THREE.Vector3(0,air_.MapSPS.y,0),	// Map XSpd, YPos, ZSpd
-	}
-//= Grid 4 ---------------------------------------------------------------------
-let Grd4 = {
-		Typ: 4,					// Type of Grid - Inner or Outer
-		RCs: 27,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz: GrdSiz,			// Size of square
-		Stp: 3,					// Steps
-		RCi: 0,					// Rows and Columns Index (computed)
-		MZV: [0],				// Ground Z Value
-		MXV: [0],				// Ground X Value
-		Nor: 0,					// Max North Square (updated)
-		Est: 0,					// Max East Square (updated)
-		Num: 0,					// Size of array (computed)
-		Ptr: [0],				// Ground Address
-		RCF: 0,					// N/A
-		NSA: 0,					// Shared North/South Adjustment (updated)
-		EWA: 0,					// Shared East/West Adjustment (updated)
-		Mat: 0					// Match Material of Outer and Inner Blocks
-	}
-//- Grid 5 ---------------------------------------------------------------------
-let Grd5 = {
-		Typ: 5,					// Type of Grid - Inner or Outer
-		RCs: 27,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz: Grd4.Siz*Grd4.Stp,	// Size of square
-		Stp: 3,					// Steps (### changed)
-		RCi: 0,					// Rows and Columns Index (computed)
-		MZV: [0],				// Ground Z Value
-		MXV: [0],				// Ground X Value
-		Nor: 0,					// Max North Square (updated)
-		Est: 0,					// Max East Square (updated)
-		Num: 0,					// Size of array (computed)
-		Ptr: [0],				// Ground Address
-		RCF: Grd4.RCs/Grd4.Stp,	// Cut-Out Area (27/3 = 9)
-		NSA: 0,					// Shared North/South Adjustment (updated)
-		EWA: 0,					// Shared East/West Adjustment (updated)
-		Mat: 0					// Match Material of Outer and Inner Blocks
-	}
+//= DEFAULT KEY BINDINGS =======================================================
+//- Autopilot
+let	K_BnkL = 37;	// Bank Left (left arrow)
+let	K_BnkR = 39;	// Bank Right (right arrow)
+let	K_PitU = 40;	// Pitch up (down arrow)
+let	K_PitD = 38;	// Pitch down (up arrow)
+//- Yaw
+let	K_YawL = 90;	// Yaw Left (z)
+let	K_YawR = 88;	// Yaw Right (x)
+//- Flags
+let K_Look = 16;	// Camera Pan (shift)
+let	K_SelV = 86;	// Toggle View (v)
+let	K_AtPF = 65;	// Toggle Autopilot (a)
+let K_Paws = 80;	// Pause (p)
 
 //= CAMERA =====================================================================
 //-	Data for External View
@@ -384,6 +432,7 @@ let cam_ = {
 //- Adjustments
 	cam_.Obj.rotation.order = "YXZ";
 	cam_.Obj.rotation.y = Mod360(cam_.XYD.y)*DegRad;
+	cam_.Obj.add(camera);			// [1]
 	cam_.PVC.rotation.order = "YXZ";
 	cam_.PVC.position.set(0,8,0);	// Position of Internal view
 //	air_.AirObj.add(cam_.PVC);			// Attach cam_.PVC to airplane
@@ -391,58 +440,6 @@ let cam_ = {
 //- Mouse Inputs
 let onPointerDownX, onPointerDownY;
 let onPointerDownLon, onPointerDownLat;
-
-//= DEFAULT KEY BINDINGS =======================================================
-//- Autopilot
-let	K_BnkL = 37;	// Bank Left (left arrow)
-let	K_BnkR = 39;	// Bank Right (right arrow)
-let	K_PitU = 40;	// Pitch up (down arrow)
-let	K_PitD = 38;	// Pitch down (up arrow)
-//- Yaw
-let	K_YawL = 90;	// Yaw Left (z)
-let	K_YawR = 88;	// Yaw Right (x)
-//- Flags
-let K_Look = 16;	// Camera Pan (shift)
-let	K_SelV = 86;	// Toggle View (v)
-let	K_AtPF = 65;	// Toggle Autopilot (a)
-let K_Paws = 80;	// Pause (p)
-
-//= BASIC VALUES ===============================================================
-//- Display
-let scene = new THREE.Scene();
-	scene.background = new THREE.Color(BakClr);
-let width  = window.innerWidth, height = window.innerHeight;
-let renderer = new THREE.WebGPURenderer({antialias: true});	// r168
-    renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setSize(width, height);
-	renderer.setAnimationLoop(rendAll);	
-	document.body.appendChild(renderer.domElement);
-//- Lights
-let ambLight = new THREE.AmbientLight(SunCol,0.1);
-	scene.add(ambLight);
-let sunLight = new THREE.DirectionalLight(SunCol, SunInt);
-	scene.add(sunLight);
-//- Camera
-let camera = new THREE.PerspectiveCamera(70, width/height, 1, 50000);
-	camera.rotation.order = "YXZ";	// [1]
-	cam_.Obj.add(camera);			// [1]
-//- Inputs
-	document.addEventListener("keydown", onDocumentKeyDown, false);
-	document.addEventListener("keyup", onDocumentKeyUp, false);
-	renderer.domElement.addEventListener("mousedown", onMouseDown, false);	// [1]
-	renderer.domElement.addEventListener("mouseup", onMouseUp, false);		// [1]
-	renderer.domElement.addEventListener('mousewheel', onMouseWheel, {capture: false, passive: false});
-	window.addEventListener("resize", onWindowResize, false);
-// 	Loading Manager
-let loadingManager = new THREE.LoadingManager();
-let RESOURCES_LOADED = false;
-	loadingManager.onLoad = function(){
-		console.log("loaded all resources");
-		RESOURCES_LOADED = true;
-		initAll();
-	};
-let txtrLoader = new THREE.TextureLoader(loadingManager);
-let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
 //= HTML OVRELAY TEXT ==========================================================
 let Air_PwrElement = document.getElementById("Air_Pwr");	// Throttle
@@ -546,39 +543,39 @@ let instructions = document.getElementById('instructions');
 		instructions.style.display = '';
 	});
 
-//= 3D OBJECTS AND LINKS =======================================================
-	scene.add(air_.AirObj);			// for Airplane
+//= 3D OBJECTS AND LINKS =======//==============================================
+	scene.add(air_.AirObj);		// for Airplane
 
-//= MAIN PROGRAM ===============================================================
+//= MAIN PROGRAM ===============//==============================================
 
-	initCamera();					// Camera [1]
+	initCamera();				// Camera [1]
 	loadAll();
 
-//- 0 LOAD =====================================================================
+//- 0 LOAD =====================//==============================================
 
 function loadAll() {
 	if (SBxFlg) loadSkyBox();
-	loadAirTxt();					// Aircraft Textures
+	loadAirTxt();				// Aircraft Textures
 }
 
-//- 1 Init =====================================================================
+//- 1 Init =====================//==============================================
 
 function initAll() {
-	if (SBxFlg) initSkyBox();		// SkyDome, Fog and Sun
-	initAirObj();					// Initialize Airplane Rotation
-	initGrdMap();					// Grid (Render First So in Background)
-	makeAirPln();					// Load Airplane Models
+	if (SBxFlg) initSkyBox();	// SkyDome, Fog and Sun
+	initAirObj();				// Initialize Airplane Rotation
+	initGrdMap();				// Grid (Render First So in Background)
+	makeAirPln();				// Load Airplane Models
 	initJetExh();
 	AutoPText();
 	PauseText();
 	LodFlg = 1;
 }
 
-//- 2 Render ===================================================================
+//- 2 Render ===================//==============================================
 
 function rendAll() {
 	if (PawsOn == 0 && (LodFlg) && controls.isLocked === true) {
-		moveCamera();				// Camera [1]
+		moveCamera();			// Camera [1]
 		moveAirObj();
 		moveJetExh();
 		Grd0.SPS.copy(air_.MapSPS);	// Copy info from Air to Grid
@@ -589,7 +586,7 @@ function rendAll() {
 	renderer.render(scene, camera);
 }
 
-//= SKY BOX ====================================================================
+//= SKY BOX ====================//==============================================
 
 //- Load SkyBox ----------------------------------------------------------------
 function loadSkyBox() {
@@ -614,10 +611,10 @@ function initSkyBox() {
 	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
 	// Lensflare
 	if (LnFFlg) {				// SunFlare		
-		let	spotLight = new THREE.PointLight(0xffffff);
-		scene.add(spotLight);
-		spotLight.position.copy(SunPos).normalize;
-		spotLight.position.multiplyScalar(1000);
+		let	spotLight = new THREE.PointLight(SunCol);
+			spotLight.position.copy(SunPos).normalize;
+			spotLight.position.multiplyScalar(1000);
+			scene.add(spotLight);
 		let LF = new LensflareMesh();
 			LF.addElement(new LensflareElement(LF0Txt,256,0));
 			LF.addElement(new LensflareElement(LF1Txt,32,0.2));
@@ -626,9 +623,9 @@ function initSkyBox() {
 	}
 }
 
-//= AIRPLANE MODEL =============================================================
+//= AIRPLANE MODEL =============//==============================================
 
-//= Load Textures ==============================================================
+//= Load Textures ==============//==============================================
 
 function loadAirTxt() {
 	// Elevator
@@ -673,11 +670,11 @@ function loadAirTxt() {
 	});
 }
 
-//= Make Airplane ==============================================================
+//= Make Airplane ==============//==============================================
 
 function makeAirPln() {
-	makeAirExt();		// Load Airplane External Shape
-	makeAirInt();		// Load Airplane Internal Shape [2]
+	makeAirExt();				// Load Airplane External Shape
+	makeAirInt();				// Load Airplane Internal Shape [2]
 }
 
 //- Make External Model --------------------------------------------------------
