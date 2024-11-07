@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>rotator _gpu</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			overflow: hidden;
+			margin:0;
+		}
+	</style>
+</head>
+<body>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://unpkg.com/three@0.170.0/build/three.webgpu.js"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from 'three';
+
+//= CONSTANTS ==================================================================
+let DegRad = Math.PI/180;		// Convert Degrees to Radians
+
+//= VARIABLES ==================================================================
+let CtrDst = 50;
+let CtrRad = 50;
+let PixNum = 18;
+let CtrMsh = [];
+let CylMsh = [];
+let CtrRot = [];
+let CylRot = [];
+
+//= STANDARD SETUP =============================================================
+//- Scene
+let	scene = new THREE.Scene();
+//- Camera
+let CamAsp = window.innerWidth/window.innerHeight;
+let camera = new THREE.PerspectiveCamera(45,CamAsp,1,1000);
+	camera.position.set(0,0,CtrDst);
+//- Renderer
+let	renderer = new THREE.WebGPURenderer({antialias: true});
+	renderer.setAnimationLoop(rendAll);
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	document.body.appendChild(renderer.domElement);
+//- Inputs
+	window.addEventListener('resize', onWindowResize);
+//- Loaders
+let txtrLoader = new THREE.TextureLoader();
+	
+//= INITIALIZE =================================================================
+for (let n = 0; n < PixNum; n++) {
+	//- Center Mesh
+	CtrMsh[n] = makMsh();
+	CtrRot[n] = n*360/PixNum;
+	CtrMsh[n].rotation.z = CtrRot[n]*DegRad;
+	console.log(CtrRot[n]);
+	//- Cylinder
+	CylMsh[n] = makCyl();
+	CylRot[n] = n*360/PixNum;
+	CylMsh[n].rotation.x = 4*CylRot[n]*DegRad;
+	//- Add to Scene
+	scene.add(CtrMsh[n]);
+	CtrMsh[n].add(CylMsh[n]);
+}
+
+//= RENDER =====================================================================
+function rendAll() {
+	for (let n = 0; n < PixNum; n++) {
+		// Rotate Center Mesh
+		CtrRot[n] = Mod360(CtrRot[n]+0.1);
+		CtrMsh[n].rotation.z = CtrRot[n]*DegRad;
+		// Rotate Cylinder
+		CylRot[n] = PoM360(Mod360(CylRot[n]+0.1));
+		CylMsh[n].rotation.x = 4*CylRot[n]*DegRad;
+	}
+	renderer.renderAsync(scene, camera);
+}
+
+//= SUBROUTINES ================================================================
+
+//- Converts degrees to 360 ----------------------------------------------------
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360; // Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
+return deg;}
+
+//- Converts 360 degrees to +/- 180 --------------------------------------------
+function PoM360(deg) {
+	if (deg > 180) deg = deg-360;
+return deg;}
+
+//- Make Mesh ------------------------------------------------------------------
+function makMsh() {
+	let geometry = new THREE.BoxGeometry(1,1,1); 
+	let material = new THREE.MeshBasicMaterial({color: "red"}); 
+	let mesh = new THREE.Mesh(geometry,material);
+	mesh.position.x = -CtrRad;
+return mesh;}
+
+//- Make Cylinder ------------------------------------------------------------------
+function makCyl() {
+	let geometry = new THREE.CylinderGeometry(10,10,16,32,1,"true",135*DegRad,90*DegRad);	
+	let texture = txtrLoader.load("https://threejs.org/examples/textures/colors.png");
+	let material = new THREE.MeshBasicMaterial({map:texture,side:THREE.BackSide}); 
+	let mesh = new THREE.Mesh(geometry,material);
+	mesh.position.x = CtrRad;
+	mesh.rotation.z = 90*DegRad;
+return mesh;}
+
+//= WINDOW RESIZE ==============================================================
+function onWindowResize() {
+	CamAsp = window.innerWidth / window.innerHeight;
+	camera.aspect = CamAsp;
+	camera.updateProjectionMatrix();
+	renderer.setSize(width, height);
+}
+
+</script>
+</body>
+</html>
