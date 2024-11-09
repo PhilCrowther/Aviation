@@ -124,12 +124,14 @@ let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 
 let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
 let PwrDif = 0;					// Power % Input - Value
 let InpBrk = 0;					// Brakes
-//- Mouse Delays ...............................................................
+//- Input Lag ..................................................................
 //- (x = diverted, y = released, z = stored)
-let PwrMsD = new THREE.Vector3(1-1/30,1/15,0);	// Power
-let CfLMsD = new THREE.Vector3(1-1/30,1/15,0);	// CfL
-let CfLApD = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
-let BnkMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
+//-  Mouse
+let LagPwr = new THREE.Vector3(1-1/30,1/15,0);	// Power
+let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
+let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
+//- Keys
+let LagAtp = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 let InpMos = new THREE.Vector2(); // Inputs - Mouse
 let _changeEvent = {type: 'change'};
@@ -872,29 +874,29 @@ let cam_ = {
 	cam_.rot.rotation.order = "YXZ";
 	cam_.obj.rotation.order = "YXZ";
 	cam_.deg.rotation.order = "YXZ";
-	cam_.par.add(cam_.rot);			// Attach Rotator
+	cam_.par.add(cam_.rot);		// Attach Rotator
 	cam_.obj.add(cam_.deg);
 
 //= HTML OVERLAY TEXT ==========//==============================================
-let Air_PwrElement = document.getElementById("Air_Pwr");	// Power
+let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
 let Air_PwrNode = document.createTextNode("");
 	Air_PwrElement.appendChild(Air_PwrNode);
-let Air_SpdElement = document.getElementById("Air_Spd");	// Speed
+let Air_SpdElement = document.getElementById("Air_Spd"); // Speed
 let Air_SpdNode = document.createTextNode("");
 	Air_SpdElement.appendChild(Air_SpdNode);
-let Air_AltElement = document.getElementById("Air_Alt");	// Altitude
+let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
 let Air_AltNode = document.createTextNode("");
 	Air_AltElement.appendChild(Air_AltNode);
-let Air_HdgElement = document.getElementById("Air_Hdg");	// Heading
+let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
 let Air_HdgNode = document.createTextNode("");
 	Air_HdgElement.appendChild(Air_HdgNode);
-let Air_CfLElement = document.getElementById("Air_CfL");	// CfLift
+let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
 let Air_CfLNode = document.createTextNode("");
 	Air_CfLElement.appendChild(Air_CfLNode);
-let On_PawsElement = document.getElementById("On_Paws");	// Pause
+let On_PawsElement = document.getElementById("On_Paws"); // Pause
 let On_PawsNode = document.createTextNode("");
 	On_PawsElement.appendChild(On_PawsNode);
-let Air_AtPElement = document.getElementById("Air_AtP");	// Autopilot
+let Air_AtPElement = document.getElementById("Air_AtP"); // Autopilot
 let Air_AtPNode = document.createTextNode("");
 	Air_AtPElement.appendChild(Air_AtPNode);
 let On_Inf0Element = document.getElementById("On_Inf0"); // Info
@@ -1031,6 +1033,7 @@ function rendAll() {
 
 //= SKYBOX =====================//==============================================
 
+//- Load SkyBox ----------------------------------------------------------------
 function loadSkyBox() {
 	envMap = cubeLoader
 		.setPath(SBxSrc)
@@ -1045,6 +1048,7 @@ function loadSkyBox() {
 	}
 }
 
+//- Init SkyBox ----------------------------------------------------------------
 function initSkyBox() {
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
@@ -1066,6 +1070,7 @@ function initSkyBox() {
 
 //= GEOMAT =====================//==============================================
 // Can't be exported since uses html context to split images
+// Or can you pass address of loader to module?
 
 function loadGeoMat() {
 	// Load Diffuse Texture
@@ -1267,17 +1272,14 @@ function moveIsland() {
 function loadVulkan() {
 	txtrLoader.load(vlk_.Txt[0], function (VlkTxt) {
 		//- Timer
-//		let timer = timerLocal(.001,1);
 		let speed = uniform(.001); // r170
 		let scaledTime = time.add(125).mul(speed); // r170
 		//- Life
 		let lifeRange = range(0.1,1);
-//		let lifeTime = timer.mul(lifeRange).mod(.05);
 		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
 		let life = lifeTime.div(lifeRange);
 		//- Rotation Range
 		let rotateRange = range(.1,4);
-//		let textureNode = texture(VlkTxt, rotateUV(uv(),timer.mul(rotateRange))); // r168
 		let textureNode = texture(VlkTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
 		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 		//- Lateral Offset	
@@ -1357,7 +1359,7 @@ function moveFxdObj() {
 
 //= MOVING AIRPLANES ===========//==============================================
 
-//	Load Plane
+//-	Load Airplane --------------------------------------------------------------
 function loadMovPln() {
 	gltfLoader.load(xac_.Mdl[0], function (gltf) {
 		xac_.Ptr[0] = gltf.scene;
@@ -1389,7 +1391,7 @@ function loadMovPln() {
 	});
 }
 
-// Init Plane
+//- Init Airplane --------------------------------------------------------------
 function initMovPln() {
 	// Compute Relative Position
 	// (cause Objects to elevate above water as we climb to prevent flicker)
@@ -1400,7 +1402,7 @@ function initMovPln() {
 	scene.add(xac_.Ptr[0]);
 }
 
-// Move Plane
+//- Move Plane -----------------------------------------------------------------
 function moveMovPln() {
 	// Rotation
 	let XPHSpd = Math.tan(xac_.Rot[0].z*DegRad)*xac_.Spd[0]/GrvMPS;
@@ -1506,18 +1508,14 @@ function moveMovShp() {
 function loadShpWak() {
 	txtrLoader.load(wak_.Txt[0], function (WakTxt) {
 		//- Timer
-//		let timer = timerLocal(.001,1); // Lower = slower
-		let speed = uniform(.001); // r170
+		let speed = uniform(.001); // r170 Lower = slower
 		let scaledTime = time.add(125).mul(speed); // r170
 		//- Life
 		let lifeRange = range(0.1,1);
-//		let lifeTime = timer.mul(lifeRange).mod(.05);
 		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
 		let life = lifeTime.div(lifeRange);
 		//- Rotation Range
-//		let rotateRange = range(.1,4);
-		let rotateRange = range(.1,.2); // No apparent change
-//		let textureNode = texture(WakTxt, rotateUV(uv(),timer.mul(rotateRange))); // r168
+		let rotateRange = range(.1,.2);
 		let textureNode = texture(WakTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
 		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 		//- Lateral Offset	
@@ -1606,10 +1604,8 @@ function moveShpFlg() {
 }
 
 //= HARDENED SURFACES ==========//==============================================
-//	Home Airfield and CVE Deck (moving)
-
-// Where object not facing north, can rotate ref points and airplane to north?
-// Use same approach for pitching deck?
+// The hardened surfaces are the Home Airfield and the CVE Deck (moving)
+// Where CVE not facing north, can we rotate ref points and airplane to north?
 
 // Compute Minimum Altitude
 function moveMinAlt() {
@@ -1747,6 +1743,7 @@ function loadAirInt() {
 }	
 
 //= Init Airplane ==============//==============================================
+// This section initializes starting location and variables before passing to Flight Module
 function initAirObj() {
 	//	Starting Location
 	if (BegLoc == 0) { 			// Base
@@ -1788,11 +1785,13 @@ function initAirObj() {
 }
 
 //= Move Airplane ==============//==============================================
+// This section processes Input before passing to Flight Module
+// And manages Views and Animations
 function moveAirObj() {
 	// Add Delay to Power
-	let gal = PwrDif * PwrMsD.x; // Current input delayed
-	let lag = PwrMsD.z * PwrMsD.y; // Released from Cumulator
-	PwrMsD.z = PwrMsD.z + gal - lag; // Change in Cumulator
+	let gal = PwrDif * LagPwr.x; // Current input delayed
+	let lag = LagPwr.y * LagPwr.z; // Released from Cumulator
+	LagPwr.z = LagPwr.z + gal - lag; // Change in Cumulator
 	PwrDif = PwrDif - gal + lag;
 	// Input Engine Power
 	air_.PwrPct = air_.PwrPct + PwrDif;
@@ -1803,16 +1802,16 @@ function moveAirObj() {
 	if (air_.AutoOn) {			// Autopilot
 		air_.CfLDif = air_.InpKey.x;
 		// Add Delay to Lift
-		gal = air_.CfLDif * CfLApD.x; // Current input delayed
-		lag = CfLMsD.z * CfLApD.y; // Released from Cumulator
-		CfLMsD.z = CfLMsD.z + gal - lag; // Change in Cumulator
+		gal = air_.CfLDif * LagAtp.x; // Current input delayed
+		lag = LagCfL.y * LagAtp.z; // Released from Cumulator
+		LagCfL.z = LagCfL.z + gal - lag; // Change in Cumulator
 	}
 	else {
 		air_.CfLDif = (InpMos.y)*air_.PYBmul.x;	// Input Coefficient of Lift
 		// Add Delay to Lift
-		gal = air_.CfLDif * CfLMsD.x; // Current input delayed
-		lag = CfLMsD.z * CfLMsD.y; // Released from Cumulator
-		CfLMsD.z = CfLMsD.z + gal - lag; // Change in Cumulator
+		gal = air_.CfLDif * LagCfL.x; // Current input delayed
+		lag = LagCfL.y * LagCfL.z; // Released from Cumulator
+		LagCfL.z = LagCfL.z + gal - lag; // Change in Cumulator
 	}
 	air_.CfLDif = air_.CfLDif - gal + lag;
 	air_.CfLift = air_.CfLift + air_.CfLDif; // New Coefficient of Lift	
@@ -1830,9 +1829,9 @@ function moveAirObj() {
 	else {
 		// Add Delay to Change in Bank Rate due to Mouse
 		let BnkDif = InpMos.x * air_.PYBmul.z;
-		gal = BnkDif * BnkMsD.x; // Current input delayed
-		lag = BnkMsD.z * BnkMsD.y; // Released from Cumulator
-		BnkMsD.z = BnkMsD.z + gal - lag; // Change in Cumulator
+		gal = BnkDif * LagBnk.x; // Current input delayed
+		lag = LagBnk.y * LagBnk.z; // Released from Cumulator
+		LagBnk.z = LagBnk.z + gal - lag; // Change in Cumulator
 		BnkDif = BnkDif - gal + lag;
 		air_.RotDif.z = air_.RotDif.z + BnkDif;	
 		air_.RotDif.z = MaxVal(air_.RotDif.z,air_.BnkMax);	// Max values
@@ -1909,7 +1908,7 @@ function moveAirObj() {
 
 //= BULLETS ====================//==============================================
 
-//	Load Bullets
+//- Load Bullets ---------------------------------------------------------------
 function loadBullet() {
 	let line = 0
 	let points = [];
@@ -1942,7 +1941,7 @@ function loadBullet() {
 	}
 }
 
-//	Fire Bullets
+//- Fire Bullets ---------------------------------------------------------------
 function moveBullet() {
 	let BulSV3 = new THREE.Vector3();
 	let	BulSpT = BulSpd * DLTime;
@@ -1995,9 +1994,9 @@ function moveBullet() {
 
 //= SOUNDS =====================//==============================================
 
-// Load Sounds
+//- Load Sounds ----------------------------------------------------------------
 function loadSounds() {	
-	// My Engine ---------------------------------------------------------------
+	// My Engine
 	let fname = AirSrc + "sounds/" + EngSrc;
 	audioLoader.load(fname, function(buffer) {
 		EngSnd.setBuffer(buffer);
@@ -2005,7 +2004,7 @@ function loadSounds() {
 		EngSnd.setLoop(true);
 		EngSnd.setVolume(0);
 	});
-	// My Prop -----------------------------------------------------------------
+	// My Prop
 	fname = AirSrc + "sounds/" + PrpSrc;
 	audioLoader.load(fname, function(buffer) {
 		PrpSnd.setBuffer(buffer);
@@ -2013,7 +2012,7 @@ function loadSounds() {
 		PrpSnd.setLoop(true);
 		PrpSnd.setVolume(0);
 	});
-	// GunL -----------------------------------------------------------------
+	// GunL
 	fname = AirSrc + "sounds/" + GunSrc;
 	audioLoader.load(fname, function(buffer) {
 		GnLSnd.setBuffer(buffer);
@@ -2021,7 +2020,7 @@ function loadSounds() {
 		GnLSnd.setLoop(true);
 		GnLSnd.setVolume(0);
 	});
-	// GunR -----------------------------------------------------------------
+	// GunR
 	fname = AirSrc + "sounds/" + GunSrc;
 	audioLoader.load(fname, function(buffer) {
 		GnRSnd.setBuffer(buffer);
@@ -2029,25 +2028,25 @@ function loadSounds() {
 		GnRSnd.setLoop(true);
 		GnRSnd.setVolume(0);
 	});
-	// XP Engine ---------------------------------------------------------------
+	// XP Engine
 	fname = XPPath + "sounds/" + xac_.Snd;
 	audioLoader.load(fname, function(buffer) {
 		XPESnd.setBuffer(buffer);
-		XPESnd.setRefDistance(RefDst);	// Distance at which sound is full volume
+		XPESnd.setRefDistance(RefDst); // Distance at which sound is full volume
 		XPESnd.setLoop(true);
 		XPESnd.setVolume(0);
 		XPESnd.playbackRate = 1.3;
 	});
 }
 
-// Change Sounds
+//- Change Sounds --------------------------------------------------------------
 function moveSounds() {
 	// My Engine
-	EngSnd.setVolume(EngVol + air_.PwrPct * 0.05);	// Range = .1 to .2
-	EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5);	// Range = 1 to 1.5
+	EngSnd.setVolume(EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
+	EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
 	// My Props
-	PrpSnd.setVolume(PrpVol + air_.PwrPct * 0.15);	// Range = .1 to .4
-	PrpSnd.setPlaybackRate(1 + air_.PwrPct * 0.5);	// Range = 1 to 1.5
+	PrpSnd.setVolume(PrpVol + air_.PwrPct * 0.15); // Range = .1 to .4
+	PrpSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
 	// My Guns
 	GnLSnd.setVolume(GunVol);
 	GnRSnd.setVolume(GunVol);
@@ -2055,7 +2054,7 @@ function moveSounds() {
 	XPESnd.setVolume(xac_.Vol);
 }
 
-//- Play Sounds
+//- Play Sounds ----------------------------------------------------------------
 function playSounds() {
 	// This leaves SndFlg and GunFlg unchanged.
 	if (!EngSnd.isPlaying) EngSnd.play();
@@ -2065,7 +2064,7 @@ function playSounds() {
 	if (!XPESnd.isPlaying) XPESnd.play();
 }
 
-//- Stop Sounds
+//- Stop Sounds ----------------------------------------------------------------
 function stopSounds() {
 	// This leaves SndFlg and GunFlg unchanged.
 	if (EngSnd.isPlaying) EngSnd.stop();
@@ -2075,8 +2074,9 @@ function stopSounds() {
 	if (XPESnd.isPlaying) XPESnd.stop();
 }
 
-//= CAMERA =====================//==============================================
+//= VIEWS ======================//==============================================
 
+//- Init View ------------------------------------------------------------------
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
 	camera.rotation.y = cam_.adj*DegRad;
@@ -2128,6 +2128,7 @@ function initCamera(camera,cam_) {
 	moveCamera(camera,cam_);
 }
 
+//- Move View ------------------------------------------------------------------
 function moveCamera(camera,cam_) {
 	// Move Camera In/Out
 	camera.position.z = -cam_.lld.z;
@@ -2155,15 +2156,20 @@ function moveCamera(camera,cam_) {
 		cam_.rot.rotation.y = Mod360(-cam_.lld.y)*DegRad;
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
-	else {
+	if (!cam_.flg) {
+		let OffCam = 0;
+		if (!cam_.pan && !air_.GrdFlg) { // If trailing view, compute camera offset
+			OffCam = 30*air_.RotDif.x;
+			camera.rotation.x = OffCam*DegRad; // + = up/airplane down
+		}
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
-		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;	
+		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;
 	}
 }
 
 //= OUTPUTS ====================//==============================================
 
-//	Print HUD Values
+//-	Print HUD Values -----------------------------------------------------------
 function prntHUDval() {
 	Air_Pwr = air_.PwrPct;						// Throttle
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
@@ -2177,18 +2183,19 @@ function prntHUDval() {
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 }
 
-//	Paused On
+//-	Pause Text -----------------------------------------------------------------
 function PawsText(){
 	if (PawsOn) On_PawsNode.nodeValue = "Paused";
 	else {On_PawsNode.nodeValue = "Pause: Press P";}
 }
 
-//	Autopilot Text
+//-	Autopilot Text -------------------------------------------------------------
 function AutoText(){
 	if (air_.AutoOn) Air_AtPNode.nodeValue = "Autopilot On";
 	else {Air_AtPNode.nodeValue = "AutoP: Press A";}
 }
 
+//- Info Text ------------------------------------------------------------------
 function InfoText() {
 	if (InfoOn == 0) onInfo0();
 	else if (InfoOn == 1) onInfo1();
@@ -2308,11 +2315,11 @@ function onDocumentKeyDown(event) {
 		GunFlg = 1;
 	}
 	// Toggle
-	if (event.keyCode == K_View) toglView();		// Switch View
-	if (event.keyCode == K_Soun) toglSoun();		// Toggle Sound
 	if (event.keyCode == K_Paws) toglPaws();		// Toggle Pause
 	if (event.keyCode == K_Auto) toglAuto();		// Toggle AutoPilot
 	if (event.keyCode == K_Info) toglInfo();		// Toggle Information
+	if (event.keyCode == K_View) toglView();		// Switch View
+	if (event.keyCode == K_Soun) toglSoun();		// Toggle Sound
 }
 
 //-	Keyboard (Up) --------------------------------------------------------------
@@ -2358,30 +2365,6 @@ function onDocumentKeyUp(event) {
 
 //- Subroutines ----------------//----------------------------------------------
 
-//. Toggle Camera View (3-Way) -------------------------------------------------
-function toglView() {
-	// Old CamSel
-	cam_.par.remove(cam_.rot);			// Unlink Old Parent
-	CamLLD[cam_.sel].copy(cam_.lld);	// Save lld
-	// New CamSel
-	cam_.sel++
-	if (cam_.sel == cam_.num) cam_.sel = 0;
-	initCamera(camera,cam_)
-}
-
-//. Toggle Sound ...............................................................
-function toglSoun() {
-	if (!PawsOn) {
-		SndFlg = 1 - SndFlg;
-		if (SndFlg) {			// Off to On
-			playSounds();
-		}
-		else {					// On to Off
-			stopSounds();
-		}
-	}
-}
-
 //. Toggle Pause ...............................................................
 function toglPaws() {
 	PawsOn = 1 - PawsOn;
@@ -2405,6 +2388,30 @@ function toglInfo() {
 	InfoOn++
 	if (InfoOn == 3) InfoOn = 0;
 	InfoText();
+}
+
+//. Toggle Camera View (3-Way) -------------------------------------------------
+function toglView() {
+	// Old CamSel
+	cam_.par.remove(cam_.rot);			// Unlink Old Parent
+	CamLLD[cam_.sel].copy(cam_.lld);	// Save lld
+	// New CamSel
+	cam_.sel++
+	if (cam_.sel == cam_.num) cam_.sel = 0;
+	initCamera(camera,cam_)
+}
+
+//. Toggle Sound ...............................................................
+function toglSoun() {
+	if (!PawsOn) {
+		SndFlg = 1 - SndFlg;
+		if (SndFlg) {			// Off to On
+			playSounds();
+		}
+		else {					// On to Off
+			stopSounds();
+		}
+	}
 }
 
 //= WINDOW RESIZE ==============//==============================================
