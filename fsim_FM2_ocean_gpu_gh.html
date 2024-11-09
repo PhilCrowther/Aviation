@@ -501,7 +501,7 @@ let alt_ = {
 		Num: 2,
 		Ref: [isl_.Ref[0],xsh_.Ref[0]],
 		Var: [0,xsh_],
-		Typ: [0,1], 			// 0 = stationary, 1 = movine
+		Typ: [0,1], 			// 0 = stationary, 1 = moving
 //		Alt: [7.59,13.1],
 		Alt: [7.57,13.1],
 		Lft: [-635,-13.2],
@@ -2079,7 +2079,6 @@ function stopSounds() {
 //- Init View ------------------------------------------------------------------
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
-	camera.rotation.y = cam_.adj*DegRad;
 	cam_.rot.add(camera);		// Attach to rotator
 	//
 	if (!cam_.sel) {			// 0 = External View
@@ -2118,12 +2117,14 @@ function initCamera(camera,cam_) {
 	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
 	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
 	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
-	camera.rotation.y = cam_.adj*DegRad;	// 180 = Looking in
 	cam_.mmr.copy(CamMMR[cam_.sel]);		// Rotation min, max, spd
 	cam_.par = CamPar[cam_.sel]				// Load New Parent
 	cam_.par.add(cam_.rot);					// Attach Rotators
 	cam_.flg = CamFlg[cam_.sel];			// 1 = cockpit
 	cam_.lnk = CamLnk[cam_.sel];			// 1 = Linked to Airplane
+	//
+	camera.rotation.x = 0.001*DegRad;
+	camera.rotation.y = cam_.adj*DegRad;	// 180 = Looking in
 	//
 	moveCamera(camera,cam_);
 }
@@ -2158,9 +2159,10 @@ function moveCamera(camera,cam_) {
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.flg) {
 		let OffCam = 0;
-		if (!cam_.pan && !air_.GrdFlg) { // If trailing view, compute camera offset
+		if (!cam_.pan && !air_.GrdFlg && !air_.MovFlg) { // If trailing view, compute camera offset
 			OffCam = 30*air_.RotDif.x;
-			camera.rotation.x = OffCam*DegRad; // + = up/airplane down
+			if (OffCam == 0) OffCam = 0.001;
+			camera.rotation.x = (OffCam)*DegRad; // + = up/airplane down
 		}
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;
