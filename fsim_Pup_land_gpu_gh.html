@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2024
+Version dated 10 Nov 2024
 
 A flight simulation of an animated airplane model over procedural land using
 -->
@@ -97,9 +97,9 @@ let CfLApD = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
 let BnkMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 let InpMos = new THREE.Vector2();	// Inputs - Mouse
-let _changeEvent = {type: 'change'};
-let _lockEvent = {type: 'lock'};
-let _unlockEvent = {type: 'unlock'};
+let _changeEvent = {type: "change"};
+let _lockEvent = {type: "lock"};
+let _unlockEvent = {type: "unlock"};
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
 let KeyVal = new THREE.Vector3(1,.05,0.25);	// Key Values (Yaw = turn rate in 15 deg bank)
 
@@ -128,7 +128,8 @@ let SndFlg = 0;
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 let LnFFlg = 1;					// Lensflare
 //	Program Flags
-let LodFlg = 0;
+let LodFlg = 0;					// Set at end of initialization
+let LodSnd = 0;					// Set when sound initialized
 //	Altitude Adjustment
 let AltAdj = 0.99;				// Raises objects above map as altitude increases
 
@@ -190,7 +191,7 @@ let oldTim, nowTim, difTim = 0;
 //- Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);
-	document.addEventListener('mousewheel', onDocumentMouseWheel, {capture: false, passive: false});
+	document.addEventListener("mousewheel", onDocumentMouseWheel, {capture: false, passive: false});
 	document.addEventListener("keydown", onDocumentKeyDown, false);
 	document.addEventListener("keyup", onDocumentKeyUp, false);
 	window.addEventListener("resize", onWindowResize, false);
@@ -208,7 +209,6 @@ let txtrLoader = new THREE.TextureLoader(loadingManager);
 let imagLoader = new THREE.ImageLoader(loadingManager);
 let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 let gltfLoader = new GLTFLoader(loadingManager);
-let audioLoader = new THREE.AudioLoader(loadingManager);
 //- Wait Screen
 let loadingScreen = {
 	scene: new THREE.Scene(),
@@ -240,7 +240,7 @@ let ImgSiz = 1024;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
-let context = canvas.getContext('2d',{willReadFrequently: true});
+let context = canvas.getContext("2d",{willReadFrequently: true});
 //= Grid 4 Data ================//==============================================
 //- 1/4 section squares (1/2 mile X 1/2 mile)
 //- Variables
@@ -539,26 +539,20 @@ let ailrgt = 180;				// AileronR 	degrees = +/- 360
 let rotaoa = 180;				// AoA 			degrees = +/- 15
 let spnprp = 180;				// Taildrag 	degrees = 0 to 360
 
+//= GUNS =======================================================================
+let GunFlg = 0;
+
 //=	SOUNDS =====================//==============================================
-let acsnd1 = "pup.mp3";			// File (my engine)
-let acvol1 = 0.1;				// Volume
-let acsnd3 = "pup_gun.mp3";		// File (my guns)
-let acvol3 = 0.5;				// Volume
-let xpsnd1 = "fm2_prop.wav";	// File (xp prop)
-let xpvol1 = 1.0;				// Volume
-//
-let	listener = new THREE.AudioListener();
-	camera.add(listener);
-let RefDst = 25;				// Reference distance for Positional Sound
-//- My Engine and Prop
-let sound1 = new THREE.PositionalAudio(listener);
-let sound3 = new THREE.PositionalAudio(listener);
-let sound4 = new THREE.PositionalAudio(listener);
-let EngMsh = new makMsh();		// Aircraft Engine
-	EngMsh.add(sound1);			// Engine
-	EngMsh.add(sound3);			// Guns
-	EngMsh.position.z = -5;
-	air_.AirObj.add(EngMsh);
+//- My Engine
+let EngSrc = "pup.mp3";			// File (my engine)
+let EngVol = 0.1;				// Volume
+let EngSnd = 0;
+let EngMsh = new makMsh();
+//- My Guns
+let GunSrc = "pup_gun.mp3";		// File (my guns)
+let GunVol = 0.5;				// Volume
+let GunSnd = 0;
+let GunMsh = new makMsh();
 
 //= POINTER LOCK CONTROL =======================================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -584,17 +578,17 @@ class PointerLockControls extends THREE.EventDispatcher {
 			}
 		}
 		function onPointerlockError() {
-			console.error('THREE.PointerLockControls: Unable to use Pointer Lock API');
+			console.error("THREE.PointerLockControls: Unable to use Pointer Lock API");
 		}
 		this.connect = function () {
-			scope.domElement.ownerDocument.addEventListener('mousemove', onMouseMove);
-			scope.domElement.ownerDocument.addEventListener('pointerlockchange', onPointerlockChange);
-			scope.domElement.ownerDocument.addEventListener('pointerlockerror', onPointerlockError);
+			scope.domElement.ownerDocument.addEventListener("mousemove", onMouseMove);
+			scope.domElement.ownerDocument.addEventListener("pointerlockchange", onPointerlockChange);
+			scope.domElement.ownerDocument.addEventListener("pointerlockerror", onPointerlockError);
 		};
 		this.disconnect = function () {
-			scope.domElement.ownerDocument.removeEventListener('mousemove', onMouseMove);
-			scope.domElement.ownerDocument.removeEventListener('pointerlockchange', onPointerlockChange);
-			scope.domElement.ownerDocument.removeEventListener('pointerlockerror', onPointerlockError);
+			scope.domElement.ownerDocument.removeEventListener("mousemove", onMouseMove);
+			scope.domElement.ownerDocument.removeEventListener("pointerlockchange", onPointerlockChange);
+			scope.domElement.ownerDocument.removeEventListener("pointerlockerror", onPointerlockError);
 		};
 		this.dispose = function () {
 			this.disconnect();
@@ -610,16 +604,16 @@ class PointerLockControls extends THREE.EventDispatcher {
 }
 //- Setup ----------------------------------------------------------------------
 let controls = new PointerLockControls(camera, renderer.domElement,air_);
-let blocker = document.getElementById('blocker');
-let instructions = document.getElementById('instructions');
-	instructions.addEventListener('click', function () {controls.lock();});
-	controls.addEventListener('lock', function () {
-		instructions.style.display = 'none';
-		blocker.style.display = 'none';
+let blocker = document.getElementById("blocker");
+let instructions = document.getElementById("instructions");
+	instructions.addEventListener("click", function () {controls.lock();});
+	controls.addEventListener("lock", function () {
+		instructions.style.display = "none";
+		blocker.style.display = "none";
 	});
-	controls.addEventListener( 'unlock', function () {
-		blocker.style.display = 'block';
-		instructions.style.display = '';
+	controls.addEventListener("unlock", function () {
+		blocker.style.display = "block";
+		instructions.style.display = "";
 	});
 
 //= DEFAULT KEY BINDINGS =======//==============================================
@@ -830,8 +824,9 @@ function rendAll() {
 		boxrot = Mod360(boxrot - 3);
 		loadingScreen.box.rotation.set(Math.PI,0,boxrot * DegRad);
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
-		return;												// Stop the function here.
+		return;					// Stop the function here.
 	}
+	if (controls.isLocked === true && !LodSnd) loadSounds();
 	if (!PawsOn && LodFlg && controls.isLocked === true) {
 		moveCamera(camera,cam_);
 		// Move Objects
@@ -845,6 +840,10 @@ function rendAll() {
 		moveSounds();
 		prntHUDval();			// change HUD value
 		if (StatOn) StatOn.update(); // update stats
+	}
+	if (controls.isLocked === false && LodSnd) {
+		stopSounds();
+		SndFlg = GunFlg = 0;
 	}
 	renderer.renderAsync(scene, camera);
 }
@@ -1554,7 +1553,6 @@ function loadACMine() {
 		AirGrp.add(ACMine);
 		// Initialize
 		ACMine.visible = true;
-		loadSounds();
 	});
 }
 
@@ -1709,40 +1707,69 @@ function moveAirObj() {
 	}
 }
 
-//= SOUNDS =====================================================================
+//= SOUNDS =====================//==============================================
 
-// Load Sounds
-function loadSounds() {	
-	// My Engine ---------------------------------------------------------------
-	let fname = ACPath + "sounds/" + acsnd1;
+//- Load and Initialize Sounds -------------------------------------------------
+function loadSounds() {
+	// Load Sounds .............................................................
+	let audioLoader = new THREE.AudioLoader();
+	let RefDst = 25;			// Reference distance for Positional Audio
+	// My Engine
+	let fname = ACPath + "sounds/" + EngSrc;
 	audioLoader.load(fname, function(buffer) {
-		sound1.setBuffer(buffer);
-		sound1.setRefDistance(RefDst);
-		sound1.setLoop(true);
-		sound1.setVolume(0);
+		EngSnd.setBuffer(buffer);
+		EngSnd.setRefDistance(RefDst);
+		EngSnd.setLoop(true);
+		EngSnd.setVolume(0);
 	});
-	// My Guns -----------------------------------------------------------------
-	fname = ACPath + "sounds/" + acsnd3;
+	// My Guns
+	fname = ACPath + "sounds/" + GunSrc;
 	audioLoader.load(fname, function(buffer) {
-		sound3.setBuffer(buffer);
-		sound3.setRefDistance(RefDst);
-		sound3.setLoop(true);
-		sound3.setVolume(0);
+		GunSnd.setBuffer(buffer);
+		GunSnd.setRefDistance(RefDst);
+		GunSnd.setLoop(true);
+		GunSnd.setVolume(0);
 	});
+	// Init Sounds .............................................................
+	let	listener = new THREE.AudioListener();
+	camera.add(listener);
+	//- My Engine and Prop
+	EngSnd = new THREE.PositionalAudio(listener);
+	EngMsh.add(EngSnd);			// Engine
+	EngMsh.position.z = -5;
+	air_.AirObj.add(EngMsh);
+	GunSnd = new THREE.PositionalAudio(listener);
+	GunMsh.add(GunSnd);			// Guns
+	GunMsh.position.z = -5;
+	air_.AirObj.add(GunMsh);
+	//- Set Flag
+	LodSnd = 1;
 }
 
-// Change Sounds
+//- Change Sounds --------------------------------------------------------------
 function moveSounds() {
 	// My Engine
-	sound1.setVolume(acvol1 + air_.PwrPct * 0.05);				// Range = .1 to .2
-	sound1.setPlaybackRate(1 + air_.PwrPct * 0.5);				// Range = 1 to 1.5
+	EngSnd.setVolume(EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
+	EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
 	// My Guns
-	sound3.setVolume(acvol3);
-	// XP Engine
-	sound4.setVolume(xpvol1);
+	GunSnd.setVolume(GunVol);
 }
 
-//= CAMERA =====================================================================
+//- Play Sounds ----------------------------------------------------------------
+function playSounds() {
+	// This leaves SndFlg and GunFlg unchanged.
+	if (!EngSnd.isPlaying) EngSnd.play();
+	if (GunFlg && !GunSnd.isPlaying) GunSnd.play();
+}
+
+//- Stop Sounds ----------------------------------------------------------------
+function stopSounds() {
+	// This leaves SndFlg and GunFlg unchanged.
+	if (EngSnd.isPlaying) EngSnd.stop();
+	if (GunSnd.isPlaying) GunSnd.stop();
+}
+
+//= CAMERA =====================//==============================================
 
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
@@ -1790,9 +1817,19 @@ function moveCamera(camera,cam_) {
 		cam_.rot.rotation.y = Mod360(-cam_.lld.y)*DegRad;
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
-	else {
+//	else {
+//		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
+//		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;		
+//	}
+	// In external view, the camera is facing in and the armature is pointing out:
+	if (!cam_.flg) {
+		let OffCam = 0;
+		if (!cam_.pan && !air_.GrdFlg) { // If trailing view, compute camera offset
+			OffCam = 15*air_.RotDif.x;
+			camera.rotation.x = OffCam*DegRad; // + = up/airplane down
+		}
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
-		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;		
+		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;
 	}
 }
 
@@ -1931,7 +1968,13 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VL90) L90flg = 1;			// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
-	if (event.keyCode == K_Guns) sound3.play();			// Guns
+	// Guns
+	if (event.keyCode == K_Guns) { // Guns
+		if (!PawsOn) {
+			if (SndFlg && !GunSnd.isPlaying) GunSnd.play();
+		};
+		GunFlg = 1;
+	}
 	// Toggle
 	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
 	if (event.keyCode == K_Paws) toglPaws();			// Toggle Pause
@@ -1964,30 +2007,20 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_VL90) L90flg = 0;			// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 0;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
-	if (event.keyCode == K_Guns) sound3.stop();			// Guns
+	if (event.keyCode == K_Guns) GunSnd.stop();			// Guns
 }
 
 //- Subroutines ----------------------------------------------------------------
 
-//. Toggle Sound ...............................................................
-function toglSoun() {
-	SndFlg = 1 - SndFlg;
-	if (SndFlg) {	// Off to On
-		sound1.play();
-		sound2.play();
-		sound4.play();
-	}
-	else {			// On to Off
-		sound1.stop();
-		sound2.stop();
-		sound3.stop();
-		sound4.stop();
-	}
-}
-
 //. Toggle Pause ...............................................................
 function toglPaws() {
 	PawsOn = 1 - PawsOn;
+	if (PawsOn && SndFlg) {		//On to Off
+		stopSounds();
+	}
+	if (!PawsOn && SndFlg) {	// Off to On
+		playSounds();
+	}
 	PawsText();
 }
 
@@ -2002,6 +2035,19 @@ function toglInfo() {
 	InfoOn++
 	if (InfoOn == 3) InfoOn = 0;
 	InfoText();
+}
+
+//. Toggle Sound ...............................................................
+function toglSoun() {
+	if (!PawsOn) {
+		SndFlg = 1 - SndFlg;
+		if (SndFlg) {			// Off to On
+			playSounds();
+		}
+		else {					// On to Off
+			stopSounds();
+		}
+	}
 }
 
 //= WINDOW RESIZE ==============================================================
