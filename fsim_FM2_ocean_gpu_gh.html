@@ -134,9 +134,9 @@ let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 let LagAtp = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 let InpMos = new THREE.Vector2(); // Inputs - Mouse
-let _changeEvent = {type: 'change'};
-let _lockEvent = {type: 'lock'};
-let _unlockEvent = {type: 'unlock'};
+let _changeEvent = {type: "change"};
+let _lockEvent = {type: "lock"};
+let _unlockEvent = {type: "unlock"};
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
 let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
 
@@ -165,7 +165,8 @@ let SndFlg = 0;					// Sound
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 let LnFFlg = 1;					// Lensflare
 //	Program Flags
-let LodFlg = 0;
+let LodFlg = 0;					// Set at end of initialization
+let LodSnd = 0;					// Set when sound initialized
 //	Altitude Adjustment
 let AltAdj = 0.99;				// Raises objects above map as altitude increases
 let AltDif = 0;
@@ -230,7 +231,7 @@ let oldTim, nowTim, difTim = 0;
 // 	Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);
-	document.addEventListener('mousewheel', onDocumentMouseWheel, {capture: false, passive: false});
+	document.addEventListener("mousewheel", onDocumentMouseWheel, {capture: false, passive: false});
 	document.addEventListener("keydown", onDocumentKeyDown, false);
 	document.addEventListener("keyup", onDocumentKeyUp, false);
 	window.addEventListener("resize", onWindowResize, false);
@@ -248,7 +249,6 @@ let txtrLoader = new THREE.TextureLoader(loadingManager);
 let imagLoader = new THREE.ImageLoader(loadingManager);
 let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 let gltfLoader = new GLTFLoader(loadingManager);
-let audioLoader = new THREE.AudioLoader(loadingManager);
 // 	Wait Screen
 let loadingScreen = {
 	scene: new THREE.Scene(),
@@ -278,7 +278,7 @@ let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
-let context = canvas.getContext('2d',{willReadFrequently: true});
+let context = canvas.getContext("2d",{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
 let WavMax = 5;					// Maximum wave height (set height of outer waves)
@@ -501,7 +501,7 @@ let alt_ = {
 		Num: 2,
 		Ref: [isl_.Ref[0],xsh_.Ref[0]],
 		Var: [0,xsh_],
-		Typ: [0,1], 			// 0 = stationary, 1 = moving
+		Typ: [0,1], 			// 0 = stationary, 1 = movine
 //		Alt: [7.59,13.1],
 		Alt: [7.57,13.1],
 		Lft: [-635,-13.2],
@@ -693,37 +693,25 @@ let BulTim = [0];				// Time in flight
 	BulTim[BulNum-1] = 0;
 
 //=	SOUNDS =====================================================================
+//- My Engine
 let EngSrc = "fm2.wav";			// File (my engine)
 let EngVol = 0.1;				// Volume
+let EngSnd = 0;
+let EngMsh = new makMsh();
+//- My Prop
 let PrpSrc = "fm2_prop.wav";	// File (my prop)
 let PrpVol = 0.5;				// Volume
+let PrpSnd = 0;
+let PrpMsh = new makMsh();
+//- My Guns
 let GunSrc = "fm2_gun.mp3";		// File (my guns)
 let GunVol = 0.5;				// Volume
-//
-let	listener = new THREE.AudioListener();
-	camera.add(listener);
-let RefDst = 25;	// Reference distance for Positional Audio
-//- My Engine and Prop
-let EngSnd = new THREE.PositionalAudio(listener);
-let PrpSnd = new THREE.PositionalAudio(listener);
-let EngMsh = new makMsh();		// Airplane Engine
-	EngMsh.add(EngSnd);			// Engine
-	EngMsh.add(PrpSnd);			// Prop
-	EngMsh.position.z = -5;
-	air_.AirObj.add(EngMsh);
-//- My Guns
-let GnLSnd = new THREE.PositionalAudio(listener);
-let GnLMsh = new makMsh();		// Gun Left
-	GnLMsh.add(GnLSnd);			// Gun
-	GnLMsh.position.x = -5;
-	air_.AirObj.add(GnLMsh);
-let GnRSnd = new THREE.PositionalAudio(listener);
-let GnRMsh = new makMsh();		// Gun Right
-	GnRMsh.add(GnRSnd);			// Gun
-	GnRMsh.position.x = 5;
-	air_.AirObj.add(GnRMsh);
-//- Other Airplane
-let XPESnd = new THREE.PositionalAudio(listener);
+let GnLSnd = 0;
+let GnRSnd = 0;
+let GnLMsh = new makMsh();
+let GnRMsh = new makMsh();
+//- Other Engine
+let XPESnd = 0;
 
 //= PPOINTER LOCK CONTROL ======//==============================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -749,17 +737,17 @@ class PointerLockControls extends THREE.EventDispatcher {
 			}
 		}
 		function onPointerlockError() {
-			console.error('THREE.PointerLockControls: Unable to use Pointer Lock API');
+			console.error("THREE.PointerLockControls: Unable to use Pointer Lock API");
 		}
 		this.connect = function () {
-			scope.domElement.ownerDocument.addEventListener('mousemove', onMouseMove);
-			scope.domElement.ownerDocument.addEventListener('pointerlockchange', onPointerlockChange);
-			scope.domElement.ownerDocument.addEventListener('pointerlockerror', onPointerlockError);
+			scope.domElement.ownerDocument.addEventListener("mousemove", onMouseMove);
+			scope.domElement.ownerDocument.addEventListener("pointerlockchange", onPointerlockChange);
+			scope.domElement.ownerDocument.addEventListener("pointerlockerror", onPointerlockError);
 		};
 		this.disconnect = function () {
-			scope.domElement.ownerDocument.removeEventListener('mousemove', onMouseMove);
-			scope.domElement.ownerDocument.removeEventListener('pointerlockchange', onPointerlockChange);
-			scope.domElement.ownerDocument.removeEventListener('pointerlockerror', onPointerlockError);
+			scope.domElement.ownerDocument.removeEventListener("mousemove", onMouseMove);
+			scope.domElement.ownerDocument.removeEventListener("pointerlockchange", onPointerlockChange);
+			scope.domElement.ownerDocument.removeEventListener("pointerlockerror", onPointerlockError);
 		};
 		this.dispose = function () {
 			this.disconnect();
@@ -775,16 +763,16 @@ class PointerLockControls extends THREE.EventDispatcher {
 }
 //- Setup ----------------------------------------------------------------------
 let controls = new PointerLockControls(camera, renderer.domElement,air_);
-let blocker = document.getElementById('blocker');
-let instructions = document.getElementById('instructions');
-	instructions.addEventListener('click', function () {controls.lock();});
-	controls.addEventListener('lock', function () {
-		instructions.style.display = 'none';
-		blocker.style.display = 'none';
+let blocker = document.getElementById("blocker");
+let instructions = document.getElementById("instructions");
+	instructions.addEventListener("click", function () {controls.lock();});
+	controls.addEventListener("lock", function () {
+		instructions.style.display = "none";
+		blocker.style.display = "none";
 	});
-	controls.addEventListener( 'unlock', function () {
-		blocker.style.display = 'block';
-		instructions.style.display = '';
+	controls.addEventListener( "unlock", function () {
+		blocker.style.display = "block";
+		instructions.style.display = "";
 	});
 
 //= DEFAULT KEY BINDINGS =======//==============================================
@@ -1001,6 +989,7 @@ function rendAll() {
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;					// Stop the function here.
 	}
+	if (controls.isLocked === true && !LodSnd) loadSounds();
 	if (!PawsOn && LodFlg && controls.isLocked === true) {
 		// Update time
 		nowTim = clock.getElapsedTime();
@@ -1024,7 +1013,7 @@ function rendAll() {
 		// console.log(sunLight.shadow.mapSize.width);
 		// console.log(sunLight.shadow.camera.far);
 	}
-	if (controls.isLocked === false) {
+	if (controls.isLocked === false && LodSnd) {
 		stopSounds();
 		SndFlg = GunFlg = 0;
 	}
@@ -1711,7 +1700,6 @@ function loadAirExt() {
 		mxr_.Adr.visible = false;
 		// Load Related Objects only after mxr_.Adr known
 		loadBullet();
-		loadSounds();
 	});		
 }
 
@@ -1994,8 +1982,11 @@ function moveBullet() {
 
 //= SOUNDS =====================//==============================================
 
-//- Load Sounds ----------------------------------------------------------------
-function loadSounds() {	
+//- Load and Initialize Sounds -------------------------------------------------
+function loadSounds() {
+	// Load Sounds .............................................................
+	let audioLoader = new THREE.AudioLoader();
+	let RefDst = 25;			// Reference distance for Positional Audio
 	// My Engine
 	let fname = AirSrc + "sounds/" + EngSrc;
 	audioLoader.load(fname, function(buffer) {
@@ -2037,6 +2028,29 @@ function loadSounds() {
 		XPESnd.setVolume(0);
 		XPESnd.playbackRate = 1.3;
 	});
+	// Init Sounds .............................................................
+	let listener = new THREE.AudioListener();
+	camera.add(listener);
+	//- My Engine and Prop
+	EngSnd = new THREE.PositionalAudio(listener);
+	PrpSnd = new THREE.PositionalAudio(listener);
+	EngMsh.add(EngSnd);			// Engine
+	EngMsh.add(PrpSnd);			// Prop
+	EngMsh.position.z = -5;
+	air_.AirObj.add(EngMsh);
+	//- My Guns
+	GnLSnd = new THREE.PositionalAudio(listener);
+	GnLMsh.add(GnLSnd);			// Gun
+	GnLMsh.position.x = -5;
+	air_.AirObj.add(GnLMsh);
+	GnRSnd = new THREE.PositionalAudio(listener);
+	GnRMsh.add(GnRSnd);			// Gun
+	GnRMsh.position.x = 5;
+	air_.AirObj.add(GnRMsh);
+	//- Other Airplane
+	XPESnd = new THREE.PositionalAudio(listener);
+	//- Set Flag
+	LodSnd = 1;
 }
 
 //- Change Sounds --------------------------------------------------------------
@@ -2079,6 +2093,7 @@ function stopSounds() {
 //- Init View ------------------------------------------------------------------
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
+	camera.rotation.y = cam_.adj*DegRad;
 	cam_.rot.add(camera);		// Attach to rotator
 	//
 	if (!cam_.sel) {			// 0 = External View
@@ -2117,14 +2132,12 @@ function initCamera(camera,cam_) {
 	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
 	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
 	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
+	camera.rotation.y = cam_.adj*DegRad;	// 180 = Looking in
 	cam_.mmr.copy(CamMMR[cam_.sel]);		// Rotation min, max, spd
 	cam_.par = CamPar[cam_.sel]				// Load New Parent
 	cam_.par.add(cam_.rot);					// Attach Rotators
 	cam_.flg = CamFlg[cam_.sel];			// 1 = cockpit
 	cam_.lnk = CamLnk[cam_.sel];			// 1 = Linked to Airplane
-	//
-	camera.rotation.x = 0.001*DegRad;
-	camera.rotation.y = cam_.adj*DegRad;	// 180 = Looking in
 	//
 	moveCamera(camera,cam_);
 }
@@ -2159,10 +2172,9 @@ function moveCamera(camera,cam_) {
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.flg) {
 		let OffCam = 0;
-		if (!cam_.pan && !air_.GrdFlg && !air_.MovFlg) { // If trailing view, compute camera offset
+		if (!cam_.pan && !air_.GrdFlg) { // If trailing view, compute camera offset
 			OffCam = 30*air_.RotDif.x;
-			if (OffCam == 0) OffCam = 0.001;
-			camera.rotation.x = (OffCam)*DegRad; // + = up/airplane down
+			camera.rotation.x = OffCam*DegRad; // + = up/airplane down
 		}
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;
