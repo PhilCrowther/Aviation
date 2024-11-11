@@ -111,7 +111,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js";
 //	* Convert waving flag to GPU shader
 //-	Flight Module:
 //	* Add supercharger/turbocharger effect
-//	* Add lag to tail leaving/returning to ground
+//	* Add lag to tail leaving/returning to ground on land
 
 //= INPUTS =====================//==============================================
 //- AIRPLANE: Start ------------------------------------------------------------
@@ -418,6 +418,7 @@ let fxd_ = {
 //= MOVING OBJECTS =============//==============================================
 //- Airplane -------------------------------------------------------------------
 let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
+//let XPFile = "A6M.glb";		// Name of airplane model file (rotated blender file) NEEDS ANIMATIONS
 let XPFile = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
 let xac_ = {
 		Num: 1,					// Number of airplanes
@@ -440,11 +441,11 @@ let xac_ = {
 		AnP: [0],				// Animation - Pitch
 		AnB: [0],				// Animation - Bank
 		// Sound
-		Snd: ["fm2_prop.wav"],	// Prop
+		Snd: ["fm2.wav"],		// Prop
 		Vol: [1]
 	};
 //- Aircraft Carrier -----------------------------------------------------------
-let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";	// Other Planes
+let XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/"; // Other Planes
 let XSFile = "CVE_noflag.glb";
 let xsh_ = {
 		Num: 1,					// Number of ships
@@ -693,25 +694,28 @@ let BulTim = [0];				// Time in flight
 	BulTim[BulNum-1] = 0;
 
 //=	SOUNDS =====================================================================
-//- My Engine
+//- My Engine and Prop
+let AirMsh = new makMsh();		// For Engine and Prop
+//- My Engne
 let EngSrc = "fm2.wav";			// File (my engine)
 let EngVol = 0.1;				// Volume
 let EngSnd = 0;
-let EngMsh = new makMsh();
 //- My Prop
 let PrpSrc = "fm2_prop.wav";	// File (my prop)
 let PrpVol = 0.5;				// Volume
 let PrpSnd = 0;
-let PrpMsh = new makMsh();
 //- My Guns
 let GunSrc = "fm2_gun.mp3";		// File (my guns)
 let GunVol = 0.5;				// Volume
 let GnLSnd = 0;
-let GnRSnd = 0;
 let GnLMsh = new makMsh();
+let GnRSnd = 0;
 let GnRMsh = new makMsh();
 //- Other Engine
+let XPESrc = "fm2.wav";			// File (my engine)
+let XPEVol = 0.1;				// Volume
 let XPESnd = 0;
+let XPEMsh = new makMsh();
 
 //= PPOINTER LOCK CONTROL ======//==============================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -855,7 +859,7 @@ let cam_ = {
 		// Linked Airplane
 		lnk: CamLnk[CamSel],
 		obj: new makMsh(),
-		deg: new makMsh()
+		deg: new makMsh(),
 	}
 //- Adjustments
 	camera.rotation.order = "YXZ";
@@ -1045,7 +1049,7 @@ function initSkyBox() {
 	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
 	// Lensflare
 	if (LnFFlg) {				// SunFlare		
-		let	spotLight = new THREE.PointLight(0xffffff);
+		let	spotLight = new THREE.PointLight("white");
 		scene.add(spotLight);
 		spotLight.position.copy(SunPos).normalize;
 		spotLight.position.multiplyScalar(1000);
@@ -1300,7 +1304,6 @@ function loadVulkan() {
 
 //- Load Objects ---------------------------------------------------------------
 function loadLnkObj() {
-	let parent = 0;
 	for (let i = 0; i < lnk_.Num; i++) {
 		gltfLoader.load(lnk_.Mdl[i], function (gltf) {
 			lnk_.Ptr[i] = gltf.scene;
@@ -1376,7 +1379,7 @@ function loadMovPln() {
 		xac_.Ptr[0].rotation.order = "YXZ"; // Heading, Pitch, Bank
 		xac_.Ptr[0].rotation.y = xac_.Rot[0].y*DegRad;
 		//
-		xac_.Ptr[0].add(XPESnd);	// Engine sound
+		xac_.Ptr[0].add(XPEMsh);	// Engine sound
 	});
 }
 
@@ -2020,7 +2023,7 @@ function loadSounds() {
 		GnRSnd.setVolume(0);
 	});
 	// XP Engine
-	fname = XPPath + "sounds/" + xac_.Snd;
+	fname = XPPath + "sounds/" + XPESrc;
 	audioLoader.load(fname, function(buffer) {
 		XPESnd.setBuffer(buffer);
 		XPESnd.setRefDistance(RefDst); // Distance at which sound is full volume
@@ -2034,10 +2037,10 @@ function loadSounds() {
 	//- My Engine and Prop
 	EngSnd = new THREE.PositionalAudio(listener);
 	PrpSnd = new THREE.PositionalAudio(listener);
-	EngMsh.add(EngSnd);			// Engine
-	EngMsh.add(PrpSnd);			// Prop
-	EngMsh.position.z = -5;
-	air_.AirObj.add(EngMsh);
+	AirMsh.add(EngSnd);			// Engine
+	AirMsh.add(PrpSnd);			// Prop
+	AirMsh.position.z = -5;
+	air_.AirObj.add(AirMsh);
 	//- My Guns
 	GnLSnd = new THREE.PositionalAudio(listener);
 	GnLMsh.add(GnLSnd);			// Gun
@@ -2049,6 +2052,7 @@ function loadSounds() {
 	air_.AirObj.add(GnRMsh);
 	//- Other Airplane
 	XPESnd = new THREE.PositionalAudio(listener);
+	XPEMsh.add(XPESnd);
 	//- Set Flag
 	LodSnd = 1;
 }
