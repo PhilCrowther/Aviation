@@ -127,9 +127,9 @@ let InpYaw = 0;					// Input Yaw
 
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 let InpMos = new THREE.Vector2();	// Inputs - Mouse
-let _changeEvent = {type: 'change'};
-let _lockEvent = {type: 'lock'};
-let _unlockEvent = {type: 'unlock'};
+let _changeEvent = {type: "change"};
+let _lockEvent = {type: "lock"};
+let _unlockEvent = {type: "unlock"};
 
 //= CONSTANTS ==================//==============================================
 //	Time
@@ -155,7 +155,8 @@ let SndFlg = 0;
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 let LnFFlg = 1;					// Lensflare
 //	Program Flags
-let LodFlg = 0;
+let LodFlg = 0;					// Set at end of initialization
+let LodSnd = 0;					// Set when sound initialized
 //	Altitude Adjustment
 let AltAdj = 0.99;				// Raises objects above map as altitude increases
 
@@ -217,7 +218,7 @@ let oldTim, nowTim, difTim = 0;
 //- Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);
-	document.addEventListener('mousewheel', onDocumentMouseWheel, {capture: false, passive: false});
+	document.addEventListener("mousewheel", onDocumentMouseWheel, {capture: false, passive: false});
 	document.addEventListener("keydown", onDocumentKeyDown, false);
 	document.addEventListener("keyup", onDocumentKeyUp, false);
 	window.addEventListener("resize", onWindowResize, false);
@@ -235,7 +236,6 @@ let txtrLoader = new THREE.TextureLoader(loadingManager);
 let imagLoader = new THREE.ImageLoader(loadingManager);
 let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 let gltfLoader = new GLTFLoader(loadingManager);
-let audioLoader = new THREE.AudioLoader(loadingManager);
 //- Wait Screen
 let loadingScreen = {
 	scene: new THREE.Scene(),
@@ -267,7 +267,7 @@ let ImgSiz = 1024;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = ImgSiz;
 	canvas.height = ImgSiz;
-let context = canvas.getContext('2d',{willReadFrequently: true});
+let context = canvas.getContext("2d",{willReadFrequently: true});
 //= Grid 4 Data ================//==============================================
 //- 1/4 section squares (1/2 mile X 1/2 mile)
 //- Variables
@@ -551,17 +551,10 @@ let spnrtr = 180;				// Tail Rotor - Spin (not used)
 let doormn = 0;					// Main Doors
 
 //=	SOUNDS =====================//==============================================
-let acsnd1 = "xbell_rotor03a.wav"; // File (my engine)
-let acvol1 = 0.1;				// Volume
-//
-let	listener = new THREE.AudioListener();
-	camera.add(listener);
-let RefDst = 25;				// Reference distance for Positional Sound
-//- My Engine
-let sound1 = new THREE.PositionalAudio(listener);
+let EngSrc = "xbell_rotor03a.wav"; // File (my engine)
+let EngVol = 0.1;				// Volume
+let EngSnd = 0;
 let EngMsh = new makMsh();		// Aircraft Engine
-	EngMsh.add(sound1);			// Engine
-	air_.AirObj.add(EngMsh);
 
 //= POINTER LOCK CONTROL =======================================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -587,17 +580,17 @@ class PointerLockControls extends THREE.EventDispatcher {
 			}
 		}
 		function onPointerlockError() {
-			console.error('THREE.PointerLockControls: Unable to use Pointer Lock API');
+			console.error("THREE.PointerLockControls: Unable to use Pointer Lock API");
 		}
 		this.connect = function () {
-			scope.domElement.ownerDocument.addEventListener('mousemove', onMouseMove);
-			scope.domElement.ownerDocument.addEventListener('pointerlockchange', onPointerlockChange);
-			scope.domElement.ownerDocument.addEventListener('pointerlockerror', onPointerlockError);
+			scope.domElement.ownerDocument.addEventListener("mousemove", onMouseMove);
+			scope.domElement.ownerDocument.addEventListener("pointerlockchange", onPointerlockChange);
+			scope.domElement.ownerDocument.addEventListener("pointerlockerror", onPointerlockError);
 		};
 		this.disconnect = function () {
-			scope.domElement.ownerDocument.removeEventListener('mousemove', onMouseMove);
-			scope.domElement.ownerDocument.removeEventListener('pointerlockchange', onPointerlockChange);
-			scope.domElement.ownerDocument.removeEventListener('pointerlockerror', onPointerlockError);
+			scope.domElement.ownerDocument.removeEventListener("mousemove", onMouseMove);
+			scope.domElement.ownerDocument.removeEventListener("pointerlockchange", onPointerlockChange);
+			scope.domElement.ownerDocument.removeEventListener("pointerlockerror", onPointerlockError);
 		};
 		this.dispose = function () {
 			this.disconnect();
@@ -613,16 +606,16 @@ class PointerLockControls extends THREE.EventDispatcher {
 }
 //- Setup ----------------------------------------------------------------------
 let controls = new PointerLockControls(camera, renderer.domElement);
-let blocker = document.getElementById('blocker');
-let instructions = document.getElementById('instructions');
-	instructions.addEventListener('click', function () {controls.lock();});
-	controls.addEventListener('lock', function () {
-		instructions.style.display = 'none';
-		blocker.style.display = 'none';
+let blocker = document.getElementById("blocker");
+let instructions = document.getElementById("instructions");
+	instructions.addEventListener("click", function () {controls.lock();});
+	controls.addEventListener("lock", function () {
+		instructions.style.display = "none";
+		blocker.style.display = "none";
 	});
-	controls.addEventListener( 'unlock', function () {
-		blocker.style.display = 'block';
-		instructions.style.display = '';
+	controls.addEventListener("unlock", function () {
+		blocker.style.display = "block";
+		instructions.style.display = "";
 	});
 
 //= DEFAULT KEY BINDINGS =======//==============================================
@@ -829,6 +822,7 @@ function rendAll() {
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;												// Stop the function here.
 	}
+	if (controls.isLocked === true && !LodSnd) loadSounds();
 	if (!PawsOn && LodFlg && controls.isLocked === true) {
 		moveCamera(camera,cam_);
 		// Move AirObj
@@ -842,6 +836,10 @@ function rendAll() {
 		moveSounds();
 		prntHUDval();			// change HUD value
 		if (StatOn) StatOn.update(); // update stats
+	}
+	if (controls.isLocked === false && LodSnd) {
+		stopSounds();
+		SndFlg = 0;
 	}
 	renderer.renderAsync(scene, camera);
 }
@@ -1552,8 +1550,6 @@ function loadAirObj() {
 		if (mxDorR) mxDorR.setTime(doormn/anmfps);
 		//- Save
 		air_.AirObj.add(AirExt);
-		// Initialize
-		loadSounds();			// load sound
 	});
 }
 
@@ -1848,28 +1844,52 @@ function makMsh() {
 	let mesh = new THREE.Mesh(geometry,material);
 return mesh;}
 
-//= SOUNDS =====================================================================
+//= SOUNDS =====================//==============================================
 
-// Load Sounds
-function loadSounds() {	
-	// My Engine ---------------------------------------------------------------
-	let fname = ACPath + "sounds/" + acsnd1;
+//- Load and Initialize Sounds -------------------------------------------------
+function loadSounds() {
+	// Load Sounds .............................................................
+	let audioLoader = new THREE.AudioLoader();
+	let RefDst = 25;			// Reference distance for Positional Audio
+	// My Engine
+	let fname = ACPath + "sounds/" + EngSrc;
 	audioLoader.load(fname, function(buffer) {
-		sound1.setBuffer(buffer);
-		sound1.setRefDistance(RefDst);
-		sound1.setLoop(true);
-		sound1.setVolume(0);
+		EngSnd.setBuffer(buffer);
+		EngSnd.setRefDistance(RefDst);
+		EngSnd.setLoop(true);
+		EngSnd.setVolume(0);
 	});
+	// Init Sounds .............................................................
+	let	listener = new THREE.AudioListener();
+	camera.add(listener);
+	// My Engine
+	EngSnd = new THREE.PositionalAudio(listener);
+	EngMsh.add(EngSnd);			// Engine
+	air_.AirObj.add(EngMsh);
+	//- Set Flag
+	LodSnd = 1;	
 }
 
 // Change Sounds
 function moveSounds() {
 	// My Engine
-	sound1.setVolume(acvol1);	// ###								// Range = .1 to .2
-	sound1.setPlaybackRate(1);	// ###
+	EngSnd.setVolume(EngVol);
+	EngSnd.setPlaybackRate(1);
 }
 
-//= CAMERA =====================================================================
+//- Play Sounds ----------------------------------------------------------------
+function playSounds() {
+	// This leaves SndFlg and GunFlg unchanged.
+	if (!EngSnd.isPlaying) EngSnd.play();
+}
+
+//- Stop Sounds ----------------------------------------------------------------
+function stopSounds() {
+	// This leaves SndFlg and GunFlg unchanged.
+	if (EngSnd.isPlaying) EngSnd.stop();
+}
+
+//= CAMERA =====================//==============================================
 
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
@@ -2057,9 +2077,9 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
 	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
 	// Toggle
-	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
 	if (event.keyCode == K_Paws) toglPaws();			// Toggle Pause
 	if (event.keyCode == K_Info) toglInfo();			// Toggle Information
+	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
 }
 
 //-	Keyboard (Up) --------------------------------------------------------------
@@ -2090,25 +2110,15 @@ function onDocumentKeyUp(event) {
 
 //- Subroutines ----------------------------------------------------------------
 
-//. Toggle Sound ...............................................................
-function toglSoun() {
-	SndFlg = 1 - SndFlg;
-	if (SndFlg) {	// Off to On
-		sound1.play();
-		sound2.play();
-		sound4.play();
-	}
-	else {			// On to Off
-		sound1.stop();
-		sound2.stop();
-		sound3.stop();
-		sound4.stop();
-	}
-}
-
 //. Toggle Pause ...............................................................
 function toglPaws() {
 	PawsOn = 1 - PawsOn;
+	if (PawsOn && SndFlg) {		//On to Off
+		stopSounds();
+	}
+	if (!PawsOn && SndFlg) {	// Off to On
+		playSounds();
+	}
 	PawsText();
 }
 
@@ -2123,6 +2133,19 @@ function toglInfo() {
 	InfoOn++
 	if (InfoOn == 3) InfoOn = 0;
 	InfoText();
+}
+
+//. Toggle Sound ...............................................................
+function toglSoun() {
+	if (!PawsOn) {
+		SndFlg = 1 - SndFlg;
+		if (SndFlg) {			// Off to On
+			playSounds();
+		}
+		else {					// On to Off
+			stopSounds();
+		}
+	}
 }
 
 //= WINDOW RESIZE ==============================================================
