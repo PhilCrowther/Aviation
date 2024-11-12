@@ -132,6 +132,9 @@ let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
 let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys
 let LagAtp = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
+//- Camera
+//let LagCam = new THREE.Vector3(1-1/30,1/15,0);	// Pitch Adj
+let LagCam = new THREE.Vector3(1-1/240,1/60,0);	// Pitch Adj
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 let InpMos = new THREE.Vector2(); // Inputs - Mouse
 let _changeEvent = {type: "change"};
@@ -2176,10 +2179,16 @@ function moveCamera(camera,cam_) {
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.flg) {
 		let OffCam = 0;
-		if (!cam_.pan && !air_.GrdFlg) { // If trailing view, compute camera offset
-			OffCam = 30*air_.RotDif.x;
-			camera.rotation.x = OffCam*DegRad; // + = up/airplane down
+		let gal = 0;
+		let lag = 0;
+		if (!cam_.pan && !air_.GrdFlg) {	// If trailing view, compute camera offset
+			OffCam = 35*air_.RotDif.x;		// full adjustment
+			gal = OffCam * LagCam.x;		// Current input delayed
+			lag = LagCam.y * LagCam.z;		// Released from Cumulator
+			LagCam.z = LagCam.z + gal - lag; // Change in Cumulator			
 		}
+		OffCam = OffCam - gal + lag;		
+		camera.rotation.x = OffCam*DegRad;	// + = up/airplane down
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;
 	}
