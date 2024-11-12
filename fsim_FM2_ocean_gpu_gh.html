@@ -132,9 +132,6 @@ let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
 let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys
 let LagAtp = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
-//- Camera
-//let LagCam = new THREE.Vector3(1-1/30,1/15,0);	// Pitch Adj
-let LagCam = new THREE.Vector3(1-1/240,1/60,0);	// Pitch Adj
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 let InpMos = new THREE.Vector2(); // Inputs - Mouse
 let _changeEvent = {type: "change"};
@@ -871,6 +868,12 @@ let cam_ = {
 	cam_.deg.rotation.order = "YXZ";
 	cam_.par.add(cam_.rot);		// Attach Rotator
 	cam_.obj.add(cam_.deg);
+//- Lag
+let CmAdjX = 0;					// Airborne Pitch Adjustment
+let CmMulX = 35;				// Pitch Adjustment Multiplier
+let CmCumX = 0.25*CmMulX;		// Transition Offset Start
+let CmLagX = 0;					// Transition Offset
+let CmTimX = 4*60;				// Seconds X FPS
 
 //= HTML OVERLAY TEXT ==========//==============================================
 let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
@@ -2178,17 +2181,17 @@ function moveCamera(camera,cam_) {
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.flg) {
-		let OffCam = 0;
-		let gal = 0;
-		let lag = 0;
-		if (!cam_.pan && !air_.GrdFlg) {	// If trailing view, compute camera offset
-			OffCam = 35*air_.RotDif.x;		// full adjustment
-			gal = OffCam * LagCam.x;		// Current input delayed
-			lag = LagCam.y * LagCam.z;		// Released from Cumulator
-			LagCam.z = LagCam.z + gal - lag; // Change in Cumulator			
+		CmAdjX = 0;
+		if (!cam_.pan && air_.GrdFlg) CmLagX = CmCumX; // If on ground, load offset value
+		if (!cam_.pan && !air_.GrdFlg) { 
+			CmAdjX = CmMulX*air_.RotDif.x;
+			if (CmLagX) { // Count down offset only once after take-off
+				CmAdjX = CmAdjX - CmLagX;
+				CmLagX = CmLagX - CmLagX/CmTimX; // Reduction in offset
+				if (CmLagX < 0) CmLagX = 0;
+			}
 		}
-		OffCam = OffCam - gal + lag;		
-		camera.rotation.x = OffCam*DegRad;	// + = up/airplane down
+		camera.rotation.x = CmAdjX*DegRad; // + = up/airplane down
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;
 	}
