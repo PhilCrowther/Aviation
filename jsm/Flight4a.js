@@ -313,8 +313,10 @@ update() {
 		if (this.air_.MapPos.y <= Flor) {
 			this.air_.GrdFlg = 1;		// Set Flag
 			this.air_.MapPos.y = Flor;	// Set Height
-			this.air_.CfLift = this.air_.CfLift+0.1*this.air_.AirRot.x;	// Set this.air_.CfLift
-			if (this.air_.ACPAdj < 0) this.air_.ACPAdj == 0;
+			this.air_.air_AirRot.x = 0;
+			this.air_.CfLift = 0;
+//			this.air_.CfLift = this.air_.CfLift+0.1*this.air_.AirRot.x;	// Set this.air_.CfLift
+			if (this.air_.ACPAdj < 0) this.air_.ACPAdj == 0; // Allow tail low landings
 		}
 	}
 	// Store XS, YP, ZS
