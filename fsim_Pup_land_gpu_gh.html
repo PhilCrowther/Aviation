@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Nov 2024
+Version dated 13 Nov 2024
 
 A flight simulation of an animated airplane model over procedural land using
 -->
@@ -76,27 +76,29 @@ import Stats from "stats-gl";
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3a.js";
 
-//= INPUTS =====================================================================
+//= INPUTS =====================//==============================================
 //- CAMERA ---------------------------------------------------------------------
-let CamSel = 0;						// Camera Seletion (0 = External; 1 = Internal)
+let BegLoc = 1;					// Starting Location (0 = Base; 1 = CVE; 2 = Air)
+let CamSel = 0;					// Camera Seletion (0 = External; 1 = Internal)
+let BegTmp = 288.15;			// K = 59F
 //- AIRPLANE: Start -----------------------------------------------------------
-let BegPwr = 0;						// Initial Power Percent
-let BegSpd = 161;					// Speed (kph = 100 mph)
+let BegPwr = 0;					// Initial Power Percent
+let BegSpd = 161;				// Speed (kph = 100 mph)
 let BegPos = new THREE.Vector3(0,610,0); // Position (meters = 2000 ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Basic airplane values
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-let PwrMul = 0.0005;				// Power % Input - Mouse Multiplier
-let PwrDif = 0;						// Power % Input - Value
-let InpBrk = 0;						// Brakes
+let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
+let PwrDif = 0;					// Power % Input - Value
+let InpBrk = 0;					// Brakes
 //- Mouse Delays ...............................................................
 //- (x = diverted, y = released, z = stored)
-let PwrMsD = new THREE.Vector3(1-1/30,1/15,0);	// Power
-let CfLMsD = new THREE.Vector3(1-1/30,1/15,0);	// CfL
-let CfLApD = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
-let BnkMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
+let LagPwr = new THREE.Vector3(1-1/30,1/15,0);	// Power
+let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
+let LagAtP = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
+let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- POINTER LOCK CONTROLS ------------------------------------------------------
-let InpMos = new THREE.Vector2();	// Inputs - Mouse
+let InpMos = new THREE.Vector2(); // Inputs - Mouse
 let _changeEvent = {type: "change"};
 let _lockEvent = {type: "lock"};
 let _unlockEvent = {type: "unlock"};
@@ -118,7 +120,6 @@ let Mil2Km = 1.60934;
 let	GrvMPS = 9.80665; 			// Gravity (mps)
 //	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
-let BegTmp = 288.15;			// K = 59F
 
 //= INPUT VALUES ===============//==============================================
 //- Display
@@ -700,6 +701,12 @@ let cam_ = {
 	cam_.deg.rotation.order = "YXZ";
 	cam_.par.add(cam_.rot);		// Attach Rotator
 	cam_.obj.add(cam_.deg);
+//- CamAdjX
+let CmAdjX = 0;					// Airborne Pitch Adjustment
+let CmMulX = 15;				// Pitch Adjustment Multiplier
+let CmCumX = 0.367*CmMulX;		// Transition Offset Start
+let CmLagX = 0;					// Transition Offset
+let CmTimX = 4*60;				// Seconds X FPS
 
 //= HTML OVERLAY TEXT ==========//==============================================
 let Air_PwrElement = document.getElementById("Air_Pwr");
@@ -1559,9 +1566,9 @@ function loadACMine() {
 //= Move Airplane Model ========================================================
 function moveAirObj() {
 	// Add Delay to Power
-	let gal = PwrDif * PwrMsD.x;		// Current input delayed
-	let lag = PwrMsD.z * PwrMsD.y;		// Released from Cumulator
-	PwrMsD.z = PwrMsD.z + gal - lag;	// Change in Cumulator
+	let gal = PwrDif * LagPwr.x;		// Current input delayed
+	let lag = LagPwr.z * LagPwr.y;		// Released from Cumulator
+	LagPwr.z = LagPwr.z + gal - lag;	// Change in Cumulator
 	PwrDif = PwrDif - gal + lag;
 	// Input Engine Power
 	air_.PwrPct = air_.PwrPct + PwrDif;
@@ -1572,16 +1579,16 @@ function moveAirObj() {
 	if (air_.AutoOn) {						// Autopilot
 		air_.CfLDif = air_.InpKey.x;
 		// Add Delay to Lift
-		gal = air_.CfLDif * CfLApD.x;		// Current input delayed
-		lag = CfLMsD.z * CfLApD.y;			// Released from Cumulator
-		CfLMsD.z = CfLMsD.z + gal - lag; 	// Change in Cumulator
+		gal = air_.CfLDif * LagAtP.x;		// Current input delayed
+		lag = LagCfL.z * LagAtP.y;			// Released from Cumulator
+		LagCfL.z = LagCfL.z + gal - lag; 	// Change in Cumulator
 	}
 	else {
 		air_.CfLDif = (InpMos.y)*air_.PYBmul.x;	// Input Coefficient of Lift
 		// Add Delay to Lift
-		gal = air_.CfLDif * CfLMsD.x;		// Current input delayed
-		lag = CfLMsD.z * CfLMsD.y;			// Released from Cumulator
-		CfLMsD.z = CfLMsD.z + gal - lag;	// Change in Cumulator
+		gal = air_.CfLDif * LagCfL.x;		// Current input delayed
+		lag = LagCfL.z * LagCfL.y;			// Released from Cumulator
+		LagCfL.z = LagCfL.z + gal - lag;	// Change in Cumulator
 	}
 	air_.CfLDif = air_.CfLDif - gal + lag;
 	air_.CfLift = air_.CfLift + air_.CfLDif;	// New Coefficient of Lift	
@@ -1599,9 +1606,9 @@ function moveAirObj() {
 	else {
 		// Add Delay to Change in Bank Rate due to Mouse
 		let BnkDif = InpMos.x * air_.PYBmul.z;
-		gal = BnkDif * BnkMsD.x;			// Current input delayed
-		lag = BnkMsD.z * BnkMsD.y;			// Released from Cumulator
-		BnkMsD.z = BnkMsD.z + gal - lag;	// Change in Cumulator
+		gal = BnkDif * LagBnk.x;			// Current input delayed
+		lag = LagBnk.z * LagBnk.y;			// Released from Cumulator
+		LagBnk.z = LagBnk.z + gal - lag;	// Change in Cumulator
 		BnkDif = BnkDif - gal + lag;
 		air_.RotDif.z = air_.RotDif.z + BnkDif;	
 		air_.RotDif.z = MaxVal(air_.RotDif.z,air_.BnkMax);	// Max values
@@ -1817,17 +1824,19 @@ function moveCamera(camera,cam_) {
 		cam_.rot.rotation.y = Mod360(-cam_.lld.y)*DegRad;
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
-//	else {
-//		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
-//		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;		
-//	}
-	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.flg) {
-		let OffCam = 0;
+		let CmAdjX = 0;
+		if (!cam_.pan && air_.GrdFlg) CmLagX = CmCumX; // If on ground, load offset value		
 		if (!cam_.pan && !air_.GrdFlg) { // If trailing view, compute camera offset
-			OffCam = 15*air_.RotDif.x;
-			camera.rotation.x = OffCam*DegRad; // + = up/airplane down
+			CmAdjX = CmMulX*air_.RotDif.x;
+			console.log(CmAdjX);
+			if (CmLagX) { // Count down offset only once after take-off
+				CmAdjX = CmAdjX - CmLagX;
+				CmLagX = CmLagX - CmLagX/CmTimX; // Reduction in offset
+				if (CmLagX < 0) CmLagX = 0;
+			}
 		}
+		camera.rotation.x = CmAdjX*DegRad; // + = up/airplane down
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
 		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;
 	}
@@ -1976,10 +1985,10 @@ function onDocumentKeyDown(event) {
 		GunFlg = 1;
 	}
 	// Toggle
-	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
 	if (event.keyCode == K_Paws) toglPaws();			// Toggle Pause
 	if (event.keyCode == K_Auto) toglAuto();			// Toggle AutoPilot
 	if (event.keyCode == K_Info) toglInfo();			// Toggle Information
+	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
 }
 
 //-	Keyboard (Up) --------------------------------------------------------------
@@ -2050,7 +2059,7 @@ function toglSoun() {
 	}
 }
 
-//= WINDOW RESIZE ==============================================================
+//= WINDOW RESIZE ==============//==============================================
 function onWindowResize() {
 	CamAsp = window.innerWidth/window.innerHeight;
 	camera.aspect = CamAsp;
