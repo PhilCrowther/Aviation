@@ -311,10 +311,10 @@ update() {
 		ACPrad = this.DegRad*Mod360(this.dat_.Ax2CGA-ACP); 	// Use ACP
 		let Flor = this.dat_.Ax2CGD*Math.cos(ACPrad)+this.dat_.WheelR+this.air_.GrdZed;
 		if (this.air_.MapPos.y <= Flor) {
-			this.air_.GrdFlg = 1;			// Set Flag
-			this.air_.MapPos.y = Flor;		// Set Height
+			this.air_.GrdFlg = 1;		// Set Flag
+			this.air_.MapPos.y = Flor;	// Set Height
 			this.air_.CfLift = this.air_.CfLift+0.1*this.air_.AirRot.x;	// Set this.air_.CfLift
-			this.air_.ACPAdj = 0;
+			if (this.air_.ACPAdj < 0) this.air_.ACPAdj == 0;
 		}
 	}
 	// Store XS, YP, ZS
