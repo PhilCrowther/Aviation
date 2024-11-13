@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Nov 2024
+Version dated 13 Nov 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
 -->
@@ -868,12 +868,11 @@ let cam_ = {
 	cam_.deg.rotation.order = "YXZ";
 	cam_.par.add(cam_.rot);		// Attach Rotator
 	cam_.obj.add(cam_.deg);
-//- CamAdjX
+//- Adjust Camera x.rotation
 let CmAdjX = 0;					// Airborne Pitch Adjustment
+let CmGrdF = 0;					// Camera Ground Flag (1 = On Ground)
 let CmMulX = 35;				// Pitch Adjustment Multiplier
-let CmCumX = 0.25*CmMulX;		// Transition Offset Start
 let CmLagX = 0;					// Transition Offset
-let CmTimX = 4*60;				// Seconds X FPS
 
 //= HTML OVERLAY TEXT ==========//==============================================
 let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
@@ -2181,15 +2180,23 @@ function moveCamera(camera,cam_) {
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.flg) {
-		CmAdjX = 0;
-		if (!cam_.pan && air_.GrdFlg) CmLagX = CmCumX; // If on ground, load offset value
-		if (!cam_.pan && !air_.GrdFlg) { 
-			CmAdjX = CmMulX*air_.RotDif.x;
-			if (CmLagX) { // Count down offset only once after take-off
-				CmAdjX = CmAdjX - CmLagX;
-				CmLagX = CmLagX - CmLagX/CmTimX; // Reduction in offset
-				if (CmLagX < 0) CmLagX = 0;
+		if (!cam_.pan && air_.GrdFlg) { // Air to Ground
+			if (!CmGrdF) {		// if just landed
+				CmLagX = CmMulX*air_.RotDif.x;
+				CmGrdF = 1;
 			}
+			CmAdjX = CmLagX;	// From Landing Value to 0
+		}	
+		if (!cam_.pan && !air_.GrdFlg) { // Ground to Air
+			if (CmGrdF) {		// if just took off
+				CmLagX = CmMulX*air_.RotDif.x;
+				CmGrdF = 0;
+			}
+			CmAdjX = (CmMulX*air_.RotDif.x)-CmLagX; // From 0 to Take-Off Value
+		}
+		if (CmLagX) {			// Reduce Lag
+			CmLagX = 0.99*CmLagX; // Reduction in Adj/AdjOff
+			if (Math.abs(CmLagX) < 0.1) CmLagX = 0;
 		}
 		camera.rotation.x = CmAdjX*DegRad; // + = up/airplane down
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;

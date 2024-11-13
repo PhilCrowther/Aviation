@@ -701,7 +701,7 @@ let cam_ = {
 	cam_.deg.rotation.order = "YXZ";
 	cam_.par.add(cam_.rot);		// Attach Rotator
 	cam_.obj.add(cam_.deg);
-//- CamAdjX
+//- Adjust Camera x.rotation
 let CmAdjX = 0;					// Airborne Pitch Adjustment
 let CmGrdF = 0;					// Camera Ground Flag (1 = On Ground)
 let CmMulX = 15;				// Pitch Adjustment Multiplier
@@ -1840,7 +1840,7 @@ function moveCamera(camera,cam_) {
 		}
 		if (CmLagX) {			// Reduce Lag
 			CmLagX = 0.99*CmLagX; // Reduction in Adj/AdjOff
-			if (Math.abs(CmLagX) < 1) CmLagX = 0;
+			if (Math.abs(CmLagX) < 0.1) CmLagX = 0;
 		}
 		camera.rotation.x = CmAdjX*DegRad; // + = up/airplane down
 		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
