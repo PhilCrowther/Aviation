@@ -1,6 +1,6 @@
 /*
  * Flight.js
- * Version 4a (vers 24.10.12)
+ * Version 4a (vers 24.11.13)
  * Copyright 2017-24, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -314,6 +314,7 @@ update() {
 			this.air_.GrdFlg = 1;			// Set Flag
 			this.air_.MapPos.y = Flor;		// Set Height
 			this.air_.CfLift = this.air_.CfLift+0.1*this.air_.AirRot.x;	// Set this.air_.CfLift
+			this.air_.ACPAdj = 0;
 		}
 	}
 	// Store XS, YP, ZS
@@ -393,4 +394,5 @@ export {Flight, Mod360, PoM360, MaxVal, makMsh};
  * 241006:	Add adjustment for Ship Pitch [REQUIRED VERSON CHANGE TO 4a]
  * 241012:  Change makMsh to NodeMaterial and add color
  * 241012:	Add adjustment for Ship Bank (just in case)
+ * 241113:	Set ACPAdj = 9 when land
 */
