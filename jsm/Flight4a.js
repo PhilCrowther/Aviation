@@ -187,8 +187,10 @@ update() {
 			// Rotation
 //	temp	this.air_.AGBank = this.air_.AGBank+this.air_.InM.x*this.air_.PBYmul.z;	// Aileron bank
 //	temp	this.air_.AGBank = MaxVal(this.air_.AGBank,this.air_.BnkMax);		// Max values	
-			this.air_.RotDif.z = -this.air_.AirRot.z;		// Wheels on ground
-			this.air_.RotDif.x = -this.air_.AirRot.x;		// Direction of flight = 0
+			this.air_.RotDif.z = -this.air_.AirRot.z;	// Wheels on ground
+//			this.air_.RotDif.x = -this.air_.AirRot.x;	// Direction of flight = 0
+			if (air_.AirRot.x < 0) air_.AirRot.x = 0;	// Direction of flight = 0
+			if (air_.ACPAdj < 0) air_.ACPAdj = 0;
 			GrvACD = 0;							// No pitch down due to gravity
 		}
 	}	
