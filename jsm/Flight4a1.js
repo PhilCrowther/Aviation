@@ -1,6 +1,6 @@
 /*
  * Flight.js
- * Version 4a (vers 24.10.12)
+ * Version 4a (vers 24.11.13)
  * Copyright 2017-24, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -187,8 +187,13 @@ update() {
 			// Rotation
 //	temp	this.air_.AGBank = this.air_.AGBank+this.air_.InM.x*this.air_.PBYmul.z;	// Aileron bank
 //	temp	this.air_.AGBank = MaxVal(this.air_.AGBank,this.air_.BnkMax);		// Max values	
-			this.air_.RotDif.z = -this.air_.AirRot.z;		// Wheels on ground
-			this.air_.RotDif.x = -this.air_.AirRot.x;		// Direction of flight = 0
+			this.air_.RotDif.z = -this.air_.AirRot.z;	// Wheels on ground
+//			this.air_.RotDif.x = -this.air_.AirRot.x;	// Direction of flight = 0
+			if (this.air_.AirRot.x < 0) {
+				this.air_.AirRot.x = 0;	// Direction of flight = 0
+				if (this.air_RotDif.x < 0) this.air_RotDif.x;
+			}
+			if (this.air_.ACPAdj < 0) this.air_.ACPAdj = 0;
 			GrvACD = 0;							// No pitch down due to gravity
 		}
 	}	
@@ -311,9 +316,12 @@ update() {
 		ACPrad = this.DegRad*Mod360(this.dat_.Ax2CGA-ACP); 	// Use ACP
 		let Flor = this.dat_.Ax2CGD*Math.cos(ACPrad)+this.dat_.WheelR+this.air_.GrdZed;
 		if (this.air_.MapPos.y <= Flor) {
-			this.air_.GrdFlg = 1;			// Set Flag
-			this.air_.MapPos.y = Flor;		// Set Height
-			this.air_.CfLift = this.air_.CfLift+0.1*this.air_.AirRot.x;	// Set this.air_.CfLift
+			this.air_.GrdFlg = 1;		// Set Flag
+			this.air_.MapPos.y = Flor;	// Set Height
+			this.air_.air_AirRot.x = 0;
+			this.air_.CfLift = 0;
+//			this.air_.CfLift = this.air_.CfLift+0.1*this.air_.AirRot.x;	// Set this.air_.CfLift
+			if (this.air_.ACPAdj < 0) this.air_.ACPAdj == 0; // Allow tail low landings
 		}
 	}
 	// Store XS, YP, ZS
@@ -393,4 +401,5 @@ export {Flight, Mod360, PoM360, MaxVal, makMsh};
  * 241006:	Add adjustment for Ship Pitch [REQUIRED VERSON CHANGE TO 4a]
  * 241012:  Change makMsh to NodeMaterial and add color
  * 241012:	Add adjustment for Ship Bank (just in case)
+ * 241113:	Set ACPAdj = 9 when land
 */
