@@ -4,9 +4,10 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Nov 2024
+Version dated 15 Nov 2024
 
 A flight simulation of an animated airplane model over procedural land using
+MANDATORY CHANGES since last version: Must make change to air_ and use Flight4a1 (see Revisions at end of program)
 -->
 
 <head>
@@ -73,18 +74,14 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a1.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3a.js";
 
 //= INPUTS =====================//==============================================
-//- CAMERA ---------------------------------------------------------------------
-let BegLoc = 1;					// Starting Location (0 = Base; 1 = CVE; 2 = Air)
+//- AIRPLANE: Start -----------------------------------------------------------
+let BegLoc = 0;					// Starting Location (0 = Base; 1 = Air)
 let CamSel = 0;					// Camera Seletion (0 = External; 1 = Internal)
 let BegTmp = 288.15;			// K = 59F
-//- AIRPLANE: Start -----------------------------------------------------------
-let BegPwr = 0;					// Initial Power Percent
-let BegSpd = 161;				// Speed (kph = 100 mph)
-let BegPos = new THREE.Vector3(0,610,0); // Position (meters = 2000 ft)
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Basic airplane values
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
@@ -290,9 +287,9 @@ let G0Id05 = [3,0,5,3,4,5,1,2,4];
 let G0Id06 = [2,0,3,5,3,1,4,4,5];
 let G0Id07 = [1,5,4,3,5,0,2,4,3];
 let G0Id08 = [2,3,0,5,3,1,4,5,4];
-let G0Id09 = [0,2,5,3,4,3,5,1,4]; // 1 = airport
+let G0Id09 = [0,2,5,3,4,3,5,1,4];
 let G0Id10 = [4,3,5,4,5,2,1,3,0];
-let G0Id11 = [4,5,3,1,0,4,3,5,2];
+let G0Id11 = [4,5,3,0,1,4,3,5,2];
 let G0Id12 = [3,1,2,4,5,3,5,0,4];
 let G0Id13 = [0,5,3,1,4,2,4,3,5];
 let G0Id14 = [1,4,2,5,3,0,4,5,3];
@@ -321,8 +318,8 @@ let G1Indx = [
 		10, 2, 4,15,10,12,10, 9, 5,
 		 3,12,11, 8,13, 3, 1, 0,14,
 		 0, 7,10,14,12,10,11, 2, 4,
-		 9,14, 5, 4, 9,13, 8,12, 7,	// 9 = over
-		 4, 7,15,12, 3,11, 9,13, 4,	// 3 = Airport
+		 9,14, 5, 4,11,13, 8,12, 7,	// 11 = Over Airport
+		 4, 7,15,12, 3,11, 9,13, 4,
 		11,12, 8, 5,13, 2,10,15,13,
 		 6,10, 7, 9,15,14,12, 5,11,
 		 0,13, 6,10, 3, 2,14, 4, 8
@@ -433,9 +430,9 @@ let ObjIdx = 0;
 	ObjNam[ObjIdx] = "hangar";
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb";
 	ObjTxt[ObjIdx] = 0; 	
-	ObjMPX[ObjIdx] = 1000;		// [m]
+	ObjMPX[ObjIdx] = 200;		// [m]
 	ObjMPY[ObjIdx] = 0.3048;	// [m] 1 ft
-	ObjMPZ[ObjIdx] = 1524;		// [m] 5000 ft
+	ObjMPZ[ObjIdx] = 250;		// [m]
 	ObjIdx = ObjIdx + 1;
 //- Giaros Island
 	ObjTyp[ObjIdx] = 1;			// 1 = Large feature
@@ -463,15 +460,15 @@ let air_ = {
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0),	// Change
 		// Airplane Speed
-		SpdKPH: BegSpd,			// Speed in KPH
-		SpdMPS: BegSpd/3.6,		// Speed - meters per second
-		SpdMPF: (BegSpd/3.6)*DLTime,	// Speed - meters per frame	
+		SpdKPH: 0,				// Speed in KPH
+		SpdMPS: 0,				// Speed - meters per second
+		SpdMPF: 0,				// Speed - meters per frame	
 		// Airplane Map Speed and Position
 		MapSpd: new THREE.Vector3(), // Map Speed (meters)
-		MapPos: new THREE.Vector3().copy(BegPos), // Map Position (meters)
-		MapSPS: new THREE.Vector3(0,BegPos.y,0), // MSX, MPY, MSZ (meters)
+		MapPos: new THREE.Vector3(), // Map Position (meters)
+		MapSPS: new THREE.Vector3(), // MSX, MPY, MSZ (meters)
 		// Variables Obtained from Flight
-		PwrPct: BegPwr,			// % of Primary Power (0 to 1) (Main and Flight)
+		PwrPct: 0,				// % of Primary Power (0 to 1) (Main and Flight)
 		SupPct: 0,				// Percent of Supplemental Power (War Enmergency or Afterburner)
 		CfLift: 0,				// Coefficient of Lift (user input) - determines lift
 		CfFlap: 0,				// Coefficient of Lift due to flaps (user input)
@@ -484,7 +481,6 @@ let air_ = {
 		GrdZed: 0,				// Ground level (default)
 		GrdFlg: 0,				// Ground Flag (1 = on ground)
 		ACPAdj: 0,				// Airplane pitch adjustment
-		MovFlg: 0,				// If Sitting on a Moving Object
 		// Values for the Selected Airplane Type (obtained from Flight)
 		CfLMax: 0,				// Maximum Coefficient of Lift
 		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
@@ -495,7 +491,7 @@ let air_ = {
 		// AutoPilot - Additional Variables
 		AutoOn: 0,				// Autopilot Flag
 		InpKey: new THREE.Vector3(), // Inputs - Keys (replace InpKey)
-		OldRot: new THREE.Vector3(), // Old Rotation (radians)
+		OldRot: new THREE.Vector3(), // Old Rotation (z = radians)
 		CfLDif: 0,				// Change in CfL
 		MaxBnk: 0,				// Max Bank (display only)
 		HdgDif: 0,				// Horizontal Turn Rate (display only)
@@ -503,9 +499,9 @@ let air_ = {
 		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0,				// Indicated Airspeed
-		// Ship Pitch and Bank (radians)
-		ShpPit: 0,
-		ShpBnk: 0,
+		// Ship Pitch and Bank
+		MovFlg: 0,				// If Sitting on Moving Ship
+		ShpRot: new THREE.Vector3(),
 	}
 // 
 //- Adjustments
@@ -793,10 +789,8 @@ function WaitScreen() {
 
 function initAll() {
 	initSkyBox();				// load skybox
-	flight = new Flight(air_);	// position airplane using air_.GrdZed
-//	flight.update;
-	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
-	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
+	// Objects
+	initAirObj();
 	initGrdTxt();
 	grd_.SPS.y = air_.MapSPS.y;
 	grids = new GrdMap(grd_,scene);	// Init Grid Map
@@ -843,6 +837,7 @@ function rendAll() {
 		moveRoads();
 		moveTrees();		
 		moveObject();			// Move objects
+		// Other
 		moveSounds();
 		prntHUDval();			// change HUD value
 		if (StatOn) StatOn.update(); // update stats
@@ -1187,7 +1182,6 @@ function makeRClr(dtColr,dtData,Weight) {
 }
 
 function initRoad2(Rod) {
-
 	// Load Variables
 	Rod.RCi = Rod.RCs-1;				// Max Index Value
 	Rod.MZV[Rod.RCi] = 0;				// Z-Values
@@ -1562,42 +1556,76 @@ function loadACMine() {
 	});
 }
 
-//= Move Airplane Model ========================================================
+//= Init Airplane ==============//==============================================
+// This section initializes starting location and variables before passing to Flight Module
+function initAirObj() {
+	//	Starting Location
+	if (BegLoc == 0) { 			// Base
+		air_.MapPos.y = air_.GrdZed;
+		air_.GrdFlg = 1;
+	}
+	if (BegLoc == 1) { 			// Air
+		PwrDif = 1000;			// This forces PwrPct to max
+		air_.SpdKPH = 161;		// Speed (kph = 100 mph)
+		air_.MapSPS.y = air_.MapPos.y = 200;
+	}
+	// Speed
+	if (air_.SpdKPH) {
+		air_.SpdMPS = air_.SpdKPH/3.6; // Speed - meters per second
+		air_.SpdMPF = (air_.SpdKPH/3.6)*DLTime; // Speed - meters per frame
+	}
+	// Altitude
+	if (air_.MapPos.y == 0) air_.GrdFlg = 1; // Altitude
+	grd_.SPS.copy(air_.MapSPS); // Use to initialize objects
+	// Flight
+	flight = new Flight(air_);	// position airplane using air_.GrdZed
+	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
+	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
+	// If on Ground, Reaadjust
+	grd_.SPS.y = air_.MapSPS.y; // Use to initialize objects (if on ground)
+}
+
+//= Move Airplane Model ========//==============================================
+// This section processes Input before passing to Flight Module
+// And manages Views and Animations
 function moveAirObj() {
-	// Add Delay to Power
-	let gal = PwrDif * LagPwr.x;		// Current input delayed
-	let lag = LagPwr.z * LagPwr.y;		// Released from Cumulator
-	LagPwr.z = LagPwr.z + gal - lag;	// Change in Cumulator
+	// Compute Inputs ----------------------------------------------------------
+	// Power Percent ...........................................................
+	// Add Delay
+	let gal = PwrDif * LagPwr.x; // Current input delayed
+	let lag = LagPwr.z * LagPwr.y; // Released from Cumulator
+	LagPwr.z = LagPwr.z + gal - lag; // Change in Cumulator
 	PwrDif = PwrDif - gal + lag;
 	// Input Engine Power
 	air_.PwrPct = air_.PwrPct + PwrDif;
 	if (air_.PwrPct > 1) air_.PwrPct = 1;
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
-	PwrDif = 0;							// Reset
-	// Coefficient of Lift
-	if (air_.AutoOn) {						// Autopilot
+	PwrDif = 0;					// Reset
+	// Coefficient of Lift .....................................................
+	if (air_.AutoOn) {			// Autopilot
 		air_.CfLDif = air_.InpKey.x;
 		// Add Delay to Lift
-		gal = air_.CfLDif * LagAtP.x;		// Current input delayed
-		lag = LagCfL.z * LagAtP.y;			// Released from Cumulator
-		LagCfL.z = LagCfL.z + gal - lag; 	// Change in Cumulator
+		gal = air_.CfLDif * LagAtP.x; // Current input delayed
+		lag = LagCfL.y * LagAtP.z; // Released from Cumulator
+		LagCfL.z = LagCfL.z + gal - lag; // Change in Cumulator
 	}
 	else {
 		air_.CfLDif = (InpMos.y)*air_.PYBmul.x;	// Input Coefficient of Lift
 		// Add Delay to Lift
-		gal = air_.CfLDif * LagCfL.x;		// Current input delayed
-		lag = LagCfL.z * LagCfL.y;			// Released from Cumulator
-		LagCfL.z = LagCfL.z + gal - lag;	// Change in Cumulator
+		gal = air_.CfLDif * LagCfL.x; // Current input delayed
+		lag = LagCfL.y * LagCfL.z; // Released from Cumulator
+		LagCfL.z = LagCfL.z + gal - lag; // Change in Cumulator
 	}
 	air_.CfLDif = air_.CfLDif - gal + lag;
-	air_.CfLift = air_.CfLift + air_.CfLDif;	// New Coefficient of Lift	
+	air_.CfLift = air_.CfLift + air_.CfLDif; // New Coefficient of Lift
+	// Limits
 	if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 	if (air_.CfLift < -air_.CfLMax) air_.CfLift = -air_.CfLMax;
-//	anm_.stkpit = InpMos.y;					// Joystick pitch animation
-	InpMos.y = 0;							// Reset
-	// Coefficient of Lift - Flaps
-//	air_.CfFlap = air_.FlpCfL*(180-anm_.flppos)/180; 	// [FLAP]
-	// Bank
+	//anm_.stkpit = InpMos.y;	// Joystick pitch animation (NA)
+	InpMos.y = 0;				// Reset
+	// Coefficient of Lift - Flaps (NA)	
+	//air_.CfFlap = air_.FlpCfL*(180-anm_.flppos)/180; // CfL - Flaps
+	// Bank ....................................................................
 	if (air_.AutoOn) {
 		air_.RotDif.z = air_.InpKey.z;
 		air_.OldRot.z = air_.OldRot.z + air_.RotDif.z*DegRad;
@@ -1610,20 +1638,71 @@ function moveAirObj() {
 		LagBnk.z = LagBnk.z + gal - lag;	// Change in Cumulator
 		BnkDif = BnkDif - gal + lag;
 		air_.RotDif.z = air_.RotDif.z + BnkDif;	
-		air_.RotDif.z = MaxVal(air_.RotDif.z,air_.BnkMax);	// Max values
+		air_.RotDif.z = MaxVal(air_.RotDif.z,air_.BnkMax); // Max values
 		if (air_.RotDif.z == air_.BnkMax && BnkDif < 0) air_.RotDif.z = BnkDif;
 		if (air_.RotDif.z == -air_.BnkMax && BnkDif > 0) air_.RotDif.z = BnkDif;
-		air_.RotDif.z = air_.RotDif.z;		// Inputs are +/-
+		air_.RotDif.z = air_.RotDif.z; // Inputs are +/-
 		air_.AGBank = air_.RotDif.z;
-//		anm_.stkbnk = InpMos.x;				// Joystick bank animation
-		InpMos.x = 0;						// Reset
+//		anm_.stkbnk = InpMos.x;	// Joystick bank animation
+		InpMos.x = 0;			// Reset
 	}
-	// Input Yaw
+	// Input Yaw ...............................................................
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
-	// Input Brakes
-	air_.BrkVal = InpBrk;				// Brakes
+	// Input Brakes ............................................................
+	air_.BrkVal = InpBrk;		// Brakes
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
+	// View Keys ---------------------------------------------------------------
+	if (cam_.pan < 1) {			// Only If Not Panning		
+		// If No Keys Pressed, Set Default View
+		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
+			if (cam_.flg) cam_.lld.x = 0; // Internal view
+			else cam_.lld.x = -12.5; // External view
+			cam_.lld.y = 0;
+		}
+		// Down 45
+		else if (D45flg) {
+			cam_.lld.x = 0;
+			// Look Back
+			if ((L90flg) && (L90flg) && (R90flg)) cam_.lld.y = 180;
+			// Look Back Left 90 + 45
+			else if (L90flg) cam_.lld.y = 135;
+			// Look Back Right 270 - 45
+			else if (R90flg) cam_.lld.y = 225;
+			// Look Down
+			else {
+				cam_.lld.y = 0;
+				cam_.lld.x = 45;
+			}
+		}
+		// Up 45
+		else if (U45flg) {
+			cam_.lld.x = 315;
+			if (!cam_.flg && (air_.GrdFlg)) cam_.lld.x = 0;
+			// Look Up Left 45
+			if (L45flg) cam_.lld.y = 45;
+			// Look Up Right 45
+			else if (R45flg) cam_.lld.y = 315;
+			// Look Up Left 90
+			else if (L90flg) cam_.lld.y = 90;
+			// Look Up Right 90
+			else if (R90flg) cam_.lld.y = 270;
+			// Look Up
+			else cam_.lld.y = 0;
+		}
+		// Level
+		else {
+			cam_.lld.x = 0;
+			// Look Left 45
+			if (L45flg) cam_.lld.y = 45;
+			// Look Right 45
+			else if (R45flg) cam_.lld.y = 315;
+			// Look Left 90
+			else if (L90flg) cam_.lld.y = 90;
+			// Look Right 90
+			else if (R90flg) cam_.lld.y = 270;
+		}
+	}
 	// Animate -----------------------------------------------------------------	
 	// Propeller
 	let prpspd =  4 * (air_.PwrPct - 0.6);					// Range = -2.4 to + 1.6
@@ -1660,57 +1739,6 @@ function moveAirObj() {
 	// Rite
 	if (mxAlTR) mxAlTR.setTime(ailrgt/anmfps);
 	if (mxAlBR) mxAlBR.setTime(ailrgt/anmfps);
-	// View Keys ---------------------------------------------------------------
-	if (cam_.pan < 1) {					// Only If Not Panning		
-		// If No Keys Pressed, Set Default View
-		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
-			if (cam_.flg) cam_.lld.x = 0;	// Internal view
-			else cam_.lld.x = -12.5;		// External view
-			cam_.lld.y = 0;
-		}
-		// Down 45
-		else if (D45flg) {
-			cam_.lld.x = 0;
-			// Look Back
-			if ((L90flg) && (L90flg) && (R90flg)) cam_.lld.y = 180;
-			// Look Back Left 90 + 45
-			else if (L90flg) cam_.lld.y = 135;
-			// Look Back Right 270 - 45
-			else if (R90flg) cam_.lld.y = 225;
-			// Look Down
-			else {
-				cam_.lld.y = 0;
-				cam_.lld.x = 45;
-			}
-		}
-		// Up 45
-		else if (U45flg) {
-			cam_.lld.x = 315;
-			if (cam_.flg == 0 && (air_.GrdFlg)) cam_.lld.x = 0;
-			// Look Up Left 45
-			if (L45flg) cam_.lld.y = 45;
-			// Look Up Right 45
-			else if (R45flg) cam_.lld.y = 315;
-			// Look Up Left 90
-			else if (L90flg) cam_.lld.y = 90;
-			// Look Up Right 90
-			else if (R90flg) cam_.lld.y = 270;
-			// Look Up
-			else cam_.lld.y = 0;
-		}
-		// Level
-		else {
-			cam_.lld.x = 0;
-			// Look Left 45
-			if (L45flg) cam_.lld.y = 45;
-			// Look Right 45
-			else if (R45flg) cam_.lld.y = 315;
-			// Look Left 90
-			else if (L90flg) cam_.lld.y = 90;
-			// Look Right 90
-			else if (R90flg) cam_.lld.y = 270;
-		}
-	}
 }
 
 //= SOUNDS =====================//==============================================
@@ -1826,7 +1854,8 @@ function moveCamera(camera,cam_) {
 	if (!cam_.flg) {
 		if (!cam_.pan && air_.GrdFlg) { // Air to Ground
 			if (!CmGrdF) {		// if just landed
-				CmLagX = CmMulX*air_.RotDif.x;
+				CmLagX = CmAdjX;
+				console.log(CmLagX);
 				CmGrdF = 1;
 			}
 			CmAdjX = CmLagX;	// From Landing Value to 0
@@ -1852,15 +1881,15 @@ function moveCamera(camera,cam_) {
 
 // Change HUD Values
 function prntHUDval() {
-	Air_Pwr = air_.PwrPct;							// Throttle
+	Air_Pwr = air_.PwrPct;		// Throttle
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
-	Air_Spd = air_.SpdKPH*Km2Mil;					// Speed
+	Air_Spd = air_.SpdKPH*Km2Mil; // Speed
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
-	Air_Hdg = Mod360(air_.AirRot.y);				// Heading
+	Air_Hdg = Mod360(air_.AirRot.y); // Heading
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
-	Air_Alt = air_.MapPos.y;						// Altitude
+	Air_Alt = air_.MapPos.y;	// Altitude
 	Air_AltNode.nodeValue = Air_Alt.toFixed(0);	
-	Air_CfL = air_.CfLift;							// Cf Lift
+	Air_CfL = air_.CfLift;		// Cf Lift
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 }
 
@@ -2072,6 +2101,9 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
+
+//= REVISIONS ==================================================================
+//	241115:	Combined air_.ShpPit/Bnk into ShpRot [requires change to air_ and Flight4a1]
 
 </script>
 </body>

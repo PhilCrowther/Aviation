@@ -4,9 +4,10 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Nov 2024
+Version dated 15 Nov 2024
 
 A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
+MANDATORY CHANGES since last version: Must make change to air_ and use Flight4a1 (see Revisions at end of program)
 -->
 
 <head>
@@ -77,7 +78,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a1.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js";
@@ -552,7 +553,6 @@ let air_ = {
 		GrdZed: 0,				// Ground level (default)
 		GrdFlg: 0,				// Ground Flag (1 = on ground)
 		ACPAdj: 0,				// Airplane pitch adjustment
-		MovFlg: 0,				// If Sitting on a Moving Object
 		// Values for the Selected Airplane Type (obtained from Flight)
 		CfLMax: 0,				// Maximum Coefficient of Lift
 		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
@@ -571,9 +571,9 @@ let air_ = {
 		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0,				// Indicated Airspeed
-		// Ship Pitch and Bank (radians)
-		ShpPit: 0,
-		ShpBnk: 0,
+		// Ship Pitch and Bank
+		MovFlg: 0,				// If Sitting on Moving Ship
+		ShpRot: new THREE.Vector3(),
 	}
 //	Adjustments
 	air_.AirObj.rotation.order = "YXZ";
@@ -1656,7 +1656,7 @@ function moveShpAlt() {
 			// Recompute air_.Spd
 			if (air_.PwrPct < 0.5) {
 				air_.SpdKPH = air_.SpdMPS = 0;
-				air_.ShpPit = -xsh_.Rot[0].x;
+				air_.ShpRot.x = -xsh_.Rot[0].x;
 			}
 			else {
 				air_.SpdKPH = ShpKPH; // (KPH)
@@ -1768,13 +1768,15 @@ function initAirObj() {
 		anm_.lngpos = 180; 		// Landing Gear Up
 		anm_.flppos = 180;		// Flaps Up
 	}
+	// Speed
 	if (air_.SpdKPH) {
 		air_.SpdMPS = air_.SpdKPH/3.6; // Speed - meters per second
 		air_.SpdMPF = (air_.SpdKPH/3.6)*DLTime; // Speed - meters per frame
 	}
+	// Altitude
 	if (air_.MapPos.y == 0) air_.GrdFlg = 1;
 	grd_.MSP.y = air_.MapPos.y; // Use to initialize objects
-	//
+	// Flight
 	flight = new Flight(air_);	// position airplane using air_.GrdZed
 	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
@@ -1784,7 +1786,9 @@ function initAirObj() {
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
 function moveAirObj() {
-	// Add Delay to Power
+	// Compute Inputs ----------------------------------------------------------
+	// Power Percent ...........................................................
+	// Add Delay
 	let gal = PwrDif * LagPwr.x; // Current input delayed
 	let lag = LagPwr.y * LagPwr.z; // Released from Cumulator
 	LagPwr.z = LagPwr.z + gal - lag; // Change in Cumulator
@@ -1794,7 +1798,7 @@ function moveAirObj() {
 	if (air_.PwrPct > 1) air_.PwrPct = 1;
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
 	PwrDif = 0;					// Reset
-	// Coefficient of Lift
+	// Coefficient of Lift .....................................................
 	if (air_.AutoOn) {			// Autopilot
 		air_.CfLDif = air_.InpKey.x;
 		// Add Delay to Lift
@@ -1811,13 +1815,14 @@ function moveAirObj() {
 	}
 	air_.CfLDif = air_.CfLDif - gal + lag;
 	air_.CfLift = air_.CfLift + air_.CfLDif; // New Coefficient of Lift	
+	// Limits
 	if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 	if (air_.CfLift < -air_.CfLMax) air_.CfLift = -air_.CfLMax;
 	anm_.stkpit = InpMos.y;		// Joystick pitch animation
 	InpMos.y = 0;				// Reset
 	// Coefficient of Lift - Flaps
 	air_.CfFlap = air_.FlpCfL*(180-anm_.flppos)/180; // [Flap]
-	// Bank
+	// Bank ....................................................................
 	if (air_.AutoOn) {
 		air_.RotDif.z = air_.InpKey.z;
 		air_.OldRot.z = air_.OldRot.z + air_.RotDif.z*DegRad;
@@ -2182,7 +2187,7 @@ function moveCamera(camera,cam_) {
 	if (!cam_.flg) {
 		if (!cam_.pan && air_.GrdFlg) { // Air to Ground
 			if (!CmGrdF) {		// if just landed
-				CmLagX = CmMulX*air_.RotDif.x;
+				CmLagX = CmAdjX;
 				CmGrdF = 1;
 			}
 			CmAdjX = CmLagX;	// From Landing Value to 0
@@ -2208,15 +2213,15 @@ function moveCamera(camera,cam_) {
 
 //-	Print HUD Values -----------------------------------------------------------
 function prntHUDval() {
-	Air_Pwr = air_.PwrPct;						// Throttle
+	Air_Pwr = air_.PwrPct;		// Throttle
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
-	Air_Spd = air_.SpdKPH*Km2Mil;				// Speed
+	Air_Spd = air_.SpdKPH*Km2Mil; // Speed
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
-	Air_Alt = air_.MapPos.y*Mtr2Ft;				// Altitude
+	Air_Alt = air_.MapPos.y*Mtr2Ft; // Altitude
 	Air_AltNode.nodeValue = Air_Alt.toFixed(0);
-	Air_Hdg = air_.AirRot.y;					// Heading
+	Air_Hdg = air_.AirRot.y;	// Heading
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
-	Air_CfL = air_.CfLift;						// Cf Lift
+	Air_CfL = air_.CfLift;		// Cf Lift
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 }
 
@@ -2458,6 +2463,9 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
+
+//= REVISIONS ==================================================================
+//	241115:	Combined air_.ShpPit/Bnk into ShpRot [requires change to air_ and Flight4a1]
 
 </script>
 </body>
