@@ -1,6 +1,6 @@
 /*
  * Flight.js
- * Version 4a1 (vers 24.11.15)
+ * Version 4a1 (vers 24.11.17)
  * Copyright 2017-24, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
