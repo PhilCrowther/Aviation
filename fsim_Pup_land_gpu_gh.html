@@ -4,10 +4,9 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 15 Nov 2024
+Version dated 17 Nov 2024
 
-A flight simulation of an animated airplane model over procedural land using
-MANDATORY CHANGES since last version: Must make change to air_ and use Flight4a1 (see Revisions at end of program)
+A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
 
 <head>
@@ -74,7 +73,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a1.js";
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3a.js";
 
 //= INPUTS =====================//==============================================
@@ -501,7 +500,8 @@ let air_ = {
 		SpdIAS: 0,				// Indicated Airspeed
 		// Ship Pitch and Bank
 		MovFlg: 0,				// If Sitting on Moving Ship
-		ShpRot: new THREE.Vector3(),
+		ShpPit: 0,
+		ShpBnk: 0,
 	}
 // 
 //- Adjustments
@@ -1805,6 +1805,7 @@ function stopSounds() {
 
 //= CAMERA =====================//==============================================
 
+//- Init Camera ----------------//----------------------------------------------
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
 	camera.rotation.y = cam_.adj*DegRad;
@@ -1824,16 +1825,17 @@ function initCamera(camera,cam_) {
 
 }
 
+//- Move Camera ----------------//----------------------------------------------
 function moveCamera(camera,cam_) {
 	// Move Camera In/Out
 	camera.position.z = -cam_.lld.z;
 	// PointerLockControls
 	if (cam_.pan) {
-		cam_.lld.x = cam_.lld.x - InpMos.y * cam_.mmr.z;				// Camera Position (Lat)
+		cam_.lld.x = cam_.lld.x - InpMos.y * cam_.mmr.z; // Camera Position (Lat)
 		cam_.lld.x = MaxVal(cam_.lld.x,cam_.mmr.x);
-		cam_.lld.y = Mod360(cam_.lld.y + InpMos.x * cam_.mmr.z);		// Camera Position (Lon)
+		cam_.lld.y = Mod360(cam_.lld.y + InpMos.x * cam_.mmr.z); // Camera Position (Lon)
 		// Internal View
-		if (cam_.flg) {											// Range: 250 to 360/0 to 110
+		if (cam_.flg) {			// Range: 250 to 360/0 to 110
 			if (cam_.lld.y > 180 && cam_.lld.y < (360-cam_.mmr.y)) cam_.lld.y = (360-cam_.mmr.y);
 			if (cam_.lld.y < 180 && cam_.lld.y > cam_.mmr.y) cam_.lld.y = cam_.mmr.y;
 		}
@@ -1854,8 +1856,8 @@ function moveCamera(camera,cam_) {
 	if (!cam_.flg) {
 		if (!cam_.pan && air_.GrdFlg) { // Air to Ground
 			if (!CmGrdF) {		// if just landed
-				CmLagX = CmAdjX;
-				console.log(CmLagX);
+				CmLagX = CmAdjX; // All landings are smooth
+//				if (CmLagX > 0.5) CmLagX = 0.5; // Make extreme landings more jarring
 				CmGrdF = 1;
 			}
 			CmAdjX = CmLagX;	// From Landing Value to 0
@@ -1885,10 +1887,10 @@ function prntHUDval() {
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
 	Air_Spd = air_.SpdKPH*Km2Mil; // Speed
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
+	Air_Alt = air_.MapPos.y;	// Altitude
+	Air_AltNode.nodeValue = Air_Alt.toFixed(0);
 	Air_Hdg = Mod360(air_.AirRot.y); // Heading
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
-	Air_Alt = air_.MapPos.y;	// Altitude
-	Air_AltNode.nodeValue = Air_Alt.toFixed(0);	
 	Air_CfL = air_.CfLift;		// Cf Lift
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 }
@@ -2101,9 +2103,6 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
-
-//= REVISIONS ==================================================================
-//	241115:	Combined air_.ShpPit/Bnk into ShpRot [requires change to air_ and Flight4a1]
 
 </script>
 </body>

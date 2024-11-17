@@ -4,10 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 15 Nov 2024
-
-A flight simulation of an animated airplane model over an animated ocean using WebGPU and NodeMaterials.
-MANDATORY CHANGES since last version: Must make change to air_ and use Flight4a1 (see Revisions at end of program)
+Version dated 16 Nov 2024
 -->
 
 <head>
@@ -78,7 +75,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a1.js";
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a0.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js";
@@ -573,7 +570,8 @@ let air_ = {
 		SpdIAS: 0,				// Indicated Airspeed
 		// Ship Pitch and Bank
 		MovFlg: 0,				// If Sitting on Moving Ship
-		ShpRot: new THREE.Vector3(),
+		ShpPit: 0,
+		ShpBnk: 0,
 	}
 //	Adjustments
 	air_.AirObj.rotation.order = "YXZ";
@@ -1656,7 +1654,7 @@ function moveShpAlt() {
 			// Recompute air_.Spd
 			if (air_.PwrPct < 0.5) {
 				air_.SpdKPH = air_.SpdMPS = 0;
-				air_.ShpRot.x = -xsh_.Rot[0].x;
+				air_.ShpPit = -xsh_.Rot[0].x;
 			}
 			else {
 				air_.SpdKPH = ShpKPH; // (KPH)
@@ -2463,9 +2461,6 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
-
-//= REVISIONS ==================================================================
-//	241115:	Combined air_.ShpPit/Bnk into ShpRot [requires change to air_ and Flight4a1]
 
 </script>
 </body>
