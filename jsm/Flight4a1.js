@@ -1,6 +1,6 @@
 /*
  * Flight.js
- * Version 4a1 (vers 24.11.15)
+ * Version 4a1 (vers 24.11.17)
  * Copyright 2017-24, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -209,7 +209,7 @@ update() {
 		// AGBank (not now) 
 		//this.air_.AGBank = this.air_.AGBank+this.air_.InM.x*this.air_.PBYmul.z;	// Aileron bank
 		//this.air_.AGBank = MaxVal(this.air_.AGBank,this.air_.BnkMax); // Max values
-		// No More User Changes to Pitch or Bank (except post-adjustments for ShpRot)
+		// No More User Changes to Pitch or Bank (except post-adjustments for ShpPit/Bnk)
 		this.air_.RotDif.x = 0;
 		this.air_.RotDif.z = 0;
 		// ACPAdj Taildragger-Related Adjustments
@@ -262,7 +262,7 @@ update() {
 	this.air_.AirPBY.rotation.y = 0;
 	// Pitch -------------------------------------------------------------------
 	this.air_.AirRot.x = PoM360(this.air_.AirObj.rotation.x*this.RadDeg);
-	this.air_.AirRot.x = this.air_.AirRot.x + this.air_.ShpRot.x; // Add Ship Pitch
+	this.air_.AirRot.x = this.air_.AirRot.x + this.air_.ShpPit; // Add Ship Pitch
 	// Heading -----------------------------------------------------------------
 	this.air_.AirRot.y = Mod360(-this.air_.AirObj.rotation.y*this.RadDeg);
 	this.air_.HdgDif = (this.air_.AirRot.y-this.air_.OldRot.y)/this.air_.DLTime;	// Change in Heading (display)
@@ -288,7 +288,7 @@ update() {
 		this.air_.AirRot.z = Mod360(ACBnew+360); 		// 270 to 90
 		this.air_.AirObj.rotation.z = -this.air_.AirRot.z*this.DegRad;
 	}
-	this.air_.AirRot.z = this.air_.AirRot.z + this.air_.ShpRot.z; // Add Ship Bank		
+	this.air_.AirRot.z = this.air_.AirRot.z + this.air_.ShpBnk; // Add Ship Bank		
 	// 3. COMPUTE MAP SPEED ----------------------------------------------------
 	// Inputs:	this.air_.SpdMPF, ACThrG, ACPtch, ACHead, this.air_.MapPos
 	// Results:	this.air_.SpdKPH, PSpdZV, PSpdYV, ACPtch, this.air_.MapSpd, this.air_.MapPos
@@ -392,5 +392,9 @@ export {Flight, Mod360, PoM360, MaxVal, makMsh};
  * 241006:	Add adjustment for Ship Pitch [REQUIRED VERSON CHANGE TO 4a]
  * 241012:  Change makMsh to NodeMaterial and add color
  * 241012:	Add adjustment for Ship Bank (just in case)
- * 241115:	Combined air_.ShpPit/Bnk into ShpRot [REQUIRED VERSON CHANGE TO 4a1]
+ * 241115:	Make changes to handling of GrdFlg and ACPAdj
+*/
+
+/*= FUTURE PLANNED REVISIONS (make as part of version change) ==================
+ * ______:	Combine air_.ShpPit/Bnk into ShpRot 
 */
