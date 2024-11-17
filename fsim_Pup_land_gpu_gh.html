@@ -29,17 +29,17 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 	<div class="overlay2">
 		<div><span id="On_Paws"></span></div>
 		<div><span id="Air_AtP"></span></div>
-		<div><span id="On_Info01"></span></div>
+		<div><span id="On_Inf0"></span></div>
 	</div>
 	<div class="overlay3">
-		<div><span id="On_Info02"></span></div>
-		<div><span id="On_Info03"></span></div>
-		<div><span id="On_Info04"></span></div>
-		<div><span id="On_Info05"></span></div>
-		<div><span id="On_Info06"></span></div>
-		<div><span id="On_Info07"></span></div>
-		<div><span id="On_Info08"></span></div>
-		<div><span id="On_Info09"></span></div>
+		<div><span id="On_Inf1"></span></div>
+		<div><span id="On_Inf2"></span></div>
+		<div><span id="On_Inf3"></span></div>
+		<div><span id="On_Inf4"></span></div>
+		<div><span id="On_Inf5"></span></div>
+		<div><span id="On_Inf6"></span></div>
+		<div><span id="On_Inf7"></span></div>
+		<div><span id="On_Inf8"></span></div>
 	</div>
 </div>
 
@@ -725,36 +725,36 @@ let On_PawsNode = document.createTextNode("");
 let Air_AtPElement = document.getElementById("Air_AtP");	// Autopilot
 let Air_AtPNode = document.createTextNode("");
 	Air_AtPElement.appendChild(Air_AtPNode);
-let On_Info01Element = document.getElementById("On_Info01");
-let On_Info01Node = document.createTextNode("");
-	On_Info01Element.appendChild(On_Info01Node);
-let On_Info02Element = document.getElementById("On_Info02");
-let On_Info02Node = document.createTextNode("");
-	On_Info02Element.appendChild(On_Info02Node);
-let On_Info03Element = document.getElementById("On_Info03");
-let On_Info03Node = document.createTextNode("");
-	On_Info03Element.appendChild(On_Info03Node);
-let On_Info04Element = document.getElementById("On_Info04");
-let On_Info04Node = document.createTextNode("");
-	On_Info04Element.appendChild(On_Info04Node);
-let On_Info05Element = document.getElementById("On_Info05");
-let On_Info05Node = document.createTextNode("");
-	On_Info05Element.appendChild(On_Info05Node);
-let On_Info06Element = document.getElementById("On_Info06");
-let On_Info06Node = document.createTextNode("");
-	On_Info06Element.appendChild(On_Info06Node);
-let On_Info07Element = document.getElementById("On_Info07");
-let On_Info07Node = document.createTextNode("");
-	On_Info07Element.appendChild(On_Info07Node);
-let On_Info08Element = document.getElementById("On_Info08");
-let On_Info08Node = document.createTextNode("");
-	On_Info08Element.appendChild(On_Info08Node);
-let On_Info09Element = document.getElementById("On_Info09");
-let On_Info09Node = document.createTextNode("");
-	On_Info09Element.appendChild(On_Info09Node);
+let On_Inf0Element = document.getElementById("On_Inf0");
+let On_Inf0Node = document.createTextNode("");
+	On_Inf0Element.appendChild(On_Inf0Node);
+let On_Inf1Element = document.getElementById("On_Inf1");
+let On_Inf1Node = document.createTextNode("");
+	On_Inf1Element.appendChild(On_Inf1Node);
+let On_Inf2Element = document.getElementById("On_Inf2");
+let On_Inf2Node = document.createTextNode("");
+	On_Inf2Element.appendChild(On_Inf2Node);
+let On_Inf3Element = document.getElementById("On_Inf3");
+let On_Inf3Node = document.createTextNode("");
+	On_Inf3Element.appendChild(On_Inf3Node);
+let On_Inf4Element = document.getElementById("On_Inf4");
+let On_Inf4Node = document.createTextNode("");
+	On_Inf4Element.appendChild(On_Inf4Node);
+let On_Inf5Element = document.getElementById("On_Inf5");
+let On_Inf5Node = document.createTextNode("");
+	On_Inf5Element.appendChild(On_Inf5Node);
+let On_Inf6Element = document.getElementById("On_Inf6");
+let On_Inf6Node = document.createTextNode("");
+	On_Inf6Element.appendChild(On_Inf6Node);
+let On_Inf7Element = document.getElementById("On_Inf7");
+let On_Inf7Node = document.createTextNode("");
+	On_Inf7Element.appendChild(On_Inf7Node);
+let On_Inf8Element = document.getElementById("On_Inf8");
+let On_Inf8Node = document.createTextNode("");
+	On_Inf8Element.appendChild(On_Inf8Node);
 //
 let Air_Pwr, Air_Spd, Air_Hdg, Air_Alt, Air_CfL;
-let On_Paws, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, On_Info07, On_Info08;
+let On_Paws, On_Inf0, On_Inf1, On_Inf2, On_Inf3, On_Inf4, On_Inf5, On_Inf6, On_Inf7, On_Inf8;
 
 //= MAIN PROGRAMS ==============================================================
 
@@ -1881,32 +1881,33 @@ function moveCamera(camera,cam_) {
 
 //= OUTPUTS ====================//==============================================
 
-// Change HUD Values
+//-	Print HUD Values -----------------------------------------------------------
 function prntHUDval() {
 	Air_Pwr = air_.PwrPct;		// Throttle
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
 	Air_Spd = air_.SpdKPH*Km2Mil; // Speed
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
-	Air_Alt = air_.MapPos.y;	// Altitude
+	Air_Alt = air_.MapPos.y*Mtr2Ft;	// Altitude
 	Air_AltNode.nodeValue = Air_Alt.toFixed(0);
-	Air_Hdg = Mod360(air_.AirRot.y); // Heading
+	Air_Hdg = air_.AirRot.y;	// Heading
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
 	Air_CfL = air_.CfLift;		// Cf Lift
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 }
 
-//	Paused On
+//-	Pause Text -----------------------------------------------------------------
 function PawsText(){
 	if (PawsOn) On_PawsNode.nodeValue = "Paused";
 	else {On_PawsNode.nodeValue = "Pause: Press P";}
 }
 
-//	Autopilot Text
+//-	Autopilot Text -------------------------------------------------------------
 function AutoText(){
 	if (air_.AutoOn) Air_AtPNode.nodeValue = "Autopilot On";
 	else {Air_AtPNode.nodeValue = "AutoP: Press A";}
 }
 
+//- Info Text ------------------------------------------------------------------
 function InfoText() {
 	if (!InfoOn) onInfo0();
 	else if (InfoOn == 1) onInfo1();
@@ -1915,43 +1916,41 @@ function InfoText() {
 
 //	Info Off
 function onInfo0(){
-	On_Info01Node.nodeValue = "Info : Press I";
-	On_Info02Node.nodeValue = "";
-	On_Info03Node.nodeValue = "";
-	On_Info04Node.nodeValue = "";
-	On_Info05Node.nodeValue = "";
-	On_Info06Node.nodeValue = "";
-	On_Info07Node.nodeValue = "";
-	On_Info08Node.nodeValue = "";
-	On_Info09Node.nodeValue = "";
+	On_Inf0Node.nodeValue = "Info : Press I";
+	On_Inf1Node.nodeValue = "";
+	On_Inf2Node.nodeValue = "";
+	On_Inf3Node.nodeValue = "";
+	On_Inf4Node.nodeValue = "";
+	On_Inf5Node.nodeValue = "";
+	On_Inf6Node.nodeValue = "";
+	On_Inf7Node.nodeValue = "";
+	On_Inf8Node.nodeValue = "";
 }
 
-// Info On
+//	Info On - Page1
 function onInfo1(){
-	On_Info01Node.nodeValue = "";
-	//
-	On_Info02Node.nodeValue = "CONTROLS";
-	On_Info03Node.nodeValue = "Use Mouse to change Pitch and Bank";
-	On_Info04Node.nodeValue = "AutoPilot: Use Arrow Keys to change Pitch and Bank";
-	On_Info05Node.nodeValue = "Use Mouse Buttons or Z/X Keys to change Yaw";
-	On_Info06Node.nodeValue = "Use Mouse Wheel or -/= Keys to change Throttle";
-	On_Info07Node.nodeValue = "Press S to toggle sound";
-	On_Info08Node.nodeValue = "Spacebar fires guns";
-	On_Info09Node.nodeValue = "";
+	On_Inf0Node.nodeValue = "";
+	On_Inf1Node.nodeValue = "CONTROLS";
+	On_Inf2Node.nodeValue = "Use Mouse to change Pitch and Bank";
+	On_Inf3Node.nodeValue = "AutoPilot: Use Arrow Keys to change Pitch and Bank";
+	On_Inf4Node.nodeValue = "Use Mouse Buttons or Z/X Keys to change Yaw";
+	On_Inf5Node.nodeValue = "Use Mouse Wheel or -/= Keys to change Throttle";
+	On_Inf6Node.nodeValue = "Press S to toggle sound";
+	On_Inf7Node.nodeValue = "Spacebar fires guns";
+	On_Inf8Node.nodeValue = "";
 }
 
-// Info On
+//	Info On - Page2
 function onInfo2(){
-	On_Info01Node.nodeValue = "";
-	//
-	On_Info02Node.nodeValue = "VIEW KEYS";
-	On_Info03Node.nodeValue = "Hold Shift and use Mouse to pan around aircraft";
-	On_Info04Node.nodeValue = "Press DELETE or PAGE DOWN to look left/right";
-	On_Info05Node.nodeValue = "Press HOME and the above to look up";
-	On_Info06Node.nodeValue = "Press END and DELETE or PAGE DOWN to look back";
-	On_Info07Node.nodeValue = "Press all 3 keys to look back";
-	On_Info08Node.nodeValue = "";
-	On_Info09Node.nodeValue = "";
+	On_Info0Node.nodeValue = "";
+	On_Inf1Node.nodeValue = "VIEW KEYS";
+	On_Inf2Node.nodeValue = "Hold Shift and use Mouse to pan around aircraft";
+	On_Inf3Node.nodeValue = "Press DELETE or PAGE DOWN to look left/right";
+	On_Inf4Node.nodeValue = "Press HOME and the above to look up";
+	On_Inf5Node.nodeValue = "Press END and DELETE or PAGE DOWN to look back";
+	On_Inf6Node.nodeValue = "Press all 3 keys to look back";
+	On_Inf7Node.nodeValue = "";
+	On_Inf8Node.nodeValue = "";
 }
 
 //= INPUTS =====================================================================

@@ -4,7 +4,9 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 16 Nov 2024
+Version dated 17 Nov 2024
+
+A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
 
 <head>
@@ -75,7 +77,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a0.js";
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js";
@@ -2102,7 +2104,7 @@ function stopSounds() {
 
 //= VIEWS ======================//==============================================
 
-//- Init View ------------------------------------------------------------------
+//- Init View ------------------//----------------------------------------------
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
 	camera.rotation.y = cam_.adj*DegRad;
@@ -2154,7 +2156,7 @@ function initCamera(camera,cam_) {
 	moveCamera(camera,cam_);
 }
 
-//- Move View ------------------------------------------------------------------
+//- Move View ------------------//----------------------------------------------
 function moveCamera(camera,cam_) {
 	// Move Camera In/Out
 	camera.position.z = -cam_.lld.z;
@@ -2185,7 +2187,8 @@ function moveCamera(camera,cam_) {
 	if (!cam_.flg) {
 		if (!cam_.pan && air_.GrdFlg) { // Air to Ground
 			if (!CmGrdF) {		// if just landed
-				CmLagX = CmAdjX;
+				CmLagX = CmAdjX; // All landings are smooth
+//				if (CmLagX > 0.5) CmLagX = 0.5; // Make extreme landings more jarring
 				CmGrdF = 1;
 			}
 			CmAdjX = CmLagX;	// From Landing Value to 0
@@ -2237,7 +2240,7 @@ function AutoText(){
 
 //- Info Text ------------------------------------------------------------------
 function InfoText() {
-	if (InfoOn == 0) onInfo0();
+	if (!InfoOn) onInfo0();
 	else if (InfoOn == 1) onInfo1();
 	else if (InfoOn == 2) onInfo2();
 }
@@ -2255,7 +2258,7 @@ function onInfo0(){
 	On_Inf8Node.nodeValue = "";
 }
 
-//	Info On
+//	Info On - Page1
 function onInfo1(){
 	On_Inf0Node.nodeValue = "";
 	On_Inf1Node.nodeValue = "CONTROLS";
@@ -2268,7 +2271,7 @@ function onInfo1(){
 	On_Inf8Node.nodeValue = "Spacebar fires guns";
 }
 
-//	Info On
+//	Info On - Page2
 function onInfo2(){
 	On_Inf0Node.nodeValue = "";
 	On_Inf1Node.nodeValue = "VIEW KEYS";
