@@ -1,5 +1,5 @@
 /*
- * AnimFM2.js (vers 24.09.28)
+ * AnimFM2.js (vers 24.11.18)
  * Copyright 2022-2024, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -74,7 +74,7 @@ function loadACanimX(air_, mxr_,anm_) {
 	actun.play();
 	if (mxr_.FlR) mxr_.FlR.setTime(anm_.flppos/anm_.anmfps);
 	// WheelL Hinge
-	if (air_.GrdFlg == 0) anm_.lngpos = 180;
+	if (!air_.GrdFlg) anm_.lngpos = 180;
 	clip = AnimationClip.findByName(mxr_.GLT.animations, "wheel_linkLAction");
 	mxr_.WHL = new AnimationMixer(mxr_.Adr);
 	actun = mxr_.WHL.clipAction(clip);
@@ -488,7 +488,7 @@ function moveACanimA(air_,anm_) {
 	if (anm_.ailrgt < 151) anm_.ailrgt = 151;				// Range = 00 to 60
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 	// Gear
-	if (anm_.lngflg > 0  && air_.GrdFlg == 0) {				// only if key pressed while in air
+	if (anm_.lngflg  && !air_.GrdFlg) {						// only if key pressed while in air
 		anm_.lngflg = 0;									// one read per keypress only
 		if (anm_.lngspd) anm_.lngspd = -anm_.lngspd;		// if already in motion
 		if (anm_.lngpos == 0) anm_.lngspd = 0.4;			// if full down
@@ -583,4 +583,5 @@ export {loadACanimX, loadACanimV, moveACanimX, moveACanimV};
  * 240424:	Changed all air_ variables to 8 character names
  * 240928:	Changed Airspeed Indicatator to IAS and Limit Rudder Travel
  * 241013:	Cleanup
+ * 241118:	Cleanup
 */
