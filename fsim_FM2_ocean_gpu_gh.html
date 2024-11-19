@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Nov 2024
+Version dated 19 Nov 2024
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -108,10 +108,10 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js";
 
 //=	TO DO:
 //-	Program:
+//	* Reset to starting position (r)
 //	* Convert waving flag to GPU shader
 //-	Flight Module:
 //	* Add supercharger/turbocharger effect
-//	* Add lag to tail leaving/returning to ground on land
 
 //= INPUTS =====================//==============================================
 //- AIRPLANE: Start ------------------------------------------------------------
@@ -1697,6 +1697,7 @@ function loadAirExt() {
 			{
 				child.castShadow = false;
 				child.receiveShadow = false;
+				child.renderOrder = 1;
 			}
 		});
 		mxr_.GLT = gltf;

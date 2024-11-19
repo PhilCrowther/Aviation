@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Nov 2024
+Version dated 19 Nov 2024
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -1500,6 +1500,7 @@ function loadACMine() {
 			if (child.name == "propeller") {
 				child.castShadow = false;
 				child.receiveShadow = false;
+				child.renderOrder = 1;
 			}		
 		});
 		ACMine = gltf.scene;
