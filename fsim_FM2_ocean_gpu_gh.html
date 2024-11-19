@@ -1690,8 +1690,7 @@ function loadAirExt() {
 				child.castShadow = true;
 				child.receiveShadow = true;
 			}
-			if (
-				child.name == "propeller" ||
+			if (child.name == "propeller" ||
 				child.name == "canopy1glass" ||
 				child.name == "canopy2glass")
 			{
@@ -1720,15 +1719,15 @@ function loadAirInt() {
 			if (child.isMesh) {
 				child.castShadow = true;
 				child.receiveShadow = true;
-				}
-			if (child.name == "propeller" ||
-					child.name == "glass")
-				{
-					child.castShadow = false;
-					child.receiveShadow = false;
-				}
 			}
-		);
+			if (child.name == "propeller" ||
+				child.name == "glass")
+			{
+				child.castShadow = false;
+				child.receiveShadow = false;
+				child.renderOrder = 1;
+			}
+		});
 		vxr_.GLT = gltf;
 		vxr_.Adr = gltf.scene;
 		vxr_.Adr.rotation.order = "YXZ";
