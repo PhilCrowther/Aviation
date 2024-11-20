@@ -666,37 +666,35 @@ let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out 
 let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
 			  new THREE.Vector3(45,110,0.5)];
 let CamPar = [air_.AirObj,CamPVC];
-let CamFlg = [0,1];				// 1 = cockpit view
+let CmIFlg = [0,1];				// 1 = cockpit view
 let CamLnk = [1,1];				// 1 = Linked to Airplane
 //- Shared Variables
 let cam_ = {
-		sel: CamSel,			// View Selector (0 = External, 1 = Internal)
-		num: CamNum,
-		pan: 0,					// Pan Flag (1 = panning)
+		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
+		CamNum: CamNum,
+		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
 		// Camera
-		lld: new THREE.Vector3().copy(CamLLD[CamSel]),	// cam_.rot Lat, Lon, Dst
-		llz: new THREE.Vector3(), // External LLZ
-		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
-		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
+		CamLLD: new THREE.Vector3().copy(CamLLD[CamSel]),	// cam_.MshRot Lat, Lon, Dst
+		CamAdj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
+		CamMMD: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
-		rot: makMsh(),			// Camera Rotator
-		mmr: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
+		MshRot: makMsh(),			// Camera Rotator
+		CamMMR: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
-		par: CamPar[CamSel],	// Center of Rotation	
-		flg: CamFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
+		Parent: CamPar[CamSel],	// Center of Rotation	
+		CamFlg: CmIFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
 		// Linked Airplane
-		lnk: CamLnk[CamSel],
-		qat: new THREE.Quaternion(),
-		obj: makMsh(),
-		deg: makMsh()
+		CamLnk: CamLnk[CamSel],
+		MshObj: makMsh(),
+		MshDeg: makMsh()
 	}
 //- Adjustments
 	camera.rotation.order = "YXZ";
-	cam_.rot.rotation.order = "YXZ";
-	cam_.obj.rotation.order = "YXZ";
-	cam_.deg.rotation.order = "YXZ";
-	cam_.par.add(cam_.rot);		// Attach Rotator
-	cam_.obj.add(cam_.deg);
+	cam_.MshRot.rotation.order = "YXZ";
+	cam_.MshObj.rotation.order = "YXZ";
+	cam_.MshDeg.rotation.order = "YXZ";
+	cam_.Parent.add(cam_.MshRot);		// Attach Rotator
+	cam_.MshObj.add(cam_.MshDeg);
 //- Adjust Camera x.rotation
 let CmAdjX = 0;					// Airborne Pitch Adjustment
 let CmGrdF = 0;					// Camera Ground Flag (1 = On Ground)
@@ -1654,54 +1652,54 @@ function moveAirObj() {
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
 	// View Keys ---------------------------------------------------------------
-	if (cam_.pan < 1) {			// Only If Not Panning		
+	if (!cam_.OrbFlg) {			// Only If Not Panning		
 		// If No Keys Pressed, Set Default View
 		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
-			if (cam_.flg) cam_.lld.x = 0; // Internal view
-			else cam_.lld.x = -12.5; // External view
-			cam_.lld.y = 0;
+			if (cam_.IntFlg) cam_.CamLLD.x = 0; // Internal view
+			else cam_.CamLLD.x = -12.5; // External view
+			cam_.CamLLD.y = 0;
 		}
 		// Down 45
 		else if (D45flg) {
-			cam_.lld.x = 0;
+			cam_.CamLLD.x = 0;
 			// Look Back
-			if ((L90flg) && (L90flg) && (R90flg)) cam_.lld.y = 180;
+			if ((L90flg) && (L90flg) && (R90flg)) cam_.CamLLD.y = 180;
 			// Look Back Left 90 + 45
-			else if (L90flg) cam_.lld.y = 135;
+			else if (L90flg) cam_.CamLLD.y = 135;
 			// Look Back Right 270 - 45
-			else if (R90flg) cam_.lld.y = 225;
+			else if (R90flg) cam_.CamLLD.y = 225;
 			// Look Down
 			else {
-				cam_.lld.y = 0;
-				cam_.lld.x = 45;
+				cam_.CamLLD.y = 0;
+				cam_.CamLLD.x = 45;
 			}
 		}
 		// Up 45
 		else if (U45flg) {
-			cam_.lld.x = 315;
-			if (!cam_.flg && (air_.GrdFlg)) cam_.lld.x = 0;
+			cam_.CamLLD.x = 315;
+			if (!cam_.IntFlg && (air_.GrdFlg)) cam_.CamLLD.x = 0;
 			// Look Up Left 45
-			if (L45flg) cam_.lld.y = 45;
+			if (L45flg) cam_.CamLLD.y = 45;
 			// Look Up Right 45
-			else if (R45flg) cam_.lld.y = 315;
+			else if (R45flg) cam_.CamLLD.y = 315;
 			// Look Up Left 90
-			else if (L90flg) cam_.lld.y = 90;
+			else if (L90flg) cam_.CamLLD.y = 90;
 			// Look Up Right 90
-			else if (R90flg) cam_.lld.y = 270;
+			else if (R90flg) cam_.CamLLD.y = 270;
 			// Look Up
-			else cam_.lld.y = 0;
+			else cam_.CamLLD.y = 0;
 		}
 		// Level
 		else {
-			cam_.lld.x = 0;
+			cam_.CamLLD.x = 0;
 			// Look Left 45
-			if (L45flg) cam_.lld.y = 45;
+			if (L45flg) cam_.CamLLD.y = 45;
 			// Look Right 45
-			else if (R45flg) cam_.lld.y = 315;
+			else if (R45flg) cam_.CamLLD.y = 315;
 			// Look Left 90
-			else if (L90flg) cam_.lld.y = 90;
+			else if (L90flg) cam_.CamLLD.y = 90;
 			// Look Right 90
-			else if (R90flg) cam_.lld.y = 270;
+			else if (R90flg) cam_.CamLLD.y = 270;
 		}
 	}
 	// Animate -----------------------------------------------------------------	
@@ -1808,19 +1806,19 @@ function stopSounds() {
 
 //- Init Camera ----------------//----------------------------------------------
 function initCamera(camera,cam_) {
-	camera.position.z = -cam_.lld.z;
-	camera.rotation.y = cam_.adj*DegRad;
-	cam_.rot.add(camera);		// Attach to rotator
+	camera.position.z = -cam_.CamLLD.z;
+	camera.rotation.y = cam_.CamAdj*DegRad;
+	cam_.MshRot.add(camera);	// Attach to rotator
 	// Common Changes
-	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
-	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
-	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
-	camera.rotation.y = cam_.adj*DegRad;	// 180 = Looking in
-	cam_.mmr.copy(CamMMR[cam_.sel]);		// Rotation min, max, spd
-	cam_.par = CamPar[cam_.sel]				// Load New Parent
-	cam_.par.add(cam_.rot);					// Attach Rotators
-	cam_.flg = CamFlg[cam_.sel];			// 1 = cockpit
-	cam_.lnk = CamLnk[cam_.sel];			// 1 = Linked to Airplane
+	cam_.CamLLD.copy(CamLLD[cam_.CamSel]);	// Restore Saved Values
+	cam_.CamMMD.copy(CamMMD[cam_.CamSel]);	// In/Out - min, max, spd
+	cam_.CamAdj = CamAdj[cam_.CamSel];		// Load Adjustment
+	camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
+	cam_.CamMMR.copy(CamMMR[cam_.CamSel]);	// Rotation min, max, spd
+	cam_.Parent = CamPar[cam_.CamSel]		// Load New Parent
+	cam_.Parent.add(cam_.MshRot);			// Attach Rotators
+	cam_.IntFlg = CmIFlg[cam_.CamSel];		// 1 = cockpit
+	cam_.CamLnk = CamLnk[cam_.CamSel];		// 1 = Linked to Airplane
 	//
 	moveCamera(camera,cam_);
 
@@ -1829,33 +1827,33 @@ function initCamera(camera,cam_) {
 //- Move Camera ----------------//----------------------------------------------
 function moveCamera(camera,cam_) {
 	// Move Camera In/Out
-	camera.position.z = -cam_.lld.z;
+	camera.position.z = -cam_.CamLLD.z;
 	// PointerLockControls
-	if (cam_.pan) {
-		cam_.lld.x = cam_.lld.x - InpMos.y * cam_.mmr.z; // Camera Position (Lat)
-		cam_.lld.x = MaxVal(cam_.lld.x,cam_.mmr.x);
-		cam_.lld.y = Mod360(cam_.lld.y + InpMos.x * cam_.mmr.z); // Camera Position (Lon)
+	if (cam_.OrbFlg) {
+		cam_.CamLLD.x = cam_.CamLLD.x - InpMos.y * cam_.CamMMR.z; // Camera Position (Lat)
+		cam_.CamLLD.x = MaxVal(cam_.CamLLD.x,cam_.CamMMR.x);
+		cam_.CamLLD.y = Mod360(cam_.CamLLD.y + InpMos.x * cam_.CamMMR.z); // Camera Position (Lon)
 		// Internal View
-		if (cam_.flg) {			// Range: 250 to 360/0 to 110
-			if (cam_.lld.y > 180 && cam_.lld.y < (360-cam_.mmr.y)) cam_.lld.y = (360-cam_.mmr.y);
-			if (cam_.lld.y < 180 && cam_.lld.y > cam_.mmr.y) cam_.lld.y = cam_.mmr.y;
+		if (cam_.IntFlg) {		// Range: 250 to 360/0 to 110
+			if (cam_.CamLLD.y > 180 && cam_.CamLLD.y < (360-cam_.CamMMR.y)) cam_.CamLLD.y = (360-cam_.CamMMR.y);
+			if (cam_.CamLLD.y < 180 && cam_.CamLLD.y > cam_.CamMMR.y) cam_.CamLLD.y = cam_.CamMMR.y;
 		}
 		// External View
 		else {
-			if (air_.GrdFlg && cam_.lld.x > -12.5) cam_.lld.x = -12.5;
+			if (air_.GrdFlg && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
 		}
 		InpMos.x = 0;
 		InpMos.y = 0;
 	}
 	// Adjust Camera Rotators
 	// In internal view, the camera is facing out - view matches rotation
-	if (cam_.flg) {
-		cam_.rot.rotation.x = Mod360(cam_.lld.x)*DegRad;
-		cam_.rot.rotation.y = Mod360(-cam_.lld.y)*DegRad;
+	if (cam_.IntFlg) {
+		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad;
+		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y)*DegRad;
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
-	if (!cam_.flg) {
-		if (!cam_.pan && air_.GrdFlg) { // Air to Ground
+	if (!cam_.IntFlg) {
+		if (!cam_.OrbFlg && air_.GrdFlg) { // Air to Ground
 			if (!CmGrdF) {		// if just landed
 				CmLagX = CmAdjX; // All landings are smooth
 //				if (CmLagX > 0.5) CmLagX = 0.5; // Make extreme landings more jarring
@@ -1863,7 +1861,7 @@ function moveCamera(camera,cam_) {
 			}
 			CmAdjX = CmLagX;	// From Landing Value to 0
 		}	
-		if (!cam_.pan && !air_.GrdFlg) { // Ground to Air
+		if (!cam_.OrbFlg && !air_.GrdFlg) { // Ground to Air
 			if (CmGrdF) {		// if just took off
 				CmLagX = CmMulX*air_.RotDif.x;
 				CmGrdF = 0;
@@ -1875,8 +1873,8 @@ function moveCamera(camera,cam_) {
 			if (Math.abs(CmLagX) < 0.1) CmLagX = 0;
 		}
 		camera.rotation.x = CmAdjX*DegRad; // + = up/airplane down
-		cam_.rot.rotation.x = Mod360(-cam_.lld.x)*DegRad;
-		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;
+		cam_.MshRot.rotation.x = Mod360(-cam_.CamLLD.x)*DegRad;
+		cam_.MshRot.rotation.y = Mod360(180-cam_.CamLLD.y)*DegRad;
 	}
 }
 
@@ -2013,7 +2011,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VR45) R45flg = 1;			// View - 45 deg right
 	if (event.keyCode == K_VL90) L90flg = 1;			// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
-	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
+	if (event.keyCode == K_Look) cam_.OrbFlg = 1;		// Orbit
 	// Guns
 	if (event.keyCode == K_Guns) { // Guns
 		if (!PawsOn) {
@@ -2052,7 +2050,7 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_VR45) R45flg = 0;			// View - 45 deg right
 	if (event.keyCode == K_VL90) L90flg = 0;			// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 0;			// View - 90 deg right
-	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
+	if (event.keyCode == K_Look) cam_.OrbFlg = 0;		// Orbit
 	if (event.keyCode == K_Guns) GunSnd.stop();			// Guns
 }
 
