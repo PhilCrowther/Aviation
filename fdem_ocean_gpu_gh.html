@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2024
+Version dated 20 Dec 2024
 
 A WebGPU demo of the GrdWtr4a, Ocean4t and Sunflare modules.
 -->
 
 <head>
-<title>fdem ocean gpu r170</title>
+<title>fdem ocean gpu r171</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
@@ -39,9 +39,10 @@ A WebGPU demo of the GrdWtr4a, Ocean4t and Sunflare modules.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+			"three": "https://unpkg.com/three@0.171.0/build/three.webgpu.js",
+			"three/webgpu": "https://unpkg.com/three@0.171.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.171.0/build/three.tsl.js",
+			"three/addons/": "https://unpkg.com/three@0.171.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -56,8 +57,8 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Custom Modules
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r171 added computeAsync
 
 //= NOTES
 //- Sections relating to my Camera Rotator are designated MY CAMERA
@@ -131,8 +132,8 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = SunDst*0.75;
 	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
-	sunLight.shadow.mapSize.width = 2048;
-	sunLight.shadow.mapSize.height = 2048;
+	sunLight.shadow.mapSize.width = 256;
+	sunLight.shadow.mapSize.height = 256;
 	sunLight.shadow.camera.left = -ShdBLR;
 	sunLight.shadow.camera.right = ShdBLR;
 	sunLight.shadow.camera.top = ShdBTB;
