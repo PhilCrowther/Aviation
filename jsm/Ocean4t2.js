@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================
 
-// Version 4t (updated 10 Oct 2024)
+// Version 4t2 (updated 20 Dec 2024)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -569,8 +569,8 @@ constructor(renderer,wav_) {
 		u_gsiz: this.Siz
 	}).compute(this.Res**2)	
 	//= Render =================================================================
-	this.renderer.compute(this.initSpectrumComp);
-	this.renderer.compute(this.butterflyComp,[1,8,1]);
+	this.renderer.computeAsync(this.initSpectrumComp);
+	this.renderer.computeAsync(this.butterflyComp,[1,8,1]);
 	// Static Targets
 	wav_.Dsp = this.dispMapTexture;
 	wav_.Nrm = this.normMapTexture;
@@ -580,35 +580,35 @@ constructor(renderer,wav_) {
 update() {
 	// 2. Initial
 	if (this.initPhase) {
-		this.renderer.compute(this.pingPhaseComp);
+		this.renderer.computeAsync(this.pingPhaseComp);
 		this.initPhase = false;
 	}
 	else {
-		this.renderer.compute(this.pingPhase ? this.pingPhaseComp : this.pongPhaseComp);
+		this.renderer.computeAsync(this.pingPhase ? this.pingPhaseComp : this.pongPhaseComp);
 	}
-	this.renderer.compute(this.pingPhase ? this.pongPhaseComp : this.pingPhaseComp);	
+	this.renderer.computeAsync(this.pingPhase ? this.pongPhaseComp : this.pingPhaseComp);	
 	this.pingPhase = !this.pingPhase;
 	// 3. New Spectrum from PingPhase or PongPhase
-	this.renderer.compute(this.pingPhase ? this.pingSpectrumComp : this.pongSpectrumComp);
+	this.renderer.computeAsync(this.pingPhase ? this.pingSpectrumComp : this.pongSpectrumComp);
 	// 4. Displacement Map (iterations = 9*2
 	let iterations = Math.log2(this.Res); // log2(512) = 9
 	let pingPong = false;
 	for (let i = 0; i < iterations; i++) {	// Horizontal Ping/Pong
 		pingPong = !pingPong;
 		this.stepBF.value = i;
-		if (i == 0) this.renderer.compute(this.initDspHrzComp);	// if first rep, then New Spectrum to PingHrz
+		if (i == 0) this.renderer.computeAsync(this.initDspHrzComp);	// if first rep, then New Spectrum to PingHrz
 		else {	// Otherwise, Ping/Pong
-			this.renderer.compute(pingPong ? this.pingDspHrzComp : this.pongDspHrzComp);
+			this.renderer.computeAsync(pingPong ? this.pingDspHrzComp : this.pongDspHrzComp);
 		}
 	}
 	for (let i = 0; i < iterations; i++) {	// Vertical Ping/Pong
 		pingPong = !pingPong;
 		this.stepBF.value = i;
-		this.renderer.compute(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
+		this.renderer.computeAsync(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
 	}
 	// 5. Displacement
-	this.renderer.compute(this.permutationComp);
-	this.renderer.compute(this.compNormalComp);	
+	this.renderer.computeAsync(this.permutationComp);
+	this.renderer.computeAsync(this.compNormalComp);	
 };	// End of Update
 
 };	// End of Module
@@ -626,3 +626,4 @@ export {Ocean};
 // 240904:				: Changed Module format
 // 240410:				: Removed visibility helpers (alpha = 1)
 // 241031: Version4t2	: Replace timerLocal with time (r170)
+// 241220:				: Added computeAsync (also works with r170)
