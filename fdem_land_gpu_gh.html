@@ -2,16 +2,16 @@
 <html>
 
 <!--
-Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2024
+Version dated 8 Jan 2025
 
 This demo program uses included versions of the GrdMap module.
 
 -->
 
 <head>
-<title>fdem land gpu r170</title>
+<title>fdem land gpu r172</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
@@ -40,9 +40,10 @@ This demo program uses included versions of the GrdMap module.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+			"three": "https://unpkg.com/three@0.172.0/build/three.webgpu.js",
+			"three/webgpu": "https://unpkg.com/three@0.172.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.172.0/build/three.tsl.js",
+			"three/addons/": "https://unpkg.com/three@0.172.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -54,10 +55,10 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 		rotateUV,				// r168 added
 		time,					// r170 changed from timerLocal
 } from "three/tsl";
-import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Custom Modules
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3a.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3b.js"; // r171
 
 //= NOTES
 //- Sections relating to my Camera Rotator are designated MY CAMERA
