@@ -2,15 +2,15 @@
 <html>
 
 <!--
-Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Nov 2024
+Version dated 13 Jan 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
 
 <head>
-<title>fsim Pup land gpu r170</title>
+<title>fsim Pup land gpu r172</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
@@ -57,9 +57,10 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+			"three": "https://unpkg.com/three@0.172.0/build/three.webgpu.js",
+			"three/webgpu": "https://unpkg.com/three@0.172.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.172.0/build/three.tsl.js",
+			"three/addons/": "https://unpkg.com/three@0.172.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -70,11 +71,11 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 import * as THREE from "three";
 import {color,float,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
-// Special Modules
+// Custom Modules
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3a.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3b.js"; // r171
 
 //= INPUTS =====================//==============================================
 //- AIRPLANE: Start -----------------------------------------------------------

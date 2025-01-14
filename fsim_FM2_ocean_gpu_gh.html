@@ -2,15 +2,15 @@
 <html>
 
 <!--
-Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Nov 2024
+Version dated 13 Jan 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
 
 <head>
-<title>fsim FM2 ocean gpu r170</title>
+<title>fsim FM2 ocean gpu r172</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
@@ -57,9 +57,10 @@ A demo of a flight simulation of an animated airplane model over animated ocean 
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+			"three": "https://unpkg.com/three@0.172.0/build/three.webgpu.js",
+			"three/webgpu": "https://unpkg.com/three@0.172.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.172.0/build/three.tsl.js",
+			"three/addons/": "https://unpkg.com/three@0.172.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -79,8 +80,8 @@ import Stats from "stats-gl";
 // Special Modules
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4a.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js"; // r171
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r171 computeAsync works with r170
 
 //= GENERAL ===================================================================
 
@@ -109,7 +110,6 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js";
 //=	TO DO:
 //-	Program:
 //	* Reset to starting position (r)
-//	* Raise Homebase above the waves.
 //	* Convert waving flag to GPU shader
 //-	Flight Module:
 //	* Add supercharger/turbocharger effect
@@ -581,7 +581,6 @@ let air_ = {
 	air_.AirPBY.rotation.order = "YXZ";
 	air_.AirObj.add(air_.AirPBY); // PBY includes air_.ACPAdj
 	scene.add(air_.AirObj);	// Airplane
-	let WorldP = new THREE.Vector3();
 
 //- Load Models and Animations -------------------------------------------------
 //	File Path
@@ -2415,15 +2414,11 @@ function onDocumentKeyUp(event) {
 function posnRSet() {
 	// CVE
 	air_.MovFlg = 1; // Flag
-	// Rotation
-	air_.AirRot.copy(E3Zero);	// Heading N
-	air_.AirObj.rotation.copy(E3Zero);
-	air_.AirPBY.rotation.copy(E3Zero);
-	air_.ACPAdj = air_.AirDat.TDrAng;
-	air_.AirPBY.x = air_.ACPAdj;
-	// Speed
-	air_.PwrPct = air_.SpdKPH = air_.SpdMPS = air_.SpdMPF = 0;
-	initAirObj();			// Move aircaft
+	air_.PwrPct = 0;
+	air_.SpdKPH = 0;
+	air_.SpdMPS = 0;
+	air_.SpdMPF = 0;
+	xsh_.ShpLok[0].add(air_.AirObj);
 }
 
 //- Subroutines ----------------//----------------------------------------------
