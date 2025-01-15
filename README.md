@@ -1,6 +1,6 @@
 <img border="2" src="textures/images/fsim_240824.jpg" style="float: center">
 
-<h2>My Aviation Resources Repository (rev. 11 Nov 2024)</h2>
+<h2>My Aviation Resources Repository (rev. 15 Jan 2025)</h2>
 <p>
 This repository contains aviation-related resources designed to simulate 3D flight in three.js.
 </p><p>
@@ -19,11 +19,9 @@ For example:<br>
 https://philcrowther.github.io/Aviation/fmod_FM2_ocean_gpu_gh.html<br>
 https://philcrowther.github.io/Aviation/fsim_FM2_ocean_gpu_gh.html
 
-NOTE:
+NOTES:
 <p>
-When we started this Repo a few months ago, you could use NodeMaterials with WebGL2. This ended with r165. Effective with r166, you could use NodeMatgerials only with WebGPU. And r167 made significant changes to the three.js WebGPU modules. Smaller changes were made by subsequent versions through r172. The modules that should work with r172 WebGPU and WebGL2 are AnimFM2 (animates FM2 airplane) and GrdMap3a (land grids).  The modules that work with WebGPU and NodeMaterials are Flight4a, GrdWtr4a (ocean grids) and Ocean4t2. The modules that should work with r172 WebGL2 and standard materials are: Flight3 (land) FlightW3 (ocean), GrdWtr3 (ocean grids) and Ocean3.
-</p><p>
-The remaining files are archive files which are retained to avoid breaking programs written using older versions of three.js. The AnimFM2, Flight3 (land) FlightW3 (ocean) and GrdMap3 (land grids) modules should work with older versions of WebGL2 and WebGPU. The GrdWtr3 (ocean grids) Ocean3 modules should work with WebGL2 and standard materials. The Ocean3 and GrdWtr3N modules work with NodeMaterials and WebGL2 up to r165. The Ocean4 and GrdWtr4 modules work with NodMaterials and WebGPU up to r166. The GrdWtr4a, Ocean4a and Ocean4t modules work with WebGPU and NodeMaterials for r167 to r169. The GrdWtr4b and Oceant2 modules work with WebGPU and NodeMaterials for r172. The SunFlare modules were for use during the period when WebGPU did have the LensFlare module. We highly encourage you to upgrade to the latest versions of these modules to take advantage of the many improvements, especially to WebGPU and NodeTextures.
+The simulation and demo program use verious modules which are located in the JSM directory: these include the Flight Module, the GrdMap Module (for use with land-based programs), the Ocean Modules (an iFFT wave generator), the GrdWtr Modeul (a version of GrdMap used with the Ocean Module), the AnimFM2 Module (used to animate the FM2 model), and the Smoke Module (used to create smoke in WebGPU programs). To avoid confusion, the JSM directory now contains only the latest versions of these Modules - which work with WebGPU r172.
 </p><p>
 Special thanks to Attila Schroeder for his encouragement and assistance in converting everything to NodeMaterials and WebGPU. And to all the volunteers at three.js who took on the daunting task of modifying three.js to work with NodeMaterials and WebGPU.
 </p>
