@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Jan 2025
+Version dated 14 Jan 2025
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -96,14 +96,14 @@ let PwrDif = 0;					// Power % Input - Value
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 let DLTim2 = DLTime*DLTime;
 //-	Conversions
-var DegRad = Math.PI/180;		// Convert Degrees to Radians
-var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
-let Mtr2Ft = 3.28084;			// Meters to Feet
-let Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
-let Km2Mil = 0.621371;
-let Mil2Km = 1.60934;
+const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+const Mtr2Ft = 3.28084;			// Meters to Feet
+const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
+const Km2Mil = 0.621371;
+const Mil2Km = 1.60934;
 //-	Default Constants (US)
-let	GrvMPS = 9.80665; // (mps)
+const GrvMPS = 9.80665; // (mps)
 //-	Starting Constants per frame
 let GrvDLT = GrvMPS * DLTim2;
 //-	Starting Air Density
@@ -121,7 +121,7 @@ let LodFlg = 0;
 let AltAdj = 0.96;				// Raises objects above map as altitude increases
 
 //= SUN ========================//==============================================
-let SunCol = "white";			// Sun
+const SunCol = "white";			// Sun
 let SunInt = 3;					// Intensity
 //- Rotation and Position (fixed)
 let SunDst = 50;				// Distance (for shadows)
@@ -138,13 +138,13 @@ let ShdDst = 1500;				// Shadow Distance (meters)
 
 //= STANDARD SETUP =============//==============================================
 //- Display
-let scene = new THREE.Scene();
+const scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
 //- Light
-let ambLight = new THREE.AmbientLight(SunCol, 0.5);
+const ambLight = new THREE.AmbientLight(SunCol, 0.5);
 	scene.add(ambLight);
 //- SunLight
-let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+const sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = SunDst*0.75;
@@ -159,9 +159,9 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
-let camera = new THREE.PerspectiveCamera(45,CamAsp,0.1,100000);
+const camera = new THREE.PerspectiveCamera(45,CamAsp,0.1,100000);
 //- Renderer
-let renderer = new THREE.WebGPURenderer({antialias:true});
+const renderer = new THREE.WebGPURenderer({antialias:true});
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -209,11 +209,11 @@ let RESOURCES_LOADED = false;
 		RESOURCES_LOADED = true;
 		initAll();
 	};
-let txtrLoader = new THREE.TextureLoader(loadingManager);
-let imagLoader = new THREE.ImageLoader(loadingManager);
-let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
-let gltfLoader = new GLTFLoader(loadingManager);
-let audioLoader = new THREE.AudioLoader(loadingManager);
+const txtrLoader = new THREE.TextureLoader(loadingManager);
+const imagLoader = new THREE.ImageLoader(loadingManager);
+const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+const gltfLoader = new GLTFLoader(loadingManager);
+const audioLoader = new THREE.AudioLoader(loadingManager);
 //- Wait Screen
 let loadingScreen = {
 	scene: new THREE.Scene(),
@@ -223,21 +223,21 @@ let loadingScreen = {
 let boxrot = 0;					//keep = 0
 
 //= SKYBOX =====================//==============================================
-let FogCol = 0xbab4a6;			// Sky (for Fog only)
+const FogCol = 0xbab4a6;		// Sky (for Fog only)
 //- Texture
-let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+const SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 //-	LensFlare
-let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
+const LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
+const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 let envMap = 0;
 
 //= GRDWTR TEXTURES ============//==============================================
-let WtrCol = 0x1060ff;			// Water (Nodes)
+const WtrCol = 0x1060ff;		// Water (Nodes)
 //- Ocean
-let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
-let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
-let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
+const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
+const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
@@ -253,9 +253,9 @@ let WavMax = 5;					// Maximum wave height (set height of outer waves)
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-let GrdSiz = 3200;				// Smallest Grid Square (3200 meters = 2 miles)
-let GrdRes = 512;
-let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
+const GrdSiz = 3200;			// Smallest Grid Square (3200 meters = 2 miles)
+const GrdRes = 512;
+const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 let grids = 0;
 let grd_ = {
 		MSP: new THREE.Vector3().copy(BegPos), // MSX, MPY, MSZ (meters) (from Flight)
@@ -374,12 +374,12 @@ let InpPwr = 0;					// Power
 
 //- Load Models and Animations -------------------------------------------------
 //-	File Path
-let ACPath = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
+const ACPath = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
 //-	Animation Mixers
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
 //-	External Model and Mixers
-let ACFile = "fm2_flyt_caf_npa.glb"; // Name of aircraft model file (rotated blender file)
+const ACFile = "fm2_flyt_caf_npa.glb"; // Name of aircraft model file (rotated blender file)
 let mxr_ = {
 		// File Name
 		Src: ACPath + ACFile,
@@ -395,7 +395,7 @@ let mxr_ = {
 		Cnp:0, THk:0,
 	}
 //- Internal Model and Mixers
-let VCFile = "fm2_flyt_vcp_npa.glb"; // Name of aircraft model file (rotated blender file)
+const VCFile = "fm2_flyt_vcp_npa.glb"; // Name of aircraft model file (rotated blender file)
 let vxr_ = {
 		// File Name
 		Src: ACPath + VCFile,
@@ -460,9 +460,9 @@ let anm_ = {
 
 
 //=	SOUNDS =====================//==============================================
-let acsnd1 = "fm2.wav";			// File (my engine)
+const acsnd1 = "fm2.wav";			// File (my engine)
 let acvol1 = 0.1;				// Volume
-let acsnd2 = "fm2_prop.wav";	// File (my prop)
+const acsnd2 = "fm2_prop.wav";	// File (my prop)
 let acvol2 = 0.5;				// Volume
 //
 let	listener = new THREE.AudioListener();
@@ -479,28 +479,28 @@ let EngMsh = new makMsh();		// Aircraft Engine
 	air_.AirObj.add(EngMsh);
 
 //= DEFAULT KEY BINDINGS =======//==============================================
-let K_BnkL = 37;				// Bank Left (left arrow)
-let K_BnkR = 39;				// Bank Right (right arrow)
-let K_PitU = 40;				// Pitch up (down arrow)
-let K_PitD = 38;				// Pitch down (up arrow)
-let K_YawL = 90;				// Yaw Left (z)
-let K_YawR = 88;				// Yaw Right (x)
-let K_Flap = 70;				// Flaps (f)
-let K_Gear = 71;				// Landing gear (g)
-let K_Hook = 72;				// Tailhook (h)
-let K_Canp = 67;				// Canopy (c)
-let K_View = 86;				// VC on/off (v)
-let K_Soun = 83;				// Toggle Sound (s)
-let K_Paws = 80;				// Pause (p)
+const K_BnkL = 37;				// Bank Left (left arrow)
+const K_BnkR = 39;				// Bank Right (right arrow)
+const K_PitU = 40;				// Pitch up (down arrow)
+const K_PitD = 38;				// Pitch down (up arrow)
+const K_YawL = 90;				// Yaw Left (z)
+const K_YawR = 88;				// Yaw Right (x)
+const K_Flap = 70;				// Flaps (f)
+const K_Gear = 71;				// Landing gear (g)
+const K_Hook = 72;				// Tailhook (h)
+const K_Canp = 67;				// Canopy (c)
+const K_View = 86;				// VC on/off (v)
+const K_Soun = 83;				// Toggle Sound (s)
+const K_Paws = 80;				// Pause (p)
 
 //= MY CAMERA ==================//==============================================
 //let CamSel = 0;	// Starting Camera View (0 = attached to grid, 1 = attached to airplane)
 //- Create Default Center Mesh
-let	CamCtr = makMsh();
+const CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
 	scene.add(CamCtr);
 //- Create Cockpit Attach Point
-let	CamPVC = makMsh();
+const CamPVC = makMsh();
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
 	air_.AirObj.add(CamPVC); // Attach CamPVC to airplane

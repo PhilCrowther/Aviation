@@ -83,12 +83,12 @@ let PitSpd = 1;					// Pitch Speed
 
 //= CONSTANTS ==================//==============================================
 //-	Conversions
-let DegRad = Math.PI/180;		// Convert Degrees to Radians
-let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
-let Mtr2Ft = 3.28084;			// Meters to Feet
-let Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
-let Km2Mil = 0.621371;
-let Mil2Km = 1.60934;
+const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+const Mtr2Ft = 3.28084;			// Meters to Feet
+const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
+const Km2Mil = 0.621371;
+const Mil2Km = 1.60934;
 //- Convert
 if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
@@ -121,13 +121,13 @@ let ShdDst = 1500;				// Shadow Distance (meters)
 
 //= BASIC VALUES ===============================================================
 //- Display
-let	scene = new THREE.Scene();
+const scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
 //- Lights
-let ambLight = new THREE.AmbientLight(SunCol,1);
+const ambLight = new THREE.AmbientLight(SunCol,1);
 	scene.add(ambLight);
 //- SunLight
-let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+const sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = SunDst*0.75;
@@ -142,10 +142,10 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
-let	camera = new THREE.PerspectiveCamera(55,CamAsp,1,100000);
+const camera = new THREE.PerspectiveCamera(55,CamAsp,1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
-let renderer = new THREE.WebGPURenderer({antialias: true});	// r168
+const renderer = new THREE.WebGPURenderer({antialias: true});	// r168
     renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -156,7 +156,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// r168
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
 //- Clock
-let clock = new THREE.Clock();
+const clock = new THREE.Clock();
 let oldTim, nowTim, difTim = 0;
 //- Inputs
 	// Key Input
@@ -193,17 +193,17 @@ let RESOURCES_LOADED = false;
 		RESOURCES_LOADED = true;
 		initAll();
 	};
-let txtrLoader = new THREE.TextureLoader(loadingManager);
-let imagLoader = new THREE.ImageLoader(loadingManager);
-let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+const txtrLoader = new THREE.TextureLoader(loadingManager);
+const imagLoader = new THREE.ImageLoader(loadingManager);
+const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
 //= SKYBOX =====================//==============================================
-let FogCol = 0xbab4a6;			// Sky (for Fog only)
+const FogCol = 0xbab4a6;			// Sky (for Fog only)
 //- Texture
-let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+const SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 //-	LensFlare
-let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
+const LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
+const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 
 //= GROUND TEXTURES ============//==============================================
@@ -225,12 +225,12 @@ let red = [0,0];
 let grn = [0,0];
 let blu = [0,0];
 //- Colors
-let GrdDrt = "#1c160e";			// Color of underlying dirt (affects brightness)
-let drtclr = [0x8e6d3d,0x47361e]; // Dirt
-let pstclr = [0x00b000,0x005000]; // Pasture
-let cvrclr = [0x75b24c,0x466b2d]; // Green
-let whtclr = [0xfbf4e5,0xeabb63]; // Wheat
-let bnsclr = [0xacd193,0x5d8e3d]; // Beans
+const GrdDrt = "#1c160e";		// Color of underlying dirt (affects brightness)
+const drtclr = [0x8e6d3d,0x47361e]; // Dirt
+const pstclr = [0x00b000,0x005000]; // Pasture
+const cvrclr = [0x75b24c,0x466b2d]; // Green
+const whtclr = [0xfbf4e5,0xeabb63]; // Wheat
+const bnsclr = [0xacd193,0x5d8e3d]; // Beans
 
 //	Tones of Dirt Brown Color | #836539 Monochromatic Color
 //	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
@@ -263,23 +263,23 @@ let G0MPtr = [];
 // 4 = Wheat
 // 5 = Green Horizontal
 // Per Pattern: 1X 0-2 2X 3-5
-let G0Id00 = [4,3,5,4,3,0,5,2,1];
-let G0Id01 = [3,0,4,1,2,4,5,3,5];
-let G0Id02 = [5,1,3,4,5,0,2,4,3];
-let G0Id03 = [2,4,1,3,5,3,5,0,4];
-let G0Id04 = [5,1,5,0,3,4,2,4,3];
-let G0Id05 = [3,0,5,3,4,5,1,2,4];
-let G0Id06 = [2,0,3,5,3,1,4,4,5];
-let G0Id07 = [1,5,4,3,5,0,2,4,3];
-let G0Id08 = [2,3,0,5,3,1,4,5,4];
-let G0Id09 = [0,2,5,3,4,3,5,1,4];	// 1 = airport
-let G0Id10 = [4,3,5,4,5,2,1,3,0];
-let G0Id11 = [4,5,3,1,0,4,3,5,2];
-let G0Id12 = [3,1,2,4,5,3,5,0,4];
-let G0Id13 = [0,5,3,1,4,2,4,3,5];
-let G0Id14 = [1,4,2,5,3,0,4,5,3];
-let G0Id15 = [4,1,5,0,3,4,3,5,2];
-let G0Indx = [
+const G0Id00 = [4,3,5,4,3,0,5,2,1];
+const G0Id01 = [3,0,4,1,2,4,5,3,5];
+const G0Id02 = [5,1,3,4,5,0,2,4,3];
+const G0Id03 = [2,4,1,3,5,3,5,0,4];
+const G0Id04 = [5,1,5,0,3,4,2,4,3];
+const G0Id05 = [3,0,5,3,4,5,1,2,4];
+const G0Id06 = [2,0,3,5,3,1,4,4,5];
+const G0Id07 = [1,5,4,3,5,0,2,4,3];
+const G0Id08 = [2,3,0,5,3,1,4,5,4];
+const G0Id09 = [0,2,5,3,4,3,5,1,4];	// 1 = airport
+const G0Id10 = [4,3,5,4,5,2,1,3,0];
+const G0Id11 = [4,5,3,1,0,4,3,5,2];
+const G0Id12 = [3,1,2,4,5,3,5,0,4];
+const G0Id13 = [0,5,3,1,4,2,4,3,5];
+const G0Id14 = [1,4,2,5,3,0,4,5,3];
+const G0Id15 = [4,1,5,0,3,4,3,5,2];
+const G0Indx = [
 		G0Id00,G0Id01,G0Id02,G0Id03,G0Id04,G0Id05,G0Id06,G0Id07,G0Id08,G0Id09,
 		G0Id10,G0Id11,G0Id12,G0Id13,G0Id14,G0Id15
 	];
@@ -310,7 +310,7 @@ let G1MPtr = [];
 // Index to G1 Textures by Pattern
 // Used to position Grid 4 squares
 // And to Create Grid 5 3X3 Textures
-let G1Indx = [
+const G1Indx = [
 		 0, 1, 2, 3, 4, 5, 6, 7, 8, //value of 9-15 in first row causes white space 
 		10, 2, 4,15,10,12,10, 9, 5,
 		 3,12,11, 8,13, 3, 1, 0,14,
@@ -343,7 +343,7 @@ let G2MPtr = [0,0,0,0,0,0,0,0,0];
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-let GrdSiz = 804.67;			// Size of Smallest Grid Square (1/4 section = 1/2 mile)
+const GrdSiz = 804.67;			// Size of Smallest Grid Square (1/4 section = 1/2 mile)
 let grids = 0;
 let grd_ = {
 		SPS: new THREE.Vector3 (), // MSX, MPY, MSZ (meters) (from Flight)
@@ -390,17 +390,17 @@ let Rod2 = {
 	}
 
 //= Materials
-let rodclr = [0xd0b894,0x8e6d3d];		// Colors
+const rodclr = [0xd0b894,0x8e6d3d];		// Colors
 //	Tones of Dirt Brown Color | #836539 Monochromatic Color
 //	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
-let r0Size = 32;
-let r0Area = r0Size*r0Size;
+const r0Size = 32;
+const r0Area = r0Size*r0Size;
 let r0Data = new Uint8Array(4*r0Area);
 
 //= TREES ======================//==============================================
-let TreTot = 64;
-let t0Size = 128;
-let t0Area = t0Size*t0Size;
+const TreTot = 64;
+const t0Size = 128;
+const t0Area = t0Size*t0Size;
 let t0Data = new Uint8Array(4*t0Area);
 let Trees = [];
 	Trees[TreTot-1] = 0;
@@ -435,7 +435,7 @@ let air_ = {
 let ACHSpd = 0;
 
 //= JET EXHAUST ================//==============================================
-let SmkMat = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
+const SmkMat = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
 let SmkMap = 0;
 let lifeRange = range(0.1,1);
 let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
@@ -450,7 +450,7 @@ let life = lifeTime.div(lifeRange);
 //= MY CAMERA ==================//==============================================
 //let CamSel = 0;	// Starting Camera View (0 = attached to grid, 1 = attached to airplane)
 //- Create Default Center Mesh
-let	CamCtr = makMsh();
+const CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
 	scene.add(CamCtr);
 //- Camera Inputs (for 2 External Cameras, second linked to Airplane)
@@ -496,16 +496,16 @@ let onPointerDownX, onPointerDownY;
 let onPointerDownLon, onPointerDownLat;
 
 //= KEY BINDINGS ===============//==============================================
-let K_SpdU = 45;				// Speed Up (insert)
-let K_PitD = 38;				// Pitch down (up arrow)
-let K_SpdD = 33;				// Speed Up (page up)
-let	K_BnkL = 37;				// Bank Left (left arrow)
-let K_Cntr = 35;				// Center (end)
-let	K_BnkR = 39;				// Bank Right (right arrow)
-let K_YawL = 46;				// Yaw Left (delete)
-let K_PitU = 40;				// Pitch up (down arrow)
-let K_YawR = 34;				// Yaw Right (page down)
-let K_Paws = 80;				// Pause (p)
+const K_SpdU = 45;				// Speed Up (insert)
+const K_PitD = 38;				// Pitch down (up arrow)
+const K_SpdD = 33;				// Speed Up (page up)
+const K_BnkL = 37;				// Bank Left (left arrow)
+const K_Cntr = 35;				// Center (end)
+const K_BnkR = 39;				// Bank Right (right arrow)
+const K_YawL = 46;				// Yaw Left (delete)
+const K_PitU = 40;				// Pitch up (down arrow)
+const K_YawR = 34;				// Yaw Right (page down)
+const K_Paws = 80;				// Pause (p)
 
 //= HTML OVERLAY TEXT ==========================================================
 let Air_SpdElement = document.getElementById("Air_Spd");	// Airspeed

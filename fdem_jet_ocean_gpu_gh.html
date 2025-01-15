@@ -83,12 +83,12 @@ let PitSpd = 1;					// Pitch Speed
 
 //= CONSTANTS ==================//==============================================
 //-	Conversions
-let DegRad = Math.PI/180;		// Convert Degrees to Radians
-let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
-let Mtr2Ft = 3.28084;			// Meters to Feet
-let Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
-let Km2Mil = 0.621371;
-let Mil2Km = 1.60934;
+const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+const Mtr2Ft = 3.28084;			// Meters to Feet
+const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
+const Km2Mil = 0.621371;
+const Mil2Km = 1.60934;
 //- Convert
 if (USorSI = "US") {
 	BegSpd = BegSpd*Mil2Km;
@@ -121,13 +121,13 @@ let ShdDst = 1500;				// Shadow Distance (meters)
 
 //= BASIC VALUES ===============//==============================================
 //- Display
-let	scene = new THREE.Scene();
+const scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
 //- Lights
-let ambLight = new THREE.AmbientLight(SunCol, 0.5);
+const ambLight = new THREE.AmbientLight(SunCol, 0.5);
 	scene.add(ambLight);
 //- SunLight
-let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+const sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = SunDst*0.75;
@@ -142,10 +142,10 @@ let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
-let	camera = new THREE.PerspectiveCamera(55,CamAsp,1,100000);
+const camera = new THREE.PerspectiveCamera(55,CamAsp,1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
-let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
     renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -190,25 +190,25 @@ let RESOURCES_LOADED = false;
 		RESOURCES_LOADED = true;
 		initAll();
 	};
-let txtrLoader = new THREE.TextureLoader(loadingManager);
-let imagLoader = new THREE.ImageLoader(loadingManager);
-let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+const txtrLoader = new THREE.TextureLoader(loadingManager);
+const imagLoader = new THREE.ImageLoader(loadingManager);
+const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
 //= SKYBOX =====================//==============================================
-let FogCol = 0xbab4a6;			// Sky (for Fog only)
+const FogCol = 0xbab4a6;			// Sky (for Fog only)
 //- Texture
-let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+const SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 //-	LensFlare
-let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
+const LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
+const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 
 //= GRDWTR TEXTURES ============//==============================================
-let WtrCol = 0x1060ff;			// Water (Nodes)
+const WtrCol = 0x1060ff;			// Water (Nodes)
 //- Textures
-let DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
-let RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
-let	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
+const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
+const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
@@ -224,9 +224,9 @@ let WavMax = 5;					// Maximum wave height (set height of outer waves)
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-let GrdSiz = 3200;				// Smallest Grid Square (3200 meters = 2 miles)
-let GrdRes = 512;
-let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
+const GrdSiz = 3200;				// Smallest Grid Square (3200 meters = 2 miles)
+const GrdRes = 512;
+const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 let grids = 0;
 let grd_ = {
 		MSP: new THREE.Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
@@ -299,7 +299,7 @@ let air_ = {
 let ACHSpd = 0;
 
 //= JET EXHAUST ================//==============================================
-let SmkMat = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
+const SmkMat = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
 let SmkMap = 0;
 let lifeRange = range(0.1,1);
 let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
@@ -314,7 +314,7 @@ let life = lifeTime.div(lifeRange);
 //= MY CAMERA ==================//==============================================
 //let CamSel = 0;	// Starting Camera View (0 = attached to grid, 1 = attached to airplane)
 //- Create Default Center Mesh
-let	CamCtr = makMsh();
+const CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
 	scene.add(CamCtr);
 //- Camera Inputs (for 2 External Cameras, second linked to Airplane)
@@ -359,17 +359,16 @@ let onPointerDownX, onPointerDownY;
 let onPointerDownLon, onPointerDownLat;
 
 //= KEY BINDINGS ===============//==============================================
-let K_SpdU = 45;				// Speed Up (insert)
-let K_PitD = 38;				// Pitch down (up arrow)
-let K_SpdD = 33;				// Speed Up (page up)
-let	K_BnkL = 37;				// Bank Left (left arrow)
-let K_Cntr = 35;				// Center (end)
-let	K_BnkR = 39;				// Bank Right (right arrow)
-let K_YawL = 46;				// Yaw Left (delete)
-let K_PitU = 40;				// Pitch up (down arrow)
-let K_YawR = 34;				// Yaw Right (page down)
-let K_Paws = 80;				// Pause (p)
-
+const K_SpdU = 45;				// Speed Up (insert)
+const K_PitD = 38;				// Pitch down (up arrow)
+const K_SpdD = 33;				// Speed Up (page up)
+const K_BnkL = 37;				// Bank Left (left arrow)
+const K_Cntr = 35;				// Center (end)
+const K_BnkR = 39;				// Bank Right (right arrow)
+const K_YawL = 46;				// Yaw Left (delete)
+const K_PitU = 40;				// Pitch up (down arrow)
+const K_YawR = 34;				// Yaw Right (page down)
+const K_Paws = 80;				// Pause (p)
 
 //= HTML OVERLAY TEXT ==========================================================
 let Air_SpdElement = document.getElementById("Air_Spd"); // Airspeed
