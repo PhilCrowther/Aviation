@@ -4,7 +4,7 @@
 <p>
 This repository contains aviation-related resources designed to simulate 3D flight in three.js.
 </p><p>
-This includes a flight simulation module (FlightW3), an ocean simulation module (Ocean3 through Ocean 4t2), and a fully animated WWII fighter airplane (FM2).
+This includes a flight simulation module (Flight), an iFFT ocean wave generator module (Ocean), and a fully animated WWII fighter airplane (FM2).
 </p><p>
 The repository includes several sample programs that show how to use these resources.
 </p><ul>
