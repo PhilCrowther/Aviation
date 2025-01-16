@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 14 Jan 2025
+Version dated 15 Jan 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -40,6 +40,7 @@ A demo of a flight simulation of an animated airplane model over animated ocean 
 		<div><span id="On_Inf6"></span></div>
 		<div><span id="On_Inf7"></span></div>
 		<div><span id="On_Inf8"></span></div>
+		<div><span id="On_Inf9"></span></div>
 	</div>
 </div>
 
@@ -276,7 +277,7 @@ const WtrCol = 0x1060ff;		// Water (Nodes)
 //- Textures
 const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
 const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
-const	NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
+const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
@@ -378,21 +379,6 @@ let isl_ = {
 		MapPos: [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)],
 		ObjRef: [new makMsh(),new makMsh()],
 	};
-//- Volcano Smoke --------------------------------------------------------------
-let vlk_ = {
-		ObjNum: 1,
-		ObjSrc: [0],
-		ObjTxt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png"],
-		ObjAdr: [0],
-		ObjSiz: [4000],			// Scale
-		RndOrd: [1],			// renderOrder
-		ObjRot: [new THREE.Euler()], // Rotation (not used)
-		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
-		ObjRef: [isl_.ObjRef[0]],
-		// Moving	
-		SpdMPS: [0],			// 0 = not moving
-		MapSpd: [new THREE.Vector3()]
-	};
 //- General Static Objects: Linked ---------------------------------------------
 //- 0 = Hangar
 let lnk_ = {
@@ -422,7 +408,6 @@ let fxd_ = {
 //= MOVING OBJECTS =============//==============================================
 //- Airplane -------------------------------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-//let XPFile = "A6M.glb";		// Name of airplane model file (rotated blender file) NEEDS ANIMATIONS
 const XPFile = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
 let xac_ = {
 		ObjNum: 1,				// Number of airplanes
@@ -434,10 +419,10 @@ let xac_ = {
 		ObjRot: [new THREE.Euler(0,0,30)], // Rotation
 		MapPos: [new THREE.Vector3(180,100,5300)], // meters
 		ObjRef: [0],			// 0 = not linked
-		// Moving
+		// Speed
 		SpdMPS: [91.5],			// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
 		MapSpd: [new THREE.Vector3()], // not used
-		// Animations
+		// Basic Animations
 		ObjDst: [0],			// Object distance (meters) used to activate effects		
 		MixSpn: [0],			// Animation Mixer - Prop
 		MixPit: [0],			// Animation Mixer - Pitch
@@ -458,7 +443,7 @@ let xsh_ = {
 		ObjRot: [new THREE.Euler()], // Object Rotation
 		MapPos: [new THREE.Vector3(-4133,0.1,146)], // Object Map Position (meters) [used by Mesh]
 		ObjRef: [new makMsh()],
-		// Moving
+		// Speed
 		SpdMPS: [9],			// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
 		MapSpd: [new THREE.Vector3()], // Object Map Speed (mtr/sec) used by airplane if landed
 		// Animations
@@ -468,9 +453,30 @@ let xsh_ = {
 		ShpPit: [0],			// Ship Pitch
 		ShpLok: [new makMsh()]	// Deck Lock
 	};
-//. Wake .......................................................................
+
+//= ANIMATED OBJECTS ===========//==============================================
+
+//- Smoke ----------------------//----------------------------------------------
+//	Can use this for Volcano or to Show Battle Damage
+let vlk_ = {
+		ObjNum: 1,				// Number of Smokes
+		ObjSrc: [0],
+		ObjTxt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png"],
+		ObjAdr: [0],
+		ObjSiz: [4000],			// Scale
+		RndOrd: [1],			// renderOrder
+		ObjRot: [new THREE.Euler()], // Rotation (not used)
+		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
+		ObjRef: [isl_.ObjRef[0]], // Parent Object
+		// Moving	
+		SpdMPS: [0],			// 0 = not moving
+		MapSpd: [new THREE.Vector3()]
+	};
+	
+//- Wakes ----------------------//----------------------------------------------
+//	Used for Ships
 let wak_ = {
-		ObjNum: 1,
+		ObjNum: 1,				// Number of Wakes
 		ObjSrc: [0],
 		ObjTxt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png"],
 		ObjAdr: [0],
@@ -478,11 +484,13 @@ let wak_ = {
 		RndOrd: [1],			// renderOrder
 		ObjRot: [new THREE.Euler()], // Rotation (not used)
 		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
-		ObjRef: [xsh_.ObjRef[0]],
+		ObjRef: [xsh_.ObjRef[0]] // Parent Object
 	};
-//. Flag .......................................................................
+
+//- Flags ----------------------//----------------------------------------------
+//	Can attach to Ships or Flagpoles
 let	flg_ = {
-		ObjNum:1,
+		ObjNum:	1,				// Number of Flags
 		// Material and Geometry
 		ObjSrc: [0],			// Geometry Address (can use this for all flags)
 		ObjTxt: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA_48.png"],
@@ -491,11 +499,10 @@ let	flg_ = {
 		RndOrd: [0],			// renderOrder (not used)
 		ObjRot: [new THREE.Euler(0,97.5*DegRad,0)], // Adjust to make the flag visible at start
 		MapPos: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
-		ObjRef: [xsh_.ObjRef[0]],	
+		ObjRef: [xsh_.ObjRef[0]], // Parent Object
 		// Animation
-		ObjDst: [152.4],		// Visibility Distance (meters)
-		ObjTim: [0],
-		Adj: [0],
+		ObjDst: [152.4],		// Visibility Distance from Parent (meters)
+		ObjAdj: [0]
 	};
 
 //= MINIMUM ALTITUDE ===========//==============================================
@@ -504,7 +511,6 @@ let alt_ = {
 		Ref: [isl_.ObjRef[0],xsh_.ObjRef[0]],
 		Var: [0,xsh_],
 		Typ: [0,1], 			// 0 = stationary, 1 = moving
-//		Alt: [7.59,13.1],
 		Alt: [7.57,13.1],
 		Lft: [-635,-13.2],
 		Rgt: [-585,13.2],
@@ -925,9 +931,13 @@ let On_Inf7Node = document.createTextNode("");
 let On_Inf8Element = document.getElementById("On_Inf8");
 let On_Inf8Node = document.createTextNode("");
 	On_Inf8Element.appendChild(On_Inf8Node);
+let On_Inf9Element = document.getElementById("On_Inf9");
+let On_Inf9Node = document.createTextNode("");
+	On_Inf9Element.appendChild(On_Inf9Node);
 //
-let Air_Pwr, Air_Spd, Air_Hdg, Air_Alt, Air_CfL;
-let On_Paws, Air_AtP, On_Inf0, On_Inf1, On_Inf2, On_Inf3, On_Inf4, On_Inf5, On_Inf6, On_Inf7, On_Inf8;
+let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL;
+let On_Paws,Air_AtP;
+let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
 //= MAIN PROGRAMS ==============//==============================================
 
@@ -1005,7 +1015,6 @@ function rendAll() {
 		// Update time
 		nowTim = clock.getElapsedTime();
 		difTim = nowTim-oldTim;
-		flg_.ObjTim[0] = nowTim;
 		oldTim = nowTim;
 		moveCamera(camera,cam_);
 		// Move Objects
@@ -1159,6 +1168,7 @@ function loadObject() {
 	AltDif = air_.MapPos.y*AltAdj;
 	loadStatic();
 	loadMoving();
+	loadAnmFlg();
 }
 
 function initObject() {
@@ -1171,6 +1181,7 @@ function moveObject() {
 	AltDif = air_.MapPos.y*AltAdj;
 	moveStatic();
 	moveMoving();
+	moveAnmObj();
 }
 
 //- Static Objects -------------------------------------------------------------
@@ -1201,12 +1212,21 @@ function loadMoving() {
 function initMoving() {
 	initMovPln();
 	initMovShp();
-
 }
 
 function moveMoving() {
 	moveMovPln();
 	moveMovShp();
+}
+
+//- Animated Attachments -------------------------------------------------------
+
+function loadAnmObj() {
+	loadAnmFlg();
+}
+
+function moveAnmObj() {
+	moveAnmFlg();
 }
 
 //= ISLANDS ====================//==============================================
@@ -1448,7 +1468,6 @@ function loadMovShp() {
 	});
 	// Attached Objects
 	loadShpWak();				// Init Ship Wake
-	loadShpFlg();				// Load and Init Ship Flag
 }
 
 //	Init Ship
@@ -1495,9 +1514,8 @@ function moveMovShp() {
 	// Compute Distance (for Viz Tests)
 	let x = xsh_.ObjRef[0].position.x;
 	let z = xsh_.ObjRef[0].position.z;
-	xsh_.ObjDst[0] = Math.sqrt(x*x+z*z);		// Compute distance
+	xsh_.ObjDst[0] = Math.sqrt(x*x+z*z); // Compute distance
 	// Attached Objects
-	moveShpFlg();				// Move Ship Flag
 	moveShpWak();
 }
 
@@ -1546,60 +1564,73 @@ function moveShpWak() {
 	wak_.ObjAdr[0].rotation.x = Math.PI/2-wak_.ObjRef[0].rotation.x;
 }
 
-//= SHIP FLAG ==================//==============================================
+//= ANIMATED FLAGS =====================//======================================
 //	Adapted from example at https://codepen.io/okada-web/pen/OJydGzy. Thanks!
 
-//	Load and Initialize Flag
-function loadShpFlg() {
-	txtrLoader.load(flg_.ObjTxt[0], function(FlgTxt) {
-		let flgSzX = 30;		// Size X
-		let flgSzY = 16;		// Size Y
-		let flgSgX = 30;		// Segments X
-		let flgSgY = 16;		// Segments Y
-		FlgTxt.format = THREE.RGBAFormat;
-		FlgTxt.magFilter = THREE.LinearFilter;
-		FlgTxt.minFilter = THREE.LinearMipMapLinearFilter;
-		FlgTxt.generateMipmaps = true;	
-		FlgTxt.needsUpdate = true;		
-		let flgMat = new THREE.MeshLambertNodeMaterial({colorNode: texture(FlgTxt), side: THREE.DoubleSide});
-		flg_.ObjSrc[0] = new THREE.PlaneGeometry(flgSzX,flgSzY,flgSgX,flgSgY);
-		flg_.ObjSrc[0].rotateY(180*DegRad);
-		flg_.ObjAdr[0] = new THREE.Mesh(flg_.ObjSrc[0],flgMat);
-		flg_.ObjAdr[0].rotation.copy(flg_.ObjRot[0]);
-		flg_.ObjAdr[0].position.copy(flg_.MapPos[0]);
-		flg_.ObjAdr[0].scale.setScalar(flg_.ObjSiz[0]); // Height = 2 meters
-		flg_.ObjRef[0].add(flg_.ObjAdr[0]);
-		flg_.ObjAdr[0].visible = true;
-	});
-}
-
-//	Move Flag Mesh
-function moveShpFlg() {
+//-	Load and Initialize Flags --//----------------------------------------------
+function loadAnmFlg() {
+	let flgSzX = 30;			// Size X
+	let flgSzY = 16;			// Size Y
 	let flgSgX = 30;			// Segments X
 	let flgSgY = 16;			// Segments Y
-	if (xsh_.ObjDst[0]<flg_.ObjDst[0]) { // Only if within range
-		flgSgX = flgSgX+1;
-		flgSgY = flgSgY+1;		
-		let h = 0.5; 			// Horizontal
-		let v = 0.3; 			// Vertical
-		let w = 0.075; 			// Swing
-		let s = 400; 			// Speed
-		let idx,val;
-		let tim = flg_.ObjTim[0]*s/50;
-		for (let y = 0; y < flgSgY; y++) {
-			for (let x = 0; x < flgSgX; x++) {
-            	idx = x + y*(flgSgX);
-				val = Math.sin(h*x+v*y-tim)*w*x/4;
-				flg_.ObjSrc[0].attributes.position.setZ(idx,val);
-            }
-        }
-		flg_.ObjSrc[0].attributes.position.needsUpdate = true;
-		flg_.ObjSrc[0].computeVertexNormals();
+	let FlgGeo = new THREE.PlaneGeometry(flgSzX,flgSzY,flgSgX,flgSgY);
+	// For Each Flag
+	for (let n = 0; n < flg_.ObjNum; n++) {
+		txtrLoader.load(flg_.ObjTxt[n], function(FlgTxt) {
+			FlgTxt.format = THREE.RGBAFormat;
+			FlgTxt.magFilter = THREE.LinearFilter;
+			FlgTxt.minFilter = THREE.LinearMipMapLinearFilter;
+			FlgTxt.generateMipmaps = true;	
+			FlgTxt.needsUpdate = true;		
+			let flgMat = new THREE.MeshLambertNodeMaterial({colorNode: texture(FlgTxt), side: THREE.DoubleSide});
+			flg_.ObjSrc[n] = FlgGeo;
+			flg_.ObjSrc[n].rotateY(180*DegRad);
+			flg_.ObjAdr[n] = new THREE.Mesh(flg_.ObjSrc[n],flgMat);
+			flg_.ObjAdr[n].rotation.copy(flg_.ObjRot[n]);
+			flg_.ObjAdr[n].position.copy(flg_.MapPos[n]);
+			flg_.ObjAdr[n].scale.setScalar(flg_.ObjSiz[n]); // Height = 2 meters
+			flg_.ObjRef[n].add(flg_.ObjAdr[n]); // Attach to Object
+			flg_.ObjAdr[n].visible = true;
+		});
 	}
-	// Rotate Flag on Flagpole
-	flg_.Adj[0] = Mod360(flg_.Adj[0]+3); // Degrees
-	let FlgAdj = 2.5*DegRad*Math.sin(flg_.Adj[0]*DegRad); // Max Offset = 5 deg
-	flg_.ObjAdr[0].rotation.y = flg_.ObjRot[0].y+FlgAdj;
+}
+
+//-	Move Flag Meshes -----------//----------------------------------------------
+function moveAnmFlg() {
+//	let n = 0;
+	for (let n = 0; n < flg_.ObjNum; n++) {
+		let flgSgX = 30;		// Segments X
+		let flgSgY = 16;		// Segments Y
+		// Get Distance to Parent Object
+		let flgPsX = Math.abs(flg_.ObjAdr[n].position.x);
+		let flgPsY = Math.abs(flg_.ObjAdr[n].position.y);
+		let flgPsZ = Math.abs(flg_.ObjAdr[n].position.z);
+		let MinDst = flg_.ObjDst[n];
+		// Only Animate if Within Min Distance to Parent Object
+		if (flgPsX < MinDst && flgPsY < MinDst && flgPsZ < MinDst) {
+			flgSgX = flgSgX+1;
+			flgSgY = flgSgY+1;		
+			let h = 0.5; 		// Horizontal
+			let v = 0.3; 		// Vertical
+			let w = 0.075; 		// Swing
+			let s = 400; 		// Speed
+			let idx,val;
+			let tim = nowTim*s/50;	
+			for (let y = 0; y < flgSgY; y++) {
+				for (let x = 0; x < flgSgX; x++) {
+	            	idx = x + y*(flgSgX);
+					val = Math.sin(h*x+v*y-tim)*w*x/4;
+					flg_.ObjSrc[n].attributes.position.setZ(idx,val);
+	            }
+	        }
+			flg_.ObjSrc[n].attributes.position.needsUpdate = true;
+			flg_.ObjSrc[n].computeVertexNormals();
+		}
+		// Rotate Flag on Flagpole
+		flg_.ObjAdj[n] = Mod360(flg_.ObjAdj[n]+3); // Degrees
+		let FlgAdj = 2.5*DegRad*Math.sin(flg_.ObjAdj[n]*DegRad); // Max Offset = 5 deg
+		flg_.ObjAdr[n].rotation.y = flg_.ObjRot[n].y+FlgAdj;
+	}
 }
 
 //= HARDENED SURFACES ==========//==============================================
@@ -2258,6 +2289,7 @@ function onInfo0(){
 	On_Inf6Node.nodeValue = "";
 	On_Inf7Node.nodeValue = "";
 	On_Inf8Node.nodeValue = "";
+	On_Inf9Node.nodeValue = "";
 }
 
 //	Info On - Page1
