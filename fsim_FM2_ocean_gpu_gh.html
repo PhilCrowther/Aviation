@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 15 Jan 2025
+Version dated 19 Jan 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -344,28 +344,29 @@ let wav_ = {
 	};
 
 //= OBJECTS ====================//==============================================
-//- Sample Variable
-let var_ = {
-		ObjNum: 1,				// Number of Objects
-		ObjSrc: [0],			// Source File
-		ObjTxt: [0],			// Texture Source File
-		ObjAdr: [0],			// Object Address
-		ObjSiz: [],				// Scale (e.g. Ft2Mtr)
-		RndOrd: [0],			// renderOrder
-		ObjRot: [new THREE.Euler(0,0,0)], // Object Rotation (in radians)
-		MapPos: [new THREE.Vector3(0,0,0)], // Map Position - Absolute or Relative
-		ObjRef: [0],			// Parent Object
+// Sample Variable
+//let var_ = {
+//		ObjNum: 1,				// Number of Objects
+//		ObjSrc: [0],			// Source File
+//		ObjTxt: [0],			// Texture Source File
+//		ObjAdr: [0],			// Object Address
+//		ObjSiz: [],				// Scale (e.g. Ft2Mtr)
+//		RndOrd: [0],			// renderOrder
+//		ObjRot: [new THREE.Euler(0,0,0)], // Object Rotation (in radians)
+//		MapPos: [new THREE.Vector3(0,0,0)], // Map Position - Absolute or Relative
+//		ObjRef: [0],			// Child: Reference to Parent or Group
+//		ObjGrp: [0],			// Group: new makMsh()
 		// Moving
-		SpdMPS: [0],			// Speed - if Moving (mtr/sec)
-		MapSpd: [new THREE.Vector3()], // Map Speed (mtr/sec)
+//		SpdMPS: [0],			// Speed - if Moving (mtr/sec)
+//		MapSpd: [new THREE.Vector3()], // Map Speed (mtr/sec)
 		// Animations (Varies by Object)
-		ObjDst: [0],			// Object distance (meters) used to activate effects
-		MixNam: [0],			// Animation Mixer
-		AnmNam: [0]				// Animation
-	};
+//		ObjDst: [0],			// Object distance (meters) used to activate effects
+//		MixNam: [0],			// Animation Mixer
+//		AnmNam: [0]				// Animation
+//	};
 
 //= STATIC OBJECTS =============//==============================================
-//- Islands --------------------------------------------------------------------
+//- Islands --------------------//----------------------------------------------
 let isl_ = {
 		ObjNum: 2,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
@@ -377,32 +378,25 @@ let isl_ = {
 		RndOrd: [0,0],			// renderOrder (not used)
 		ObjRot: [new THREE.Euler(),new THREE.Euler()], // Rotation
 		MapPos: [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)],
-		ObjRef: [new makMsh(),new makMsh()],
+		ObjGrp: [new makMsh(),new makMsh()], // Group
 	};
-//- General Static Objects: Linked ---------------------------------------------
-//- 0 = Hangar
-let lnk_ = {
-		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
-		ObjTxt: [0],
-		ObjAdr: [],				// Loaded Object
-		ObjSiz: [Ft2Mtr],		// Scale
-		RndOrd: [0],			// renderOrder
-		ObjRot: [new THREE.Euler()], // Rotation
-		MapPos: [new THREE.Vector3(-562,-22.5,-363)], // Relative Position
-		ObjRef: [isl_.ObjRef[0]],
-	};
-//- General Static Objects: Unlinked -------------------------------------------
-//- 0 = Fletcher
+//- Static Objects: Linked -----//----------------------------------------------
+//- 0 = Hangar; 1 = Fletcher
 let fxd_ = {
-		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"],
-		ObjTxt: [0],
-		ObjAdr: [],				// Loaded Object
-		ObjSiz: [Ft2Mtr],		// Scale
+		ObjNum: 2,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb",
+				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"],
+		ObjTxt: [0,0],
+		ObjAdr: [0,0],			// Loaded Object
+		ObjSiz: [Ft2Mtr,
+				 Ft2Mtr],		// Scale
 		RndOrd: [0],			// renderOrder
-		ObjRot: [new THREE.Euler()], // Rotation
-		MapPos: [new THREE.Vector3(-300,0,5275)], // Absolute Position
+		ObjRot: [new THREE.Euler(),
+				 new THREE.Euler()], // Rotation
+		MapPos: [new THREE.Vector3(-562,-22.5,-363),
+				 new THREE.Vector3(-910,-30,0)], // Relative Position
+		ObjRef: [isl_.ObjGrp[0],
+				 isl_.ObjGrp[0]],
 	};
 
 //= MOVING OBJECTS =============//==============================================
@@ -442,7 +436,7 @@ let xsh_ = {
 		RndOrd: [0],			// renderOrder (not used)
 		ObjRot: [new THREE.Euler()], // Object Rotation
 		MapPos: [new THREE.Vector3(-4133,0.1,146)], // Object Map Position (meters) [used by Mesh]
-		ObjRef: [new makMsh()],
+		ObjGrp: [new makMsh()],	// Group
 		// Speed
 		SpdMPS: [9],			// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
 		MapSpd: [new THREE.Vector3()], // Object Map Speed (mtr/sec) used by airplane if landed
@@ -466,7 +460,7 @@ let vlk_ = {
 		RndOrd: [1],			// renderOrder
 		ObjRot: [new THREE.Euler()], // Rotation (not used)
 		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
-		ObjRef: [isl_.ObjRef[0]], // Parent Object
+		ObjRef: [isl_.ObjGrp[0]], // Parent Object
 		// Moving	
 		SpdMPS: [0],			// 0 = not moving
 		MapSpd: [new THREE.Vector3()]
@@ -482,7 +476,7 @@ let wak_ = {
 		RndOrd: [1],			// renderOrder
 		ObjRot: [new THREE.Euler()], // Rotation (not used)
 		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
-		ObjRef: [xsh_.ObjRef[0]] // Parent Object
+		ObjRef: [xsh_.ObjGrp[0]] // Parent Object
 	};
 //- Flags ----------------------//----------------------------------------------
 //	Can attach to Ships or Flagpoles
@@ -496,7 +490,7 @@ let	flg_ = {
 		RndOrd: [0],			// renderOrder (not used)
 		ObjRot: [new THREE.Euler(0,97.5*DegRad,0)], // Adjust to make the flag visible at start
 		MapPos: [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)], // Relative Map Position
-		ObjRef: [xsh_.ObjRef[0]], // Parent Object
+		ObjRef: [xsh_.ObjGrp[0]], // Parent Object
 		// Animation
 		ObjDst: [152.4],		// Visibility Distance from Parent (meters)
 		ObjAdj: [0]
@@ -505,7 +499,7 @@ let	flg_ = {
 //= MINIMUM ALTITUDE ===========//==============================================
 let alt_ = {
 		Num: 2,
-		Ref: [isl_.ObjRef[0],xsh_.ObjRef[0]],
+		Ref: [isl_.ObjGrp[0],xsh_.ObjGrp[0]],
 		Var: [0,xsh_],
 		Typ: [0,1], 			// 0 = stationary, 1 = moving
 		Alt: [7.57,13.1],
@@ -516,7 +510,7 @@ let alt_ = {
 	};
 //- Carrier Deck Lock Down
 	xsh_.ShpLok[0].position.y = 1.4+(alt_.Alt[1]-xsh_.MapPos[0].y);
-	xsh_.ObjRef[0].add(xsh_.ShpLok[0]);
+	xsh_.ObjGrp[0].add(xsh_.ShpLok[0]);
 
 //= MY AIRPLANE ================//==============================================
 //- Flight Module --------------------------------------------------------------
@@ -721,7 +715,7 @@ let XPEVol = 0.1;				// Volume
 let XPESnd = 0;
 let XPEMsh = new makMsh();
 
-//= PPOINTER LOCK CONTROL ======//==============================================
+//= POINTER LOCK CONTROL ======//===============================================
 class PointerLockControls extends THREE.EventDispatcher {
 	constructor(camera, domElement, plc_) {
 		super();
@@ -1185,7 +1179,6 @@ function moveObject() {
 
 function loadStatic() {
 	loadIsland();
-	if (lnk_.ObjNum) loadLnkObj();
 	if (fxd_.ObjNum) loadFxdObj();
 }
 
@@ -1195,7 +1188,6 @@ function initStatic() {
 
 function moveStatic() {
 	moveIsland();
-	if (lnk_.ObjNum) moveLnkObj();
 	if (fxd_.ObjNum) moveFxdObj();
 }
 
@@ -1231,8 +1223,8 @@ function moveAnmObj() {
 //-	Load Islands ---------------------------------------------------------------
 function loadIsland() {
 	for (let i = 0; i < isl_.ObjNum; i++) {
-		isl_.ObjRef[i].position.copy(isl_.MapPos[i]);
-		scene.add(isl_.ObjRef[i]);
+		isl_.ObjGrp[i].position.copy(isl_.MapPos[i]);
+		scene.add(isl_.ObjGrp[i]);
 	}
 	for (let i = 0; i < isl_.ObjNum; i++) {
 	// Transparent Island Objects
@@ -1249,7 +1241,7 @@ function loadIsland() {
 				isl_.ObjAdr[i] = gltf.scene;
 				isl_.ObjAdr[i].scale.setScalar(isl_.ObjSiz[i]);
 				isl_.ObjAdr[i].rotation.copy(isl_.ObjRot[i]);
-				isl_.ObjRef[i].add(isl_.ObjAdr[i]);
+				isl_.ObjGrp[i].add(isl_.ObjAdr[i]);
 			});
 		});
 	}
@@ -1266,7 +1258,7 @@ function initIsland() {
 		X = isl_.MapPos[i].x-air_.MapPos.x;
 		Y = isl_.MapPos[i].y-AltDif;
 		Z = air_.MapPos.z-isl_.MapPos[i].z;
-		isl_.ObjRef[i].position.set(X,Y,Z);
+		isl_.ObjGrp[i].position.set(X,Y,Z);
 	}
 }
 
@@ -1279,7 +1271,7 @@ function moveIsland() {
 		X = isl_.MapPos[i].x-air_.MapPos.x;
 		Y = isl_.MapPos[i].y-AltDif;
 		Z = air_.MapPos.z-isl_.MapPos[i].z;
-		isl_.ObjRef[i].position.set(X,Y,Z);
+		isl_.ObjGrp[i].position.set(X,Y,Z);
 	}
 }
 
@@ -1324,52 +1316,25 @@ function loadVulkan() {
 	})
 }
 
-//= GENERAL STATIC OBJECTS: LINKED =============================================
+//= STATIC OBJECTS =============//==============================================
 
-//- Load Objects ---------------------------------------------------------------
-function loadLnkObj() {
-	for (let i = 0; i < lnk_.ObjNum; i++) {
-		gltfLoader.load(lnk_.ObjSrc[i], function (gltf) {
-			lnk_.ObjAdr[i] = gltf.scene;
-			lnk_.ObjAdr[i].scale.setScalar(lnk_.ObjSiz[i]);
-			lnk_.ObjAdr[i].rotation.copy(lnk_.ObjRot[i]);
-			lnk_.ObjAdr[i].position.copy(lnk_.MapPos[i]);
-			lnk_.ObjRef[i].add(lnk_.ObjAdr[i]);
-		});
-	}
-}
-
-//- Move Objects ---------------------------------------------------------------
-function moveLnkObj() {
-	for (let i = 0; i < lnk_.ObjNum; i++) {
-		lnk_.ObjAdr[i].position.y = lnk_.MapPos[i].y + AltDif*0.01;
-	}
-}
-
-//= GENERAL STATIC OBJECTS: UNLINKED ===========================================
-
-//- Load Objects ---------------------------------------------------------------
+//- Load Objects ---------------//----------------------------------------------
 function loadFxdObj() {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
 		gltfLoader.load(fxd_.ObjSrc[i], function (gltf) {
 			fxd_.ObjAdr[i] = gltf.scene;
 			fxd_.ObjAdr[i].scale.setScalar(fxd_.ObjSiz[i]);
-			fxd_.ObjAdr[i].rotation.copy(lnk_.ObjRot[i]);
+			fxd_.ObjAdr[i].rotation.copy(fxd_.ObjRot[i]);
 			fxd_.ObjAdr[i].position.copy(fxd_.MapPos[i]);
-			scene.add(fxd_.ObjAdr[i]);
+			fxd_.ObjRef[i].add(fxd_.ObjAdr[i]);
 		});
 	}
 }
 
-//-	Move Objects ---------------------------------------------------------------
+//- Move Objects ---------------//----------------------------------------------
 function moveFxdObj() {
-	let position = new THREE.Vector3();
-	let X,Y,Z;
 	for (let i = 0; i < fxd_.ObjNum; i++) {
-		X = fxd_.MapPos[i].x-air_.MapPos.x;
-		Y = fxd_.MapPos[i].y-AltDif;
-		Z = air_.MapPos.z-fxd_.MapPos[i].z;
-		fxd_.ObjAdr[i].position.set(X,Y,Z);
+		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y + AltDif*0.01;
 	}
 }
 
@@ -1469,15 +1434,15 @@ function loadMovShp() {
 
 //	Init Ship
 function initMovShp() {
-	xsh_.ObjRef[0].rotation.order = "YXZ";
+	xsh_.ObjGrp[0].rotation.order = "YXZ";
 	// Compute Relative Position
 	// (cause Objects to elevate above water as we climb to prevent flicker)
 	let X = xsh_.MapPos[0].x-air_.MapPos.x;
 	let Y = xsh_.MapPos[0].y-AltDif;
 	let Z = air_.MapPos.z-xsh_.MapPos[0].z;
-	xsh_.ObjRef[0].position.set(X,Y,Z);
-	xsh_.ObjRef[0].add(xsh_.ObjAdr[0]);
-	scene.add(xsh_.ObjRef[0]);		// Uses position of CVE to compute relative position
+	xsh_.ObjGrp[0].position.set(X,Y,Z);
+	xsh_.ObjGrp[0].add(xsh_.ObjAdr[0]);
+	scene.add(xsh_.ObjGrp[0]);		// Uses position of CVE to compute relative position
 }
 
 //	Move Ship
@@ -1491,7 +1456,7 @@ function moveMovShp() {
 	xsh_.ShpPit[0] = Mod360(xsh_.ShpPit[0] + 0.5);
 	let PitAdj = 1.5*DegRad*Math.sin(xsh_.ShpPit[0]*DegRad);
 	xsh_.ObjRot[0].x = PitAdj;
-	xsh_.ObjRef[0].rotation.copy(xsh_.ObjRot[0]);
+	xsh_.ObjGrp[0].rotation.copy(xsh_.ObjRot[0]);
 	// Speed (Only Horizontal)
 	let SpdMPF = xsh_.SpdMPS[0] * DLTime; // Speed (u/t)
 	xsh_.MapSpd[0].z = -SpdMPF * Math.cos(xsh_.ObjRot[0].y*DegRad);
@@ -1507,10 +1472,10 @@ function moveMovShp() {
 	let X = xsh_.MapPos[0].x-air_.MapPos.x;
 	let Y = xsh_.MapPos[0].y-AltDif;
 	let Z = air_.MapPos.z-xsh_.MapPos[0].z;
-	xsh_.ObjRef[0].position.set(X,Y,Z);
+	xsh_.ObjGrp[0].position.set(X,Y,Z);
 	// Compute Distance (for Viz Tests)
-	let x = xsh_.ObjRef[0].position.x;
-	let z = xsh_.ObjRef[0].position.z;
+	let x = xsh_.ObjGrp[0].position.x;
+	let z = xsh_.ObjGrp[0].position.z;
 	xsh_.ObjDst[0] = Math.sqrt(x*x+z*z); // Compute distance
 	// Attached Objects
 	moveShpWak();
@@ -1936,8 +1901,6 @@ function moveAirObj() {
 	// Attadhced Objects
 	moveBullet();
 }
-
-//= BULLETS ====================//==============================================
 
 //- Load Bullets ---------------------------------------------------------------
 function loadBullet() {
