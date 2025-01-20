@@ -117,7 +117,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; /
 
 //= INPUTS =====================//==============================================
 //- AIRPLANE: Start ------------------------------------------------------------
-let BegLoc = 1;					// Starting Location (0 = Base; 1 = CVE; 2 = Air)
+let BegLoc = 1;					// Starting Location (0 = Island; 1 = CVE; 2 = Air)
 let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
 let BegTmp = 303.15;			// K = 86F
 //- AIRPLANE: Flight -----------------------------------------------------------
@@ -399,6 +399,34 @@ let fxd_ = {
 				 isl_.ObjGrp[0]],
 	};
 
+//= AA Guns ====================================================================
+
+//- Anti-Aircraft --------------------------------------------------------------
+//	Bofors anti-aircraft guns - 40 mm (1.57 in)
+let AAANum = 16;				// Number of bullets
+let AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
+let AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
+let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
+//
+let gun_ = {
+		ObjNum: 1,
+		ObjAdr: [new makMsh()],	// Gun Object
+		ObjRot: [new THREE.Euler(45,90,0)], // Rotation (degrees)
+		MapPos: [new THREE.Vector3(48,8,5638)], // Absolute Position (near hangar)
+		// For Each Bullet String
+		AAAFlg: [1],			// 1 = Gun Firing
+		AAASp2: [AAASpc],		// Bullet spacing time remaining
+		// Bullets for each gun
+		AAAPtr: [[0]],			// Addresses of bullet objects
+		AAAMSX: [[0]],			// Map Speed
+		AAAMSY: [[0]],
+		AAAMSZ: [[0]],
+		AAAMPX: [[0]],			// Map Position
+		AAAMPY: [[0]],
+		AAAMPZ: [[0]],
+		AAATim: [[0]],			// Time in flight
+	};
+
 //= MOVING OBJECTS =============//==============================================
 //- Airplane -------------------------------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
@@ -668,7 +696,7 @@ let anm_ = {
 	}
 //- Bullets --------------------------------------------------------------------
 //	M2 Browning .50 caliber
-let GunFlg = 0;
+let BulFlg = 0;
 let BulNum = 16;				// Number of bullets
 let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
 let BulDLT = 0.5;				// Life of bullet
@@ -676,18 +704,18 @@ let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
 let BulSp2 = BulSpc;			// Bullet spacing time remaining
 let BulPtr = [0];				// Addresses of bullet objects
 	BulPtr[BulNum-1] = 0;
-let BullSX = [0];				// Speed
-	BullSX[BulNum-1] = 0;
-let BullSY = [0];
-	BullSY[BulNum-1] = 0;
-let BullSZ = [0];
-	BullSZ[BulNum-1] = 0;
-let BullPX = [0];				// Position
-	BullPX[BulNum-1] = 0;
-let BullPY = [0];
-	BullPY[BulNum-1] = 0;
-let BullPZ = [0];
-	BullPZ[BulNum-1] = 0;
+let BulMSX = [0];				// Map Speed
+	BulMSX[BulNum-1] = 0;
+let BulMSY = [0];
+	BulMSY[BulNum-1] = 0;
+let BulMSZ = [0];
+	BulMSZ[BulNum-1] = 0;
+let BulMPX = [0];				// Map Position
+	BulMPX[BulNum-1] = 0;
+let BulMPY = [0];
+	BulMPY[BulNum-1] = 0;
+let BulMPZ = [0];
+	BulMPZ[BulNum-1] = 0;
 let BulTim = [0];				// Time in flight
 	BulTim[BulNum-1] = 0;
 
@@ -1026,7 +1054,7 @@ function rendAll() {
 	}
 	if (controls.isLocked === false && LodSnd) {
 		stopSounds();
-		SndFlg = GunFlg = 0;
+		SndFlg = BulFlg = 0;
 	}
 	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
 }
@@ -1160,6 +1188,7 @@ function loadObject() {
 	loadStatic();
 	loadMoving();
 	loadAnmFlg();
+	loadAAAGun();
 }
 
 function initObject() {
@@ -1173,6 +1202,7 @@ function moveObject() {
 	moveStatic();
 	moveMoving();
 	moveAnmObj();
+	moveAAAGun();
 }
 
 //- Static Objects -------------------------------------------------------------
@@ -1216,6 +1246,16 @@ function loadAnmObj() {
 
 function moveAnmObj() {
 	moveAnmFlg();
+}
+
+//- AAA Guns -------------------------------------------------------------------
+
+function loadAAAGun() {
+	if (gun_.ObjNum) loadGunObj();
+}
+
+function moveAAAGun() {
+	if (gun_.ObjNum) moveGunObj();
 }
 
 //= ISLANDS ====================//==============================================
@@ -1335,6 +1375,122 @@ function loadFxdObj() {
 function moveFxdObj() {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
 		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y + AltDif*0.01;
+	}
+}
+
+//= AAA GUNS ===================//==============================================
+
+//- Load Guns ------------------------------------------------------------------
+function loadGunObj() {
+	// Make Bullets
+	let scale = 2.5;
+	let line = 0
+	let points = [];
+		points.push(new THREE.Vector3(0,0,-2));
+		points.push(new THREE.Vector3(0,0,2));
+	let AAAGeL = new THREE.BufferGeometry().setFromPoints(points);
+	let point2 = [];
+		point2.push(new THREE.Vector3(0,0,-10));
+		point2.push(new THREE.Vector3(0,0,10));
+	let AAAGeD = new THREE.BufferGeometry().setFromPoints(point2);	
+	let AAAMtL = new THREE.LineBasicNodeMaterial({colorNode: color(0x80ffff)});
+	let AAAMtD = new THREE.LineBasicNodeMaterial({colorNode: color(0x408080)});
+	// For Each Gun
+	for (let n = 0; n < gun_.ObjNum; n ++) {
+		gun_.ObjAdr[n].rotation.copy(gun_.ObjRot[n]);
+		gun_.ObjAdr[n].position.copy(gun_.MapPos[n]);
+		scene.add(gun_.ObjAdr[n]);
+		// Load Bullets
+		for (let i = 0; i < AAANum; i ++) {
+			// Create AAA Meshes - 1 Double Line
+			gun_.AAAPtr[n][i] = new makMsh();
+			line = new THREE.Line(AAAGeL,AAAMtL); // Lite Color
+			line.position.z = -2;
+			gun_.AAAPtr[n][i].add(line);
+			line = new THREE.Line(AAAGeD,AAAMtD); // Dark Color
+			line.position.z = 10;
+			gun_.AAAPtr[n][i].add(line);
+			gun_.AAAPtr[n][i].scale.set(scale,scale,scale);
+			gun_.AAAPtr[n][i].rotation.order = "YXZ";
+			// 
+			scene.add(gun_.AAAPtr[n][i]);
+			gun_.AAAPtr[n][i].visible = false;
+		}
+	}
+}
+
+//- Fire AAA -------------------//----------------------------------------------
+function moveGunObj() {
+	let AAASV3 = new THREE.Vector3();
+	let	AAASpT = AAASpd * DLTime;
+	let X,Y,Z;
+	for (let n = 0; n < gun_.ObjNum; n ++) {
+		// Update Gun Object Rotation
+		gun_.ObjAdr[n].rotation.x = gun_.ObjRot[n].x*DegRad;
+		gun_.ObjAdr[n].rotation.y = gun_.ObjRot[n].y*DegRad;
+		// Compute Gun Relative Position (for show only - will compute relative position of bullets
+		X = gun_.MapPos[n].x-air_.MapPos.x;
+		Y = gun_.MapPos[n].y-AltDif;
+		Z = air_.MapPos.z-gun_.MapPos[n].z;
+		gun_.ObjAdr[n].position.set(X,Y,Z);
+		// For Each Bullet String	
+		gun_.AAASp2[n] = gun_.AAASp2[n] - DLTime;
+		if (gun_.AAASp2[n] < 0) gun_.AAASp2[n] = 0;
+		if (gun_.AAAFlg[n]) {
+			for (let i = 0; i < AAANum; i ++) {
+				// Start New Bullets
+				if (!gun_.AAATim[n][i] && !gun_.AAASp2[n]) {
+					// Set Initial Rotation
+					gun_.AAAPtr[n][i].rotation.x = gun_.ObjRot[n].x*DegRad;
+					gun_.AAAPtr[n][i].rotation.y = gun_.ObjRot[n].y*DegRad;
+					// Initial Map Position
+					gun_.AAAMPX[n][i] = gun_.MapPos[0].x;
+					gun_.AAAMPY[n][i] = gun_.MapPos[0].y;
+					gun_.AAAMPZ[n][i] = gun_.MapPos[0].z;				
+					// Set Initial Speed
+					AAASV3 = new THREE.Spherical(AAASpT,(gun_.ObjRot[0].x)*DegRad,Mod360(-gun_.ObjRot[0].y)*DegRad);
+					AAASV3 = new THREE.Vector3().setFromSpherical(AAASV3);
+					gun_.AAAMSX[n][i] = AAASV3.x;
+					gun_.AAAMSY[n][i] = AAASV3.y;
+					gun_.AAAMSZ[n][i] = AAASV3.z;
+					//
+					gun_.AAATim[n][i] = DLTime;
+					gun_.AAASp2[n] = AAASpc;
+					gun_.AAAPtr[n][i].visible = true;
+				}
+			}
+		}
+	}		
+	// Continue Bullet
+	for (let n = 0; n < gun_.ObjNum; n ++) {
+		for (let i = 0; i < AAANum; i ++) {
+			if (gun_.AAATim[n][i]) {
+				// Speed lost due to Drag (approx)
+				gun_.AAAMSX[n][i] = gun_.AAAMSX[n][i] * .995;
+				gun_.AAAMSY[n][i] = gun_.AAAMSY[n][i] * .995;
+				gun_.AAAMSZ[n][i] = gun_.AAAMSZ[n][i] * .995;
+				// New Map Position
+				gun_.AAAMPX[n][i] = gun_.AAAMPX[n][i] + gun_.AAAMSX[n][i];
+				gun_.AAAMPY[n][i] = gun_.AAAMPY[n][i] + gun_.AAAMSY[n][i] - GrvDLT;		// Bullet drop
+				gun_.AAAMPZ[n][i] = gun_.AAAMPZ[n][i] + gun_.AAAMSZ[n][i];
+				// Relative Position
+				X = gun_.AAAMPX[n][i]-air_.MapPos.x;
+				Y = gun_.AAAMPY[n][i]-AltDif;
+				Z = air_.MapPos.z-gun_.AAAMPZ[n][i];
+				gun_.AAAPtr[n][i].position.set(X,Y,Z);
+				//
+				gun_.AAATim[n][i] = gun_.AAATim[n][i] + DLTime;
+			}
+		}
+	}
+	// End Bullet
+	for (let n = 0; n < gun_.ObjNum; n ++) {
+		for (let i = 0; i < AAANum; i ++) {
+			if (gun_.AAATim[n][i] > AAADLT) {
+				gun_.AAATim[n][i] = 0;
+				gun_.AAAPtr[n][i].visible = false;
+			}
+		}
 	}
 }
 
@@ -1909,24 +2065,25 @@ function loadBullet() {
 		points.push(new THREE.Vector3(0,0,-10));
 		points.push(new THREE.Vector3(0,0,10));
 	let BltGeo = new THREE.BufferGeometry().setFromPoints(points);
-	let BlLMat = new THREE.LineBasicNodeMaterial({colorNode: color(0xff80ff)});
-	let BlDMat = new THREE.LineBasicNodeMaterial({colorNode: color(0x804080)});
+	let BulMtL = new THREE.LineBasicNodeMaterial({colorNode: color(0xff80ff)});
+	let BulMtD = new THREE.LineBasicNodeMaterial({colorNode: color(0x804080)});
 	// Note: MeshBasicNodeMaterial not allow envMap
 	let xp = 2;
 	for (let i = 0; i < BulNum; i ++) {
+		// Create Bullet Meshes - 2 Double Lines
 		BulPtr[i] = new makMsh();
 		// Left
-		line = new THREE.Line(BltGeo,BlLMat);
+		line = new THREE.Line(BltGeo,BulMtL); // Lite Color
 		line.position.x = -xp-0.1;
 		BulPtr[i].add(line);
-		line = new THREE.Line(BltGeo,BlDMat);
+		line = new THREE.Line(BltGeo,BulMtD); // Dark Color
 		line.position.x = -xp;
 		BulPtr[i].add(line);
 		// Rite
-		line = new THREE.Line(BltGeo,BlLMat);
+		line = new THREE.Line(BltGeo,BulMtL); // Lite Color
 		line.position.x = xp+0.1;
 		BulPtr[i].add(line);
-		line = new THREE.Line(BltGeo,BlDMat);
+		line = new THREE.Line(BltGeo,BulMtD); // Dark Color
 		line.position.x = xp;
 		BulPtr[i].add(line);
 		//
@@ -1941,18 +2098,20 @@ function moveBullet() {
 	let	BulSpT = BulSpd * DLTime;
 	BulSp2 = BulSp2 - DLTime;
 	if (BulSp2 < 0) BulSp2 = 0;
-	if (GunFlg) {
+	if (BulFlg) {
 		for (let i = 0; i < BulNum; i ++) {
 			// Start New Bullets
 			if (!BulTim[i] && !BulSp2) {
-				// Set Initial Rotation (Position is 0,0,0)
-				BulPtr[i].rotation.copy(air_.AirObj.rotation); //###
+				// Set Initial Position
+				BulMPX[i] = BulMPY[i] = BulMPZ[i] = 0;
+				// Set Initial Rotation
+				BulPtr[i].rotation.copy(air_.AirObj.rotation);
 				// Set Initial Speed			
 				BulSV3 = new THREE.Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
 				BulSV3 = new THREE.Vector3().setFromSpherical(BulSV3);
-				BullSX[i] = BulSV3.x;
-				BullSY[i] = BulSV3.y;
-				BullSZ[i] = BulSV3.z;
+				BulMSX[i] = BulSV3.x;
+				BulMSY[i] = BulSV3.y;
+				BulMSZ[i] = BulSV3.z;
 				//
 				BulTim[i] = DLTime;
 				BulSp2 = BulSpc;
@@ -1964,14 +2123,15 @@ function moveBullet() {
 	for (let i = 0; i < BulNum; i ++) {
 		if (BulTim[i]) {
 			// Speed lost due to Drag (approx)
-			BullSX[i] = BullSX[i] * .99;
-			BullSY[i] = BullSY[i] * .99;
-			BullSZ[i] = BullSZ[i] * .99;
-			// New Position
-			BullPX[i] = BullPX[i] + BullSX[i];
-			BullPY[i] = BullPY[i] + BullSY[i] - GrvDLT;		// Bullet drop
-			BullPZ[i] = BullPZ[i] + BullSZ[i];
-			BulPtr[i].position.set(-BullPX[i],BullPY[i],-BullPZ[i]);		
+			BulMSX[i] = BulMSX[i] * .99;
+			BulMSY[i] = BulMSY[i] * .99;
+			BulMSZ[i] = BulMSZ[i] * .99;
+			// New Relative Position
+			BulMPX[i] = BulMPX[i] + BulMSX[i];
+			BulMPY[i] = BulMPY[i] + BulMSY[i] - GrvDLT; // Bullet drop
+			BulMPZ[i] = BulMPZ[i] + BulMSZ[i];
+			BulPtr[i].position.set(-BulMPX[i],BulMPY[i],-BulMPZ[i]);
+			//		
 			BulTim[i] = BulTim[i] + DLTime;
 		}
 	}
@@ -1979,8 +2139,6 @@ function moveBullet() {
 	for (let i = 0; i < BulNum; i ++) {
 		if (BulTim[i] > BulDLT) {
 			BulTim[i] = 0;
-			BullSX[i] = BullSY[i] = BullSZ[i] = 0;
-			BullPX[i] = BullPY[i] = BullPZ[i] = 0;
 			BulPtr[i].visible = false;
 		}
 	}
@@ -2077,17 +2235,17 @@ function moveSounds() {
 
 //- Play Sounds ----------------------------------------------------------------
 function playSounds() {
-	// This leaves SndFlg and GunFlg unchanged.
+	// This leaves SndFlg and BulFlg unchanged.
 	if (!EngSnd.isPlaying) EngSnd.play();
 	if (!PrpSnd.isPlaying) PrpSnd.play();
-	if (GunFlg && !GnLSnd.isPlaying) GnLSnd.play();
-	if (GunFlg && !GnRSnd.isPlaying) GnRSnd.play();
+	if (BulFlg && !GnLSnd.isPlaying) GnLSnd.play();
+	if (BulFlg && !GnRSnd.isPlaying) GnRSnd.play();
 	if (!XPESnd.isPlaying) XPESnd.play();
 }
 
 //- Stop Sounds ----------------------------------------------------------------
 function stopSounds() {
-	// This leaves SndFlg and GunFlg unchanged.
+	// This leaves SndFlg and BulFlg unchanged.
 	if (EngSnd.isPlaying) EngSnd.stop();
 	if (PrpSnd.isPlaying) PrpSnd.stop();
 	if (GnLSnd.isPlaying) GnLSnd.stop();
@@ -2349,7 +2507,7 @@ function onDocumentKeyDown(event) {
 			if (SndFlg && !GnLSnd.isPlaying) GnLSnd.play();
 			if (SndFlg && !GnRSnd.isPlaying) GnRSnd.play();
 		};
-		GunFlg = 1;
+		BulFlg = 1;
 	}
 	// Reset
 	if (event.keyCode == K_RSet) posnRSet();		// Do Reset	
@@ -2398,7 +2556,7 @@ function onDocumentKeyUp(event) {
 			if (GnLSnd.isPlaying) GnLSnd.stop();
 			if (GnRSnd.isPlaying) GnRSnd.stop();
 		};
-		GunFlg = 0;
+		BulFlg = 0;
 	}
 }
 
