@@ -2133,8 +2133,6 @@ function moveAirObj() {
 
 //- Load Bullets ---------------------------------------------------------------
 function loadBullet() {
-	// Smoke
-	
 	// Line
 	let line = 0
 	let points = [];
@@ -2174,30 +2172,33 @@ function moveBullet() {
 	let	BulSpT = BulSpd * DLTime;
 	BulSp2 = BulSp2 - DLTime;
 	if (BulSp2 < 0) BulSp2 = 0;
-	if (BulFlg) {
-		for (let i = 0; i < BulNum; i ++) {
-			// Start New Bullets
-			if (!BulTim[i] && !BulSp2) {
-				// Set Initial Position
-				BulMPX[i] = BulMPY[i] = BulMPZ[i] = 0;
-				// Set Initial Rotation
-				BulPtr[i].rotation.copy(air_.AirObj.rotation);
-				// Set Initial Speed			
-				BulSV3 = new THREE.Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
-				BulSV3 = new THREE.Vector3().setFromSpherical(BulSV3);
-				BulMSX[i] = BulSV3.x;
-				BulMSY[i] = BulSV3.y;
-				BulMSZ[i] = BulSV3.z;
-				//
-				BulTim[i] = DLTime;
-				BulSp2 = BulSpc;
-				BulPtr[i].visible = true;
-			}
-		}
-	}
-	// Continue Bullet
 	for (let i = 0; i < BulNum; i ++) {
-		if (BulTim[i]) {
+		// Start New Bullets
+		if (!BulTim[i] && !BulSp2 && BulFlg) {
+			// Set Initial Position
+			BulMPX[i] = BulMPY[i] = BulMPZ[i] = 0;
+			// Set Initial Rotation
+			BulPtr[i].rotation.copy(air_.AirObj.rotation);
+			// Set Initial Speed			
+			BulSV3 = new THREE.Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
+			BulSV3 = new THREE.Vector3().setFromSpherical(BulSV3);
+			BulMSX[i] = BulSV3.x;
+			BulMSY[i] = BulSV3.y;
+			BulMSZ[i] = BulSV3.z;
+			//
+			BulTim[i] = DLTime;
+			BulSp2 = BulSpc;
+			BulPtr[i].visible = true;
+		}
+		// Continue Bullets
+		BulTim[i] = BulTim[i] + DLTime;		
+		// End Bullet
+		if (BulTim[i] > BulDLT) {
+			BulTim[i] = 0;
+			BulPtr[i].visible = false;
+		}
+		// Continue Bullet
+		else {
 			// Speed lost due to Drag (approx)
 			BulMSX[i] = BulMSX[i] * .99;
 			BulMSY[i] = BulMSY[i] * .99;
@@ -2207,17 +2208,8 @@ function moveBullet() {
 			BulMPY[i] = BulMPY[i] + BulMSY[i] - GrvDLT; // Bullet drop
 			BulMPZ[i] = BulMPZ[i] + BulMSZ[i];
 			BulPtr[i].position.set(-BulMPX[i],BulMPY[i],-BulMPZ[i]);
-			//		
-			BulTim[i] = BulTim[i] + DLTime;
 		}
-	}
-	// End Bullet
-	for (let i = 0; i < BulNum; i ++) {
-		if (BulTim[i] > BulDLT) {
-			BulTim[i] = 0;
-			BulPtr[i].visible = false;
-		}
-	}
+	} // end i
 }
 
 //= SOUNDS =====================//==============================================
