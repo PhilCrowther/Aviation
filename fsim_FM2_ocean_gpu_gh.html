@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Jan 2025
+Version dated 22 Jan 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -376,32 +376,27 @@ let isl_ = {
 		ObjAdr: [],
 		ObjSiz: [MtrMil,1.5*MtrMil], // Scale
 		RndOrd: [0,0],			// renderOrder (not used)
-		ObjRot: [new THREE.Euler(),new THREE.Euler()], // Rotation
-		MapPos: [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)],
+		ObjRot: [new THREE.Euler(),
+				 new THREE.Euler()], // Rotation
+		MapPos: [new THREE.Vector3(610,30,5275),
+				 new THREE.Vector3(-1610,10,2440)],
 		ObjGrp: [new makMsh(),new makMsh()], // Group
 	};
 //- Static Objects: Linked -----//----------------------------------------------
-//- 0 = Hangar; 1 = Fletcher
+//- 0 = Hangar;
 let fxd_ = {
-		ObjNum: 2,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb",
-				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"],
-		ObjTxt: [0,0],
-		ObjAdr: [0,0],			// Loaded Object
-		ObjSiz: [Ft2Mtr,
-				 Ft2Mtr],		// Scale
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],			// Loaded Object
+		ObjSiz: [Ft2Mtr],		// Scale
 		RndOrd: [0],			// renderOrder
-		ObjRot: [new THREE.Euler(),
-				 new THREE.Euler()], // Rotation
-		MapPos: [new THREE.Vector3(-562,-22.5,-363),
-				 new THREE.Vector3(-910,-30,0)], // Relative Position
-		ObjRef: [isl_.ObjGrp[0],
-				 isl_.ObjGrp[0]],
+		ObjRot: [new THREE.Euler()], // Rotation
+		MapPos: [new THREE.Vector3(-562,-22.5,-363)], // Relative Position
+		ObjRef: [isl_.ObjGrp[0]],
 	};
 
 //= AA Guns ====================================================================
-
-//- Anti-Aircraft --------------------------------------------------------------
 //	Bofors anti-aircraft guns - 40 mm (1.57 in)
 let AAANum = 16;				// Number of bullets
 let AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
@@ -409,23 +404,37 @@ let AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
 let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
 //
 let gun_ = {
-		ObjNum: 1,
-		ObjAdr: [new makMsh()],	// Gun Object
-		ObjRot: [new THREE.Euler(45,90,0)], // Rotation (degrees)
-		MapPos: [new THREE.Vector3(48,8,5638)], // Absolute Position (near hangar)
+		ObjNum: 2,
+		ObjAdr: [new makMsh(),new makMsh()], // Gun Object
+		RotYBg: [90,0],			// Starting Y-Rotation
+		RotAdj: [0,0],			// Y-Rotation Adjustment
+		ObjRot: [new THREE.Euler(45,90,0),
+				 new THREE.Euler(45,0,0)], // Rotation (degrees)
+		MapPos: [new THREE.Vector3(48,8,5638), // Absolute Position (near hangar)
+				 new THREE.Vector3(-1225,5,3355)], // Absolute Position (near Giaros)
 		// For Each Bullet String
-		AAAFlg: [1],			// 1 = Gun Firing
-		AAASp2: [AAASpc],		// Bullet spacing time remaining
+		AAAFlg: [1,1],			// 1 = Gun Firing
+		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
 		// Bullets for each gun
-		AAAPtr: [[0]],			// Addresses of bullet objects
-		AAAMSX: [[0]],			// Map Speed
-		AAAMSY: [[0]],
-		AAAMSZ: [[0]],
-		AAAMPX: [[0]],			// Map Position
-		AAAMPY: [[0]],
-		AAAMPZ: [[0]],
-		AAATim: [[0]],			// Time in flight
+		AAAPtr: [[],[]],		// Addresses of bullet objects
+		AAAMSX: [[],[]],		// Map Speed
+		AAAMSY: [[],[]],
+		AAAMSZ: [[],[]],
+		AAAMPX: [[],[]],		// Map Position
+		AAAMPY: [[],[]],
+		AAAMPZ: [[],[]],
+		AAATim: [[],[]],		// Time in flight
+		// Smoke
+		SmkSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
+		SmkMap: [0,0],
+		SmkMat: [0,0],
+		SmkPtr: [0,0],			// AAA Smoke
+		SmkMPX: [0,0],			// Map Position
+		SmkMPY: [0,0],
+		SmkMPZ: [0,0],
+		SmkTim: [0,0],
 	};
+//
 
 //= MOVING OBJECTS =============//==============================================
 //- Airplane -------------------------------------------------------------------
@@ -439,7 +448,7 @@ let xac_ = {
 		ObjSiz: [Ft2Mtr],		// Scale
 		RndOrd: [0],			// renderOrder (not used)
 		ObjRot: [new THREE.Euler(0,0,30)], // Rotation
-		MapPos: [new THREE.Vector3(180,100,5300)], // meters
+		MapPos: [new THREE.Vector3(180,1524,5300)], // meters
 		ObjRef: [0],			// 0 = not linked
 		// Speed
 		SpdMPS: [91.5],			// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
@@ -453,27 +462,31 @@ let xac_ = {
 		AnmBnk: [0],			// Animation
 	};
 //- Aircraft Carrier -----------------------------------------------------------
-const XSPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/"; // Other Planes
-const XSFile = "CVE_noflag.glb";
 let xsh_ = {
-		ObjNum: 1,				// Number of ships
-		ObjSrc: [XSPath+XSFile], // Source File
-		ObjTxt: [0],			// Texture Source File (not used)
-		ObjAdr: [0],			// Object Address
-		ObjSiz: [Ft2Mtr],		// Scale
-		RndOrd: [0],			// renderOrder (not used)
-		ObjRot: [new THREE.Euler()], // Object Rotation
-		MapPos: [new THREE.Vector3(-4133,0.1,146)], // Object Map Position (meters) [used by Mesh]
-		ObjGrp: [new makMsh()],	// Group
+		ObjNum: 2,				// Number of ships
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
+				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"], // Source File
+		ObjTxt: [0,0],			// Texture Source File (not used)
+		ObjAdr: [0,0],			// Object Address
+		ObjSiz: [Ft2Mtr,		// Scale
+				 Ft2Mtr],
+		RndOrd: [0,0],			// renderOrder (not used)
+		ObjRot: [new THREE.Euler(),  // Object Rotation
+				 new THREE.Euler()],
+		MapPos: [new THREE.Vector3(-4100,0.1,150),  // Object Map Position (meters) [used by Mesh]
+				 new THREE.Vector3(-4200,0.2,350)],
+		ObjGrp: [new makMsh(),	// Group
+				 new makMsh()],
 		// Speed
-		SpdMPS: [9],			// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
-		MapSpd: [new THREE.Vector3()], // Object Map Speed (mtr/sec) used by airplane if landed
+		SpdMPS: [9,11],			// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
+		MapSpd: [new THREE.Vector3(),  // Object Map Speed (mtr/sec) used by airplane if landed
+				 new THREE.Vector3()],
 		// Animations
-		ObjDst: [0],			// Object distance (meters) used to activate effects
-		MixRdr: [0],			// Animation Mixer - Radar
-		AnmRdr: [0],			// Animation
-		ShpPit: [0],			// Ship Pitch
-		ShpLok: [new makMsh()]	// Deck Lock
+		ObjDst: [0,0],			// Object distance (meters) used to activate effects
+		MixRdr: [0,0],			// Animation Mixer - Radar
+		AnmRdr: [0,0],			// Animation
+		ShpPit: [0,0],			// Ship Pitch
+		ShpLok: [new makMsh(),0] // Deck Lock
 	};
 
 //= ANIMATED OBJECTS ===========//==============================================
@@ -496,15 +509,17 @@ let vlk_ = {
 //- Wakes ----------------------//----------------------------------------------
 //	Used for Ships and Torpedoes
 let wak_ = {
-		ObjNum: 1,				// Number of Wakes
-		ObjSrc: [0],
-		ObjTxt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png"],
-		ObjAdr: [0],
-		ObjSiz: [4000],			// Scale
-		RndOrd: [1],			// renderOrder
-		ObjRot: [new THREE.Euler()], // Rotation (not used)
-		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
-		ObjRef: [xsh_.ObjGrp[0]] // Parent Object
+		ObjNum: 2,				// Number of Wakes
+		ObjSrc: [0,0],
+		ObjTxt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png"],
+		ObjAdr: [0,0],
+		ObjSiz: [4000,4000],	// Scale
+		RndOrd: [1,1],			// renderOrder
+		MapPos: [new THREE.Vector3(50,75,25),  // Map Position
+				 new THREE.Vector3(50,75,25)],
+		ObjRef: [xsh_.ObjGrp[0], // Parent Object
+				 xsh_.ObjGrp[1]],
 	};
 //- Flags ----------------------//----------------------------------------------
 //	Can attach to Ships or Flagpoles
@@ -1385,14 +1400,14 @@ function loadGunObj() {
 	// Make Bullets
 	let scale = 2.5;
 	let line = 0
-	let points = [];
-		points.push(new THREE.Vector3(0,0,-2));
-		points.push(new THREE.Vector3(0,0,2));
-	let AAAGeL = new THREE.BufferGeometry().setFromPoints(points);
-	let point2 = [];
-		point2.push(new THREE.Vector3(0,0,-10));
-		point2.push(new THREE.Vector3(0,0,10));
-	let AAAGeD = new THREE.BufferGeometry().setFromPoints(point2);	
+	let point0 = [];
+		point0.push(new THREE.Vector3(0,0,-2));
+		point0.push(new THREE.Vector3(0,0,2));
+	let AAAGeL = new THREE.BufferGeometry().setFromPoints(point0);
+	let point1 = [];
+		point1.push(new THREE.Vector3(0,0,-10));
+		point1.push(new THREE.Vector3(0,0,10));
+	let AAAGeD = new THREE.BufferGeometry().setFromPoints(point1);	
 	let AAAMtL = new THREE.LineBasicNodeMaterial({colorNode: color(0x80ffff)});
 	let AAAMtD = new THREE.LineBasicNodeMaterial({colorNode: color(0x408080)});
 	// For Each Gun
@@ -1415,8 +1430,27 @@ function loadGunObj() {
 			// 
 			scene.add(gun_.AAAPtr[n][i]);
 			gun_.AAAPtr[n][i].visible = false;
+			// Initialize Values (Necessary?)
+			gun_.AAAMSX[n][i] = gun_.AAAMSY[n][i] = gun_.AAAMSZ[n][i] = 0;
+			gun_.AAAMPX[n][i] = gun_.AAAMPY[n][i] = gun_.AAAMPZ[n][i] = 0;		
 		}
-	}
+		// Starting Y-Rotation
+		gun_.ObjRot[n].y = gun_.RotYBg[n];
+		// Smoke
+		gun_.SmkMap[n] = txtrLoader.load(gun_.SmkSrc);
+		gun_.SmkMat[n] = new THREE.SpriteNodeMaterial({
+			colorNode: color(0xffffff),
+			colorNode: texture(gun_.SmkMap[n]),
+			transparent:true,
+			opacity: 1.0,		
+			depthTest:false,
+			depthWrite:false,
+		});
+		gun_.SmkPtr[n] = new THREE.Sprite(gun_.SmkMat[n]);
+		gun_.SmkPtr[n].scale.set(100,50,100);	
+		scene.add(gun_.SmkPtr[n]);
+		gun_.SmkPtr[n].visible = false;
+	} // end of n
 }
 
 //- Fire AAA -------------------//----------------------------------------------
@@ -1426,72 +1460,90 @@ function moveGunObj() {
 	let X,Y,Z;
 	for (let n = 0; n < gun_.ObjNum; n ++) {
 		// Update Gun Object Rotation
+		gun_.RotAdj[n] = Mod360(gun_.RotAdj[n]+0.01); // Range 0 to 360
+		gun_.ObjRot[n].y = gun_.RotYBg[n] + 5*Math.sin(gun_.RotAdj[n]); // Offset = -45 to +45
 		gun_.ObjAdr[n].rotation.x = gun_.ObjRot[n].x*DegRad;
 		gun_.ObjAdr[n].rotation.y = gun_.ObjRot[n].y*DegRad;
-		// Compute Gun Relative Position (for show only - will compute relative position of bullets
+		// Compute Gun Relative Position (for show only)
 		X = gun_.MapPos[n].x-air_.MapPos.x;
 		Y = gun_.MapPos[n].y-AltDif;
 		Z = air_.MapPos.z-gun_.MapPos[n].z;
 		gun_.ObjAdr[n].position.set(X,Y,Z);
 		// For Each Bullet String	
-		gun_.AAASp2[n] = gun_.AAASp2[n] - DLTime;
-		if (gun_.AAASp2[n] < 0) gun_.AAASp2[n] = 0;
-		if (gun_.AAAFlg[n]) {
-			for (let i = 0; i < AAANum; i ++) {
-				// Start New Bullets
-				if (!gun_.AAATim[n][i] && !gun_.AAASp2[n]) {
-					// Set Initial Rotation
-					gun_.AAAPtr[n][i].rotation.x = gun_.ObjRot[n].x*DegRad;
-					gun_.AAAPtr[n][i].rotation.y = gun_.ObjRot[n].y*DegRad;
-					// Initial Map Position
-					gun_.AAAMPX[n][i] = gun_.MapPos[0].x;
-					gun_.AAAMPY[n][i] = gun_.MapPos[0].y;
-					gun_.AAAMPZ[n][i] = gun_.MapPos[0].z;				
-					// Set Initial Speed
-					AAASV3 = new THREE.Spherical(AAASpT,(gun_.ObjRot[0].x)*DegRad,Mod360(-gun_.ObjRot[0].y)*DegRad);
-					AAASV3 = new THREE.Vector3().setFromSpherical(AAASV3);
-					gun_.AAAMSX[n][i] = AAASV3.x;
-					gun_.AAAMSY[n][i] = AAASV3.y;
-					gun_.AAAMSZ[n][i] = AAASV3.z;
-					//
-					gun_.AAATim[n][i] = DLTime;
-					gun_.AAASp2[n] = AAASpc;
-					gun_.AAAPtr[n][i].visible = true;
+		gun_.AAASp2[n] = gun_.AAASp2[n] - DLTime; // When reach 0, fire next bullet
+		if (gun_.AAASp2[n] < 0) gun_.AAASp2[n] = 0; // Ready to fire next bullet
+		for (let i = 0; i < AAANum; i ++) {
+			// Start New Bullets
+			if (!gun_.AAATim[n][i] && !gun_.AAASp2[n] && gun_.AAAFlg[n]) {
+				// Set Initial Rotation
+				gun_.AAAPtr[n][i].rotation.x = gun_.ObjRot[n].x*DegRad;
+				gun_.AAAPtr[n][i].rotation.y = gun_.ObjRot[n].y*DegRad;
+				// Initial Map Position
+				gun_.AAAMPX[n][i] = gun_.MapPos[n].x;
+				gun_.AAAMPY[n][i] = gun_.MapPos[n].y;
+				gun_.AAAMPZ[n][i] = gun_.MapPos[n].z;				
+				// Set Initial Speed
+				AAASV3 = new THREE.Spherical(AAASpT,(gun_.ObjRot[n].x)*DegRad,Mod360(-gun_.ObjRot[n].y)*DegRad);
+				AAASV3 = new THREE.Vector3().setFromSpherical(AAASV3);
+				gun_.AAAMSX[n][i] = AAASV3.x;
+				gun_.AAAMSY[n][i] = AAASV3.y;
+				gun_.AAAMSZ[n][i] = AAASV3.z;
+				//
+				gun_.AAATim[n][i] = DLTime; // First jump
+				gun_.AAASp2[n] = AAASpc;
+				gun_.AAAPtr[n][i].visible = true;
+				// End Smoke When Bullet0 Begins
+				if (!i) gun_.SmkPtr[n].visible = false;
+			}
+			// Continue Bullets
+			gun_.AAATim[n][i] = gun_.AAATim[n][i] + DLTime;
+			// Stop
+			if (gun_.AAATim[n][i] > AAADLT) {
+				gun_.AAATim[n][i] = 0;
+				gun_.AAAPtr[n][i].visible = false;
+				// Start Smoke When Bullet0 Ends
+				if (n == 0 && i == 0) {
+					gun_.SmkMPX[n] = gun_.AAAMPX[n][i]; // Bullet0 MapPos
+					gun_.SmkMPY[n] = gun_.AAAMPY[n][i];
+					gun_.SmkMPZ[n] = gun_.AAAMPZ[n][i];
+					gun_.SmkPtr[n].visible = true;
+					gun_.SmkMat[n].opacity = 1.0;
+				}
+				if (n == 1 && i == 2) {
+					gun_.SmkMPX[n] = gun_.AAAMPX[n][i]; // Bullet0 MapPos
+					gun_.SmkMPY[n] = gun_.AAAMPY[n][i];
+					gun_.SmkMPZ[n] = gun_.AAAMPZ[n][i];
+					gun_.SmkPtr[n].visible = true;
+					gun_.SmkMat[n].opacity = 1.0;
 				}
 			}
-		}
-	}		
-	// Continue Bullet
-	for (let n = 0; n < gun_.ObjNum; n ++) {
-		for (let i = 0; i < AAANum; i ++) {
-			if (gun_.AAATim[n][i]) {
+			// Continue
+			else {
 				// Speed lost due to Drag (approx)
 				gun_.AAAMSX[n][i] = gun_.AAAMSX[n][i] * .995;
 				gun_.AAAMSY[n][i] = gun_.AAAMSY[n][i] * .995;
 				gun_.AAAMSZ[n][i] = gun_.AAAMSZ[n][i] * .995;
 				// New Map Position
 				gun_.AAAMPX[n][i] = gun_.AAAMPX[n][i] + gun_.AAAMSX[n][i];
-				gun_.AAAMPY[n][i] = gun_.AAAMPY[n][i] + gun_.AAAMSY[n][i] - GrvDLT;		// Bullet drop
+				gun_.AAAMPY[n][i] = gun_.AAAMPY[n][i] + gun_.AAAMSY[n][i] - GrvDLT; // Bullet drop
 				gun_.AAAMPZ[n][i] = gun_.AAAMPZ[n][i] + gun_.AAAMSZ[n][i];
 				// Relative Position
-				X = gun_.AAAMPX[n][i]-air_.MapPos.x;
-				Y = gun_.AAAMPY[n][i]-AltDif;
-				Z = air_.MapPos.z-gun_.AAAMPZ[n][i];
+				X = gun_.AAAMPX[n][i] - air_.MapPos.x;
+				Y = gun_.AAAMPY[n][i] - AltDif;
+				Z = air_.MapPos.z - gun_.AAAMPZ[n][i];
 				gun_.AAAPtr[n][i].position.set(X,Y,Z);
-				//
-				gun_.AAATim[n][i] = gun_.AAATim[n][i] + DLTime;
 			}
+		} // end of i
+		// Smoke Relative Position
+		if (gun_.SmkPtr[n].visible = true) {
+			X = gun_.SmkMPX[n] - air_.MapPos.x;
+			Y = gun_.SmkMPY[n] - AltDif;
+			Z = air_.MapPos.z - gun_.SmkMPZ[n];
+			gun_.SmkPtr[n].position.set(X,Y,Z);
+			gun_.SmkMat[n].opacity = gun_.SmkMat[n].opacity - 0.005;
+			if (gun_.SmkMat[n].opacity < 0) gun_.SmkMat[n].opacity = 0;
 		}
-	}
-	// End Bullet
-	for (let n = 0; n < gun_.ObjNum; n ++) {
-		for (let i = 0; i < AAANum; i ++) {
-			if (gun_.AAATim[n][i] > AAADLT) {
-				gun_.AAATim[n][i] = 0;
-				gun_.AAAPtr[n][i].visible = false;
-			}
-		}
-	}
+	} // end of n
 }
 
 //= MOVING AIRPLANES ===========//==============================================
@@ -1566,120 +1618,141 @@ function moveMovPln() {
 
 //	Load Ship
 function loadMovShp() {
-	gltfLoader.load(xsh_.ObjSrc[0], function (gltf) {
-		gltf.scene.traverse(function (child) {
-			if (child.isMesh) {
-				child.castShadow = true;
-				child.receiveShadow = true;
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		gltfLoader.load(xsh_.ObjSrc[n], function (gltf) {
+			gltf.scene.traverse(function (child) {
+				if (child.isMesh) {
+					child.castShadow = true;
+					child.receiveShadow = true;
+				}
+			});
+			xsh_.ObjAdr[n] = gltf.scene;
+			xsh_.ObjAdr[n].scale.setScalar(xsh_.ObjSiz[n]); // Scale
+			// Animated Radar
+			if (n == 0) {
+				// Radar
+				let clip = THREE.AnimationClip.findByName(gltf.animations, "RadarAction");
+				xsh_.MixRdr[n] = new THREE.AnimationMixer(xsh_.ObjAdr[n]);
+				let actun = xsh_.MixRdr[n].clipAction(clip);
+				actun.play();
+				if (xsh_.MixRdr[n]) xsh_.MixRdr[n].setTime(xsh_.AnmRdr[n]/anmfps);
+				// Wake
+				loadShpWak();				// Init Ship Wake
 			}
+			xsh_.ObjAdr[n].position.set(0,0,0); // position within group is always 0,0,0
+
 		});
-		xsh_.ObjAdr[0] = gltf.scene;
-		xsh_.ObjAdr[0].scale.setScalar(xsh_.ObjSiz[0]); // Scale
-		// Animated Radar
-		let clip = THREE.AnimationClip.findByName(gltf.animations, "RadarAction");
-		xsh_.MixRdr[0] = new THREE.AnimationMixer(xsh_.ObjAdr[0]);
-		let actun = xsh_.MixRdr[0].clipAction(clip);
-		actun.play();
-		if (xsh_.MixRdr[0]) xsh_.MixRdr[0].setTime(xsh_.AnmRdr[0]/anmfps);
-		//
-		xsh_.ObjAdr[0].position.set(0,0,0); // position within group is always 0,0,0
-	});
-	// Attached Objects
-	loadShpWak();				// Init Ship Wake
+	}
 }
 
 //	Init Ship
 function initMovShp() {
-	xsh_.ObjGrp[0].rotation.order = "YXZ";
-	// Compute Relative Position
-	// (cause Objects to elevate above water as we climb to prevent flicker)
-	let X = xsh_.MapPos[0].x-air_.MapPos.x;
-	let Y = xsh_.MapPos[0].y-AltDif;
-	let Z = air_.MapPos.z-xsh_.MapPos[0].z;
-	xsh_.ObjGrp[0].position.set(X,Y,Z);
-	xsh_.ObjGrp[0].add(xsh_.ObjAdr[0]);
-	scene.add(xsh_.ObjGrp[0]);		// Uses position of CVE to compute relative position
+// Always use group
+	let X, Y, Z;
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		xsh_.ObjGrp[n].rotation.order = "YXZ";
+		// Compute Relative Position
+		// (cause Objects to elevate above water as we climb to prevent flicker)
+		X = xsh_.MapPos[n].x-air_.MapPos.x;
+		Y = xsh_.MapPos[n].y-AltDif;
+		Z = air_.MapPos.z-xsh_.MapPos[n].z;
+		xsh_.ObjGrp[n].position.set(X,Y,Z);
+		xsh_.ObjGrp[n].add(xsh_.ObjAdr[n]);
+		scene.add(xsh_.ObjGrp[n]);		// Uses position of CVE to compute relative position
+	}
 }
 
 //	Move Ship
 function moveMovShp() {
-	// Change in Heading
-	let XSHSpd = 0;				// for now
-	let XSHPit = 0;
-	XSHSpd = XSHSpd * DLTime;
-	xsh_.ObjRot[0].y = xsh_.ObjRot[0].y + XSHSpd;	
-	// Rock the boat
-	xsh_.ShpPit[0] = Mod360(xsh_.ShpPit[0] + 0.5);
-	let PitAdj = 1.5*DegRad*Math.sin(xsh_.ShpPit[0]*DegRad);
-	xsh_.ObjRot[0].x = PitAdj;
-	xsh_.ObjGrp[0].rotation.copy(xsh_.ObjRot[0]);
-	// Speed (Only Horizontal)
-	let SpdMPF = xsh_.SpdMPS[0] * DLTime; // Speed (u/t)
-	xsh_.MapSpd[0].z = -SpdMPF * Math.cos(xsh_.ObjRot[0].y*DegRad);
-	xsh_.MapSpd[0].x = -SpdMPF * Math.sin(xsh_.ObjRot[0].y*DegRad);
-	// Recompute Map Postion
-	xsh_.MapPos[0].x = xsh_.MapPos[0].x + xsh_.MapSpd[0].x;
-	xsh_.MapPos[0].z = xsh_.MapPos[0].z - xsh_.MapSpd[0].z;
-	// Animation - Radar
-	xsh_.AnmRdr[0] = xsh_.AnmRdr[0] - 0.1;
-	if (xsh_.AnmRdr[0] < 0) xsh_.AnmRdr[0] = 359;
-	if (xsh_.MixRdr[0]) xsh_.MixRdr[0].setTime(xsh_.AnmRdr[0]/anmfps);
-	// Compute New Relative Position
-	let X = xsh_.MapPos[0].x-air_.MapPos.x;
-	let Y = xsh_.MapPos[0].y-AltDif;
-	let Z = air_.MapPos.z-xsh_.MapPos[0].z;
-	xsh_.ObjGrp[0].position.set(X,Y,Z);
-	// Compute Distance (for Viz Tests)
-	let x = xsh_.ObjGrp[0].position.x;
-	let z = xsh_.ObjGrp[0].position.z;
-	xsh_.ObjDst[0] = Math.sqrt(x*x+z*z); // Compute distance
-	// Attached Objects
-	moveShpWak();
+	let X, Y, Z;
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		// Change in Heading
+		let XSHSpd = 0;				// for now
+		let XSHPit = 0;
+		XSHSpd = XSHSpd * DLTime;
+		xsh_.ObjRot[n].y = xsh_.ObjRot[n].y + XSHSpd;	
+		// Rock the boat
+		if (n == 0) {
+			xsh_.ShpPit[n] = Mod360(xsh_.ShpPit[n] + 0.5);
+			let PitAdj = 1.5*DegRad*Math.sin(xsh_.ShpPit[n]*DegRad);
+			xsh_.ObjRot[n].x = PitAdj;
+			xsh_.ObjGrp[n].rotation.copy(xsh_.ObjRot[n]);
+		}
+		// Speed (Only Horizontal)
+		let SpdMPF = xsh_.SpdMPS[n] * DLTime; // Speed (u/t)
+		xsh_.MapSpd[n].z = -SpdMPF * Math.cos(xsh_.ObjRot[n].y*DegRad);
+		xsh_.MapSpd[n].x = -SpdMPF * Math.sin(xsh_.ObjRot[n].y*DegRad);
+		// Recompute Map Postion
+		xsh_.MapPos[n].x = xsh_.MapPos[n].x + xsh_.MapSpd[n].x;
+		xsh_.MapPos[n].z = xsh_.MapPos[n].z - xsh_.MapSpd[n].z;
+		// Compute New Relative Position
+		X = xsh_.MapPos[n].x-air_.MapPos.x;
+		Y = xsh_.MapPos[n].y-AltDif;
+		Z = air_.MapPos.z-xsh_.MapPos[n].z;
+		xsh_.ObjGrp[n].position.set(X,Y,Z);
+		// Compute Distance (for Viz Tests)
+		X = xsh_.ObjGrp[n].position.x;
+		Z = xsh_.ObjGrp[n].position.z;
+		xsh_.ObjDst[n] = Math.sqrt(X*X+Z*Z); // Compute distance
+		// Attached Objects
+		if (n == 0) {
+			// Radar
+			xsh_.AnmRdr[n] = xsh_.AnmRdr[n] - 0.1;
+			if (xsh_.AnmRdr[n] < 0) xsh_.AnmRdr[n] = 359;
+			if (xsh_.MixRdr[n]) xsh_.MixRdr[n].setTime(xsh_.AnmRdr[n]/anmfps);
+			// Wake
+			moveShpWak();
+		}
+	}
 }
 
 //= SHIP WAKE ==================//==============================================
 
 //- Load Ship Wake -------------------------------------------------------------
 function loadShpWak() {
-	txtrLoader.load(wak_.ObjTxt[0], function (WakTxt) {
-		//- Timer
-		let speed = uniform(.001); // r170 Lower = slower
-		let scaledTime = time.add(125).mul(speed); // r170
-		//- Life
-		let lifeRange = range(0.1,1);
-		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
-		let life = lifeTime.div(lifeRange);
-		//- Rotation Range
-		let rotateRange = range(.1,.2);
-		let textureNode = texture(WakTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
-		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
-		//- Lateral Offset	
-		let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
-		//- Size Range
-		let scaleRange = range(.01,.02);
-		//
-		let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
-		// Wake
-		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-		let	WakMat = new THREE.SpriteNodeMaterial();
-			WakMat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
-			WakMat.opacityNode = opacityNode;
-			WakMat.positionNode = offsetRange.mul(lifeTime);
-			WakMat.scaleNode = scaleRange.mul(lifeTime.max(0.3));
-			WakMat.depthWrite = false;
-			WakMat.transparent = true;
-		wak_.ObjAdr[0] = new THREE.Mesh(new THREE.PlaneGeometry(1, 1),WakMat);
-			wak_.ObjAdr[0].scale.setScalar(wak_.ObjSiz[0]);
-			wak_.ObjAdr[0].isInstancedMesh = true;
-			wak_.ObjAdr[0].count = 600; // Increases continuity (was 100)
-			wak_.ObjAdr[0].rotation.x = Math.PI/2; // Set Flat
-			wak_.ObjAdr[0].position.y = -5; // Added
-			wak_.ObjRef[0].add(wak_.ObjAdr[0]);
-	})
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		txtrLoader.load(wak_.ObjTxt[n], function (WakTxt) {
+			//- Timer
+			let speed = uniform(.001); // r170 Lower = slower
+			let scaledTime = time.add(125).mul(speed); // r170
+			//- Life
+			let lifeRange = range(0.1,1);
+			let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
+			let life = lifeTime.div(lifeRange);
+			//- Rotation Range
+			let rotateRange = range(.1,.2);
+			let textureNode = texture(WakTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
+			let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
+			//- Lateral Offset	
+			let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
+			//- Size Range
+			let scaleRange = range(.01,.02);
+			//
+			let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
+			// Wake
+			let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+			let	WakMat = new THREE.SpriteNodeMaterial();
+				WakMat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+				WakMat.opacityNode = opacityNode;
+				WakMat.positionNode = offsetRange.mul(lifeTime);
+				WakMat.scaleNode = scaleRange.mul(lifeTime.max(0.3));
+				WakMat.depthWrite = false;
+				WakMat.transparent = true;
+			wak_.ObjAdr[n] = new THREE.Mesh(new THREE.PlaneGeometry(1, 1),WakMat);
+				wak_.ObjAdr[n].scale.setScalar(wak_.ObjSiz[n]);
+				wak_.ObjAdr[n].isInstancedMesh = true;
+				wak_.ObjAdr[n].count = 600; // Increases continuity (was 100)
+				wak_.ObjAdr[n].rotation.x = Math.PI/2; // Set Flat
+				wak_.ObjAdr[n].position.y = -5; // Added
+				wak_.ObjRef[n].add(wak_.ObjAdr[n]);
+		});
+	}
 }
 
 function moveShpWak() {
-	wak_.ObjAdr[0].rotation.x = Math.PI/2-wak_.ObjRef[0].rotation.x;
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		wak_.ObjAdr[n].rotation.x = Math.PI/2-wak_.ObjRef[n].rotation.x;
+	}
 }
 
 //= ANIMATED FLAGS =====================//======================================
@@ -2060,6 +2133,9 @@ function moveAirObj() {
 
 //- Load Bullets ---------------------------------------------------------------
 function loadBullet() {
+	// Smoke
+	
+	// Line
 	let line = 0
 	let points = [];
 		points.push(new THREE.Vector3(0,0,-10));
