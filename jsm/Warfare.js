@@ -72,8 +72,6 @@ function loadGunObj(gun_,scene) {
 			gun_.AAAMSX[n][i] = gun_.AAAMSY[n][i] = gun_.AAAMSZ[n][i] = 0;
 			gun_.AAAMPX[n][i] = gun_.AAAMPY[n][i] = gun_.AAAMPZ[n][i] = 0;
 		}
-		// Starting Y-Rotation
-		gun_.ObjRot[n].y = gun_.RotYBg[n];
 		// Smoke
 		gun_.SmkMat[n] = new SpriteNodeMaterial({
 			colorNode: color(0xffffff),
