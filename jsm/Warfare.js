@@ -18,7 +18,7 @@ import {
 	LineBasicNodeMaterial,
 	Spherical,
 	Sprite,
-	SpriteNodeMateria,
+	SpriteNodeMaterial,
 	Vector3,
 } from 'three';
 
