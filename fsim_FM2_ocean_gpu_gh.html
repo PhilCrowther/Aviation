@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 22 Jan 2025
+Version dated 23 Jan 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -166,8 +166,8 @@ let E3Zero = new THREE.Euler(0,0,0);
 //- Display
 let PawsOn = 0;					// Pause
 let InfoOn = 0;					// Info
-let SndFlg = 0;					// Sound
-let StatOn = 1;					// Stats ((0 = off, 1 = on)
+let SndFlg = 0;					// Sound (0 = off; 1 = on)
+let StatOn = 1;					// Stats (0 = off, 1 = on)
 let LnFFlg = 1;					// Lensflare
 //	Program Flags
 let LodFlg = 0;					// Set at end of initialization
@@ -409,7 +409,7 @@ let gun_ = {
 		RotYBg: [90,0],			// Starting Y-Rotation
 		RotAdj: [0,0],			// Y-Rotation Adjustment
 		ObjRot: [new THREE.Euler(45,90,0),
-				 new THREE.Euler(45,0,0)], // Rotation (degrees)
+				 new THREE.Euler(30,0,0)], // Rotation (degrees)
 		MapPos: [new THREE.Vector3(48,8,5638), // Absolute Position (near hangar)
 				 new THREE.Vector3(-1225,5,3355)], // Absolute Position (near Giaros)
 		// For Each Bullet String
@@ -433,8 +433,13 @@ let gun_ = {
 		SmkMPY: [0,0],
 		SmkMPZ: [0,0],
 		SmkTim: [0,0],
+		// Sounds
+		SndFlg: [1,1],			// Gun Firing
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: [0,0],
+		SndMsh: [new makMsh(),new makMsh()],
+		SndVol: 15,				// Volume
 	};
-//
 
 //= MOVING OBJECTS =============//==============================================
 //- Airplane -------------------------------------------------------------------
@@ -709,9 +714,9 @@ let anm_ = {
 		canflg: 0,				// Canopy (up/down)
 		thkflg: 0,				// Tailhook (up/down)
 	}
-//- Bullets --------------------------------------------------------------------
+//- My Guns --------------------------------------------------------------------
 //	M2 Browning .50 caliber
-let BulFlg = 0;
+let MYGFlg = 0;
 let BulNum = 16;				// Number of bullets
 let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
 let BulDLT = 0.5;				// Life of bullet
@@ -733,11 +738,19 @@ let BulMPZ = [0];
 	BulMPZ[BulNum-1] = 0;
 let BulTim = [0];				// Time in flight
 	BulTim[BulNum-1] = 0;
+// Sounds
+let myg_ = {
+		ObjNum: 2,
+		SndSrc: "fm2_gun.mp3",	// File (my guns)
+		SndVol: 0.5,			// Volume
+		SndPtr: [0,0],
+		SndMsh: [new makMsh(),new makMsh()],
+	}
 
 //=	SOUNDS =====================//==============================================
 //- My Engine and Prop
 let AirMsh = new makMsh();		// For Engine and Prop
-//- My Engne
+//- My Engine
 const EngSrc = "fm2.wav";		// File (my engine)
 let EngVol = 0.1;				// Volume
 let EngSnd = 0;
@@ -746,12 +759,12 @@ const PrpSrc = "fm2_prop.wav";	// File (my prop)
 let PrpVol = 0.5;				// Volume
 let PrpSnd = 0;
 //- My Guns
-const GunSrc = "fm2_gun.mp3";	// File (my guns)
-let GunVol = 0.5;				// Volume
-let GnLSnd = 0;
-let GnLMsh = new makMsh();
-let GnRSnd = 0;
-let GnRMsh = new makMsh();
+//const GunSrc = "fm2_gun.mp3";	// File (my guns)
+//let GunVol = 0.5;				// Volume
+//let GnLSnd = 0;
+//let GnLMsh = new makMsh();
+//let GnRSnd = 0;
+//let GnRMsh = new makMsh();
 //- Other Engine
 const XPESrc = "fm2.wav";		// File (my engine)
 let XPEVol = 0.1;				// Volume
@@ -1069,7 +1082,7 @@ function rendAll() {
 	}
 	if (controls.isLocked === false && LodSnd) {
 		stopSounds();
-		SndFlg = BulFlg = 0;
+		SndFlg = MYGFlg = 0;
 	}
 	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
 }
@@ -1397,6 +1410,8 @@ function moveFxdObj() {
 
 //- Load Guns ------------------------------------------------------------------
 function loadGunObj() {
+	// Smoke
+	gun_.SmkMap = txtrLoader.load(gun_.SmkSrc);
 	// Make Bullets
 	let scale = 2.5;
 	let line = 0
@@ -1432,22 +1447,22 @@ function loadGunObj() {
 			gun_.AAAPtr[n][i].visible = false;
 			// Initialize Values (Necessary?)
 			gun_.AAAMSX[n][i] = gun_.AAAMSY[n][i] = gun_.AAAMSZ[n][i] = 0;
-			gun_.AAAMPX[n][i] = gun_.AAAMPY[n][i] = gun_.AAAMPZ[n][i] = 0;		
+			gun_.AAAMPX[n][i] = gun_.AAAMPY[n][i] = gun_.AAAMPZ[n][i] = 0;
 		}
 		// Starting Y-Rotation
 		gun_.ObjRot[n].y = gun_.RotYBg[n];
 		// Smoke
-		gun_.SmkMap[n] = txtrLoader.load(gun_.SmkSrc);
 		gun_.SmkMat[n] = new THREE.SpriteNodeMaterial({
 			colorNode: color(0xffffff),
-			colorNode: texture(gun_.SmkMap[n]),
+			colorNode: texture(gun_.SmkMap),
 			transparent:true,
 			opacity: 1.0,		
 			depthTest:false,
 			depthWrite:false,
 		});
 		gun_.SmkPtr[n] = new THREE.Sprite(gun_.SmkMat[n]);
-		gun_.SmkPtr[n].scale.set(100,50,100);	
+		gun_.SmkPtr[n].scale.set(100,50,100);
+		gun_.SmkPtr[n].rotation.order = "YXZ";	
 		scene.add(gun_.SmkPtr[n]);
 		gun_.SmkPtr[n].visible = false;
 	} // end of n
@@ -1459,11 +1474,12 @@ function moveGunObj() {
 	let	AAASpT = AAASpd * DLTime;
 	let X,Y,Z;
 	for (let n = 0; n < gun_.ObjNum; n ++) {
-		// Update Gun Object Rotation
-		gun_.RotAdj[n] = Mod360(gun_.RotAdj[n]+0.01); // Range 0 to 360
+		// Cumulative Y Rotation Adjustment
+		gun_.RotAdj[n] = Mod360(gun_.RotAdj[n]+0.005); // Range 0 to 360
 		gun_.ObjRot[n].y = gun_.RotYBg[n] + 5*Math.sin(gun_.RotAdj[n]); // Offset = -45 to +45
-		gun_.ObjAdr[n].rotation.x = gun_.ObjRot[n].x*DegRad;
-		gun_.ObjAdr[n].rotation.y = gun_.ObjRot[n].y*DegRad;
+		// Update Gun Object Rotation (for show only)
+		gun_.ObjAdr[n].rotation.x = gun_.ObjRot[n].x*DegRad; // Latitude
+		gun_.ObjAdr[n].rotation.y = gun_.ObjRot[n].y*DegRad; // Longitude
 		// Compute Gun Relative Position (for show only)
 		X = gun_.MapPos[n].x-air_.MapPos.x;
 		Y = gun_.MapPos[n].y-AltDif;
@@ -1476,14 +1492,14 @@ function moveGunObj() {
 			// Start New Bullets
 			if (!gun_.AAATim[n][i] && !gun_.AAASp2[n] && gun_.AAAFlg[n]) {
 				// Set Initial Rotation
-				gun_.AAAPtr[n][i].rotation.x = gun_.ObjRot[n].x*DegRad;
-				gun_.AAAPtr[n][i].rotation.y = gun_.ObjRot[n].y*DegRad;
+				gun_.AAAPtr[n][i].rotation.x = gun_.ObjRot[n].x*DegRad; // Latitude
+				gun_.AAAPtr[n][i].rotation.y = gun_.ObjRot[n].y*DegRad; // Longitude
 				// Initial Map Position
 				gun_.AAAMPX[n][i] = gun_.MapPos[n].x;
 				gun_.AAAMPY[n][i] = gun_.MapPos[n].y;
 				gun_.AAAMPZ[n][i] = gun_.MapPos[n].z;				
 				// Set Initial Speed
-				AAASV3 = new THREE.Spherical(AAASpT,(gun_.ObjRot[n].x)*DegRad,Mod360(-gun_.ObjRot[n].y)*DegRad);
+				AAASV3 = new THREE.Spherical(AAASpT,(90-gun_.ObjRot[n].x)*DegRad,Mod360(-gun_.ObjRot[n].y)*DegRad);
 				AAASV3 = new THREE.Vector3().setFromSpherical(AAASV3);
 				gun_.AAAMSX[n][i] = AAASV3.x;
 				gun_.AAAMSY[n][i] = AAASV3.y;
@@ -1508,6 +1524,7 @@ function moveGunObj() {
 					gun_.SmkMPZ[n] = gun_.AAAMPZ[n][i];
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
+					if (SndFlg && gun_.SndFlg[n]) gun_.SndPtr[n].play();
 				}
 				if (n == 1 && i == 2) {
 					gun_.SmkMPX[n] = gun_.AAAMPX[n][i]; // Bullet0 MapPos
@@ -1515,6 +1532,7 @@ function moveGunObj() {
 					gun_.SmkMPZ[n] = gun_.AAAMPZ[n][i];
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
+					if (SndFlg && gun_.SndFlg[n]) gun_.SndPtr[n].play();
 				}
 			}
 			// Continue
@@ -1538,12 +1556,17 @@ function moveGunObj() {
 		if (gun_.SmkPtr[n].visible = true) {
 			X = gun_.SmkMPX[n] - air_.MapPos.x;
 			Y = gun_.SmkMPY[n] - AltDif;
-			Z = air_.MapPos.z - gun_.SmkMPZ[n];
+			Z = air_.MapPos.z - gun_.SmkMPZ[n];			
 			gun_.SmkPtr[n].position.set(X,Y,Z);
+			gun_.SmkMat[n].rotation = air_.AirRot.z * DegRad;
 			gun_.SmkMat[n].opacity = gun_.SmkMat[n].opacity - 0.005;
-			if (gun_.SmkMat[n].opacity < 0) gun_.SmkMat[n].opacity = 0;
+			if (gun_.SmkMat[n].opacity < 0) {
+				gun_.SmkMat[n].opacity = 0;
+				gun_.SndPtr[n].stop();  // Reset for next explosion
+			}
 		}
 	} // end of n
+//	console.log(gun_.SmkPtr[0].rotation.z);
 }
 
 //= MOVING AIRPLANES ===========//==============================================
@@ -2174,7 +2197,7 @@ function moveBullet() {
 	if (BulSp2 < 0) BulSp2 = 0;
 	for (let i = 0; i < BulNum; i ++) {
 		// Start New Bullets
-		if (!BulTim[i] && !BulSp2 && BulFlg) {
+		if (!BulTim[i] && !BulSp2 && MYGFlg) {
 			// Set Initial Position
 			BulMPX[i] = BulMPY[i] = BulMPZ[i] = 0;
 			// Set Initial Rotation
@@ -2235,22 +2258,16 @@ function loadSounds() {
 		PrpSnd.setLoop(true);
 		PrpSnd.setVolume(0);
 	});
-	// GunL
-	fname = AirSrc + "sounds/" + GunSrc;
-	audioLoader.load(fname, function(buffer) {
-		GnLSnd.setBuffer(buffer);
-		GnLSnd.setRefDistance(RefDst);
-		GnLSnd.setLoop(true);
-		GnLSnd.setVolume(0);
-	});
-	// GunR
-	fname = AirSrc + "sounds/" + GunSrc;
-	audioLoader.load(fname, function(buffer) {
-		GnRSnd.setBuffer(buffer);
-		GnRSnd.setRefDistance(RefDst);
-		GnRSnd.setLoop(true);
-		GnRSnd.setVolume(0);
-	});
+	// Guns
+	fname = AirSrc + "sounds/" + myg_.SndSrc;
+	for (let n = 0; n < myg_.ObjNum; n ++) {
+		audioLoader.load(fname, function(buffer) {
+			myg_.SndPtr[n].setBuffer(buffer);
+			myg_.SndPtr[n].setRefDistance(RefDst);
+			myg_.SndPtr[n].setLoop(true);
+			myg_.SndPtr[n].setVolume(0);
+		});
+	}
 	// XP Engine
 	fname = XPPath + "sounds/" + XPESrc;
 	audioLoader.load(fname, function(buffer) {
@@ -2260,6 +2277,15 @@ function loadSounds() {
 		XPESnd.setVolume(0);
 		XPESnd.playbackRate = 1.3;
 	});
+	// AA Guns
+	fname = gun_.SndSrc;
+	for (let n = 0; n < gun_.ObjNum; n ++) {
+		audioLoader.load(fname, function(buffer) {
+			gun_.SndPtr[n].setBuffer(buffer);
+			gun_.SndPtr[n].setRefDistance(RefDst);
+			gun_.SndPtr[n].setVolume(0);
+		});	
+	}
 	// Init Sounds .............................................................
 	let listener = new THREE.AudioListener();
 	camera.add(listener);
@@ -2271,17 +2297,22 @@ function loadSounds() {
 	AirMsh.position.z = -5;
 	air_.AirObj.add(AirMsh);
 	//- My Guns
-	GnLSnd = new THREE.PositionalAudio(listener);
-	GnLMsh.add(GnLSnd);			// Gun
-	GnLMsh.position.x = -5;
-	air_.AirObj.add(GnLMsh);
-	GnRSnd = new THREE.PositionalAudio(listener);
-	GnRMsh.add(GnRSnd);			// Gun
-	GnRMsh.position.x = 5;
-	air_.AirObj.add(GnRMsh);
+	for (let n = 0; n < myg_.ObjNum; n ++) {
+		myg_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		myg_.SndMsh[n].add(myg_.SndPtr[n]);
+		myg_.SndMsh[n].position.x = -5;
+		air_.AirObj.add(myg_.SndMsh[n]);
+	}
 	//- Other Airplane
 	XPESnd = new THREE.PositionalAudio(listener);
 	XPEMsh.add(XPESnd);
+	// AA Guns
+	for (let n = 0; n < gun_.ObjNum; n ++) {
+		gun_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		gun_.SndMsh[n].add(gun_.SndPtr[n]);
+	}
+	gun_.AAAPtr[0][0].add(gun_.SndMsh[0]); // Link SndMsh to Specific Bullets
+	gun_.AAAPtr[1][2].add(gun_.SndMsh[1]);
 	//- Set Flag
 	LodSnd = 1;
 }
@@ -2295,30 +2326,50 @@ function moveSounds() {
 	PrpSnd.setVolume(PrpVol + air_.PwrPct * 0.15); // Range = .1 to .4
 	PrpSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
 	// My Guns
-	GnLSnd.setVolume(GunVol);
-	GnRSnd.setVolume(GunVol);
+	for (let n = 0; n < myg_.ObjNum; n ++) {
+		myg_.SndPtr[n].setVolume(myg_.SndVol);
+	}
 	// XP Engine
 	XPESnd.setVolume(XPEVol);
+	// AA Guns
+	for (let n = 0; n < gun_.ObjNum; n ++) {
+		gun_.SndPtr[n].setVolume(gun_.SndVol);
+	}
 }
 
 //- Play Sounds ----------------------------------------------------------------
 function playSounds() {
-	// This leaves SndFlg and BulFlg unchanged.
+	// This leaves SndFlg = 1 and MYGFlg unchanged.
+	// My Engine
 	if (!EngSnd.isPlaying) EngSnd.play();
+	// My Prop
 	if (!PrpSnd.isPlaying) PrpSnd.play();
-	if (BulFlg && !GnLSnd.isPlaying) GnLSnd.play();
-	if (BulFlg && !GnRSnd.isPlaying) GnRSnd.play();
+	// My Guns
+	for (let n = 0; n < myg_.ObjNum; n ++) {
+		if (MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();
+	}
+	// Other Airplane
 	if (!XPESnd.isPlaying) XPESnd.play();
+	// AA Guns - activated in PlayAA
 }
 
 //- Stop Sounds ----------------------------------------------------------------
 function stopSounds() {
-	// This leaves SndFlg and BulFlg unchanged.
+	// This leaves SndFlg = 0 and MYGFlg unchanged.
+	// My Engine
 	if (EngSnd.isPlaying) EngSnd.stop();
+	// My Prop
 	if (PrpSnd.isPlaying) PrpSnd.stop();
-	if (GnLSnd.isPlaying) GnLSnd.stop();
-	if (GnRSnd.isPlaying) GnRSnd.stop();
+	// My Guns
+	for (let n = 0; n < myg_.ObjNum; n ++) {
+		if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();
+	}
+	// Other Airplane
 	if (XPESnd.isPlaying) XPESnd.stop();
+	// AA Guns
+	for (let n = 0; n < gun_.ObjNum; n ++) {
+		if (gun_.SndPtr[n].isPlaying) gun_.SndPtr[n].stop();
+	}
 }
 
 //= VIEWS ======================//==============================================
@@ -2572,10 +2623,11 @@ function onDocumentKeyDown(event) {
 	// Guns
 	if (event.keyCode == K_Guns) { // Guns
 		if (!PawsOn) {
-			if (SndFlg && !GnLSnd.isPlaying) GnLSnd.play();
-			if (SndFlg && !GnRSnd.isPlaying) GnRSnd.play();
+			for (let n = 0; n < myg_.ObjNum; n ++) {
+				if (SndFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();
+			}
 		};
-		BulFlg = 1;
+		MYGFlg = 1;
 	}
 	// Reset
 	if (event.keyCode == K_RSet) posnRSet();		// Do Reset	
@@ -2619,12 +2671,15 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_VR90) R90flg = 0;		// View - 90 deg right
 	// Guns
 	if (event.keyCode == K_Guns) {					// Guns
-		GnLSnd.stop();
+		for (let n = 0; n < myg_.ObjNum; n ++) {
+			myg_.SndPtr[n].stop();
+		}
 		if (!PawsOn) {
-			if (GnLSnd.isPlaying) GnLSnd.stop();
-			if (GnRSnd.isPlaying) GnRSnd.stop();
+			for (let n = 0; n < myg_.ObjNum; n ++) {
+				if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();
+			}
 		};
-		BulFlg = 0;
+		MYGFlg = 0;
 	}
 }
 
