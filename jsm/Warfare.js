@@ -85,6 +85,9 @@ function loadGunObj(gun_,scene) {
 		gun_.SmkPtr[n].scale.set(100,50,100);	
 		scene.add(gun_.SmkPtr[n]);
 		gun_.SmkPtr[n].visible = false;
+		// Sound
+		gun_.AAAPtr[0][0].add(gun_.SndMsh[0]); // Link SndMsh to Specific Bullets
+		gun_.AAAPtr[1][2].add(gun_.SndMsh[1]);
 	} // end of n
 }
 
