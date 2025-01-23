@@ -190,6 +190,8 @@ function Mod360(deg) {
 	deg = deg % 360;					// Compute remainder of any number divided by 360
 return deg;}
 
+export {loadGunObj,moveGunObj};
+
 /*= REVISIONS ==================================================================
  * 250123:	Created
 */
