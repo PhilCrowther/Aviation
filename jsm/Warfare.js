@@ -54,7 +54,7 @@ function loadGunObj(gun_,scene) {
 		gun_.ObjAdr[n].position.copy(gun_.MapPos[n]);
 		scene.add(gun_.ObjAdr[n]);
 		// Load Bullets
-		for (let i = 0; i < AAANum; i ++) {
+		for (let i = 0; i < gun_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
 			gun_.AAAPtr[n][i] = new makMsh();
 			line = new Line(AAAGeL,AAAMtL); // Lite Color
@@ -91,9 +91,9 @@ function loadGunObj(gun_,scene) {
 }
 
 //- Fire AAA -------------------//----------------------------------------------
-function moveGunObj(gun_) {
+function moveGunObj(gun_,DLTime) {
 	let AAASV3 = new Vector3();
-	let	AAASpT = AAASpd * DLTime;
+	let	AAASpT = gun_.AAASpd * DLTime;
 	let X,Y,Z;
 	for (let n = 0; n < gun_.ObjNum; n ++) {
 		// Update Gun Object Rotation (for show only)
@@ -107,7 +107,7 @@ function moveGunObj(gun_) {
 		// For Each Bullet String	
 		gun_.AAASp2[n] = gun_.AAASp2[n] - DLTime; // When reach 0, fire next bullet
 		if (gun_.AAASp2[n] < 0) gun_.AAASp2[n] = 0; // Ready to fire next bullet
-		for (let i = 0; i < AAANum; i ++) {
+		for (let i = 0; i < gun_.AAANum; i ++) {
 			// Start New Bullets
 			if (!gun_.AAATim[n][i] && !gun_.AAASp2[n] && gun_.AAAFlg[n]) {
 				// Set Initial Rotation
@@ -125,7 +125,7 @@ function moveGunObj(gun_) {
 				gun_.AAAMSZ[n][i] = AAASV3.z;
 				//
 				gun_.AAATim[n][i] = DLTime; // First jump
-				gun_.AAASp2[n] = AAASpc;
+				gun_.AAASp2[n] = gun_.AAASpc;
 				gun_.AAAPtr[n][i].visible = true;
 				// End Smoke When Bullet0 Begins
 				if (!i) gun_.SmkPtr[n].visible = false;
@@ -133,7 +133,7 @@ function moveGunObj(gun_) {
 			// Continue Bullets
 			gun_.AAATim[n][i] = gun_.AAATim[n][i] + DLTime;
 			// Stop
-			if (gun_.AAATim[n][i] > AAADLT) {
+			if (gun_.AAATim[n][i] > gun_.AAADLT) {
 				gun_.AAATim[n][i] = 0;
 				gun_.AAAPtr[n][i].visible = false;
 				// Start Smoke When Bullet0 Ends
