@@ -22,6 +22,11 @@ import {
 	Vector3,
 } from 'three';
 
+import {
+	color,
+	texture,
+} from "three/tsl";
+
 //= CONSTANTS ==================//==============================================
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
