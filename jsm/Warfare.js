@@ -89,7 +89,7 @@ function loadGunObj(gun_,scene) {
 }
 
 //- Fire AAA -------------------//----------------------------------------------
-function moveGunObj(gun_,DLTime) {
+function moveGunObj(air_,gun_,DLTime) {
 	let AAASV3 = new Vector3();
 	let	AAASpT = gun_.AAASpd * DLTime;
 	let X,Y,Z;
