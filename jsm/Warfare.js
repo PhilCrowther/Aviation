@@ -179,9 +179,6 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	let AAASV3 = new Vector3();
 	let	AAASpT = gun_.AAASpd * DLTime;
 	for (let n = 0; n < gun_.ObjNum; n ++) {
-		// Cumulative Y Rotation Adjustment
-		gun_.RotAdj[n] = Mod360(gun_.RotAdj[n]+0.005); // Range 0 to 360
-		gun_.ObjRot[n].y = gun_.RotYBg[n] + 5*Math.sin(gun_.RotAdj[n]); // Offset = -45 to +45
 		// Update Gun Object Rotation (for show only)
 		gun_.ObjAdr[n].rotation.x = gun_.ObjRot[n].x*DegRad; // Latitude
 		gun_.ObjAdr[n].rotation.y = gun_.ObjRot[n].y*DegRad; // Longitude
