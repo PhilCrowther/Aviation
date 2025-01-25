@@ -175,7 +175,7 @@ function loadGunObj(gun_,scene) {
 
 //= MOVE AAA GUNS ===================//=========================================
 
-function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT) {
+function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	let AAASV3 = new Vector3();
 	let	AAASpT = gun_.AAASpd * DLTime;
 	for (let n = 0; n < gun_.ObjNum; n ++) {
