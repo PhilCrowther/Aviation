@@ -1,5 +1,20 @@
-﻿9//= PRE-LOAD DATA ==============================================================
+﻿//= PRE-LOAD DATA ==============================================================
 //	No three.js routines allowed since three.js has not been loaded yet.
+
+//= 1. MAIN VARIABLES ==========//==============================================
+
+//- CONSTANTS ------------------//----------------------------------------------
+//	Conversions
+const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+const Ft2Mtr = 0.3048;			// Convert Feet to Meters
+const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
+const Km2Mil = 0.621371;		// Kilometers to Miles
+const Mil2Km = 1.60934;			// Miles to Kilometers
+const MtrMil = 1609.34;			// Meters per Mile
+const GrvMPS = 9.80665; 		// Gravity (mps)
+
+//= 8. OUTPUTS VARIABLES =======//==============================================
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
 let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
