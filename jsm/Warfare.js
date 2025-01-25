@@ -54,7 +54,7 @@ function loadBullet(myg_,scene) {
 		line = new Line(BltGeo,BulMtL); // Lite Color
 		line.position.x = -xp-0.1;
 		myg_.BulPtr[i].add(line);
-		line = new THREE.Line(BltGeo,BulMtD); // Dark Color
+		line = new Line(BltGeo,BulMtD); // Dark Color
 		line.position.x = -xp;
 		myg_.BulPtr[i].add(line);
 		// Rite
@@ -68,7 +68,7 @@ function loadBullet(myg_,scene) {
 		scene.add(myg_.BulPtr[i]);
 		myg_.BulPtr[i].visible = false;
 		// Initialize Speed and Position
-		myg_.BulMpS[i] = new THREE.Vector3();
+		myg_.BulMpS[i] = new Vector3();
 	}
 }
 
