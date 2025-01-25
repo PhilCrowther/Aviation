@@ -75,7 +75,7 @@ function loadBullet(myg_,scene) {
 //= MOVE =======================================================================
 
 //- Fire My Bullets ------------------------------------------------------------
-function moveBullet(myg_) {
+function moveBullet(myg_,DLTime) {
 	let BulSV3 = new Vector3();
 	let	BulSpT = myg_.BulSpd * DLTime;
 	myg_.BulSp2 = myg_.BulSp2 - DLTime;
