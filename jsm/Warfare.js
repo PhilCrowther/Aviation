@@ -154,8 +154,6 @@ function loadGunObj(gun_,scene) {
 			gun_.AAAMpS[n][i] = new Vector3();
 			gun_.AAAMpP[n][i] = new Vector3();
 		}
-		// Starting Y-Rotation
-		gun_.ObjRot[n].y = gun_.RotYBg[n];
 		// Smoke
 		gun_.SmkMat[n] = new SpriteNodeMaterial({
 			colorNode: color(0xffffff),
