@@ -79,10 +79,10 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
-import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js"; // r171
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r171 computeAsync works with r170
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
+import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 
 //= GENERAL ===================================================================
 
@@ -115,12 +115,45 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; /
 //-	Flight Module:
 //	* Add supercharger/turbocharger effect
 
-//= INPUTS =====================//==============================================
-//- AIRPLANE: Start ------------------------------------------------------------
+//= INDEX TO SECTIONS ==========================================================
+//	VARIABLES
+//	2. SKYBOX VARIABLES
+//	3. GEOMAT VARIABLES
+//	4. OBJECTS VARIABLES
+//		GRDWTR MODULE
+//		OCEAN MODULE
+//	5. MY AIRPLANE VARIABLES
+//		FLIGHT MODULE
+//		ANIMFM2 MODULE
+//	6. SOUNDS VARIABLES
+//	7. CAMERA VARIABLES
+//  8. OUTPUTS VAIABLES
+//	9. INPUTS VARIABLES
+//	PROGRAM
+//	1. MAIN			Main Program
+//	2. SKYBOX		SkyCube
+//	3. GEOMAT		Grids and Textures
+//	4. OBJECTS		Static and Moving Objects and Animations
+//	5. MY AIRPLANE	My Airplane and Animations
+//	6. SOUNDS		All Sounds
+//	7. CAMERA		Camera Views
+//	8. OUTPUTS		Screen Text and Numbers
+//	9. INPUTS		Key and Mouse Inputs
+
+//==============================================================================
+//																			   =
+//								VARIABLES									   =
+//																			   =
+//==============================================================================
+
+//= MAIN VARIABLES =============//==============================================
+
+//- INPUTS ---------------------//----------------------------------------------
+//- AIRPLANE: Start ............................................................
 let BegLoc = 1;					// Starting Location (0 = Island; 1 = CVE; 2 = Air)
 let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
 let BegTmp = 303.15;			// K = 86F
-//- AIRPLANE: Flight -----------------------------------------------------------
+//- AIRPLANE: Flight ...........................................................
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
 let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
@@ -142,7 +175,7 @@ let _unlockEvent = {type: "unlock"};
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
 let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
 
-//= CONSTANTS ==================//==============================================
+//- CONSTANTS ------------------//----------------------------------------------
 //	Time
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 let DLTim2 = DLTime*DLTime;
@@ -162,7 +195,7 @@ let GrvDLT = GrvMPS*DLTim2;
 let V3Zero = new THREE.Vector3(0,0,0);
 let E3Zero = new THREE.Euler(0,0,0);
 
-//= INPUT VALUES ===============//==============================================
+//- INPUT VALUES ---------------//----------------------------------------------
 //- Display
 let PawsOn = 0;					// Pause
 let InfoOn = 0;					// Info
@@ -172,11 +205,12 @@ let LnFFlg = 1;					// Lensflare
 //	Program Flags
 let LodFlg = 0;					// Set at end of initialization
 let LodSnd = 0;					// Set when sound initialized
+let MYGFlg = 0;					// My Guns (1 = firing)
 //	Altitude Adjustment
 let AltAdj = 0.99;				// Raises objects above map as altitude increases
 let AltDif = 0;
 
-//= SUN VALUES =================//==============================================
+//- SUN VALUES -----------------//----------------------------------------------
 const SunCol = "white";			// Sun
 let SunInt = 3;					// Default intensity of light/sun
 //- Rotation and Position (fixed)
@@ -192,7 +226,7 @@ let ShdBLR = 5;
 let ShdBTB = 4;
 let ShdDst = 1500;				// Shadow Distance (meters)
 
-//= STANDARD SETUP =============//==============================================
+//- STANDARD SETUP -------------//----------------------------------------------
 // 	Scene
 const scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
@@ -262,7 +296,8 @@ let loadingScreen = {
 };
 let boxrot = 0;
 
-//= SKY ========================//==============================================
+//= 2. SKYBOX VARIABLES ========//==============================================
+
 const FogCol = 0xbab4a6;		// Sky (for Fog only)
 //- SkyBox
 const SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
@@ -272,7 +307,9 @@ const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 let envMap = 0;
 
-//= GRDWTR TEXTURES ============//==============================================
+//= 3. GEOMAT VARIABLES ========//==============================================
+
+//- GRDWTR TEXTURES ------------//----------------------------------------------
 const WtrCol = 0x1060ff;		// Water (Nodes)
 //- Textures
 const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
@@ -288,7 +325,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	context.scale(1,-1);
 let WavMax = 5;					// Maximum wave height (set height of outer waves)
 
-//= GRDWTR MODULE ==============//==============================================
+//- GRDWTR MODULE --------------//----------------------------------------------
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
@@ -323,7 +360,7 @@ let grd_ = {
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
 
-//= OCEAN MODULE ===============//==============================================
+//- OCEAN MODULE ---------------//----------------------------------------------
 let WndSpd = 10.0;
 let WndHdg = 90;
 let Choppy = 1.5;
@@ -343,7 +380,8 @@ let wav_ = {
 		Spd: AnmSpd
 	};
 
-//= OBJECTS ====================//==============================================
+//= 4. OBJECTS VARIABLES =======//==============================================
+
 // Sample Variable
 //let var_ = {
 //		ObjNum: 1,				// Number of Objects
@@ -431,9 +469,6 @@ let gun_ = {
 		SmkPtr: [0,0],			// AAA Smoke
 		SmkMpP: [new THREE.Vector3(),			// Map Position
 				 new THREE.Vector3()],
-//		SmkMPX: [0,0],
-//		SmkMPY: [0,0],
-//		SmkMPZ: [0,0],
 		SmkTim: [0,0],
 		// Sounds
 		SndFlg: [1,1],			// Gun Firing
@@ -562,7 +597,8 @@ let alt_ = {
 	xsh_.ShpLok[0].position.y = 1.4+(alt_.Alt[1]-xsh_.MapPos[0].y);
 	xsh_.ObjGrp[0].add(xsh_.ShpLok[0]);
 
-//= MY AIRPLANE ================//==============================================
+//= 5. MY AIRPLANE VARIABLES ===//==============================================
+
 //- Flight Module --------------------------------------------------------------
 let	flight = 0;
 let air_ = {
@@ -718,28 +754,31 @@ let anm_ = {
 	}
 //- My Guns --------------------------------------------------------------------
 //	M2 Browning .50 caliber
-let MYGFlg = 0;
-let BulNum = 16;				// Number of bullets
 let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
-let BulDLT = 0.5;				// Life of bullet
+let BulDLT = 0.5;				// Bullet Maximum Time in Flight
+let BulNum = 16;				// Number of bullets
 let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
-let BulSp2 = BulSpc;			// Bullet spacing time remaining
-let BulPtr = [0];				// Addresses of bullet objects
-	BulPtr[BulNum-1] = 0;
-let BulMpS = [0];				// Bullet Map Speed (XYZ)
-	BulMpS[BulNum-1] = 0;
-let BulTim = [0];				// Time in flight
-	BulTim[BulNum-1] = 0;
 // Sounds
 let myg_ = {
+		// Data
+		BulSpd: BulSpd,			// Muzzle Velocity (mps)
+		BulDLT: BulDLT,			// Max Bullet Time in Flight
+		BulNum: BulNum,			// Number of bullets
+		BulSpc: BulSpc,			// Bullet spacing
+		BulSp2: BulSpc,
+		// Object
+		BulPtr: [0],			// Bullet Objects
+		BulMpS: [0],			// Bullet Speed
+		BulTim: [0],			// Bullet Time in Flight
+		// Sound
 		ObjNum: 2,
 		SndSrc: "fm2_gun.mp3",	// File (my guns)
-		SndVol: 0.5,			// Volume
 		SndPtr: [0,0],
+		SndVol: 0.5,			// Volume
 		SndMsh: [new makMsh(),new makMsh()],
 	}
 
-//=	SOUNDS =====================//==============================================
+//=	6. SOUNDS VARIABLES ========//==============================================
 //- My Engine and Prop
 let AirMsh = new makMsh();		// For Engine and Prop
 //- My Engine
@@ -750,20 +789,170 @@ let EngSnd = 0;
 const PrpSrc = "fm2_prop.wav";	// File (my prop)
 let PrpVol = 0.5;				// Volume
 let PrpSnd = 0;
-//- My Guns
-//const GunSrc = "fm2_gun.mp3";	// File (my guns)
-//let GunVol = 0.5;				// Volume
-//let GnLSnd = 0;
-//let GnLMsh = new makMsh();
-//let GnRSnd = 0;
-//let GnRMsh = new makMsh();
 //- Other Engine
 const XPESrc = "fm2.wav";		// File (my engine)
 let XPEVol = 0.1;				// Volume
 let XPESnd = 0;
 let XPEMsh = new makMsh();
 
-//= POINTER LOCK CONTROL ======//===============================================
+//= 7. CAMERA VARIABLES ========//==============================================
+//- Create Cockpit Attach Point
+const CamPVC = new makMsh();
+	CamPVC.rotation.order = "YXZ";
+	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
+	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
+//- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
+let CamNum = 2;
+let CamLLD = [new THREE.Vector3(-10,0,30),
+			  new THREE.Vector3(0,0,0.001)];
+let CamAdj = [180,0];			// 180 = Looking In
+let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
+			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
+let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
+			  new THREE.Vector3(45,110,0.5)];
+let CamPar = [air_.AirObj,CamPVC];
+let CamFlg = [0,1];				// 1 = cockpit view
+let CamLnk = [1,1];				// 1 = Linked to Airplane
+//- Shared Variables
+let cam_ = {
+		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
+		CamNum: CamNum,
+		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
+		// Camera
+		CamLLD: new THREE.Vector3().copy(CamLLD[CamSel]), // cam_.MshRot Lat, Lon, Dst
+		CamAdj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
+		CamMMD: new THREE.Vector3().copy(CamMMD[CamSel]), // In/Out - min,max,spd
+		// Rotator
+		MshRot: new makMsh(),	// Camera Rotator
+		CamMMR: new THREE.Vector3().copy(CamMMR[CamSel]), // Rotate - min/max Lat/Lon,rspd
+		// Center of Rotation
+		CamPar: CamPar[CamSel],	// Center of Rotation	
+		CamFlg: CamFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
+		// Linked Airplane
+		CamLnk: CamLnk[CamSel],
+		MshObj: new makMsh(),
+		MshDeg: new makMsh(),
+	}
+//- Adjustments
+	camera.rotation.order = "YXZ";
+	cam_.MshRot.rotation.order = "YXZ";
+	cam_.MshObj.rotation.order = "YXZ";
+	cam_.MshDeg.rotation.order = "YXZ";
+	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
+	cam_.MshObj.add(cam_.MshDeg);
+//- Adjust Camera x.rotation
+let CmAdjX = 0;					// Airborne Pitch Adjustment
+let CmGrdF = 0;					// Camera Ground Flag (1 = On Ground)
+let CmMulX = 35;				// Pitch Adjustment Multiplier
+let CmLagX = 0;					// Transition Offset
+
+//-	Camera View Keys -----------//----------------------------------------------
+let U45flg = 0;					// Up 45 degrees
+let D45flg = 0;					// Down 45 degrees
+let	L45flg = 0;					// Left 45 degrees
+let R45flg = 0;					// Right 45 degrees
+let L90flg = 0;					// Left 90 degrees
+let R90flg = 0;					// Right 90 degrees
+
+//= 8. OUTPUTS VARIABLES =======//==============================================
+
+//- HTML OVERLAY TEXT ----------//----------------------------------------------
+let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
+let Air_PwrNode = document.createTextNode("");
+	Air_PwrElement.appendChild(Air_PwrNode);
+let Air_SpdElement = document.getElementById("Air_Spd"); // Speed
+let Air_SpdNode = document.createTextNode("");
+	Air_SpdElement.appendChild(Air_SpdNode);
+let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
+let Air_AltNode = document.createTextNode("");
+	Air_AltElement.appendChild(Air_AltNode);
+let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
+let Air_HdgNode = document.createTextNode("");
+	Air_HdgElement.appendChild(Air_HdgNode);
+let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
+let Air_CfLNode = document.createTextNode("");
+	Air_CfLElement.appendChild(Air_CfLNode);
+let On_PawsElement = document.getElementById("On_Paws"); // Pause
+let On_PawsNode = document.createTextNode("");
+	On_PawsElement.appendChild(On_PawsNode);
+let Air_AtPElement = document.getElementById("Air_AtP"); // Autopilot
+let Air_AtPNode = document.createTextNode("");
+	Air_AtPElement.appendChild(Air_AtPNode);
+let On_Inf0Element = document.getElementById("On_Inf0"); // Info
+let On_Inf0Node = document.createTextNode("");
+	On_Inf0Element.appendChild(On_Inf0Node);
+let On_Inf1Element = document.getElementById("On_Inf1");
+let On_Inf1Node = document.createTextNode("");
+	On_Inf1Element.appendChild(On_Inf1Node);
+let On_Inf2Element = document.getElementById("On_Inf2");
+let On_Inf2Node = document.createTextNode("");
+	On_Inf2Element.appendChild(On_Inf2Node);
+let On_Inf3Element = document.getElementById("On_Inf3");
+let On_Inf3Node = document.createTextNode("");
+	On_Inf3Element.appendChild(On_Inf3Node);
+let On_Inf4Element = document.getElementById("On_Inf4");
+let On_Inf4Node = document.createTextNode("");
+	On_Inf4Element.appendChild(On_Inf4Node);
+let On_Inf5Element = document.getElementById("On_Inf5");
+let On_Inf5Node = document.createTextNode("");
+	On_Inf5Element.appendChild(On_Inf5Node);
+let On_Inf6Element = document.getElementById("On_Inf6");
+let On_Inf6Node = document.createTextNode("");
+	On_Inf6Element.appendChild(On_Inf6Node);
+let On_Inf7Element = document.getElementById("On_Inf7");
+let On_Inf7Node = document.createTextNode("");
+	On_Inf7Element.appendChild(On_Inf7Node);
+let On_Inf8Element = document.getElementById("On_Inf8");
+let On_Inf8Node = document.createTextNode("");
+	On_Inf8Element.appendChild(On_Inf8Node);
+let On_Inf9Element = document.getElementById("On_Inf9");
+let On_Inf9Node = document.createTextNode("");
+	On_Inf9Element.appendChild(On_Inf9Node);
+//
+let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL;
+let On_Paws,Air_AtP;
+let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
+
+//= 9. INPUTS VARIABLES ========//==============================================
+
+//- DEFAULT KEY BINDINGS -------//----------------------------------------------
+//	Basic
+const K_PwLU =  87;				// Power Up (w) - keyboard left
+const K_PwLD =  81;				// Power Down (q) - keyboard left
+const K_PwRU = 187;				// Power Up (=) - keyboard right
+const K_PwRD = 189;				// Power Down (-) - keyboard right
+const K_BnkL =  37;				// Bank Left (left arrow) - autopilot only
+const K_BnkR =  39;				// Bank Right (right arrow) - autopilot only
+const K_PitU =  40;				// Pitch Up (down arrow) - autopilot only
+const K_PitD =  38;				// Pitch Down (up arrow) - autopilot only
+const K_YwLL =  90;				// Yaw Left (z) - keyboard left
+const K_YwLR =  88;				// Yaw Left (x) - keyboard left
+const K_YwRL = 188;				// Yaw Left (,) - keyboard right
+const K_YwRR = 190;				// Yaw Left (.) - keyboard right
+const K_Brak =  66;				// Brakes (b)
+const K_Guns =  32;				// Guns (spacebar)
+//	Additional
+const K_Flap =  70;				// Flaps (f)
+const K_Gear =  71;				// Landing Gear (g)
+const K_Hook =  72;				// Tailhook (h)
+const K_Canp =  67;				// Canopy (c)
+//	Views
+const K_Look =  16;				// Orbit (shift)
+const K_VU45 =  36;				// View Up (alone or modifier)
+const K_VD45 =  35;				// View Down (alone or modifier)
+const K_VL45 =  33;				// Left 45 degrees
+const K_VR45 =  45;				// Right 45 degrees
+const K_VL90 =  34;				// Left 90 degrees
+const K_VR90 =  46;				// Right 90 degrees
+//	Toggle
+const K_View =  86;				// Toggle Visibility (v)
+const K_Soun =  83;				// Toggle sound (s)
+const K_Paws =  80;				// Pause (p)
+const K_Auto =  65;				// Autopilot (a)
+const K_Info =  73;				// Info (i)
+const K_RSet =  82;				// Reset (r)
+
+//- POINTER LOCK CONTROL -------//----------------------------------------------
 class PointerLockControls extends THREE.EventDispatcher {
 	constructor(camera, domElement, plc_) {
 		super();
@@ -825,164 +1014,17 @@ let instructions = document.getElementById("instructions");
 		instructions.style.display = "";
 	});
 
-//= DEFAULT KEY BINDINGS =======//==============================================
-//	Basic
-const K_PwLU =  87;				// Power Up (w) - keyboard left
-const K_PwLD =  81;				// Power Down (q) - keyboard left
-const K_PwRU = 187;				// Power Up (=) - keyboard right
-const K_PwRD = 189;				// Power Down (-) - keyboard right
-const K_BnkL =  37;				// Bank Left (left arrow) - autopilot only
-const K_BnkR =  39;				// Bank Right (right arrow) - autopilot only
-const K_PitU =  40;				// Pitch Up (down arrow) - autopilot only
-const K_PitD =  38;				// Pitch Down (up arrow) - autopilot only
-const K_YwLL =  90;				// Yaw Left (z) - keyboard left
-const K_YwLR =  88;				// Yaw Left (x) - keyboard left
-const K_YwRL = 188;				// Yaw Left (,) - keyboard right
-const K_YwRR = 190;				// Yaw Left (.) - keyboard right
-const K_Brak =  66;				// Brakes (b)
-const K_Guns =  32;				// Guns (spacebar)
-//	Additional
-const K_Flap =  70;				// Flaps (f)
-const K_Gear =  71;				// Landing Gear (g)
-const K_Hook =  72;				// Tailhook (h)
-const K_Canp =  67;				// Canopy (c)
-//	Views
-const K_Look =  16;				// Orbit (shift)
-const K_VU45 =  36;				// View Up (alone or modifier)
-const K_VD45 =  35;				// View Down (alone or modifier)
-const K_VL45 =  33;				// Left 45 degrees
-const K_VR45 =  45;				// Right 45 degrees
-const K_VL90 =  34;				// Left 90 degrees
-const K_VR90 =  46;				// Right 90 degrees
-//	Toggle
-const K_View =  86;				// Toggle Visibility (v)
-const K_Soun =  83;				// Toggle sound (s)
-const K_Paws =  80;				// Pause (p)
-const K_Auto =  65;				// Autopilot (a)
-const K_Info =  73;				// Info (i)
-const K_RSet =  82;				// Reset (r)
+//==============================================================================
+//																			   =
+//								PROGRAM										   =
+//																			   =
+//==============================================================================
 
-//=	VIEW KEYS ==================//==============================================
-let U45flg = 0;					// Up 45 degrees
-let D45flg = 0;					// Down 45 degrees
-let	L45flg = 0;					// Left 45 degrees
-let R45flg = 0;					// Right 45 degrees
-let L90flg = 0;					// Left 90 degrees
-let R90flg = 0;					// Right 90 degrees
-
-//= CAMERA =====================//==============================================
-//- Create Cockpit Attach Point
-const CamPVC = new makMsh();
-	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
-	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
-//- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
-let CamNum = 2;
-let CamLLD = [new THREE.Vector3(-10,0,30),
-			  new THREE.Vector3(0,0,0.001)];
-let CamAdj = [180,0];			// 180 = Looking In
-let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
-			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
-let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
-			  new THREE.Vector3(45,110,0.5)];
-let CamPar = [air_.AirObj,CamPVC];
-let CamFlg = [0,1];				// 1 = cockpit view
-let CamLnk = [1,1];				// 1 = Linked to Airplane
-//- Shared Variables
-let cam_ = {
-		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
-		CamNum: CamNum,
-		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
-		// Camera
-		CamLLD: new THREE.Vector3().copy(CamLLD[CamSel]), // cam_.MshRot Lat, Lon, Dst
-		CamAdj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
-		CamMMD: new THREE.Vector3().copy(CamMMD[CamSel]), // In/Out - min,max,spd
-		// Rotator
-		MshRot: new makMsh(),	// Camera Rotator
-		CamMMR: new THREE.Vector3().copy(CamMMR[CamSel]), // Rotate - min/max Lat/Lon,rspd
-		// Center of Rotation
-		CamPar: CamPar[CamSel],	// Center of Rotation	
-		CamFlg: CamFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
-		// Linked Airplane
-		CamLnk: CamLnk[CamSel],
-		MshObj: new makMsh(),
-		MshDeg: new makMsh(),
-	}
-//- Adjustments
-	camera.rotation.order = "YXZ";
-	cam_.MshRot.rotation.order = "YXZ";
-	cam_.MshObj.rotation.order = "YXZ";
-	cam_.MshDeg.rotation.order = "YXZ";
-	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
-	cam_.MshObj.add(cam_.MshDeg);
-//- Adjust Camera x.rotation
-let CmAdjX = 0;					// Airborne Pitch Adjustment
-let CmGrdF = 0;					// Camera Ground Flag (1 = On Ground)
-let CmMulX = 35;				// Pitch Adjustment Multiplier
-let CmLagX = 0;					// Transition Offset
-
-//= HTML OVERLAY TEXT ==========//==============================================
-let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
-let Air_PwrNode = document.createTextNode("");
-	Air_PwrElement.appendChild(Air_PwrNode);
-let Air_SpdElement = document.getElementById("Air_Spd"); // Speed
-let Air_SpdNode = document.createTextNode("");
-	Air_SpdElement.appendChild(Air_SpdNode);
-let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
-let Air_AltNode = document.createTextNode("");
-	Air_AltElement.appendChild(Air_AltNode);
-let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
-let Air_HdgNode = document.createTextNode("");
-	Air_HdgElement.appendChild(Air_HdgNode);
-let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
-let Air_CfLNode = document.createTextNode("");
-	Air_CfLElement.appendChild(Air_CfLNode);
-let On_PawsElement = document.getElementById("On_Paws"); // Pause
-let On_PawsNode = document.createTextNode("");
-	On_PawsElement.appendChild(On_PawsNode);
-let Air_AtPElement = document.getElementById("Air_AtP"); // Autopilot
-let Air_AtPNode = document.createTextNode("");
-	Air_AtPElement.appendChild(Air_AtPNode);
-let On_Inf0Element = document.getElementById("On_Inf0"); // Info
-let On_Inf0Node = document.createTextNode("");
-	On_Inf0Element.appendChild(On_Inf0Node);
-let On_Inf1Element = document.getElementById("On_Inf1");
-let On_Inf1Node = document.createTextNode("");
-	On_Inf1Element.appendChild(On_Inf1Node);
-let On_Inf2Element = document.getElementById("On_Inf2");
-let On_Inf2Node = document.createTextNode("");
-	On_Inf2Element.appendChild(On_Inf2Node);
-let On_Inf3Element = document.getElementById("On_Inf3");
-let On_Inf3Node = document.createTextNode("");
-	On_Inf3Element.appendChild(On_Inf3Node);
-let On_Inf4Element = document.getElementById("On_Inf4");
-let On_Inf4Node = document.createTextNode("");
-	On_Inf4Element.appendChild(On_Inf4Node);
-let On_Inf5Element = document.getElementById("On_Inf5");
-let On_Inf5Node = document.createTextNode("");
-	On_Inf5Element.appendChild(On_Inf5Node);
-let On_Inf6Element = document.getElementById("On_Inf6");
-let On_Inf6Node = document.createTextNode("");
-	On_Inf6Element.appendChild(On_Inf6Node);
-let On_Inf7Element = document.getElementById("On_Inf7");
-let On_Inf7Node = document.createTextNode("");
-	On_Inf7Element.appendChild(On_Inf7Node);
-let On_Inf8Element = document.getElementById("On_Inf8");
-let On_Inf8Node = document.createTextNode("");
-	On_Inf8Element.appendChild(On_Inf8Node);
-let On_Inf9Element = document.getElementById("On_Inf9");
-let On_Inf9Node = document.createTextNode("");
-	On_Inf9Element.appendChild(On_Inf9Node);
-//
-let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL;
-let On_Paws,Air_AtP;
-let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
-
-//= MAIN PROGRAMS ==============//==============================================
+//= 1. MAIN PROGRAMS ===========//==============================================
 
 	loadAll();
 	
-//=	0 LOAD ALL =================//==============================================
+//-	0 LOAD ALL------------------//----------------------------------------------
 
 function loadAll() {
 	WaitScreen();				// load loading screen
@@ -992,7 +1034,7 @@ function loadAll() {
 	loadObject();				// load objects	
 }
 
-//= WAIT SCREEN ================//==============================================
+//- WAIT SCREEN ----------------//----------------------------------------------
 
 function WaitScreen() {
 	// Set up the loading screen scene - it can be treated just like our main scene.
@@ -1006,7 +1048,7 @@ function WaitScreen() {
 	loadingScreen.scene.add(loadingScreen.box);
 }
 
-//= 1 INITIALIZE ================//==============================================
+//-	INITIALIZE -----------------//----------------------------------------------
 
 function initAll() {
 	initSkyBox();
@@ -1039,7 +1081,7 @@ function initAll() {
 	LodFlg = 1;
 }
 
-//= 2 RENDER ===================//==============================================
+//- RENDER ---------------------//----------------------------------------------
 
 function rendAll() {
 	// This block runs while resources are loading.
@@ -1079,7 +1121,7 @@ function rendAll() {
 	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
 }
 
-//= SKYBOX =====================//==============================================
+//= 2. SKYBOX ==================//==============================================
 
 //- Load SkyBox ----------------------------------------------------------------
 function loadSkyBox() {
@@ -1116,7 +1158,7 @@ function initSkyBox() {
 	}
 }
 
-//= GEOMAT =====================//==============================================
+//= 3. GEOMAT ===================//==============================================
 // Can't be exported since uses html context to split images
 // Or can you pass address of loader to module?
 
@@ -1201,7 +1243,7 @@ function loadGeoMat() {
 	});
 }
 
-//= OBJECTS ====================//==============================================
+//= 4. OBJECTS =================//==============================================
 
 function loadObject() {
 	AltDif = air_.MapPos.y*AltAdj;
@@ -1898,7 +1940,7 @@ function moveShpAlt() {
 	}
 }
 
-//= MY AIRCRAFT ================//==============================================
+//= 5. MY AIRPLANE ================//==============================================
 
 //= Load Airplane ==============//==============================================
 function loadAirObj() {
@@ -2145,73 +2187,73 @@ function loadBullet() {
 	let BulMtD = new THREE.LineBasicNodeMaterial({colorNode: color(0x804080)});
 	// Note: MeshBasicNodeMaterial not allow envMap
 	let xp = 2;
-	for (let i = 0; i < BulNum; i ++) {
+	for (let i = 0; i < myg_.BulNum; i ++) {
 		// Create Bullet Meshes - 2 Double Lines
-		BulPtr[i] = new makMsh();
+		myg_.BulPtr[i] = new makMsh();
 		// Left
 		line = new THREE.Line(BltGeo,BulMtL); // Lite Color
 		line.position.x = -xp-0.1;
-		BulPtr[i].add(line);
+		myg_.BulPtr[i].add(line);
 		line = new THREE.Line(BltGeo,BulMtD); // Dark Color
 		line.position.x = -xp;
-		BulPtr[i].add(line);
+		myg_.BulPtr[i].add(line);
 		// Rite
 		line = new THREE.Line(BltGeo,BulMtL); // Lite Color
 		line.position.x = xp+0.1;
-		BulPtr[i].add(line);
+		myg_.BulPtr[i].add(line);
 		line = new THREE.Line(BltGeo,BulMtD); // Dark Color
 		line.position.x = xp;
-		BulPtr[i].add(line);
+		myg_.BulPtr[i].add(line);
 		//
-		scene.add(BulPtr[i]);
-		BulPtr[i].visible = false;
+		scene.add(myg_.BulPtr[i]);
+		myg_.BulPtr[i].visible = false;
 		// Initialize Speed and Position
-		BulMpS[i] = new THREE.Vector3();
+		myg_.BulMpS[i] = new THREE.Vector3();
 	}
 }
 
 //- Fire My Bullets ---------------------------------------------------------------
 function moveBullet() {
 	let BulSV3 = new THREE.Vector3();
-	let	BulSpT = BulSpd * DLTime;
-	BulSp2 = BulSp2 - DLTime;
-	if (BulSp2 < 0) BulSp2 = 0;
-	for (let i = 0; i < BulNum; i ++) {
+	let	BulSpT = myg_.BulSpd * DLTime;
+	myg_.BulSp2 = myg_.BulSp2 - DLTime;
+	if (myg_.BulSp2 < 0) myg_.BulSp2 = 0;
+	for (let i = 0; i < myg_.BulNum; i ++) {
 		// Start New Bullets
-		if (!BulTim[i] && !BulSp2 && MYGFlg) {
+		if (!myg_.BulTim[i] && !myg_.BulSp2 && MYGFlg) {
 			// Set Initial Position
-			BulPtr[i].position.set(0,0,0);
+			myg_.BulPtr[i].position.set(0,0,0);
 			// Set Initial Rotation
-			BulPtr[i].rotation.copy(air_.AirObj.rotation);
+			myg_.BulPtr[i].rotation.copy(air_.AirObj.rotation);
 			// Set Initial Speed
 			BulSV3 = new THREE.Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
 			BulSV3 = new THREE.Vector3().setFromSpherical(BulSV3);
-			BulMpS[i].copy(BulSV3);
+			myg_.BulMpS[i].copy(BulSV3);
 			//
-			BulTim[i] = DLTime;
-			BulSp2 = BulSpc;
-			BulPtr[i].visible = true;
+			myg_.BulTim[i] = DLTime;
+			myg_.BulSp2 = myg_.BulSpc;
+			myg_.BulPtr[i].visible = true;
 		}
 		// Continue Bullets
-		BulTim[i] = BulTim[i] + DLTime;
+		myg_.BulTim[i] = myg_.BulTim[i] + DLTime;
 		// End Bullet
-		if (BulTim[i] > BulDLT) {
-			BulTim[i] = 0;
-			BulPtr[i].visible = false;
+		if (myg_.BulTim[i] > myg_.BulDLT) {
+			myg_.BulTim[i] = 0;
+			myg_.BulPtr[i].visible = false;
 		}
 		// Continue Bullet
 		else {
 			// Speed lost due to Drag (approx)
-			BulMpS[i].multiplyScalar(.995);
+			myg_.BulMpS[i].multiplyScalar(.995);
 			// New Relative Position
-			BulPtr[i].position.x = BulPtr[i].position.x - BulMpS[i].x;
-			BulPtr[i].position.y = BulPtr[i].position.y + BulMpS[i].y - GrvDLT; // Bullet drop
-			BulPtr[i].position.z = BulPtr[i].position.z - BulMpS[i].z;
+			myg_.BulPtr[i].position.x = myg_.BulPtr[i].position.x - myg_.BulMpS[i].x;
+			myg_.BulPtr[i].position.y = myg_.BulPtr[i].position.y + myg_.BulMpS[i].y - GrvDLT; // Bullet drop
+			myg_.BulPtr[i].position.z = myg_.BulPtr[i].position.z - myg_.BulMpS[i].z;
 		}
 	} // end i
 }
 
-//= SOUNDS =====================//==============================================
+//= 6. SOUNDS ==================//==============================================
 
 //- Load and Initialize Sounds -------------------------------------------------
 function loadSounds() {
@@ -2348,9 +2390,9 @@ function stopSounds() {
 	}
 }
 
-//= VIEWS ======================//==============================================
+//= 7. CAMERA ==================//==============================================
 
-//- Init View ------------------//----------------------------------------------
+//- Init Camera View -----------//----------------------------------------------
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.CamLLD.z;
 	camera.rotation.y = cam_.CamAdj*DegRad;
@@ -2402,7 +2444,7 @@ function initCamera(camera,cam_) {
 	moveCamera(camera,cam_);
 }
 
-//- Move View ------------------//----------------------------------------------
+//- Move Camera View -------------//----------------------------------------------
 function moveCamera(camera,cam_) {
 	// Move Camera In/Out
 	camera.position.z = -cam_.CamLLD.z;
@@ -2456,7 +2498,7 @@ function moveCamera(camera,cam_) {
 	}
 }
 
-//= OUTPUTS ====================//==============================================
+//= 8. OUTPUTS ====================//==============================================
 
 //-	Print HUD Values -----------------------------------------------------------
 function prntHUDval() {
@@ -2531,7 +2573,7 @@ function onInfo2(){
 	On_Inf8Node.nodeValue = "All 3 Keys look back";
 }
 
-//= INPUTS =====================//==============================================
+//= 9. INPUTS =====================//==============================================
 // The PointerLockControls creates inputs for mouse movement.
 // This creates inputs for mouse buttons and keys.
 
