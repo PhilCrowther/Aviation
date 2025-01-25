@@ -58,6 +58,36 @@ let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL;
 let On_Paws,Air_AtP;
 let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
+//- Info Text ------------------------------------------------------------------
+let InfoData = [
+		[
+			"Info : Press I","","","","","","","","",""
+		],
+		[
+			"",
+			"CONTROLS",
+			"Mouse changes Pitch/Bank and Yaw (bottons)",
+			"AutoPilot: Arrow Key change Pitch and Bank",
+			"Mouse Wheel or -/= Keys change Throttle",
+			"G Key toggles landing gear",
+			"F Key toggles flaps",
+			"S Key toggles sound",
+			"Spacebar fires guns"
+		],
+		[
+			"",
+			"VIEW KEYS",
+			"V Key toggles views",
+			"Shift Key and Mouse orbits around airplane",
+			"END Key looks down",
+			"DELETE or PAGE DOWN Keys look left/right",
+			"HOME Key and above Keys look up",
+			"END Key and DELETE or PAGE DOWN Keys look back",
+			"All 3 Keys look back"
+		]
+	];
+
+
 //= 9. INPUTS VARIABLES ========//==============================================
 
 //- DEFAULT KEY BINDINGS -------//----------------------------------------------
