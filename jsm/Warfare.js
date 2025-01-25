@@ -18,6 +18,10 @@ import {
 	LineBasicNodeMaterial,
 	Spherical,
 	Vector3,
+	// makMsh
+	BoxGeometry,
+	Mesh,
+	MeshBasicNodeMaterial
 } from 'three';
 
 import {color} from "three/tsl";
@@ -119,8 +123,17 @@ function Mod360(deg) {
 	deg = deg % 360;					// Compute remainder of any number divided by 360
 return deg;}
 
+//- Make Mesh ------------------------------------------------------------------
+function makMsh() {
+	let geometry = new BoxGeometry(0.01,0.01,0.01); 
+	let material = new MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
+	let mesh = new Mesh(geometry,material);
+return mesh;}
+
+//= EXPORTS ====================================================================
+
 export {loadBullet,moveBullet};
 
 /*= REVISIONS ==================================================================
- * 250123:	Created
+ * 250125:	Created
 */
