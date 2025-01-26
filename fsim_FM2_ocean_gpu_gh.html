@@ -483,27 +483,32 @@ let gun_ = {
 //- MOVING OBJECTS -------------//----------------------------------------------
 //. Airplane ...................................................................
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-const XPFile = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
+const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
+const XP2Nam = "A6M_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
 let xac_ = {
-		ObjNum: 1,				// Number of airplanes
-		ObjSrc: [XPPath+XPFile], // Model Source file
-		ObjTxt: [0],			// Texture Source File (not used)
-		ObjAdr: [0],			// Object Address
-		ObjSiz: [Ft2Mtr],		// Scale
-		RndOrd: [0],			// renderOrder (not used)
-		ObjRot: [new THREE.Euler(0,0,30)], // Rotation
-		MapPos: [new THREE.Vector3(180,1524,5300)], // meters
-		ObjRef: [0],			// 0 = not linked
+		ObjNum: 2,				// Number of airplanes
+		ObjSrc: [XPPath+XP1Nam, // Model Source file
+				 XPPath+XP2Nam],
+		ObjTxt: [0,0],			// Texture Source File (not used)
+		ObjAdr: [0,0],			// Object Address
+		ObjSiz: [Ft2Mtr,Ft2Mtr], // Scale
+		RndOrd: [0,0],			// renderOrder (not used)
+		ObjRot: [new THREE.Euler(0,0,30), // Rotation
+				 new THREE.Euler(0,0,30)],
+		MapPos: [new THREE.Vector3(180,1524,5300), // meters
+				 new THREE.Vector3(180,1524,5300)],
+		ObjRef: [0,0],			// 0 = not linked
 		// Speed
-		SpdMPS: [91.5],			// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-		MapSpd: [new THREE.Vector3()], // not used
+		SpdMPS: [91.5,91,5],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+		MapSpd: [new THREE.Vector3(), // not used
+				 new THREE.Vector3()],
 		// Basic Animations
-		ObjDst: [0],			// Object distance (meters) used to activate effects
-		MixSpn: [0],			// Animation Mixer - Prop
-		MixPit: [0],			// Animation Mixer - Pitch
-		AnmPit: [0],			// Animation
-		MixBnk: [0],			// Animation Mixer - Bank
-		AnmBnk: [0],			// Animation
+		ObjDst: [0,0],			// Object distance (meters) used to activate effects
+		MixSpn: [0,0],			// Animation Mixer - Prop
+		MixPit: [0,0],			// Animation Mixer - Pitch
+		AnmPit: [0,0],			// Animation
+		MixBnk: [0,0],			// Animation Mixer - Bank
+		AnmBnk: [0,0],			// Animation
 	};
 //. Aircraft Carrier ...........//..............................................
 let xsh_ = {
@@ -1346,68 +1351,74 @@ function moveFxdObj() {
 
 //-	Load Airplane --------------------------------------------------------------
 function loadMovPln() {
-	gltfLoader.load(xac_.ObjSrc[0], function (gltf) {
-		xac_.ObjAdr[0] = gltf.scene;
-		// Convert from feet to meters
-		xac_.ObjAdr[0].scale.setScalar(xac_.ObjSiz[0]);
-		// Propeller
-		let clip = THREE.AnimationClip.findByName(gltf.animations, "propellerAction");
-		xac_.MixSpn[0] = new THREE.AnimationMixer(xac_.ObjAdr[0]);
-		let actun = xac_.MixSpn[0].clipAction(clip);
-		actun.play();
-		if (xac_.MixSpn[0]) xac_.MixSpn[0].setTime(anm_.spnprp/anmfps);
-		// Bank
-		clip = THREE.AnimationClip.findByName(gltf.animations, "AC_BankAction");
-		xac_.MixBnk[0] = new THREE.AnimationMixer(xac_.ObjAdr[0]);
-		actun = xac_.MixBnk[0].clipAction(clip);
-		actun.play();
-		if (xac_.MixBnk[0]) xac_.MixBnk[0].setTime(xac_.AnmBnk[0]/anmfps);
-		// Pitch
-		clip = THREE.AnimationClip.findByName(gltf.animations, "AC_PtchAction");
-		xac_.MixPit[0] = new THREE.AnimationMixer(xac_.ObjAdr[0]);
-		actun = xac_.MixPit[0].clipAction(clip);
-		actun.play();
-		if (xac_.MixPit[0]) xac_.MixPit[0].setTime(xac_.AnmPit[0]/anmfps);
-		// Rotation
-		xac_.ObjAdr[0].rotation.order = "YXZ"; // Heading, Pitch, Bank
-		xac_.ObjAdr[0].rotation.y = xac_.ObjRot[0].y*DegRad;
-		//
-		xac_.ObjAdr[0].add(XPEMsh);	// Engine sound
-	});
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		gltfLoader.load(xac_.ObjSrc[n], function (gltf) {
+			xac_.ObjAdr[n] = gltf.scene;
+			// Convert from feet to meters
+			xac_.ObjAdr[n].scale.setScalar(xac_.ObjSiz[n]);
+			// Propeller
+			let clip = THREE.AnimationClip.findByName(gltf.animations, "propellerAction");
+			xac_.MixSpn[n] = new THREE.AnimationMixer(xac_.ObjAdr[n]);
+			let actun = xac_.MixSpn[n].clipAction(clip);
+			actun.play();
+			if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anmfps);
+			// Bank
+			clip = THREE.AnimationClip.findByName(gltf.animations, "AC_BankAction");
+			xac_.MixBnk[n] = new THREE.AnimationMixer(xac_.ObjAdr[n]);
+			actun = xac_.MixBnk[n].clipAction(clip);
+			actun.play();
+			if (xac_.MixBnk[n]) xac_.MixBnk[n].setTime(xac_.AnmBnk[n]/anmfps);
+			// Pitch
+			clip = THREE.AnimationClip.findByName(gltf.animations, "AC_PtchAction");
+			xac_.MixPit[n] = new THREE.AnimationMixer(xac_.ObjAdr[n]);
+			actun = xac_.MixPit[n].clipAction(clip);
+			actun.play();
+			if (xac_.MixPit[n]) xac_.MixPit[n].setTime(xac_.AnmPit[n]/anmfps);
+			// Rotation
+			xac_.ObjAdr[n].rotation.order = "YXZ"; // Heading, Pitch, Bank
+			xac_.ObjAdr[n].rotation.y = xac_.ObjRot[n].y*DegRad;
+			//
+			xac_.ObjAdr[n].add(XPEMsh);	// Engine sound
+		});
+	}
 }
 
 //- Init Airplane --------------------------------------------------------------
 function initMovPln() {
-	// Compute Relative Position
-	// (cause Objects to elevate above water as we climb to prevent flicker)
-	let X = xac_.MapPos[0].x-air_.MapPos.x;
-	let Y = xac_.MapPos[0].y-AltDif;
-	let Z = air_.MapPos.z-xac_.MapPos[0].z;
-	xac_.ObjAdr[0].position.set(X,Y,Z);
-	scene.add(xac_.ObjAdr[0]);
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		// Compute Relative Position
+		// (cause Objects to elevate above water as we climb to prevent flicker)
+		let X = xac_.MapPos[n].x-air_.MapPos.x;
+		let Y = xac_.MapPos[n].y-AltDif;
+		let Z = air_.MapPos.z-xac_.MapPos[n].z;
+		xac_.ObjAdr[n].position.set(X,Y,Z);
+		scene.add(xac_.ObjAdr[n]);
+	};
 }
 
 //- Move Plane -----------------------------------------------------------------
 function moveMovPln() {
-	// Rotation
-	let XPHSpd = Math.tan(xac_.ObjRot[0].z*DegRad)*xac_.SpdMPS[0]/GrvMPS;
-	XPHSpd = XPHSpd * DLTime;
-	xac_.ObjRot[0].y = xac_.ObjRot[0].y + XPHSpd;
-	xac_.ObjAdr[0].rotation.set(0,xac_.ObjRot[0].y*DegRad,xac_.ObjRot[0].z*DegRad);
-	// Speed (Only Horizontal for Now)
-	let SpdMPF = xac_.SpdMPS[0] * DLTime; // Speed (m/t)
-	let SpeedZ = -SpdMPF * Math.cos(xac_.ObjRot[0].y * DegRad);
-	let SpeedX = -SpdMPF * Math.sin(xac_.ObjRot[0].y * DegRad);
-	// Recompute Map Position
-	xac_.MapPos[0].x = xac_.MapPos[0].x + SpeedX;
-	xac_.MapPos[0].z = xac_.MapPos[0].z - SpeedZ;
-	// Animation - Prop (same as mine)
-	if (xac_.MixSpn[0]) xac_.MixSpn[0].setTime(anm_.spnprp/anmfps);
-	// Compute New Relative Position
-	let X = xac_.MapPos[0].x-air_.MapPos.x;
-	let Y = xac_.MapPos[0].y-AltDif;
-	let Z = air_.MapPos.z-xac_.MapPos[0].z;
-	xac_.ObjAdr[0].position.set(X,Y,Z);
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		// Rotation
+		let XPHSpd = Math.tan(xac_.ObjRot[n].z*DegRad)*xac_.SpdMPS[n]/GrvMPS;
+		XPHSpd = XPHSpd * DLTime;
+		xac_.ObjRot[n].y = xac_.ObjRot[n].y + XPHSpd;
+		xac_.ObjAdr[n].rotation.set(0,xac_.ObjRot[n].y*DegRad,xac_.ObjRot[n].z*DegRad);
+		// Speed (Only Horizontal for Now)
+		let SpdMPF = xac_.SpdMPS[n] * DLTime; // Speed (m/t)
+		let SpeedZ = -SpdMPF * Math.cos(xac_.ObjRot[n].y * DegRad);
+		let SpeedX = -SpdMPF * Math.sin(xac_.ObjRot[n].y * DegRad);
+		// Recompute Map Position
+		xac_.MapPos[n].x = xac_.MapPos[n].x + SpeedX;
+		xac_.MapPos[n].z = xac_.MapPos[n].z - SpeedZ;
+		// Animation - Prop (same as mine)
+		if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anmfps);
+		// Compute New Relative Position
+		let X = xac_.MapPos[n].x-air_.MapPos.x;
+		let Y = xac_.MapPos[n].y-AltDif;
+		let Z = air_.MapPos.z-xac_.MapPos[n].z;
+		xac_.ObjAdr[n].position.set(X,Y,Z);
+	}
 }
 
 //= MOVING SHIPS ===============//==============================================
