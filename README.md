@@ -1,4 +1,4 @@
-<img border="2" src="textures/images/fsim_240824.jpg" style="float: center">
+<img border="2" src="textures/images/fsim_250126.jpg" style="float: center">
 
 <h2>My Aviation Resources Repository (rev. 15 Jan 2025)</h2>
 <p>
