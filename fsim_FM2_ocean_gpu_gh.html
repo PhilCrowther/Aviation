@@ -77,7 +77,7 @@ import {color,texture,attribute,range,positionLocal,uv,mix,uniform,
 		time,		// r170
 } from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js"; // r171
@@ -85,6 +85,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; /
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {loadBullet,moveBullet,loadGunObj,moveGunObj} from "https://PhilCrowther.github.io/Aviation/jsm/Warfare.js";
+import {initVulkan,initShpWak} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 
 //= GENERAL ===================================================================
 
@@ -112,16 +113,25 @@ import {loadBullet,moveBullet,loadGunObj,moveGunObj} from "https://PhilCrowther.
 
 //=	TO DO:
 //-	Program:
+//	* Move Variables to Data File (not variables which include three.js functions)
 //	* Reset to starting position (r)
 //	* Convert waving flag to GPU shader
+//	* My Guns seem to be aimed too high? Or is that AoA?
 //-	Flight Module:
 //	* Add supercharger/turbocharger effect
+//	* Fix Autopilot
 
-//= INDEX TO SECTIONS ==========================================================
-//	VARIABLES
+//==============================================================================
+//																			   =
+//							INDEX TO SECTIONS								   =
+//																			   =
+//==============================================================================
+
+//	VARIABLES (also see Data File)
+//	1. MAIN VARIABLES
 //	2. SKYBOX VARIABLES
 //	3. GEOMAT VARIABLES
-//	4. OBJECTS VARIABLES
+//	4. OBJECT VARIABLES
 //		GRDWTR MODULE
 //		OCEAN MODULE
 //		WARFARE MODULE (AA Guns)
@@ -129,10 +139,11 @@ import {loadBullet,moveBullet,loadGunObj,moveGunObj} from "https://PhilCrowther.
 //		FLIGHT MODULE
 //		ANIMFM2 MODULE
 //		WARFARE MODULE (My Guns)
-//	6. SOUNDS VARIABLES
+//	6. SOUND VARIABLES
 //	7. CAMERA VARIABLES
-//  8. OUTPUTS VAIABLES
-//	9. INPUTS VARIABLES
+//  8. OUTPUT VAIABLES
+//	9. INPUT VARIABLES
+
 //	PROGRAM
 //	1. MAIN			Main Program
 //	2. SKYBOX		SkyCube
@@ -144,17 +155,13 @@ import {loadBullet,moveBullet,loadGunObj,moveGunObj} from "https://PhilCrowther.
 //	8. OUTPUTS		Screen Text and Numbers
 //	9. INPUTS		Key and Mouse Inputs
 
-//- TO DO ======================================================================
-//*	Fix Autopilot
-//* My Guns seem to be aimed too high?
-
 //==============================================================================
 //																			   =
 //								VARIABLES									   =
 //																			   =
 //==============================================================================
 
-//= MAIN VARIABLES =============//==============================================
+//= 1. MAIN VARIABLES ==========//==============================================
 
 //- INPUTS ---------------------//----------------------------------------------
 //- AIRPLANE: Start ............................................................
@@ -176,28 +183,14 @@ let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys
 let LagAtP = new THREE.Vector3(0.967,0,0.099);	// CfL - Autopilot
 //- POINTER LOCK CONTROLS ------------------------------------------------------
-let InpMos = new THREE.Vector2(); // Inputs - Mouse
-let _changeEvent = {type: "change"};
-let _lockEvent = {type: "lock"};
-let _unlockEvent = {type: "unlock"};
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
 let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
 
 //- CONSTANTS ------------------//----------------------------------------------
+//	Conversions (Loaded from Data File)
 //	Time
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 let DLTim2 = DLTime*DLTime;
-//	Conversions
-const DegRad = Math.PI/180;		// Convert Degrees to Radians
-const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
-const Ft2Mtr = 0.3048;			// Convert Feet to Meters
-const Mtr2Ft = 1/Ft2Mtr;
-const Km2Mil = 0.621371;
-const Mil2Km = 1.60934;
-const MtrMil = 1609.34;			// Meters per Mile
-//	Default Constants
-const GrvMPS = 9.80665; 			// Gravity (mps)
-//	Starting Constants per frame
 let GrvDLT = GrvMPS*DLTim2;
 //	Set Zero Values
 let V3Zero = new THREE.Vector3(0,0,0);
@@ -388,7 +381,7 @@ let wav_ = {
 		Spd: AnmSpd
 	};
 
-//= 4. OBJECTS VARIABLES =======//==============================================
+//= 4. OBJECT VARIABLES ========//==============================================
 
 // Sample Variable
 //let var_ = {
@@ -487,8 +480,8 @@ let gun_ = {
 		SndVol: 15,				// Volume
 	};
 
-//= MOVING OBJECTS =============//==============================================
-//- Airplane -------------------------------------------------------------------
+//- MOVING OBJECTS -------------//----------------------------------------------
+//. Airplane ...................................................................
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 const XPFile = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
 let xac_ = {
@@ -512,7 +505,7 @@ let xac_ = {
 		MixBnk: [0],			// Animation Mixer - Bank
 		AnmBnk: [0],			// Animation
 	};
-//- Aircraft Carrier -----------------------------------------------------------
+//. Aircraft Carrier ...........//..............................................
 let xsh_ = {
 		ObjNum: 2,				// Number of ships
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
@@ -540,13 +533,14 @@ let xsh_ = {
 		ShpLok: [new makMsh(),0] // Deck Lock
 	};
 
-//= ANIMATED OBJECTS ===========//==============================================
-//- Smoke ----------------------//----------------------------------------------
+//- ANIMATED OBJECTS -----------//----------------------------------------------
+//. Smoke ......................//..............................................
 //	Can use this for Volcano or to Show Battle Damage
 let vlk_ = {
 		ObjNum: 1,				// Number of Smokes
 		ObjSrc: [0],
 		ObjTxt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png"],
+		VlkTxt: [0],
 		ObjAdr: [0],
 		ObjSiz: [4000],			// Scale
 		RndOrd: [1],			// renderOrder
@@ -557,13 +551,14 @@ let vlk_ = {
 		SpdMPS: [0],			// 0 = not moving
 		MapSpd: [new THREE.Vector3()]
 	};
-//- Wakes ----------------------//----------------------------------------------
+//. Wakes ......................//..............................................
 //	Used for Ships and Torpedoes
 let wak_ = {
 		ObjNum: 2,				// Number of Wakes
 		ObjSrc: [0,0],
 		ObjTxt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
 				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png"],
+		WakTxt: [0,0],
 		ObjAdr: [0,0],
 		ObjSiz: [4000,4000],	// Scale
 		RndOrd: [1,1],			// renderOrder
@@ -572,7 +567,7 @@ let wak_ = {
 		ObjRef: [xsh_.ObjGrp[0], // Parent Object
 				 xsh_.ObjGrp[1]],
 	};
-//- Flags ----------------------//----------------------------------------------
+//. Flags ......................//..............................................
 //	Can attach to Ships or Flagpoles
 let	flg_ = {
 		ObjNum:	1,				// Number of Flags
@@ -590,7 +585,7 @@ let	flg_ = {
 		ObjAdj: [0]
 	};
 
-//= MINIMUM ALTITUDE ===========//==============================================
+//- MINIMUM ALTITUDE -----------//----------------------------------------------
 let alt_ = {
 		Num: 2,
 		Ref: [isl_.ObjGrp[0],xsh_.ObjGrp[0]],
@@ -787,7 +782,7 @@ let myg_ = {
 		SndMsh: [new makMsh(),new makMsh()],
 	}
 
-//=	6. SOUNDS VARIABLES ========//==============================================
+//=	6. SOUND VARIABLES =========//==============================================
 //- My Engine and Prop
 let AirMsh = new makMsh();		// For Engine and Prop
 //- My Engine
@@ -863,7 +858,7 @@ let R45flg = 0;					// Right 45 degrees
 let L90flg = 0;					// Left 90 degrees
 let R90flg = 0;					// Right 90 degrees
 
-//= 8. OUTPUTS VARIABLES =======//==============================================
+//= 8. OUTPUT VARIABLES ========//==============================================
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
 //	Loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
@@ -871,12 +866,18 @@ let R90flg = 0;					// Right 90 degrees
 //- INFO DATA ------------------------------------------------------------------
 //	Loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
-//= 9. INPUTS VARIABLES ========//==============================================
+//= 9. INPUT VARIABLES =========//==============================================
 
 //- DEFAULT KEY BINDINGS -------//----------------------------------------------
 //	Loadd from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
 //- POINTER LOCK CONTROL -------//----------------------------------------------
+//	Variables
+let InpMos = new THREE.Vector2(); // Inputs - Mouse
+let _changeEvent = {type: "change"};
+let _lockEvent = {type: "lock"};
+let _unlockEvent = {type: "unlock"};
+//	Class
 class PointerLockControls extends THREE.EventDispatcher {
 	constructor(camera, domElement, plc_) {
 		super();
@@ -924,7 +925,7 @@ class PointerLockControls extends THREE.EventDispatcher {
 		this.connect();
 	}
 }
-//- Setup ----------------------------------------------------------------------
+//. Setup ......................................................................
 let controls = new PointerLockControls(camera, renderer.domElement,air_);
 let blocker = document.getElementById("blocker");
 let instructions = document.getElementById("instructions");
@@ -1315,41 +1316,8 @@ function moveIsland() {
 
 //- Load Volcano ---------------------------------------------------------------
 function loadVulkan() {
-	txtrLoader.load(vlk_.ObjTxt[0], function (VlkTxt) {
-		//- Timer
-		let speed = uniform(.001); // r170
-		let scaledTime = time.add(125).mul(speed); // r170
-		//- Life
-		let lifeRange = range(0.1,1);
-		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
-		let life = lifeTime.div(lifeRange);
-		//- Rotation Range
-		let rotateRange = range(.1,4);
-		let textureNode = texture(VlkTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
-		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
-		//- Lateral Offset	
-		let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1)); // cone shaped
-		//- Size Range
-		let scaleRange = range(.1,.2);
-		//
-		let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-		// Wake
-		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-		let VlkMat = new THREE.SpriteNodeMaterial();
-			VlkMat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
-			VlkMat.opacityNode = opacityNode;
-			VlkMat.positionNode = offsetRange.mul(lifeTime);
-			VlkMat.scaleNode = scaleRange.mul(lifeTime.max(0.3));
-			VlkMat.depthWrite = false;
-			VlkMat.transparent = true;
-		vlk_.ObjAdr[0] = new THREE.Mesh(new THREE.PlaneGeometry(1, 1),VlkMat);
-			vlk_.ObjAdr[0].scale.setScalar(vlk_.ObjSiz[0]);
-			vlk_.ObjAdr[0].isInstancedMesh = true;
-			vlk_.ObjAdr[0].count = 600; // Increases continuity (was 100)
-			vlk_.ObjAdr[0].position.copy(vlk_.MapPos[0]);
-			vlk_.ObjAdr[0].renderOrder = vlk_.RndOrd[0]; // This allows the transparent smoke to work with transparent island
-			vlk_.ObjRef[0].add(vlk_.ObjAdr[0]);
-	})
+	vlk_.VlkTxt[0] = txtrLoader.load(vlk_.ObjTxt[0]);
+	initVulkan(vlk_);
 }
 
 //= STATIC OBJECTS =============//==============================================
@@ -1538,47 +1506,14 @@ function moveMovShp() {
 
 //- Load Ship Wake -------------------------------------------------------------
 function loadShpWak() {
-	for (let n = 0; n < xsh_.ObjNum; n ++) {
-		txtrLoader.load(wak_.ObjTxt[n], function (WakTxt) {
-			//- Timer
-			let speed = uniform(.001); // r170 Lower = slower
-			let scaledTime = time.add(125).mul(speed); // r170
-			//- Life
-			let lifeRange = range(0.1,1);
-			let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
-			let life = lifeTime.div(lifeRange);
-			//- Rotation Range
-			let rotateRange = range(.1,.2);
-			let textureNode = texture(WakTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
-			let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
-			//- Lateral Offset	
-			let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
-			//- Size Range
-			let scaleRange = range(.01,.02);
-			//
-			let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
-			// Wake
-			let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-			let	WakMat = new THREE.SpriteNodeMaterial();
-				WakMat.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
-				WakMat.opacityNode = opacityNode;
-				WakMat.positionNode = offsetRange.mul(lifeTime);
-				WakMat.scaleNode = scaleRange.mul(lifeTime.max(0.3));
-				WakMat.depthWrite = false;
-				WakMat.transparent = true;
-			wak_.ObjAdr[n] = new THREE.Mesh(new THREE.PlaneGeometry(1, 1),WakMat);
-				wak_.ObjAdr[n].scale.setScalar(wak_.ObjSiz[n]);
-				wak_.ObjAdr[n].isInstancedMesh = true;
-				wak_.ObjAdr[n].count = 600; // Increases continuity (was 100)
-				wak_.ObjAdr[n].rotation.x = Math.PI/2; // Set Flat
-				wak_.ObjAdr[n].position.y = -5; // Added
-				wak_.ObjRef[n].add(wak_.ObjAdr[n]);
-		});
+	for (let n = 0; n < wak_.ObjNum; n ++) {
+		wak_.WakTxt[n] = txtrLoader.load(wak_.ObjTxt[n]);
 	}
-}
+	initShpWak(wak_);
+};
 
 function moveShpWak() {
-	for (let n = 0; n < xsh_.ObjNum; n ++) {
+	for (let n = 0; n < wak_.ObjNum; n ++) {
 		wak_.ObjAdr[n].rotation.x = Math.PI/2-wak_.ObjRef[n].rotation.x;
 	}
 }
