@@ -20,7 +20,7 @@ import {
 	Vector3,
 } from 'three';
 
-import {uniform,range,color,texture,rotateUV,mix,time} from "three/tsl";
+import {uniform,range,color,texture,uv,rotateUV,mix,time} from "three/tsl";
 
 //= INITIALIZE VOLCANO SMOKE ===================================================
 
