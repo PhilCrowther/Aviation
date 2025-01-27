@@ -169,7 +169,7 @@ function loadXACBul(xac_,scene) {
 
 //= MOVE XP BULLETS ============================================================
 
-function moveXACBul(xac_,air_,DLTime,GrvDLT) {
+function moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT) {
 	let BulSV3 = new Vector3();
 	let	BulSpT = xac_.BulSpd * DLTime;
 	for (let n = 0; n < xac_.ObjNum; n ++) {
