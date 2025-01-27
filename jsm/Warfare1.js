@@ -164,8 +164,7 @@ function loadGunObj(gun_,scene) {
 			depthWrite:false,
 		});
 		gun_.SmkPtr[n] = new Sprite(gun_.SmkMat[n]);
-		gun_.SmkPtr[n].scale.set(100,50,100);
-		gun_.SmkPtr[n].rotation.order = "YXZ";	
+//		gun_.SmkPtr[n].scale.set(100,50,100);
 		scene.add(gun_.SmkPtr[n]);
 		gun_.SmkPtr[n].visible = false;
 	} // end of n
@@ -219,6 +218,8 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
 					gun_.SmkRot[n] = gun_.SmkRot[n] + 30; // Rotate smoke shape
+					gun_.SmkMat[n].rotation = gun_.SmkRot[n] * DegRad;
+					gun_.SmkPtr[n].scale.set(100,50,100);
 					if (SndFlg && gun_.SndFlg[n]) gun_.SndPtr[n].play();
 				}
 				if (n == 1 && i == 2) {
@@ -226,6 +227,8 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
 					gun_.SmkRot[n] = gun_.SmkRot[n] + 30; // Rotate smoke shape
+					gun_.SmkMat[n].rotation = gun_.SmkRot[n] * DegRad;
+					gun_.SmkPtr[n].scale.set(100,50,100);
 					if (SndFlg && gun_.SndFlg[n]) gun_.SndPtr[n].play();
 				}
 			}
@@ -248,7 +251,7 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			gun_.SmkPtr[n].position.x = gun_.SmkMpP[n].x - air_.MapPos.x;
 			gun_.SmkPtr[n].position.y = gun_.SmkMpP[n].y - AltDif;
 			gun_.SmkPtr[n].position.z = air_.MapPos.z - gun_.SmkMpP[n].z;
-			gun_.SmkMat[n].rotation = (air_.AirRot.z + gun_.SmkRot[n]) * DegRad;
+			gun_.SmkMat[n].rotation = air_.AirRot.z * DegRad;
 			gun_.SmkMat[n].opacity = gun_.SmkMat[n].opacity - 0.005;
 			if (gun_.SmkMat[n].opacity < 0) {
 				gun_.SmkMat[n].opacity = 0;
