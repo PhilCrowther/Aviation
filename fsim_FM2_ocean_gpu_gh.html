@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Jan 2025
+Version dated 27 Jan 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -84,7 +84,10 @@ import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js"; 
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r171 computeAsync works with r170
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
-import {loadBullet,moveBullet,loadGunObj,moveGunObj} from "https://PhilCrowther.github.io/Aviation/jsm/Warfare.js";
+import {loadBullet,moveBullet,
+		loadXACBul,moveXACBul,
+		loadGunObj,moveGunObj
+} from "https://PhilCrowther.github.io/Aviation/jsm/Warfare.js";
 import {initVulkan,initShpWak} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 
 //= GENERAL ===================================================================
@@ -469,7 +472,7 @@ let gun_ = {
 		SmkMap: [0,0],
 		SmkMat: [0,0],
 		SmkPtr: [0,0],			// AAA Smoke
-		SmkRot: [0,180],		// Z-rotation of smoke
+		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
 		SmkTim: [0,0],
@@ -480,6 +483,13 @@ let gun_ = {
 		SndMsh: [new makMsh(),new makMsh()],
 		SndVol: 15,				// Volume
 	};
+
+//- Aircraft Guns
+//	M2 Browning .50 caliber
+let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
+let BulDLT = 0.5;				// Bullet Maximum Time in Flight
+let BulNum = 16;				// Number of bullets
+let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
 
 //- MOVING OBJECTS -------------//----------------------------------------------
 //. Airplane ...................................................................
@@ -510,11 +520,29 @@ let xac_ = {
 		AnmPit: [0,0],			// Animation
 		MixBnk: [0,0],			// Animation Mixer - Bank
 		AnmBnk: [0,0],			// Animation
+		// Guns
+		BulSpd: BulSpd,			// Muzzle Velocity (mps)
+		BulDLT: BulDLT,			// Max Bullet Time in Flight
+		BulNum: BulNum,			// Number of bullets
+		BulSpc: BulSpc,			// Bullet spacing
+		BulSp2: [BulSpc,BulSpc],
+		BulFlg: [0,1],			// 1 = Guns Firing
+		BulPtr: [[],[]],		// Bullet Objects
+		BulMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		BulMpP: [[0],[0]],		// Bullet Map Position (V3)
+		BulTim: [[],[]],		// Bullet Time in Flight
 		// Engine Sounds
-		XPESrc: ["fm2.wav","fm2.wav"],
-		XPESnd: [0,0],
-		XPEMsh: [new makMsh(),new makMsh()],
-		XPEVol: [0.1,0.1]				// Volume
+		EngSrc: ["fm2.wav",
+				 "fm2.wav"],
+		EngPtr: [0,0],
+		EngMsh: [new makMsh(),new makMsh()],
+		EngVol: [0.1,0.1],		// Volume
+		// Gun Sounds
+		SndSrc: ["fm2_gun.mp3",	// File (my guns)
+				 "fm2_gun.mp3"],
+		SndPtr: [0,0],
+		SndVol: [0.5,0.5],		// Volume
+		SndMsh: [new makMsh(),new makMsh()],		
 	};
 
 //. Aircraft Carrier ...........//..............................................
@@ -769,11 +797,6 @@ let anm_ = {
 		thkflg: 0,				// Tailhook (up/down)
 	}
 //- My Guns --------------------------------------------------------------------
-//	M2 Browning .50 caliber
-let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
-let BulDLT = 0.5;				// Bullet Maximum Time in Flight
-let BulNum = 16;				// Number of bullets
-let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
 // Sounds
 let myg_ = {
 		// Data
@@ -963,6 +986,7 @@ function loadAll() {
 	loadSkyBox();
 	loadGeoMat();
 	loadAirObj();
+	AltDif = air_.MapPos.y*AltAdj; // Used by everything
 	loadObject();				// load objects	
 }
 
@@ -986,6 +1010,7 @@ function initAll() {
 	initSkyBox();
 	// Objects
 	initAirObj();
+	AltDif = air_.MapPos.y*AltAdj; // Used by everything
 	initObject();				// Determine relative XZ location of all objects
 	// Grid
 	waves = new Ocean(renderer,wav_); // Init Ocean
@@ -1032,6 +1057,7 @@ function rendAll() {
 		moveCamera(camera,cam_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
+		AltDif = air_.MapPos.y*AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
 		// Move Grids
@@ -1178,7 +1204,6 @@ function loadGeoMat() {
 //= 4. OBJECTS =================//==============================================
 
 function loadObject() {
-	AltDif = air_.MapPos.y*AltAdj;
 	loadStatic();
 	loadMoving();
 	loadAnmFlg();
@@ -1186,13 +1211,11 @@ function loadObject() {
 }
 
 function initObject() {
-	AltDif = air_.MapPos.y*AltAdj;
 	initStatic();
 	initMoving();
 }
 
 function moveObject() {
-	AltDif = air_.MapPos.y*AltAdj;
 	moveStatic();
 	moveMoving();
 	moveAnmObj();
@@ -1380,7 +1403,7 @@ function loadMovPln() {
 			xac_.ObjAdr[n].rotation.order = "YXZ"; // Heading, Pitch, Bank
 			xac_.ObjAdr[n].rotation.y = xac_.ObjRot[n].y*DegRad;
 			//
-			xac_.ObjAdr[n].add(xac_.XPEMsh[n]);	// Engine sound
+			xac_.ObjAdr[n].add(xac_.EngMsh[n]);	// Engine sound
 		});
 	}
 }
@@ -1396,6 +1419,7 @@ function initMovPln() {
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 		scene.add(xac_.ObjAdr[n]);
 	};
+	loadXACBul(xac_,scene);
 }
 
 //- Move Plane -----------------------------------------------------------------
@@ -1421,6 +1445,7 @@ function moveMovPln() {
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 	}
+	moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT);
 }
 
 //= MOVING SHIPS ===============//==============================================
@@ -1942,14 +1967,25 @@ function loadSounds() {
 	}
 	// XP Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		fname = XPPath + "sounds/" + xac_.XPESrc[n];	
+		fname = XPPath + "sounds/" + xac_.EngSrc[n];	
 		audioLoader.load(fname, function(buffer) {
-			xac_.XPESnd[n].setBuffer(buffer);
-			xac_.XPESnd[n].setRefDistance(RefDst); // Distance at which sound is full volume
-			xac_.XPESnd[n].setLoop(true);
-			xac_.XPESnd[n].setVolume(0);
-			xac_.XPESnd[n].playbackRate = 1.3;
+			xac_.EngPtr[n].setBuffer(buffer);
+			xac_.EngPtr[n].setRefDistance(RefDst); // Distance at which sound is full volume
+			xac_.EngPtr[n].setLoop(true);
+			xac_.EngPtr[n].setVolume(0);
+			xac_.EngPtr[n].playbackRate = 1.3;
 		});
+	}
+	// XP Guns
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		fname = XPPath + "sounds/" + xac_.SndSrc[n];	
+		audioLoader.load(fname, function(buffer) {
+			xac_.SndPtr[n].setBuffer(buffer);
+			xac_.SndPtr[n].setRefDistance(RefDst); // Distance at which sound is full volume
+			xac_.SndPtr[n].setLoop(true);
+			xac_.SndPtr[n].setVolume(0);
+			xac_.SndPtr[n].playbackRate = 1.3;
+		});	
 	}
 	// AA Guns
 	fname = gun_.SndSrc;
@@ -1977,10 +2013,15 @@ function loadSounds() {
 		myg_.SndMsh[n].position.x = -5;
 		air_.AirObj.add(myg_.SndMsh[n]);
 	}
-	//- Other Airplanes
+	//- XP Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		xac_.XPESnd[n] = new THREE.PositionalAudio(listener);
-		xac_.XPEMsh[n].add(xac_.XPESnd[n]);
+		xac_.EngPtr[n] = new THREE.PositionalAudio(listener);
+		xac_.EngMsh[n].add(xac_.EngPtr[n]);
+	}
+	//- XP Guns
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		xac_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		xac_.SndMsh[n].add(xac_.SndPtr[n]);
 	}
 	// AA Guns
 	for (let n = 0; n < gun_.ObjNum; n ++) {
@@ -2007,7 +2048,11 @@ function moveSounds() {
 	}
 	// XP Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		xac_.XPESnd[n].setVolume(xac_.XPEVol[n]);
+		xac_.EngPtr[n].setVolume(xac_.EngVol[n]);
+	}
+	// XP Guns
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		xac_.SndPtr[n].setVolume(xac_.SndVol[n]);
 	}
 	// AA Guns
 	for (let n = 0; n < gun_.ObjNum; n ++) {
@@ -2026,10 +2071,14 @@ function playSounds() {
 	for (let n = 0; n < myg_.ObjNum; n ++) {
 		if (MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();
 	}
-	// Other Airplanes
+	// XP Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		if (!xac_.XPESnd[n].isPlaying) xac_.XPESnd[n].play();
+		if (!xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].play();
 	}
+	// XP Guns
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play();
+	}	
 	// AA Guns - activated in PlayAA
 }
 
@@ -2044,10 +2093,14 @@ function stopSounds() {
 	for (let n = 0; n < myg_.ObjNum; n ++) {
 		if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();
 	}
-	// Other Airplane
+	// XP Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		if (xac_.XPESnd[n].isPlaying) xac_.XPESnd[n].stop();
+		if (xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].stop();
 	}
+	// XP Guns
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();
+	}	
 	// AA Guns
 	for (let n = 0; n < gun_.ObjNum; n ++) {
 		if (gun_.SndPtr[n].isPlaying) gun_.SndPtr[n].stop();
