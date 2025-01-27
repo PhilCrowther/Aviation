@@ -484,18 +484,21 @@ let gun_ = {
 		SndVol: 15,				// Volume
 	};
 
+//- MOVING OBJECTS -------------//----------------------------------------------
+//. Airplane ...................................................................
+const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
+const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
+const XP2Nam = "A6M_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
 //- Aircraft Guns
 //	M2 Browning .50 caliber
 let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
 let BulDLT = 0.5;				// Bullet Maximum Time in Flight
 let BulNum = 16;				// Number of bullets
 let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
-
-//- MOVING OBJECTS -------------//----------------------------------------------
-//. Airplane ...................................................................
-const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
-const XP2Nam = "A6M_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
+//- Firing
+let XPGMax = 120;				// Guns Firing (2 secs)
+let XPGFlg = XPGMax;
+let XPGMin = -600;				// Guns Not Firing (10 secs)
 let xac_ = {
 		ObjNum: 2,				// Number of airplanes
 		ObjSrc: [XPPath+XP1Nam, // Model Source file
@@ -1445,6 +1448,14 @@ function moveMovPln() {
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 	}
+	// Turn Airplane 2 (Enemy) Guns On/Off
+	XPGFlg = XPGFlg - 1;
+	if (XPGFlg > 0) xac_.BulFlg[1] = 1;
+	else {
+		xac_.BulFlg[1] = 0;
+		if (XPGFlg < XPGMin) XPGFlg = XPGMax;
+	}
+	//
 	moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT);
 }
 
