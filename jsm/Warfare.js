@@ -34,6 +34,12 @@ import {color,texture} from "three/tsl";
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 
+//==============================================================================
+//																			   =
+//								MY BULLETS									   =
+//																			   =
+//==============================================================================
+
 //= LOAD MY BULLETS ============================================================
 
 function loadBullet(myg_,scene) {
@@ -112,6 +118,109 @@ function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
 		}
 	} // end i
 }
+
+//==============================================================================
+//																			   =
+//							OTHER AIRPLANES									   =
+//																			   =
+//==============================================================================
+
+//= LOAD XP BULLETS ============================================================
+
+function loadXACBul(xac_,scene) {
+	// Line
+	let line = 0
+	let points = [];
+		points.push(new Vector3(0,0,-10));
+		points.push(new Vector3(0,0,10));
+	let BltGeo = new BufferGeometry().setFromPoints(points);
+	let BulMtL = new LineBasicNodeMaterial({colorNode: color(0xff80ff)});
+	let BulMtD = new LineBasicNodeMaterial({colorNode: color(0x804080)});
+	let xp = 2;
+	// For Each Gun
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		// Load Bullets
+		for (let i = 0; i < xac_.BulNum; i ++) {
+			// Create Bullet Meshes - 2 Double Lines
+			xac_.BulPtr[n][i] = new makMsh();
+			// Left
+			line = new Line(BltGeo,BulMtL); // Lite Color
+			line.position.x = -xp-0.1;
+			xac_.BulPtr[n][i].add(line);
+			line = new Line(BltGeo,BulMtD); // Dark Color
+			line.position.x = -xp;
+			xac_.BulPtr[n][i].add(line);
+			// Rite
+			line = new Line(BltGeo,BulMtL); // Lite Color
+			line.position.x = xp+0.1;
+			xac_.BulPtr[n][i].add(line);
+			line = new Line(BltGeo,BulMtD); // Dark Color
+			line.position.x = xp;
+			xac_.BulPtr[n][i].add(line);
+		//
+			scene.add(xac_.BulPtr[n][i]);
+			xac_.BulPtr[n][i].visible = false;
+			// Initialize Speed and Position
+			xac_.BulMpS[n][i] = new Vector3();
+			xac_.BulMpP[n][i] = new Vector3();
+		} // end i
+	} // end n
+}
+
+//= MOVE XP BULLETS ============================================================
+
+function moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT) {
+	let BulSV3 = new Vector3();
+	let	BulSpT = xac_.BulSpd * DLTime;
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		xac_.BulSp2[n] = xac_.BulSp2[n] - DLTime;
+		if (xac_.BulSp2[n] < 0) xac_.BulSp2[n] = 0;
+		for (let i = 0; i < xac_.BulNum; i ++) {
+			// Start New Bullets
+			if (!xac_.BulTim[n][i] && !xac_.BulSp2[n] && xac_.BulFlg[n]) {		
+				// Set Initial Rotation
+				xac_.BulPtr[n][i].rotation.x = xac_.ObjRot[n].x*DegRad; // Latitude
+				xac_.BulPtr[n][i].rotation.y = xac_.ObjRot[n].y*DegRad; // Longitude
+				// Initial Map Position
+				xac_.BulMpP[n][i].copy(xac_.MapPos[n]);		
+				// Set Initial Speed
+				BulSV3 = new Spherical(BulSpT,(90-xac_.ObjRot[n].x)*DegRad,Mod360(-xac_.ObjRot[n].y)*DegRad);
+				BulSV3 = new Vector3().setFromSpherical(BulSV3);
+				xac_.BulMpS[n][i].copy(BulSV3);
+				//
+				xac_.BulTim[n][i] = DLTime;
+				xac_.BulSp2[n] = xac_.BulSpc;
+				xac_.BulPtr[n][i].visible = true;
+			}
+			// Continue Bullets
+			xac_.BulTim[n][i] = xac_.BulTim[n][i] + DLTime;
+			// Stop
+			if (xac_.BulTim[n][i] > xac_.BulDLT) {
+				xac_.BulTim[n][i] = 0;
+				xac_.BulPtr[n][i].visible = false;
+			}
+			// Continue Bullet
+			else {
+				// Speed lost due to Drag (approx)
+				xac_.BulMpS[n][i].multiplyScalar(.995);
+				// New Map Position
+				xac_.BulMpP[n][i].x = xac_.BulMpP[n][i].x + xac_.BulMpS[n][i].x;
+				xac_.BulMpP[n][i].y = xac_.BulMpP[n][i].y + xac_.BulMpS[n][i].y - GrvDLT;
+				xac_.BulMpP[n][i].z = xac_.BulMpP[n][i].z + xac_.BulMpS[n][i].z;
+				// Relative Position
+				xac_.BulPtr[n][i].position.x = xac_.BulMpP[n][i].x - air_.MapPos.x;
+				xac_.BulPtr[n][i].position.y = xac_.BulMpP[n][i].y - AltDif;
+				xac_.BulPtr[n][i].position.z = air_.MapPos.z - xac_.BulMpP[n][i].z;
+			}
+		} // end i
+	} // end n
+}
+
+//==============================================================================
+//																			   =
+//								ANTI-AIRCRAFT								   =
+//																			   =
+//==============================================================================
 
 //= LOAD AAA GUNS ===================//=========================================
 
@@ -273,7 +382,7 @@ return mesh;}
 
 //= EXPORTS ====================================================================
 
-export {loadBullet,moveBullet,loadGunObj,moveGunObj};
+export {loadBullet,moveBullet,loadXACBul,moveXACBul,loadGunObj,moveGunObj};
 
 /*= REVISIONS ==================================================================
  * 250125:	Created
