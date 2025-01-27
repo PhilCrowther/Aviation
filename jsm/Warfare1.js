@@ -187,7 +187,6 @@ function moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT) {
 				BulSV3 = new Spherical(BulSpT,(90-xac_.ObjRot[n].x)*DegRad,Mod360(-xac_.ObjRot[n].y)*DegRad);
 				BulSV3 = new Vector3().setFromSpherical(BulSV3);
 				xac_.BulMpS[n][i].copy(BulSV3);
-				console.log(xac_.ObjRot[n].y);
 				//
 				xac_.BulTim[n][i] = DLTime;
 				xac_.BulSp2[n] = xac_.BulSpc;
