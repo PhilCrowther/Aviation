@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.01.25)
+ * Warfare.js (vers 27.01.25)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -45,7 +45,6 @@ function loadBullet(myg_,scene) {
 	let BltGeo = new BufferGeometry().setFromPoints(points);
 	let BulMtL = new LineBasicNodeMaterial({colorNode: color(0xff80ff)});
 	let BulMtD = new LineBasicNodeMaterial({colorNode: color(0x804080)});
-	// Note: MeshBasicNodeMaterial not allow envMap
 	let xp = 2;
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		// Create Bullet Meshes - 2 Double Lines
@@ -164,8 +163,7 @@ function loadGunObj(gun_,scene) {
 			depthWrite:false,
 		});
 		gun_.SmkPtr[n] = new Sprite(gun_.SmkMat[n]);
-		gun_.SmkPtr[n].scale.set(100,50,100);
-		gun_.SmkPtr[n].rotation.order = "YXZ";	
+		gun_.SmkPtr[n].scale.set(100,100,100);	
 		scene.add(gun_.SmkPtr[n]);
 		gun_.SmkPtr[n].visible = false;
 	} // end of n
@@ -218,12 +216,14 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 					gun_.SmkMpP[n].copy(gun_.AAAMpP[n][i]); // Bullet0 MapPos
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
+					gun_.SmkRot[n] = Mod360(gun_.SmkRot[n] + 163); // Change appearance
 					if (SndFlg && gun_.SndFlg[n]) gun_.SndPtr[n].play();
 				}
 				if (n == 1 && i == 2) {
 					gun_.SmkMpP[n].copy(gun_.AAAMpP[n][i]); // Bullet0 MapPos
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
+					gun_.SmkRot[n] = Mod360(gun_.SmkRot[n] - 197); // Change appearance
 					if (SndFlg && gun_.SndFlg[n]) gun_.SndPtr[n].play();
 				}
 			}
@@ -246,7 +246,7 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			gun_.SmkPtr[n].position.x = gun_.SmkMpP[n].x - air_.MapPos.x;
 			gun_.SmkPtr[n].position.y = gun_.SmkMpP[n].y - AltDif;
 			gun_.SmkPtr[n].position.z = air_.MapPos.z - gun_.SmkMpP[n].z;
-			gun_.SmkMat[n].rotation = air_.AirRot.z * DegRad;
+			gun_.SmkMat[n].rotation = Mod360((air_.AirRot.z + gun_.SmkRot[n])) * DegRad;
 			gun_.SmkMat[n].opacity = gun_.SmkMat[n].opacity - 0.005;
 			if (gun_.SmkMat[n].opacity < 0) {
 				gun_.SmkMat[n].opacity = 0;
