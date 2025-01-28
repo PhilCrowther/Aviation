@@ -17,11 +17,12 @@ const GrvMPS = 9.80665; 		// Gravity (mps)
 // module users also create a data file - which complicates the use of modules.
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
+let	anmfps = 24;
 
 //- FM2 Animations -------------------------------------------------------------
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm_ = {
-		anmfps: 0,				// Blender FPS
+		anmfps: anmfps,				// Blender FPS
 		spnprp: 180,			// SpinProp 	degrees = 0 to 360
 		rudder: 180,			// Rudder 		degrees = +/- 360
 		elvatr: 180,			// Elevator 	degrees = +/- 360
