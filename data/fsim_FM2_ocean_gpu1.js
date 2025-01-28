@@ -21,7 +21,7 @@ const GrvMPS = 9.80665; 		// Gravity (mps)
 //- FM2 Animations -------------------------------------------------------------
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm_ = {
-		anmfps: anmfps,			// Blender FPS
+		anmfps: 0,				// Blender FPS
 		spnprp: 180,			// SpinProp 	degrees = 0 to 360
 		rudder: 180,			// Rudder 		degrees = +/- 360
 		elvatr: 180,			// Elevator 	degrees = +/- 360
