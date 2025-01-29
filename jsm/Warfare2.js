@@ -519,7 +519,11 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	} // end of n
 }
 
-//= EXTRA ======================================================================
+//==============================================================================
+//																			   =
+//								SUBROUTINES									   =
+//																			   =
+//==============================================================================
 
 /* Converts degrees to 360 */
 function Mod360(deg) {
@@ -534,9 +538,14 @@ function makMsh() {
 	let mesh = new Mesh(geometry,material);
 return mesh;}
 
-//= EXPORTS ====================================================================
 
-export {loadBullet,moveBullet,loadXACBul,moveXACBul,loadGunObj,moveGunObj};
+//==============================================================================
+//																			   =
+//									EXPORTS									   =
+//																			   =
+//==============================================================================
+
+export {loadBullet,moveBullet,loadXACBul,moveXACBul,loadXSHBul,moveXSHBul,loadGunObj,moveGunObj};
 
 /*= REVISIONS ==================================================================
  * 250125:	Created
