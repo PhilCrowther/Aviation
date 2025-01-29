@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 27.01.25)
+ * Warfare.js (vers 25.01.29)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
