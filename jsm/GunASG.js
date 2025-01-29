@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 28.01.25)
+ * Warfare.js (vers 25.01.29)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -218,6 +218,160 @@ function moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT) {
 
 //==============================================================================
 //																			   =
+//								MOVING SHIPS AA							 	   =
+//																			   =
+//==============================================================================
+
+// Bullet = Single Lines - 2 Color (Series)
+// Smoke
+// Gun Object = Gun at Relative Position to Ship
+
+//= LOAD SHIP AA ===============================================================
+
+function loadXSHBul(xsh_,scene) {
+	// Make Bullets
+	let scale = 2.5;
+	let line = 0
+	let point0 = [];
+		point0.push(new Vector3(0,0,-2));
+		point0.push(new Vector3(0,0,2));
+	let AAAGeL = new BufferGeometry().setFromPoints(point0);
+	let point1 = [];
+		point1.push(new Vector3(0,0,-10));
+		point1.push(new Vector3(0,0,10));
+	let AAAGeD = new BufferGeometry().setFromPoints(point1);	
+	let AAAMtL = new LineBasicNodeMaterial({colorNode: color(0xff80ff)}); // Lite Red
+	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(0x804080)}); // Dark Red
+	// For Each Gun
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		// Gun Object
+//		xsh_.GunPtr[n].rotation.copy(xsh_.GunRot[n]);
+//		xsh_.GunPtr[n].position.copy(xsh_.GunPos[n]);
+//		scene.add(xsh_.ObjAdr[n]);
+		// Load Bullets
+		for (let i = 0; i < xsh_.AAANum; i ++) {
+			// Create AAA Meshes - 1 Double Line
+			xsh_.AAAPtr[n][i] = new makMsh();
+			line = new Line(AAAGeL,AAAMtL); // Lite Color
+			line.position.z = -2;
+			xsh_.AAAPtr[n][i].add(line);
+			line = new Line(AAAGeD,AAAMtD); // Dark Color
+			line.position.z = 10;
+			xsh_.AAAPtr[n][i].add(line);
+			xsh_.AAAPtr[n][i].scale.set(scale,scale,scale);
+			xsh_.AAAPtr[n][i].rotation.order = "YXZ";
+			// 
+			scene.add(xsh_.AAAPtr[n][i]);
+			xsh_.AAAPtr[n][i].visible = false;
+			// Initialize Values
+			xsh_.AAAMpS[n][i] = new Vector3();
+			xsh_.AAAMpP[n][i] = new Vector3();
+		}
+		// Smoke
+		xsh_.SmkMat[n] = new SpriteNodeMaterial({
+			colorNode: color(0xffffff),
+			colorNode: texture(xsh_.SmkMap),
+			transparent:true,
+			opacity: 1.0,
+			depthTest:false,
+			depthWrite:false,
+		});
+		xsh_.SmkPtr[n] = new Sprite(xsh_.SmkMat[n]);
+		xsh_.SmkPtr[n].scale.set(100,100,100);	
+		scene.add(xsh_.SmkPtr[n]);
+		xsh_.SmkPtr[n].visible = false;
+	} // end of n
+}
+
+//= MOVE SHIP AA ===============//==============================================
+
+function moveXSHBul(xsh_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
+	let AAASV3 = new Vector3();
+	let	AAASpT = xsh_.AAASpd * DLTime;
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		// Update Gun Object Rotation (for show only)
+//		xsh_.GunPtr[n].rotation.x = xsh_.GunRot[n].x*DegRad; // Latitude
+//		xsh_.GunPtr[n].rotation.y = xsh_.GunRot[n].y*DegRad; // Longitude
+		// Compute Gun Relative Position (for show only)
+//		xsh_.GunPtr[n].position.x = xsh_.MapPos[n].x-air_.MapPos.x;
+//		xsh_.GunPtr[n].position.y = xsh_.MapPos[n].y-AltDif;
+//		xsh_.GunPtr[n].position.z = air_.MapPos.z-xsh_.MapPos[n].z;
+		// For Each Bullet String	
+		xsh_.AAASp2[n] = xsh_.AAASp2[n] - DLTime; // When reach 0, fire next bullet
+		if (xsh_.AAASp2[n] < 0) xsh_.AAASp2[n] = 0; // Ready to fire next bullet
+		for (let i = 0; i < xsh_.AAANum; i ++) {
+			// Start New Bullets
+			if (!xsh_.AAATim[n][i] && !xsh_.AAASp2[n] && xsh_.AAAFlg[n]) {
+			// AAATim = time in flight (reset to zero at end); AAASp2 = delay (reset to zero when time passed)
+				// Set Initial Rotation
+				xsh_.AAAPtr[n][i].rotation.x = xsh_.GunRot[n].x*DegRad; // Latitude
+				xsh_.AAAPtr[n][i].rotation.y = xsh_.GunRot[n].y*DegRad; // Longitude
+				// Initial Map Position
+				xsh_.AAAMpP[n][i].copy(xsh_.MapPos[n]);
+				// Set Initial Speed
+				AAASV3 = new Spherical(AAASpT,(90-xsh_.GunRot[n].x)*DegRad,Mod360(-xsh_.GunRot[n].y)*DegRad);
+				AAASV3 = new Vector3().setFromSpherical(AAASV3);
+				xsh_.AAAMpS[n][i] = AAASV3;
+				//
+				xsh_.AAATim[n][i] = DLTime; // First jump
+				xsh_.AAASp2[n] = xsh_.AAASpc; // restart delay
+				xsh_.AAAPtr[n][i].visible = true;
+				// End Smoke When Bullet0 Begins
+				if (!i) xsh_.SmkPtr[n].visible = false;
+			}
+			// Continue Bullets
+			xsh_.AAATim[n][i] = xsh_.AAATim[n][i] + DLTime;
+			// Stop
+			if (xsh_.AAATim[n][i] > xsh_.AAADLT) {
+				xsh_.AAATim[n][i] = 0;
+				xsh_.AAAPtr[n][i].visible = false;
+				// Start Smoke When Bullet0 Ends
+				if (n == 0 && i == 0) {
+					xsh_.SmkMpP[n].copy(xsh_.AAAMpP[n][i]); // Bullet0 MapPos
+					xsh_.SmkPtr[n].visible = true;
+					xsh_.SmkMat[n].opacity = 1.0;
+					xsh_.SmkRot[n] = Mod360(xsh_.SmkRot[n] + 163); // Change appearance
+					if (SndFlg && xsh_.SndFlg[n]) xsh_.SndPtr[n].play();
+				}
+				if (n == 1 && i == 2) {
+					xsh_.SmkMpP[n].copy(xsh_.AAAMpP[n][i]); // Bullet0 MapPos
+					xsh_.SmkPtr[n].visible = true;
+					xsh_.SmkMat[n].opacity = 1.0;
+					xsh_.SmkRot[n] = Mod360(xsh_.SmkRot[n] - 197); // Change appearance
+					if (SndFlg && xsh_.SndFlg[n]) xsh_.SndPtr[n].play();
+				}
+			}
+			// Continue
+			else {
+				// Speed lost due to Drag (approx)
+				xsh_.AAAMpS[n][i].multiplyScalar(.995);
+				// New Map Position
+				xsh_.AAAMpP[n][i].x = xsh_.AAAMpP[n][i].x + xsh_.AAAMpS[n][i].x;
+				xsh_.AAAMpP[n][i].y = xsh_.AAAMpP[n][i].y + xsh_.AAAMpS[n][i].y - GrvDLT;
+				xsh_.AAAMpP[n][i].z = xsh_.AAAMpP[n][i].z + xsh_.AAAMpS[n][i].z;
+				// Relative Position
+				xsh_.AAAPtr[n][i].position.x = xsh_.AAAMpP[n][i].x - air_.MapPos.x;
+				xsh_.AAAPtr[n][i].position.y = xsh_.AAAMpP[n][i].y - AltDif;
+				xsh_.AAAPtr[n][i].position.z = air_.MapPos.z - xsh_.AAAMpP[n][i].z;
+			}
+		} // end of i
+		// Smoke Relative Position
+		if (xsh_.SmkPtr[n].visible = true) {
+			xsh_.SmkPtr[n].position.x = xsh_.SmkMpP[n].x - air_.MapPos.x;
+			xsh_.SmkPtr[n].position.y = xsh_.SmkMpP[n].y - AltDif;
+			xsh_.SmkPtr[n].position.z = air_.MapPos.z - xsh_.SmkMpP[n].z;
+			xsh_.SmkMat[n].rotation = Mod360((air_.AirRot.z + xsh_.SmkRot[n])) * DegRad;
+			xsh_.SmkMat[n].opacity = xsh_.SmkMat[n].opacity - 0.005;
+			if (xsh_.SmkMat[n].opacity < 0) {
+				xsh_.SmkMat[n].opacity = 0;
+				xsh_.SndPtr[n].stop();  // Reset for next explosion
+			}
+		}
+	} // end of n
+}
+
+//==============================================================================
+//																			   =
 //								ANTI-AIRCRAFT								   =
 //																			   =
 //==============================================================================
@@ -239,28 +393,28 @@ function loadGunObj(gun_,scene) {
 	let AAAMtL = new LineBasicNodeMaterial({colorNode: color(0x80ffff)});
 	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(0x408080)});
 	// For Each Gun
-	for (let n = 0; n < gun_.GunNum; n ++) {
-		gun_.GunPtr[n].rotation.copy(gun_.GunRot[n]);
-		gun_.GunPtr[n].position.copy(gun_.GunMpP[n]);
-		scene.add(gun_.GunPtr[n]);
+	for (let n = 0; n < gun_.ObjNum; n ++) {
+		gun_.ObjAdr[n].rotation.copy(gun_.ObjRot[n]);
+		gun_.ObjAdr[n].position.copy(gun_.MapPos[n]);
+		scene.add(gun_.ObjAdr[n]);
 		// Load Bullets
-		for (let i = 0; i < gun_.BulNum; i ++) {
+		for (let i = 0; i < gun_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
-			gun_.BulPtr[n][i] = new makMsh();
+			gun_.AAAPtr[n][i] = new makMsh();
 			line = new Line(AAAGeL,AAAMtL); // Lite Color
 			line.position.z = -2;
-			gun_.BulPtr[n][i].add(line);
+			gun_.AAAPtr[n][i].add(line);
 			line = new Line(AAAGeD,AAAMtD); // Dark Color
 			line.position.z = 10;
-			gun_.BulPtr[n][i].add(line);
-			gun_.BulPtr[n][i].scale.set(scale,scale,scale);
-			gun_.BulPtr[n][i].rotation.order = "YXZ";
+			gun_.AAAPtr[n][i].add(line);
+			gun_.AAAPtr[n][i].scale.set(scale,scale,scale);
+			gun_.AAAPtr[n][i].rotation.order = "YXZ";
 			// 
-			scene.add(gun_.BulPtr[n][i]);
-			gun_.BulPtr[n][i].visible = false;
+			scene.add(gun_.AAAPtr[n][i]);
+			gun_.AAAPtr[n][i].visible = false;
 			// Initialize Values
-			gun_.BulMpS[n][i] = new Vector3();
-			gun_.BulMpP[n][i] = new Vector3();
+			gun_.AAAMpS[n][i] = new Vector3();
+			gun_.AAAMpP[n][i] = new Vector3();
 		}
 		// Smoke
 		gun_.SmkMat[n] = new SpriteNodeMaterial({
@@ -282,54 +436,54 @@ function loadGunObj(gun_,scene) {
 
 function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	let AAASV3 = new Vector3();
-	let	AAASpT = gun_.BulSpd * DLTime;
-	for (let n = 0; n < gun_.GunNum; n ++) {
+	let	AAASpT = gun_.AAASpd * DLTime;
+	for (let n = 0; n < gun_.ObjNum; n ++) {
 		// Update Gun Object Rotation (for show only)
-		gun_.GunPtr[n].rotation.x = gun_.GunRot[n].x*DegRad; // Latitude
-		gun_.GunPtr[n].rotation.y = gun_.GunRot[n].y*DegRad; // Longitude
+		gun_.ObjAdr[n].rotation.x = gun_.ObjRot[n].x*DegRad; // Latitude
+		gun_.ObjAdr[n].rotation.y = gun_.ObjRot[n].y*DegRad; // Longitude
 		// Compute Gun Relative Position (for show only)
-		gun_.GunPtr[n].position.x = gun_.GunMpP[n].x-air_.MapPos.x;
-		gun_.GunPtr[n].position.y = gun_.GunMpP[n].y-AltDif;
-		gun_.GunPtr[n].position.z = air_.MapPos.z-gun_.GunMpP[n].z;
+		gun_.ObjAdr[n].position.x = gun_.MapPos[n].x-air_.MapPos.x;
+		gun_.ObjAdr[n].position.y = gun_.MapPos[n].y-AltDif;
+		gun_.ObjAdr[n].position.z = air_.MapPos.z-gun_.MapPos[n].z;
 		// For Each Bullet String	
-		gun_.BulSp2[n] = gun_.BulSp2[n] - DLTime; // When reach 0, fire next bullet
-		if (gun_.BulSp2[n] < 0) gun_.BulSp2[n] = 0; // Ready to fire next bullet
-		for (let i = 0; i < gun_.BulNum; i ++) {
+		gun_.AAASp2[n] = gun_.AAASp2[n] - DLTime; // When reach 0, fire next bullet
+		if (gun_.AAASp2[n] < 0) gun_.AAASp2[n] = 0; // Ready to fire next bullet
+		for (let i = 0; i < gun_.AAANum; i ++) {
 			// Start New Bullets
-			if (!gun_.BulTim[n][i] && !gun_.BulSp2[n] && gun_.BulFlg[n]) {
+			if (!gun_.AAATim[n][i] && !gun_.AAASp2[n] && gun_.AAAFlg[n]) {
 			// AAATim = time in flight (reset to zero at end); AAASp2 = delay (reset to zero when time passed)
 				// Set Initial Rotation
-				gun_.BulPtr[n][i].rotation.x = gun_.GunRot[n].x*DegRad; // Latitude
-				gun_.BulPtr[n][i].rotation.y = gun_.GunRot[n].y*DegRad; // Longitude
+				gun_.AAAPtr[n][i].rotation.x = gun_.ObjRot[n].x*DegRad; // Latitude
+				gun_.AAAPtr[n][i].rotation.y = gun_.ObjRot[n].y*DegRad; // Longitude
 				// Initial Map Position
-				gun_.BulMpP[n][i].copy(gun_.GunMpP[n]);
+				gun_.AAAMpP[n][i].copy(gun_.MapPos[n]);
 				// Set Initial Speed
-				AAASV3 = new Spherical(AAASpT,(90-gun_.GunRot[n].x)*DegRad,Mod360(-gun_.GunRot[n].y)*DegRad);
+				AAASV3 = new Spherical(AAASpT,(90-gun_.ObjRot[n].x)*DegRad,Mod360(-gun_.ObjRot[n].y)*DegRad);
 				AAASV3 = new Vector3().setFromSpherical(AAASV3);
-				gun_.BulMpS[n][i] = AAASV3;
+				gun_.AAAMpS[n][i] = AAASV3;
 				//
-				gun_.BulTim[n][i] = DLTime; // First jump
-				gun_.BulSp2[n] = gun_.BulSpc; // restart delay
-				gun_.BulPtr[n][i].visible = true;
+				gun_.AAATim[n][i] = DLTime; // First jump
+				gun_.AAASp2[n] = gun_.AAASpc; // restart delay
+				gun_.AAAPtr[n][i].visible = true;
 				// End Smoke When Bullet0 Begins
 				if (!i) gun_.SmkPtr[n].visible = false;
 			}
 			// Continue Bullets
-			gun_.BulTim[n][i] = gun_.BulTim[n][i] + DLTime;
+			gun_.AAATim[n][i] = gun_.AAATim[n][i] + DLTime;
 			// Stop
-			if (gun_.BulTim[n][i] > gun_.BulDLT) {
-				gun_.BulTim[n][i] = 0;
-				gun_.BulPtr[n][i].visible = false;
+			if (gun_.AAATim[n][i] > gun_.AAADLT) {
+				gun_.AAATim[n][i] = 0;
+				gun_.AAAPtr[n][i].visible = false;
 				// Start Smoke When Bullet0 Ends
 				if (n == 0 && i == 0) {
-					gun_.SmkMpP[n].copy(gun_.BulMpP[n][i]); // Bullet0 MapPos
+					gun_.SmkMpP[n].copy(gun_.AAAMpP[n][i]); // Bullet0 MapPos
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
 					gun_.SmkRot[n] = Mod360(gun_.SmkRot[n] + 163); // Change appearance
 					if (SndFlg && gun_.SndFlg[n]) gun_.SndPtr[n].play();
 				}
 				if (n == 1 && i == 2) {
-					gun_.SmkMpP[n].copy(gun_.BulMpP[n][i]); // Bullet0 MapPos
+					gun_.SmkMpP[n].copy(gun_.AAAMpP[n][i]); // Bullet0 MapPos
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
 					gun_.SmkRot[n] = Mod360(gun_.SmkRot[n] - 197); // Change appearance
@@ -339,15 +493,15 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			// Continue
 			else {
 				// Speed lost due to Drag (approx)
-				gun_.BulMpS[n][i].multiplyScalar(.995);
+				gun_.AAAMpS[n][i].multiplyScalar(.995);
 				// New Map Position
-				gun_.BulMpP[n][i].x = gun_.BulMpP[n][i].x + gun_.BulMpS[n][i].x;
-				gun_.BulMpP[n][i].y = gun_.BulMpP[n][i].y + gun_.BulMpS[n][i].y - GrvDLT;
-				gun_.BulMpP[n][i].z = gun_.BulMpP[n][i].z + gun_.BulMpS[n][i].z;
+				gun_.AAAMpP[n][i].x = gun_.AAAMpP[n][i].x + gun_.AAAMpS[n][i].x;
+				gun_.AAAMpP[n][i].y = gun_.AAAMpP[n][i].y + gun_.AAAMpS[n][i].y - GrvDLT;
+				gun_.AAAMpP[n][i].z = gun_.AAAMpP[n][i].z + gun_.AAAMpS[n][i].z;
 				// Relative Position
-				gun_.BulPtr[n][i].position.x = gun_.BulMpP[n][i].x - air_.MapPos.x;
-				gun_.BulPtr[n][i].position.y = gun_.BulMpP[n][i].y - AltDif;
-				gun_.BulPtr[n][i].position.z = air_.MapPos.z - gun_.BulMpP[n][i].z;
+				gun_.AAAPtr[n][i].position.x = gun_.AAAMpP[n][i].x - air_.MapPos.x;
+				gun_.AAAPtr[n][i].position.y = gun_.AAAMpP[n][i].y - AltDif;
+				gun_.AAAPtr[n][i].position.z = air_.MapPos.z - gun_.AAAMpP[n][i].z;
 			}
 		} // end of i
 		// Smoke Relative Position
@@ -365,7 +519,11 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	} // end of n
 }
 
-//= EXTRA ======================================================================
+//==============================================================================
+//																			   =
+//								SUBROUTINES									   =
+//																			   =
+//==============================================================================
 
 /* Converts degrees to 360 */
 function Mod360(deg) {
@@ -380,9 +538,14 @@ function makMsh() {
 	let mesh = new Mesh(geometry,material);
 return mesh;}
 
-//= EXPORTS ====================================================================
 
-export {loadBullet,moveBullet,loadXACBul,moveXACBul,loadGunObj,moveGunObj};
+//==============================================================================
+//																			   =
+//									EXPORTS									   =
+//																			   =
+//==============================================================================
+
+export {loadBullet,moveBullet,loadXACBul,moveXACBul,loadXSHBul,moveXSHBul,loadGunObj,moveGunObj};
 
 /*= REVISIONS ==================================================================
  * 250125:	Created
