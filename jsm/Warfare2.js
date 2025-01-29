@@ -233,15 +233,15 @@ function loadXSHBul(xsh_,scene) {
 	let scale = 2.5;
 	let line = 0
 	let point0 = [];
-		point0.push(new THREE.Vector3(0,0,-2));
-		point0.push(new THREE.Vector3(0,0,2));
-	let AAAGeL = new THREE.BufferGeometry().setFromPoints(point0);
+		point0.push(new Vector3(0,0,-2));
+		point0.push(new Vector3(0,0,2));
+	let AAAGeL = new BufferGeometry().setFromPoints(point0);
 	let point1 = [];
-		point1.push(new THREE.Vector3(0,0,-10));
-		point1.push(new THREE.Vector3(0,0,10));
-	let AAAGeD = new THREE.BufferGeometry().setFromPoints(point1);	
-	let AAAMtL = new THREE.LineBasicNodeMaterial({colorNode: color(0xff80ff)}); // Lite Red
-	let AAAMtD = new THREE.LineBasicNodeMaterial({colorNode: color(0x804080)}); // Dark Red
+		point1.push(new Vector3(0,0,-10));
+		point1.push(new Vector3(0,0,10));
+	let AAAGeD = new BufferGeometry().setFromPoints(point1);	
+	let AAAMtL = new LineBasicNodeMaterial({colorNode: color(0xff80ff)}); // Lite Red
+	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(0x804080)}); // Dark Red
 	// For Each Gun
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		// Gun Object
@@ -252,10 +252,10 @@ function loadXSHBul(xsh_,scene) {
 		for (let i = 0; i < xsh_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
 			xsh_.AAAPtr[n][i] = new makMsh();
-			line = new THREE.Line(AAAGeL,AAAMtL); // Lite Color
+			line = new Line(AAAGeL,AAAMtL); // Lite Color
 			line.position.z = -2;
 			xsh_.AAAPtr[n][i].add(line);
-			line = new THREE.Line(AAAGeD,AAAMtD); // Dark Color
+			line = new Line(AAAGeD,AAAMtD); // Dark Color
 			line.position.z = 10;
 			xsh_.AAAPtr[n][i].add(line);
 			xsh_.AAAPtr[n][i].scale.set(scale,scale,scale);
@@ -264,11 +264,11 @@ function loadXSHBul(xsh_,scene) {
 			scene.add(xsh_.AAAPtr[n][i]);
 			xsh_.AAAPtr[n][i].visible = false;
 			// Initialize Values
-			xsh_.AAAMpS[n][i] = new THREE.Vector3();
-			xsh_.AAAMpP[n][i] = new THREE.Vector3();
+			xsh_.AAAMpS[n][i] = new Vector3();
+			xsh_.AAAMpP[n][i] = new Vector3();
 		}
 		// Smoke
-		xsh_.SmkMat[n] = new THREE.SpriteNodeMaterial({
+		xsh_.SmkMat[n] = new SpriteNodeMaterial({
 			colorNode: color(0xffffff),
 			colorNode: texture(xsh_.SmkMap),
 			transparent:true,
@@ -276,7 +276,7 @@ function loadXSHBul(xsh_,scene) {
 			depthTest:false,
 			depthWrite:false,
 		});
-		xsh_.SmkPtr[n] = new THREE.Sprite(xsh_.SmkMat[n]);
+		xsh_.SmkPtr[n] = new Sprite(xsh_.SmkMat[n]);
 		xsh_.SmkPtr[n].scale.set(100,100,100);	
 		scene.add(xsh_.SmkPtr[n]);
 		xsh_.SmkPtr[n].visible = false;
@@ -286,7 +286,7 @@ function loadXSHBul(xsh_,scene) {
 //= MOVE SHIP AA ===============//==============================================
 
 function moveXSHBul(xsh_,air_,AltDif,DLTime,GrvDLT) {
-	let AAASV3 = new THREE.Vector3();
+	let AAASV3 = new Vector3();
 	let	AAASpT = xsh_.AAASpd * DLTime;
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		// Update Gun Object Rotation (for show only)
@@ -309,8 +309,8 @@ function moveXSHBul(xsh_,air_,AltDif,DLTime,GrvDLT) {
 				// Initial Map Position
 				xsh_.AAAMpP[n][i].copy(xsh_.MapPos[n]);
 				// Set Initial Speed
-				AAASV3 = new THREE.Spherical(AAASpT,(90-xsh_.GunRot[n].x)*DegRad,Mod360(-xsh_.GunRot[n].y)*DegRad);
-				AAASV3 = new THREE.Vector3().setFromSpherical(AAASV3);
+				AAASV3 = new Spherical(AAASpT,(90-xsh_.GunRot[n].x)*DegRad,Mod360(-xsh_.GunRot[n].y)*DegRad);
+				AAASV3 = new Vector3().setFromSpherical(AAASV3);
 				xsh_.AAAMpS[n][i] = AAASV3;
 				//
 				xsh_.AAATim[n][i] = DLTime; // First jump
