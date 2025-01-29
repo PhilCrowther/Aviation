@@ -10,7 +10,11 @@
  * See http://philcrowther.com/Aviation for more details.
  */
 
-//= IMPORTS ====================================================================
+//=====================================|========================================
+//																			   =
+//									IMPORTS									   =
+//																			   =
+//==============================================================================
 
 import {
 	// Common
@@ -30,20 +34,30 @@ import {
 
 import {color,texture} from "three/tsl";
 
+//=====================================|========================================
+//																			   =
+//								   VARIABLES								   =
+//																			   =
+//==============================================================================
+
 //= CONSTANTS ==================//==============================================
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 
-//==============================================================================
+//=====================================|========================================
 //																			   =
-//								MY BULLETS									   =
+//								  MY BULLETS								   =
 //																			   =
 //==============================================================================
+
+// Bullet = 4 Lines: 2 X Single Type of Line X 2 Colors (Parallel)
+// No Smoke
+// Gun Object = Airplane
 
 //= LOAD MY BULLETS ============================================================
 
 function loadBullet(myg_,scene) {
-	// Line
+	// Line	
 	let line = 0
 	let points = [];
 		points.push(new Vector3(0,0,-10));
@@ -119,44 +133,60 @@ function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
 	} // end i
 }
 
-//==============================================================================
+//=====================================|========================================
 //																			   =
-//							OTHER AIRPLANES									   =
+//							    OTHER AIRPLANES								   =
 //																			   =
 //==============================================================================
 
-//= LOAD XP BULLETS ============================================================
+// Bullet = 2 Lines: Each Line = 2 Types of Different Colored Lines
+// No Smoke
+// Gun Object = Airplane
+
+//= LOAD XAC BULLETS ===========================================================
 
 function loadXACBul(xac_,scene) {
-	// Line
 	let line = 0
-	let points = [];
-		points.push(new Vector3(0,0,-10));
-		points.push(new Vector3(0,0,10));
-	let BltGeo = new BufferGeometry().setFromPoints(points);
-	let BulMtL = new LineBasicNodeMaterial({colorNode: color(0xff80ff)});
-	let BulMtD = new LineBasicNodeMaterial({colorNode: color(0x804080)});
+	//- Front Line
+	let lnF = 6;
+	let point0 = [];
+		point0.push(new Vector3(0,0,-lnF));
+		point0.push(new Vector3(0,0,lnF));
+	let BulGeL = new BufferGeometry().setFromPoints(point0);
+	//- Back Line
+	let lnB = 6;
+	let point1 = [];
+		point1.push(new Vector3(0,0,-lnB));
+		point1.push(new Vector3(0,0,lnB));
+	let BulGeD = new BufferGeometry().setFromPoints(point1);	
+	let BulMtL = new LineBasicNodeMaterial({colorNode: color(0xff80ff)}); // Lite Red
+	let BulMtD = new LineBasicNodeMaterial({colorNode: color(0x804080)}); // Dark Red
 	let xp = 2;
 	// For Each Gun
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		// Load Bullets
-		for (let i = 0; i < xac_.BulNum; i ++) {
-			// Create Bullet Meshes - 2 Double Lines
+		for (let i = 0; i < xac_.BulNum; i ++) {	
+			// Create Bull Meshes - Double Line 2 Colors
 			xac_.BulPtr[n][i] = new makMsh();
 			// Left
-			line = new Line(BltGeo,BulMtL); // Lite Color
-			line.position.x = -xp-0.1;
+			line = new Line(BulGeL,BulMtL); // Lite Color
+			line.position.z = -lnF;
+			line.position.x = -xp;
 			xac_.BulPtr[n][i].add(line);
-			line = new Line(BltGeo,BulMtD); // Dark Color
+			line = new Line(BulGeD,BulMtD); // Dark Color
+			line.position.z = lnB;
 			line.position.x = -xp;
 			xac_.BulPtr[n][i].add(line);
 			// Rite
-			line = new Line(BltGeo,BulMtL); // Lite Color
-			line.position.x = xp+0.1;
-			xac_.BulPtr[n][i].add(line);
-			line = new Line(BltGeo,BulMtD); // Dark Color
+			line = new Line(BulGeL,BulMtL); // Lite Color
+			line.position.z = -lnF;
 			line.position.x = xp;
 			xac_.BulPtr[n][i].add(line);
+			line = new Line(BulGeD,BulMtD); // Dark Color
+			line.position.z = lnB;
+			line.position.x = xp;
+			xac_.BulPtr[n][i].add(line);
+			xac_.BulPtr[n][i].rotation.order = "YXZ";
 		//
 			scene.add(xac_.BulPtr[n][i]);
 			xac_.BulPtr[n][i].visible = false;
@@ -167,7 +197,7 @@ function loadXACBul(xac_,scene) {
 	} // end n
 }
 
-//= MOVE XP BULLETS ============================================================
+//= MOVE XAC BULLETS ===========================================================
 
 function moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT) {
 	let BulSV3 = new Vector3();
@@ -216,9 +246,9 @@ function moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT) {
 	} // end n
 }
 
-//==============================================================================
+//=====================================|========================================
 //																			   =
-//								MOVING SHIPS AA							 	   =
+//								 MOVING SHIPS AA							   =
 //																			   =
 //==============================================================================
 
@@ -226,23 +256,26 @@ function moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT) {
 // Smoke
 // Gun Object = Gun at Relative Position to Ship
 
-//= LOAD SHIP AA ===============================================================
+//= LOAD XSH AA ================//==============================================
 
 function loadXSHBul(xsh_,scene) {
-	// Make Bullets
-	let scale = 2.5;
-	let line = 0
+	let scale = 2.5;			// Smoke Scale
+	let line = 0;
+	//- Front Line
+	let lnF = 2;
 	let point0 = [];
-		point0.push(new Vector3(0,0,-2));
-		point0.push(new Vector3(0,0,2));
+		point0.push(new Vector3(0,0,-lnF));
+		point0.push(new Vector3(0,0,lnF));
 	let AAAGeL = new BufferGeometry().setFromPoints(point0);
+	//- Back Line
+	let lnB = 10;
 	let point1 = [];
-		point1.push(new Vector3(0,0,-10));
-		point1.push(new Vector3(0,0,10));
+		point1.push(new Vector3(0,0,-lnB));
+		point1.push(new Vector3(0,0,lnB));
 	let AAAGeD = new BufferGeometry().setFromPoints(point1);	
 	let AAAMtL = new LineBasicNodeMaterial({colorNode: color(0xff80ff)}); // Lite Red
 	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(0x804080)}); // Dark Red
-	// For Each Gun
+	//- For Each Gun
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		// Gun Object
 //		xsh_.GunPtr[n].rotation.copy(xsh_.GunRot[n]);
@@ -253,10 +286,10 @@ function loadXSHBul(xsh_,scene) {
 			// Create AAA Meshes - 1 Double Line
 			xsh_.AAAPtr[n][i] = new makMsh();
 			line = new Line(AAAGeL,AAAMtL); // Lite Color
-			line.position.z = -2;
+			line.position.z = -lnF;
 			xsh_.AAAPtr[n][i].add(line);
 			line = new Line(AAAGeD,AAAMtD); // Dark Color
-			line.position.z = 10;
+			line.position.z = lnB;
 			xsh_.AAAPtr[n][i].add(line);
 			xsh_.AAAPtr[n][i].scale.set(scale,scale,scale);
 			xsh_.AAAPtr[n][i].rotation.order = "YXZ";
@@ -283,7 +316,7 @@ function loadXSHBul(xsh_,scene) {
 	} // end of n
 }
 
-//= MOVE SHIP AA ===============//==============================================
+//= MOVE XSH AA ================================================================
 
 function moveXSHBul(xsh_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	let AAASV3 = new Vector3();
@@ -370,17 +403,17 @@ function moveXSHBul(xsh_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	} // end of n
 }
 
-//==============================================================================
+//=====================================|========================================
 //																			   =
 //								ANTI-AIRCRAFT								   =
 //																			   =
 //==============================================================================
 
-//= LOAD AAA GUNS ===================//=========================================
+//= LOAD AAA GUNS ==============//==============================================
 
 function loadGunObj(gun_,scene) {
 	// Make Bullets
-	let scale = 2.5;
+	let scale = 2.5;			// Smoke Scale
 	let line = 0
 	let point0 = [];
 		point0.push(new Vector3(0,0,-2));
@@ -519,9 +552,9 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	} // end of n
 }
 
-//==============================================================================
+//=====================================|========================================
 //																			   =
-//								SUBROUTINES									   =
+//								  SUBROUTINES								   =
 //																			   =
 //==============================================================================
 
@@ -539,7 +572,7 @@ function makMsh() {
 return mesh;}
 
 
-//==============================================================================
+//=====================================|========================================
 //																			   =
 //									EXPORTS									   =
 //																			   =
