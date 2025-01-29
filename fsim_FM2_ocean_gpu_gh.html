@@ -1456,21 +1456,28 @@ function moveMovPln() {
 	moveXACGun();
 }
 
-//= AIRPLANE GUNS ==============================================================
+//= AIRPLANE GUNS ==============//==============================================
 
-//- Load Airplane Guns ---------------------------------------------------------
+//- Load Airplane Guns ---------//----------------------------------------------
 function loadXACGun() {
 	loadXACBul(xac_,scene);
 }
 
-//- Move Airplane Guns ---------------------------------------------------------
+//- Move Airplane Guns ---------//----------------------------------------------
 function moveXACGun() {
 	// Turn Airplane 2 (Enemy) Guns On/Off
+	xac_.BulFlg[1] = 0;			// Default = Off
+	let MinDst = 500;
+	// Counter
 	XPGFlg = XPGFlg - 1;
-	if (XPGFlg > 0) xac_.BulFlg[1] = 1;
-	else {
-		xac_.BulFlg[1] = 0;
-		if (XPGFlg < XPGMin) XPGFlg = XPGMax;
+	if (XPGFlg < XPGMin) XPGFlg = XPGMax;
+	// On or Off	
+	if (xac_.ObjAdr[1].position.x < MinDst && 
+		xac_.ObjAdr[1].position.y < MinDst && 
+	    xac_.ObjAdr[1].position.z < MinDst)
+	    {
+		if (XPGFlg > 0) xac_.BulFlg[1] = 1;
+		else {xac_.BulFlg[1] = 0;}
 	}
 	moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT);
 }
@@ -1502,7 +1509,6 @@ function loadMovShp() {
 				loadShpGun();
 			}
 			xsh_.ObjAdr[n].position.set(0,0,0); // position within group is always 0,0,0
-
 		});
 	}
 }
