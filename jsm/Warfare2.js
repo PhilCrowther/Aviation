@@ -285,7 +285,7 @@ function loadXSHBul(xsh_,scene) {
 
 //= MOVE SHIP AA ===============//==============================================
 
-function moveXSHBul(xsh_,air_,AltDif,DLTime,GrvDLT) {
+function moveXSHBul(xsh_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	let AAASV3 = new Vector3();
 	let	AAASpT = xsh_.AAASpd * DLTime;
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
