@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 27.01.25)
+ * Warfare.js (vers 28.01.25)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -239,28 +239,28 @@ function loadGunObj(gun_,scene) {
 	let AAAMtL = new LineBasicNodeMaterial({colorNode: color(0x80ffff)});
 	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(0x408080)});
 	// For Each Gun
-	for (let n = 0; n < gun_.ObjNum; n ++) {
-		gun_.GunAdr[n].rotation.copy(gun_.GunRot[n]);
-		gun_.GunAdr[n].position.copy(gun_.GunMpP[n]);
-		scene.add(gun_.GunAdr[n]);
+	for (let n = 0; n < gun_.GunNum; n ++) {
+		gun_.GunPtr[n].rotation.copy(gun_.GunRot[n]);
+		gun_.GunPtr[n].position.copy(gun_.GunMpP[n]);
+		scene.add(gun_.GunPtr[n]);
 		// Load Bullets
-		for (let i = 0; i < gun_.AAANum; i ++) {
+		for (let i = 0; i < gun_.BulNum; i ++) {
 			// Create AAA Meshes - 1 Double Line
-			gun_.AAAPtr[n][i] = new makMsh();
+			gun_.BulPtr[n][i] = new makMsh();
 			line = new Line(AAAGeL,AAAMtL); // Lite Color
 			line.position.z = -2;
-			gun_.AAAPtr[n][i].add(line);
+			gun_.BulPtr[n][i].add(line);
 			line = new Line(AAAGeD,AAAMtD); // Dark Color
 			line.position.z = 10;
-			gun_.AAAPtr[n][i].add(line);
-			gun_.AAAPtr[n][i].scale.set(scale,scale,scale);
-			gun_.AAAPtr[n][i].rotation.order = "YXZ";
+			gun_.BulPtr[n][i].add(line);
+			gun_.BulPtr[n][i].scale.set(scale,scale,scale);
+			gun_.BulPtr[n][i].rotation.order = "YXZ";
 			// 
-			scene.add(gun_.AAAPtr[n][i]);
-			gun_.AAAPtr[n][i].visible = false;
+			scene.add(gun_.BulPtr[n][i]);
+			gun_.BulPtr[n][i].visible = false;
 			// Initialize Values
-			gun_.AAAMpS[n][i] = new Vector3();
-			gun_.AAAMpP[n][i] = new Vector3();
+			gun_.BulMpS[n][i] = new Vector3();
+			gun_.BulMpP[n][i] = new Vector3();
 		}
 		// Smoke
 		gun_.SmkMat[n] = new SpriteNodeMaterial({
@@ -282,54 +282,54 @@ function loadGunObj(gun_,scene) {
 
 function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	let AAASV3 = new Vector3();
-	let	AAASpT = gun_.AAASpd * DLTime;
-	for (let n = 0; n < gun_.ObjNum; n ++) {
+	let	AAASpT = gun_.BulSpd * DLTime;
+	for (let n = 0; n < gun_.GunNum; n ++) {
 		// Update Gun Object Rotation (for show only)
-		gun_.GunAdr[n].rotation.x = gun_.GunRot[n].x*DegRad; // Latitude
-		gun_.GunAdr[n].rotation.y = gun_.GunRot[n].y*DegRad; // Longitude
+		gun_.GunPtr[n].rotation.x = gun_.GunRot[n].x*DegRad; // Latitude
+		gun_.GunPtr[n].rotation.y = gun_.GunRot[n].y*DegRad; // Longitude
 		// Compute Gun Relative Position (for show only)
-		gun_.GunAdr[n].position.x = gun_.GunMpP[n].x-air_.MapPos.x;
-		gun_.GunAdr[n].position.y = gun_.GunMpP[n].y-AltDif;
-		gun_.GunAdr[n].position.z = air_.MapPos.z-gun_.GunMpP[n].z;
+		gun_.GunPtr[n].position.x = gun_.GunMpP[n].x-air_.MapPos.x;
+		gun_.GunPtr[n].position.y = gun_.GunMpP[n].y-AltDif;
+		gun_.GunPtr[n].position.z = air_.MapPos.z-gun_.GunMpP[n].z;
 		// For Each Bullet String	
-		gun_.AAASp2[n] = gun_.AAASp2[n] - DLTime; // When reach 0, fire next bullet
-		if (gun_.AAASp2[n] < 0) gun_.AAASp2[n] = 0; // Ready to fire next bullet
-		for (let i = 0; i < gun_.AAANum; i ++) {
+		gun_.BulSp2[n] = gun_.BulSp2[n] - DLTime; // When reach 0, fire next bullet
+		if (gun_.BulSp2[n] < 0) gun_.BulSp2[n] = 0; // Ready to fire next bullet
+		for (let i = 0; i < gun_.BulNum; i ++) {
 			// Start New Bullets
-			if (!gun_.AAATim[n][i] && !gun_.AAASp2[n] && gun_.AAAFlg[n]) {
+			if (!gun_.BulTim[n][i] && !gun_.BulSp2[n] && gun_.BulFlg[n]) {
 			// AAATim = time in flight (reset to zero at end); AAASp2 = delay (reset to zero when time passed)
 				// Set Initial Rotation
-				gun_.AAAPtr[n][i].rotation.x = gun_.GunRot[n].x*DegRad; // Latitude
-				gun_.AAAPtr[n][i].rotation.y = gun_.GunRot[n].y*DegRad; // Longitude
+				gun_.BulPtr[n][i].rotation.x = gun_.GunRot[n].x*DegRad; // Latitude
+				gun_.BulPtr[n][i].rotation.y = gun_.GunRot[n].y*DegRad; // Longitude
 				// Initial Map Position
-				gun_.AAAMpP[n][i].copy(gun_.GunMpP[n]);
+				gun_.BulMpP[n][i].copy(gun_.GunMpP[n]);
 				// Set Initial Speed
 				AAASV3 = new Spherical(AAASpT,(90-gun_.GunRot[n].x)*DegRad,Mod360(-gun_.GunRot[n].y)*DegRad);
 				AAASV3 = new Vector3().setFromSpherical(AAASV3);
-				gun_.AAAMpS[n][i] = AAASV3;
+				gun_.BulMpS[n][i] = AAASV3;
 				//
-				gun_.AAATim[n][i] = DLTime; // First jump
-				gun_.AAASp2[n] = gun_.AAASpc; // restart delay
-				gun_.AAAPtr[n][i].visible = true;
+				gun_.BulTim[n][i] = DLTime; // First jump
+				gun_.BulSp2[n] = gun_.BulSpc; // restart delay
+				gun_.BulPtr[n][i].visible = true;
 				// End Smoke When Bullet0 Begins
 				if (!i) gun_.SmkPtr[n].visible = false;
 			}
 			// Continue Bullets
-			gun_.AAATim[n][i] = gun_.AAATim[n][i] + DLTime;
+			gun_.BulTim[n][i] = gun_.BulTim[n][i] + DLTime;
 			// Stop
-			if (gun_.AAATim[n][i] > gun_.AAADLT) {
-				gun_.AAATim[n][i] = 0;
-				gun_.AAAPtr[n][i].visible = false;
+			if (gun_.BulTim[n][i] > gun_.BulDLT) {
+				gun_.BulTim[n][i] = 0;
+				gun_.BulPtr[n][i].visible = false;
 				// Start Smoke When Bullet0 Ends
 				if (n == 0 && i == 0) {
-					gun_.SmkMpP[n].copy(gun_.AAAMpP[n][i]); // Bullet0 MapPos
+					gun_.SmkMpP[n].copy(gun_.BulMpP[n][i]); // Bullet0 MapPos
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
 					gun_.SmkRot[n] = Mod360(gun_.SmkRot[n] + 163); // Change appearance
 					if (SndFlg && gun_.SndFlg[n]) gun_.SndPtr[n].play();
 				}
 				if (n == 1 && i == 2) {
-					gun_.SmkMpP[n].copy(gun_.AAAMpP[n][i]); // Bullet0 MapPos
+					gun_.SmkMpP[n].copy(gun_.BulMpP[n][i]); // Bullet0 MapPos
 					gun_.SmkPtr[n].visible = true;
 					gun_.SmkMat[n].opacity = 1.0;
 					gun_.SmkRot[n] = Mod360(gun_.SmkRot[n] - 197); // Change appearance
@@ -339,15 +339,15 @@ function moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			// Continue
 			else {
 				// Speed lost due to Drag (approx)
-				gun_.AAAMpS[n][i].multiplyScalar(.995);
+				gun_.BulMpS[n][i].multiplyScalar(.995);
 				// New Map Position
-				gun_.AAAMpP[n][i].x = gun_.AAAMpP[n][i].x + gun_.AAAMpS[n][i].x;
-				gun_.AAAMpP[n][i].y = gun_.AAAMpP[n][i].y + gun_.AAAMpS[n][i].y - GrvDLT;
-				gun_.AAAMpP[n][i].z = gun_.AAAMpP[n][i].z + gun_.AAAMpS[n][i].z;
+				gun_.BulMpP[n][i].x = gun_.BulMpP[n][i].x + gun_.BulMpS[n][i].x;
+				gun_.BulMpP[n][i].y = gun_.BulMpP[n][i].y + gun_.BulMpS[n][i].y - GrvDLT;
+				gun_.BulMpP[n][i].z = gun_.BulMpP[n][i].z + gun_.BulMpS[n][i].z;
 				// Relative Position
-				gun_.AAAPtr[n][i].position.x = gun_.AAAMpP[n][i].x - air_.MapPos.x;
-				gun_.AAAPtr[n][i].position.y = gun_.AAAMpP[n][i].y - AltDif;
-				gun_.AAAPtr[n][i].position.z = air_.MapPos.z - gun_.AAAMpP[n][i].z;
+				gun_.BulPtr[n][i].position.x = gun_.BulMpP[n][i].x - air_.MapPos.x;
+				gun_.BulPtr[n][i].position.y = gun_.BulMpP[n][i].y - AltDif;
+				gun_.BulPtr[n][i].position.z = air_.MapPos.z - gun_.BulMpP[n][i].z;
 			}
 		} // end of i
 		// Smoke Relative Position
