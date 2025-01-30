@@ -560,11 +560,6 @@ let xac_ = {
 	};
 
 //. Moving Ships ...............//..............................................
-//- Firing
-let XSGMax = 600;				// Guns Firing (2 secs)
-let XSGFlg = XSGMax;
-let XSGMin = -600;				// Guns Not Firing (10 secs)
-//-	Variables
 let xsh_ = {
 		ObjNum: 2,				// Number of ships
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
@@ -593,6 +588,10 @@ let xsh_ = {
 	};
 
 //- Moving Ships AA Guns -------//-----------------------------------------------
+//- Firing
+let XSGMax = 1200;				// Guns Firing (20 secs)
+let XSGFlg = XSGMax;
+let XSGMin = -1200;				// Guns Not Firing (20 secs)
 let xsg_ = {
 		ObjNum: 2,				// Number of guns
 		// Parent (if any)
@@ -627,11 +626,11 @@ let xsg_ = {
 				 new THREE.Vector3()],
 		SmkTim: [0,0],
 		// Smoke Sounds
-		SndFlg: [1,1],			// Gun Firing
+		SndFlg: [0,1],			// Gun Firing
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [0,0],
 		SndMsh: [new makMsh(),new makMsh()],
-		SndVol: 15				// Volume
+		SndVol: 5				// Volume
 	};
 
 //- ANIMATED OBJECTS -----------//----------------------------------------------
