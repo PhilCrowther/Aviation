@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.01.29)
+ * Warfare.js (vers 25.01.30)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -46,7 +46,7 @@ import {color,texture} from "three/tsl";
 //																				*
 //===============================================================================
 
-//= CONSTANTS ==========================//=======================================
+//= CONSTANTS ==================//===============================================
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 
@@ -61,7 +61,7 @@ const DegRad = Math.PI/180;		// Convert Degrees to Radians
 // No Smoke
 // Gun Object = Airplane
 
-//= LOAD MY BULLETS ====================//=======================================
+//= LOAD MY BULLETS ============//===============================================
 
 function loadBullet(myg_,scene) {
 	// Line	
@@ -98,7 +98,7 @@ function loadBullet(myg_,scene) {
 	}
 }
 
-//= MOVE MY BULLETS ====================//=======================================
+//= MOVE MY BULLETS ============//===============================================
 
 function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
 	let BulSV3 = new Vector3();
@@ -151,9 +151,9 @@ function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
 // No Smoke
 // Gun Object = Airplane
 
-//= LOAD XAC BULLETS ===================//=======================================
+//= LOAD XAC BULLETS ===========//===============================================
 
-function loadXACBul(xac_,scene) {
+function loadXACBul(xag_,scene) {
 	let line = 0
 	//- Front Line
 	let lnF = 6;
@@ -167,88 +167,88 @@ function loadXACBul(xac_,scene) {
 		point1.push(new Vector3(0,0,-lnB));
 		point1.push(new Vector3(0,0,lnB));
 	let BulGeD = new BufferGeometry().setFromPoints(point1);	
-	let BulMtL = new LineBasicNodeMaterial({colorNode: color(xac_.BulClr.x)});
-	let BulMtD = new LineBasicNodeMaterial({colorNode: color(xac_.BulClr.y)});
+	let BulMtL = new LineBasicNodeMaterial({colorNode: color(xag_.BulClr.x)});
+	let BulMtD = new LineBasicNodeMaterial({colorNode: color(xag_.BulClr.y)});
 	let xp = 2;
 	// For Each Gun
-	for (let n = 0; n < xac_.ObjNum; n ++) {
+	for (let n = 0; n < xag_.ObjNum; n ++) {
 		// Load Bullets
-		for (let i = 0; i < xac_.BulNum; i ++) {	
+		for (let i = 0; i < xag_.BulNum; i ++) {	
 			// Create Bull Meshes - Double Line 2 Colors
-			xac_.BulPtr[n][i] = new makMsh();
+			xag_.BulPtr[n][i] = new makMsh();
 			// Left
 			line = new Line(BulGeL,BulMtL); // Lite Color
 			line.position.z = -lnF;
 			line.position.x = -xp;
-			xac_.BulPtr[n][i].add(line);
+			xag_.BulPtr[n][i].add(line);
 			line = new Line(BulGeD,BulMtD); // Dark Color
 			line.position.z = lnB;
 			line.position.x = -xp;
-			xac_.BulPtr[n][i].add(line);
+			xag_.BulPtr[n][i].add(line);
 			// Rite
 			line = new Line(BulGeL,BulMtL); // Lite Color
 			line.position.z = -lnF;
 			line.position.x = xp;
-			xac_.BulPtr[n][i].add(line);
+			xag_.BulPtr[n][i].add(line);
 			line = new Line(BulGeD,BulMtD); // Dark Color
 			line.position.z = lnB;
 			line.position.x = xp;
-			xac_.BulPtr[n][i].add(line);
-			xac_.BulPtr[n][i].rotation.order = "YXZ";
+			xag_.BulPtr[n][i].add(line);
+			xag_.BulPtr[n][i].rotation.order = "YXZ";
 		//
-			scene.add(xac_.BulPtr[n][i]);
-			xac_.BulPtr[n][i].visible = false;
+			scene.add(xag_.BulPtr[n][i]);
+			xag_.BulPtr[n][i].visible = false;
 			// Initialize Speed and Position
-			xac_.BulMpS[n][i] = new Vector3();
-			xac_.BulMpP[n][i] = new Vector3();
+			xag_.BulMpS[n][i] = new Vector3();
+			xag_.BulMpP[n][i] = new Vector3();
 		} // end i
 	} // end n
 }
 
-//= MOVE XAC BULLETS =====================//=====================================
+//= MOVE XAC BULLETS ===========//===============================================
 
-function moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT) {
+function moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT) {
 	let BulSV3 = new Vector3();
-	let	BulSpT = xac_.BulSpd * DLTime;
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		xac_.BulSp2[n] = xac_.BulSp2[n] - DLTime;
-		if (xac_.BulSp2[n] < 0) xac_.BulSp2[n] = 0;
-		for (let i = 0; i < xac_.BulNum; i ++) {
+	let	BulSpT = xag_.BulSpd * DLTime;
+	for (let n = 0; n < xag_.ObjNum; n ++) {
+		xag_.BulSp2[n] = xag_.BulSp2[n] - DLTime;
+		if (xag_.BulSp2[n] < 0) xag_.BulSp2[n] = 0;
+		for (let i = 0; i < xag_.BulNum; i ++) {
 			// Start New Bullets
-			if (!xac_.BulTim[n][i] && !xac_.BulSp2[n] && xac_.BulFlg[n]) {		
+			if (!xag_.BulTim[n][i] && !xag_.BulSp2[n] && xag_.BulFlg[n]) {		
 				// Set Initial Rotation
-				xac_.BulPtr[n][i].rotation.x = xac_.ObjRot[n].x*DegRad; // Latitude
-				xac_.BulPtr[n][i].rotation.y = xac_.ObjRot[n].y*DegRad; // Longitude
+				xag_.BulPtr[n][i].rotation.x = xag_.XACRot[n].x*DegRad; // Latitude
+				xag_.BulPtr[n][i].rotation.y = xag_.XACRot[n].y*DegRad; // Longitude
 				// Initial Map Position
-				xac_.BulMpP[n][i].copy(xac_.MapPos[n]);		
+				xag_.BulMpP[n][i].copy(xag_.XACPos[n]);	
 				// Set Initial Speed
-				BulSV3 = new Spherical(BulSpT,(90-xac_.ObjRot[n].x)*DegRad,Mod360(-xac_.ObjRot[n].y)*DegRad);
+				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(-xag_.XACRot[n].y)*DegRad);
 				BulSV3 = new Vector3().setFromSpherical(BulSV3);
-				xac_.BulMpS[n][i].copy(BulSV3);
+				xag_.BulMpS[n][i].copy(BulSV3);
 				//
-				xac_.BulTim[n][i] = DLTime;
-				xac_.BulSp2[n] = xac_.BulSpc;
-				xac_.BulPtr[n][i].visible = true;
+				xag_.BulTim[n][i] = DLTime;
+				xag_.BulSp2[n] = xag_.BulSpc;
+				xag_.BulPtr[n][i].visible = true;
 			}
 			// Continue Bullets
-			xac_.BulTim[n][i] = xac_.BulTim[n][i] + DLTime;
+			xag_.BulTim[n][i] = xag_.BulTim[n][i] + DLTime;
 			// Stop
-			if (xac_.BulTim[n][i] > xac_.BulDLT) {
-				xac_.BulTim[n][i] = 0;
-				xac_.BulPtr[n][i].visible = false;
+			if (xag_.BulTim[n][i] > xag_.BulDLT) {
+				xag_.BulTim[n][i] = 0;
+				xag_.BulPtr[n][i].visible = false;
 			}
 			// Continue Bullet
 			else {
 				// Speed lost due to Drag (approx)
-				xac_.BulMpS[n][i].multiplyScalar(.995);
+				xag_.BulMpS[n][i].multiplyScalar(.995);
 				// New Map Position
-				xac_.BulMpP[n][i].x = xac_.BulMpP[n][i].x + xac_.BulMpS[n][i].x;
-				xac_.BulMpP[n][i].y = xac_.BulMpP[n][i].y + xac_.BulMpS[n][i].y - GrvDLT;
-				xac_.BulMpP[n][i].z = xac_.BulMpP[n][i].z + xac_.BulMpS[n][i].z;
+				xag_.BulMpP[n][i].x = xag_.BulMpP[n][i].x + xag_.BulMpS[n][i].x;
+				xag_.BulMpP[n][i].y = xag_.BulMpP[n][i].y + xag_.BulMpS[n][i].y - GrvDLT;
+				xag_.BulMpP[n][i].z = xag_.BulMpP[n][i].z + xag_.BulMpS[n][i].z;
 				// Relative Position
-				xac_.BulPtr[n][i].position.x = xac_.BulMpP[n][i].x - air_.MapPos.x;
-				xac_.BulPtr[n][i].position.y = xac_.BulMpP[n][i].y - AltDif;
-				xac_.BulPtr[n][i].position.z = air_.MapPos.z - xac_.BulMpP[n][i].z;
+				xag_.BulPtr[n][i].position.x = xag_.BulMpP[n][i].x - air_.MapPos.x;
+				xag_.BulPtr[n][i].position.y = xag_.BulMpP[n][i].y - AltDif;
+				xag_.BulPtr[n][i].position.z = air_.MapPos.z - xag_.BulMpP[n][i].z;
 			}
 		} // end i
 	} // end n
@@ -265,7 +265,7 @@ function moveXACBul(xac_,air_,AltDif,DLTime,GrvDLT) {
 // Smoke
 // Gun Object = Gun at Relative Position to Ship
 
-//= LOAD AA GUNS ========================//======================================
+//= LOAD AA GUNS ===============//===============================================
 
 function loadAAGuns(aag_,air_,AltDif,scene) {
 	let MapPos = new Vector3();
@@ -332,7 +332,7 @@ function loadAAGuns(aag_,air_,AltDif,scene) {
 	} // end of n
 }
 
-//= MOVE AA GUNS ========================//=====================================
+//= MOVE AA GUNS ===============//===============================================
 
 function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	let MapPos = new Vector3();
@@ -424,84 +424,17 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 
 //**************************************|****************************************
 //																				*
-//								   ANTI-AIRCRAFT								*
-//																				*
-//*******************************************************************************
-
-// Many objects
-// Bullet = Single Lines - 2 Color (Series)
-// Smoke
-// Gun Object = Gun at Absolute Position
-
-//= LOAD AAA GUNS ======================//=======================================
-
-function loadGunObj(gun_,scene) {
-	// Make Bullets
-	let scale = 2.5;					// Smoke Scale
-	let line = 0
-	let point0 = [];
-		point0.push(new Vector3(0,0,-2));
-		point0.push(new Vector3(0,0,2));
-	let AAAGeL = new BufferGeometry().setFromPoints(point0);
-	let point1 = [];
-		point1.push(new Vector3(0,0,-10));
-		point1.push(new Vector3(0,0,10));
-	let AAAGeD = new BufferGeometry().setFromPoints(point1);	
-	let AAAMtL = new LineBasicNodeMaterial({colorNode: color(gun_.AAAClr.x)});
-	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(gun_.AAAClr.y)});
-	// For Each Gun
-	for (let n = 0; n < gun_.ObjNum; n ++) {
-		gun_.ObjAdr[n].rotation.copy(gun_.ObjRot[n]);
-		gun_.ObjAdr[n].position.copy(gun_.MapPos[n]);
-		scene.add(gun_.ObjAdr[n]);
-		// Load Bullets
-		for (let i = 0; i < gun_.AAANum; i ++) {
-			// Create AAA Meshes - 1 Double Line
-			gun_.AAAPtr[n][i] = new makMsh();
-			line = new Line(AAAGeL,AAAMtL); // Lite Color
-			line.position.z = -2;
-			gun_.AAAPtr[n][i].add(line);
-			line = new Line(AAAGeD,AAAMtD); // Dark Color
-			line.position.z = 10;
-			gun_.AAAPtr[n][i].add(line);
-			gun_.AAAPtr[n][i].scale.set(scale,scale,scale);
-			gun_.AAAPtr[n][i].rotation.order = "YXZ";
-			// 
-			scene.add(gun_.AAAPtr[n][i]);
-			gun_.AAAPtr[n][i].visible = false;
-			// Initialize Values
-			gun_.AAAMpS[n][i] = new Vector3();
-			gun_.AAAMpP[n][i] = new Vector3();
-		}
-		// Smoke
-		gun_.SmkMat[n] = new SpriteNodeMaterial({
-			colorNode: color(0xffffff),
-			colorNode: texture(gun_.SmkMap),
-			transparent:true,
-			opacity: 1.0,
-			depthTest:false,
-			depthWrite:false,
-		});
-		gun_.SmkPtr[n] = new Sprite(gun_.SmkMat[n]);
-		gun_.SmkPtr[n].scale.set(100,100,100);	
-		scene.add(gun_.SmkPtr[n]);
-		gun_.SmkPtr[n].visible = false;
-	} // end of n
-}
-
-//**************************************|****************************************
-//																				*
 //								  SUBROUTINES									*
 //																				*
 //*******************************************************************************
 
 /* Converts degrees to 360 */
 function Mod360(deg) {
-	while (deg < 0) deg = deg + 360;	// Make deg a positive number
-	deg = deg % 360;					// Compute remainder of any number divided by 360
+	while (deg < 0) deg = deg + 360; // Make deg a positive number
+	deg = deg % 360;				 // Compute remainder of any number divided by 360
 return deg;}
 
-//- Make Mesh ------------------------------------------------------------------
+//- Make Mesh -------------------------------------------------------------------
 function makMsh() {
 	let geometry = new BoxGeometry(0.01,0.01,0.01); 
 	let material = new MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
