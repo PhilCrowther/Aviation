@@ -72,10 +72,7 @@ A demo of a flight simulation of an animated airplane model over animated ocean 
 
 // Basic Modules
 import * as THREE from "three";
-import {color,texture,attribute,range,positionLocal,uv,mix,uniform,
-		rotateUV,	//r168
-		time,		// r170
-} from "three/tsl";
+import {texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
@@ -88,7 +85,7 @@ import {loadBullet,moveBullet,
 		loadXACBul,moveXACBul,
 		loadXSHBul,moveXSHBul,
 		loadGunObj,moveGunObj
-} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG3.js";
 import {initVulkan,initShpWak} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 
 //= GENERAL ===================================================================
@@ -468,6 +465,8 @@ let gun_ = {
 		AAADLT: AAADLT,			// Life of bullet
 		AAASpc: AAASpc,			// Bullet Spacing
 		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
+		// Colors
+		AAAClr: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
 		// Bullets for each gun
 		AAAPtr: [[],[]],		// Addresses of bullet objects
 		AAAMpS: [[0],[0]],		// Map Speed (V3)
@@ -537,6 +536,8 @@ let xac_ = {
 		BulNum: BulNum,			// Number of bullets
 		BulSpc: BulSpc,			// Bullet spacing
 		BulSp2: [BulSpc,BulSpc],
+		// Colors
+		BulClr: new THREE.Vector2(0xff80ff,0x804080), // Red
 		BulFlg: [0,1],			// 1 = Guns Firing
 		BulPtr: [[],[]],		// Bullet Objects
 		BulMpS: [[0],[0]],		// Bullet Map Speed (V3)
@@ -598,6 +599,7 @@ let xsh_ = {
 		AAADLT: AAADLT,			// Max Bullet Time in Flight
 		AAASpc: AAASpc,			// Bullet spacing
 		AAASp2: [AAASpc,AAASpc],
+		AAAClr: new THREE.Vector2(0xff80ff,0x804080), // Red
 		AAAFlg: [0,1],			// 1 = Guns Firing
 		AAAPtr: [[],[]],		// Bullet Objects
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
@@ -814,6 +816,7 @@ let myg_ = {
 		BulSpc: BulSpc,			// Bullet spacing
 		BulSp2: BulSpc,
 		// Object
+		BulClr: new THREE.Vector2(0xff80ff,0x804080), // Red
 		BulPtr: [0],			// Bullet Objects
 		BulMpS: [0],			// Bullet Speed
 		BulTim: [0],			// Bullet Time in Flight
