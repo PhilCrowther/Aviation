@@ -588,19 +588,30 @@ let xsh_ = {
 		AnmRdr: [0,0],			// Animation
 		ShpPit: [0,0],			// Ship Pitch
 		ShpLok: [new makMsh(),0], // Deck Lock
-		// AA Guns
+	};
+
+//- Moving Ships AA Guns -------//-----------------------------------------------
+let xsg_ = {
+		ObjNum: 2,				// Number of guns
+		// Parent (if any)
+		GunRef: [xsh_.MapPos[1], // Parent
+				 xsh_.MapPos[1]],
+		// Gun Object
 		GunPtr: [new makMsh(),new makMsh()], // Gun Object
-		GunRot: [new THREE.Euler(0,90,0), // Gun Rotation
+		GunRot: [new THREE.Euler(45,315,0), // Gun Rotation (degrees)
 				 new THREE.Euler(45,315,0)],
-		GunPos: [new THREE.Vector3(0,0,0), // Relative Map Position (meters) [used by Mesh]
-				 new THREE.Vector3(0,0,0)],	
-		AAASpd: AAASpd,			// Muzzle Velocity (mps)
+		GunPos: [new THREE.Vector3(0,0,0), // Map Position (meters)
+				 new THREE.Vector3(0,0,0)],
+		// Bullet Data
+		AAAFlg: [1,0],			// 1 = Guns Firing
 		AAANum: AAANum,			// Number of bullets
+		AAASpd: AAASpd,			// Muzzle Velocity (mps)
 		AAADLT: AAADLT,			// Max Bullet Time in Flight
 		AAASpc: AAASpc,			// Bullet spacing
-		AAASp2: [AAASpc,AAASpc],
+		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
+		// Bullet Colors
 		AAAClr: new THREE.Vector2(0xff80ff,0x804080), // Red
-		AAAFlg: [0,1],			// 1 = Guns Firing
+		// Bullets for each gun		
 		AAAPtr: [[],[]],		// Bullet Objects
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
@@ -619,7 +630,7 @@ let xsh_ = {
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [0,0],
 		SndMsh: [new makMsh(),new makMsh()],
-		SndVol: 15				// Volume
+		SndVol: 15,				// Volume
 	};
 
 //- ANIMATED OBJECTS -----------//----------------------------------------------
@@ -1599,8 +1610,8 @@ function moveShpWak() {
 
 //- Load Ship Guns -------------------------------------------------------------
 function loadShpGun() {
-	xsh_.SmkMap = txtrLoader.load(xsh_.SmkSrc);
-	loadXSHBul(xsh_,scene);
+	xsg_.SmkMap = txtrLoader.load(xsg_.SmkSrc);
+	loadXSHBul(xsg_,air_,AltDif,scene);
 
 }
 
@@ -1608,12 +1619,12 @@ function loadShpGun() {
 function moveShpGun() {
 	// Turn Ship 2 Guns On/Off
 	XSGFlg = XSGFlg - 1;
-	if (XSGFlg > 0) xsh_.AAAFlg[1] = 1;
+	if (XSGFlg > 0) xsg_.AAAFlg[1] = 1;
 	else {
-		xsh_.AAAFlg[1] = 0;
+		xsg_.AAAFlg[1] = 0;
 		if (XSGFlg < XSGMin) XSGFlg = XSGMax;
 	}
-	moveXSHBul(xsh_,air_,AltDif,DLTime,GrvDLT,SndFlg);
+	moveXSHBul(xsg_,air_,AltDif,DLTime,GrvDLT,SndFlg);
 }
 
 //= ANIMATED FLAGS =============//==============================================
@@ -2048,12 +2059,12 @@ function loadSounds() {
 		});	
 	}
 	// XS Guns - Smoke Sounds
-	fname = xsh_.SndSrc;
-	for (let n = 0; n < xsh_.ObjNum; n ++) {
+	fname = xsg_.SndSrc;
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		audioLoader.load(fname, function(buffer) {
-			xsh_.SndPtr[n].setBuffer(buffer);
-			xsh_.SndPtr[n].setRefDistance(RefDst);
-			xsh_.SndPtr[n].setVolume(0);
+			xsg_.SndPtr[n].setBuffer(buffer);
+			xsg_.SndPtr[n].setRefDistance(RefDst);
+			xsg_.SndPtr[n].setVolume(0);
 		});	
 	}
 	// AA Guns
@@ -2093,12 +2104,12 @@ function loadSounds() {
 		xac_.SndMsh[n].add(xac_.SndPtr[n]);
 	}
 	// XS Guns
-	for (let n = 0; n < xsh_.ObjNum; n ++) {
-		xsh_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		xsh_.SndMsh[n].add(xsh_.SndPtr[n]);
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		xsg_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		xsg_.SndMsh[n].add(xsg_.SndPtr[n]);
 	}
-	xsh_.AAAPtr[0][0].add(xsh_.SndMsh[0]); // Link SndMsh to Specific Bullets
-	xsh_.AAAPtr[1][2].add(xsh_.SndMsh[1]);
+	xsg_.AAAPtr[0][0].add(xsg_.SndMsh[0]); // Link SndMsh to Specific Bullets
+	xsg_.AAAPtr[1][2].add(xsg_.SndMsh[1]);
 	// AA Guns
 	for (let n = 0; n < gun_.ObjNum; n ++) {
 		gun_.SndPtr[n] = new THREE.PositionalAudio(listener);
@@ -2131,8 +2142,8 @@ function moveSounds() {
 		xac_.SndPtr[n].setVolume(xac_.SndVol[n]);
 	}
 	// XS Guns
-	for (let n = 0; n < xsh_.ObjNum; n ++) {
-		xsh_.SndPtr[n].setVolume(xsh_.SndVol);
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		xsg_.SndPtr[n].setVolume(xsg_.SndVol);
 	}
 	// AA Guns
 	for (let n = 0; n < gun_.ObjNum; n ++) {
@@ -2183,8 +2194,8 @@ function stopSounds() {
 		if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();
 	}
 	// XS Guns
-	for (let n = 0; n < xsh_.ObjNum; n ++) {
-		if (xsh_.SndPtr[n].isPlaying) xsh_.SndPtr[n].stop();
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		if (xsg_.SndPtr[n].isPlaying) xsg_.SndPtr[n].stop();
 	}	
 	// AA Guns
 	for (let n = 0; n < gun_.ObjNum; n ++) {
