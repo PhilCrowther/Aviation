@@ -83,8 +83,7 @@ import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {loadBullet,moveBullet,
 		loadXACBul,moveXACBul,
-		loadXSHBul,moveXSHBul,
-		loadGunObj,moveGunObj
+		loadAAGuns,moveAAGuns
 } from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
 import {initVulkan,initShpWak} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 
@@ -453,25 +452,29 @@ let AARYDf = [0,0];				// Y-Rotation Adjustment
 //
 let gun_ = {
 		ObjNum: 2,
-		ObjAdr: [new makMsh(),new makMsh()], // Gun Object
-		ObjRot: [new THREE.Euler(45,90,0),
-				 new THREE.Euler(30,0,0)], // Rotation (degrees)
-		MapPos: [new THREE.Vector3(48,8,5638), // Absolute Position (near hangar)
-				 new THREE.Vector3(-1225,5,3355)], // Absolute Position (near Giaros)
-		// For Each Bullet String
+		// Parent (if any)
+		GunRef: [new THREE.Vector3(0,0,0), // No Parent
+				 new THREE.Vector3(0,0,0)],
+		// Gun Object
+		GunPtr: [new makMsh(),new makMsh()], // Gun Object
+		GunRot: [new THREE.Euler(45,90,0), // Gun Rotation (degrees)
+				 new THREE.Euler(30,0,0)],
+		GunPos: [new THREE.Vector3(48,8,5638), // Map Position
+				 new THREE.Vector3(-1225,5,3355)],
+		// Bullet Data
 		AAAFlg: [1,1],			// 1 = Gun Firing
 		AAANum: AAANum,			// Number of Bullets
-		AAASpd: AAASpd,			// Bullet Speed (mps)
-		AAADLT: AAADLT,			// Life of bullet
+		AAASpd: AAASpd,			// Muzzle Velocity (mps)
+		AAADLT: AAADLT,			// Max Bullet Time in Flight
 		AAASpc: AAASpc,			// Bullet Spacing
 		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
-		// Colors
+		// Bullet Colors
 		AAAClr: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
 		// Bullets for each gun
-		AAAPtr: [[],[]],		// Addresses of bullet objects
-		AAAMpS: [[0],[0]],		// Map Speed (V3)
-		AAAMpP: [[0],[0]],		// Map Position (V3)	
-		AAATim: [[],[]],		// Time in flight
+		AAAPtr: [[],[]],		// Bullet Objects
+		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
+		AAATim: [[],[]],		// Bullet Time in flight
 		// Smoke
 		SmkSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
 		SmkMap: [0,0],
@@ -481,14 +484,13 @@ let gun_ = {
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
 		SmkTim: [0,0],
-		// Sounds
+		// Smoke Sounds
 		SndFlg: [1,1],			// Gun Firing
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [0,0],
 		SndMsh: [new makMsh(),new makMsh()],
 		SndVol: 15,				// Volume
 	};
-
 
 //- MOVING VEHICLES ------------//----------------------------------------------
 
@@ -594,13 +596,12 @@ let xsh_ = {
 let xsg_ = {
 		ObjNum: 2,				// Number of guns
 		// Parent (if any)
-		GunRef: [xsh_.MapPos[1], // Parent
-				 xsh_.MapPos[1]],
+		GunRef: [xsh_.MapPos[1],xsh_.MapPos[1]],
 		// Gun Object
 		GunPtr: [new makMsh(),new makMsh()], // Gun Object
-		GunRot: [new THREE.Euler(45,315,0), // Gun Rotation (degrees)
+		GunRot: [new THREE.Euler(45,315,0), // Gun Rotation
 				 new THREE.Euler(45,315,0)],
-		GunPos: [new THREE.Vector3(0,0,0), // Map Position (meters)
+		GunPos: [new THREE.Vector3(0,0,0), // Relative Map Position (meters) [used by Mesh]
 				 new THREE.Vector3(0,0,0)],
 		// Bullet Data
 		AAAFlg: [1,0],			// 1 = Guns Firing
@@ -608,7 +609,7 @@ let xsg_ = {
 		AAASpd: AAASpd,			// Muzzle Velocity (mps)
 		AAADLT: AAADLT,			// Max Bullet Time in Flight
 		AAASpc: AAASpc,			// Bullet spacing
-		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
+		AAASp2: [AAASpc,AAASpc],
 		// Bullet Colors
 		AAAClr: new THREE.Vector2(0xff80ff,0x804080), // Red
 		// Bullets for each gun		
@@ -630,7 +631,7 @@ let xsg_ = {
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [0,0],
 		SndMsh: [new makMsh(),new makMsh()],
-		SndVol: 15,				// Volume
+		SndVol: 15				// Volume
 	};
 
 //- ANIMATED OBJECTS -----------//----------------------------------------------
@@ -1292,7 +1293,7 @@ function moveAnmObj() {
 function loadAAAGun() {
 	if (gun_.ObjNum) {
 		gun_.SmkMap = txtrLoader.load(gun_.SmkSrc);
-		loadGunObj(gun_,scene);
+		loadAAGuns(gun_,air_,AltDif,scene)
 	}
 }
 
@@ -1301,9 +1302,9 @@ function moveAAAGun() {
 		for (let n = 0; n < gun_.ObjNum; n ++) {	
 			// Adjust Y-Rotation
 			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
-			gun_.ObjRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
+			gun_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
 		}
-		moveGunObj(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg);
+		moveAAGuns(gun_,air_,AltDif,DLTime,GrvDLT,SndFlg);
 	}
 }
 
@@ -1611,7 +1612,7 @@ function moveShpWak() {
 //- Load Ship Guns -------------------------------------------------------------
 function loadShpGun() {
 	xsg_.SmkMap = txtrLoader.load(xsg_.SmkSrc);
-	loadXSHBul(xsg_,air_,AltDif,scene);
+	loadAAGuns(xsg_,air_,AltDif,scene);
 
 }
 
@@ -1624,7 +1625,7 @@ function moveShpGun() {
 		xsg_.AAAFlg[1] = 0;
 		if (XSGFlg < XSGMin) XSGFlg = XSGMax;
 	}
-	moveXSHBul(xsg_,air_,AltDif,DLTime,GrvDLT,SndFlg);
+	moveAAGuns(xsg_,air_,AltDif,DLTime,GrvDLT,SndFlg);
 }
 
 //= ANIMATED FLAGS =============//==============================================
@@ -2067,7 +2068,7 @@ function loadSounds() {
 			xsg_.SndPtr[n].setVolume(0);
 		});	
 	}
-	// AA Guns
+	// AA Guns - Smoke Sounds
 	fname = gun_.SndSrc;
 	for (let n = 0; n < gun_.ObjNum; n ++) {
 		audioLoader.load(fname, function(buffer) {
