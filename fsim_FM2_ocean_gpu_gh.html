@@ -1083,7 +1083,7 @@ function initAll() {
 
 //- RENDER ---------------------//-----------------------------------------------
 
-function rendAll() {
+async function rendAll() {		// r173 added async
 	// This block runs while resources are loading.
 	if(RESOURCES_LOADED == false){
 		boxrot = Mod360(boxrot - 3);
@@ -1119,7 +1119,7 @@ function rendAll() {
 		stopSounds();
 		SndFlg = MYGFlg = 0;
 	}
-	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
+	await renderer.renderAsync(scene, camera); // ### WebGPU requires Async, r173 added await
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
