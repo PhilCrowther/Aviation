@@ -4,10 +4,15 @@
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
 
-
 /* NOTES:
 	Bul refers to aircraft bullets with double lines
 	AAA refers to anti-aircraft bullets with singles lines
+	Use lines and 2 colors so bullets appear against both light sky and dark ground
+*/
+
+/* TO DO:
+	Change XACBul to allow for tail-gunners - different gun rotation and position
+	Fix AAGuns so that Ships fire in correct direction
 */
 
 /*
@@ -268,8 +273,11 @@ function moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT) {
 //= LOAD AA GUNS ===============//===============================================
 
 function loadAAGuns(aag_,air_,AltDif,scene) {
+	//- Combined Rotation and Map Position of Parent plus Gun
+	let MapRot = new Vector3();
 	let MapPos = new Vector3();
-	let scale = 2.5;					// Smoke Scale
+	//- Lines
+	let scale = 2.5;			// Smoke Scale
 	let line = 0;
 	//- Front Line
 	let lnF = 2;
@@ -287,11 +295,14 @@ function loadAAGuns(aag_,air_,AltDif,scene) {
 	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(aag_.AAAClr.y)});
 	//- For Each Gun
 	for (let n = 0; n < aag_.ObjNum; n ++) {
+		// Combined Rotation and Map Position of Parent plus Gun
+		MapRot.copy(aag_.XSHPos[n]).add(aag_.GunRot[n]);
+		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
 		// Gun Object Rotation (for show only)
-		aag_.GunPtr[n].rotation.x = aag_.GunRot[n].x*DegRad; // Latitude
-		aag_.GunPtr[n].rotation.y = aag_.GunRot[n].y*DegRad; // Longitude
+		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
+		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
 		// Combined Map Position of Parent plus Gun
-		MapPos.copy(aag_.GunRef[n]).add(aag_.GunPos[n]);
+		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
 		// Compute Gun Relative Position (for show only)
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aag_.GunPtr[n].position.y = MapPos.y-AltDif;
@@ -335,15 +346,19 @@ function loadAAGuns(aag_,air_,AltDif,scene) {
 //= MOVE AA GUNS ===============//===============================================
 
 function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
+	//- Combined Rotation and Map Position of Parent plus Gun
+	let MapRot = new Vector3();
 	let MapPos = new Vector3();
+	//
 	let AAASV3 = new Vector3();
 	let	AAASpT = aag_.AAASpd * DLTime;
 	for (let n = 0; n < aag_.ObjNum; n ++) {
+		// Combined Rotation and Map Position of Parent plus Gun
+		MapRot.copy(aag_.XSHPos[n]).add(aag_.GunRot[n]);
+		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
 		// Update Gun Object Rotation (for show only)
-		aag_.GunPtr[n].rotation.x = aag_.GunRot[n].x*DegRad; // Latitude
-		aag_.GunPtr[n].rotation.y = aag_.GunRot[n].y*DegRad; // Longitude
-		// Combined Map Position of Parent plus Gun
-		MapPos.copy(aag_.GunRef[n]).add(aag_.GunPos[n]);
+		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
+		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
 		// Compute Gun Relative Position (for show only)
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aag_.GunPtr[n].position.y = MapPos.y-AltDif;
@@ -356,12 +371,12 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			if (!aag_.AAATim[n][i] && !aag_.AAASp2[n] && aag_.AAAFlg[n]) {
 			// AAATim = time in flight (reset to zero at end); AAASp2 = delay (reset to zero when time passed)
 				// Set Initial Rotation
-				aag_.AAAPtr[n][i].rotation.x = aag_.GunRot[n].x*DegRad; // Latitude
-				aag_.AAAPtr[n][i].rotation.y = aag_.GunRot[n].y*DegRad; // Longitude
+				aag_.AAAPtr[n][i].rotation.x = MapRot.x*DegRad; // Latitude
+				aag_.AAAPtr[n][i].rotation.y = MapRot.y*DegRad; // Longitude
 				// Initial Map Position
 				aag_.AAAMpP[n][i].copy(MapPos);
 				// Set Initial Speed
-				AAASV3 = new Spherical(AAASpT,(90-aag_.GunRot[n].x)*DegRad,Mod360(-aag_.GunRot[n].y)*DegRad);
+				AAASV3 = new Spherical(AAASpT,(90-MapRot.x)*DegRad,Mod360(-MapRot.y)*DegRad);
 				AAASV3 = new Vector3().setFromSpherical(AAASV3);
 				aag_.AAAMpS[n][i] = AAASV3;
 				//
