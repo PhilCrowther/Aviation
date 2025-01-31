@@ -601,13 +601,13 @@ update() {
 			this.renderer.computeAsync(pingPong ? this.pingDspHrzComp : this.pongDspHrzComp);
 		}
 	}
-	this.renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // r173
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 	for (let i = 0; i < iterations; i++) {	// Vertical Ping/Pong
 		pingPong = !pingPong;
 		this.stepBF.value = i;
 		this.renderer.computeAsync(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
 	}
-	this.renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // r173
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 	// 5. Displacement
 	this.renderer.computeAsync(this.permutationComp);
 	this.renderer.computeAsync(this.compNormalComp);	
