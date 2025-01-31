@@ -1,5 +1,5 @@
 /*
- * AnimFM2.js (vers 24.11.18)
+ * AnimFM2.js (vers 25.01.31)
  * Copyright 2022-2024, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -10,14 +10,26 @@
  * See http://philcrowther.com/Aviation for more details.
  */
 
-//= GRID MAPS ==================================================================
+//**************************************|****************************************
+//																				*
+//								   	 IMPORTS									*
+//																				*
+//*******************************************************************************
 
 import {
 	AnimationClip,
 	AnimationMixer
 } from 'three';
 
-//= VARIABLES ==================================================================
+//**************************************|****************************************
+//																				*
+//								   	VARIABLES									*
+//																				*
+//*******************************************************************************
+
+//= 1. MAIN VARIABLES ==========//===============================================
+
+//- CONSTANTS ------------------//-----------------------------------------------
 let	DLTime = 1/60;					// Delta Time (1/60 seconds)
 //-	Conversions
 var DegRad = Math.PI/180;			// Convert Degrees to Radians
@@ -27,7 +39,57 @@ let Ft2Mtr = 0.3048;				// Convert Feet to Meters (exact)
 let Km2Mil = 0.621371;
 let Mil2Km = 1.60934;
 
-//= LOAD =======================================================================
+//= 5. MY AIRPLANE VARIABLES ===//===============================================
+
+//- My Animations --------------//-----------------------------------------------
+//	Animation Positions (all range from 0 to 360 with center at 180)
+let anm_ = {
+		anmfps: anmfps,			// Blender FPS
+		spnprp: 180,			// SpinProp 	degrees = 0 to 360
+		rudder: 180,			// Rudder 		degrees = +/- 360
+		elvatr: 180,			// Elevator 	degrees = +/- 360
+		aillft: 180,			// AileronL 	degrees = +/- 360
+		ailrgt: 180,			// AileronR 	degrees = +/- 360
+		flppos: 180,			// Flaps 		degrees = 0 to 180
+		lngpos: 0,				// Landing Gear degrees = 0 to 180
+		canpos: 180,			// Canopy 		degrees = 0 to 180
+		thkpos: 180,			// Tailhook 	degrees = 0 to 180
+		cmphdg: 0,				// Compass Heading
+		atiarr: 180,			// Attitude - Arrow
+		atibnk: 0,				// Attitude - Bank
+		atipit: 180,			// Attitude - Pitch
+		altft0: 0,				// Altitude - feet
+		altft1: 0,				// Altitude - feet X 1000
+		spdmph: 0,				// Speed - MPH
+		vsifpm: 0,				// Vertical Speed - fpm
+		manprs: 0,				// Manifold Pressure
+		rpmprp: 0,				// Propeller RPM
+		hdgdif: 180,			// Change in heading
+		yawval: 180,			// Slip indicator
+		stkpit: 180,			// Joystick pitch
+		stkpcm: 0,				// cumulative
+		stkbnk: 180,			// Joystick bank
+		stkbcm: 0,				// cumulative
+		vchead: 0,				// Pilot head
+		// Gear and Flap					
+		lngspd: 0,				// Change in Gear
+		flpspd: 0,				// Change in Flaps
+		canspd: 0,				// Change in Canopy
+		thkspd: 0,				// Change in Canopy
+		// Flags
+		lngflg: 0,				// Gear (up.down)
+		flpflg: 0,				// Flap (up/down)
+		canflg: 0,				// Canopy (up/down)
+		thkflg: 0,				// Tailhook (up/down)
+	}
+
+//**************************************|****************************************
+//																				*
+//								   	 PROGRAM									*
+//																				*
+//*******************************************************************************
+
+//= LOAD ========================================================================
 
 // Load Aircraft Model Animations
 function loadACanimX(air_, mxr_,anm_) {
@@ -315,9 +377,9 @@ function loadACanimV(vxr_,anm_) {
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.yawval/anm_.anmfps);	
 }
 
-//= MOVE =======================//==============================================
+//= MOVE =======================//===============================================
 
-//- Move External Model Animations ---------------------------------------------
+//- Move External Model Animations ----------------------------------------------
 function moveACanimX(air_,mxr_,anm_) {
 	// General
 	moveACanimA(air_,anm_);
@@ -395,10 +457,10 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 	anm_.atipit = (179*anm_.atipit/45)+180;
 	if (vxr_.GaP) vxr_.GaP.setTime(anm_.atipit/anm_.anmfps);
 	// Pointer - Altitude
-	let altthd = air_.MapSPS.y*Mtr2Ft/1000;					// Round to 1000s
+	let altthd = air_.MapSPS.y*Mtr2Ft/1000; // Round to 1000s
 	altthd = Math.trunc(altthd);
 	altthd = altthd*1000;
-	anm_.altft0 = ((air_.MapSPS.y*Mtr2Ft-altthd)/1000)*360;			// Eliminate 1000s
+	anm_.altft0 = ((air_.MapSPS.y*Mtr2Ft-altthd)/1000)*360; // Eliminate 1000s
 	if (vxr_.PtA) vxr_.PtA.setTime(anm_.altft0/anm_.anmfps);
 	anm_.altft1 = (air_.MapSPS.y*Mtr2Ft/10000)*360;		
 	if (vxr_.PtB) vxr_.PtB.setTime(anm_.altft1/anm_.anmfps);
@@ -407,22 +469,22 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 	if (vxr_.PtS) vxr_.PtS.setTime(anm_.spdmph/anm_.anmfps);
 	// Pointer - Turn Coordinator
 	anm_.hdgdif = PoM360(Mod360(air_.AirRot.y - vxr_.HdO));	// Change in heading +/-
-	anm_.hdgdif = anm_.hdgdif / DLTime;						// Change per second
-	if (anm_.hdgdif >  9) anm_.hdgdif =  9;					// Std Rate = 3 deg = 10 deg deflation
-	if (anm_.hdgdif < -9) anm_.hdgdif = -9;					// Max 9 deg = 30 deg deflection
+	anm_.hdgdif = anm_.hdgdif / DLTime; // Change per second
+	if (anm_.hdgdif >  9) anm_.hdgdif =  9; // Std Rate = 3 deg = 10 deg deflation
+	if (anm_.hdgdif < -9) anm_.hdgdif = -9; // Max 9 deg = 30 deg deflection
 	anm_.hdgdif = (179 * anm_.hdgdif/9)+180;
 	if (vxr_.PtT) vxr_.PtT.setTime(anm_.hdgdif/anm_.anmfps);
 	vxr_.HdO = air_.AirRot.y;
 	// Pointer - Ball
-	anm_.yawval = air_.RotDif.y;								// Values = +/- 0.1
+	anm_.yawval = air_.RotDif.y;		// Values = +/- 0.1
 	anm_.yawval = (179 * anm_.yawval/0.3)+180;
 	if (vxr_.PtC) vxr_.PtC.setTime(anm_.yawval/anm_.anmfps);
 	// Pointer - VSI
-	let vsispd = air_.MapSPS.y-vxr_.AlO;						// Change in meters (1/60 sec)
-	anm_.vsifpm = 60*vsispd*Mtr2Ft/DLTime;					// e.g .05 fpt = 180 fpm
+	let vsispd = air_.MapSPS.y-vxr_.AlO; // Change in meters (1/60 sec)
+	anm_.vsifpm = 60*vsispd*Mtr2Ft/DLTime; // e.g .05 fpt = 180 fpm
 	if (anm_.vsifpm >  6000) anm_.vsifpm =  6000;
 	if (anm_.vsifpm < -6000) anm_.vsifpm = -6000;
-	anm_.vsifpm = ((anm_.vsifpm / 6000)*179)+180;			// 180 fpm / 600 fpm max =.3	
+	anm_.vsifpm = ((anm_.vsifpm / 6000)*179)+180; // 180 fpm / 600 fpm max =.3	
 	if (vxr_.PtV) vxr_.PtV.setTime(anm_.vsifpm/anm_.anmfps);
 	vxr_.AlO = air_.MapSPS.y;
 	// Pointer - Manifold Pressure
@@ -473,26 +535,26 @@ function moveACanimV(air_,vxr_,anm_,CamRot) {
 //  Animations which act in all views: Propeller, Ailerons, Gear, Flaps, Canopy, Tailhook
 function moveACanimA(air_,anm_) {
 	// Propeller
-	let prpspd =  4*(air_.PwrPct-0.6);						// Range = -2.4 to + 1.6
+	let prpspd =  4*(air_.PwrPct-0.6);				// Range = -2.4 to + 1.6
 	anm_.spnprp = anm_.spnprp-prpspd;
-	if (anm_.spnprp < 0) anm_.spnprp = 359;					// A complete circle
+	if (anm_.spnprp < 0) anm_.spnprp = 359;			// A complete circle
 	// Ailerons
 	let ailbnk = air_.RotDif.z;
 	if (air_.GrdFlg) ailbnk = air_.AGBank;
 	// Left
 	anm_.aillft = 180+ailbnk*30;
-	if (anm_.aillft < 151) anm_.aillft = 151;				// Range = 00 to 60
+	if (anm_.aillft < 151) anm_.aillft = 151;		// Range = 00 to 60
 	else if (anm_.aillft > 209) anm_.aillft = 209;
 	// Right
 	anm_.ailrgt = 180-ailbnk*30;
-	if (anm_.ailrgt < 151) anm_.ailrgt = 151;				// Range = 00 to 60
+	if (anm_.ailrgt < 151) anm_.ailrgt = 151;		// Range = 00 to 60
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 	// Gear
-	if (anm_.lngflg  && !air_.GrdFlg) {						// only if key pressed while in air
-		anm_.lngflg = 0;									// one read per keypress only
-		if (anm_.lngspd) anm_.lngspd = -anm_.lngspd;		// if already in motion
-		if (anm_.lngpos == 0) anm_.lngspd = 0.4;			// if full down
-		if (anm_.lngpos == 180) anm_.lngspd = -0.4;			// if full up
+	if (anm_.lngflg  && !air_.GrdFlg) {				// only if key pressed while in air
+		anm_.lngflg = 0;							// one read per keypress only
+		if (anm_.lngspd) anm_.lngspd = -anm_.lngspd; // if already in motion
+		if (anm_.lngpos == 0) anm_.lngspd = 0.4;	// if full down
+		if (anm_.lngpos == 180) anm_.lngspd = -0.4;	// if full up
 	}
 	if (anm_.lngspd) {
 		anm_.lngpos = anm_.lngpos + anm_.lngspd;
@@ -507,10 +569,10 @@ function moveACanimA(air_,anm_) {
 	}
 	// Flaps
 	if (anm_.flpflg) {
-		anm_.flpflg = 0;									// one read per keypress only
-		if (anm_.flpspd) anm_.flpspd = -anm_.flpspd;		// if already in motion
-		if (anm_.flppos == 0) anm_.flpspd = 1;				// if full down
-		if (anm_.flppos == 180) anm_.flpspd = -1;			// if full up
+		anm_.flpflg = 0;							// one read per keypress only
+		if (anm_.flpspd) anm_.flpspd = -anm_.flpspd; // if already in motion
+		if (anm_.flppos == 0) anm_.flpspd = 1;		// if full down
+		if (anm_.flppos == 180) anm_.flpspd = -1;	// if full up
 	}
 	if (anm_.flpspd) {
 		anm_.flppos = anm_.flppos + anm_.flpspd;
@@ -527,10 +589,10 @@ function moveACanimA(air_,anm_) {
 	air_.LngPct = 1 - (anm_.lngpos/180);
 	// Canopy
 	if (anm_.canflg) {
-		anm_.canflg = 0;									// one read per keypress only
-		if (anm_.canspd) anm_.canspd = -anm_.canspd;		// if already in motion
-		if (anm_.canpos == 0) anm_.canspd = 1;				// if full down
-		if (anm_.canpos == 180) anm_.canspd = -1;			// if full up
+		anm_.canflg = 0;							// one read per keypress only
+		if (anm_.canspd) anm_.canspd = -anm_.canspd; // if already in motion
+		if (anm_.canpos == 0) anm_.canspd = 1;		// if full down
+		if (anm_.canpos == 180) anm_.canspd = -1;	// if full up
 	}
 	if (anm_.canspd) {
 		anm_.canpos = anm_.canpos + anm_.canspd;
@@ -545,10 +607,10 @@ function moveACanimA(air_,anm_) {
 	}
 	// Tailhook
 	if (anm_.thkflg) {
-		anm_.thkflg = 0;									// one read per keypress only
-		if (anm_.thkspd) anm_.thkspd = -anm_.thkspd;		// if already in motion
-		if (anm_.thkpos == 0) anm_.thkspd = 1;				// if full down
-		if (anm_.thkpos == 180) anm_.thkspd = -1;			// if full up
+		anm_.thkflg = 0;							// one read per keypress only
+		if (anm_.thkspd) anm_.thkspd = -anm_.thkspd; // if already in motion
+		if (anm_.thkpos == 0) anm_.thkspd = 1;		// if full down
+		if (anm_.thkpos == 180) anm_.thkspd = -1;	// if full up
 	}
 	if (anm_.thkspd) {
 		anm_.thkpos = anm_.thkpos + anm_.thkspd;
@@ -563,7 +625,11 @@ function moveACanimA(air_,anm_) {
 	}
 }
 
-//= EXTRA ======================================================================
+//**************************************|****************************************
+//																				*
+//								   SUBROUTINES									*
+//																				*
+//*******************************************************************************
 
 /* Converts degrees to 360 */
 function Mod360(deg) {
@@ -576,9 +642,20 @@ function PoM360(deg) {
 	if (deg > 180) deg = deg - 360;
 return deg;}
 
+//**************************************|****************************************
+//																				*
+//								     EXPORTS									*
+//																				*
+//*******************************************************************************
+
 export {loadACanimX, loadACanimV, moveACanimX, moveACanimV};
 
-/*= REVISIONS ==================================================================
+//=====================================|========================================
+//																			   =
+//								   REVISIONS								   =
+//																			   =
+//==============================================================================
+/*
  * 240420:	Converted to SI units
  * 240424:	Changed all air_ variables to 8 character names
  * 240928:	Changed Airspeed Indicatator to IAS and Limit Rudder Travel
