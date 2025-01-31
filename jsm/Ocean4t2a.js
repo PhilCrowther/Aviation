@@ -22,6 +22,7 @@ import {
 	RepeatWrapping,
 	RGBAFormat,
 	StorageTexture,
+	TimestampQuery,
 } from 'three';
 import {
 	vec2,
