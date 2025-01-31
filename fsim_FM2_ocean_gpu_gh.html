@@ -84,7 +84,7 @@ import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowt
 import {loadBullet,moveBullet,	// My Airplane Bullets
 		loadXACBul,moveXACBul,	// Other Airplane Bullets
 		loadAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
-} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG3.js";
 import {initVulkan,initShpWak} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 
 //= GENERAL ====================//===============================================
@@ -636,8 +636,10 @@ let xag_ = {
 //- AA GUNS (FIXED) ------------//-----------------------------------------------
 let aaf_ = {
 		ObjNum: 2,
-		// Parent (if any)
-		GunRef: [new THREE.Vector3(0,0,0), // No Parent
+		// No Parent
+		XSHRot: [new THREE.Vector3(0,0,0),
+				 new THREE.Vector3(0,0,0)],
+		XSHPos: [new THREE.Vector3(0,0,0),
 				 new THREE.Vector3(0,0,0)],
 		// Gun Object
 		GunPtr: [new makMsh(),new makMsh()], // Gun Object
@@ -683,12 +685,13 @@ let XSGFlg = XSGMax;
 let XSGMin = -1200;				// Guns Not Firing (20 secs)
 let xsg_ = {
 		ObjNum: 2,				// Number of guns
-		// Parent (if any)
-		GunRef: [xsh_.MapPos[1],xsh_.MapPos[1]],
+		// Parent
+		XSHRot: [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
+		XSHPos: [xsh_.MapPos[1],xsh_.MapPos[1]],
 		// Gun Object
 		GunPtr: [new makMsh(),new makMsh()], // Gun Object
-		GunRot: [new THREE.Euler(45,315,0), // Gun Rotation
-				 new THREE.Euler(45,315,0)],
+		GunRot: [new THREE.Euler(0,45,0), // Gun Rotation
+				 new THREE.Euler(0,45,0)],
 		GunPos: [new THREE.Vector3(0,0,0), // Relative Map Position (meters) [used by Mesh]
 				 new THREE.Vector3(0,0,0)],
 		// Bullet Data
