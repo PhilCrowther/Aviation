@@ -12,7 +12,6 @@
 
 /* TO DO:
 	Change XACBul to allow for tail-gunners - different gun rotation and position
-	Fix AAGuns so that Ships fire in correct direction
 */
 
 /*
