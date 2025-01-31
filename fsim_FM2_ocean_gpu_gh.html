@@ -84,7 +84,7 @@ import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowt
 import {loadBullet,moveBullet,	// My Airplane Bullets
 		loadXACBul,moveXACBul,	// Other Airplane Bullets
 		loadAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
-} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG3.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
 import {initVulkan,initShpWak} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 
 //= GENERAL ====================//===============================================
@@ -489,8 +489,8 @@ let xsh_ = {
 		ObjSiz: [Ft2Mtr,		// Scale
 				 Ft2Mtr],
 		RndOrd: [0,0],			// renderOrder (not used)
-		ObjRot: [new THREE.Euler(),  // Object Rotation
-				 new THREE.Euler()],
+		ObjRot: [new THREE.Euler(0,0,0), // Object Rotation
+				 new THREE.Euler(0,0,0)],
 		MapPos: [new THREE.Vector3(-4100,0.1,150),  // Object Map Position (meters) [used by Mesh]
 				 new THREE.Vector3(-4200,0.2,350)],
 		ObjGrp: [new makMsh(),	// Group
@@ -609,8 +609,11 @@ let xag_ = {
 		XACPos: [xac_.MapPos[1],xac_.MapPos[1]],
 		// Gun Object (Fixed Firing Forward)
 		// GunPtr = Airplane Object
-		// GunRot = Gun Relative Rotation
-		// GunPos = Gun Relative Position
+		GunPtr: [0,0], // Not Used Yet
+		GunRot: [new THREE.Euler(0,0,0), // Gun Rotation (degrees)
+				 new THREE.Euler(0,0,0)], // if not firing forward
+		GunPos: [new THREE.Vector3(0,0,0), // Map Position
+				 new THREE.Vector3(0,0,0)], // if not at center
 		// Bullet Data
 		BulFlg: [0,1],			// 1 = Guns Firing
 		BulNum: BulNum,			// Number of bullets		
@@ -637,8 +640,8 @@ let xag_ = {
 let aaf_ = {
 		ObjNum: 2,
 		// No Parent
-		XSHRot: [new THREE.Vector3(0,0,0),
-				 new THREE.Vector3(0,0,0)],
+		XSHRot: [new THREE.Euler(0,0,0),
+				 new THREE.Euler(0,0,0)],
 		XSHPos: [new THREE.Vector3(0,0,0),
 				 new THREE.Vector3(0,0,0)],
 		// Gun Object
@@ -690,12 +693,12 @@ let xsg_ = {
 		XSHPos: [xsh_.MapPos[1],xsh_.MapPos[1]],
 		// Gun Object
 		GunPtr: [new makMsh(),new makMsh()], // Gun Object
-		GunRot: [new THREE.Euler(0,45,0), // Gun Rotation
-				 new THREE.Euler(0,45,0)],
+		GunRot: [new THREE.Euler(0,0,0), // Gun Rotation
+				 new THREE.Euler(60,315,0)],
 		GunPos: [new THREE.Vector3(0,0,0), // Relative Map Position (meters) [used by Mesh]
 				 new THREE.Vector3(0,0,0)],
 		// Bullet Data
-		AAAFlg: [1,0],			// 1 = Guns Firing
+		AAAFlg: [0,1],			// 1 = Guns Firing
 		AAANum: AAANum,			// Number of bullets
 		AAASpd: AAASpd,			// Muzzle Velocity (mps)
 		AAADLT: AAADLT,			// Max Bullet Time in Flight
@@ -718,7 +721,7 @@ let xsg_ = {
 				 new THREE.Vector3()],
 		SmkTim: [0,0],
 		// Smoke Sounds
-		SndFlg: [0,1],			// 1 = Explosion
+		SndFlg: [0,0],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [0,0],
 		SndMsh: [new makMsh(),new makMsh()],
