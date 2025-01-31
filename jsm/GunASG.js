@@ -10,10 +10,6 @@
 	Use lines and 2 colors so bullets appear against both light sky and dark ground
 */
 
-/* TO DO:
-	Change XACBul to allow for tail-gunners - different gun rotation and position
-*/
-
 /*
  * @fileoverview
  * Subroutines to create an air combat simulation
