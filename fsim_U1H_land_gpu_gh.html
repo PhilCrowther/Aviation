@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Jan 2025
+Version dated 31 Jan 2025
 
 A flight simulation of an animated airplane model over procedural land using
 -->
@@ -58,10 +58,10 @@ A flight simulation of an animated airplane model over procedural land using
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.172.0/build/three.webgpu.js",
-			"three/webgpu": "https://unpkg.com/three@0.172.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.172.0/build/three.tsl.js",
-			"three/addons/": "https://unpkg.com/three@0.172.0/examples/jsm/",
+			"three": "https://unpkg.com/three@0.173.0/build/three.webgpu.js",
+			"three/webgpu": "https://unpkg.com/three@0.173.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.173.0/build/three.tsl.js",
+			"three/addons/": "https://unpkg.com/three@0.173.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -842,7 +842,8 @@ function rendAll() {
 		stopSounds();
 		SndFlg = 0;
 	}
-	renderer.renderAsync(scene, camera);
+	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
 //= SKYBOX =====================//==============================================
