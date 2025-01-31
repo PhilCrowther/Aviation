@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================
 
-// Version 4t2 (updated 20 Dec 2024)
+// Version 4t2 (updated 31 Jan 2025)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -22,6 +22,7 @@ import {
 	RepeatWrapping,
 	RGBAFormat,
 	StorageTexture,
+	TimestampQuery,				// r173
 } from 'three';
 import {
 	vec2,
@@ -601,11 +602,13 @@ update() {
 			this.renderer.computeAsync(pingPong ? this.pingDspHrzComp : this.pongDspHrzComp);
 		}
 	}
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 	for (let i = 0; i < iterations; i++) {	// Vertical Ping/Pong
 		pingPong = !pingPong;
 		this.stepBF.value = i;
 		this.renderer.computeAsync(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
 	}
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 	// 5. Displacement
 	this.renderer.computeAsync(this.permutationComp);
 	this.renderer.computeAsync(this.compNormalComp);	
@@ -627,3 +630,4 @@ export {Ocean};
 // 240410:				: Removed visibility helpers (alpha = 1)
 // 241031: Version4t2	: Replace timerLocal with time (r170)
 // 241220:				: Added computeAsync (also works with r170)
+// 250131:				: Added TimestampQuery after loops (r173)
