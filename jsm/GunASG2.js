@@ -12,7 +12,6 @@
 
 /* TO DO:
 	Change XACBul to allow for tail-gunners - different gun rotation and position
-	Fix AAGuns so that Ships fire in correct direction
 */
 
 /*
@@ -296,7 +295,7 @@ function loadAAGuns(aag_,air_,AltDif,scene) {
 	//- For Each Gun
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Combined Rotation and Map Position of Parent plus Gun
-		MapRot.copy(aag_.XSHPos[n]).add(aag_.GunRot[n]);
+		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]);
 		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
 		// Gun Object Rotation (for show only)
 		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
@@ -354,7 +353,7 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 	let	AAASpT = aag_.AAASpd * DLTime;
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Combined Rotation and Map Position of Parent plus Gun
-		MapRot.copy(aag_.XSHPos[n]).add(aag_.GunRot[n]);
+		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]);
 		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
 		// Update Gun Object Rotation (for show only)
 		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
