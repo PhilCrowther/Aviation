@@ -144,7 +144,7 @@ function initXACSmk(xas_) {
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
 		smokeNodeMaterial.depthWrite = false;
 		smokeNodeMaterial.transparent = true;
-	let smokeInstancedSprite = new Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
+	let smokeInstancedSprite = new Mesh(new PlaneGeometry(1, 1), smokeNodeMaterial);
 		smokeInstancedSprite.scale.setScalar(400);
 		smokeInstancedSprite.isInstancedMesh = true;
 		smokeInstancedSprite.count = 100;
