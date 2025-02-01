@@ -1,5 +1,5 @@
 /*
- * Smoke.js (vers 25.01.25)
+ * Smoke.js (vers 25.01.31)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
  * Adapted from three.js examples.
@@ -11,7 +11,11 @@
  * See http://philcrowther.com/Aviation for more details.
  */
 
-//= IMPORTS ====================================================================
+//**************************************|****************************************
+//																				*
+//									IMPORTS										*
+//																				*
+//*******************************************************************************
 
 import {
 	Mesh,
@@ -22,7 +26,13 @@ import {
 
 import {uniform,range,color,texture,uv,rotateUV,mix,time,positionLocal} from "three/tsl";
 
-//= INITIALIZE VOLCANO SMOKE ===================================================
+//**************************************|****************************************
+//																				*
+//								 VOLCANO SMOKE									*
+//																				*
+//*******************************************************************************
+
+//= INITIALIZE VOLCANO SMOKE ====================================================
 
 function initVulkan(vlk_) {
 	//- Timer
@@ -60,7 +70,13 @@ function initVulkan(vlk_) {
 		vlk_.ObjRef[0].add(vlk_.ObjAdr[0]);
 }
 
-//= INITIALIZE SHIP SMOKE ======================================================
+//**************************************|****************************************
+//																				*
+//								   SHIP WAKE									*
+//																				*
+//*******************************************************************************
+
+//= INITIALIZE SHIP WAKE ========================================================
 
 function initShpWak(wak_) {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
@@ -100,10 +116,55 @@ function initShpWak(wak_) {
 	}
 }
 
-//= EXPORTS ====================================================================
+//**************************************|****************************************
+//																				*
+//								 HORIZONTAL SMOKE								*
+//																				*
+//*******************************************************************************
 
-export {initVulkan,initShpWak};
+//= INITIALIZE HORIZONTAL SMOKE =================================================
 
-/*= REVISIONS ==================================================================
- * 250125:	Created
-*/
+function initXACSmk(xas_) {
+	let lifeRange = range(0.1,1);
+	let offsetRange = range(new Vector3(0,3,0), new Vector3(0,5,0));
+	let speed = uniform(.2);		// r170
+	let scaledTime = time.add(5).mul(speed); // r170
+	let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
+	let scaleRange = range(.01,.02);
+	let rotateRange = range(.1,4);
+	let life = lifeTime.div(lifeRange);
+	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
+	let textureNode = texture(xas_.SmkMap, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
+	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+	let smokeNodeMaterial = new SpriteNodeMaterial();
+		smokeNodeMaterial.colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.opacityNode = opacityNode;
+		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
+		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		smokeNodeMaterial.depthWrite = false;
+		smokeNodeMaterial.transparent = true;
+	let smokeInstancedSprite = new Mesh(new PlaneGeometry(1, 1), smokeNodeMaterial);
+		smokeInstancedSprite.scale.setScalar(400);
+		smokeInstancedSprite.isInstancedMesh = true;
+		smokeInstancedSprite.count = 100;
+		smokeInstancedSprite.rotation.x = Math.PI/2;
+		smokeInstancedSprite.position.z = 10;
+		xas_.ObjAdr_.add(smokeInstancedSprite);
+}
+
+//**************************************|****************************************
+//																				*
+//								    EXPORTS										*
+//																				*
+//*******************************************************************************
+
+export {initVulkan,initShpWak,initXACSmk};
+
+//**************************************|****************************************
+//																				*
+//								   REVISIONS									*
+//																				*
+//*******************************************************************************
+
+// 250125:	Created
