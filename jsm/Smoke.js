@@ -1,5 +1,5 @@
 /*
- * Smoke.js (vers 25.01.31)
+ * Smoke.js (vers 25.02.01)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
  * Adapted from three.js examples.
@@ -151,7 +151,6 @@ function initXACSmk(xas_) {
 		smokeInstancedSprite.rotation.x = Math.PI/2;
 		smokeInstancedSprite.position.z = 10;
 	xas_.SmkAdr = smokeInstancedSprite;
-//		xas_.ObjAdr.add(smokeInstancedSprite);
 }
 
 //**************************************|****************************************
