@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Jan 2025
+Version dated 1 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -139,6 +139,7 @@ import {initVulkan,initShpWak} from "https://PhilCrowther.github.io/Aviation/jsm
 //	4. OBJECT VARIABLES
 //		GRDWTR MODULE
 //		OCEAN MODULE
+//	    SMOKE MODULE
 //		GUNASG MODULE
 //	5. MY AIRPLANE VARIABLES
 //		FLIGHT MODULE
@@ -409,6 +410,15 @@ let wav_ = {
 //		AnmNam: [0]				// Animation
 //	};
 
+//= SHARED TEXTURES =============================================================
+let txt_ = {
+		ObjNum: 3,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
+		ObjTxt: [],
+	};
+
 //= STATIC OBJECTS =============//===============================================
 
 //- Islands --------------------//-----------------------------------------------
@@ -508,39 +518,6 @@ let xsh_ = {
 	};
 
 //- ANIMATED OBJECTS -----------//-----------------------------------------------
-//. Smoke ......................//...............................................
-//	Can use this for Volcano or to Show Battle Damage
-let vlk_ = {
-		ObjNum: 1,				// Number of Smokes
-		ObjSrc: [0],
-		ObjTxt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png"],
-		VlkTxt: [0],
-		ObjAdr: [0],
-		ObjSiz: [4000],			// Scale
-		RndOrd: [1],			// renderOrder
-		ObjRot: [new THREE.Euler()], // Rotation (not used)
-		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
-		ObjRef: [isl_.ObjGrp[0]], // Parent Object
-		// Moving	
-		SpdMPS: [0],			// 0 = not moving
-		MapSpd: [new THREE.Vector3()]
-	};
-//. Wakes ......................//..............................................
-//	Used for Ships and Torpedoes
-let wak_ = {
-		ObjNum: 2,				// Number of Wakes
-		ObjSrc: [0,0],
-		ObjTxt: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
-				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png"],
-		WakTxt: [0,0],
-		ObjAdr: [0,0],
-		ObjSiz: [4000,4000],	// Scale
-		RndOrd: [1,1],			// renderOrder
-		MapPos: [new THREE.Vector3(50,75,25),  // Map Position
-				 new THREE.Vector3(50,75,25)],
-		ObjRef: [xsh_.ObjGrp[0], // Parent Object
-				 xsh_.ObjGrp[1]],
-	};
 //. Flags ......................//...............................................
 //	Can attach to Ships or Flagpoles
 let	flg_ = {
@@ -557,6 +534,40 @@ let	flg_ = {
 		// Animation
 		ObjDst: [152.4],		// Visibility Distance from Parent (meters)
 		ObjAdj: [0]
+	};
+
+//= SMOKE MODULE ================================================================
+
+//- VOLCANO SMOKE --------------//-----------------------------------------------
+//	Can use this for Volcano or to Show Battle Damage
+let vlk_ = {
+		ObjNum: 1,				// Number of Smokes
+		ObjSrc: [0],
+		VlkTxt: [1],			// Shared Texture Reference Number
+		ObjAdr: [0],
+		ObjSiz: [4000],			// Scale
+		RndOrd: [1],			// renderOrder
+		ObjRot: [new THREE.Euler()], // Rotation (not used)
+		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
+		ObjRef: [isl_.ObjGrp[0]], // Parent Object
+		// Moving	
+		SpdMPS: [0],			// 0 = not moving
+		MapSpd: [new THREE.Vector3()]
+	};
+	
+//- SHIP WAKES ----------------------//------------------------------------------
+//	Used for Ships and Torpedoes
+let wak_ = {
+		ObjNum: 2,				// Number of Wakes
+		ObjSrc: [0,0],
+		WakTxt: [0,0],			// Shared Texture Reference Number
+		ObjAdr: [0,0],
+		ObjSiz: [4000,4000],	// Scale
+		RndOrd: [1,1],			// renderOrder
+		MapPos: [new THREE.Vector3(50,75,25),  // Map Position
+				 new THREE.Vector3(50,75,25)],
+		ObjRef: [xsh_.ObjGrp[0], // Parent Object
+				 xsh_.ObjGrp[1]],
 	};
 
 //= GUNASG MODULE ==============//===============================================
@@ -665,10 +676,9 @@ let aaf_ = {
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
 		AAATim: [[],[]],		// Bullet Time in flight
 		// Smoke
-		SmkSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
-		SmkMap: [0,0],
-		SmkMat: [0,0],
-		SmkPtr: [0,0],			// AAA Smoke
+		SmkMap: 2,				// Shared Texture Reference Number
+		SmkMat: [0,0],			// Smoke Material
+		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
@@ -712,10 +722,9 @@ let xsg_ = {
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
 		AAATim: [[],[]],		// Bullet Time in Flight
 		// Smoke
-		SmkSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
-		SmkMap: [0,0],
-		SmkMat: [0,0],
-		SmkPtr: [0,0],			// AAA Smoke
+		SmkMap: 2,				// Shared Texture Reference Number
+		SmkMat: [0,0],			// Smoke Material
+		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
@@ -1248,13 +1257,19 @@ function loadGeoMat() {
 //= 4. OBJECTS =================//===============================================
 
 function loadObject() {
+	// Shared Textures
+	if (txt_.ObjNum) {
+		for (let n = 0; n < txt_.ObjNum; n++) {
+			txt_.ObjTxt[n] = txtrLoader.load(txt_.ObjSrc[n]);	
+		}
+	}
 	loadStatic();
 	loadMoving();
 	loadAnmFlg();
-	loadAAAGun();
 }
 
 function initObject() {
+	initAAAGun();
 	initStatic();
 	initMoving();
 }
@@ -1311,9 +1326,9 @@ function moveAnmObj() {
 
 //- AAA Guns -------------------------------------------------------------------
 
-function loadAAAGun() {
+function initAAAGun() {
 	if (aaf_.ObjNum) {
-		aaf_.SmkMap = txtrLoader.load(aaf_.SmkSrc);
+		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];		
 		loadAAGuns(aaf_,air_,AltDif,scene)
 	}
 }
@@ -1356,8 +1371,6 @@ function loadIsland() {
 			});
 		});
 	}
-	// Specific Atached Objects
-	loadVulkan();				// Load Volcano Smoke
 }
 
 //-	Init Islands ---------------------------------------------------------------
@@ -1371,6 +1384,8 @@ function initIsland() {
 		Z = air_.MapPos.z-isl_.MapPos[i].z;
 		isl_.ObjGrp[i].position.set(X,Y,Z);
 	}
+	// Specific Atached Objects
+	initVlkSmk();				// Load Volcano Smoke
 }
 
 //-	Move Islands ---------------------------------------------------------------
@@ -1389,8 +1404,8 @@ function moveIsland() {
 //= VOLCANO SMOKE ==============//===============================================
 
 //- Load Volcano ---------------------------------------------------------------
-function loadVulkan() {
-	vlk_.VlkTxt[0] = txtrLoader.load(vlk_.ObjTxt[0]);
+function initVlkSmk() {
+	vlk_.VlkTxt[0] = txt_.ObjTxt[vlk_.VlkTxt[0]];
 	initVulkan(vlk_);
 }
 
@@ -1544,7 +1559,7 @@ function loadMovShp() {
 				if (xsh_.MixRdr[n]) xsh_.MixRdr[n].setTime(xsh_.AnmRdr[n]/anm_.anmfps);
 				// Wake
 				loadShpWak(); // Init Ship Wake
-				loadShpGun();
+				initShpGun();
 			}
 			xsh_.ObjAdr[n].position.set(0,0,0); // position within group is always 0,0,0
 		});
@@ -1618,7 +1633,8 @@ function moveMovShp() {
 //- Load Ship Wake -------------------------------------------------------------
 function loadShpWak() {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.WakTxt[n] = txtrLoader.load(wak_.ObjTxt[n]);
+//		wak_.WakTxt[n] = txtrLoader.load(wak_.ObjTxt[n]);
+		wak_.WakTxt[n] = txt_.ObjTxt[wak_.WakTxt[n]];
 	}
 	initShpWak(wak_);
 };
@@ -1633,8 +1649,8 @@ function moveShpWak() {
 //= SHIP GUNS ==================================================================
 
 //- Load Ship Guns -------------------------------------------------------------
-function loadShpGun() {
-	xsg_.SmkMap = txtrLoader.load(xsg_.SmkSrc);
+function initShpGun() {
+	xsg_.SmkMap = txt_.ObjTxt[xsg_.SmkMap];
 	loadAAGuns(xsg_,air_,AltDif,scene);
 
 }
