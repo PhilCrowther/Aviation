@@ -85,8 +85,8 @@ import {loadBullet,moveBullet,	// My Airplane Bullets
 		loadXACBul,moveXACBul,	// Other Airplane Bullets
 		loadAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
 } from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
-import {initVulkan,initShpWak} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
-
+import {initVulkan,initShpWak,initXACSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
+2
 //= GENERAL ====================//===============================================
 
 /*	This flight simulation demo uses the most advanced version of three.js */
@@ -517,8 +517,7 @@ let xsh_ = {
 		ShpLok: [new makMsh(),0], // Deck Lock
 	};
 
-//- ANIMATED OBJECTS -----------//-----------------------------------------------
-//. Flags ......................//...............................................
+//= ANIMATED FLAGS =============//===============================================
 //	Can attach to Ships or Flagpoles
 let	flg_ = {
 		ObjNum:	1,				// Number of Flags
@@ -558,7 +557,7 @@ let vlk_ = {
 //- SHIP WAKES ----------------------//------------------------------------------
 //	Used for Ships and Torpedoes
 let wak_ = {
-		ObjNum: 2,				// Number of Wakes
+		ObjNum: xsh_.ObjNum,	// Number of Wakes
 		ObjSrc: [0,0],
 		WakTxt: [0,0],			// Shared Texture Reference Number
 		ObjAdr: [0,0],
@@ -568,6 +567,13 @@ let wak_ = {
 				 new THREE.Vector3(50,75,25)],
 		ObjRef: [xsh_.ObjGrp[0], // Parent Object
 				 xsh_.ObjGrp[1]],
+	};
+
+//- AIRPLANE SMOKE --------------------------------------------------------------
+//	For now, airplane #1 is smoking constantly
+let xas_ = {
+		SmkMap: 0,				// Shared Texture Reference Number
+		SmkAdr: 0,				// Address of Emitter
 	};
 
 //= GUNASG MODULE ==============//===============================================
@@ -1465,6 +1471,7 @@ function loadMovPln() {
 			xac_.ObjAdr[n].add(xac_.EngMsh[n]);	// Engine sound
 		});
 	}
+	loadXACSmk(xas_);
 }
 
 //- Init Airplane --------------------------------------------------------------
@@ -1478,7 +1485,10 @@ function initMovPln() {
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 		scene.add(xac_.ObjAdr[n]);
 	};
-	loadXACGun();
+	initXACGun();
+	initXACSmk(xas_);
+	xas_.SmkAdr.scale.setScalar(800);
+	xac_.ObjAdr[0].add(xas_.SmkAdr); // Attach smoke to Airplne 1
 }
 
 //- Move Plane -----------------------------------------------------------------
@@ -1510,7 +1520,7 @@ function moveMovPln() {
 //= AIRPLANE GUNS ==============//===============================================
 
 //- Load Airplane Guns ---------//-----------------------------------------------
-function loadXACGun() {
+function initXACGun() {
 	loadXACBul(xag_,scene);
 }
 
@@ -1533,6 +1543,13 @@ function moveXACGun() {
 		else {xag_.BulFlg[1] = 0;}
 	}
 	moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT);
+}
+
+//= AIRPLANE SMOKE =============//===============================================
+
+//- Load Jet Exhaust ------------------------------------------------------------
+function loadXACSmk(xas_) {
+	xas_.SmkMap = txt_.ObjTxt[xas_.SmkMap];
 }
 
 //= MOVING SHIPS ===============//===============================================
@@ -1633,7 +1650,6 @@ function moveMovShp() {
 //- Load Ship Wake -------------------------------------------------------------
 function loadShpWak() {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-//		wak_.WakTxt[n] = txtrLoader.load(wak_.ObjTxt[n]);
 		wak_.WakTxt[n] = txt_.ObjTxt[wak_.WakTxt[n]];
 	}
 	initShpWak(wak_);
