@@ -124,7 +124,7 @@ function initShpWak(wak_) {
 
 //= INITIALIZE HORIZONTAL SMOKE =================================================
 
-function initHrzSmk(obj_) {
+function initXACSmk(xas_) {
 	let lifeRange = range(0.1,1);
 	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));
 	let speed = uniform(.2);		// r170
@@ -134,7 +134,7 @@ function initHrzSmk(obj_) {
 	let rotateRange = range(.1,4);
 	let life = lifeTime.div(lifeRange);
 	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
-	let textureNode = texture(SmkMap, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
+	let textureNode = texture(xas_.SmkMap, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
 	let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
 	let smokeNodeMaterial = new SpriteNodeMaterial();
@@ -150,7 +150,7 @@ function initHrzSmk(obj_) {
 		smokeInstancedSprite.count = 100;
 		smokeInstancedSprite.rotation.x = Math.PI/2;
 		smokeInstancedSprite.position.z = 10;
-		obj_.add(smokeInstancedSprite);
+		xas_.ObjAdr_.add(smokeInstancedSprite);
 }
 
 //**************************************|****************************************
@@ -159,7 +159,7 @@ function initHrzSmk(obj_) {
 //																				*
 //*******************************************************************************
 
-export {initVulkan,initShpWak,initHrzSmk};
+export {initVulkan,initShpWak,initXACSmk};
 
 //**************************************|****************************************
 //																				*
