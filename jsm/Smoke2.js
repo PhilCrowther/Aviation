@@ -150,7 +150,7 @@ function initXACSmk(xas_) {
 		smokeInstancedSprite.count = 100;
 		smokeInstancedSprite.rotation.x = Math.PI/2;
 		smokeInstancedSprite.position.z = 10;
-		xas_.ObjAdr_.add(smokeInstancedSprite);
+		xas_.ObjAdr.add(smokeInstancedSprite);
 }
 
 //**************************************|****************************************
