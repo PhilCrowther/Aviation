@@ -1483,7 +1483,7 @@ function loadMovPln() {
 			xac_.ObjAdr[n].add(xac_.EngMsh[n]);	// Engine sound
 		});
 	}
-	loadXACSmk(xas_);
+
 }
 
 //- Init Airplane --------------------------------------------------------------
@@ -1498,8 +1498,7 @@ function initMovPln() {
 		scene.add(xac_.ObjAdr[n]);
 	};
 	initXACGun();
-	initAirSmk(xas_);
-	xac_.ObjAdr[0].add(xas_.ObjAdr[0]); // Attach smoke to Airplane 1
+	initXACSmk();
 }
 
 //- Move Plane -----------------------------------------------------------------
@@ -1530,7 +1529,7 @@ function moveMovPln() {
 
 //= AIRPLANE GUNS ==============//===============================================
 
-//- Load Airplane Guns ---------//-----------------------------------------------
+//- Init Airplane Guns ---------//-----------------------------------------------
 function initXACGun() {
 	initXACBul(xag_,scene);
 }
@@ -1558,11 +1557,13 @@ function moveXACGun() {
 
 //= AIRPLANE SMOKE =============//===============================================
 
-//- Load Airplane Smoke ------------------------------------------------------------
-function loadXACSmk(xas_) {
+//- Init Airplane Smoke ------------------------------------------------------------
+function initXACSmk() {
 	for (let n = 0; n < xas_.ObjNum; n ++) {
 		xas_.ObjTxt[n] = txt_.ObjTxt[xas_.ObjTxt[n]];
 	}
+	initAirSmk(xas_);
+	xac_.ObjAdr[0].add(xas_.ObjAdr[0]); // Attach smoke to Airplane 1
 }
 
 //= MOVING SHIPS ===============//===============================================
@@ -1587,9 +1588,6 @@ function loadMovShp() {
 				let actun = xsh_.MixRdr[n].clipAction(clip);
 				actun.play();
 				if (xsh_.MixRdr[n]) xsh_.MixRdr[n].setTime(xsh_.AnmRdr[n]/anm_.anmfps);
-				// Wake
-				loadShpWak(); // Init Ship Wake
-				initShpGun();
 			}
 			xsh_.ObjAdr[n].position.set(0,0,0); // position within group is always 0,0,0
 		});
@@ -1611,6 +1609,8 @@ function initMovShp() {
 		xsh_.ObjGrp[n].add(xsh_.ObjAdr[n]);
 		scene.add(xsh_.ObjGrp[n]);		// Uses position of CVE to compute relative position
 	}
+	initXSHWak();			// Init Ship Wake
+	initXSHGun();	
 }
 
 //	Move Ship
@@ -1652,16 +1652,16 @@ function moveMovShp() {
 			if (xsh_.AnmRdr[n] < 0) xsh_.AnmRdr[n] = 359;
 			if (xsh_.MixRdr[n]) xsh_.MixRdr[n].setTime(xsh_.AnmRdr[n]/anm_.anmfps);
 			// Wake
-			moveShpWak();
-			moveShpGun();
+			moveXSHWak();
+			moveXSHGun();
 		}
 	}
 }
 
 //= SHIP WAKE ==================//===============================================
 
-//- Load Ship Wake -------------------------------------------------------------
-function loadShpWak() {
+//- Init Ship Wake -------------------------------------------------------------
+function initXSHWak() {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
 		wak_.ObjTxt[n] = txt_.ObjTxt[wak_.ObjTxt[n]];
 	}
@@ -1669,7 +1669,7 @@ function loadShpWak() {
 };
 
 //- Move Ship Wake -------------------------------------------------------------
-function moveShpWak() {
+function moveXSHWak() {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
 		wak_.ObjAdr[n].rotation.x = Math.PI/2-wak_.ObjRef[n].rotation.x;
 	}
@@ -1677,15 +1677,15 @@ function moveShpWak() {
 
 //= SHIP GUNS ==================================================================
 
-//- Load Ship Guns -------------------------------------------------------------
-function initShpGun() {
+//- Init Ship Guns -------------------------------------------------------------
+function initXSHGun() {
 	xsg_.SmkMap = txt_.ObjTxt[xsg_.SmkMap];
 	initAAGuns(xsg_,air_,AltDif,scene);
 
 }
 
 //- Move Ship Guns -------------------------------------------------------------
-function moveShpGun() {
+function moveXSHGun() {
 	// Turn Ship 2 Guns On/Off
 	XSGFlg = XSGFlg - 1;
 	if (XSGFlg > 0) xsg_.AAAFlg[1] = 1;
