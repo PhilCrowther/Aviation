@@ -12,6 +12,12 @@
 // As with the original wave generators, this module is licensed under a
 // Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
+//**************************************|****************************************
+//																				*
+//									IMPORTS										*
+//																				*
+//*******************************************************************************
+
 import {
 	ClampToEdgeWrapping,
 	DataTexture,
@@ -22,7 +28,7 @@ import {
 	RepeatWrapping,
 	RGBAFormat,
 	StorageTexture,
-	TimestampQuery,				// r173
+	TimestampQuery,				// r173 requires this
 } from 'three';
 import {
 	vec2,
@@ -35,7 +41,14 @@ import {
 	time,						// r170 changed timerLocal to time
 } from 'three/tsl';
 
-//= OCEAN MODULE ===============================================================
+//**************************************|****************************************
+//																				*
+//								  OCEAN MODULE									*
+//																				*
+//*******************************************************************************
+
+
+//= NOTES =======================================================================
 /*
  *	Don't Change After Initialization
  *	@param {float} Res		Resolution of Computation
@@ -54,9 +67,15 @@ import {
 // Modified 2023: Attila Schroeder - many improvements
 // Modified 2024: Attila Schroeder - converted to GPU and added butterfly texture
 
+//**************************************|****************************************
+//																				*
+//								INITIALIZE CLASS								*
+//																				*
+//*******************************************************************************
+
 class Ocean {
 
-//= Initialize Ocean ===========//==============================================
+//= Initialize Ocean ===========//===============================================
 constructor(renderer,wav_) {
 	// flag used to trigger parameter changes
 	this.renderer = renderer;
@@ -129,14 +148,20 @@ constructor(renderer,wav_) {
 	this.phaseArrayTexture.type = FloatType;
 	this.phaseArrayTexture.minFilter = this.phaseArrayTexture.magFilter = NearestFilter;
 	this.phaseArrayTexture.needsUpdate = true;
-	//= Shaders ================================================================
-	//- Common Subroutines -----------------------------------------------------
+
+//**************************************|****************************************
+//																				*
+//									 SHADERS									*
+//																				*
+//*******************************************************************************
+
+	//- Common Subroutines ------------------------------------------------------
 	let subroutines = code(`
 		fn multiplyComplex(a: vec2f, b: vec2f) -> vec2f {
 			return vec2f(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
 	`);
-	//- Shader 1 ---------------------------------------------------------------
+	//- Shader 1 ----------------------------------------------------------------
 	//	Set intitial wave frequency at a texel coordinate (AS V2)
 	this.initSpectrum = wgslFn(`
 		fn computeWGSL(
@@ -204,7 +229,7 @@ constructor(renderer,wav_) {
 			return (1.-exp(-2*x))/(1.+exp(-2*x));
 		}		
 	`, [subroutines]);
-	//- Shader 2 ---------------------------------------------------------------
+	//- Shader 2 ----------------------------------------------------------------
 	//	Current Phase (AS V2)
 	this.compPhase = wgslFn(`	
 		fn computeWGSL(
@@ -241,7 +266,7 @@ constructor(renderer,wav_) {
 			return sqrt(G*k*(1+(k*k)/(KM*KM)));
 		}
 	`, [subroutines]);
-	//- Shader 3 ---------------------------------------------------------------
+	//- Shader 3 ----------------------------------------------------------------
 	//	Current Spectrum (AS V2)
 	this.compSpectrum = wgslFn(`
 		fn computeWGSL(
@@ -291,7 +316,7 @@ constructor(renderer,wav_) {
 			return vec2f(-z.y,z.x);
 		}
 	`, [subroutines]);
-	//- Butterfly --------------------------------------------------------------
+	//- Butterfly ---------------------------------------------------------------
 	//  This assists with Ping/Pong computations
 	this.butterfly = wgslFn(`
 		fn computeWGSL(
@@ -342,7 +367,7 @@ constructor(renderer,wav_) {
 		// Variables
 		const P2: f32 = 6.28318530718;
 	`, [subroutines]);
-	//- Shader 4A --------------------------------------------------------------
+	//- Shader 4A ---------------------------------------------------------------
 	//	Displacement Map (AS WebGPU)
 	this.compDspHrz = wgslFn(`
 		fn computeWGSL(
@@ -365,7 +390,7 @@ constructor(renderer,wav_) {
 			textureStore(w_horz,idx,vec4<f32>(H,0,1));
 		}
 	`, [subroutines]);
-	//- Shader 4B --------------------------------------------------------------
+	//- Shader 4B ---------------------------------------------------------------
 	//	Displacement Map (AS WebGPU)
 	this.compDspVrt = wgslFn(`
 		fn computeWGSL(
@@ -388,7 +413,7 @@ constructor(renderer,wav_) {
 			textureStore(w_vert,idx,vec4<f32>(H,0,1));
 		}
 	`, [subroutines]);
-	//- Shader 5 ---------------------------------------------------------------
+	//- Shader 5 ----------------------------------------------------------------
 	// Permutation
 	// Technically, the Ping/Pong method above results in only a vec2 value
 	// where H.x = real number (vertical displacement) and H.y is an imaginary number.
@@ -420,7 +445,7 @@ constructor(renderer,wav_) {
 			textureStore(w_disp,idx,input);
 		}     
 	`, [subroutines]);
-	//- Shader 6 ---------------------------------------------------------------
+	//- Shader 6 ----------------------------------------------------------------
 	//  Normal Map
 	this.compNormal = wgslFn(`
 		fn computeWGSL(
@@ -460,7 +485,14 @@ constructor(renderer,wav_) {
 			textureStore(w_norm,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 		}
 	`, [subroutines]);
-	//= Instructions ===========//==============================================
+
+//**************************************|****************************************
+//																				*
+//							INITIALIZE CLASS (continue)							*
+//																				*
+//*******************************************************************************
+
+	//= Instructions ===========//===============================================
 	//- Shader 1. Initial Frequency
 	this.initSpectrumComp = this.initSpectrum({
 		u_tsiz: this.Res,
@@ -569,7 +601,7 @@ constructor(renderer,wav_) {
 		u_indx: instanceIndex,
 		u_gsiz: this.Siz
 	}).compute(this.Res**2)	
-	//= Render =================================================================
+	//= Render ==================================================================
 	this.renderer.computeAsync(this.initSpectrumComp);
 	this.renderer.computeAsync(this.butterflyComp,[1,8,1]);
 	// Static Targets
@@ -577,7 +609,13 @@ constructor(renderer,wav_) {
 	wav_.Nrm = this.normMapTexture;
 };	// End of Initialize
 
-// = OCEAN.RENDER = (called by Main Program) ====================
+//**************************************|****************************************
+//																				*
+//								  UPDATE CLASS									*
+//																				*
+//*******************************************************************************
+
+// = (called by Main Program) ===================================================
 update() {
 	// 2. Initial
 	if (this.initPhase) {
@@ -616,9 +654,20 @@ update() {
 
 };	// End of Module
 
+//**************************************|****************************************
+//																				*
+//								    EXPORTS										*
+//																				*
+//*******************************************************************************
+
 export {Ocean};
 
-/* Change Log =================================================*/
+//**************************************|****************************************
+//																				*
+//								   REVISIONS									*
+//																				*
+//*******************************************************************************
+/*
 // 230519: Version 1	:
 // 230614: Vecsion 2	: Changed to Class; on initialization, only imput renderer and wav_; on render, only input wavTim; moved wavTim variables to main program
 // 230628: Version 2a	: Many improvements to original code and Oceean is now WebGL2 compatible (the three.js default)
@@ -631,3 +680,4 @@ export {Ocean};
 // 241031: Version4t2	: Replace timerLocal with time (r170)
 // 241220:				: Added computeAsync (also works with r170)
 // 250131:				: Added TimestampQuery after loops (r173)
+*/
