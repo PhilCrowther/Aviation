@@ -157,6 +157,8 @@ function initXACSmk(xas_) {
 		xas_.ObjAdr[n].count = 100;
 		xas_.ObjAdr[n].rotation.x = Math.PI/2;
 		xas_.ObjAdr[n].position.z = 10;
+		//	Link
+//		xas_.ObjRef[n].add(xas_.ObjAdr[n]); // ### not work! xas_.ObjRef[n].add is not a function
 	}
 }
 
