@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 1 Feb 2025
+Version dated 2 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -81,11 +81,11 @@ import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js"; 
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r171 computeAsync works with r170
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
-import {loadBullet,moveBullet,	// My Airplane Bullets
-		loadXACBul,moveXACBul,	// Other Airplane Bullets
-		loadAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
+import {initBullet,moveBullet,	// My Airplane Bullets
+		initXACBul,moveXACBul,	// Other Airplane Bullets
+		initAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
 } from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
-import {initVulkan,initShpWak,initXACSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
+import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 2
 //= GENERAL ====================//===============================================
 
@@ -1347,7 +1347,7 @@ function moveAnmObj() {
 function initAAAGun() {
 	if (aaf_.ObjNum) {
 		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];		
-		loadAAGuns(aaf_,air_,AltDif,scene)
+		initAAGuns(aaf_,air_,AltDif,scene)
 	}
 }
 
@@ -1498,7 +1498,7 @@ function initMovPln() {
 		scene.add(xac_.ObjAdr[n]);
 	};
 	initXACGun();
-	initXACSmk(xas_);
+	initAirSmk(xas_);
 	xac_.ObjAdr[0].add(xas_.ObjAdr[0]); // Attach smoke to Airplane 1
 }
 
@@ -1532,7 +1532,7 @@ function moveMovPln() {
 
 //- Load Airplane Guns ---------//-----------------------------------------------
 function initXACGun() {
-	loadXACBul(xag_,scene);
+	initXACBul(xag_,scene);
 }
 
 //- Move Airplane Guns ---------//-----------------------------------------------
@@ -1680,7 +1680,7 @@ function moveShpWak() {
 //- Load Ship Guns -------------------------------------------------------------
 function initShpGun() {
 	xsg_.SmkMap = txt_.ObjTxt[xsg_.SmkMap];
-	loadAAGuns(xsg_,air_,AltDif,scene);
+	initAAGuns(xsg_,air_,AltDif,scene);
 
 }
 
@@ -1872,7 +1872,7 @@ function loadAirExt() {
 		// Initialize
 		mxr_.Adr.visible = false;
 		// Load Related Objects only after mxr_.Adr known
-		loadBullet(myg_,scene);
+		initBullet(myg_,scene);
 	});		
 }
 
