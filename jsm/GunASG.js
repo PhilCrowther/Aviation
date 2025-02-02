@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.01.30)
+ * Warfare.js (vers 25.02.02)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -61,9 +61,9 @@ const DegRad = Math.PI/180;		// Convert Degrees to Radians
 // No Smoke
 // Gun Object = Airplane
 
-//= LOAD MY BULLETS ============//===============================================
+//= INIT MY BULLETS ============//===============================================
 
-function loadBullet(myg_,scene) {
+function initBullet(myg_,scene) {
 	// Line	
 	let line = 0
 	let points = [];
@@ -151,9 +151,9 @@ function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
 // No Smoke
 // Gun Object = Airplane
 
-//= LOAD XAC BULLETS ===========//===============================================
+//= INIT XAC BULLETS ===========//===============================================
 
-function loadXACBul(xag_,scene) {
+function initXACBul(xag_,scene) {
 	let line = 0
 	//- Front Line
 	let lnF = 6;
@@ -265,9 +265,9 @@ function moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT) {
 // Smoke
 // Gun Object = Gun at Relative Position to Ship
 
-//= LOAD AA GUNS ===============//===============================================
+//= INIT AA GUNS ===============//===============================================
 
-function loadAAGuns(aag_,air_,AltDif,scene) {
+function initAAGuns(aag_,air_,AltDif,scene) {
 	//- Combined Rotation and Map Position of Parent plus Gun
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
@@ -458,7 +458,7 @@ return mesh;}
 //																				*
 //*******************************************************************************
 
-export {loadBullet,moveBullet,loadXACBul,moveXACBul,loadAAGuns,moveAAGuns};
+export {initBullet,moveBullet,initXACBul,moveXACBul,initAAGuns,moveAAGuns};
 
 //**************************************|****************************************
 //																				*
