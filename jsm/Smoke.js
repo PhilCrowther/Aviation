@@ -1,5 +1,5 @@
 /*
- * Smoke.js (vers 25.02.01)
+ * Smoke.js (vers 25.02.02)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
  * Adapted from three.js examples.
@@ -127,7 +127,7 @@ function initShpWak(wak_) {
 
 //= INITIALIZE HORIZONTAL SMOKE =================================================
 
-function initXACSmk(xas_) {
+function initAirSmk(xas_) {
 	for (let n = 0; n < xas_.ObjNum; n ++) {
 		let lifeRange = range(0.1,1);
 		let offsetRange = range(new Vector3(0,3,0), new Vector3(0,5,0));
@@ -168,7 +168,7 @@ function initXACSmk(xas_) {
 //																				*
 //*******************************************************************************
 
-export {initVulkan,initShpWak,initXACSmk};
+export {initVulkan,initShpWak,initAirSmk};
 
 //**************************************|****************************************
 //																				*
