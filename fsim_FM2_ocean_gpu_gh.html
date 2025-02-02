@@ -85,7 +85,7 @@ import {loadBullet,moveBullet,	// My Airplane Bullets
 		loadXACBul,moveXACBul,	// Other Airplane Bullets
 		loadAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
 } from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
-import {initVulkan,initShpWak,initXACSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
+import {initVulkan,initShpWak,initXACSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke6.js";
 2
 //= GENERAL ====================//===============================================
 
@@ -558,11 +558,14 @@ let vlk_ = {
 //	Used for Ships and Torpedoes
 let wak_ = {
 		ObjNum: xsh_.ObjNum,	// Number of Wakes
-		ObjSrc: [0,0],
-		WakTxt: [0,0],			// Shared Texture Reference Number
-		ObjAdr: [0,0],
+		ObjSrc: [0,0],			// Not Used
+		ObjTxt: [0,0],			// Shared Texture Reference Number
+		ObjMat: [0,0],			// Material
+		ObjAdr: [0,0],			// Emitter Address
 		ObjSiz: [4000,4000],	// Scale
 		RndOrd: [1,1],			// renderOrder
+		ObjRot: [new THREE.Euler(), // Rotation (not used)
+				new THREE.Euler()],
 		MapPos: [new THREE.Vector3(50,75,25),  // Map Position
 				 new THREE.Vector3(50,75,25)],
 		ObjRef: [xsh_.ObjGrp[0], // Parent Object
@@ -572,8 +575,17 @@ let wak_ = {
 //- AIRPLANE SMOKE --------------------------------------------------------------
 //	For now, airplane #1 is smoking constantly
 let xas_ = {
-		SmkMap: 0,				// Shared Texture Reference Number
-		SmkAdr: 0,				// Address of Emitter
+		ObjNum: 1,				// Number of Wakes
+		ObjSrc: [0],			// Not Used
+		ObjTxt: [0],			// Shared Texture Reference Number
+		ObjMat: [0],			// 
+		ObjAdr: [0],			// Emitter Address
+		ObjSiz: [800],			// Scale
+		RndOrd: [0],			// renderOrder - Not Used
+		ObjRot: [new THREE.Euler(), // Rotation (not used)
+				new THREE.Euler()],
+		MapPos: [new THREE.Vector3(0)], // Map Position - Not Used
+		ObjRef: [0],			// Parent Object - Not Used
 	};
 
 //= GUNASG MODULE ==============//===============================================
@@ -1487,8 +1499,7 @@ function initMovPln() {
 	};
 	initXACGun();
 	initXACSmk(xas_);
-	xas_.SmkAdr.scale.setScalar(800);
-	xac_.ObjAdr[0].add(xas_.SmkAdr); // Attach smoke to Airplne 1
+	xac_.ObjAdr[0].add(xas_.ObjAdr[0]); // Attach smoke to Airplane 1
 }
 
 //- Move Plane -----------------------------------------------------------------
@@ -1547,9 +1558,11 @@ function moveXACGun() {
 
 //= AIRPLANE SMOKE =============//===============================================
 
-//- Load Jet Exhaust ------------------------------------------------------------
+//- Load Airplane Smoke ------------------------------------------------------------
 function loadXACSmk(xas_) {
-	xas_.SmkMap = txt_.ObjTxt[xas_.SmkMap];
+	for (let n = 0; n < xas_.ObjNum; n ++) {
+		xas_.ObjTxt[n] = txt_.ObjTxt[xas_.ObjTxt[n]];
+	}
 }
 
 //= MOVING SHIPS ===============//===============================================
@@ -1650,7 +1663,7 @@ function moveMovShp() {
 //- Load Ship Wake -------------------------------------------------------------
 function loadShpWak() {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.WakTxt[n] = txt_.ObjTxt[wak_.WakTxt[n]];
+		wak_.ObjTxt[n] = txt_.ObjTxt[wak_.ObjTxt[n]];
 	}
 	initShpWak(wak_);
 };
