@@ -1,5 +1,5 @@
 /*
- * Smoke.js (vers 25.02.01)
+ * Smoke.js (vers 25.02.02)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
  * Adapted from three.js examples.
