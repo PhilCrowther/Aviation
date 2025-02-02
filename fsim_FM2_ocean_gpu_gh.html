@@ -85,7 +85,7 @@ import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
 		initAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
 } from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
-import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
+import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke2.js";
 2
 //= GENERAL ====================//===============================================
 
@@ -541,17 +541,15 @@ let	flg_ = {
 //	Can use this for Volcano or to Show Battle Damage
 let vlk_ = {
 		ObjNum: 1,				// Number of Smokes
-		ObjSrc: [0],
-		VlkTxt: [1],			// Shared Texture Reference Number
-		ObjAdr: [0],
+		ObjSrc: [0],			// Not Used
+		ObjTxt: [1],			// Shared Texture Reference Number
+		ObjMat: [0],			// Material
+		ObjAdr: [0],			// Emitter Address
 		ObjSiz: [4000],			// Scale
 		RndOrd: [1],			// renderOrder
 		ObjRot: [new THREE.Euler()], // Rotation (not used)
 		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
 		ObjRef: [isl_.ObjGrp[0]], // Parent Object
-		// Moving	
-		SpdMPS: [0],			// 0 = not moving
-		MapSpd: [new THREE.Vector3()]
 	};
 	
 //- SHIP WAKES ----------------------//------------------------------------------
@@ -578,7 +576,7 @@ let xas_ = {
 		ObjNum: 1,				// Number of Wakes
 		ObjSrc: [0],			// Not Used
 		ObjTxt: [0],			// Shared Texture Reference Number
-		ObjMat: [0],			// 
+		ObjMat: [0],			// Material
 		ObjAdr: [0],			// Emitter Address
 		ObjSiz: [800],			// Scale
 		RndOrd: [0],			// renderOrder - Not Used
@@ -1391,7 +1389,7 @@ function loadIsland() {
 	}
 }
 
-//-	Init Islands ---------------------------------------------------------------
+//-	Init Islands ---------------//-----------------------------------------------
 function initIsland() {
 	let X,Y,Z;
 	for (let i = 0; i < isl_.ObjNum; i++) {
@@ -1406,7 +1404,7 @@ function initIsland() {
 	initVlkSmk();				// Load Volcano Smoke
 }
 
-//-	Move Islands ---------------------------------------------------------------
+//-	Move Islands ---------------//-----------------------------------------------
 function moveIsland() {
 	let X,Y,Z;
 	for (let i = 0; i < isl_.ObjNum; i ++) {
@@ -1421,9 +1419,9 @@ function moveIsland() {
 
 //= VOLCANO SMOKE ==============//===============================================
 
-//- Load Volcano ---------------------------------------------------------------
+//- Init Volcano ----------------------------------------------------------------
 function initVlkSmk() {
-	vlk_.VlkTxt[0] = txt_.ObjTxt[vlk_.VlkTxt[0]];
+	vlk_.ObjTxt[0] = txt_.ObjTxt[vlk_.ObjTxt[0]];
 	initVulkan(vlk_);
 }
 
