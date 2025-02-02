@@ -127,7 +127,7 @@ function initShpWak(wak_) {
 
 //= INITIALIZE HORIZONTAL SMOKE =================================================
 
-function initXACSmk(xas_) {
+function initAirSmk(xas_) {
 	for (let n = 0; n < xas_.ObjNum; n ++) {
 		let lifeRange = range(0.1,1);
 		let offsetRange = range(new Vector3(0,3,0), new Vector3(0,5,0));
@@ -168,7 +168,7 @@ function initXACSmk(xas_) {
 //																				*
 //*******************************************************************************
 
-export {initVulkan,initShpWak,initXACSmk};
+export {initVulkan,initShpWak,initAirSmk};
 
 //**************************************|****************************************
 //																				*
