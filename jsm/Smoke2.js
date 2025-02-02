@@ -126,7 +126,7 @@ function initShpWak(wak_) {
 
 //**************************************|****************************************
 //																				*
-//								 HORIZONTAL SMOKE								*
+//								 AIRPLANE SMOKE									*
 //																				*
 //*******************************************************************************
 
@@ -156,7 +156,7 @@ function initXACSmk(xas_) {
 		xas_.ObjMat[n].depthWrite = false;
 		xas_.ObjMat[n].transparent = true;
 		//	Mesh
-		xas_.ObjAdr[n] = new Mesh(new PlaneGeometry(1, 1), smokeNodeMaterial);
+		xas_.ObjAdr[n] = new Mesh(new PlaneGeometry(1, 1),xas_.ObjMat[n]);
 		xas_.ObjAdr[n].scale.setScalar(xas_.ObjSiz[n]);
 		xas_.ObjAdr[n].isInstancedMesh = true;
 		xas_.ObjAdr[n].count = 100;
