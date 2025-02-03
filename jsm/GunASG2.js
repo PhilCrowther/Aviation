@@ -387,21 +387,15 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			if (aag_.AAATim[n][i] > aag_.AAADLT) {
 				aag_.AAATim[n][i] = 0;
 				aag_.AAAPtr[n][i].visible = false;
-				// Start Smoke When Bullet0 Ends
+				// Start Smoke When Designated Bullet Stops
 				if (i == aag_.SmkAAA[n][i]) { // If Bullet Causes Smoke
+					console.log(i);
 					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
 					aag_.SmkPtr[n].visible = true;
 					aag_.SmkMat[n].opacity = 1.0;
 					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
 					if (SndFlg && aag_.SndFlg[n]) aag_.SndPtr[n].play();
 				}
-//				if (n == 1 && i == 2) {
-//					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
-//					aag_.SmkPtr[n].visible = true;
-//					aag_.SmkMat[n].opacity = 1.0;
-//					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] - 197); // Change appearance
-//					if (SndFlg && aag_.SndFlg[n]) aag_.SndPtr[n].play();
-//				}
 			}
 			// Continue
 			else {
