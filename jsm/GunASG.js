@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.02.02)
+ * Warfare.js (vers 25.02.03)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -386,20 +386,13 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			// Stop
 			if (aag_.AAATim[n][i] > aag_.AAADLT) {
 				aag_.AAATim[n][i] = 0;
-				aag_.AAAPtr[n][i].visible = false;
-				// Start Smoke When Bullet0 Ends
-				if (n == 0 && i == 0) {
+				aag_.AAAPtr[n][i].visible = false;	
+				// Start Smoke When Designated Bullet Stops
+				if (i == aag_.SmkAAA[n]) { // If Bullet Causes Smoke
 					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
 					aag_.SmkPtr[n].visible = true;
 					aag_.SmkMat[n].opacity = 1.0;
 					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
-					if (SndFlg && aag_.SndFlg[n]) aag_.SndPtr[n].play();
-				}
-				if (n == 1 && i == 2) {
-					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
-					aag_.SmkPtr[n].visible = true;
-					aag_.SmkMat[n].opacity = 1.0;
-					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] - 197); // Change appearance
 					if (SndFlg && aag_.SndFlg[n]) aag_.SndPtr[n].play();
 				}
 			}
