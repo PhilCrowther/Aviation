@@ -2,7 +2,7 @@
 
 // GrdWtr variation
 // Version 4b (dated 3 Dec 2024)
-// Copyright 2022-2024, Phil Crowther
+// Copyright 2022-2025, Phil Crowther
 // Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 //
 // @fileoverview
@@ -58,10 +58,20 @@
 //	WMx: WavMax,			// Max wave height, used to lower outer squares
 //};
 
+//**************************************|****************************************
+//																				*
+//									IMPORTS										*
+//																				*
+//*******************************************************************************
+
 import {Mesh,PlaneGeometry,MeshStandardNodeMaterial} from 'three';
 import {color,texture,normalMap,positionLocal} from 'three/tsl';
 
-/*= PROGRAM ==================================================================*/
+//**************************************|****************************************
+//																				*
+//								INITIALIZE CLASS								*
+//																				*
+//*******************************************************************************
 
 class GrdMap {
 
@@ -69,7 +79,7 @@ constructor(grd_,scene) {
 	this.grd_ = grd_;
 	this.scene = scene;
 
-//- Grid 0 ---------------------------------------------------------------------
+//- Grid 0 ----------------------------------------------------------------------
 	this.grd_.Grx[0] = {
 		Typ:	0,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs/grd_.Stp,	// Since each square is 4x4, only need 4x4 
@@ -105,7 +115,7 @@ constructor(grd_,scene) {
 		NSA:	0,					// Shared North/South Adjustment (updated)
 		EWA:	0,					// Shared East/West Adjustment (updated)
 	}
-//- Grid 2 ---------------------------------------------------------------------
+//- Grid 2 ----------------------------------------------------------------------
 	this.grd_.Grx[2] = {
 		Typ:	2,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,			// Rows and Columns - use odd number (for now = divisible by 3)
@@ -133,7 +143,7 @@ constructor(grd_,scene) {
 
 _initGeoMat(grd_,scene) {
 // Define Geometries and Materials Referenced in grd_.Geo and grd_.Mat
-	// Grid0 ------------------------------------------------------------------
+	// Grid0 --------------------------------------------------------------------
 	// For Grid0, using geometry = siz*stp since flip over stp at a time
 	// Color texture is full-sized, normal and displacement maps repeat
 	let n = 0;
@@ -161,7 +171,7 @@ _initGeoMat(grd_,scene) {
 	let sg0 = grd_.Seg*grd_.Stp;
 	grd_.Geo[n] = new PlaneGeometry(sz0,sz0,sg0,sg0);
 	grd_.Geo[n].rotateX(-Math.PI*0.5);
-	//- Grid1 ------------------------------------------------------------------
+	//- Grid1 -------------------------------------------------------------------
 	// For Grid1, using geometry = siz*stp
 	// Color texture is full-sized, normal and displacement maps repeat
 	n = 1;
@@ -185,7 +195,7 @@ _initGeoMat(grd_,scene) {
 	// Single Geometry works for all
 	grd_.Geo[n] = new PlaneGeometry(sz0,sz0);
 	grd_.Geo[n].rotateX(-Math.PI*0.5);
-	//- Grid2 ------------------------------------------------------------------
+	//- Grid2 -------------------------------------------------------------------
 	n = 2;
 	grd_.Mat[n] = new MeshStandardNodeMaterial({
 		colorNode: color(grd_.Col),
@@ -204,7 +214,7 @@ _initGeoMat(grd_,scene) {
 	grd_.Geo[n].rotateX(-Math.PI*0.5);
 }
 
-//- Init Moving Map (Ocean) ----------------------------------------------------
+//- Init Moving Map (Ocean) -----------------------------------------------------
 
 _init1GrMap(grx_, grd_, scene) {
 	// Load Variables
@@ -252,7 +262,13 @@ _init1GrMap(grx_, grd_, scene) {
 	}
 }
 
-//= UPDATE =====================================================================
+//**************************************|****************************************
+//																				*
+//								  UPDATE CLASS									*
+//																				*
+//*******************************************************************************
+
+//= (called by Main Program) ====================================================
 
 update() {
 	this._move1GrMap(this.grd_.Grx[0],this.grd_);
@@ -260,7 +276,7 @@ update() {
 	this._move1GrMap(this.grd_.Grx[2],this.grd_);
 }
 
-//- Move Moving Map ------------------------------------------------------------
+//- Move Moving Map -------------------------------------------------------------
 
 _move1GrMap(grx_, grd_) {
 	let grd1_ = grd_.Grx[1];
@@ -393,14 +409,26 @@ _move1GrMap(grx_, grd_) {
 	}
 }
 
-}	// END OF MODULE
+} // END OF MODULE
+
+//**************************************|****************************************
+//																				*
+//									 EXPORTS									*
+//																				*
+//*******************************************************************************
 
 export {GrdMap};
 
-//= REVISIONS ==================================================================
-//- 230530	Created this simplified version of GrdMap by moving Grid Definitions 
-//			and routines for creating Geometries and Materials into this Module
-//- 240108	This version 2 initalizes large-sized diffuse and roughness maps
-//			grx_ changed to grd_ and, in subroutines, grx_.Grd[] to grd_.Grx[]
-//- 240903	Converted to Class
-//- 240908	Turned off shadows for outer grids (due to changes made by r168)
+//**************************************|****************************************
+//																				*
+//									REVISIONS									*
+//																				*
+//*******************************************************************************
+/*
+230530	Created this simplified version of GrdMap by moving Grid Definitions 
+		and routines for creating Geometries and Materials into this Module
+240108	This version 2 initalizes large-sized diffuse and roughness maps
+		grx_ changed to grd_ and, in subroutines, grx_.Grd[] to grd_.Grx[]
+240903	Converted to Class
+240908	Turned off shadows for outer grids (due to changes made by r168)
+*/

@@ -1,6 +1,6 @@
 //= GRIDMAP3b MODULE ===========================================================
 
-// GrdMap3b Module (updated 20 Dec 2024)
+// GrdMap3b Module (updated 20 Dec 2025)
 // Copyright 2022-2024, Phil Crowther
 // icensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
@@ -9,6 +9,12 @@
 // This moduel contains functions creating a scrolling grid map for Land
 //
 
+//**************************************|****************************************
+//																				*
+//									IMPORTS										*
+//																				*
+//*******************************************************************************
+
 import {
 	PlaneGeometry,
 	Mesh,
@@ -16,15 +22,24 @@ import {
 } from 'three';
 import {color} from 'three/tsl';
 
-//= CONSTANTS ==================================================================
+//**************************************|****************************************
+//																				*
+//									CONSTANTS									*
+//																				*
+//*******************************************************************************
+
 //-	Conversions
 var DegRad = Math.PI/180;			// Convert Degrees to Radians
 
-/*= PROGRAM ==================================================================*/
+//**************************************|****************************************
+//																				*
+//								   CONSTRUCTOR									*
+//																				*
+//*******************************************************************************
 
 let GrdMap = function (grd_, scene) {
 
-//- Grid 0 ---------------------------------------------------------------------
+//- Grid 0 ----------------------------------------------------------------------
 	grd_.Grx[0] = {
 		Typ:	0,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,			// Rows and Columns - use odd number (for now = divisible by 3)
@@ -43,7 +58,7 @@ let GrdMap = function (grd_, scene) {
 		EWA:	0,					// N/A
 		Mat:	0					// N/A
 	}
-//- Grid 1 ---------------------------------------------------------------------
+//- Grid 1 ----------------------------------------------------------------------
 	grd_.Grx[1] = {
 		Typ:	1,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,			// Rows and Columns - use odd number (for now = divisible by 3)
@@ -62,7 +77,7 @@ let GrdMap = function (grd_, scene) {
 		EWA:	0,					// Shared East/West Adjustment (updated)
 		Mat:	0					// Match Texture of Outer and Inner Blocks
 	}
-//- Grid 2 ---------------------------------------------------------------------
+//- Grid 2 ----------------------------------------------------------------------
 	grd_.Grx[2] = {
 		Typ:	2,					// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,			// Rows and Columns - use odd number (for now = divisible by 3)
@@ -92,7 +107,11 @@ GrdMap.prototype.update = function (grd_) {
 	move1GrMap(grd_.Grx[2], grd_);
 }
 
-//- Init Grid Map --------------------------------------------------------------
+//**************************************|****************************************
+//																				*
+//									INITIALIZE									*
+//																				*
+//*******************************************************************************
 
 function init1GrMap(grx_, grd_, scene) {
 	// Load Variables
@@ -210,7 +229,11 @@ function init1GrMap(grx_, grd_, scene) {
 	}
 }
 
-//= Move Grid Map ==============================================================
+//**************************************|****************************************
+//																				*
+//									   MOVE										*
+//																				*
+//*******************************************************************************
 
 function move1GrMap(grx_, grd_) {
 	let grd1_ = grd_.Grx[1];
@@ -342,7 +365,19 @@ function move1GrMap(grx_, grd_) {
 	}
 }
 
+//**************************************|****************************************
+//																				*
+//									 EXPORTS									*
+//																				*
+//*******************************************************************************
+
 export {GrdMap};
 
-/* Change Log =================================================*/
-// 241220: Version3b	: NodeMaterials moved from tsl to main (r171)
+//**************************************|****************************************
+//																				*
+//									REVISIONS									*
+//																				*
+//*******************************************************************************
+/*
+241220: Version3b	: NodeMaterials moved from tsl to main (r171)
+*/
