@@ -387,10 +387,10 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			if (aag_.AAATim[n][i] > aag_.AAADLT) {
 				aag_.AAATim[n][i] = 0;
 				aag_.AAAPtr[n][i].visible = false;
-				console.log(i);
+				if (n == 0) console.log(i);
 				// Start Smoke When Designated Bullet Stops
 				if (i == aag_.SmkAAA[n][i]) { // If Bullet Causes Smoke
-					console.log(i);
+					if (n == 0) console.log(i);
 					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
 					aag_.SmkPtr[n].visible = true;
 					aag_.SmkMat[n].opacity = 1.0;
