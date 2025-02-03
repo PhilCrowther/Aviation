@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Feb 2025
+Version dated 3 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -84,7 +84,7 @@ import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowt
 import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
 		initAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
-} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG2.js";
 import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 2
 //= GENERAL ====================//===============================================
@@ -692,13 +692,13 @@ let aaf_ = {
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
 		AAATim: [[],[]],		// Bullet Time in flight
 		// Smoke
+		SmkAAA: [0,2],			// Bullet causing smoke
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
-		SmkTim: [0,0],
 		// Smoke Sounds
 		SndFlg: [1,1],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
@@ -738,13 +738,13 @@ let xsg_ = {
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
 		AAATim: [[],[]],		// Bullet Time in Flight
 		// Smoke
+		SmkAAA: [0,1],			// Bullet causing smoke
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
-		SmkTim: [0,0],
 		// Smoke Sounds
 		SndFlg: [0,0],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
@@ -1352,7 +1352,7 @@ function initAAAGun() {
 function moveAAAGun() {
 	if (aaf_.ObjNum) {
 		for (let n = 0; n < aaf_.ObjNum; n ++) {	
-			// Adjust Y-Rotation
+			// Adjust Gun Longitude
 			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
 			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
 		}
