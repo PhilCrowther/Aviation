@@ -388,6 +388,7 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 				aag_.AAATim[n][i] = 0;
 				aag_.AAAPtr[n][i].visible = false;
 				if (n == 0) console.log(i);
+				console.log(aag_.SmkAAA[n][i]);			
 				// Start Smoke When Designated Bullet Stops
 				if (i == aag_.SmkAAA[n][i]) { // If Bullet Causes Smoke
 					if (n == 0) console.log(i);
