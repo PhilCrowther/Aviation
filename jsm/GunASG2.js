@@ -18,6 +18,32 @@
 
 //**************************************|****************************************
 //																				*
+//									  NOTES										*
+//																				*
+//===============================================================================
+/*
+The AA module does not cycle through all bullets, but only enough to fill the sky.
+This is because, once the time of flight has passed and the wait time has passed,
+each bullet is ready to be fired again and the program uses the first available
+bullet (similar to a LIFO method). This stops subsequent bullets from being fired.
+
+Since AA Smoke is tied to a bullet, that bullet must be one of those fired and
+the smoke will appear more frequently than if the module cycled through all bullets.
+We can fix this by adding a smoke cycles that does not allow smoke to be created
+until a certain minumum time has passed - rather than tying it to a specific bullet.
+
+Regarding implementing a delay in sounds due to distance:
+The smoke was appearing so fast that that the delay counter was reset before it
+had a chance to hit zero. As a result, the sound was never triggered.  This could
+be addressed by creating a delay that is slightly offset.
+
+However, since AA sound is not heard much until we get close, implementation of a
+sound delay may be superfluous.
+*/
+
+
+//**************************************|****************************************
+//																				*
 //									 IMPORTS									*
 //																				*
 //===============================================================================
@@ -386,15 +412,15 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			// Stop
 			if (aag_.AAATim[n][i] > aag_.AAADLT) {
 				aag_.AAATim[n][i] = 0;
-				aag_.AAAPtr[n][i].visible = false;
+				aag_.AAAPtr[n][i].visible = false;	
 				// Start Smoke When Designated Bullet Stops
-				if (i == aag_.SmkAAA[n]) { // If Bullet Causes Smoke
+				if (!aag_.SmkTim[n]) { // Smoke Delay = 0
 					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
 					aag_.SmkPtr[n].visible = true;
 					aag_.SmkMat[n].opacity = 1.0;
 					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
-//					if (SndFlg && aag_.SndFlg[n]) aag_.SndPtr[n].play();
-					if (SndFlg) aag_.SndFlg[n] = 1; // ### Start Sound Routine
+					aag_.SmkTim[n] = aag_.SmkMax[n]; Reset Delay Timer
+					if (SndFlg && aag_.SndFlg[n]) aag_.SndPtr[n].play();
 				}
 			}
 			// Continue
@@ -409,6 +435,9 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 				aag_.AAAPtr[n][i].position.x = aag_.AAAMpP[n][i].x - air_.MapPos.x;
 				aag_.AAAPtr[n][i].position.y = aag_.AAAMpP[n][i].y - AltDif;
 				aag_.AAAPtr[n][i].position.z = air_.MapPos.z - aag_.AAAMpP[n][i].z;
+				// Smoke Timer
+				if (aag_.SmkTim[n] > 0) aag_.SmkTim[n] = aag_.SmkTim[n] - DLTime;
+				if (aag_.SmkTim[n] < 0) aag_.SmkTim[n] = 0;
 			}
 		} // end of i
 		// Smoke Relative Position
@@ -417,10 +446,11 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			aag_.SmkPtr[n].position.y = aag_.SmkMpP[n].y - AltDif;
 			aag_.SmkPtr[n].position.z = air_.MapPos.z - aag_.SmkMpP[n].z;
 			aag_.SmkMat[n].rotation = Mod360((air_.AirRot.z + aag_.SmkRot[n])) * DegRad;
+			// Reduce Opacity
 			aag_.SmkMat[n].opacity = aag_.SmkMat[n].opacity - 0.005;
 			if (aag_.SmkMat[n].opacity < 0) {
 				aag_.SmkMat[n].opacity = 0;
-//				aag_.SndPtr[n].stop();	// Reset for next explosion
+				aag_.SndPtr[n].stop();	// Reset for next explosion
 			}
 		}
 	} // end of n
