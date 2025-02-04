@@ -419,7 +419,7 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 					aag_.SmkPtr[n].visible = true;
 					aag_.SmkMat[n].opacity = 1.0;
 					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
-					aag_.SmkTim[n] = aag_.SmkMax[n]; Reset Delay Timer
+					aag_.SmkTim[n] = aag_.SmkMax[n]; // Reset Delay Timer
 					if (SndFlg && aag_.SndFlg[n]) aag_.SndPtr[n].play();
 				}
 			}
