@@ -435,9 +435,6 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 				aag_.AAAPtr[n][i].position.x = aag_.AAAMpP[n][i].x - air_.MapPos.x;
 				aag_.AAAPtr[n][i].position.y = aag_.AAAMpP[n][i].y - AltDif;
 				aag_.AAAPtr[n][i].position.z = air_.MapPos.z - aag_.AAAMpP[n][i].z;
-				// Smoke Timer
-				if (aag_.SmkTim[n] > 0) aag_.SmkTim[n] = aag_.SmkTim[n] - DLTime;
-				if (aag_.SmkTim[n] < 0) aag_.SmkTim[n] = 0;
 			}
 		} // end of i
 		// Smoke Relative Position
@@ -453,6 +450,9 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 				aag_.SndPtr[n].stop();	// Reset for next explosion
 			}
 		}
+		// Smoke Timer
+		if (aag_.SmkTim[n] > 0) aag_.SmkTim[n] = aag_.SmkTim[n] - DLTime;
+		if (aag_.SmkTim[n] < 0) aag_.SmkTim[n] = 0;
 	} // end of n
 }
 
