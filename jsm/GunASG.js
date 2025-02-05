@@ -444,10 +444,9 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			aag_.SmkPtr[n].position.z = air_.MapPos.z - aag_.SmkMpP[n].z;
 			aag_.SmkMat[n].rotation = Mod360((air_.AirRot.z + aag_.SmkRot[n])) * DegRad;
 			// Reduce Opacity
-			aag_.SmkMat[n].opacity = aag_.SmkMat[n].opacity - 0.005;
+			aag_.SmkMat[n].opacity = aag_.SmkMat[n].opacity - 0.01;
 			if (aag_.SmkMat[n].opacity < 0) {
 				aag_.SmkMat[n].opacity = 0;
-				aag_.SndPtr[n].stop();	// Reset for next explosion
 			}
 		}
 		// Smoke Timer
