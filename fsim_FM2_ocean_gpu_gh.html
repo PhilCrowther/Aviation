@@ -113,12 +113,12 @@ import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/A
 
 //=	TO DO:
 //-	Program:
-//	* Move Variables to Data File (not variables which include three.js functions)
-//	* Reset to starting position (r)
-//	* Convert waving flag to GPU shader
-//	* Flame and Smoke Trail for Damaged Airplane
+//	* Don't hear EA guns or engines (used to hear engines)
+//	* Move Variables to Data File (not variables with three.js functions) - WIP
+//	* Reset landed airplane to starting position (R) - WIP
+//	* Create Flame and Smoke Trail for Damaged Airplane - WIP
 //  * Add plane to simulate black/red out and for transitions
-//  * XP Guns are firing even when SndFlg = 0
+//	* Convert waving flag to GPU shader
 //-	Flight Module:
 //	* Add supercharger/turbocharger effect
 //	* Fix Autopilot
@@ -706,7 +706,6 @@ let aaf_ = {
 		SndPtr: [0,0],
 		SndVol: 15,				// Volume
 		SndMsh: [new makMsh(),new makMsh()],
-
 	};
 
 //- AA GUNS (MOVING SHIPS) -----//-----------------------------------------------
@@ -746,8 +745,8 @@ let xsg_ = {
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
-		SmkMax: [12,11],		// Delay between Smoke events (secs)
-		SmkTim: [0,6],			// Delay Counter
+		SmkMax: [12,14],		// Delay between Smoke events (secs)
+		SmkTim: [0,7],			// Delay Counter
 		// Smoke Sounds
 		SndFlg: [0,1],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
@@ -1480,8 +1479,6 @@ function loadMovPln() {
 			// Rotation
 			xac_.ObjAdr[n].rotation.order = "YXZ"; // Heading, Pitch, Bank
 			xac_.ObjAdr[n].rotation.y = xac_.ObjRot[n].y*DegRad;
-			//
-			xac_.ObjAdr[n].add(xac_.EngMsh[n]);	// Engine sound
 		});
 	}
 
@@ -2163,23 +2160,24 @@ function loadSounds() {
 		myg_.SndMsh[n].position.x = -5;
 		air_.AirObj.add(myg_.SndMsh[n]);
 	}
-	//- XP Engines
+	//- Moving Airplane Sounds (centered at ObjAdr)
 	for (let n = 0; n < xac_.ObjNum; n ++) {
+		// Engine
 		xac_.EngPtr[n] = new THREE.PositionalAudio(listener);
 		xac_.EngMsh[n].add(xac_.EngPtr[n]);
-	}
-	//- XP Guns
-	for (let n = 0; n < xag_.ObjNum; n ++) {
+		xac_.ObjAdr[n].add(xac_.EngMsh[n]);
+		// Guns
 		xag_.SndPtr[n] = new THREE.PositionalAudio(listener);
 		xag_.SndMsh[n].add(xag_.SndPtr[n]);
+		xac_.ObjAdr[n].add(xag_.SndMsh[n]);
 	}
-	// XS Guns
+	// Moving Ship Gun Explosions (same as Smoke)
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		xsg_.SndPtr[n] = new THREE.PositionalAudio(listener);
 		xsg_.SndMsh[n].add(xsg_.SndPtr[n]);
 		xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
 	}
-	// AA Guns
+	// Fixed AA Gun Explosions (same as Smoke)
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		aaf_.SndPtr[n] = new THREE.PositionalAudio(listener);
 		aaf_.SndMsh[n].add(aaf_.SndPtr[n]);
