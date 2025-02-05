@@ -84,7 +84,7 @@ import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowt
 import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
 		initAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
-} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG1.js";
 import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 2
 //= GENERAL ====================//===============================================
@@ -1359,6 +1359,10 @@ function moveAAAGun() {
 			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
 		}
 		moveAAGuns(aaf_,air_,AltDif,DLTime,GrvDLT,SndFlg);
+		// Play (No Delay)
+		for (let n = 0; n < aaf_.ObjNum; n ++) {
+			if (SndFlg && aaf_.SndFlg[n]) aaf_.SndPtr[n].play()
+		}
 	}
 }
 
@@ -1692,6 +1696,10 @@ function moveXSHGun() {
 		if (XSGFlg < XSGMin) XSGFlg = XSGMax;
 	}
 	moveAAGuns(xsg_,air_,AltDif,DLTime,GrvDLT,SndFlg);
+	// Play (No Delay)
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		if (SndFlg && xsg_.SndFlg[n]) xsg_.SndPtr[n].play()
+	}
 }
 
 //= ANIMATED FLAGS =============//===============================================
