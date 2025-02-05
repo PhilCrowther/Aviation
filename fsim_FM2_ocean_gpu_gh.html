@@ -84,7 +84,7 @@ import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowt
 import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
 		initAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
-} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG2.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
 import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 2
 //= GENERAL ====================//===============================================
@@ -706,7 +706,7 @@ let aaf_ = {
 		SndPtr: [0,0],
 		SndVol: 15,				// Volume
 		SndMsh: [new makMsh(),new makMsh()],
-		SndTim: [0,0],
+		SndDTm: [0,0],
 	};
 
 //- AA GUNS (MOVING SHIPS) -----//-----------------------------------------------
@@ -754,7 +754,7 @@ let xsg_ = {
 		SndPtr: [0,0],
 		SndVol: 15,				// Volume
 		SndMsh: [new makMsh(),new makMsh()],
-		SndTim: [0,0],
+		SndDTm: [0,0],
 	};
 
 //= MINIMUM ALTITUDE ===========//===============================================
@@ -1361,32 +1361,27 @@ function moveAAAGun() {
 			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
 		}
 		moveAAGuns(aaf_,air_,AltDif,DLTime,GrvDLT,SndFlg);
-		// Play (No Delay)
+		// Play Sound (No Delay)
 //		for (let n = 0; n < aaf_.ObjNum; n ++) {
 //			if (SndFlg && aaf_.SndFlg[n]) aaf_.SndPtr[n].play()
 //		}
-		// Sound Delay
+		// Play Sound With Delay
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
-//			console.log(aaf_.SndFlg[0]); // never on?
 			// Start Delay
 			if (aaf_.SndFlg[n]) {
 				let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
 				let Z = aaf_.SmkPtr[n].position.z;
 				let delay = (Math.sqrt(X*X+Z*Z)/343);			
 				if (delay > (aaf_.SmkMax[n]-1)) delay = (aaf_.SmkMax[n]-1); // Avoid overlap issues
-				aaf_.SndTim[n] = delay;
-//				console.log(1);
-//				console.log(delay); // s/b fixed, but changes
+				aaf_.SndDTm[n] = delay;
 			}
 			// If End of Delay Start Sound
-			if (aaf_.SndTim[n]) aaf_.SndTim[n] = aaf_.SndTim[n] - DLTime;
-//			if (aaf_.SndTim[n] > 0) aaf_.SndTim[n] = aaf_.SndTim[n] - 10;
-			if (aaf_.SndTim[n] < 0) {
-				aaf_.SndTim[n] = 0;
+			if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - DLTime;
+			if (aaf_.SndDTm[n] < 0) {
+				aaf_.SndDTm[n] = 0;
 				if (SndFlg) aaf_.SndPtr[n].play();
 			}
 		}
-//		console.log(aaf_.SndTim[0]);
 	}
 }
 
@@ -1721,11 +1716,11 @@ function moveXSHGun() {
 			if (XSGFlg < XSGMin) XSGFlg = XSGMax;
 		}
 		moveAAGuns(xsg_,air_,AltDif,DLTime,GrvDLT,SndFlg);
-		// Play (No Delay)
+		// Play Sound (No Delay)
 //		for (let n = 0; n < xsg_.ObjNum; n ++) {
 //			if (SndFlg && xsg_.SndFlg[n]) xsg_.SndPtr[n].play()
 //		}
-		// Delay
+		// Play Sound With Delay
 		for (let n = 0; n < xsg_.ObjNum; n ++) {
 			// Start Delay
 			if (xsg_.SndFlg[n]) {
@@ -1733,12 +1728,12 @@ function moveXSHGun() {
 				let Z = xsg_.SmkPtr[n].position.z;
 				let delay = Math.sqrt(X*X+Z*Z)/343;
 				if (delay > (xsg_.SmkMax[n]-1)) delay = (xsg_.SmkMax[n]-1); // Avoid overlap issues
-				xsg_.SndTim[n] = delay;
+				xsg_.SndDTm[n] = delay;
 			}
 			// If End of Delay Start Sound
-			if (xsg_.SndTim[n]) xsg_.SndTim[n] = xsg_.SndTim[n] - DLTime;
-			if (xsg_.SndTim[n] < 0) {
-				xsg_.SndTim[n] = 0;
+			if (xsg_.SndDTm[n]) xsg_.SndDTm[n] = xsg_.SndDTm[n] - DLTime;
+			if (xsg_.SndDTm[n] < 0) {
+				xsg_.SndDTm[n] = 0;
 				if (SndFlg) xsg_.SndPtr[n].play();
 			}
 		}
