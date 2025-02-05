@@ -384,6 +384,8 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aag_.GunPtr[n].position.y = MapPos.y-AltDif;
 		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+		// Sound Flag Default
+		aag_.SndFlg[n] = 0;
 		// For Each Bullet String	
 		aag_.AAASp2[n] = aag_.AAASp2[n] - DLTime; // When reach 0, fire next bullet
 		if (aag_.AAASp2[n] < 0) aag_.AAASp2[n] = 0; // Ready to fire next bullet
