@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.02.04)
+ * Warfare.js (vers 25.02.05)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -27,10 +27,10 @@ This is because, once the time of flight has passed and the wait time has passed
 each bullet is ready to be fired again and the program uses the first available
 bullet (similar to a LIFO method). This stops subsequent bullets from being fired.
 
-We initially tied the smoke to a specific bullet. However, for the reasons
-described above, this limited the maximum time between bullets, leading to a 
-drumbeat.  We have now created an independent delay for smoke, so that the maximum
-time can be increased. [240204]
+Since AA Smoke is tied to a bullet, that bullet must be one of those fired and
+the smoke will appear more frequently than if the module cycled through all bullets.
+We can fix this by adding a smoke cycles that does not allow smoke to be created
+until a certain minumum time has passed - rather than tying it to a specific bullet.
 
 Regarding implementing a delay in sounds due to distance:
 The smoke was appearing so fast that that the delay counter was reset before it
@@ -384,6 +384,8 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aag_.GunPtr[n].position.y = MapPos.y-AltDif;
 		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+		// Sound Flag Default
+		aag_.SndFlg[n] = 0;
 		// For Each Bullet String	
 		aag_.AAASp2[n] = aag_.AAASp2[n] - DLTime; // When reach 0, fire next bullet
 		if (aag_.AAASp2[n] < 0) aag_.AAASp2[n] = 0; // Ready to fire next bullet
@@ -420,7 +422,7 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 					aag_.SmkMat[n].opacity = 1.0;
 					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
 					aag_.SmkTim[n] = aag_.SmkMax[n]; // Reset Delay Timer
-					if (SndFlg && aag_.SndFlg[n]) aag_.SndPtr[n].play();
+					if (SndFlg) aag_.SndFlg[n] = 1; // ### Start Sound Routine
 				}
 			}
 			// Continue
