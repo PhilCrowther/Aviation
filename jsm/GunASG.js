@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.02.05)
+ * Warfare.js (vers 25.02.03)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -420,7 +420,7 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 					aag_.SmkMat[n].opacity = 1.0;
 					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
 					aag_.SmkTim[n] = aag_.SmkMax[n]; // Reset Delay Timer
-					if (SndFlg && gun_.SndFlg[n]) gun_.SndPtr[n].play();
+					if (SndFlg && aag_.SndFlg[n]) aag_.SndPtr[n].play();
 				}
 			}
 			// Continue
