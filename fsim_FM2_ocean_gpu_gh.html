@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Feb 2025
+Version dated 5 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -2177,16 +2177,14 @@ function loadSounds() {
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		xsg_.SndPtr[n] = new THREE.PositionalAudio(listener);
 		xsg_.SndMsh[n].add(xsg_.SndPtr[n]);
+		xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
 	}
-	xsg_.AAAPtr[0][0].add(xsg_.SndMsh[0]); // Link SndMsh to Specific Bullets
-	xsg_.AAAPtr[1][2].add(xsg_.SndMsh[1]);
 	// AA Guns
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		aaf_.SndPtr[n] = new THREE.PositionalAudio(listener);
 		aaf_.SndMsh[n].add(aaf_.SndPtr[n]);
+		aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
 	}
-	aaf_.AAAPtr[0][0].add(aaf_.SndMsh[0]); // Link SndMsh to Specific Bullets
-	aaf_.AAAPtr[1][2].add(aaf_.SndMsh[1]);
 	//- Set Flag
 	LodSnd = 1;
 }
