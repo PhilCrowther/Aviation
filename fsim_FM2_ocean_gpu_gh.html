@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Feb 2025
+Version dated 4 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -692,13 +692,14 @@ let aaf_ = {
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
 		AAATim: [[],[]],		// Bullet Time in flight
 		// Smoke
-		SmkAAA: [0,2],			// Bullet causing smoke
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
+		SmkMax: [12,11],		// Delay between Smoke events (secs)
+		SmkTim: [0,6],			// Delay Counter
 		// Smoke Sounds
 		SndFlg: [1,1],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
@@ -739,13 +740,14 @@ let xsg_ = {
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
 		AAATim: [[],[]],		// Bullet Time in Flight
 		// Smoke
-		SmkAAA: [0,1],			// Bullet causing smoke
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
+		SmkMax: [12,11],		// Delay between Smoke events (secs)
+		SmkTim: [0,6],			// Delay Counter
 		// Smoke Sounds
 		SndFlg: [0,1],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
@@ -1359,6 +1361,7 @@ function moveAAAGun() {
 		}
 		moveAAGuns(aaf_,air_,AltDif,DLTime,GrvDLT,SndFlg);
 	}
+	console.log(aaf_.SmkTim[0]);
 }
 
 //= ISLANDS ====================//===============================================
