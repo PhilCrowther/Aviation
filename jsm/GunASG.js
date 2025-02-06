@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.02.05)
+ * Warfare.js (vers 25.02.06)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -414,12 +414,12 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 				aag_.AAATim[n][i] = 0;
 				aag_.AAAPtr[n][i].visible = false;	
 				// Start Smoke When Designated Bullet Stops
-				if (!aag_.SmkTim[n]) { // Smoke Delay = 0
+				if (!aag_.SmkDTm[n]) { // Smoke Delay = 0
 					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
 					aag_.SmkPtr[n].visible = true;
 					aag_.SmkMat[n].opacity = 1.0;
 					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
-					aag_.SmkTim[n] = aag_.SmkMax[n]; // Reset Delay Timer
+					aag_.SmkDTm[n] = aag_.SmkDMx[n]; // Reset Delay Timer
 					if (SndFlg) aag_.SndFlg[n] = 1; // Start Sound Routine
 				}
 			}
@@ -444,14 +444,15 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			aag_.SmkPtr[n].position.z = air_.MapPos.z - aag_.SmkMpP[n].z;
 			aag_.SmkMat[n].rotation = Mod360((air_.AirRot.z + aag_.SmkRot[n])) * DegRad;
 			// Reduce Opacity
-			aag_.SmkMat[n].opacity = aag_.SmkMat[n].opacity - 0.01;
+//			aag_.SmkMat[n].opacity = aag_.SmkMat[n].opacity - 0.01;
+			aag_.SmkMat[n].opacity = aag_.SmkMat[n].opacity - aag_.SmkOpR;
 			if (aag_.SmkMat[n].opacity < 0) {
 				aag_.SmkMat[n].opacity = 0;
 			}
 		}
 		// Smoke Timer
-		if (aag_.SmkTim[n] > 0) aag_.SmkTim[n] = aag_.SmkTim[n] - DLTime;
-		if (aag_.SmkTim[n] < 0) aag_.SmkTim[n] = 0;
+		if (aag_.SmkDTm[n] > 0) aag_.SmkDTm[n] = aag_.SmkDTm[n] - DLTime;
+		if (aag_.SmkDTm[n] < 0) aag_.SmkDTm[n] = 0;
 	} // end of n
 }
 
