@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Feb 2025
+Version dated 6 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -602,6 +602,9 @@ let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
 //	Adjust y-Rotation
 let AARYBg = [90,0];			// Starting Y-Rotation
 let AARYDf = [0,0];				// Y-Rotation Adjustment
+//	Smoke
+//let SmkOpR = 0.01;			// Opacity Reduction per Frame
+let SmkOpR = 0.005;				// Opacity Reduction per Frame
 
 //- MY GUNS --------------------//-----------------------------------------------
 let myg_ = {
@@ -698,8 +701,9 @@ let aaf_ = {
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
-		SmkMax: [12,11],		// Delay between Smoke events (secs)
-		SmkTim: [0,6],			// Delay Counter
+		SmkDMx: [12,11],		// Delay between Smoke events (secs)
+		SmkDTm: [0,6],			// Delay Counter
+		SmkOpR:	SmkOpR,			// Opacity Reduction
 		// Smoke Sounds
 		SndFlg: [1,1],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
@@ -746,8 +750,9 @@ let xsg_ = {
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
-		SmkMax: [12,14],		// Delay between Smoke events (secs)
-		SmkTim: [0,7],			// Delay Counter
+		SmkDMx: [12,14],		// Delay between Smoke events (secs)
+		SmkDTm: [0,7],			// Delay Counter
+		SmkOpR:	SmkOpR,			// Opacity Reduction
 		// Smoke Sounds
 		SndFlg: [0,1],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
@@ -1372,7 +1377,7 @@ function moveAAAGun() {
 				let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
 				let Z = aaf_.SmkPtr[n].position.z;
 				let delay = (Math.sqrt(X*X+Z*Z)/343);			
-				if (delay > (aaf_.SmkMax[n]-1)) delay = (aaf_.SmkMax[n]-1); // Avoid overlap issues
+				if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
 				aaf_.SndDTm[n] = delay;
 			}
 			// If End of Delay Start Sound
@@ -1727,7 +1732,7 @@ function moveXSHGun() {
 				let X = xsg_.SmkPtr[n].position.x;
 				let Z = xsg_.SmkPtr[n].position.z;
 				let delay = Math.sqrt(X*X+Z*Z)/343;
-				if (delay > (xsg_.SmkMax[n]-1)) delay = (xsg_.SmkMax[n]-1); // Avoid overlap issues
+				if (delay > (xsg_.SmkDMx[n]-1)) delay = (xsg_.SmkDMx[n]-1); // Avoid overlap issues
 				xsg_.SndDTm[n] = delay;
 			}
 			// If End of Delay Start Sound
