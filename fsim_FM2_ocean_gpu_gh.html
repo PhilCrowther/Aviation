@@ -72,7 +72,7 @@ A demo of a flight simulation of an animated airplane model over animated ocean 
 
 // Basic Modules
 import * as THREE from "three";
-import {texture} from "three/tsl";
+import {color,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
@@ -84,7 +84,7 @@ import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowt
 import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
 		initAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
-} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG2a.js";
 import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 2
 //= GENERAL ====================//===============================================
@@ -688,13 +688,14 @@ let aaf_ = {
 		AAASpc: AAASpc,			// Bullet Spacing
 		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
 		// Bullet Colors
-		AAAClr: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
+		AAACol: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
 		// Bullets for each gun
 		AAAPtr: [[],[]],		// Bullet Objects
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
 		AAATim: [[],[]],		// Bullet Time in flight
 		// Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke ### new
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
@@ -705,12 +706,16 @@ let aaf_ = {
 		SmkDTm: [0,6],			// Delay Counter
 		SmkOpR:	SmkOpR,			// Opacity Reduction
 		// Smoke Sounds
-		SndFlg: [1,1],			// 1 = Explosion
+		SndFlg: [1,1],			// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [0,0],
 		SndVol: 15,				// Volume
 		SndMsh: [new makMsh(),new makMsh()],
 		SndDTm: [0,0],
+		// Exploding Center
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
 
 //- AA GUNS (MOVING SHIPS) -----//-----------------------------------------------
@@ -737,13 +742,14 @@ let xsg_ = {
 		AAASpc: AAASpc,			// Bullet spacing
 		AAASp2: [AAASpc,AAASpc],
 		// Bullet Colors
-		AAAClr: new THREE.Vector2(0xff80ff,0x804080), // Red
+		AAACol: new THREE.Vector2(0xff80ff,0x804080), // Red
 		// Bullets for each gun		
 		AAAPtr: [[],[]],		// Bullet Objects
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
 		AAATim: [[],[]],		// Bullet Time in Flight
 		// Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke ### new
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
@@ -760,6 +766,10 @@ let xsg_ = {
 		SndVol: 15,				// Volume
 		SndMsh: [new makMsh(),new makMsh()],
 		SndDTm: [0,0],
+		// Exploding Center
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
 
 //= MINIMUM ALTITUDE ===========//===============================================
@@ -1353,32 +1363,60 @@ function moveAnmObj() {
 
 function initAAAGun() {
 	if (aaf_.ObjNum) {
-		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];		
-		initAAGuns(aaf_,air_,AltDif,scene)
+		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
+		initAAGuns(aaf_,air_,AltDif,scene);
+		// Create Exploding Center
+		let ExpGeo = 0;
+		let ExpMat = 0;
+		for (let n = 0; n < aaf_.ObjNum; n ++) {
+			ExpGeo = new THREE.SphereGeometry(1,32,16); // Smoke Size = 200
+			ExpMat = new THREE.MeshBasicNodeMaterial({colorNode:color("crimson"),transparent:true,opacity:1});
+			aaf_.ExpPtr[n] = new THREE.Mesh(ExpGeo,ExpMat);
+			aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
+			aaf_.ExpPtr[n].visible = false;
+		}	
 	}
 }
 
 function moveAAAGun() {
 	if (aaf_.ObjNum) {
-		for (let n = 0; n < aaf_.ObjNum; n ++) {	
+		for (let n = 0; n < aaf_.ObjNum; n ++) {
 			// Adjust Gun Longitude
 			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
 			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
 		}
 		moveAAGuns(aaf_,air_,AltDif,DLTime,GrvDLT,SndFlg);
+		// Explosion
+		for (let n = 0; n < aaf_.ObjNum; n ++) {
+			if (aaf_.SmkFlg[n]) {
+				aaf_.ExpSiz[n] = 1/200; // Start Size
+				aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
+				aaf_.ExpPtr[n].visible = true;
+				console.log(1);
+			}
+			if (aaf_.ExpLif[n] > 0) {
+				aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
+				aaf_.ExpSiz[n] = aaf_.ExpSiz[n] + 1/200;
+				aaf_.ExpLif[n] = aaf_.ExpLif[n] - DLTime;
+				if (aaf_.ExpLif[n] < 0) {
+					aaf_.ExpLif[n] = 0;
+					aaf_.ExpPtr[n].visible = false;
+				}
+			}
+		}	
 		// Play Sound (No Delay)
 //		for (let n = 0; n < aaf_.ObjNum; n ++) {
-//			if (SndFlg && aaf_.SndFlg[n]) aaf_.SndPtr[n].play()
+//			if (SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
 //		}
 		// Play Sound With Delay
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
 			// Start Delay
-			if (aaf_.SndFlg[n]) {
+			if (aaf_.SmkFlg[n]) { // Start Countdown
 				let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
 				let Z = aaf_.SmkPtr[n].position.z;
-				let delay = (Math.sqrt(X*X+Z*Z)/343);			
+				let delay = (Math.sqrt(X*X+Z*Z)/343);
 				if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
-				aaf_.SndDTm[n] = delay;
+				aaf_.SndDTm[n] = delay;	
 			}
 			// If End of Delay Start Sound
 			if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - DLTime;
@@ -1723,12 +1761,12 @@ function moveXSHGun() {
 		moveAAGuns(xsg_,air_,AltDif,DLTime,GrvDLT,SndFlg);
 		// Play Sound (No Delay)
 //		for (let n = 0; n < xsg_.ObjNum; n ++) {
-//			if (SndFlg && xsg_.SndFlg[n]) xsg_.SndPtr[n].play()
+//			if (xsg_.SmkFlg[n] && SndFlg) xsg_.SndPtr[n].play()
 //		}
 		// Play Sound With Delay
 		for (let n = 0; n < xsg_.ObjNum; n ++) {
 			// Start Delay
-			if (xsg_.SndFlg[n]) {
+			if (xsg_.SmkFlg[n]) {
 				let X = xsg_.SmkPtr[n].position.x;
 				let Z = xsg_.SmkPtr[n].position.z;
 				let delay = Math.sqrt(X*X+Z*Z)/343;
@@ -1736,7 +1774,7 @@ function moveXSHGun() {
 				xsg_.SndDTm[n] = delay;
 			}
 			// If End of Delay Start Sound
-			if (xsg_.SndDTm[n]) xsg_.SndDTm[n] = xsg_.SndDTm[n] - DLTime;
+			if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - DLTime;
 			if (xsg_.SndDTm[n] < 0) {
 				xsg_.SndDTm[n] = 0;
 				if (SndFlg) xsg_.SndPtr[n].play();
