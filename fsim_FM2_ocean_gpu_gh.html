@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Feb 2025
+Version dated 10 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -72,7 +72,7 @@ A demo of a flight simulation of an animated airplane model over animated ocean 
 
 // Basic Modules
 import * as THREE from "three";
-import {color,texture} from "three/tsl";
+import {color,texture,posterize,oscSine,time,output} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
@@ -772,6 +772,22 @@ let xsg_ = {
 		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
 
+//= MY PEEPS ===================//===============================================
+//- Animated Objects: Linked ---//-----------------------------------------------
+//- 0 = Gail;
+let myp_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Michelle.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],			// Loaded Object
+		ObjSiz: [1],			// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [new THREE.Euler()], // Rotation
+		MapPos: [new THREE.Vector3(8,13,40)], // Relative Position
+		ObjRef: [xsh_.ObjGrp[0]],
+		ObjMxr: [0],
+	};
+
 //= MINIMUM ALTITUDE ===========//===============================================
 let alt_ = {
 		Num: 2,
@@ -1121,7 +1137,8 @@ function initAll() {
 		StatOn.init(renderer);
 		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(StatOn.dom);
-	}	
+	}
+	nowTim = clock.getElapsedTime();
 	LodFlg = 1;
 }
 
@@ -1136,17 +1153,16 @@ async function rendAll() {		// r173 added async
 		return;					// Stop the function here.
 	}
 	if (controls.isLocked === true && !LodSnd) loadSounds();
-	if (!PawsOn && LodFlg && controls.isLocked === true) {
-		// Update time
-		nowTim = clock.getElapsedTime();
-		difTim = nowTim-oldTim;
-		oldTim = nowTim;
+	if (!PawsOn && LodFlg && controls.isLocked === true) {		
+		difTim = clock.getDelta();
+		nowTim = nowTim + difTim;
 		moveCamera(camera,cam_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
 		AltDif = air_.MapPos.y*AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
+		moveMyPeep();
 		// Move Grids
 		waves.update();			// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
@@ -1301,6 +1317,7 @@ function loadObject() {
 	loadStatic();
 	loadMoving();
 	loadAnmFlg();
+	loadMyPeep();
 }
 
 function initObject() {
@@ -1849,6 +1866,41 @@ function moveAnmFlg() {
 		flg_.ObjAdj[n] = Mod360(flg_.ObjAdj[n]+3); // Degrees
 		let FlgAdj = 2.5*DegRad*Math.sin(flg_.ObjAdj[n]*DegRad); // Max Offset = 5 deg
 		flg_.ObjAdr[n].rotation.y = flg_.ObjRot[n].y+FlgAdj;
+	}
+}
+
+//= MY PEEPS ===================//===============================================
+
+//- Load Objects ---------------//-----------------------------------------------
+function loadMyPeep() {
+	for (let i = 0; i < myp_.ObjNum; i++) {
+		gltfLoader.load(myp_.ObjSrc[i], function (gltf) {
+			// Cast Shadow (but not in shadow zone)
+			gltf.scene.traverse(function (child) {
+				if (child.isMesh) child.castShadow = true;
+			});
+			myp_.ObjAdr[i] = gltf.scene;
+			// Play Animation
+			myp_.ObjMxr[i] = new THREE.AnimationMixer(myp_.ObjAdr[i]);
+			let material = myp_.ObjAdr[i].children[0].children[0].material;
+				material.outputNode = oscSine(time.mul(.1)).mix(output, posterize(output.add(.1),4).mul(2));
+			let action = myp_.ObjMxr[i].clipAction(gltf.animations[0]);
+				action.play();		
+			//
+//			myp_.ObjAdr[i].scale.setScalar(myp_.ObjSiz[i]);
+			myp_.ObjAdr[i].rotation.copy(myp_.ObjRot[i]);
+			myp_.ObjAdr[i].position.copy(myp_.MapPos[i]); // Relative to moving object
+			myp_.ObjRef[i].add(myp_.ObjAdr[i]); // Link to moving object
+		});
+	}
+}
+
+function moveMyPeep() {
+//	let delta = clock.getDelta();
+	for (let i = 0; i < myp_.ObjNum; i++) {
+//		if (myp_.ObjMxr[i]) myp_.ObjMxr[i].update(delta);
+		if (myp_.ObjMxr[i]) myp_.ObjMxr[i].update(difTim);
+//		if (myp_.ObjMxr[i]) myp_.ObjMxr[i].update(time);
 	}
 }
 
