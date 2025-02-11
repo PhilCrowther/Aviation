@@ -782,10 +782,14 @@ let myp_ = {
 		ObjAdr: [0],			// Loaded Object
 		ObjSiz: [1],			// Scale
 		RndOrd: [0],			// renderOrder
-		ObjRot: [new THREE.Euler()], // Rotation
-		MapPos: [new THREE.Vector3(8,13,40)], // Relative Position
-		ObjRef: [xsh_.ObjGrp[0]],
-		ObjMxr: [0],
+		ObjRot: [new THREE.Euler()], // Rotation (degrees)
+		MapPos: [new THREE.Vector3(8,13,40)], // Relative Position (if parent)
+		ObjRef: [xsh_.ObjGrp[0]], // Parent, if any
+		// Animation
+		ObjAct: [0],			// Animation Action
+		ObjMxr: [0],			// Animation Mixer
+		MaxDst: [1000],			// Max Distance where visible (meters)
+		ObjViz: [1],			// Visibility Flag On
 	};
 
 //= MINIMUM ALTITUDE ===========//===============================================
@@ -1409,7 +1413,6 @@ function moveAAAGun() {
 				aaf_.ExpSiz[n] = 1/200; // Start Size
 				aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
 				aaf_.ExpPtr[n].visible = true;
-				console.log(1);
 			}
 			if (aaf_.ExpLif[n] > 0) {
 				aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
@@ -1873,34 +1876,50 @@ function moveAnmFlg() {
 
 //- Load Objects ---------------//-----------------------------------------------
 function loadMyPeep() {
-	for (let i = 0; i < myp_.ObjNum; i++) {
-		gltfLoader.load(myp_.ObjSrc[i], function (gltf) {
+	for (let n = 0; n < myp_.ObjNum; n++) {
+		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
 			// Cast Shadow (but not in shadow zone)
 			gltf.scene.traverse(function (child) {
 				if (child.isMesh) child.castShadow = true;
 			});
-			myp_.ObjAdr[i] = gltf.scene;
+			myp_.ObjAdr[n] = gltf.scene;
 			// Play Animation
-			myp_.ObjMxr[i] = new THREE.AnimationMixer(myp_.ObjAdr[i]);
-			let material = myp_.ObjAdr[i].children[0].children[0].material;
+			myp_.ObjMxr[n] = new THREE.AnimationMixer(myp_.ObjAdr[n]);
+			let material = myp_.ObjAdr[n].children[0].children[0].material;
 				material.outputNode = oscSine(time.mul(.1)).mix(output, posterize(output.add(.1),4).mul(2));
-			let action = myp_.ObjMxr[i].clipAction(gltf.animations[0]);
-				action.play();		
+			myp_.ObjAct[n] = myp_.ObjMxr[n].clipAction(gltf.animations[0]);
+			myp_.ObjAct[n].play();		
 			//
-//			myp_.ObjAdr[i].scale.setScalar(myp_.ObjSiz[i]);
-			myp_.ObjAdr[i].rotation.copy(myp_.ObjRot[i]);
-			myp_.ObjAdr[i].position.copy(myp_.MapPos[i]); // Relative to moving object
-			myp_.ObjRef[i].add(myp_.ObjAdr[i]); // Link to moving object
+			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
+			myp_.ObjAdr[n].rotation.copy(myp_.ObjRot[n]);
+			myp_.ObjAdr[n].position.copy(myp_.MapPos[n]); // Relative to moving object
+			myp_.ObjRef[n].add(myp_.ObjAdr[n]); // Link to moving object
 		});
 	}
 }
 
 function moveMyPeep() {
-//	let delta = clock.getDelta();
-	for (let i = 0; i < myp_.ObjNum; i++) {
-//		if (myp_.ObjMxr[i]) myp_.ObjMxr[i].update(delta);
-		if (myp_.ObjMxr[i]) myp_.ObjMxr[i].update(difTim);
-//		if (myp_.ObjMxr[i]) myp_.ObjMxr[i].update(time);
+	let ObjRef = new THREE.Vector3();
+	let ObjDst = new THREE.Vector3();
+	for (let n = 0; n < myp_.ObjNum; n++) {
+		// Turn On
+		ObjRef = myp_.ObjRef[n];
+		ObjDst = ObjRef.position;
+		if (!myp_.ObjViz && ObjDst.x < myp_.MaxDst && ObjDst.y < myp_.MaxDst && ObjDst.z < myp_.MaxDst) {
+			myp_.ObjViz = 1;
+			myp_.ObjAdr[n].visible = true;
+			myp_.ObjAct[n].play(); // Start Playing
+		}
+		// Continue
+		if (myp_.ObjViz) {
+			if (myp_.ObjMxr[n]) myp_.ObjMxr[n].update(difTim);
+			// Stop?
+			if (ObjDst.x > myp_.MaxDst || ObjDst.y > myp_.MaxDst || ObjDst.z > myp_.MaxDst) {
+				myp_.ObjViz = 0;
+				myp_.ObjAdr[n].visible = false;
+				myp_.ObjAct[n].stop();
+			}
+		}
 	}
 }
 
