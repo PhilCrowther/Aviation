@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Feb 2025
+Version dated 13 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -228,8 +228,8 @@ let SunLon = 312;				// Direction - Horz (0->360) deg
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let ShdBox = 6;					// Size of shadow box
-let ShdBLR = 5;
+let ShdBox = 15;					// Size of shadow box
+let ShdBLR = 12;
 let ShdBTB = 4;
 let ShdDst = 1500;				// Shadow Distance (meters)
 
@@ -783,7 +783,7 @@ let myp_ = {
 		ObjSiz: [1],			// Scale
 		RndOrd: [0],			// renderOrder
 		ObjRot: [new THREE.Euler()], // Rotation (degrees)
-		MapPos: [new THREE.Vector3(8,13,40)], // Relative Position (if parent)
+		MapPos: [new THREE.Vector3(8,12.9,40)], // Relative Position (if parent)
 		ObjRef: [xsh_.ObjGrp[0]], // Parent, if any
 		// Animation
 		ObjAct: [0],			// Animation Action
