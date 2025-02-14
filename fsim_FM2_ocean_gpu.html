@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Feb 2025
+Version dated 13 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -72,7 +72,7 @@ A demo of a flight simulation of an animated airplane model over animated ocean 
 
 // Basic Modules
 import * as THREE from "three";
-import {texture} from "three/tsl";
+import {color,texture,posterize,oscSine,time,output} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
@@ -228,8 +228,8 @@ let SunLon = 312;				// Direction - Horz (0->360) deg
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let ShdBox = 6;					// Size of shadow box
-let ShdBLR = 5;
+let ShdBox = 15;					// Size of shadow box
+let ShdBLR = 12;
 let ShdBTB = 4;
 let ShdDst = 1500;				// Shadow Distance (meters)
 
@@ -602,6 +602,9 @@ let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
 //	Adjust y-Rotation
 let AARYBg = [90,0];			// Starting Y-Rotation
 let AARYDf = [0,0];				// Y-Rotation Adjustment
+//	Smoke
+//let SmkOpR = 0.01;			// Opacity Reduction per Frame
+let SmkOpR = 0.005;				// Opacity Reduction per Frame
 
 //- MY GUNS --------------------//-----------------------------------------------
 let myg_ = {
@@ -685,27 +688,34 @@ let aaf_ = {
 		AAASpc: AAASpc,			// Bullet Spacing
 		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
 		// Bullet Colors
-		AAAClr: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
+		AAACol: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
 		// Bullets for each gun
 		AAAPtr: [[],[]],		// Bullet Objects
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
 		AAATim: [[],[]],		// Bullet Time in flight
 		// Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke ### new
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
-		SmkMax: [12,11],		// Delay between Smoke events (secs)
-		SmkTim: [0,6],			// Delay Counter
+		SmkDMx: [12,11],		// Delay between Smoke events (secs)
+		SmkDTm: [0,6],			// Delay Counter
+		SmkOpR:	SmkOpR,			// Opacity Reduction
 		// Smoke Sounds
-		SndFlg: [1,1],			// 1 = Explosion
+		SndFlg: [1,1],			// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [0,0],
 		SndVol: 15,				// Volume
 		SndMsh: [new makMsh(),new makMsh()],
+		SndDTm: [0,0],
+		// Exploding Center
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
 
 //- AA GUNS (MOVING SHIPS) -----//-----------------------------------------------
@@ -732,27 +742,54 @@ let xsg_ = {
 		AAASpc: AAASpc,			// Bullet spacing
 		AAASp2: [AAASpc,AAASpc],
 		// Bullet Colors
-		AAAClr: new THREE.Vector2(0xff80ff,0x804080), // Red
+		AAACol: new THREE.Vector2(0xff80ff,0x804080), // Red
 		// Bullets for each gun		
 		AAAPtr: [[],[]],		// Bullet Objects
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
 		AAATim: [[],[]],		// Bullet Time in Flight
 		// Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke ### new
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [new THREE.Vector3(), // Map Position
 				 new THREE.Vector3()],
-		SmkMax: [12,14],		// Delay between Smoke events (secs)
-		SmkTim: [0,7],			// Delay Counter
+		SmkDMx: [12,14],		// Delay between Smoke events (secs)
+		SmkDTm: [0,7],			// Delay Counter
+		SmkOpR:	SmkOpR,			// Opacity Reduction
 		// Smoke Sounds
 		SndFlg: [0,1],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [0,0],
 		SndVol: 15,				// Volume
 		SndMsh: [new makMsh(),new makMsh()],
+		SndDTm: [0,0],
+		// Exploding Center
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
+	};
+
+//= MY PEEPS ===================//===============================================
+//- Animated Objects: Linked ---//-----------------------------------------------
+//- 0 = Gail;
+let myp_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Samba.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],			// Loaded Object
+		ObjSiz: [1],			// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [new THREE.Euler()], // Rotation (degrees)
+		MapPos: [new THREE.Vector3(8,12.9,40)], // Relative Position (if parent)
+		ObjRef: [xsh_.ObjGrp[0]], // Parent, if any
+		// Animation
+		ObjAct: [0],			// Animation Action
+		ObjMxr: [0],			// Animation Mixer
+		MaxDst: [1000],			// Max Distance where visible (meters)
+		ObjViz: [1],			// Visibility Flag On
 	};
 
 //= MINIMUM ALTITUDE ===========//===============================================
@@ -1104,7 +1141,8 @@ function initAll() {
 		StatOn.init(renderer);
 		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(StatOn.dom);
-	}	
+	}
+	nowTim = clock.getElapsedTime();
 	LodFlg = 1;
 }
 
@@ -1119,17 +1157,16 @@ async function rendAll() {		// r173 added async
 		return;					// Stop the function here.
 	}
 	if (controls.isLocked === true && !LodSnd) loadSounds();
-	if (!PawsOn && LodFlg && controls.isLocked === true) {
-		// Update time
-		nowTim = clock.getElapsedTime();
-		difTim = nowTim-oldTim;
-		oldTim = nowTim;
+	if (!PawsOn && LodFlg && controls.isLocked === true) {		
+		difTim = clock.getDelta();
+		nowTim = nowTim + difTim;
 		moveCamera(camera,cam_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
 		AltDif = air_.MapPos.y*AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
+		moveMyPeep();
 		// Move Grids
 		waves.update();			// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
@@ -1284,6 +1321,7 @@ function loadObject() {
 	loadStatic();
 	loadMoving();
 	loadAnmFlg();
+	loadMyPeep();
 }
 
 function initObject() {
@@ -1346,22 +1384,66 @@ function moveAnmObj() {
 
 function initAAAGun() {
 	if (aaf_.ObjNum) {
-		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];		
-		initAAGuns(aaf_,air_,AltDif,scene)
+		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
+		initAAGuns(aaf_,air_,AltDif,scene);
+		// Create Exploding Center
+		let ExpGeo = 0;
+		let ExpMat = 0;
+		for (let n = 0; n < aaf_.ObjNum; n ++) {
+			ExpGeo = new THREE.SphereGeometry(1,32,16); // Smoke Size = 200
+			ExpMat = new THREE.MeshBasicNodeMaterial({colorNode:color("crimson"),transparent:true,opacity:1});
+			aaf_.ExpPtr[n] = new THREE.Mesh(ExpGeo,ExpMat);
+			aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
+			aaf_.ExpPtr[n].visible = false;
+		}	
 	}
 }
 
 function moveAAAGun() {
 	if (aaf_.ObjNum) {
-		for (let n = 0; n < aaf_.ObjNum; n ++) {	
+		for (let n = 0; n < aaf_.ObjNum; n ++) {
 			// Adjust Gun Longitude
 			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
 			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
 		}
 		moveAAGuns(aaf_,air_,AltDif,DLTime,GrvDLT,SndFlg);
-		// Play (No Delay)
+		// Explosion
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			if (SndFlg && aaf_.SndFlg[n]) aaf_.SndPtr[n].play()
+			if (aaf_.SmkFlg[n]) {
+				aaf_.ExpSiz[n] = 1/200; // Start Size
+				aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
+				aaf_.ExpPtr[n].visible = true;
+			}
+			if (aaf_.ExpLif[n] > 0) {
+				aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
+				aaf_.ExpSiz[n] = aaf_.ExpSiz[n] + 1/200;
+				aaf_.ExpLif[n] = aaf_.ExpLif[n] - DLTime;
+				if (aaf_.ExpLif[n] < 0) {
+					aaf_.ExpLif[n] = 0;
+					aaf_.ExpPtr[n].visible = false;
+				}
+			}
+		}	
+		// Play Sound (No Delay)
+//		for (let n = 0; n < aaf_.ObjNum; n ++) {
+//			if (SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
+//		}
+		// Play Sound With Delay
+		for (let n = 0; n < aaf_.ObjNum; n ++) {
+			// Start Delay
+			if (aaf_.SmkFlg[n]) { // Start Countdown
+				let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
+				let Z = aaf_.SmkPtr[n].position.z;
+				let delay = (Math.sqrt(X*X+Z*Z)/343);
+				if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
+				aaf_.SndDTm[n] = delay;	
+			}
+			// If End of Delay Start Sound
+			if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - DLTime;
+			if (aaf_.SndDTm[n] < 0) {
+				aaf_.SndDTm[n] = 0;
+				if (SndFlg) aaf_.SndPtr[n].play();
+			}
 		}
 	}
 }
@@ -1688,17 +1770,36 @@ function initXSHGun() {
 
 //- Move Ship Guns -------------------------------------------------------------
 function moveXSHGun() {
-	// Turn Ship 2 Guns On/Off
-	XSGFlg = XSGFlg - 1;
-	if (XSGFlg > 0) xsg_.AAAFlg[1] = 1;
-	else {
-		xsg_.AAAFlg[1] = 0;
-		if (XSGFlg < XSGMin) XSGFlg = XSGMax;
-	}
-	moveAAGuns(xsg_,air_,AltDif,DLTime,GrvDLT,SndFlg);
-	// Play (No Delay)
-	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		if (SndFlg && xsg_.SndFlg[n]) xsg_.SndPtr[n].play()
+	if (xsg_.ObjNum) {
+		// Turn Ship 2 Guns On/Off
+		XSGFlg = XSGFlg - 1;
+		if (XSGFlg > 0) xsg_.AAAFlg[1] = 1;
+		else {
+			xsg_.AAAFlg[1] = 0;
+			if (XSGFlg < XSGMin) XSGFlg = XSGMax;
+		}
+		moveAAGuns(xsg_,air_,AltDif,DLTime,GrvDLT,SndFlg);
+		// Play Sound (No Delay)
+//		for (let n = 0; n < xsg_.ObjNum; n ++) {
+//			if (xsg_.SmkFlg[n] && SndFlg) xsg_.SndPtr[n].play()
+//		}
+		// Play Sound With Delay
+		for (let n = 0; n < xsg_.ObjNum; n ++) {
+			// Start Delay
+			if (xsg_.SmkFlg[n]) {
+				let X = xsg_.SmkPtr[n].position.x;
+				let Z = xsg_.SmkPtr[n].position.z;
+				let delay = Math.sqrt(X*X+Z*Z)/343;
+				if (delay > (xsg_.SmkDMx[n]-1)) delay = (xsg_.SmkDMx[n]-1); // Avoid overlap issues
+				xsg_.SndDTm[n] = delay;
+			}
+			// If End of Delay Start Sound
+			if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - DLTime;
+			if (xsg_.SndDTm[n] < 0) {
+				xsg_.SndDTm[n] = 0;
+				if (SndFlg) xsg_.SndPtr[n].play();
+			}
+		}
 	}
 }
 
@@ -1768,6 +1869,57 @@ function moveAnmFlg() {
 		flg_.ObjAdj[n] = Mod360(flg_.ObjAdj[n]+3); // Degrees
 		let FlgAdj = 2.5*DegRad*Math.sin(flg_.ObjAdj[n]*DegRad); // Max Offset = 5 deg
 		flg_.ObjAdr[n].rotation.y = flg_.ObjRot[n].y+FlgAdj;
+	}
+}
+
+//= MY PEEPS ===================//===============================================
+
+//- Load Objects ---------------//-----------------------------------------------
+function loadMyPeep() {
+	for (let n = 0; n < myp_.ObjNum; n++) {
+		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
+			// Cast Shadow (but not in shadow zone)
+			gltf.scene.traverse(function (child) {
+				if (child.isMesh) child.castShadow = true;
+			});
+			myp_.ObjAdr[n] = gltf.scene;
+			// Play Animation
+			myp_.ObjMxr[n] = new THREE.AnimationMixer(myp_.ObjAdr[n]);
+			let material = myp_.ObjAdr[n].children[0].children[0].material;
+				material.outputNode = oscSine(time.mul(.1)).mix(output, posterize(output.add(.1),4).mul(2));
+			myp_.ObjAct[n] = myp_.ObjMxr[n].clipAction(gltf.animations[0]);
+			myp_.ObjAct[n].play();		
+			//
+			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
+			myp_.ObjAdr[n].rotation.copy(myp_.ObjRot[n]);
+			myp_.ObjAdr[n].position.copy(myp_.MapPos[n]); // Relative to moving object
+			myp_.ObjRef[n].add(myp_.ObjAdr[n]); // Link to moving object
+		});
+	}
+}
+
+function moveMyPeep() {
+	let ObjRef = new THREE.Vector3();
+	let ObjDst = new THREE.Vector3();
+	for (let n = 0; n < myp_.ObjNum; n++) {
+		// Turn On
+		ObjRef = myp_.ObjRef[n];
+		ObjDst = ObjRef.position;
+		if (!myp_.ObjViz && ObjDst.x < myp_.MaxDst && ObjDst.y < myp_.MaxDst && ObjDst.z < myp_.MaxDst) {
+			myp_.ObjViz = 1;
+			myp_.ObjAdr[n].visible = true;
+			myp_.ObjAct[n].play(); // Start Playing
+		}
+		// Continue
+		if (myp_.ObjViz) {
+			if (myp_.ObjMxr[n]) myp_.ObjMxr[n].update(difTim);
+			// Stop?
+			if (ObjDst.x > myp_.MaxDst || ObjDst.y > myp_.MaxDst || ObjDst.z > myp_.MaxDst) {
+				myp_.ObjViz = 0;
+				myp_.ObjAdr[n].visible = false;
+				myp_.ObjAct[n].stop();
+			}
+		}
 	}
 }
 
