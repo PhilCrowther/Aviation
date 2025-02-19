@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Feb 2025
+Version dated 19 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -777,12 +777,12 @@ let xsg_ = {
 //- 0 = Gail;
 let myp_ = {
 		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Pete_Samba.glb"],
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Wave.glb"],
 		ObjTxt: [0],
 		ObjAdr: [0],			// Loaded Object
 		ObjSiz: [1],			// Scale
 		RndOrd: [0],			// renderOrder
-		ObjRot: [new THREE.Euler()], // Rotation (degrees)
+		ObjRot: [new THREE.Euler(0,-45,0)], // Rotation (degrees)
 		MapPos: [new THREE.Vector3(8,12.9,40)], // Relative Position (if parent)
 		ObjRef: [xsh_.ObjGrp[0]], // Parent, if any
 		// Animation
@@ -1885,11 +1885,8 @@ function loadMyPeep() {
 			myp_.ObjAdr[n] = gltf.scene;
 			// Play Animation
 			myp_.ObjMxr[n] = new THREE.AnimationMixer(myp_.ObjAdr[n]);
-			let material = myp_.ObjAdr[n].children[0].children[0].material;
-				material.outputNode = oscSine(time.mul(.1)).mix(output, posterize(output.add(.1),4).mul(2));
-			myp_.ObjAct[n] = myp_.ObjMxr[n].clipAction(gltf.animations[0]);
-			myp_.ObjAct[n].play();		
-			//
+			myp_.ObjMxr[n].clipAction(gltf.animations[0]).setDuration(1).play();
+			//- Position
 			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
 			myp_.ObjAdr[n].rotation.copy(myp_.ObjRot[n]);
 			myp_.ObjAdr[n].position.copy(myp_.MapPos[n]); // Relative to moving object
@@ -1899,7 +1896,8 @@ function loadMyPeep() {
 }
 
 function moveMyPeep() {
-	let ObjRef = new THREE.Vector3();
+//	let ObjRef = new THREE.Vector3();
+	let ObjRef = 0;
 	let ObjDst = new THREE.Vector3();
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		// Turn On
@@ -1908,7 +1906,7 @@ function moveMyPeep() {
 		if (!myp_.ObjViz && ObjDst.x < myp_.MaxDst && ObjDst.y < myp_.MaxDst && ObjDst.z < myp_.MaxDst) {
 			myp_.ObjViz = 1;
 			myp_.ObjAdr[n].visible = true;
-			myp_.ObjAct[n].play(); // Start Playing
+//			myp_.ObjAct[n].play(); // Start Playing
 		}
 		// Continue
 		if (myp_.ObjViz) {
@@ -1917,7 +1915,7 @@ function moveMyPeep() {
 			if (ObjDst.x > myp_.MaxDst || ObjDst.y > myp_.MaxDst || ObjDst.z > myp_.MaxDst) {
 				myp_.ObjViz = 0;
 				myp_.ObjAdr[n].visible = false;
-				myp_.ObjAct[n].stop();
+//				myp_.ObjAct[n].stop();
 			}
 		}
 	}
