@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Feb 2025
+Version dated 22 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -776,20 +776,27 @@ let xsg_ = {
 //- Animated Objects: Linked ---//-----------------------------------------------
 //- 0 = Gail;
 let myp_ = {
-		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Wave.glb"],
-		ObjTxt: [0],
-		ObjAdr: [0],			// Loaded Object
-		ObjSiz: [1],			// Scale
-		RndOrd: [0],			// renderOrder
-		ObjRot: [new THREE.Euler(0,-45,0)], // Rotation (degrees)
-		MapPos: [new THREE.Vector3(8,12.9,40)], // Relative Position (if parent)
-		ObjRef: [xsh_.ObjGrp[0]], // Parent, if any
+		ObjNum: 2,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Wave.glb",
+				 "https://PhilCrowther.github.io/Aviation/peeps/Brian_Anim.glb"],
+		ObjTxt: [0,0],
+		ObjAdr: [0,0],			// Loaded Object
+		ObjSiz: [1,1],			// Scale
+		RndOrd: [0,0],			// renderOrder
+		ObjRot: [new THREE.Euler(0,-45,0), // Rotation (degrees)
+				 new THREE.Euler(0,-90,0)],
+		MapPos: [new THREE.Vector3(6,12.9,40), // Relative Position (if parent)
+				 new THREE.Vector3(12.22,11.39,35)],
+		ObjRef: [xsh_.ObjGrp[0], // Parent, if any
+				 xsh_.ObjGrp[0]],
 		// Animation
-		ObjAct: [0],			// Animation Action
-		ObjMxr: [0],			// Animation Mixer
-		MaxDst: [1000],			// Max Distance where visible (meters)
-		ObjViz: [1],			// Visibility Flag On
+		AnmAct: [0,0],			// Animation Action
+		AnmMxr: [0,0],			// Animation Mixer
+		AnmPos: [0,0],			// Animation Position
+		AnmRng: [40,360],		// Animation Range		
+		// Visibility
+		MaxDst: 1000,			// Max Distance where visible (meters)
+		ObjViz: [1,1],			// Visibility Flag On
 	};
 
 //= MINIMUM ALTITUDE ===========//===============================================
@@ -1874,7 +1881,7 @@ function moveAnmFlg() {
 
 //= MY PEEPS ===================//===============================================
 
-//- Load Objects ---------------//-----------------------------------------------
+//- Load MyPeeps ---------------//-----------------------------------------------
 function loadMyPeep() {
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
@@ -1884,38 +1891,51 @@ function loadMyPeep() {
 			});
 			myp_.ObjAdr[n] = gltf.scene;
 			// Play Animation
-			myp_.ObjMxr[n] = new THREE.AnimationMixer(myp_.ObjAdr[n]);
-			myp_.ObjMxr[n].clipAction(gltf.animations[0]).setDuration(1).play();
+			myp_.AnmMxr[n] = new THREE.AnimationMixer(myp_.ObjAdr[n]);
+			myp_.AnmMxr[n].clipAction(gltf.animations[0]).play();
+			myp_.AnmPos[n] = nowTim % myp_.AnmRng[n];
+			if (myp_.AnmMxr[n]) myp_.AnmMxr[n].setTime(myp_.AnmPos[n]);
 			//- Position
-			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
-			myp_.ObjAdr[n].rotation.copy(myp_.ObjRot[n]);
+			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);		
+//			myp_.ObjAdr[n].rotation.copy(myp_.ObjRot[n]);
+			myp_.ObjAdr[n].rotation.x = myp_.ObjRot[n].x * DegRad;
+			myp_.ObjAdr[n].rotation.y = myp_.ObjRot[n].y * DegRad;
+			myp_.ObjAdr[n].rotation.z = myp_.ObjRot[n].z * DegRad;
 			myp_.ObjAdr[n].position.copy(myp_.MapPos[n]); // Relative to moving object
-			myp_.ObjRef[n].add(myp_.ObjAdr[n]); // Link to moving object
+			if (myp_.ObjRef[n]) myp_.ObjRef[n].add(myp_.ObjAdr[n]); // Link to moving object
+			else {scene.add(myp_.ObjAdr[n]);}
 		});
 	}
 }
 
+//- Move MyPeeps ---------------//-----------------------------------------------
 function moveMyPeep() {
-//	let ObjRef = new THREE.Vector3();
+//  Mostly N/A if Using OrbitControls
 	let ObjRef = 0;
 	let ObjDst = new THREE.Vector3();
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		// Turn On
-		ObjRef = myp_.ObjRef[n];
-		ObjDst = ObjRef.position;
+		// Get Distances
+		if (myp_.ObjRef[n]) { // If Linked
+			ObjRef = myp_.ObjRef[n];
+			ObjDst = ObjRef.position;
+		}
+		else {ObjDst.copy(myp_.MapPos[n]);}
+		// Turn On
 		if (!myp_.ObjViz && ObjDst.x < myp_.MaxDst && ObjDst.y < myp_.MaxDst && ObjDst.z < myp_.MaxDst) {
 			myp_.ObjViz = 1;
 			myp_.ObjAdr[n].visible = true;
-//			myp_.ObjAct[n].play(); // Start Playing
+			myp_.AnmAct[n].play(); // Start Playing
 		}
 		// Continue
 		if (myp_.ObjViz) {
-			if (myp_.ObjMxr[n]) myp_.ObjMxr[n].update(difTim);
+			myp_.AnmPos[n] = nowTim % myp_.AnmRng[n];
+			if (myp_.AnmMxr[n]) myp_.AnmMxr[n].setTime(myp_.AnmPos[n]);
 			// Stop?
 			if (ObjDst.x > myp_.MaxDst || ObjDst.y > myp_.MaxDst || ObjDst.z > myp_.MaxDst) {
 				myp_.ObjViz = 0;
 				myp_.ObjAdr[n].visible = false;
-//				myp_.ObjAct[n].stop();
+				myp_.AnmAct[n].stop();
 			}
 		}
 	}
