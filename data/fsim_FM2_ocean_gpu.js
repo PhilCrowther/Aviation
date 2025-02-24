@@ -19,6 +19,48 @@ const GrvMPS = 9.80665; 		// Gravity (mps)
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
 
+//- FM2 Animations -------------------------------------------------------------
+//	Animation Positions (all range from 0 to 360 with center at 180)
+let anm_ = {
+		anmfps: anmfps,			// Blender FPS
+		spnprp: 180,			// SpinProp 	degrees = 0 to 360
+		rudder: 180,			// Rudder 		degrees = +/- 360
+		elvatr: 180,			// Elevator 	degrees = +/- 360
+		aillft: 180,			// AileronL 	degrees = +/- 360
+		ailrgt: 180,			// AileronR 	degrees = +/- 360
+		flppos: 180,			// Flaps 		degrees = 0 to 180
+		lngpos: 0,				// Landing Gear degrees = 0 to 180
+		canpos: 180,			// Canopy 		degrees = 0 to 180
+		thkpos: 180,			// Tailhook 	degrees = 0 to 180
+		cmphdg: 0,				// Compass Heading
+		atiarr: 180,			// Attitude - Arrow
+		atibnk: 0,				// Attitude - Bank
+		atipit: 180,			// Attitude - Pitch
+		altft0: 0,				// Altitude - feet
+		altft1: 0,				// Altitude - feet X 1000
+		spdmph: 0,				// Speed - MPH
+		vsifpm: 0,				// Vertical Speed - fpm
+		manprs: 0,				// Manifold Pressure
+		rpmprp: 0,				// Propeller RPM
+		hdgdif: 180,			// Change in heading
+		yawval: 180,			// Slip indicator
+		stkpit: 180,			// Joystick pitch
+		stkpcm: 0,				// cumulative
+		stkbnk: 180,			// Joystick bank
+		stkbcm: 0,				// cumulative
+		vchead: 0,				// Pilot head
+		// Gear and Flap					
+		lngspd: 0,				// Change in Gear
+		flpspd: 0,				// Change in Flaps
+		canspd: 0,				// Change in Canopy
+		thkspd: 0,				// Change in Canopy
+		// Flags
+		lngflg: 0,				// Gear (up.down)
+		flpflg: 0,				// Flap (up/down)
+		canflg: 0,				// Canopy (up/down)
+		thkflg: 0,				// Tailhook (up/down)
+	}
+
 //= 8. OUTPUTS VARIABLES =======//==============================================
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
