@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Jan 2025
+Version dated 23 Feb 2025
 
 A WebGPU demo of the GrdWtr4b and Ocean4t2 modules.
 -->
@@ -58,7 +58,7 @@ import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMes
 import Stats from "stats-gl";
 // Custom Modules
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r171 added computeAsync
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
 
 //= NOTES
 //- Sections relating to my Camera Rotator are designated MY CAMERA
@@ -204,7 +204,8 @@ const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 
 //= GRDWTR TEXTURES ============//==============================================
-const WtrCol = 0x1060ff;			// Water (Nodes)
+//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
+const WtrCol = 0x0066cc;		// Water (Nodes)
 //- Textures
 const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
 const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
