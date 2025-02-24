@@ -30,12 +30,12 @@ import {
 //= 1. MAIN VARIABLES ==========//===============================================
 
 //- CONSTANTS ------------------//-----------------------------------------------
-let	DLTime = 1/60;					// Delta Time (1/60 seconds)
+let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 //-	Conversions
-var DegRad = Math.PI/180;			// Convert Degrees to Radians
-var RadDeg = 180/Math.PI;			// Convert Radians to Degrees
-let Mtr2Ft = 3.28084;				// Meters to Feet
-let Ft2Mtr = 0.3048;				// Convert Feet to Meters (exact)
+var DegRad = Math.PI/180;		// Convert Degrees to Radians
+var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let Mtr2Ft = 3.28084;			// Meters to Feet
+let Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 let Km2Mil = 0.621371;
 let Mil2Km = 1.60934;
 
@@ -44,7 +44,7 @@ let Mil2Km = 1.60934;
 //- My Animations --------------//-----------------------------------------------
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm_ = {
-		anmfps: anmfps,			// Blender FPS
+		anmfps: 24,				// Blender FPS
 		spnprp: 180,			// SpinProp 	degrees = 0 to 360
 		rudder: 180,			// Rudder 		degrees = +/- 360
 		elvatr: 180,			// Elevator 	degrees = +/- 360
