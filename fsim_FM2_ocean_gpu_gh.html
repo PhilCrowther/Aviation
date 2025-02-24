@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 22 Feb 2025
+Version dated 23 Feb 2025
 
 A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 -->
@@ -78,7 +78,7 @@ import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh
 import Stats from "stats-gl";
 // Special Modules
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js"; // r171
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r171 computeAsync works with r170
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (TimestampQuery)
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {initBullet,moveBullet,	// My Airplane Bullets
@@ -317,7 +317,8 @@ let envMap = 0;
 //= 3. GEOMAT VARIABLES ========//===============================================
 
 //- GRDWTR TEXTURES ------------//-----------------------------------------------
-const WtrCol = 0x1060ff;		// Water (Nodes)
+//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
+const WtrCol = 0x0066cc;		// Water (Nodes)
 //- Textures
 const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
 const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
