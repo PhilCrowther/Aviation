@@ -1,0 +1,320 @@
+﻿<!doctype html>
+<html>
+
+<!--
+Scenery Viewer
+Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 18 Feb 2025
+-->
+
+<head>
+<title>Brian Wave r173</title>
+<style>
+	body {background:#000; padding:0; margin:0; width:240px; overflow:hidden;}
+	.overlay1 {position: absolute; top: 1%; left: 1%; width: 240px; height: 12px;
+		  color: white; font-family: Courier; font-size: 12pt; font-weight: bold; z-index: 1;}
+</style>
+</head>
+
+<body oncontextmenu="return false;">
+
+<div id="container">
+	<div class="overlay1">
+		<div>Cam Lat: <span id="Cam_Lat"></span></div>
+		<div>Cam Lon: <span id="Cam_Lon"></span></div>
+	</div>
+</div>
+
+<div id = "container"></div>
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://unpkg.com/three@0.173.0/build/three.webgpu.js",
+			"three/webgpu": "https://unpkg.com/three@0.173.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.173.0/build/three.tsl.js",
+			"three/addons/": "https://unpkg.com/three@0.173.0/examples/jsm/"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+import {color,texture,posterize,oscSine,time,output} from "three/tsl";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import Stats from "three/addons/libs/stats.module.js";
+
+//= INPUTS =====================//==============================================
+
+//= VARIABLES ==================//==============================================
+//- Math Predefined
+let	DegRad = Math.PI/180;		// Convert Degrees to Radians
+let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let Mtr2Ft = 3.28084;			// Meters to Feet
+let Ft2Mtr = 1/Mtr2Ft
+let MtrMil = 1609.34;			// Meters per Mile
+//- Sun
+let SunLLD = new THREE.Vector3(23,170,1000); // Lat (+/- 90), Lon (0->360), Distance
+let SunSph = new THREE.Spherical(SunLLD.z,(90-SunLLD.x)*DegRad,Mod360(180-SunLLD.y)*DegRad);
+let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+//- Camera
+let CamLLD = new THREE.Vector3(0,180,4); // Lat (+/- 90), Lon (0->360), Distance
+let CamSph = new THREE.Spherical(CamLLD.z,Mod360(90-CamLLD.x)*DegRad,Mod360(180-CamLLD.y)*DegRad);
+let	CamPos = new THREE.Vector3().setFromSpherical(CamSph);
+let OrbCon = 1;					// Used by OrbitControls
+//- Mouse
+let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
+//- Stats
+let StatOn = 0;					// Stats ((0 = off, 1 = on)
+let LodFlg = 0;
+
+//= STANDARD ===================//==============================================
+//= Display
+let	container = document.createElement('container');
+	document.body.appendChild(container);
+//- Scene
+let	scene = new THREE.Scene();
+	scene.background = new THREE.Color("gray");
+//- Renderer
+let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.outputColorSpace = THREE.SRGBColorSpace;		// ### r152
+	renderer.setAnimationLoop(rendAll);	
+	document.body.appendChild(renderer.domElement);
+//- Light
+let ambLight = new THREE.AmbientLight(0xffffff,0.25);
+	scene.add(ambLight);
+let sunLight = new THREE.DirectionalLight(0xffffff,3);
+	sunLight.position.copy(SunPos).normalize();
+	scene.add(sunLight);
+//- Camera
+let CamAsp =  window.innerWidth/window.innerHeight;
+let	camera = new THREE.PerspectiveCamera(45,CamAsp,1,10000);
+	camera.position.copy(CamPos);	// set starting value
+//	scene.add(camera);
+// 	Clock
+let clock = new THREE.Clock();
+let oldTim, nowTim, difTim = 0;
+//- Controls and Inputs
+	OrbCon = new OrbitControls(camera, renderer.domElement);
+	window.addEventListener("resize", onWindowResize, false);
+// 	Loading Manager
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let	txtrLoader = new THREE.TextureLoader(loadingManager);
+let	gltfLoader = new GLTFLoader(loadingManager);
+//= HTML OVERLAY TEXT ==========================================================
+let Cam_LatElement = document.getElementById("Cam_Lat");	// Cam Lat
+let Cam_LatNode = document.createTextNode("");
+	Cam_LatElement.appendChild(Cam_LatNode);
+let Cam_LonElement = document.getElementById("Cam_Lon");	// Cam Lon
+let Cam_LonNode = document.createTextNode("");
+	Cam_LonElement.appendChild(Cam_LonNode);
+let Cam_Lat,Cam_Lon;
+
+//= ANIMATIONS =================//===============================================
+let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
+
+//= MY PEEPS ===================//===============================================
+//- Animated Objects: Linked ---//-----------------------------------------------
+//- 0 = Gail;
+let myp_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Wave2.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],			// Loaded Object
+		ObjSiz: [1],			// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [new THREE.Euler(0,0,0)], // Rotation (degrees)
+		MapPos: [new THREE.Vector3(0,-1.2,0)], // Relative Position (if parent)
+		ObjRef: [0],			// Parent, if any
+		// Animation Action
+		AnmAct: [0],			// Animation Action
+		AnmMxr: [0],			// Animation Mixer
+		AnmTim: [0],			// Animation
+		AnmRep: [0],			// Number of Times to Repeat
+		AnmRng: [80],
+		// Sub-Animations (within single action)
+		SubNum: [2],			// Number of SubAnimations
+		SubRef: [0],			// Currently Playing
+		SubBeg: [[0,40]],		// Sub-Animation Beg
+		SubEnd: [[40,80]],		// Sub-Animation End
+		// Repitions
+		RepNum: [[2,0]],		// Number of Times to Repeat Before Moving On
+		RepRem: [0],			// Animation Reps Remaining
+		// Delay
+		DlyPos: [[0,60]],		// Position in Range where Delay Starts (Absolute)
+		DlyFlg: [0],			// Delay Flag - So Delay Only Once
+		DlyTim: [[0,3]],		// Delay before Moving to Next (Secs)
+		DlyRem: [0],			// Delay Time Remaining
+		// Visibility
+		MaxDst: 1000,			// Max Distance where visible (meters)
+		ObjViz: [1],			// Visibility Flag On
+	};
+
+//= MAIN =======================================================================
+	loadAll();
+
+//= LOAD =======================================================================
+function loadAll() {
+	loadMyPeep();
+}
+
+//= INITIALIZE =================================================================
+
+function initAll() {
+	// Show stats
+	if (StatOn) {				// Stats
+		StatOn = new Stats();
+		StatOn.setMode(0);	// FPS only
+		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+		container.appendChild(StatOn.dom);
+	}
+	nowTim = clock.getElapsedTime();
+	LodFlg = 1;
+}
+
+//= RENDER =====================//==============================================
+
+function rendAll() {
+	if (LodFlg>10) {
+		difTim = clock.getDelta();
+		nowTim = nowTim + difTim;
+		moveMyPeep();
+		OrbCon.update();		// Camera
+		CamLLD.x = OrbCon.getPolarAngle()*RadDeg-90;
+		CamLLD.y = Mod360(360-OrbCon.getAzimuthalAngle()*RadDeg);
+		prntHUDval();
+		if (StatOn) StatOn.update(); // update stats
+		renderer.renderAsync(scene, camera); // Render
+	}
+	LodFlg++;
+}
+
+//= MY PEEPS ===================//===============================================
+
+//- Load My Peeps --------------//-----------------------------------------------
+function loadMyPeep() {
+	for (let n = 0; n < myp_.ObjNum; n++) {
+		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
+			// Cast Shadow (but not in shadow zone)
+			gltf.scene.traverse(function (child) {
+				if (child.isMesh) child.castShadow = true;
+			});
+			myp_.ObjAdr[n] = gltf.scene;
+			// Play Animation
+			myp_.AnmMxr[n] = new THREE.AnimationMixer(myp_.ObjAdr[n]);
+			myp_.AnmMxr[n].clipAction(gltf.animations[0]).play();
+			//- Set Initial Values
+			myp_.AnmTim[n] = 0;
+			myp_.RepRem[n] = myp_.RepNum[n][myp_.SubRef[n]]; // Starting Reps
+			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SubRef[n]]/anmfps; // Delay Flag
+			//- Position
+			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
+			myp_.ObjAdr[n].rotation.copy(myp_.ObjRot[n]);
+			myp_.ObjAdr[n].position.copy(myp_.MapPos[n]); // Relative to moving object
+			if (myp_.ObjRef[n]) myp_.ObjRef[n].add(myp_.ObjAdr[n]); // Link to moving object
+			else {scene.add(myp_.ObjAdr[n]);}
+		});
+	}
+}
+
+//- Move My Peeps --------------//-----------------------------------------------
+function moveMyPeep() {
+	// To compute position, use AnmTim * anmfps
+	let ObjRef = 0;
+	let ObjDst = new THREE.Vector3();
+	for (let n = 0; n < myp_.ObjNum; n++) {
+		//= Play Animations ----//-----------------------------------------------
+		if (myp_.ObjViz[n]) { // If in Visual Range
+			// Set Position - AnmTim = time on timeline - setTime converts to position
+			myp_.AnmMxr[n].setTime(myp_.AnmTim[n]);
+			//. Update or Delay Counter .........................................
+			// If No Delay, Update Counter
+			if (!myp_.DlyRem[n]) myp_.AnmTim[n] = myp_.AnmTim[n] + difTim;
+			// If Delay, Don't Update Counter
+			else {
+				myp_.DlyRem[n] = myp_.DlyRem[n] - difTim;
+				if (myp_.DlyRem[n] < 0) myp_.DlyRem[n] = 0;
+				console.log("1");
+			}
+			//. If Exceed Max, Repeat or Move to Next Animation
+			if (myp_.AnmTim[n] * anmfps > (myp_.SubEnd[n][myp_.SubRef[n]])) {
+				// Repeat Animation?
+				if (myp_.RepRem[n]) myp_.RepRem[n] = myp_.RepRem[n] - 1;
+				// Or Move On to Next Animation?
+				else {
+					myp_.SubRef[n] = myp_.SubRef[n] + 1;
+					if (myp_.SubRef[n] == myp_.SubNum[n]) myp_.SubRef[n] = 0;		
+					myp_.RepRem[n] = myp_.RepNum[n][myp_.SubRef[n]];
+				}
+				myp_.AnmTim[n] = myp_.SubBeg[n][myp_.SubRef[n]]/anmfps; // old or new start time
+				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SubRef[n]]/anmfps; // reload delay flag = delay time	
+			}
+			// Set Delay Once
+			if (myp_.DlyFlg[n] && myp_.AnmTim[n] > myp_.DlyFlg[n]) {
+				myp_.DlyRem[n] = myp_.DlyTim[n][myp_.SubRef[n]];
+				myp_.DlyFlg[n] = 0; // so don't keep repeating delay
+			}
+		}
+		console.log(Math.floor(myp_.AnmTim[n]*anmfps));
+		//- Distance -----------//-----------------------------------------------
+		// Turn On or Off Based on Distance
+		// (Not Computed for OrbitControls)
+		// Get Distances
+		if (myp_.ObjRef[n]) { // If Linked
+			ObjRef = myp_.ObjRef[n];
+			ObjDst = ObjRef.position;
+		}
+		else {ObjDst.copy(myp_.MapPos[n]);}
+		// Turn On
+		if (!myp_.ObjViz[n] && ObjDst.x < myp_.MaxDst && ObjDst.y < myp_.MaxDst && ObjDst.z < myp_.MaxDst) {
+			myp_.ObjViz[n] = 1;
+			myp_.ObjAdr[n].visible = true;
+			myp_.AnmAct[n].play(); // Start Playing
+		}
+		// Continue
+		if (myp_.ObjViz[n] && ObjDst.x > myp_.MaxDst || ObjDst.y > myp_.MaxDst || ObjDst.z > myp_.MaxDst) {
+			myp_.ObjViz[n] = 0;
+			myp_.ObjAdr[n].visible = false;
+			myp_.AnmAct[n].stop();
+		}
+	}
+}
+
+//= OUTPUTS ====================//==============================================
+
+// Print HUD Values
+function prntHUDval() {
+	Cam_Lat = CamLLD.x;			// Cam Lat
+	Cam_LatNode.nodeValue = Cam_Lat.toFixed(0);
+	Cam_Lon = CamLLD.y;			// Cam Lon
+	Cam_LonNode.nodeValue = Cam_Lon.toFixed(0);
+}
+
+//= MISC SUBROUTINES ===========//==============================================
+//  Converts degrees to 360
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;			// Make deg a positive number
+	deg = deg % 360;						// Compute remainder of any number divided by 360
+return deg;}
+
+//= WINDOW RESIZE ==============//==============================================
+function onWindowResize() {
+	CamAsp = window.innerWidth/window.innerHeight;
+	camera.aspect = CamAsp;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+</script>
+</body>
+</html>
