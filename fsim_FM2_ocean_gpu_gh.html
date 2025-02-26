@@ -4,9 +4,10 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Feb 2025
+Version dated 26 Feb 2025
 
-A demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
+A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
+This demo has now been expanded to include a battle scenario which will eventually involve air combat
 -->
 
 <head>
@@ -141,6 +142,7 @@ import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/A
 //		OCEAN MODULE
 //	    SMOKE MODULE
 //		GUNASG MODULE
+//		MYPEEPS
 //	5. MY AIRPLANE VARIABLES
 //		FLIGHT MODULE
 //		ANIMFM2 MODULE
@@ -795,22 +797,25 @@ let myp_ = {
 		AnmTim: [0,0],			// Animation
 		AnmRep: [0,0],			// Number of Times to Repeat
 		AnmRng: [80,360],
-		// Sub-Animations (within single action)
-		SubNum: [2,1],			// Number of SubAnimations
-		SubRef: [0,0],			// Currently Playing
-		SubBeg: [[0,40],[0]],	// Sub-Animation Beg
-		SubEnd: [[40,80],[360]], // Sub-Animation End
-		// Repitions
+		// Animation Segments (within single Animation)
+		SegNum: [2,1],			// Number of Segments
+		SegRef: [0,0],			// Currently Playing
+		SegBeg: [[0,40],[0]],	// Animation Segment Beg (Absolute Position)
+		SegEnd: [[40,80],[360]], // Animation Segment End (Absolute Position)
+		// Repetitions
 		RepNum: [[10,0],[99]],	// Number of Times to Repeat Before Moving On
-		RepRem: [0,0],			// Animation Reps Remaining
+		RepRem: [0,0],			// Animation Reps Remaining		
 		// Delay
-		DlyPos: [[0,60],[0]],	// Position in Range where Delay Starts (Absolute)
-		DlyFlg: [0,0],			// Delay Flag - So Delay Only Once
-		DlyTim: [[0,10],[0]],	// Delay before Moving to Next (Secs)
-		DlyRem: [0,0],			// Delay Time Remaining
+		DlyBeg: [[0,3],[0]],	// Delay Time Between Animation Segments (Secs)
+		DlyPos: [[0,60],[0]],	// Absolute Position in Range where Delay Starts
+		DlyMid: [[0,3],[0]],		// Delay Time Within Animation Segments (Secs)
+		DlyFlg: [0,0],			// Flag for Middle Delay - So Only Delay Once
+		DlyRem: [0,0],			// Delay Time Remaining (Shared)
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
 		ObjViz: [1,1],			// Visibility Flag On
+		// Segment Names (Optional)
+		SegNam: [["Chocks Removed","Set Brakes"]],
 	};
 
 
@@ -1894,9 +1899,13 @@ function moveAnmFlg() {
 	}
 }
 
-//= MY PEEPS ===================//===============================================
+/*************************************-*****************************************
+*                                                                              *
+*                                  MY PEEPS                                    *
+*                                                                              *
+**************************************-****************************************/
 
-//- Load My Peeps --------------//-----------------------------------------------
+//= LOAD MY PEEPS ==============//==============================================
 function loadMyPeep() {
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
@@ -1910,8 +1919,9 @@ function loadMyPeep() {
 			myp_.AnmMxr[n].clipAction(gltf.animations[0]).play();
 			//- Set Initial Values
 			myp_.AnmTim[n] = 0;
-			myp_.RepRem[n] = myp_.RepNum[n][myp_.SubRef[n]]; // Starting Reps
-			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SubRef[n]]/anmfps; // Delay Flag
+			myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]]; // Reps Remaining
+			myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Load Beg Delay (if any)
+			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // Set Mid Delay Flag = Time
 			//- Position
 			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
 			myp_.ObjAdr[n].rotation.copy(myp_.ObjRot[n]);
@@ -1922,40 +1932,41 @@ function loadMyPeep() {
 	}
 }
 
-//- Move My Peeps --------------//-----------------------------------------------
+//= MOVE MY PEEPS ==============//==============================================
 function moveMyPeep() {
 	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
 	let ObjDst = new THREE.Vector3();
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		//= Play Animations ----//-----------------------------------------------
-		if (myp_.ObjViz[n]) { // If in Visual Range
+		if (myp_.ObjViz[n]) {	// If in Visual Range
 			// Set Position - AnmTim = time on timeline - setTime converts to position
 			myp_.AnmMxr[n].setTime(myp_.AnmTim[n]);
 			//. Update or Delay Counter .........................................
-			// If No Delay, Update Counter
+			// If No Delay, Update Positon Time
 			if (!myp_.DlyRem[n]) myp_.AnmTim[n] = myp_.AnmTim[n] + difTim;
-			// If Delay, Don't Update Counter
+			// If Delay, Don't Change Position Time
 			else {
 				myp_.DlyRem[n] = myp_.DlyRem[n] - difTim;
 				if (myp_.DlyRem[n] < 0) myp_.DlyRem[n] = 0;
 			}
 			//. If Exceed Max, Repeat or Move to Next Animation
-			if (myp_.AnmTim[n] * anmfps > (myp_.SubEnd[n][myp_.SubRef[n]])) {
+			if (myp_.AnmTim[n] * anmfps > (myp_.SegEnd[n][myp_.SegRef[n]])) {
 				// Repeat Animation?
 				if (myp_.RepRem[n]) myp_.RepRem[n] = myp_.RepRem[n] - 1;
 				// Or Move On to Next Animation?
 				else {
-					myp_.SubRef[n] = myp_.SubRef[n] + 1;
-					if (myp_.SubRef[n] == myp_.SubNum[n]) myp_.SubRef[n] = 0;		
-					myp_.RepRem[n] = myp_.RepNum[n][myp_.SubRef[n]];
+					myp_.SegRef[n] = myp_.SegRef[n] + 1;
+					if (myp_.SegRef[n] == myp_.SegNum[n]) myp_.SegRef[n] = 0;		
+					myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]];
+					myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Start Delay
 				}
-				myp_.AnmTim[n] = myp_.SubBeg[n][myp_.SubRef[n]]/anmfps; // old or new start time
-				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SubRef[n]]/anmfps; // reload delay flag = delay time	
+				myp_.AnmTim[n] = myp_.SegBeg[n][myp_.SegRef[n]]/anmfps; // old or new start time
+				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // load delay flag = delay time	
 			}
-			// Set Delay Once
+			//	When Reach Mid Delay Time, Set Delay Counter
 			if (myp_.DlyFlg[n] && myp_.AnmTim[n] > myp_.DlyFlg[n]) {
-				myp_.DlyRem[n] = myp_.DlyTim[n][myp_.SubRef[n]];
+				myp_.DlyRem[n] = myp_.DlyMid[n][myp_.SegRef[n]];
 				myp_.DlyFlg[n] = 0; // so don't keep repeating delay
 			}
 		}
