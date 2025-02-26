@@ -12,12 +12,18 @@ Version dated 18 Feb 2025
 <title>Brian Wave r173</title>
 <style>
 	body {background:#000; padding:0; margin:0; width:240px; overflow:hidden;}
-	.overlay1 {position: absolute; top: 1%; left: 1%; width: 240px; height: 12px;
+	.overlay1 {position: absolute; top: 1%; left: 1%; width: 500px; height: 12px;
 		  color: white; font-family: Courier; font-size: 12pt; font-weight: bold; z-index: 1;}
 </style>
 </head>
 
 <body oncontextmenu="return false;">
+
+<div id="container">
+	<div class="overlay1">
+		<div>Segment Name: <span id="Seg_Nam"></span></div>
+	</div>
+</div>
 
 <div id = "container"></div>
 <script type="importmap">
@@ -39,7 +45,30 @@ import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
 
-//= INPUTS =====================//==============================================
+/*************************************-*****************************************
+*                                                                              *
+*                                DESCRIPTION                                   *
+*                                                                              *
+**************************************-****************************************/
+
+/*
+This program allows you to:
+* Treat a single animation as including several segments
+* Repeat those segments
+* Pause between segments
+* Pause in the middle of a segment (once)
+* Display the name of the segment (optional)
+
+To Do:
+* Use Key Input to start next segment
+
+*/
+
+/*************************************-*****************************************
+*                                                                              *
+*                                 VARIABLES                                    *
+*                                                                              *
+**************************************-****************************************/
 
 //= VARIABLES ==================//==============================================
 //- Math Predefined
@@ -105,11 +134,16 @@ let RESOURCES_LOADED = false;
 let	txtrLoader = new THREE.TextureLoader(loadingManager);
 let	gltfLoader = new GLTFLoader(loadingManager);
 
-//= ANIMATIONS =================//===============================================
+//= HTML OVERLAY TEXT ==========================================================
+let Seg_NamElement = document.getElementById("Seg_Nam");
+let Seg_NamNode = document.createTextNode("");
+	Seg_NamElement.appendChild(Seg_NamNode);
+let Seg_Nam;
+
+//= GENERAL ANIMATION VARIABLES //===============================================
 let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
 
-//= MY PEEPS ===================//===============================================
-//- Animated Objects: Linked ---//-----------------------------------------------
+//= MY PEEPS VARIABLE ==========//===============================================
 let myp_ = {
 		ObjNum: 1,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Wave2.glb"],
@@ -126,39 +160,48 @@ let myp_ = {
 		AnmTim: [0],			// Animation
 		AnmRep: [0],			// Number of Times to Repeat
 		AnmRng: [80],
-		// Sub-Animations (within single action)
-		SubNum: [2],			// Number of SubAnimations
-		SubRef: [0],			// Currently Playing
-		SubBeg: [[0,40]],		// Sub-Animation Beg
-		SubEnd: [[40,80]],		// Sub-Animation End
-		// Repitions
+		// Animation Segments (within single Animation)
+		SegNum: [2],			// Number of Segments
+		SegRef: [0],			// Currently Playing
+		SegBeg: [[0,40]],		// Animation Segment Beg (Absolute Position)
+		SegEnd: [[40,80]],		// Animation Segment End (Absolute Position)
+		// Repetitions
 		RepNum: [[2,0]],		// Number of Times to Repeat Before Moving On
 		RepRem: [0],			// Animation Reps Remaining
 		// Delay
-		DlyPos: [[0,60]],		// Position in Range where Delay Starts (Absolute)
-		DlyFlg: [0],			// Delay Flag - So Delay Only Once
-		DlyTim: [[0,3]],		// Delay before Moving to Next (Secs)
-		DlyRem: [0],			// Delay Time Remaining
+		DlyBeg: [[0,3]],		// Delay Time Between Animation Segments (Secs)
+		DlyPos: [[0,60]],		// Absolute Position in Range where Delay Starts
+		DlyMid: [[0,3]],		// Delay Time Within Animation Segments (Secs)
+		DlyFlg: [0],			// Flag for Middle Delay - So Only Delay Once
+		DlyRem: [0],			// Delay Time Remaining (Shared)
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
 		ObjViz: [1],			// Visibility Flag On
+		// Segment Names (Optional)
+		SegNam: [["Chocks Removed","Set Brakes"]],
 	};
 
-//= MAIN =======================================================================
+/*************************************-*****************************************
+*                                                                              *
+*                                MAIN PROGRAM                                  *
+*                                                                              *
+**************************************-****************************************/
+
+//= MAIN =======================//==============================================
 	loadAll();
 
-//= LOAD =======================================================================
+//= LOAD =======================//==============================================
 function loadAll() {
 	loadMyPeep();
 }
 
-//= INITIALIZE =================================================================
+//= INITIALIZE =================//==============================================
 
 function initAll() {
 	// Show stats
 	if (StatOn) {				// Stats
 		StatOn = new Stats();
-		StatOn.setMode(0);	// FPS only
+		StatOn.setMode(0);		// FPS only
 		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
 		container.appendChild(StatOn.dom);
 	}
@@ -173,6 +216,7 @@ function rendAll() {
 		difTim = clock.getDelta();
 		nowTim = nowTim + difTim;
 		moveMyPeep();
+		prntHUDval();
 		OrbCon.update();		// Camera
 		CamLLD.x = OrbCon.getPolarAngle()*RadDeg-90;
 		CamLLD.y = Mod360(360-OrbCon.getAzimuthalAngle()*RadDeg);
@@ -181,9 +225,13 @@ function rendAll() {
 	}
 }
 
-//= MY PEEPS ===================//===============================================
+/*************************************-*****************************************
+*                                                                              *
+*                                  MY PEEPS                                    *
+*                                                                              *
+**************************************-****************************************/
 
-//- Load My Peeps --------------//-----------------------------------------------
+//= LOAD MY PEEPS ==============//==============================================
 function loadMyPeep() {
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
@@ -197,8 +245,9 @@ function loadMyPeep() {
 			myp_.AnmMxr[n].clipAction(gltf.animations[0]).play();
 			//- Set Initial Values
 			myp_.AnmTim[n] = 0;
-			myp_.RepRem[n] = myp_.RepNum[n][myp_.SubRef[n]]; // Starting Reps
-			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SubRef[n]]/anmfps; // Delay Flag
+			myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]]; // Reps Remaining
+			myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Load Beg Delay (if any)
+			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // Set Mid Delay Flag = Time
 			//- Position
 			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
 			myp_.ObjAdr[n].rotation.copy(myp_.ObjRot[n]);
@@ -209,40 +258,41 @@ function loadMyPeep() {
 	}
 }
 
-//- Move My Peeps --------------//-----------------------------------------------
+//= MOVE MY PEEPS ==============//==============================================
 function moveMyPeep() {
 	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
 	let ObjDst = new THREE.Vector3();
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		//= Play Animations ----//-----------------------------------------------
-		if (myp_.ObjViz[n]) { // If in Visual Range
+		if (myp_.ObjViz[n]) {	// If in Visual Range
 			// Set Position - AnmTim = time on timeline - setTime converts to position
 			myp_.AnmMxr[n].setTime(myp_.AnmTim[n]);
 			//. Update or Delay Counter .........................................
-			// If No Delay, Update Counter
+			// If No Delay, Update Positon Time
 			if (!myp_.DlyRem[n]) myp_.AnmTim[n] = myp_.AnmTim[n] + difTim;
-			// If Delay, Don't Update Counter
+			// If Delay, Don't Change Position Time
 			else {
 				myp_.DlyRem[n] = myp_.DlyRem[n] - difTim;
 				if (myp_.DlyRem[n] < 0) myp_.DlyRem[n] = 0;
 			}
 			//. If Exceed Max, Repeat or Move to Next Animation
-			if (myp_.AnmTim[n] * anmfps > (myp_.SubEnd[n][myp_.SubRef[n]])) {
+			if (myp_.AnmTim[n] * anmfps > (myp_.SegEnd[n][myp_.SegRef[n]])) {
 				// Repeat Animation?
 				if (myp_.RepRem[n]) myp_.RepRem[n] = myp_.RepRem[n] - 1;
 				// Or Move On to Next Animation?
 				else {
-					myp_.SubRef[n] = myp_.SubRef[n] + 1;
-					if (myp_.SubRef[n] == myp_.SubNum[n]) myp_.SubRef[n] = 0;		
-					myp_.RepRem[n] = myp_.RepNum[n][myp_.SubRef[n]];
+					myp_.SegRef[n] = myp_.SegRef[n] + 1;
+					if (myp_.SegRef[n] == myp_.SegNum[n]) myp_.SegRef[n] = 0;		
+					myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]];
+					myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Start Delay
 				}
-				myp_.AnmTim[n] = myp_.SubBeg[n][myp_.SubRef[n]]/anmfps; // old or new start time
-				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SubRef[n]]/anmfps; // reload delay flag = delay time	
+				myp_.AnmTim[n] = myp_.SegBeg[n][myp_.SegRef[n]]/anmfps; // old or new start time
+				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // load delay flag = delay time	
 			}
-			// Set Delay Once
+			//	When Reach Mid Delay Time, Set Delay Counter
 			if (myp_.DlyFlg[n] && myp_.AnmTim[n] > myp_.DlyFlg[n]) {
-				myp_.DlyRem[n] = myp_.DlyTim[n][myp_.SubRef[n]];
+				myp_.DlyRem[n] = myp_.DlyMid[n][myp_.SegRef[n]];
 				myp_.DlyFlg[n] = 0; // so don't keep repeating delay
 			}
 		}
@@ -270,11 +320,23 @@ function moveMyPeep() {
 	}
 }
 
+/*************************************-*****************************************
+*                                                                              *
+*                                MISCELANEOUS                                  *
+*                                                                              *
+**************************************-****************************************/
+
+//= OUTPUTS ====================//==============================================
+function prntHUDval() {
+	Seg_Nam = myp_.SegNam[0][myp_.SegRef[0]];
+	Seg_NamNode.nodeValue = Seg_Nam;
+}
+
 //= MISC SUBROUTINES ===========//==============================================
 //  Converts degrees to 360
 function Mod360(deg) {
-	while (deg < 0) deg = deg+360;			// Make deg a positive number
-	deg = deg % 360;						// Compute remainder of any number divided by 360
+	while (deg < 0) deg = deg+360; // Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
 return deg;}
 
 //= WINDOW RESIZE ==============//==============================================
