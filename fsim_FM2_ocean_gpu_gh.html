@@ -1924,7 +1924,9 @@ function loadMyPeep() {
 			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // Set Mid Delay Flag = Time
 			//- Position
 			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
-			myp_.ObjAdr[n].rotation.copy(myp_.ObjRot[n]);
+			myp_.ObjAdr[n].rotation.x = myp_.ObjRot[n].x * DegRad;
+			myp_.ObjAdr[n].rotation.y = myp_.ObjRot[n].y * DegRad;
+			myp_.ObjAdr[n].rotation.z = myp_.ObjRot[n].z * DegRad;
 			myp_.ObjAdr[n].position.copy(myp_.MapPos[n]); // Relative to moving object
 			if (myp_.ObjRef[n]) myp_.ObjRef[n].add(myp_.ObjAdr[n]); // Link to moving object
 			else {scene.add(myp_.ObjAdr[n]);}
