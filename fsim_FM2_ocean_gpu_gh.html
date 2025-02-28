@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Feb 2025
+Version dated 28 Feb 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -1985,13 +1985,13 @@ function moveMyPeep() {
 		if (!myp_.ObjViz[n] && ObjDst.x < myp_.MaxDst && ObjDst.y < myp_.MaxDst && ObjDst.z < myp_.MaxDst) {
 			myp_.ObjViz[n] = 1;
 			myp_.ObjAdr[n].visible = true;
-			myp_.AnmAct[n].play(); // Start Playing
+//			myp_.AnmAct[n].play(); // Start Playing
 		}
 		// Continue
 		if (myp_.ObjViz[n] && ObjDst.x > myp_.MaxDst || ObjDst.y > myp_.MaxDst || ObjDst.z > myp_.MaxDst) {
 			myp_.ObjViz[n] = 0;
 			myp_.ObjAdr[n].visible = false;
-			myp_.AnmAct[n].stop();
+//			myp_.AnmAct[n].stop(); // causes err (not a function)
 		}
 	}
 }
@@ -2156,9 +2156,6 @@ function initAirObj() {
 		xsh_.ShpLok[0].add(air_.AirObj);
 		anm_.lngpos = 0;		// Landing Gear Down
 		anm_.flppos = 0;		// Flaps Down
-		anm_.canpos = 0;		// Canopy Open
-		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
-		if (vxr_.Cnp) vxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
 	}
 	if (BegLoc == 2) { 			// Air
 		PwrDif = 1000;
