@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 Feb 2025
+Version dated 3 Mar 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -88,7 +88,7 @@ import {initBullet,moveBullet,	// My Airplane Bullets
 } from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
 import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 2
-//= GENERAL ====================//===============================================
+//= GENERAL ====================//==============================================
 
 /*	This flight simulation demo uses the most advanced version of three.js */
 
@@ -127,54 +127,58 @@ import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/A
 //- Program:
 //	* My Guns seem to be aimed too high - but if fly level, guns shoot at horizon
 
-//**************************************|****************************************
-//																				*
-//							   INDEX TO SECTIONS								*
-//																				*
-//*******************************************************************************
+/**************************************|****************************************
+*
+*	INDEX TO SECTIONS
+*
+********************************************************************************
 
-//	VARIABLES (also see Data File)
-//	1. MAIN VARIABLES
-//	2. SKYBOX VARIABLES
-//	3. GEOMAT VARIABLES
-//	4. OBJECT VARIABLES
-//		GRDWTR MODULE
-//		OCEAN MODULE
-//	    SMOKE MODULE
-//		GUNASG MODULE
-//		MYPEEPS
-//	5. MY AIRPLANE VARIABLES
-//		FLIGHT MODULE
-//		ANIMFM2 MODULE
-//		WARFARE MODULE (My Guns)
-//	6. SOUND VARIABLES
-//	7. CAMERA VARIABLES
-//  8. OUTPUT VAIABLES
-//	9. INPUT VARIABLES
+	VARIABLES (also see Data File)
+	1. MAIN VARIABLES
+	2. SKYBOX VARIABLES
+	3. GEOMAT VARIABLES
+	4. OBJECT VARIABLES
+		GRDWTR MODULE
+		OCEAN MODULE
+	    SMOKE MODULE
+		GUNASG MODULE
+		MYPEEPS
+	5. MY AIRPLANE VARIABLES
+		FLIGHT MODULE
+		ANIMFM2 MODULE
+		WARFARE MODULE (My Guns)
+	6. SOUND VARIABLES
+	7. CAMERA VARIABLES
+	8. OUTPUT VAIABLES
+	9. INPUT VARIABLES
 
-//	PROGRAM
-//	1. MAIN			Main Program
-//	2. SKYBOX		SkyCube
-//	3. GEOMAT		Grids and Textures
-//	4. OBJECTS		Static and Moving Objects and Animations
-//	5. MY AIRPLANE	My Airplane and Animations
-//	6. SOUNDS		All Sounds
-//	7. CAMERA		Camera Views
-//	8. OUTPUTS		Screen Text and Numbers
-//	9. INPUTS		Key and Mouse Inputs
+	PROGRAM
+	1. MAIN			Main Program
+	2. SKYBOX		SkyCube
+	3. GEOMAT		Grids and Textures
+	4. OBJECTS		Static and Moving Objects and Animations
+	5. MY AIRPLANE	My Airplane and Animations
+	6. SOUNDS		All Sounds
+	7. CAMERA		Camera Views
+	8. OUTPUTS		Screen Text and Numbers
+	9. INPUTS		Key and Mouse Inputs
+*/
 
-//**************************************|****************************************
-//																				*
-//								   VARIABLES									*
-//																				*
-//*******************************************************************************
+/*******************************************************************************
+*
+*	VARIABLES
+*
+*******************************************************************************/
 
-//= 1. MAIN VARIABLES ==========//===============================================
+//= 1. MAIN VARIABLES ==========//==============================================
 
-//- INPUTS ---------------------//-----------------------------------------------
+//- INPUTS ---------------------//----------------------------------------------
 //- AIRPLANE: Start .............................................................
 let BegLoc = 1;					// Starting Location (0 = Island; 1 = CVE; 2 = Air)
 let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
+if (BegLoc == 1) CamSel = 1;
+let HedRot = new THREE.Vector2(0,30); // Used to rotation head in beginning internal view
+let BegFlg = 1;					// 1 = At Start
 let BegTmp = 303.15;			// K = 86F
 //- AIRPLANE: Flight ...........................................................
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
@@ -194,7 +198,7 @@ let LagAtP = new THREE.Vector3(0.967,0,0.099);	// CfL - Autopilot
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) ........
 let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
 
-//- CONSTANTS ------------------//-----------------------------------------------
+//- CONSTANTS ------------------//----------------------------------------------
 //	Conversions (Loaded from Data File)
 //	Time
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
@@ -204,7 +208,7 @@ let GrvDLT = GrvMPS*DLTim2;
 let V3Zero = new THREE.Vector3(0,0,0);
 let E3Zero = new THREE.Euler(0,0,0);
 
-//- INPUT VALUES ---------------//-----------------------------------------------
+//- INPUT VALUES ---------------//----------------------------------------------
 //- Display
 let PawsOn = 0;					// Pause
 let InfoOn = 0;					// Info
@@ -219,7 +223,7 @@ let MYGFlg = 0;					// My Guns (1 = firing)
 let AltAdj = 0.99;				// Raises objects above map as altitude increases
 let AltDif = 0;
 
-//- SUN VALUES -----------------//-----------------------------------------------
+//- SUN VALUES -----------------//----------------------------------------------
 const SunCol = "white";			// Sun
 let SunInt = 3;					// Default intensity of light/sun
 //- Rotation and Position (fixed)
@@ -235,7 +239,7 @@ let ShdBLR = 12;
 let ShdBTB = 4;
 let ShdDst = 1500;				// Shadow Distance (meters)
 
-//- STANDARD SETUP -------------//-----------------------------------------------
+//- STANDARD SETUP -------------//----------------------------------------------
 // 	Scene
 const scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
@@ -305,7 +309,13 @@ let loadingScreen = {
 };
 let boxrot = 0;
 
-//= 2. SKYBOX VARIABLES ========//===============================================
+//= FADE2BLACK PLANE ===========//==============================================
+let FadBeg = 0;					// Beg Opacity
+let FadEnd = 0;					// Beg Target
+let FadSpd = 0.005;				// Fade Speed
+let FadMsh = initFadMsh();
+
+//= 2. SKYBOX VARIABLES ========//==============================================
 
 const FogCol = 0xbab4a6;		// Sky (for Fog only)
 //- SkyBox
@@ -316,9 +326,9 @@ const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 let envMap = 0;
 
-//= 3. GEOMAT VARIABLES ========//===============================================
+//= 3. GEOMAT VARIABLES ========//==============================================
 
-//- GRDWTR TEXTURES ------------//-----------------------------------------------
+//- GRDWTR TEXTURES ------------//----------------------------------------------
 //const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
 const WtrCol = 0x0066cc;		// Water (Nodes)
 //- Textures
@@ -334,7 +344,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
 
-//- GRDWTR MODULE --------------//-----------------------------------------------
+//- GRDWTR MODULE --------------//----------------------------------------------
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
@@ -370,7 +380,7 @@ let grd_ = {
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
 
-//- OCEAN MODULE ---------------//-----------------------------------------------
+//- OCEAN MODULE ---------------//----------------------------------------------
 let WndSpd = 10.0;
 let WndHdg = 90;
 let Choppy = 1.5;
@@ -390,7 +400,7 @@ let wav_ = {
 		Spd: AnmSpd
 	};
 
-//= 4. OBJECT VARIABLES ========//===============================================
+//= 4. OBJECT VARIABLES ========//==============================================
 
 // Sample Variable
 //let var_ = {
@@ -422,9 +432,9 @@ let txt_ = {
 		ObjTxt: [],
 	};
 
-//= STATIC OBJECTS =============//===============================================
+//= STATIC OBJECTS =============//==============================================
 
-//- Islands --------------------//-----------------------------------------------
+//- Islands --------------------//----------------------------------------------
 let isl_ = {
 		ObjNum: 2,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
@@ -440,7 +450,7 @@ let isl_ = {
 				 new THREE.Vector3(-1610,10,2440)],
 		ObjGrp: [new makMsh(),new makMsh()], // Group
 	};
-//- Static Objects: Linked -----//-----------------------------------------------
+//- Static Objects: Linked -----//----------------------------------------------
 //- 0 = Hangar;
 let fxd_ = {
 		ObjNum: 1,
@@ -454,9 +464,9 @@ let fxd_ = {
 		ObjRef: [isl_.ObjGrp[0]],
 	};
 
-//- MOVING VEHICLES ------------//-----------------------------------------------
+//- MOVING VEHICLES ------------//----------------------------------------------
 
-//. Moving Airplanes ...........//...............................................
+//. Moving Airplanes ...........//..............................................
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
 const XP2Nam = "A6M_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
@@ -492,7 +502,7 @@ let xac_ = {
 		EngVol: [0.1,0.1],		// Volume
 	};
 
-//. Moving Ships ...............//...............................................
+//. Moving Ships ...............//..............................................
 let xsh_ = {
 		ObjNum: 2,				// Number of ships
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
@@ -520,7 +530,7 @@ let xsh_ = {
 		ShpLok: [new makMsh(),0], // Deck Lock
 	};
 
-//= ANIMATED FLAGS =============//===============================================
+//= ANIMATED FLAGS =============//==============================================
 //	Can attach to Ships or Flagpoles
 let	flg_ = {
 		ObjNum:	1,				// Number of Flags
@@ -538,9 +548,9 @@ let	flg_ = {
 		ObjAdj: [0]
 	};
 
-//= SMOKE MODULE ================================================================
+//= SMOKE MODULE ===============================================================
 
-//- VOLCANO SMOKE --------------//-----------------------------------------------
+//- VOLCANO SMOKE --------------//----------------------------------------------
 //	Can use this for Volcano or to Show Battle Damage
 let vlk_ = {
 		ObjNum: 1,				// Number of Smokes
@@ -573,7 +583,7 @@ let wak_ = {
 				 xsh_.ObjGrp[1]],
 	};
 
-//- AIRPLANE SMOKE --------------------------------------------------------------
+//- AIRPLANE SMOKE -------------------------------------------------------------
 //	For now, airplane #1 is smoking constantly
 let xas_ = {
 		ObjNum: 1,				// Number of Wakes
@@ -589,7 +599,7 @@ let xas_ = {
 		ObjRef: [0],			// Parent Object - Not Used
 	};
 
-//= GUNASG MODULE ==============//===============================================
+//= GUNASG MODULE ==============//==============================================
 //- Aircraft Guns
 //	M2 Browning .50 caliber
 let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
@@ -609,7 +619,7 @@ let AARYDf = [0,0];				// Y-Rotation Adjustment
 //let SmkOpR = 0.01;			// Opacity Reduction per Frame
 let SmkOpR = 0.005;				// Opacity Reduction per Frame
 
-//- MY GUNS --------------------//-----------------------------------------------
+//- MY GUNS --------------------//----------------------------------------------
 let myg_ = {
 		// Data
 		BulSpd: BulSpd,			// Muzzle Velocity (mps)
@@ -630,7 +640,7 @@ let myg_ = {
 		SndMsh: [new makMsh(),new makMsh()],
 	}
 
-//- GUNS (MOVING AIRPLANE) -----//-----------------------------------------------
+//- GUNS (MOVING AIRPLANE) -----//----------------------------------------------
 //- Firing
 let XPGMax = 120;				// Guns Firing (2 secs)
 let XPGFlg = XPGMax;
@@ -669,7 +679,7 @@ let xag_ = {
 		SndMsh: [new makMsh(),new makMsh()],		
 	};
 
-//- AA GUNS (FIXED) ------------//-----------------------------------------------
+//- AA GUNS (FIXED) ------------//----------------------------------------------
 let aaf_ = {
 		ObjNum: 2,
 		// No Parent
@@ -721,7 +731,7 @@ let aaf_ = {
 		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
 
-//- AA GUNS (MOVING SHIPS) -----//-----------------------------------------------
+//- AA GUNS (MOVING SHIPS) -----//----------------------------------------------
 //- Firing
 let XSGMax = 1200;				// Guns Firing (20 secs)
 let XSGFlg = XSGMax;
@@ -775,8 +785,8 @@ let xsg_ = {
 		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
 
-//= MY PEEPS ===================//===============================================
-//- Animated Objects: Linked ---//-----------------------------------------------
+//= MY PEEPS ===================//==============================================
+//- Animated Objects: Linked ---//----------------------------------------------
 let myp_ = {
 		ObjNum: 2,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Wave2.glb",
@@ -819,7 +829,7 @@ let myp_ = {
 	};
 
 
-//= MINIMUM ALTITUDE ===========//===============================================
+//= MINIMUM ALTITUDE ===========//==============================================
 let alt_ = {
 		Num: 2,
 		Ref: [isl_.ObjGrp[0],xsh_.ObjGrp[0]],
@@ -835,9 +845,9 @@ let alt_ = {
 	xsh_.ShpLok[0].position.y = 1.4+(alt_.Alt[1]-xsh_.MapPos[0].y);
 	xsh_.ObjGrp[0].add(xsh_.ShpLok[0]);
 
-//= 5. MY AIRPLANE VARIABLES ===//===============================================
+//= 5. MY AIRPLANE VARIABLES ===//==============================================
 
-//- Flight Module --------------//-----------------------------------------------
+//- Flight Module --------------//----------------------------------------------
 let	flight = 0;
 let air_ = {
 		// General Variables
@@ -903,7 +913,7 @@ let air_ = {
 	air_.AirObj.add(air_.AirPBY); // PBY includes air_.ACPAdj
 	scene.add(air_.AirObj);	// Airplane
 
-//- Load Models and Animations -//-----------------------------------------------
+//- Load Models and Animations -//----------------------------------------------
 //	File Path
 const AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/"; // Used to load models and sounds
 //	Animation Mixers
@@ -948,10 +958,10 @@ let vxr_ = {
 		// Camera Distance from Reference Point
 		Cam: -0.1
 	}	
-//- FM2 Animations -------------//-----------------------------------------------
+//- FM2 Animations -------------//----------------------------------------------
 //	Loadd from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
-//=	6. SOUND VARIABLES =========//===============================================
+//=	6. SOUND VARIABLES =========//==============================================
 //- My Engine and Prop
 let AirMsh = new makMsh();		// For Engine and Prop
 //- My Engine
@@ -963,7 +973,7 @@ const PrpSrc = "fm2_prop.wav";	// File (my prop)
 let PrpVol = 0.5;				// Volume
 let PrpSnd = 0;
 
-//= 7. CAMERA VARIABLES ========//===============================================
+//= 7. CAMERA VARIABLES ========//==============================================
 //- Create Cockpit Attach Point
 const CamPVC = new makMsh();
 	CamPVC.rotation.order = "YXZ";
@@ -1008,13 +1018,14 @@ let cam_ = {
 	cam_.MshDeg.rotation.order = "YXZ";
 	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
 	cam_.MshObj.add(cam_.MshDeg);
+
 //- Adjust Camera x.rotation
 let CmAdjX = 0;					// Airborne Pitch Adjustment
 let CmGrdF = 0;					// Camera Ground Flag (1 = On Ground)
 let CmMulX = 35;				// Pitch Adjustment Multiplier
 let CmLagX = 0;					// Transition Offset
 
-//-	Camera View Keys -----------//-----------------------------------------------
+//-	Camera View Keys -----------//----------------------------------------------
 let U45flg = 0;					// Up 45 degrees
 let D45flg = 0;					// Down 45 degrees
 let	L45flg = 0;					// Left 45 degrees
@@ -1022,20 +1033,22 @@ let R45flg = 0;					// Right 45 degrees
 let L90flg = 0;					// Left 90 degrees
 let R90flg = 0;					// Right 90 degrees
 
-//= 8. OUTPUT VARIABLES ========//===============================================
+//= 8. OUTPUT VARIABLES ========//==============================================
 
-//- HTML OVERLAY TEXT ----------//-----------------------------------------------
+//- HTML OVERLAY TEXT ----------//----------------------------------------------
+
 //	Loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
 //- INFO DATA ------------------------------------------------------------------
 //	Loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
-//= 9. INPUT VARIABLES =========//===============================================
+//= 9. INPUT VARIABLES =========//==============================================
 
-//- DEFAULT KEY BINDINGS -------//-----------------------------------------------
+//- DEFAULT KEY BINDINGS -------//----------------------------------------------
+
 //	Loadd from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
-//- POINTER LOCK CONTROL -------//-----------------------------------------------
+//- POINTER LOCK CONTROL -------//----------------------------------------------
 //	Variables
 let InpMos = new THREE.Vector2(); // Inputs - Mouse
 let _changeEvent = {type: "change"};
@@ -1103,17 +1116,17 @@ let instructions = document.getElementById("instructions");
 		instructions.style.display = "";
 	});
 
-//**************************************|****************************************
-//																				*
-//									PROGRAM										*
-//																				*
-//*******************************************************************************
+/*******************************************************************************
+*
+*	PROGRAM
+*
+*******************************************************************************/
 
-//= 1. MAIN PROGRAMS ===========//===============================================
+//= 1. MAIN PROGRAMS ===========//==============================================
 
 	loadAll();
 	
-//-	0 LOAD ALL------------------//-----------------------------------------------
+//-	0 LOAD ALL------------------//----------------------------------------------
 
 function loadAll() {
 	WaitScreen();				// load loading screen
@@ -1124,7 +1137,7 @@ function loadAll() {
 	loadObject();				// load objects	
 }
 
-//- WAIT SCREEN ----------------//-----------------------------------------------
+//- WAIT SCREEN ----------------//----------------------------------------------
 
 function WaitScreen() {
 	// Set up the loading screen scene - it can be treated just like our main scene.
@@ -1138,7 +1151,7 @@ function WaitScreen() {
 	loadingScreen.scene.add(loadingScreen.box);
 }
 
-//-	INITIALIZE -----------------//-----------------------------------------------
+//-	INITIALIZE -----------------//----------------------------------------------
 
 function initAll() {
 	initSkyBox();
@@ -1173,7 +1186,7 @@ function initAll() {
 	LodFlg = 1;
 }
 
-//- RENDER ---------------------//-----------------------------------------------
+//- RENDER ---------------------//----------------------------------------------
 
 async function rendAll() {		// r173 added async
 	// This block runs while resources are loading.
@@ -1187,6 +1200,7 @@ async function rendAll() {		// r173 added async
 	if (!PawsOn && LodFlg && controls.isLocked === true) {		
 		difTim = clock.getDelta();
 		nowTim = nowTim + difTim;
+		if (FadEnd != FadBeg) moveFadMsh(); // Fade In/Out
 		moveCamera(camera,cam_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
@@ -1214,7 +1228,44 @@ async function rendAll() {		// r173 added async
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-//= 2. SKYBOX ==================//===============================================
+//= FADE =======================//==============================================
+
+//-	Init Fade Mesh -------------//----------------------------------------------
+function initFadMsh() {
+	let geometry = new THREE.SphereGeometry(0.15,64,64);
+	let material = new THREE.MeshBasicNodeMaterial({
+		colorNode:color("black"),
+		transparent:true,
+		opacity:FadBeg,
+		side:THREE.DoubleSide,
+//		depthWrite:false,		// prop shows through
+	});
+	let mesh = new THREE.Mesh(geometry,material);
+	camera.add(mesh);
+	mesh.visible = false;		// default
+return mesh;}
+
+//-	Move Fade Mesh -------------//----------------------------------------------
+function moveFadMsh() {
+	FadMsh.visible = true;
+	// If Black to Clear
+	if (FadEnd < FadBeg) {
+		FadBeg = FadBeg - FadSpd;
+		if (FadBeg < FadEnd) {
+			FadBeg = FadEnd;
+			if (!FadBeg) FadMsh.visible = false;
+		}
+	}
+	// If Fade to Black
+	else {
+		FadBeg = FadBeg + FadSpd;
+		if (FadBeg > FadEnd) FadBeg = FadEnd;
+	}
+	// Set Opacity
+	FadMsh.material.opacity = FadBeg;
+}
+
+//= 2. SKYBOX ==================//==============================================
 
 //- Load SkyBox ----------------------------------------------------------------
 function loadSkyBox() {
@@ -1251,7 +1302,7 @@ function initSkyBox() {
 	}
 }
 
-//= 3. GEOMAT ===================//===============================================
+//= 3. GEOMAT ===================//==============================================
 // Can't be exported since uses html context to split images
 // Or can you pass address of loader to module?
 
@@ -1336,7 +1387,7 @@ function loadGeoMat() {
 	});
 }
 
-//= 4. OBJECTS =================//===============================================
+//= 4. OBJECTS =================//==============================================
 
 function loadObject() {
 	// Shared Textures
@@ -1475,7 +1526,7 @@ function moveAAAGun() {
 	}
 }
 
-//= ISLANDS ====================//===============================================
+//= ISLANDS ====================//==============================================
 
 //-	Load Islands ---------------------------------------------------------------
 function loadIsland() {
@@ -1504,7 +1555,7 @@ function loadIsland() {
 	}
 }
 
-//-	Init Islands ---------------//-----------------------------------------------
+//-	Init Islands ---------------//----------------------------------------------
 function initIsland() {
 	let X,Y,Z;
 	for (let i = 0; i < isl_.ObjNum; i++) {
@@ -1519,7 +1570,7 @@ function initIsland() {
 	initVlkSmk();				// Load Volcano Smoke
 }
 
-//-	Move Islands ---------------//-----------------------------------------------
+//-	Move Islands ---------------//----------------------------------------------
 function moveIsland() {
 	let X,Y,Z;
 	for (let i = 0; i < isl_.ObjNum; i ++) {
@@ -1532,17 +1583,17 @@ function moveIsland() {
 	}
 }
 
-//= VOLCANO SMOKE ==============//===============================================
+//= VOLCANO SMOKE ==============//==============================================
 
-//- Init Volcano ----------------------------------------------------------------
+//- Init Volcano ---------------------------------------------------------------
 function initVlkSmk() {
 	vlk_.ObjTxt[0] = txt_.ObjTxt[vlk_.ObjTxt[0]];
 	initVulkan(vlk_);
 }
 
-//= STATIC OBJECTS =============//===============================================
+//= STATIC OBJECTS =============//==============================================
 
-//- Load Objects ---------------//-----------------------------------------------
+//- Load Objects ---------------//----------------------------------------------
 function loadFxdObj() {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
 		gltfLoader.load(fxd_.ObjSrc[i], function (gltf) {
@@ -1555,14 +1606,14 @@ function loadFxdObj() {
 	}
 }
 
-//- Move Objects ---------------//-----------------------------------------------
+//- Move Objects ---------------//----------------------------------------------
 function moveFxdObj() {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
 		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y + AltDif*0.01;
 	}
 }
 
-//= MOVING AIRPLANES ===========//===============================================
+//= MOVING AIRPLANES ===========//==============================================
 
 //-	Load Airplane --------------------------------------------------------------
 function loadMovPln() {
@@ -1638,14 +1689,14 @@ function moveMovPln() {
 	moveXACGun();
 }
 
-//= AIRPLANE GUNS ==============//===============================================
+//= AIRPLANE GUNS ==============//==============================================
 
-//- Init Airplane Guns ---------//-----------------------------------------------
+//- Init Airplane Guns ---------//----------------------------------------------
 function initXACGun() {
 	initXACBul(xag_,scene);
 }
 
-//- Move Airplane Guns ---------//-----------------------------------------------
+//- Move Airplane Guns ---------//----------------------------------------------
 function moveXACGun() {
 	let n = 1;					// Japanese Aircraft
 	// Turn Airplane 2 (Enemy) Guns On/Off
@@ -1666,9 +1717,9 @@ function moveXACGun() {
 	moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT);
 }
 
-//= AIRPLANE SMOKE =============//===============================================
+//= AIRPLANE SMOKE =============//==============================================
 
-//- Init Airplane Smoke ------------------------------------------------------------
+//- Init Airplane Smoke --------------------------------------------------------
 function initXACSmk() {
 	for (let n = 0; n < xas_.ObjNum; n ++) {
 		xas_.ObjTxt[n] = txt_.ObjTxt[xas_.ObjTxt[n]];
@@ -1677,7 +1728,7 @@ function initXACSmk() {
 	xac_.ObjAdr[0].add(xas_.ObjAdr[0]); // Attach smoke to Airplane 1
 }
 
-//= MOVING SHIPS ===============//===============================================
+//= MOVING SHIPS ===============//==============================================
 
 //	Load Ship
 function loadMovShp() {
@@ -1769,7 +1820,7 @@ function moveMovShp() {
 	}
 }
 
-//= SHIP WAKE ==================//===============================================
+//= SHIP WAKE ==================//==============================================
 
 //- Init Ship Wake -------------------------------------------------------------
 function initXSHWak() {
@@ -1830,10 +1881,11 @@ function moveXSHGun() {
 	}
 }
 
-//= ANIMATED FLAGS =============//===============================================
+//= ANIMATED FLAGS =============//==============================================
 //	Adapted from example at https://codepen.io/okada-web/pen/OJydGzy. Thanks!
 
-//-	Load and Initialize Flags --//-----------------------------------------------
+//-	Load and Initialize Flags --//----------------------------------------------
+
 function loadAnmFlg() {
 	let flgSzX = 30;			// Size X
 	let flgSzY = 16;			// Size Y
@@ -1861,7 +1913,7 @@ function loadAnmFlg() {
 	}
 }
 
-//-	Move Flag Meshes -----------//-----------------------------------------------
+//-	Move Flag Meshes -----------//----------------------------------------------
 function moveAnmFlg() {
 //	let n = 0;
 	for (let n = 0; n < flg_.ObjNum; n++) {
@@ -1899,11 +1951,11 @@ function moveAnmFlg() {
 	}
 }
 
-/*************************************-*****************************************
-*                                                                              *
-*                                  MY PEEPS                                    *
-*                                                                              *
-**************************************-****************************************/
+/*******************************************************************************
+*
+*	MY PEEPS
+*
+*******************************************************************************/
 
 //= LOAD MY PEEPS ==============//==============================================
 function loadMyPeep() {
@@ -1940,7 +1992,7 @@ function moveMyPeep() {
 	let ObjRef = 0;
 	let ObjDst = new THREE.Vector3();
 	for (let n = 0; n < myp_.ObjNum; n++) {
-		//= Play Animations ----//-----------------------------------------------
+		//= Play Animations ----//----------------------------------------------
 		if (myp_.ObjViz[n]) {	// If in Visual Range
 			// Set Position - AnmTim = time on timeline - setTime converts to position
 			myp_.AnmMxr[n].setTime(myp_.AnmTim[n]);
@@ -1972,7 +2024,7 @@ function moveMyPeep() {
 				myp_.DlyFlg[n] = 0; // so don't keep repeating delay
 			}
 		}
-		//- Distance -----------//-----------------------------------------------
+		//- Distance -----------//----------------------------------------------
 		// Turn On or Off Based on Distance
 		// (Not Computed for OrbitControls)
 		// Get Distances
@@ -1996,7 +2048,7 @@ function moveMyPeep() {
 	}
 }
 
-//= HARDENED SURFACES ==========//===============================================
+//= HARDENED SURFACES ==========//==============================================
 // The hardened surfaces are the Home Airfield and the CVE Deck (moving)
 // Where CVE not facing north, can we rotate ref points and airplane to north?
 
@@ -2068,9 +2120,9 @@ function moveShpAlt() {
 	}
 }
 
-//= 5. MY AIRPLANE ================//===============================================
+//= 5. MY AIRPLANE ================//===========================================
 
-//= Load Airplane ==============//===============================================
+//= Load Airplane ==============//==============================================
 function loadAirObj() {
 	loadAirExt();
 	loadAirInt();
@@ -2134,7 +2186,7 @@ function loadAirInt() {
 	});
 }	
 
-//= Init Airplane ==============//===============================================
+//= Init Airplane ==============//==============================================
 // This section initializes starting location and variables before passing to Flight Module
 function initAirObj() {
 	//	Starting Location
@@ -2156,6 +2208,11 @@ function initAirObj() {
 		xsh_.ShpLok[0].add(air_.AirObj);
 		anm_.lngpos = 0;		// Landing Gear Down
 		anm_.flppos = 0;		// Flaps Down
+		anm_.canflg = 1;		// Open Canopy
+		anm_.canpos = 1;		// Required Adjust
+		anm_.canspd = 1;		// Required Adjust
+		HedRot.x = -10;			// Turn Head Down
+		HedRot.y = 55;			// Turn Head Right
 	}
 	if (BegLoc == 2) { 			// Air
 		PwrDif = 1000;
@@ -2178,7 +2235,7 @@ function initAirObj() {
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 }
 
-//= Move Airplane ==============//===============================================
+//= Move Airplane ==============//==============================================
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
 function moveAirObj() {
@@ -2303,7 +2360,7 @@ function moveAirObj() {
 	moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg);
 }
 
-//= 6. SOUNDS ==================//===============================================
+//= 6. SOUNDS ==================//==============================================
 
 //- Load and Initialize Sounds -------------------------------------------------
 function loadSounds() {
@@ -2502,9 +2559,9 @@ function stopSounds() {
 	}
 }
 
-//= 7. CAMERA ==================//===============================================
+//= 7. CAMERA ==================//==============================================
 
-//- Init Camera View -----------//-----------------------------------------------
+//- Init Camera View -----------//----------------------------------------------
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.CamLLD.z;
 	camera.rotation.y = cam_.CamAdj*DegRad;
@@ -2556,8 +2613,17 @@ function initCamera(camera,cam_) {
 	moveCamera(camera,cam_);
 }
 
-//- Move Camera View -------------//-----------------------------------------------
+//- Move Camera View -----------//----------------------------------------------
 function moveCamera(camera,cam_) {
+	if (BegFlg) {
+		if (air_.PwrPct) {		// Throttle is trigger - for now
+			HedRot.x = 0.95 * HedRot.x;
+			HedRot.y = 0.95 * HedRot.y;
+			if (Math.abs(HedRot.x < 0.1)) HedRot.x = 0;
+			if (Math.abs(HedRot.y < 0.1)) HedRot.y = 0;
+		}
+		if (!HedRot.x && !HedRot.y) BegFlg = 0;
+	}
 	// Move Camera In/Out
 	camera.position.z = -cam_.CamLLD.z;
 	// PointerLockControls
@@ -2579,9 +2645,9 @@ function moveCamera(camera,cam_) {
 	}
 	// Adjust Camera Rotators
 	// In internal view, the camera is facing out - view matches rotation
-	if (cam_.CamFlg) {
-		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad;
-		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y)*DegRad;
+	if (cam_.CamFlg) {			
+		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x+HedRot.x)*DegRad; // Include BegAdj
+		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y-HedRot.y)*DegRad; // Include BegAdj
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
@@ -2610,7 +2676,7 @@ function moveCamera(camera,cam_) {
 	}
 }
 
-//= 8. OUTPUTS ====================//===============================================
+//= 8. OUTPUTS ====================//===========================================
 
 //-	Print HUD Values -----------------------------------------------------------
 function prntHUDval() {
@@ -2689,7 +2755,7 @@ function onInfo(n){
 	On_Inf9Node.nodeValue = InfoData[n][9];
 }
 
-//= 9. INPUTS =====================//===============================================
+//= 9. INPUTS =====================//===========================================
 // The PointerLockControls creates inputs for mouse movement.
 // This creates inputs for mouse buttons and keys.
 
@@ -2817,7 +2883,7 @@ function onDocumentKeyUp(event) {
 	}
 }
 
-//- Reset Position -------------//-----------------------------------------------
+//- Reset Position -------------//----------------------------------------------
 function posnRSet() {
 	// CVE
 	air_.MovFlg = 1; // Flag
@@ -2828,7 +2894,7 @@ function posnRSet() {
 	xsh_.ShpLok[0].add(air_.AirObj);
 }
 
-//- Subroutines ----------------//-----------------------------------------------
+//- Subroutines ----------------//----------------------------------------------
 
 //. Toggle Pause ...............................................................
 function toglPaws() {
@@ -2879,7 +2945,7 @@ function toglSoun() {
 	}
 }
 
-//= WINDOW RESIZE ==============//===============================================
+//= WINDOW RESIZE ==============//==============================================
 function onWindowResize() {
 	CamAsp = window.innerWidth/window.innerHeight;
 	camera.aspect = CamAsp;
