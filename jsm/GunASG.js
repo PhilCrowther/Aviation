@@ -20,7 +20,7 @@
 *
 *	NOTES
 *
-//===============================================================================
+*******************************************************************************/
 /*
 The AA module does not cycle through all bullets, but only enough to fill the sky.
 This is because, once the time of flight has passed and the wait time has passed,
@@ -44,7 +44,7 @@ sound delay may be superfluous.
 *
 *	IMPORTS
 *
-//===============================================================================
+*******************************************************************************/
 
 import {
 	// Common
