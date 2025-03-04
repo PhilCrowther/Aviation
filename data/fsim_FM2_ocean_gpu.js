@@ -60,6 +60,40 @@ let anm_ = {
 		canflg: 0,				// Canopy (up/down)
 		thkflg: 0,				// Tailhook (up/down)
 	}
+//	Animation Mixers - External Model
+let mxr_ = {
+		// GLTF
+		GLT: 0,
+		// Address
+		Adr: 0,
+		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
+		Prp:0, Rdr:0, Elv:0, AiL:0, AiR:0, FlL:0, FlR:0,
+		// Wheel: HingeL, HingeR, StrutBL, StrutBR, StrutTL, StrutTR, ShockL, ShockR, UpperL, UpperR
+		WHL:0, WHR:0, WBL:0, WBR:0, WTL:0, WTR:0, WSL:0, WSR:0, WUL:0, WUR:0,
+		// Canopy, Tailhook, SpinProp XP
+		Cnp:0, THk:0
+	}
+//	Animation Mixers - Internal Model
+let vxr_ = {
+		// GLTF
+		GLT: 0,
+		// Address
+		Adr: 0,
+		// Propeller, AileronL, AileronR, Canopy
+		Prp:0, AiL:0, AiR:0, Cnp:0,
+		// Gauge: Compass Heading, AI Arrow, AI Bank, AI Pitch, ManPrs
+		GaH:0, GaA:0, GaB:0, GaP:0, GaM:0,
+		// Pointer: Alt, Alt*1k, MPH, TrnInd, Ball, VSI, RPM, Heading
+		PtA:0, PtB:0, PtS:0, PtT:0, PtC:0, PtV:0, PtR:0, PtH:0,
+		// ArmL (T), ArmR (PB), HandL (T), HandR (P), HandR (B), 
+		ArL:0, ArR:0, HLT:0, HRP:0, HRB:0,
+		// LegL, LegR, RudderL, RudderR, Head
+		LgL:0, LgR:0, RdL:0, RdR:0, Hed:0,
+		// Old Heading, Old Altitude
+		HdO:0, AlO:0,
+		// Camera Distance from Reference Point
+		Cam: -0.1
+	}
 
 //= 8. OUTPUTS VARIABLES =======//==============================================
 
