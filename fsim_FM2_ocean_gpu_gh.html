@@ -178,8 +178,12 @@ OK
 //- AIRPLANE: Start .............................................................
 let BegLoc = 1;					// Starting Location (0 = Island; 1 = CVE; 2 = Air)
 let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
-if (BegLoc == 1) CamSel = 1;
-let HedRot = new THREE.Vector2(0,30); // Used to rotation head in beginning internal view
+let HedRot = new THREE.Vector2(); // Used to rotation head in beginning internal view
+if (BegLoc == 1) {
+	CamSel = 1;
+	HedRot.x = -10;
+	HedRot.y = 45;
+}
 let BegFlg = 1;					// 1 = At Start
 let BegTmp = 303.15;			// K = 86F
 //- AIRPLANE: Flight ...........................................................
@@ -314,15 +318,12 @@ let boxrot = 0;
 //= FADE2BLACK PLANE ===========//==============================================
 //	If FadBeg > 0, Prop Invisible.
 //	Therefore, limit use to where Prop would be invisible.
-let FadFlr = 0.8;				// 
+let FadFlr = 0.8;				// Floor (Fade Not Visible)
 let FadBeg = 0.99;				// Beg Opacity
 let FadEnd = FadFlr;			// Beg Target
 let FadSpd = 0.002;				// Fade Speed
 let FadCol = "black";
 let FadMsh = initFadMsh();
-if (FadBeg < FadFlr) FedBeg = FadFlr;
-if (FadBeg == FadFlr) FadMsh.visible = false;
-else {FadMsh.visible = true};
 
 //= 2. SKYBOX VARIABLES ========//==============================================
 
@@ -361,7 +362,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 const GrdSiz = 1600;			// 1600 = 1 mile
 const GrdRes = 512;
 const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
-const WavMax = 5;					// Maximum wave height (set height of outer waves)
+const WavMax = 5;				// Maximum wave height (set height of outer waves)
 let grids = 0;
 let grd_ = {
 		MSP: new THREE.Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
@@ -432,7 +433,7 @@ let wav_ = {
 //		AnmNam: [0]				// Animation
 //	};
 
-//= SHARED TEXTURES =============================================================
+//= SHARED TEXTURES ============//===============================================
 let txt_ = {
 		ObjNum: 3,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
@@ -557,7 +558,7 @@ let	flg_ = {
 		ObjAdj: [0]
 	};
 
-//= SMOKE MODULE ===============================================================
+//= SMOKE MODULE ===============//==============================================
 
 //- VOLCANO SMOKE --------------//----------------------------------------------
 //	Can use this for Volcano or to Show Battle Damage
@@ -928,9 +929,24 @@ const AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/"; // Used to
 const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
 const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
 const mxrSrc = AirSrc + mxrFNm;
-const vxrSrc = AirSrc + vxrFNm;	
+const vxrSrc = AirSrc + vxrFNm;
 //- FM2 Animations -------------//----------------------------------------------
 //	Load from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
+	mxr_.Adr = new makMsh();
+	vxr_.Adr = new makMsh();
+	if (BegLoc == 0) {
+//		anm_.lngpos = 0;		// Landing Gear Down (later)
+		anm_.flppos = 180;		// Flaps Up
+	}
+	if (BegLoc == 1) {
+//		anm_.lngpos = 0;		// Landing Gear Down (later)
+		anm_.flppos = 0;		// Flaps Down
+		anm_.canpos = 0;		// Canopy Open
+	}
+	if (BegLoc == 2) {
+//		anm_.lngpos = 180;		// Landing Gear Up (later)
+		anm_.flppos = 180;		// Flaps Up
+	}
 
 //=	6. SOUND VARIABLES =========//==============================================
 //- My Engine and Prop
@@ -1010,7 +1026,7 @@ let R90flg = 0;					// Right 90 degrees
 
 //	Loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
-//- INFO DATA ------------------------------------------------------------------
+//- INFO DATA ------------------//----------------------------------------------
 //	Loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
 //= 9. INPUT VARIABLES =========//==============================================
@@ -1208,12 +1224,17 @@ function initFadMsh() {
 		side:THREE.BackSide,
 		colorNode:color(FadCol),
 		opacity:FadBeg,
-//		depthWrite:false,		// prop shows through
+//		depthTest:false,		// No effect
+//		depthWrite:false,		// If false, prop shines through
 		transparent:true,
 	});
 	let mesh = new THREE.Mesh(geometry,material);
 	camera.add(mesh);
-	mesh.visible = false;		// default
+	//- Range and Visibility Tests
+	if (FadBeg < FadFlr) FedBeg = FadFlr;
+	if (FadBeg == FadFlr) mesh.visible = false;
+	else {mesh.visible = true};
+
 return mesh;}
 
 //-	Move Fade Mesh -------------//----------------------------------------------
@@ -1244,7 +1265,7 @@ function moveFadMsh() {
 
 //= 2. SKYBOX ==================//==============================================
 
-//- Load SkyBox ----------------------------------------------------------------
+//- Load SkyBox ----------------//----------------------------------------------
 function loadSkyBox() {
 	envMap = cubeLoader
 		.setPath(SBxSrc)
@@ -1259,7 +1280,7 @@ function loadSkyBox() {
 	}
 }
 
-//- Init SkyBox ----------------------------------------------------------------
+//- Init SkyBox ----------------//----------------------------------------------
 function initSkyBox() {
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
@@ -1392,7 +1413,7 @@ function moveObject() {
 	moveAAAGun();
 }
 
-//- Static Objects -------------------------------------------------------------
+//- Static Objects -------------//----------------------------------------------
 
 function loadStatic() {
 	loadIsland();
@@ -1408,7 +1429,7 @@ function moveStatic() {
 	if (fxd_.ObjNum) moveFxdObj();
 }
 
-//- Moving Objects -------------------------------------------------------------
+//- Moving Objects -------------//----------------------------------------------
 
 function loadMoving() {
 	loadMovPln();
@@ -1425,7 +1446,7 @@ function moveMoving() {
 	moveMovShp();
 }
 
-//- Animated Attachments -------------------------------------------------------
+//- Animated Attachments -------//----------------------------------------------
 
 function loadAnmObj() {
 	loadAnmFlg();
@@ -1435,7 +1456,7 @@ function moveAnmObj() {
 	moveAnmFlg();
 }
 
-//- AAA Guns -------------------------------------------------------------------
+//- AAA Guns -------------------//----------------------------------------------
 
 function initAAAGun() {
 	if (aaf_.ObjNum) {
@@ -1505,7 +1526,7 @@ function moveAAAGun() {
 
 //= ISLANDS ====================//==============================================
 
-//-	Load Islands ---------------------------------------------------------------
+//-	Load Islands ---------------//----------------------------------------------
 function loadIsland() {
 	for (let i = 0; i < isl_.ObjNum; i++) {
 		isl_.ObjGrp[i].position.copy(isl_.MapPos[i]);
@@ -1562,7 +1583,7 @@ function moveIsland() {
 
 //= VOLCANO SMOKE ==============//==============================================
 
-//- Init Volcano ---------------------------------------------------------------
+//- Init Volcano ---------------//----------------------------------------------
 function initVlkSmk() {
 	vlk_.ObjTxt[0] = txt_.ObjTxt[vlk_.ObjTxt[0]];
 	initVulkan(vlk_);
@@ -1592,7 +1613,7 @@ function moveFxdObj() {
 
 //= MOVING AIRPLANES ===========//==============================================
 
-//-	Load Airplane --------------------------------------------------------------
+//-	Load Airplane --------------//----------------------------------------------
 function loadMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		gltfLoader.load(xac_.ObjSrc[n], function (gltf) {
@@ -1625,7 +1646,7 @@ function loadMovPln() {
 
 }
 
-//- Init Airplane --------------------------------------------------------------
+//- Init Airplane --------------//----------------------------------------------
 function initMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		// Compute Relative Position
@@ -1640,7 +1661,7 @@ function initMovPln() {
 	initXACSmk();
 }
 
-//- Move Plane -----------------------------------------------------------------
+//- Move Plane -----------------//----------------------------------------------
 function moveMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		// Rotation
@@ -1696,7 +1717,7 @@ function moveXACGun() {
 
 //= AIRPLANE SMOKE =============//==============================================
 
-//- Init Airplane Smoke --------------------------------------------------------
+//- Init Airplane Smoke --------//----------------------------------------------
 function initXACSmk() {
 	for (let n = 0; n < xas_.ObjNum; n ++) {
 		xas_.ObjTxt[n] = txt_.ObjTxt[xas_.ObjTxt[n]];
@@ -1799,7 +1820,7 @@ function moveMovShp() {
 
 //= SHIP WAKE ==================//==============================================
 
-//- Init Ship Wake -------------------------------------------------------------
+//- Init Ship Wake -------------//----------------------------------------------
 function initXSHWak() {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
 		wak_.ObjTxt[n] = txt_.ObjTxt[wak_.ObjTxt[n]];
@@ -1807,23 +1828,23 @@ function initXSHWak() {
 	initShpWak(wak_);
 };
 
-//- Move Ship Wake -------------------------------------------------------------
+//- Move Ship Wake -------------//----------------------------------------------
 function moveXSHWak() {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
 		wak_.ObjAdr[n].rotation.x = Math.PI/2-wak_.ObjRef[n].rotation.x;
 	}
 }
 
-//= SHIP GUNS ==================================================================
+//= SHIP GUNS ==================//==============================================
 
-//- Init Ship Guns -------------------------------------------------------------
+//- Init Ship Guns -------------//----------------------------------------------
 function initXSHGun() {
 	xsg_.SmkMap = txt_.ObjTxt[xsg_.SmkMap];
 	initAAGuns(xsg_,air_,AltDif,scene);
 
 }
 
-//- Move Ship Guns -------------------------------------------------------------
+//- Move Ship Guns -------------//----------------------------------------------
 function moveXSHGun() {
 	if (xsg_.ObjNum) {
 		// Turn Ship 2 Guns On/Off
@@ -2097,7 +2118,7 @@ function moveShpAlt() {
 	}
 }
 
-//= 5. MY AIRPLANE ================//===========================================
+//= 5. MY AIRPLANE =============//==============================================
 
 //= Load Airplane ==============//==============================================
 function loadAirObj() {
@@ -2105,7 +2126,7 @@ function loadAirObj() {
 	loadAirInt();
 }
 
-//-	Load Airplane Model --------------------------------------------------------
+//-	Load Airplane Model --------//----------------------------------------------
 function loadAirExt() {
 	gltfLoader.load(mxrSrc, function (gltf) {
 		gltf.scene.traverse(function (child) {
@@ -2136,7 +2157,7 @@ function loadAirExt() {
 	});		
 }
 
-//-	Load Virtual Cockpit -------------------------------------------------------
+//-	Load Virtual Cockpit -------//----------------------------------------------
 function loadAirInt() {
 	gltfLoader.load(vxrSrc, function (gltf) {
 		gltf.scene.traverse(function (child) {
@@ -2173,7 +2194,6 @@ function initAirObj() {
 		air_.MapPos.z = isl_.MapPos[0].z-275;	
 		air_.MapPos.y = air_.GrdZed = alt_.Alt[0];
 		anm_.lngpos = 0;		// Landing Gear Down
-		anm_.flppos = 180;		// Flaps Up
 	}
 	if (BegLoc == 1) { 			// CVE
 		air_.GrdFlg = air_.MovFlg = 1;
@@ -2184,20 +2204,12 @@ function initAirObj() {
 		xsh_.ShpLok[0].position.z = ZDst;
 		xsh_.ShpLok[0].add(air_.AirObj);
 		anm_.lngpos = 0;		// Landing Gear Down
-		anm_.flppos = 0;		// Flaps Down
-//		anm_.canpos = 0;		// Canopy Open (not work)
-		anm_.canflg = 1;		// Open Canopy
-		anm_.canpos = 1;		// Required Adjust
-		anm_.canspd = 1;		// Required Adjust
-		HedRot.x = -10;			// Turn Head Down
-		HedRot.y = 50;			// Turn Head Right
 	}
 	if (BegLoc == 2) { 			// Air
 		PwrDif = 1000;
 		air_.SpdKPH = 200;
 		air_.MapPos.y = air_.MapSPS.y = 200;
-		anm_.lngpos = 180; 		// Landing Gear Up
-		anm_.flppos = 180;		// Flaps Up
+		anm_.lngpos = 180;		// Landing Gear Up
 	}
 	// Speed
 	if (air_.SpdKPH) {
@@ -2217,7 +2229,7 @@ function initAirObj() {
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
 function moveAirObj() {
-	// Compute Inputs ----------------------------------------------------------
+	// Compute Inputs ----------..----------------------------------------------
 	// Power Percent ...........................................................
 	// Add Delay
 	let gal = PwrDif * LagPwr.x; // Current input delayed
@@ -2455,7 +2467,7 @@ function loadSounds() {
 	LodSnd = 1;
 }
 
-//- Change Sounds --------------------------------------------------------------
+//- Change Sounds --------------//----------------------------------------------
 function moveSounds() {
 	// My Engine
 	EngSnd.setVolume(EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
@@ -2485,7 +2497,7 @@ function moveSounds() {
 	}
 }
 
-//- Play Sounds ----------------------------------------------------------------
+//- Play Sounds ----------------//----------------------------------------------
 function playSounds() {
 	// This leaves SndFlg = 1 and MYGFlg unchanged.
 	// My Engine
@@ -2508,7 +2520,7 @@ function playSounds() {
 	// AA Guns - activated in PlayAA
 }
 
-//- Stop Sounds ----------------------------------------------------------------
+//- Stop Sounds ----------------//----------------------------------------------
 function stopSounds() {
 	// This leaves SndFlg = 0 and MYGFlg unchanged.
 	// My Engine
@@ -2654,9 +2666,9 @@ function moveCamera(camera,cam_) {
 	}
 }
 
-//= 8. OUTPUTS ====================//===========================================
+//= 8. OUTPUTS =================//==============================================
 
-//-	Print HUD Values -----------------------------------------------------------
+//-	Print HUD Values -----------//----------------------------------------------
 function prntHUDval() {
 	Air_Pwr = air_.PwrPct;		// Throttle
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
@@ -2670,19 +2682,19 @@ function prntHUDval() {
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 }
 
-//-	Pause Text -----------------------------------------------------------------
+//-	Pause Text -----------------//----------------------------------------------
 function PawsText(){
 	if (PawsOn) On_PawsNode.nodeValue = "Paused";
 	else {On_PawsNode.nodeValue = "Pause: Press P";}
 }
 
-//-	Autopilot Text -------------------------------------------------------------
+//-	Autopilot Text -------------//----------------------------------------------
 function AutoText(){
 	if (air_.AutoOn) Air_AtPNode.nodeValue = "Autopilot On";
 	else {Air_AtPNode.nodeValue = "AutoP: Press A";}
 }
 
-//- Info Text ------------------------------------------------------------------
+//- Info Text ------------------//----------------------------------------------
 
 let InfoData = [
 		[
@@ -2733,13 +2745,13 @@ function onInfo(n){
 	On_Inf9Node.nodeValue = InfoData[n][9];
 }
 
-//= 9. INPUTS =====================//===========================================
+//= 9. INPUTS ==================//==============================================
 // The PointerLockControls creates inputs for mouse movement.
 // This creates inputs for mouse buttons and keys.
 
-//- MOUSE ----------------------------------------------------------------------
+//- MOUSE ----------------------//----------------------------------------------
 
-//- Mouse Buttons (Down) -------------------------------------------------------
+//- Mouse Buttons (Down) -------//----------------------------------------------
 function onDocumentMouseDown(event) {
 	event.preventDefault();
 	if (event.button == 0) {	// Yaw Left
@@ -2750,7 +2762,7 @@ function onDocumentMouseDown(event) {
 	}
 }
 
-//- Mouse Buttons (Up) ---------------------------------------------------------
+//- Mouse Buttons (Up) ---------//----------------------------------------------
 function onDocumentMouseUp(event) {
 	if (event.button == 0) {	// Yaw Left Off
 		air_.RotDif.y = 0;
@@ -2760,15 +2772,15 @@ function onDocumentMouseUp(event) {
 	}
 }
 
-//- Mousewheel -----------------------------------------------------------------
+//- Mousewheel -----------------//----------------------------------------------
 function onDocumentMouseWheel(event) {
 	event.preventDefault();
 	PwrDif = - event.deltaY * PwrMul; // Increment = 1%
 }
 
-//- KEYBOARD -------------------------------------------------------------------
+//- KEYBOARD -------------------//----------------------------------------------
 
-//- Keyboard (Down) ------------------------------------------------------------
+//- Keyboard (Down) ------------//----------------------------------------------
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
 	// Basic
@@ -2817,7 +2829,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_Soun) toglSoun();		// Toggle Sound
 }
 
-//-	Keyboard (Up) --------------------------------------------------------------
+//-	Keyboard (Up) --------------//----------------------------------------------
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
 	// Basic
@@ -2874,7 +2886,7 @@ function posnRSet() {
 
 //- Subroutines ----------------//----------------------------------------------
 
-//. Toggle Pause ...............................................................
+//. Toggle Pause ...............///..............................................
 function toglPaws() {
 	PawsOn = 1 - PawsOn;
 	if (PawsOn && SndFlg) {		//On to Off
@@ -2886,20 +2898,20 @@ function toglPaws() {
 	PawsText();
 }
 
-//. Toggle AutoPilot ...........................................................
+//. Toggle AutoPilot ...........//..............................................
 function toglAuto() {
 	air_.AutoOn = 1 - air_.AutoOn;
 	AutoText();
 }
 
-//. Toggle Info ................................................................
+//. Toggle Info ................//..............................................
 function toglInfo() {
 	InfoOn++
 	if (InfoOn == 3) InfoOn = 0;
 	InfoText();
 }
 
-//. Toggle Camera View (3-Way) -------------------------------------------------
+//. Toggle Camera View (3-Way) -//----------------------------------------------
 function toglView() {
 	// Old CamSel
 	cam_.CamPar.remove(cam_.MshRot);		// Unlink Old Parent
@@ -2910,7 +2922,7 @@ function toglView() {
 	initCamera(camera,cam_)
 }
 
-//. Toggle Sound ...............................................................
+//. Toggle Sound ...............//..............................................
 function toglSoun() {
 	if (!PawsOn) {
 		SndFlg = 1 - SndFlg;
