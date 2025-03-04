@@ -280,7 +280,7 @@ function moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT) {
 
 //**************************************|****************************************
 //																				*
-//									 AA GUNS									*
+//								AA GUNS WITH SMOKE								*
 //																				*
 //*******************************************************************************
 
@@ -310,8 +310,8 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 		point1.push(new Vector3(0,0,-lnB));
 		point1.push(new Vector3(0,0,lnB));
 	let AAAGeD = new BufferGeometry().setFromPoints(point1);	
-	let AAAMtL = new LineBasicNodeMaterial({colorNode: color(aag_.AAAClr.x)});
-	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(aag_.AAAClr.y)});
+	let AAAMtL = new LineBasicNodeMaterial({colorNode: color(aag_.AAACol.x)});
+	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(aag_.AAACol.y)});
 	//- For Each Gun
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Combined Rotation and Map Position of Parent plus Gun
@@ -352,7 +352,7 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 			colorNode: texture(aag_.SmkMap),
 			transparent:true,
 			opacity: 1.0,
-//			depthTest:false,
+			depthTest:false,
 			depthWrite:false,
 		});
 		aag_.SmkPtr[n] = new Sprite(aag_.SmkMat[n]);
@@ -382,8 +382,8 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aag_.GunPtr[n].position.y = MapPos.y-AltDif;
 		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-		// Sound Flag Default
-//		aag_.SndFlg[n] = 0;
+		// Smoke Flag Default
+		aag_.SmkFlg[n] = 0;
 		// For Each Bullet String	
 		aag_.AAASp2[n] = aag_.AAASp2[n] - DLTime; // When reach 0, fire next bullet
 		if (aag_.AAASp2[n] < 0) aag_.AAASp2[n] = 0; // Ready to fire next bullet
@@ -420,7 +420,7 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 					aag_.SmkMat[n].opacity = 1.0;
 					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
 					aag_.SmkDTm[n] = aag_.SmkDMx[n]; // Reset Delay Timer
-					if (SndFlg) aag_.SndFlg[n] = 1; // Start Sound Routine
+					aag_.SmkFlg[n] = 1 // Smoke Flag On (Used to Start Sound)
 				}
 			}
 			// Continue
@@ -444,7 +444,6 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 			aag_.SmkPtr[n].position.z = air_.MapPos.z - aag_.SmkMpP[n].z;
 			aag_.SmkMat[n].rotation = Mod360((air_.AirRot.z + aag_.SmkRot[n])) * DegRad;
 			// Reduce Opacity
-//			aag_.SmkMat[n].opacity = aag_.SmkMat[n].opacity - 0.01;
 			aag_.SmkMat[n].opacity = aag_.SmkMat[n].opacity - aag_.SmkOpR;
 			if (aag_.SmkMat[n].opacity < 0) {
 				aag_.SmkMat[n].opacity = 0;
