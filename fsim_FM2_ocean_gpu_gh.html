@@ -88,46 +88,48 @@ import {initBullet,moveBullet,	// My Airplane Bullets
 } from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
 import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 2
-//= GENERAL ====================//==============================================
+/*= GENERAL ====================//==============================================
 
-/*	This flight simulation demo uses the most advanced version of three.js */
+This flight simulation demo uses the most advanced version of three.js
 
-//=	FEATURES
-//-	Flight Smulation
-//	* Realistic Flight Simulation and AutoPilot (Flight Module)
-//	* Taildragger takeoff and landing
-//	* Static and Moving Landing Surfaces
-//-	Scenery:
-//	* Animated and Textured iFFT Ocean (Ocean and GrdMap Modules)
-//	* Islands, including Volcano with Animated Smoke
-//	* SunFlare
-//-	My Airplane:
-//	* Detailed Airplane Model - External and Internal (created in Blender)
-//	* Animated Controls and Gauges - External and Internal (AnimFM2 Module)
-//	* Animated Pilot
-//	* 3D Sounds
-//-	Traffic:
-//	* Animated Traffic - Airplane and Carrier
-//	* Landable Moving Carrier with animated Flag and Wake
-//-	Controls:
-//	* Multi-Positional Camera
+=FEATURES
+-Flight Smulation
+	* Realistic Flight Simulation and AutoPilot (Flight Module)
+	* Taildragger takeoff and landing
+	* Static and Moving Landing Surfaces
+-Scenery:
+	* Animated and Textured iFFT Ocean (Ocean and GrdMap Modules)
+	* Islands, including Volcano with Animated Smoke
+	* SunFlare
+-My Airplane:
+	* Detailed Airplane Model - External and Internal (created in Blender)
+	* Animated Controls and Gauges - External and Internal (AnimFM2 Module)
+	* Animated Pilot
+	* 3D Sounds
+-	Traffic:
+	* Animated Traffic - Airplane and Carrier
+	* Landable Moving Carrier with animated Flag and Wake
+-Controls:
+	* Multi-Positional Camera
 
-//=	TO DO:
-//-	Program:
-//	* Don't hear EA guns or engines (used to hear engines)
-//	* Move Variables to Data File (not variables with three.js functions) - WIP
-//	* Reset landed airplane to starting position (R) - WIP
-//	* Create Flame and Smoke Trail for Damaged Airplane - WIP
-//  * Add plane to simulate black/red out and for transitions
-//	* Convert waving flag to GPU shader
-//-	Flight Module:
-//	* Add supercharger/turbocharger effect
-//	* Fix Autopilot
-//= OK
-//- Program:
-//	* My Guns seem to be aimed too high - but if fly level, guns shoot at horizon
+TO DO:
+-	Program:
+	* Starting Canopy position set in AnimFM2?  We want to set.
+	* Don't hear EA guns or engines (used to hear engines)
+	* Move Variables to Data File (not variables with three.js functions) - WIP
+	* Reset landed airplane to starting position (R) - WIP
+	* Create Flame and Smoke Trail for Damaged Airplane - WIP
+	* Add plane to simulate black/red out and for transitions
+	* Convert waving flag to GPU shader
+-	Flight Module:
+	* Add supercharger/turbocharger effect
+	* Fix Autopilot
+OK
+- Program:
+	* My Guns seem to be aimed too high - but if fly level, guns shoot at horizon
+*/
 
-/**************************************|****************************************
+/*******************************************************************************
 *
 *	INDEX TO SECTIONS
 *
@@ -310,10 +312,17 @@ let loadingScreen = {
 let boxrot = 0;
 
 //= FADE2BLACK PLANE ===========//==============================================
-let FadBeg = 0;					// Beg Opacity
-let FadEnd = 0;					// Beg Target
-let FadSpd = 0.005;				// Fade Speed
+//	If FadBeg > 0, Prop Invisible.
+//	Therefore, limit use to where Prop would be invisible.
+let FadFlr = 0.8;				// 
+let FadBeg = 0.99;				// Beg Opacity
+let FadEnd = FadFlr;			// Beg Target
+let FadSpd = 0.002;				// Fade Speed
+let FadCol = "black";
 let FadMsh = initFadMsh();
+if (FadBeg < FadFlr) FedBeg = FadFlr;
+if (FadBeg == FadFlr) FadMsh.visible = false;
+else {FadMsh.visible = true};
 
 //= 2. SKYBOX VARIABLES ========//==============================================
 
@@ -748,7 +757,7 @@ let xsg_ = {
 		GunPos: [new THREE.Vector3(0,0,0), // Relative Map Position (meters) [used by Mesh]
 				 new THREE.Vector3(0,0,0)],
 		// Bullet Data
-		AAAFlg: [0,1],			// 1 = Guns Firing
+		AAAFlg: [0,0],			// 1 = Guns Firing
 		AAANum: AAANum,			// Number of bullets
 		AAASpd: AAASpd,			// Muzzle Velocity (mps)
 		AAADLT: AAADLT,			// Max Bullet Time in Flight
@@ -914,52 +923,14 @@ let air_ = {
 	scene.add(air_.AirObj);	// Airplane
 
 //- Load Models and Animations -//----------------------------------------------
-//	File Path
+//	File Paths
 const AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/"; // Used to load models and sounds
-//	Animation Mixers
-let aoarng = 20;				// AoA range (model)
-//	Animation Mixers - External Model
-const AirFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
-let mxr_ = {
-		// File Name
-		FNm: AirSrc + AirFNm,
-		// GLTF
-		GLT: 0,
-		// Address
-		Adr: new makMsh(),
-		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
-		Prp:0, Rdr:0, Elv:0, AiL:0, AiR:0, FlL:0, FlR:0,
-		// Wheel: HingeL, HingeR, StrutBL, StrutBR, StrutTL, StrutTR, ShockL, ShockR, UpperL, UpperR
-		WHL:0, WHR:0, WBL:0, WBR:0, WTL:0, WTR:0, WSL:0, WSR:0, WUL:0, WUR:0,
-		// Canopy, Tailhook, SpinProp XP
-		Cnp:0, THk:0
-	}
-//	Animation Mixers - Internal Model
-const VCFile = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
-let vxr_ = {
-		// File Name
-		FNm: AirSrc + VCFile,
-		// GLTF
-		GLT: 0,
-		// Address
-		Adr: new makMsh(),
-		// Propeller, AileronL, AileronR, Canopy
-		Prp:0, AiL:0, AiR:0, Cnp:0,
-		// Gauge: Compass Heading, AI Arrow, AI Bank, AI Pitch, ManPrs
-		GaH:0, GaA:0, GaB:0, GaP:0, GaM:0,
-		// Pointer: Alt, Alt*1k, MPH, TrnInd, Ball, VSI, RPM, Heading
-		PtA:0, PtB:0, PtS:0, PtT:0, PtC:0, PtV:0, PtR:0, PtH:0,
-		// ArmL (T), ArmR (PB), HandL (T), HandR (P), HandR (B), 
-		ArL:0, ArR:0, HLT:0, HRP:0, HRB:0,
-		// LegL, LegR, RudderL, RudderR, Head
-		LgL:0, LgR:0, RdL:0, RdR:0, Hed:0,
-		// Old Heading, Old Altitude
-		HdO:0, AlO:0,
-		// Camera Distance from Reference Point
-		Cam: -0.1
-	}	
+const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
+const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
+const mxrSrc = AirSrc + mxrFNm;
+const vxrSrc = AirSrc + vxrFNm;	
 //- FM2 Animations -------------//----------------------------------------------
-//	Loadd from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
+//	Load from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
 //=	6. SOUND VARIABLES =========//==============================================
 //- My Engine and Prop
@@ -1234,11 +1205,11 @@ async function rendAll() {		// r173 added async
 function initFadMsh() {
 	let geometry = new THREE.SphereGeometry(0.15,64,64);
 	let material = new THREE.MeshBasicNodeMaterial({
-		colorNode:color("black"),
-		transparent:true,
+		side:THREE.BackSide,
+		colorNode:color(FadCol),
 		opacity:FadBeg,
-		side:THREE.DoubleSide,
 //		depthWrite:false,		// prop shows through
+		transparent:true,
 	});
 	let mesh = new THREE.Mesh(geometry,material);
 	camera.add(mesh);
@@ -1247,13 +1218,19 @@ return mesh;}
 
 //-	Move Fade Mesh -------------//----------------------------------------------
 function moveFadMsh() {
+	// Limit Range (FadFlr to 1)
+	if (FadBeg < FadFlr) FadBeg = FadFlr;
+	if (FadEnd < FadFlr) FadEnd = FadFlr;
+	if (FadBeg > 1) FadBeg = 1;
+	if (FadEnd > 1) FadBeg = 1;
+	//
 	FadMsh.visible = true;
 	// If Black to Clear
 	if (FadEnd < FadBeg) {
 		FadBeg = FadBeg - FadSpd;
 		if (FadBeg < FadEnd) {
 			FadBeg = FadEnd;
-			if (!FadBeg) FadMsh.visible = false;
+			if (FadBeg == FadEnd) FadMsh.visible = false;
 		}
 	}
 	// If Fade to Black
@@ -2130,7 +2107,7 @@ function loadAirObj() {
 
 //-	Load Airplane Model --------------------------------------------------------
 function loadAirExt() {
-	gltfLoader.load(mxr_.FNm, function (gltf) {
+	gltfLoader.load(mxrSrc, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
 				child.material.envMap = envMap; // ??? required?
@@ -2161,7 +2138,7 @@ function loadAirExt() {
 
 //-	Load Virtual Cockpit -------------------------------------------------------
 function loadAirInt() {
-	gltfLoader.load(vxr_.FNm, function (gltf) {
+	gltfLoader.load(vxrSrc, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -2208,11 +2185,12 @@ function initAirObj() {
 		xsh_.ShpLok[0].add(air_.AirObj);
 		anm_.lngpos = 0;		// Landing Gear Down
 		anm_.flppos = 0;		// Flaps Down
+//		anm_.canpos = 0;		// Canopy Open (not work)
 		anm_.canflg = 1;		// Open Canopy
 		anm_.canpos = 1;		// Required Adjust
 		anm_.canspd = 1;		// Required Adjust
 		HedRot.x = -10;			// Turn Head Down
-		HedRot.y = 55;			// Turn Head Right
+		HedRot.y = 50;			// Turn Head Right
 	}
 	if (BegLoc == 2) { 			// Air
 		PwrDif = 1000;
