@@ -352,7 +352,7 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 			colorNode: texture(aag_.SmkMap),
 			transparent:true,
 			opacity: 1.0,
-			depthTest:false,
+//			depthTest:false,
 			depthWrite:false,
 		});
 		aag_.SmkPtr[n] = new Sprite(aag_.SmkMat[n]);
