@@ -128,7 +128,7 @@ constructor(air_) {
 
 //= (called by Main Program) ===//==============================================
 update() {
-	// 1. COMPUTE VECTORS -------------------------------------------------------
+	// 1. COMPUTE VECTORS ------//-----------------------------------------------
 	// Most of these comps are also used while on ground, so compute and adjust
 	// Inputs: this.air_.SpdMPS, this.air_.GrvMPS
 	// Comps
@@ -151,7 +151,7 @@ update() {
 	let LftMaxF = this.air_.CfLMax*DynPrs*this.dat_.WingAr;	// Max Lift at this Speed
 	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
 	this.air_.MaxBnk = Math.acos(this.air_.Weight/LftMaxF)*this.RadDeg;	// Max Bank Angle for Max Lift
-	// a. COMPUTE LIFT ROTATION ................................................
+	// a. COMPUTE LIFT ROTATION //..............................................
 	// Lift = DynPres*this.dat_.WingArea*Cl
 	let CfLftT = this.air_.CfLift+this.air_.CfFlap;	// Default
 	if (this.air_.AutoOn) {
@@ -164,13 +164,14 @@ update() {
 	if (this.air_.CfLftT >  this.air_.CfLMax) this.air_.CfLftT =  this.air_.CfLMax;
 	if (this.air_.CfLftT < -this.air_.CfLMax) this.air_.CfLftT = -this.air_.CfLMax;
 	// Compute Lift Force, Acceleration and Degrees Rotation
-	let ACLftF = CfLftT*QSTval;					// Lift[ft-lbs] - can be positive or negative
-	let ACLift = ACLftF*this.FrcAcc;			// Acceleration (DLT)
-	if (ACLift > 0 && ACLift > LftMax) ACLift = LftMax;	// Limit to Max Gs (pos)
-	if (ACLift < 0 && ACLift < -LftMax) ACLift = -LftMax;	// Limit to Max Gs (neg)
-	let ACLftD = (ACLift/this.air_.SpdMPF)*this.RadDeg;	// Degrees = ACLift*180/(PI()*V) = (ACLift/V)*this.RadDeg
+	let ACLftF = CfLftT*QSTval; // Lift[ft-lbs] - can be positive or negative
+	let ACLift = ACLftF*this.FrcAcc; // Acceleration (DLT)
+	if (ACLift > 0 && ACLift > LftMax) ACLift = LftMax; // Limit to Max Gs (pos)
+	if (ACLift < 0 && ACLift < -LftMax) ACLift = -LftMax; // Limit to Max Gs (neg)
+	let ACLftD = (ACLift/this.air_.SpdMPF)*this.RadDeg; // Degrees = ACLift*180/(PI()*V) = (ACLift/V)*this.RadDeg
 	// Compute this.air_.RotDif.x
 	this.air_.RotDif.x = ACLftD; // Pitch Degrees (before Gravity)
+	this.air_.GFmult = ACLift/LftMax; // Save G-Force
 	// b. COMPUTE GRAVITY CHANGES ..............................................
 	let GrvThr = GrvDLT*Math.sin(this.air_.AirObj.rotation.x);	// Gravity opposing Thrust = Grav * sin(ACPrad)
 	let GrvACP = GrvDLT*Math.cos(this.air_.AirObj.rotation.x);	// Vertical Gravity
@@ -427,6 +428,7 @@ export {Flight, Mod360, PoM360, MaxVal, makMsh};
 241012:	Change makMsh to NodeMaterial and add color
 241012:	Add adjustment for Ship Bank (just in case)
 241115:	Make changes to handling of GrdFlg and ACPAdj
+240304:	Save GFmult
 */
 
 /*= FUTURE PLANNED REVISIONS (make as part of version change) ===================
