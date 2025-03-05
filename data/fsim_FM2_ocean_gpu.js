@@ -112,12 +112,10 @@ let Air_HdgNode = document.createTextNode("");
 	Air_HdgElement.appendChild(Air_HdgNode);
 let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
 let Air_CfLNode = document.createTextNode("");
-	Air_CfLElement.appendChild(Air_CfLNode);
-		
-let air_GFmElement = document.getElementById("air_GFm"); // GFmult
-let air_GFmNode = document.createTextNode("");
-	air_GFmElement.appendChild(air_GFmNode);
-
+	Air_CfLElement.appendChild(Air_CfLNode);		
+let Air_GFmElement = document.getElementById("Air_GFm"); // GFmult
+let Air_GFmNode = document.createTextNode("");
+	Air_GFmElement.appendChild(Air_GFmNode);
 let On_PawsElement = document.getElementById("On_Paws"); // Pause
 let On_PawsNode = document.createTextNode("");
 	On_PawsElement.appendChild(On_PawsNode);
