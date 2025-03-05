@@ -113,6 +113,11 @@ let Air_HdgNode = document.createTextNode("");
 let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
 let Air_CfLNode = document.createTextNode("");
 	Air_CfLElement.appendChild(Air_CfLNode);
+		
+let air_GFmElement = document.getElementById("air_GFm"); // GFmult
+let air_GFmNode = document.createTextNode("");
+	air_GFmElement.appendChild(air_GFmNode);
+
 let On_PawsElement = document.getElementById("On_Paws"); // Pause
 let On_PawsNode = document.createTextNode("");
 	On_PawsElement.appendChild(On_PawsNode);
@@ -150,7 +155,7 @@ let On_Inf9Element = document.getElementById("On_Inf9");
 let On_Inf9Node = document.createTextNode("");
 	On_Inf9Element.appendChild(On_Inf9Node);
 //
-let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL;
+let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL,Air_GFm;
 let On_Paws,Air_AtP;
 let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
