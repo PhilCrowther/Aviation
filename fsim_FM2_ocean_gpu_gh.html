@@ -24,8 +24,10 @@ This demo has now been expanded to include a battle scenario which will eventual
 		<div>Throttle: <span id="Air_Pwr"></span></div>
 		<div>AirSpeed: <span id="Air_Spd"></span> mph</div>
 		<div>Altitude: <span id="Air_Alt"></span> ft</div>
-		<div>Heading : <span id="Air_Hdg"></span> deg</div>
-		<div>CoefLift: <span id="Air_CfL"></span></div>
+		<div>Heading.: <span id="Air_Hdg"></span> deg</div>
+		<div>CfLift..: <span id="Air_CfL"></span></div>
+		<div>GFmult..: <span id="Air_GFm"></span></div>
+
 	</div>
 	<div class="overlay2">
 		<div><span id="On_Paws"></span></div>
@@ -916,6 +918,8 @@ let air_ = {
 		MovFlg: 0,				// If Sitting on Moving Ship
 		ShpPit: 0,
 		ShpBnk: 0,
+		// G-Force
+		GFmult: 0,
 	}
 //	Adjustments
 	air_.AirObj.rotation.order = "YXZ";
@@ -2680,6 +2684,8 @@ function prntHUDval() {
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
 	Air_CfL = air_.CfLift;		// Cf Lift
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
+	Air_GFm = air_.GFmult*10;	// G-Force Multiplier
+	Air_GFmNode.nodeValue = Air_GFm.toFixed(2);
 }
 
 //-	Pause Text -----------------//----------------------------------------------
