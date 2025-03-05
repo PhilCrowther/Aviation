@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Mar 2025
+Version dated 5 Mar 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -24,9 +24,9 @@ This demo has now been expanded to include a battle scenario which will eventual
 		<div>Throttle: <span id="Air_Pwr"></span></div>
 		<div>AirSpeed: <span id="Air_Spd"></span> mph</div>
 		<div>Altitude: <span id="Air_Alt"></span> ft</div>
-		<div>Heading.: <span id="Air_Hdg"></span> deg</div>
-		<div>CfLift..: <span id="Air_CfL"></span></div>
-		<div>GFmult..: <span id="Air_GFm"></span></div>
+		<div>Heading&nbsp: <span id="Air_Hdg"></span> deg</div>
+		<div>CfLift&nbsp&nbsp: <span id="Air_CfL"></span></div>
+		<div>GFmult&nbsp&nbsp: <span id="Air_GFm"></span></div>
 
 	</div>
 	<div class="overlay2">
@@ -116,7 +116,7 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
-	* Starting Canopy position set in AnimFM2?  We want to set.
+	* Red Out not red.
 	* Don't hear EA guns or engines (used to hear engines)
 	* Move Variables to Data File (not variables with three.js functions) - WIP
 	* Reset landed airplane to starting position (R) - WIP
@@ -320,12 +320,13 @@ let boxrot = 0;
 //= FADE2BLACK PLANE ===========//==============================================
 //	If FadBeg > 0, Prop Invisible.
 //	Therefore, limit use to where Prop would be invisible.
-let FadFlr = 0.8;				// Floor (Fade Not Visible)
+let FadFlr = 0.25;				// Floor (Fade Not Visible)
 let FadBeg = 0.99;				// Beg Opacity
 let FadEnd = FadFlr;			// Beg Target
-let FadSpd = 0.002;				// Fade Speed
-let FadCol = "black";
-let FadMsh = initFadMsh();
+let FadSpd = 0.005;				// Fade Speed
+let FadMat = 0;					// Allows change of color
+let FadCol = "black";			// Beg Color
+let FadMsh = initFadMsh();		// Initialize
 
 //= 2. SKYBOX VARIABLES ========//==============================================
 
@@ -1191,7 +1192,15 @@ async function rendAll() {		// r173 added async
 	if (!PawsOn && LodFlg && controls.isLocked === true) {		
 		difTim = clock.getDelta();
 		nowTim = nowTim + difTim;
+		// Black Out/Red Out
+		if (air_.GFmult*10>7.5 || air_.GFmult*10<-5) {
+			FadEnd = 0.99;
+			if (air_.GFmult*10>7.5) FadCol = "black";
+			else {FadCol = "red"};
+		}		
+		else {FadEnd = FadFlr};
 		if (FadEnd != FadBeg) moveFadMsh(); // Fade In/Out
+		// Camera
 		moveCamera(camera,cam_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
@@ -1224,15 +1233,15 @@ async function rendAll() {		// r173 added async
 //-	Init Fade Mesh -------------//----------------------------------------------
 function initFadMsh() {
 	let geometry = new THREE.SphereGeometry(0.15,64,64);
-	let material = new THREE.MeshBasicNodeMaterial({
+	FadMat = new THREE.MeshBasicNodeMaterial({
 		side:THREE.BackSide,
 		colorNode:color(FadCol),
 		opacity:FadBeg,
 //		depthTest:false,		// No effect
-//		depthWrite:false,		// If false, prop shines through
+//		depthWrite:false,		// NG - prop shines through
 		transparent:true,
 	});
-	let mesh = new THREE.Mesh(geometry,material);
+	let mesh = new THREE.Mesh(geometry,FadMat);
 	camera.add(mesh);
 	//- Range and Visibility Tests
 	if (FadBeg < FadFlr) FedBeg = FadFlr;
@@ -1243,6 +1252,8 @@ return mesh;}
 
 //-	Move Fade Mesh -------------//----------------------------------------------
 function moveFadMsh() {
+	// Set Color
+	FadMat.colorNode = color(FadCol);
 	// Limit Range (FadFlr to 1)
 	if (FadBeg < FadFlr) FadBeg = FadFlr;
 	if (FadEnd < FadFlr) FadEnd = FadFlr;
@@ -1252,19 +1263,21 @@ function moveFadMsh() {
 	FadMsh.visible = true;
 	// If Black to Clear
 	if (FadEnd < FadBeg) {
-		FadBeg = FadBeg - FadSpd;
+		FadBeg = FadBeg - FadSpd/FadBeg;
 		if (FadBeg < FadEnd) {
 			FadBeg = FadEnd;
-			if (FadBeg == FadEnd) FadMsh.visible = false;
+//			if (FadBeg == FadEnd) FadMsh.visible = false;
 		}
 	}
 	// If Fade to Black
 	else {
-		FadBeg = FadBeg + FadSpd;
+		FadBeg = FadBeg + FadSpd/FadBeg;
 		if (FadBeg > FadEnd) FadBeg = FadEnd;
 	}
 	// Set Opacity
 	FadMsh.material.opacity = FadBeg;
+	if (FadBeg == FadFlr) FadMsh.visible = false;
+	else {FadMsh.visible = true};
 }
 
 //= 2. SKYBOX ==================//==============================================
