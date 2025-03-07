@@ -309,6 +309,10 @@ const txtrLoader = new THREE.TextureLoader(loadingManager);
 const imagLoader = new THREE.ImageLoader(loadingManager);
 const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 const gltfLoader = new GLTFLoader(loadingManager);
+const audoLoader = new THREE.AudioLoader();
+// Create Audio Listener
+let	listener = new THREE.AudioListener();
+	camera.add(listener);
 // 	Wait Screen
 let loadingScreen = {
 	scene: new THREE.Scene(),
@@ -964,6 +968,21 @@ let EngSnd = 0;
 const PrpSrc = "fm2_prop.wav";	// File (my prop)
 let PrpVol = 0.5;				// Volume
 let PrpSnd = 0;
+//- Radio ----------------------//----------------------------------------------
+let RadFlg = 0;					// Press "S" to play sound
+let RadTim = 0;					// Start this timer on take-off
+let	rad_ = {
+		// Sound Files (voice plus static)
+		SndSrc: ["https://PhilCrowther.github.io/Aviation/sounds/radio/radio.wav",
+				 "https://PhilCrowther.github.io/Aviation/sounds/radio/noise.mp3"],
+		SndPtr: [0,0],
+		// Sound File Segments
+		SegNum: 2,				// Number of Sequential Segments
+		SegIdx: 0,				// Index to Segment
+		SegTim: [10,30,50],		// Time from start of RadTim; first 2 = sequential; last activated by action
+		SegOff: [0.0,1.0,3.5],
+		SegEnd: [1.0,2.5,2.0],
+	}
 
 //= 7. CAMERA VARIABLES ========//==============================================
 //- Create Cockpit Attach Point
@@ -1188,7 +1207,10 @@ async function rendAll() {		// r173 added async
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;					// Stop the function here.
 	}
-	if (controls.isLocked === true && !LodSnd) loadSounds();
+	if (controls.isLocked === true && !LodSnd) {
+		loadSounds();
+		loadRadios();
+	}
 	if (!PawsOn && LodFlg && controls.isLocked === true) {		
 		difTim = clock.getDelta();
 		nowTim = nowTim + difTim;
@@ -1212,8 +1234,16 @@ async function rendAll() {		// r173 added async
 		waves.update();			// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update(grd_);		// Move Grids
-		// Other
+		// Sounds
 		moveSounds();
+		// Radio
+		if (!RadTim && !air_.GrdFlg) RadTim = 1; // Start timer when leave ground
+		if (RadTim) RadTim = RadTim + difTim; // Once started, keep updating
+		if ((RadTim > rad_.SegTim[rad_.SegIdx]) && (rad_.SegIdx < rad_.SegNum)) {
+			playRadios();		// Play Segment
+			rad_.SegIdx++;		// Go to next segment in list
+		}
+		//
 		prntHUDval();			// print HUD values
 		if (StatOn) StatOn.update(); // update stats
 		// Shadow Tests (confirms that shadow values changed)
@@ -2372,11 +2402,10 @@ function moveAirObj() {
 //- Load and Initialize Sounds -------------------------------------------------
 function loadSounds() {
 	// Load Sounds .............................................................
-	let audioLoader = new THREE.AudioLoader();
 	let RefDst = 25;			// Reference distance for Positional Audio
 	// My Engine
 	let fname = AirSrc + "sounds/" + EngSrc;
-	audioLoader.load(fname, function(buffer) {
+	audoLoader.load(fname, function(buffer) {
 		EngSnd.setBuffer(buffer);
 		EngSnd.setRefDistance(RefDst);
 		EngSnd.setLoop(true);
@@ -2384,7 +2413,7 @@ function loadSounds() {
 	});
 	// My Prop
 	fname = AirSrc + "sounds/" + PrpSrc;
-	audioLoader.load(fname, function(buffer) {
+	audoLoader.load(fname, function(buffer) {
 		PrpSnd.setBuffer(buffer);
 		PrpSnd.setRefDistance(RefDst);
 		PrpSnd.setLoop(true);
@@ -2393,7 +2422,7 @@ function loadSounds() {
 	// My Guns (Left and Rite)
 	fname = AirSrc + "sounds/" + myg_.SndSrc;
 	for (let n = 0; n < myg_.ObjNum; n ++) {
-		audioLoader.load(fname, function(buffer) {
+		audoLoader.load(fname, function(buffer) {
 			myg_.SndPtr[n].setBuffer(buffer);
 			myg_.SndPtr[n].setRefDistance(RefDst);
 			myg_.SndPtr[n].setLoop(true);
@@ -2403,7 +2432,7 @@ function loadSounds() {
 	// XP Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		fname = XPPath + "sounds/" + xac_.EngSrc[n];	
-		audioLoader.load(fname, function(buffer) {
+		audoLoader.load(fname, function(buffer) {
 			xac_.EngPtr[n].setBuffer(buffer);
 			xac_.EngPtr[n].setRefDistance(RefDst); // Distance at which sound is full volume
 			xac_.EngPtr[n].setLoop(true);
@@ -2414,7 +2443,7 @@ function loadSounds() {
 	// XP Guns
 	for (let n = 0; n < xag_.ObjNum; n ++) {
 		fname = XPPath + "sounds/" + xag_.SndSrc[n];	
-		audioLoader.load(fname, function(buffer) {
+		audoLoader.load(fname, function(buffer) {
 			xag_.SndPtr[n].setBuffer(buffer);
 			xag_.SndPtr[n].setRefDistance(RefDst); // Distance at which sound is full volume
 			xag_.SndPtr[n].setLoop(true);
@@ -2425,7 +2454,7 @@ function loadSounds() {
 	// XS Guns - Smoke Sounds
 	fname = xsg_.SndSrc;
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		audioLoader.load(fname, function(buffer) {
+		audoLoader.load(fname, function(buffer) {
 			xsg_.SndPtr[n].setBuffer(buffer);
 			xsg_.SndPtr[n].setRefDistance(RefDst);
 			xsg_.SndPtr[n].setVolume(0);
@@ -2434,15 +2463,13 @@ function loadSounds() {
 	// AA Guns - Smoke Sounds
 	fname = aaf_.SndSrc;
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		audioLoader.load(fname, function(buffer) {
+		audoLoader.load(fname, function(buffer) {
 			aaf_.SndPtr[n].setBuffer(buffer);
 			aaf_.SndPtr[n].setRefDistance(RefDst);
 			aaf_.SndPtr[n].setVolume(0);
 		});	
 	}
 	// Init Sounds .............................................................
-	let listener = new THREE.AudioListener();
-	camera.add(listener);
 	//- My Engine and Prop
 	EngSnd = new THREE.PositionalAudio(listener);
 	PrpSnd = new THREE.PositionalAudio(listener);
@@ -2563,6 +2590,40 @@ function stopSounds() {
 	// AA Guns
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();
+	}
+}
+
+//= RADIO SOUNDS ===============//==============================================
+
+//-	Load Radio Sounds ----------//----------------------------------------------
+function loadRadios() {	
+	// Create Global Audio Source
+	rad_.SndPtr[0] = new THREE.Audio(listener);	
+	audoLoader.load(rad_.SndSrc[0],function(buffer) {
+		rad_.SndPtr[0].setBuffer(buffer);
+		rad_.SndPtr[0].setVolume(0.7);
+		rad_.SndPtr[0].setPlaybackRate(1.05);
+	});
+	rad_.SndPtr[1] = new THREE.Audio(listener);	
+	audoLoader.load(rad_.SndSrc[1],function(buffer) {
+		rad_.SndPtr[1].setBuffer(buffer);
+		rad_.SndPtr[1].setVolume(1.0);
+	});
+}
+
+//-	Play Radio Sounds ----------//----------------------------------------------
+function playRadios() {
+	if (SndFlg) {
+		if (!rad_.SndPtr[0].isPlaying) {
+			if (rad_.SegOff[rad_.SegIdx]) rad_.SndPtr[0].offset = rad_.SegOff[rad_.SegIdx];
+			rad_.SndPtr[0].play();
+			rad_.SndPtr[0].stop(rad_.SegEnd[rad_.SegIdx]);
+		}
+		if (!rad_.SndPtr[1].isPlaying) {
+			if (rad_.SegOff[rad_.SegIdx]) rad_.SndPtr[1].offset = rad_.SegOff[rad_.SegIdx];
+			rad_.SndPtr[1].play();
+			rad_.SndPtr[1].stop(rad_.SegEnd[rad_.SegIdx]);
+		}
 	}
 }
 
