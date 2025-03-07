@@ -1,0 +1,184 @@
+﻿<!doctype html>
+<html>
+
+<!--
+Scenery Viewer
+Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 6 Mar 2025
+-->
+
+<head>
+<title>Radio Demo</title>
+<style>
+	body {background:#000; padding:0; margin:0; width:240px; overflow:hidden;}
+	.overlay1 {position: absolute; top: 1%; left: 1%; width: 240px; height: 12px;
+		  color: white; font-family: Courier; font-size: 12pt; font-weight: bold; z-index: 1;}
+</style>
+</head>
+
+<body oncontextmenu="return false;">
+
+<div id = "container"></div>
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.174.0/examples/jsm/"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+
+//= INPUTS =====================//==============================================
+
+//= VARIABLES ==================//==============================================
+let OrbCon = 0;
+let LodFlg = 0;
+
+//= STANDARD ===================//==============================================
+//- Scene
+let	scene = new THREE.Scene();
+// 	Light
+let ambLight = new THREE.AmbientLight("white",0.2);
+	scene.add(ambLight);
+let CamAsp =  window.innerWidth/window.innerHeight;
+let	camera = new THREE.PerspectiveCamera(45,CamAsp,1,10000);
+	camera.position.set (10,10,10);
+	scene.add(camera);
+//- Renderer
+let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);	
+	document.body.appendChild(renderer.domElement);
+// 	Clock
+let clock = new THREE.Clock();
+let oldTim, nowTim, difTim = 0;
+//- Camera
+//- Controls and Inputs
+	OrbCon = new OrbitControls(camera, renderer.domElement);
+	document.addEventListener("keydown", onDocumentKeyDown, false);
+	window.addEventListener("resize", onWindowResize, false);
+// 	Loading Manager
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let audioLoader = new THREE.AudioLoader(loadingManager);
+
+//= RADIO ======================//==============================================
+let K_Num1 = 49;				// Play Segment 1
+let K_Num2 = 50;				// Play Segment 2
+let K_Num3 = 51;				// Play Segment 2
+let	rad_ = {
+		// Sound Files (voice plus static)
+		SndSrc: ["https://PhilCrowther.github.io/Aviation/sounds/radio/radio.wav",
+				 "https://PhilCrowther.github.io/Aviation/sounds/radio/noise.mp3"],
+		SndPtr: [0,0],
+		// Sound File Segments
+		SegNum: 3,				// Number of Segments
+		SegIdx: 0,				// Index to Segment
+		SegOff: [0.0,1.0,3.5],
+		SegEnd: [1.0,2.5,2.0],
+	}	
+
+
+//= MAIN =======================//==============================================
+	loadAll();
+	rendAll();
+
+//= LOAD =======================//==============================================
+function loadAll() {
+	loadSounds();
+}
+
+//= INITIALIZE =================//==============================================
+
+function initAll() {
+	LodFlg = 1;
+}
+
+//= RENDER =====================//==============================================
+
+function rendAll() {
+	if (LodFlg) {
+		renderer.renderAsync(scene, camera);	// Render
+	}
+}
+
+//= SOUNDS =====================//==============================================
+
+//-	Load Sounds ----------------//----------------------------------------------
+function loadSounds() {
+	// Create Audio Listener
+	let	listener = new THREE.AudioListener();
+	camera.add(listener);	
+	// Create Global Audio Source
+	rad_.SndPtr[0] = new THREE.Audio(listener);	
+	audioLoader.load(rad_.SndSrc[0],function(buffer) {
+		rad_.SndPtr[0].setBuffer(buffer);
+		rad_.SndPtr[0].setVolume(0.3);
+		rad_.SndPtr[0].setPlaybackRate(1.05);
+	});
+	rad_.SndPtr[1] = new THREE.Audio(listener);	
+	audioLoader.load(rad_.SndSrc[1],function(buffer) {
+		rad_.SndPtr[1].setBuffer(buffer);
+		rad_.SndPtr[1].setVolume(0.5);
+	});
+}
+
+//-	Play Sounds ----------------//----------------------------------------------
+function playSounds() {
+	if (!rad_.SndPtr[0].isPlaying) {
+		if (rad_.SegOff[rad_.SegIdx]) rad_.SndPtr[0].offset = rad_.SegOff[rad_.SegIdx];
+		rad_.SndPtr[0].play();
+		rad_.SndPtr[0].stop(rad_.SegEnd[rad_.SegIdx]);
+	}
+	if (!rad_.SndPtr[1].isPlaying) {
+		if (rad_.SegOff[rad_.SegIdx]) rad_.SndPtr[1].offset = rad_.SegOff[rad_.SegIdx];
+		rad_.SndPtr[1].play();
+		rad_.SndPtr[1].stop(rad_.SegEnd[rad_.SegIdx]);
+	}
+}
+
+//= OUTPUTS ====================//==============================================
+
+//= INPUTS =====================//==============================================
+
+//- KEYBOARD -------------------//----------------------------------------------
+function onDocumentKeyDown(event) {
+	let keyCode = event.which;
+	if (event.keyCode == K_Num1) {
+		rad_.SegIdx = 0;
+		playSounds();
+	}
+	if (event.keyCode == K_Num2) {
+		rad_.SegIdx = 1;
+		playSounds();
+	}
+	if (event.keyCode == K_Num3) {
+		rad_.SegIdx = 2;
+		playSounds();
+	}
+}
+
+//= WINDOW RESIZE ==============//==============================================
+function onWindowResize() {
+	CamAsp = window.innerWidth/window.innerHeight;
+	camera.aspect = CamAsp;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+</script>
+</body>
+</html>
