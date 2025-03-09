@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Mar 2025
+Version dated 9 Mar 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -655,6 +655,16 @@ let myg_ = {
 		SndPtr: [0,0],
 		SndVol: 0.5,			// Volume
 		SndMsh: [new makMsh(),new makMsh()],
+		// HitBox
+		HitDst: 10,				// Hit Radius
+		HitNum: 5,				// Hits Required for Kill
+		HitCnt: 0,				// Hit Counter
+		// Explosion
+		ExpPtr: 0,				// Sphere Address
+		ExpSiz: 0,				// Explosion Size
+		ExpLif: 0,				// Remaining Life
+		// Sequence
+		xacDed: 0,				// Begin Death Sequence
 	}
 
 //- GUNS (MOVING AIRPLANE) -----//----------------------------------------------
@@ -742,7 +752,7 @@ let aaf_ = {
 		SndVol: 15,				// Volume
 		SndMsh: [new makMsh(),new makMsh()],
 		SndDTm: [0,0],
-		// Exploding Center
+		// Explosion
 		ExpPtr: [0,0],			// Pointer to Exploding Center
 		ExpSiz: [0,0],			// Expanding Size
 		ExpLif: [0,0],			// Life of Explosion (seconds)
@@ -1145,7 +1155,7 @@ function loadAll() {
 	loadGeoMat();
 	loadAirObj();
 	AltDif = air_.MapPos.y*AltAdj; // Used by everything
-	loadObject();				// load objects	
+	loadObject();				// load objects
 }
 
 //- WAIT SCREEN ----------------//----------------------------------------------
@@ -1510,15 +1520,10 @@ function initAAAGun() {
 		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
 		initAAGuns(aaf_,air_,AltDif,scene);
 		// Create Exploding Center
-		let ExpGeo = 0;
-		let ExpMat = 0;
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			ExpGeo = new THREE.SphereGeometry(1,32,16); // Smoke Size = 200
-			ExpMat = new THREE.MeshBasicNodeMaterial({colorNode:color("crimson"),transparent:true,opacity:1});
-			aaf_.ExpPtr[n] = new THREE.Mesh(ExpGeo,ExpMat);
+			aaf_.ExpPtr[n] = initSphere("crimson");
 			aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
-			aaf_.ExpPtr[n].visible = false;
-		}	
+		}
 	}
 }
 
@@ -2201,6 +2206,7 @@ function loadAirExt() {
 		mxr_.Adr.visible = false;
 		// Load Related Objects only after mxr_.Adr known
 		initBullet(myg_,scene);
+		initHitBox();
 	});		
 }
 
@@ -2393,8 +2399,73 @@ function moveAirObj() {
 	// Animate -----------------------------------------------------------------	
 	if (cam_.CamFlg) moveACanimV(air_,vxr_,anm_,cam_.CamLLD); // VC
 	else moveACanimX(air_,mxr_,anm_); // External
-	// Attached Objects
+	// Bullets
 	moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg);
+	testHitBox();
+}
+
+//= HITBOX =====================//==============================================
+
+function initHitBox() {
+	// Create Exploding Center
+	myg_.ExpPtr = initSphere("yellow");
+	xac_.ObjAdr[1].add(myg_.ExpPtr); // Attach to Enemy Airplane
+}
+
+function testHitBox() {
+	// Check Bullets for Hit
+	for (let i = 0; i < myg_.BulNum; i ++) {
+		// Hitting Target?
+		if (Math.abs(xac_.ObjAdr[1].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
+			if (Math.abs(xac_.ObjAdr[1].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
+				if (Math.abs(xac_.ObjAdr[1].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
+					myg_.HitCnt++;
+				}
+			}
+		}
+	}
+	// Start Death Sequence
+	if (myg_.HitCnt > myg_.HitNum && !myg_.xacDed) {
+		myg_.xacDed = DLTime * 10;
+		// Start Explosion
+		myg_.ExpSiz = 1/Ft2Mtr;	// Start Size
+		myg_.ExpLif = 0.1;		// Start Life (seconds)
+		myg_.ExpPtr.visible = true;
+		myg_.HitCnt = 0;		// Reset Hit Counter
+	}
+	// Continue Death Sequence
+	if (myg_.xacDed > 0) {
+		// Continue Explosion
+		if (myg_.ExpLif > 0) {
+			myg_.ExpPtr.scale.setScalar(myg_.ExpSiz);
+			myg_.ExpSiz = myg_.ExpSiz + 1/Ft2Mtr;
+			myg_.ExpLif = myg_.ExpLif - DLTime;
+			if (myg_.ExpLif < 0) {
+				myg_.ExpLif = 0;
+				myg_.ExpPtr.visible = false;
+			}
+		}
+		myg_.xacDed = myg_.xacDed - DLTime;
+		if (myg_.xacDed < 0) myg_.xacDed = 0;	
+		// Trigger Things
+			// Death Spiral
+			// Smoke Trail
+			// Radio Message
+	}
+//	console.log(myg_.HitCnt);
+}
+
+//= SPHERE =====================//===============================================
+//	Used to create flash explosions
+
+function initSphere(col) {
+	let geometry = new THREE.SphereGeometry(1,32,16);
+	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
+	let mesh = new THREE.Mesh(geometry,material);
+	mesh.visible = false;
+return mesh;}
+
+function moveSphere() {
 }
 
 //= 6. SOUNDS ==================//==============================================
