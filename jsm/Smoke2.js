@@ -32,7 +32,7 @@ import {uniform,range,color,texture,uv,rotateUV,mix,time,positionLocal} from "th
 *
 *******************************************************************************/
 
-//= INITIALIZE GOUND SMOKE =====//==============================================
+//= INITIALIZE GROUND SMOKE ====//==============================================
 
 function initGrdSmk(grs_) {
 	for (let n = 0; n < grs_.ObjNum; n ++) {
@@ -75,9 +75,9 @@ function initGrdSmk(grs_) {
 	}
 }
 
-//= INITIALIZE GOUND FIRE =====//===============================================
+//= INITIALIZE GROUND FIRE =====//===============================================
 
-function initGrdSmk(grf_) {
+function initGrdFyr(grf_) {
 	for (let n = 0; n < grf_.ObjNum; n ++) {
 		// create nodes
 		let lifeRange = range(.1,1);
