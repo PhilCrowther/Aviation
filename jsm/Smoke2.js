@@ -1,5 +1,5 @@
 /*
- * Smoke.js (vers 25.03.10)
+ * Smoke.js (vers 25.03.11)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
  * Adapted from three.js examples.
@@ -163,45 +163,47 @@ function initAirSmk(xas_) {
 
 function initAirFyr(xaf_) {
 	for (let n = 0; n < xaf_.ObjNum; n ++) {
-		let lifeRange = range(0.1,1);
+		let lifeRange = range(0.5,5); // faster
 		let speed = uniform(0.2);
-		let scaledTime = time.add(5).mul(speed);
-		let lifeTime = scaledTime.mul(lifeRange).mod(1);
-		let scaleRange = range(.3,2);
+		let scaledTime = time.add(10).mul(speed);
+		let lifeTime = scaledTime.mul(lifeRange).mod(0.5); // length
+		let scaleRange = range(0.3,1); // volume - denser
 		let rotateRange = range(0.1,4);
 		let life = lifeTime.div(lifeRange);
+		//- Materials
 		let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
 		let textureNode = texture(xaf_.ObjTxt, rotateUV(uv(),scaledTime.mul(rotateRange)));
 		let opacityNode = textureNode.a.mul(life.oneMinus());
 		let smokeColor = mix(color(0x2c1501),color(0x222222),positionLocal.y.mul(3).clamp());
-		//-	Smoke
-		xaf_.SmkMat[n] = new SpriteNodeMaterial();
+		//-	Smoke Material
+		xaf_.SmkMat[n] = new THREE.SpriteNodeMaterial();
 		xaf_.SmkMat[n].colorNode = mix(color(0xf27d0c),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
 		xaf_.SmkMat[n].opacityNode = opacityNode;
-		xaf_.SmkMat[n].positionNode = range(new Vector3(-.5,3,-.5), new Vector3(1,5,1)).mul(lifeTime);
+		xaf_.SmkMat[n].positionNode = range(new THREE.Vector3(-.1,3,-.1), new THREE.Vector3(0.5,5,0.5)).mul(lifeTime); // narrower
 		xaf_.SmkMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
 		xaf_.SmkMat[n].depthWrite = false;
-		//
-		xaf_.SmkMsh[n] = new Mesh(new PlaneGeometry(1,1),xaf_.SmkMat[n]);
+		//-	Smoke Mesh
+		xaf_.SmkMsh[n] = new THREE.Mesh(new THREE.PlaneGeometry(1,1),xaf_.SmkMat[n]);
 		xaf_.SmkMsh[n].scale.setScalar(xaf_.ObjSiz);
-		xaf_.SmkMsh[n].count = 1000;
+		xaf_.SmkMsh[n].count = 250;
 		xaf_.SmkMsh[n].rotation.x = Math.PI/2;
-		//- Fire
-		xaf_.FyrMat[n] = new SpriteNodeMaterial();
+		xaf_.SmkMsh[n].position.z = 10;
+		//- Fire Material
+		xaf_.FyrMat[n] = new THREE.SpriteNodeMaterial();
 		xaf_.FyrMat[n].colorNode = mix(color(0xb72f17),color(0xb72f17),life);
-		xaf_.FyrMat[n].positionNode = range(new Vector3(-.25,1,-.25),new Vector3(.5,2,.5)).mul(lifeTime);
-		xaf_.FyrMat[n].scaleNode = xaf_.SmkMat[n].scaleNode;
 		xaf_.FyrMat[n].opacityNode = opacityNode.mul(.5);
-		xaf_.FyrMat[n].blending = AdditiveBlending;
-		xaf_.FyrMat[n].transparent = true;
+		xaf_.FyrMat[n].positionNode = range(new THREE.Vector3(-0.01,0.25,-0.01),new THREE.Vector3(0.01,0.5,0.01)).mul(lifeTime);
+		xaf_.FyrMat[n].scaleNode = xaf_.SmkMat[n].scaleNode;
 		xaf_.FyrMat[n].depthWrite = false;
-		//
-		xaf_.FyrMsh[n] = new Mesh(new PlaneGeometry(1,1),xaf_.FyrMat[n]);
+		xaf_.FyrMat[n].transparent = true;
+		xaf_.FyrMat[n].blending = THREE.AdditiveBlending;
+		//-	Fire Mesh
+		xaf_.FyrMsh[n] = new THREE.Mesh(new THREE.PlaneGeometry(1,1),xaf_.FyrMat[n]);
 		xaf_.FyrMsh[n].scale.setScalar(xaf_.ObjSiz);
-		xaf_.FyrMsh[n].count = 500;
+		xaf_.FyrMsh[n].count = 50;
 		xaf_.FyrMsh[n].renderOrder = 1;
 		xaf_.FyrMsh[n].rotation.x = Math.PI/2;
-		xaf_.FyrMsh[n].position.z = -10;
+		xaf_.FyrMsh[n].position.z = 10;
 	}
 }
 
@@ -268,7 +270,8 @@ export {initGrdSmk,initGrdFyr,initAirSmk,initAirFyr,initShpWak};
 *                                                                              *
 *******************************************************************************/
 /*
-// 250125: Version 1	:
+250125:	Version 1
+250311:	Version 2: Changed labels and added subroutines with Fire
 */
 
 
