@@ -176,29 +176,29 @@ function initAirFyr(xaf_) {
 		let opacityNode = textureNode.a.mul(life.oneMinus());
 		let smokeColor = mix(color(0x2c1501),color(0x222222),positionLocal.y.mul(3).clamp());
 		//-	Smoke Material
-		xaf_.SmkMat[n] = new THREE.SpriteNodeMaterial();
+		xaf_.SmkMat[n] = new SpriteNodeMaterial();
 		xaf_.SmkMat[n].colorNode = mix(color(0xf27d0c),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
 		xaf_.SmkMat[n].opacityNode = opacityNode;
-		xaf_.SmkMat[n].positionNode = range(new THREE.Vector3(-.1,3,-.1), new THREE.Vector3(0.5,5,0.5)).mul(lifeTime); // narrower
+		xaf_.SmkMat[n].positionNode = range(new Vector3(-.1,3,-.1), new Vector3(0.5,5,0.5)).mul(lifeTime); // narrower
 		xaf_.SmkMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
 		xaf_.SmkMat[n].depthWrite = false;
 		//-	Smoke Mesh
-		xaf_.SmkMsh[n] = new THREE.Mesh(new THREE.PlaneGeometry(1,1),xaf_.SmkMat[n]);
+		xaf_.SmkMsh[n] = new Mesh(new PlaneGeometry(1,1),xaf_.SmkMat[n]);
 		xaf_.SmkMsh[n].scale.setScalar(xaf_.ObjSiz);
 		xaf_.SmkMsh[n].count = 250;
 		xaf_.SmkMsh[n].rotation.x = Math.PI/2;
 		xaf_.SmkMsh[n].position.z = 10;
 		//- Fire Material
-		xaf_.FyrMat[n] = new THREE.SpriteNodeMaterial();
+		xaf_.FyrMat[n] = new SpriteNodeMaterial();
 		xaf_.FyrMat[n].colorNode = mix(color(0xb72f17),color(0xb72f17),life);
 		xaf_.FyrMat[n].opacityNode = opacityNode.mul(.5);
-		xaf_.FyrMat[n].positionNode = range(new THREE.Vector3(-0.01,0.25,-0.01),new THREE.Vector3(0.01,0.5,0.01)).mul(lifeTime);
+		xaf_.FyrMat[n].positionNode = range(new Vector3(-0.01,0.25,-0.01),new Vector3(0.01,0.5,0.01)).mul(lifeTime);
 		xaf_.FyrMat[n].scaleNode = xaf_.SmkMat[n].scaleNode;
 		xaf_.FyrMat[n].depthWrite = false;
 		xaf_.FyrMat[n].transparent = true;
-		xaf_.FyrMat[n].blending = THREE.AdditiveBlending;
+		xaf_.FyrMat[n].blending = AdditiveBlending;
 		//-	Fire Mesh
-		xaf_.FyrMsh[n] = new THREE.Mesh(new THREE.PlaneGeometry(1,1),xaf_.FyrMat[n]);
+		xaf_.FyrMsh[n] = new Mesh(new PlaneGeometry(1,1),xaf_.FyrMat[n]);
 		xaf_.FyrMsh[n].scale.setScalar(xaf_.ObjSiz);
 		xaf_.FyrMsh[n].count = 50;
 		xaf_.FyrMsh[n].renderOrder = 1;
