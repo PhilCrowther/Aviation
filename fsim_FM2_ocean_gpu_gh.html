@@ -1037,11 +1037,12 @@ let	rad_ = {
 		// Sound Files (voice plus static)
 		SndSrc: ["https://PhilCrowther.github.io/Aviation/sounds/radio/radio.wav",
 				 "https://PhilCrowther.github.io/Aviation/sounds/radio/noise.mp3"],
-		SndPtr: [0,0],
-		// Sound File Segments
+		SndPtr: [0,0],			// Pointer to Radio and Static Sounds
+		// Linear Segments
 		SegNum: 2,				// Number of Sequential Segments
 		SegIdx: 0,				// Index to Segment
-		SegTim: [10,30,50],		// Time from start of RadTim; first 2 = sequential; last activated by action
+		SegTim: [10,30],		// Time from start of RadTim; first 2 = sequential; last activated by action
+		// All Segments
 		SegOff: [0.0,1.0,3.5],
 		SegEnd: [1.0,2.5,2.0],
 	}
@@ -1298,11 +1299,11 @@ async function rendAll() {		// r173 added async
 		grids.update(grd_);		// Move Grids
 		// Sounds
 		moveSounds();
-		// Radio
+		// Radio Sequence
 		if (!RadTim && !air_.GrdFlg) RadTim = 1; // Start timer when leave ground
 		if (RadTim) RadTim = RadTim + difTim; // Once started, keep updating
 		if ((RadTim > rad_.SegTim[rad_.SegIdx]) && (rad_.SegIdx < rad_.SegNum)) {
-			playRadios();		// Play Segment
+			playRadSeg(rad_.SegIdx); // Play Segment
 			rad_.SegIdx++;		// Go to next segment in list
 		}
 		//
@@ -1802,27 +1803,27 @@ function moveMovPln() {
 		}
 		else {moveXACEnd(n)}	// If Ending Sequence
 		xac_.ObjAdr[n].rotation.set(xac_.ObjRot[n].x*DegRad,xac_.ObjRot[n].y*DegRad,xac_.ObjRot[n].z*DegRad);
-		// May Speed
+		//- Map Speed ..........................................................
+		//- Default = Horizontal Only
 		let SpdMPF = xac_.SpdMPS[n] * DLTime; // Speed (m/t)
 		let SpeedY = SpdMPF * Math.sin(xac_.ObjRot[n].x * DegRad);
-		if (xac_.ObjRot[n].x == 0) SpeedY = 0; // Prevent Rounding Errors
-//		console.log(SpeedY);
+		if (!xac_.EndSeq[n]) SpeedY = 0; // avoid rounding errors
 		let GS = -SpdMPF * Math.cos(xac_.ObjRot[n].x * DegRad)
 		let SpeedZ = GS * Math.cos(xac_.ObjRot[n].y * DegRad);
-		let SpeedX = GS * Math.sin(xac_.ObjRot[n].y * DegRad);	
-		// Recompute Map Position
-		xac_.MapPos[n].y = xac_.MapPos[n].y + SpeedX;
+		let SpeedX = GS * Math.sin(xac_.ObjRot[n].y * DegRad);
+		//. Recompute Map Position .............................................
 		xac_.MapPos[n].x = xac_.MapPos[n].x + SpeedX;
 		xac_.MapPos[n].z = xac_.MapPos[n].z - SpeedZ;
+		xac_.MapPos[n].y = xac_.MapPos[n].y + SpeedY;
 		// Animation - Prop (same as mine)
 		if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
-		// Compute New Relative Position
+		//. Compute New Relative Position ......................................
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
 		let Y = xac_.MapPos[n].y-AltDif;
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 	}
-	moveXACGun(1);				// Enemy Airplane Only
+	if (!xac_.EndSeq[1]) moveXACGun(1); // Enemy Airplane Only
 }
 
 //= XAC GUNS ===================//==============================================
@@ -1845,8 +1846,7 @@ function moveXACGun(n) {
 	let X = xag_.XACPos[n].x - air_.MapPos.x;
 	let Y = xag_.XACPos[n].y - AltDif;
 	let Z = air_.MapPos.z - xag_.XACPos[n].z;
-	if (X < MinDst && Y < MinDst && Z < MinDst) // If Visible
-	    {
+	if (X < MinDst && Y < MinDst && Z < MinDst) { // If Visible
 		if (XPGFlg > 0) xag_.BulFlg[n] = 1;
 		else {xag_.BulFlg[n] = 0;}
 	}
@@ -1879,7 +1879,7 @@ function moveXACEnd(n) {
 //-	Start Explosion ------------//----------------------------------------------
 function begnXACExp(n) {
 	// Both Explosions
-	xae_.ExpSiz = 1/Ft2Mtr;		// Start Size
+	xae_.ExpSiz = 0.1;			// Start Size
 	xae_.ExpLif = 0.1;			// Start Life (seconds)
 	xae_.ExpMsh.visible = true;
 	// 2nd Explosion
@@ -1907,6 +1907,7 @@ function contXACExp(n) {
 			xac_.ObjAdr[n].visible = false;
 			xac_.EndSeq[n] = 0;
 			// Trigger Final Radio Call
+			playRadSeg(2);
 		}
 	}
 }
@@ -2807,13 +2808,17 @@ function loadRadios() {
 }
 
 //-	Play Radio Sounds ----------//----------------------------------------------
-function playRadios() {
+function playRadSeg(n) {
+	// SegIdx 0 = "Over Island"; SegIdx 1 = "Help"; SegIdx 2 = "Thanks"
+	rad_.SegIdx = n;
 	if (SndFlg) {
+		// Radio
 		if (!rad_.SndPtr[0].isPlaying) {
 			if (rad_.SegOff[rad_.SegIdx]) rad_.SndPtr[0].offset = rad_.SegOff[rad_.SegIdx];
 			rad_.SndPtr[0].play();
 			rad_.SndPtr[0].stop(rad_.SegEnd[rad_.SegIdx]);
 		}
+		// Static
 		if (!rad_.SndPtr[1].isPlaying) {
 			if (rad_.SegOff[rad_.SegIdx]) rad_.SndPtr[1].offset = rad_.SegOff[rad_.SegIdx];
 			rad_.SndPtr[1].play();
