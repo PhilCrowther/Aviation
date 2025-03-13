@@ -1,0 +1,456 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+<title>Jet End Seq r174</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+	<style>
+		body {
+			overflow: hidden;
+			margin:0;
+		}
+	</style>
+</head>
+<body>
+
+<div id="container"></div>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
+			"three/webgpu": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.174.0/build/three.tsl.js",
+			"three/addons/": "https://unpkg.com/three@0.174.0/examples/jsm/"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+import {range,texture,mix,uv,color,rotateUV,positionLocal,time,uniform} from "three/tsl";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+
+//= CONSTANTS ==================//==============================================
+//-	Conversions
+const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+const Mtr2Ft = 3.28084;			// Meters to Feet
+const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
+const Mil2Km = 1.60934;
+const GrvMPS = 9.81;
+//-	Time
+let DLTime = 1/60;				// Frames per Second
+//-	Flags
+let PawsOn = 0;					// Pause
+let StatOn = 1;					// Stats ((0 = off, 1 = on)
+//-	Program Flags
+let LodFlg = 0;					// Done initializing
+//- Delay
+let BegDly = 2;					// Seconds
+
+//=	STANDARD SETUP =============================================================
+let	scene = new THREE.Scene();
+	scene.background = new THREE.Color("lightblue");
+// 	Light
+let ambLight = new THREE.AmbientLight(0xffffff,0.2);
+	scene.add(ambLight);
+//-	Camera
+let	CamAsp = window.innerWidth/window.innerHeight;
+let	camera = new THREE.PerspectiveCamera(60,CamAsp,1,50000);
+	camera.position.set(40,15,-20);
+//-	Renderer
+let	renderer = new THREE.WebGPURenderer({antialias: true});
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	document.body.appendChild(renderer.domElement);
+//-	Controls
+let	controls = new OrbitControls(camera, renderer.domElement);
+//-	Listeners
+	window.addEventListener('resize', onWindowResize);
+//-	Files
+let textureLoader = new THREE.TextureLoader();
+//-	Grid
+let helper = new THREE.GridHelper(3000,40,0x303030,0x303030);
+	helper.position.y = - 75;
+scene.add(helper);
+
+//= MOVING OBJECTS =============//==============================================
+
+//. Moving Airplanes ...........//..............................................
+let xac_ = {
+		ObjNum: 2,				// Number of airplanes
+		ObjSrc: [0,0],			// Model Source file
+		ObjTxt: [0,0],			// Texture Source File (not used)
+		ObjAdr: [makMsh(),makMsh()], // Object Address
+		ObjSiz: [Ft2Mtr,Ft2Mtr], // Scale
+		RndOrd: [0,0],			// renderOrder (not used)
+		ObjRot: [new THREE.Euler(0,0,30), // Rotation
+				 new THREE.Euler(0,0,30)],
+		MapPos: [new THREE.Vector3(180,1524,5300), // meters
+				 new THREE.Vector3(180,1524,5300)],
+		ObjRef: [0,0],			// 0 = not linked
+		// Speed
+		SpdMPS: [91.5,91,5],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+		MapSpd: [new THREE.Vector3(), // not used
+				 new THREE.Vector3()],
+		// Engine Sounds
+		EngSrc: ["fm2.wav",
+				 "fm2.wav"],
+		EngPtr: [0,0],
+		EngMsh: [new makMsh(),new makMsh()],
+		EngVol: [0.1,0.1],		// Volume
+		// End Sequence
+		HitCnt: [0,0],			// Hits Taken
+		HitMax: 5,				// Hits Requred
+		EndSeq: [0,10],			// End Sequence On
+		EndTim: 10,				// End Sequance (Seconds)
+	};
+
+
+//=	SMOKE AND FIRE: AIR BASED ==================================================
+let TxtSrc = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
+
+//- AIRPLANE EXPLOSION ---------//----------------------------------------------
+let xae_ = {
+		ExpSiz: 0,				// Explosion Size
+		ExpLif: 0,				// Remaining Life
+		ExpMsh: makeSphere("yellow"),
+	};
+
+//- AIRPLANE WHITE SMOKE -------------------------------------------------------
+let xas_ = {
+		// Shared Values
+		ObjNum: 1,				// Number of Smoke Trails
+		ObjTxt: TxtSrc,			// Texture Ref No or Source
+		ObjSiz: 800,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+	};
+
+//- AIRPLANE BLACK SMOKE WITH FLAMES -------------------------------------------
+let xaf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: TxtSrc,			// Texture Ref No or Source
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+	};
+
+/*******************************************************************************
+*
+*	MAIN PROGRAM
+*
+*******************************************************************************/
+
+	initAll();
+
+//-	INITIALIZE -----------------//----------------------------------------------
+function initAll() {
+	initMovPln();
+	xac_.ObjAdr[1].visible = true;
+	LodFlg = 1;
+}
+
+//-	RENDER ---------------------------------------------------------------------
+function rendAll() {
+	if (LodFlg) {
+		if (BegDly) {
+			BegDly = BegDly - DLTime;
+			if (BegDly < 0) BegDly = 0;
+		}
+		else {moveMovPln();}
+	}
+	controls.update();
+	renderer.renderAsync(scene, camera);
+}
+
+//= MOVING AIRPLANES ===========//==============================================
+
+//- Load Moving Airplanes ------------------------------------------------------
+function initMovPln() {
+	for (let n = 0; n < xac_.ObjNum; n++) {
+		// Front
+		let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
+		mesh.rotation.x = -Math.PI/2;
+		mesh.position.z = -5;
+		mesh.castShadow = true;
+		mesh.receiveShadow = true;
+		xac_.ObjAdr[n].add(mesh);
+		// Back
+		mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
+		mesh.rotation.x = Math.PI/2;
+		mesh.rotation.y = Math.PI;
+		mesh.position.z = 15;
+		mesh.castShadow = true;
+		mesh.receiveShadow = true;
+		xac_.ObjAdr[n].add(mesh);
+		// Wing
+		mesh = new THREE.Mesh(new THREE.BoxGeometry(50,.25,5), new THREE.MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
+		mesh.position.y = -.5;
+		mesh.position.z = 2.5;
+		mesh.castShadow = true;
+		mesh.receiveShadow = true;
+		xac_.ObjAdr[n].add(mesh);
+		// HTail
+		mesh = new THREE.Mesh(new THREE.BoxGeometry(12.5,.25,3.25), new THREE.MeshStandardNodeMaterial({colorNode:color(0xffffff)}));
+		mesh.position.y = -.5;
+		mesh.position.z = 25;
+		mesh.castShadow = true;
+		mesh.receiveShadow = true;
+		xac_.ObjAdr[n].add(mesh);
+		// VTail
+		mesh = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
+		mesh.position.y = 2.5;
+		mesh.position.z = 25;
+		mesh.castShadow = true;
+		mesh.receiveShadow = true;
+		xac_.ObjAdr[n].add(mesh);
+		xac_.ObjAdr[n].scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);
+		//
+		xac_.ObjAdr[n].rotation.order = "YXZ"; // Heading, Pitch, Bank
+		scene.add(xac_.ObjAdr[n]);
+		xac_.ObjAdr[n].visible = false;
+	}
+	initXACExp(1);				// Enemy Airplane Only
+	initXACSmk(0);				// Friendly Airplane Only
+	initXACFyr(1);				// Enemy Airplany Only
+}
+
+//- Move Moving Airplanes ------//----------------------------------------------
+function moveMovPln() {
+	for (let n = 0; n < xac_.ObjNum; n++) {
+		// Rotation
+		if (!xac_.EndSeq[n]) {	// Horizontal Turning Flight
+			let XPHSpd = Math.tan(xac_.ObjRot[n].z*DegRad)*xac_.SpdMPS[n]/GrvMPS;
+			XPHSpd = XPHSpd * DLTime;
+			xac_.ObjRot[n].y = xac_.ObjRot[n].y + XPHSpd;
+		}
+		else {moveXACEnd(n)}	// If Ending Sequence
+		xac_.ObjAdr[n].rotation.set(xac_.ObjRot[n].x*DegRad,xac_.ObjRot[n].y*DegRad,xac_.ObjRot[n].z*DegRad);
+		// Speed (Only Horizontal for Now)
+		let SpdMPF = xac_.SpdMPS[n] * DLTime; // Speed (m/t)
+		let SpeedY = -SpdMPF * Math.cos(xac_.ObjRot[n].x * DegRad);
+		let SpeedZ = -SpdMPF * Math.cos(xac_.ObjRot[n].y * DegRad);
+		let SpeedX = -SpdMPF * Math.sin(xac_.ObjRot[n].y * DegRad);
+	}
+}
+
+//= XAC END SEQUENCE ===========//==============================================
+
+function moveXACEnd(n) {
+	// If Starting, Start 1st Explosion
+	if (xac_.EndSeq[n] == xac_.EndTim) begnXACExp(n);
+	// If 1st or 2nd Explosion in Progress, Continue
+	if (xae_.ExpLif) contXACExp(n);
+	// If 1st Explosion Done, Continue Sequence
+	if (xac_.EndSeq[n] > 1) {
+		xac_.ObjRot[n].z = Mod360(xac_.ObjRot[n].z - 6); // Roll Right
+		if (xac_.ObjRot[n].x > -90) {
+			xac_.ObjRot[n].x = xac_.ObjRot[n].x - 1; // Pitch Down
+			if (xac_.ObjRot[n].x < -90) xac_.ObjRot[n].x = -90;
+		}
+		xac_.EndSeq[n] = xac_.EndSeq[n] - DLTime;
+//		console.log(xac_.EndSeq[n]);
+		// Almost End of Sequence
+		if (xac_.EndSeq[n] < 1) {
+			xac_.EndSeq[n] = 1;
+			begnXACExp(n);		// Start 2nd Explosion
+		}
+	}
+}
+
+//-	Start Explosion ------------//----------------------------------------------
+function begnXACExp(n) {
+	// Both Explosions
+	xae_.ExpSiz = 0.1;			// Start Size
+	xae_.ExpLif = 0.1;			// Start Life (seconds)
+	xae_.ExpMsh.visible = true;
+	// 2nd Explosion
+	if (xac_.EndSeq[n] == 1) xae_.ExpLif = 0.12;
+}
+
+//- Continue Explosion ---------//----------------------------------------------
+function contXACExp(n) {
+	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz);
+	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr;
+	xae_.ExpLif = xae_.ExpLif - DLTime;
+	// If Explosion Over
+	if (xae_.ExpLif < 0) {
+		xae_.ExpLif = 0;
+		xae_.ExpMsh.visible = false;
+		// End 1st Explosion
+		if (xac_.EndSeq[n] > 1) {
+			xaf_.SmkMsh[0].visible = true;
+			xaf_.FyrMsh[0].visible = true;
+		}
+		// End 2nd Explosion
+		else {
+			xaf_.SmkMsh[0].visible = false;
+			xaf_.FyrMsh[0].visible = false;
+			xac_.EndSeq[n] = 0;
+			xac_.ObjAdr[n].visible = false;
+			// Trigger Final Radio Call
+		}
+	}
+}
+
+//= AIRPLANE EXPLOSION, SMOKE AND FIRE =========================================
+
+//- Init Airplane Explosion ----//----------------------------------------------
+function initXACExp(n) {
+	// Attach Exploding Center
+	xac_.ObjAdr[n].add(xae_.ExpMsh); // Attach to Enemy Airplane
+	xae_.ExpMsh.visible = false;
+}
+
+//- Init Airplane White Smoke --//----------------------------------------------
+function initXACSmk(n) {
+	// Create Emitter
+//	xas_.ObjTxt = txt_.ObjTxt[xas_.ObjTxt];
+	xas_.ObjTxt = textureLoader.load(xaf_.ObjTxt);
+	initAirSmk(xas_);
+	// Attach to Friendly Airplane
+	xac_.ObjAdr[n].add(xas_.SmkMsh[0]);
+	xas_.SmkMsh[0].visible = false;
+}
+
+//- Init Airplane Black Smoke --//----------------------------------------------
+function initXACFyr(n) {
+	// Create Emitter
+//	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt];
+	xaf_.ObjTxt = textureLoader.load(xaf_.ObjTxt);
+	initAirFyr(xaf_);
+	// Attach to Enemy Airplane
+	xac_.ObjAdr[n].add(xaf_.SmkMsh[0]);
+	xac_.ObjAdr[n].add(xaf_.FyrMsh[0]);
+	// Turn Off
+	xaf_.SmkMsh[0].visible = false;
+	xaf_.FyrMsh[0].visible = false;
+}
+
+//=	AIRPLANE SMOKE =============================================================
+
+function initAirSmk(xas_) {
+	for (let n = 0; n < xas_.ObjNum; n ++) {
+		let lifeRange = range(0.1,1);
+		let speed = uniform(0.2);		// r170
+		let scaledTime = time.add(5).mul(speed); // r170
+		let lifeTime = scaledTime.mul(lifeRange).mod(0.05); // r170
+		let scaleRange = range(.01,.02);
+		let rotateRange = range(0.1,4);
+		let life = lifeTime.div(lifeRange);
+		//-	Materials
+		let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
+		let textureNode = texture(xas_.ObjTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
+		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
+		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+		//-	Smoke Material
+		xas_.SmkMat[n] = new THREE.SpriteNodeMaterial();
+		xas_.SmkMat[n].colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		xas_.SmkMat[n].opacityNode = opacityNode;
+		xas_.SmkMat[n].positionNode = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0)).mul(lifeTime);
+		xas_.SmkMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		xas_.SmkMat[n].depthWrite = false;
+		xas_.SmkMat[n].transparent = true;
+		//-	Smoke Mesh
+		xas_.SmkMsh[n] = new THREE.Mesh(new THREE.PlaneGeometry(1,1),xas_.SmkMat[n]);
+		xas_.SmkMsh[n].scale.setScalar(xas_.ObjSiz);
+		xas_.SmkMsh[n].isInstancedMesh = true;
+		xas_.SmkMsh[n].count = 100;
+		xas_.SmkMsh[n].rotation.x = Math.PI/2;
+		xas_.SmkMsh[n].position.z = 10;
+	}
+}
+
+//=	AIRPLANE FIRE ==============================================================
+
+function initAirFyr(xaf_) {
+	for (let n = 0; n < xaf_.ObjNum; n ++) {
+		let lifeRange = range(0.5,5); // faster
+		let speed = uniform(0.2);
+		let scaledTime = time.add(10).mul(speed);
+		let lifeTime = scaledTime.mul(lifeRange).mod(0.5); // length
+		let scaleRange = range(0.3,1); // volume - denser
+		let rotateRange = range(0.1,4);
+		let life = lifeTime.div(lifeRange);
+		//- Materials
+		let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
+		let textureNode = texture(xaf_.ObjTxt, rotateUV(uv(),scaledTime.mul(rotateRange)));
+		let opacityNode = textureNode.a.mul(life.oneMinus());
+		let smokeColor = mix(color(0x2c1501),color(0x222222),positionLocal.y.mul(3).clamp());
+		//-	Smoke Material
+		xaf_.SmkMat[n] = new THREE.SpriteNodeMaterial();
+		xaf_.SmkMat[n].colorNode = mix(color(0xf27d0c),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
+		xaf_.SmkMat[n].opacityNode = opacityNode;
+		xaf_.SmkMat[n].positionNode = range(new THREE.Vector3(-.1,3,-.1), new THREE.Vector3(0.5,5,0.5)).mul(lifeTime); // narrower
+		xaf_.SmkMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		xaf_.SmkMat[n].depthWrite = false;
+		//-	Smoke Mesh
+		xaf_.SmkMsh[n] = new THREE.Mesh(new THREE.PlaneGeometry(1,1),xaf_.SmkMat[n]);
+		xaf_.SmkMsh[n].scale.setScalar(xaf_.ObjSiz);
+		xaf_.SmkMsh[n].count = 250;
+		xaf_.SmkMsh[n].renderOrder = 2;
+		xaf_.SmkMsh[n].rotation.x = Math.PI/2;
+		xaf_.SmkMsh[n].position.z = 10;
+		//- Fire Material
+		xaf_.FyrMat[n] = new THREE.SpriteNodeMaterial();
+		xaf_.FyrMat[n].colorNode = mix(color(0xb72f17),color(0xb72f17),life);
+		xaf_.FyrMat[n].opacityNode = opacityNode.mul(.5);
+		xaf_.FyrMat[n].positionNode = range(new THREE.Vector3(-0.01,0.25,-0.01),new THREE.Vector3(0.01,0.5,0.01)).mul(lifeTime);
+		xaf_.FyrMat[n].scaleNode = xaf_.SmkMat[n].scaleNode;
+		xaf_.FyrMat[n].depthWrite = false;
+		xaf_.FyrMat[n].transparent = true;
+		xaf_.FyrMat[n].blending = THREE.AdditiveBlending;
+		//-	Fire Mesh
+		xaf_.FyrMsh[n] = new THREE.Mesh(new THREE.PlaneGeometry(1,1),xaf_.FyrMat[n]);
+		xaf_.FyrMsh[n].scale.setScalar(xaf_.ObjSiz);
+		xaf_.FyrMsh[n].count = 50;
+		xaf_.FyrMsh[n].renderOrder = 1;
+		xaf_.FyrMsh[n].rotation.x = Math.PI/2;
+		xaf_.FyrMsh[n].position.z = 10;
+	}
+}
+
+//= MISC SUBROUTINES ===========================================================
+
+//- Make Sphere ----------------//----------------------------------------------
+function makeSphere(col) {
+	let geometry = new THREE.SphereGeometry(1,32,16);
+	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
+	let mesh = new THREE.Mesh(geometry,material);
+	mesh.visible = false;
+return mesh;}
+
+//- Converts degrees to 360 ----//----------------------------------------------
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;	// Make deg a positive number
+	deg = deg % 360;				// Compute remainder of any number divided by 360
+return deg;}
+
+//- Make Simple Mesh -----------//----------------------------------------------
+function makMsh() {
+	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
+	let material = new THREE.MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacityNode:0});
+	let mesh = new THREE.Mesh(geometry,material);
+return mesh;}
+
+//= WINDOW RESIZE ==============//==============================================
+function onWindowResize() {
+	CamAsp = window.innerWidth/window.innerHeight;
+	camera.aspect = CamAsp;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth,window.innerHeight);
+}
+
+</script>
+</body>
+</html>
