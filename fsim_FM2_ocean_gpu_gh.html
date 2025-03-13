@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Mar 2025
+Version dated 10 Mar 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -75,7 +75,9 @@ This demo has now been expanded to include a battle scenario which will eventual
 
 // Basic Modules
 import * as THREE from "three";
-import {color,texture,posterize,oscSine,time,output} from "three/tsl";
+import {color,texture,posterize,oscSine,time,output,
+		range,uniform,positionLocal,rotateUV,uv,mix,
+} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
@@ -88,7 +90,10 @@ import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
 		initAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
 } from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
-import {initVulkan,initShpWak,initAirSmk} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
+import {initGrdSmk,initGrdFyr,	// Ground Based
+		initAirSmk,initAirFyr,	// Air Based
+		initShpWak				// Ship Based
+} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke2.js";
 2
 /*= GENERAL ====================//==============================================
 
@@ -247,7 +252,7 @@ let ShdBLR = 12;
 let ShdBTB = 4;
 let ShdDst = 1500;				// Shadow Distance (meters)
 
-//- STANDARD SETUP -------------//----------------------------------------------
+//= STANDARD SETUP =============//==============================================
 // 	Scene
 const scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
@@ -517,6 +522,11 @@ let xac_ = {
 		EngPtr: [0,0],
 		EngMsh: [new makMsh(),new makMsh()],
 		EngVol: [0.1,0.1],		// Volume
+		// End Sequence
+		HitCnt: [0,0],			// Hits Taken
+		HitMax: 5,				// Hits Requred
+		EndSeq: [0,0],			// End Sequence On
+		EndTim: 10,				// End Sequance (Seconds)
 	};
 
 //. Moving Ships ...............//..............................................
@@ -569,19 +579,70 @@ let	flg_ = {
 
 //- VOLCANO SMOKE --------------//----------------------------------------------
 //	Can use this for Volcano or to Show Battle Damage
-let vlk_ = {
+let grs_ = {
 		ObjNum: 1,				// Number of Smokes
-		ObjSrc: [0],			// Not Used
-		ObjTxt: [1],			// Shared Texture Reference Number
-		ObjMat: [0],			// Material
-		ObjAdr: [0],			// Emitter Address
-		ObjSiz: [4000],			// Scale
-		RndOrd: [1],			// renderOrder
+		// Shared Values		
+		ObjTxt: 1,				// Shared Texture Reference Number
+		ObjSiz: 4000,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+		// Rotaton and Position
 		ObjRot: [new THREE.Euler()], // Rotation (not used)
 		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
 		ObjRef: [isl_.ObjGrp[0]], // Parent Object
 	};
-	
+
+//- HANGAR FIRE ----------------//----------------------------------------------
+let grf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: 0,				// Texture
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+		// Rotation and Position
+		ObjRot: [new THREE.Euler()], // Rotation
+		MapPos: [new THREE.Vector3(-562,-22.5,-363)], // Map Position
+		ObjRef: [isl_.ObjGrp[0]], // Parent Object
+	};
+
+//- AIRPLANE EXPLOSION ---------//----------------------------------------------
+let xae_ = {
+		ExpSiz: 0,				// Explosion Size
+		ExpLif: 0,				// Remaining Life
+		ExpMsh: makeSphere("yellow"),
+	};
+
+//- AIRPLANE WHITE SMOKE -------//----------------------------------------------
+let xas_ = {
+		// Shared Values
+		ObjNum: 1,				// Number of Smoke Trails
+		ObjTxt: 0,				// Shared Texture Reference Number
+		ObjSiz: 800,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+	};
+
+//- AIRPLANE BLACK SMOKE WITH FLAMES -------------------------------------------
+let xaf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: 0,				// Texture
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+	};
+
 //- SHIP WAKES ----------------------//------------------------------------------
 //	Used for Ships and Torpedoes
 let wak_ = {
@@ -598,22 +659,6 @@ let wak_ = {
 				 new THREE.Vector3(50,75,25)],
 		ObjRef: [xsh_.ObjGrp[0], // Parent Object
 				 xsh_.ObjGrp[1]],
-	};
-
-//- AIRPLANE SMOKE -------------------------------------------------------------
-//	For now, airplane #1 is smoking constantly
-let xas_ = {
-		ObjNum: 1,				// Number of Wakes
-		ObjSrc: [0],			// Not Used
-		ObjTxt: [0],			// Shared Texture Reference Number
-		ObjMat: [0],			// Material
-		ObjAdr: [0],			// Emitter Address
-		ObjSiz: [800],			// Scale
-		RndOrd: [0],			// renderOrder - Not Used
-		ObjRot: [new THREE.Euler(), // Rotation (not used)
-				new THREE.Euler()],
-		MapPos: [new THREE.Vector3(0)], // Map Position - Not Used
-		ObjRef: [0],			// Parent Object - Not Used
 	};
 
 //= GUNASG MODULE ==============//==============================================
@@ -656,15 +701,8 @@ let myg_ = {
 		SndVol: 0.5,			// Volume
 		SndMsh: [new makMsh(),new makMsh()],
 		// HitBox
+		HitTgt: 1,				// Hit Target (1 = enemy airplane_
 		HitDst: 10,				// Hit Radius
-		HitNum: 5,				// Hits Required for Kill
-		HitCnt: 0,				// Hit Counter
-		// Explosion
-		ExpPtr: 0,				// Sphere Address
-		ExpSiz: 0,				// Explosion Size
-		ExpLif: 0,				// Remaining Life
-		// Sequence
-		xacDed: 0,				// Begin Death Sequence
 	}
 
 //- GUNS (MOVING AIRPLANE) -----//----------------------------------------------
@@ -811,6 +849,20 @@ let xsg_ = {
 		ExpSiz: [0,0],			// Expanding Size
 		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
+
+//= EXPLOSIONS =================//==============================================
+
+//- Explosions -----------------//----------------------------------------------
+let exp_ = {
+		ExpNum: 2,				//
+		ExpCol: ["red","yellow"], // Red = AA, Yellow = XAC End
+		ExpMsh: [0,0],			// Mesh	
+}
+
+//-	Aiplanes -------------------//----------------------------------------------
+let	exa_ = {
+		ExpRef: [1,1]
+	}
 
 //= MY PEEPS ===================//==============================================
 //- Animated Objects: Linked ---//----------------------------------------------
@@ -1451,6 +1503,7 @@ function loadObject() {
 			txt_.ObjTxt[n] = txtrLoader.load(txt_.ObjSrc[n]);	
 		}
 	}
+	//
 	loadStatic();
 	loadMoving();
 	loadAnmFlg();
@@ -1475,6 +1528,7 @@ function moveObject() {
 function loadStatic() {
 	loadIsland();
 	if (fxd_.ObjNum) loadFxdObj();
+	
 }
 
 function initStatic() {
@@ -1521,7 +1575,7 @@ function initAAAGun() {
 		initAAGuns(aaf_,air_,AltDif,scene);
 		// Create Exploding Center
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			aaf_.ExpPtr[n] = initSphere("crimson");
+			aaf_.ExpPtr[n] = makeSphere("crimson");
 			aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
 		}
 	}
@@ -1575,6 +1629,16 @@ function moveAAAGun() {
 		}
 	}
 }
+
+//- Sphere ---------------------//---------------------------------------------
+//	Used to create flash explosions
+
+function makeSphere(col) {
+	let geometry = new THREE.SphereGeometry(1,32,16);
+	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
+	let mesh = new THREE.Mesh(geometry,material);
+	mesh.visible = false;
+return mesh;}
 
 //= ISLANDS ====================//==============================================
 
@@ -1633,12 +1697,12 @@ function moveIsland() {
 	}
 }
 
-//= VOLCANO SMOKE ==============//==============================================
-
-//- Init Volcano ---------------//----------------------------------------------
+//- Init Volcano Smoke ---------//----------------------------------------------
 function initVlkSmk() {
-	vlk_.ObjTxt[0] = txt_.ObjTxt[vlk_.ObjTxt[0]];
-	initVulkan(vlk_);
+	grs_.ObjTxt = txt_.ObjTxt[grs_.ObjTxt];
+	initGrdSmk(grs_);
+	grs_.SmkMsh[0].position.copy(grs_.MapPos[0]);
+	grs_.ObjRef[0].add(grs_.SmkMsh[0]);
 }
 
 //= STATIC OBJECTS =============//==============================================
@@ -1654,6 +1718,7 @@ function loadFxdObj() {
 			fxd_.ObjRef[i].add(fxd_.ObjAdr[i]);
 		});
 	}
+//	initHgrFyr();		// Needs More Work
 }
 
 //- Move Objects ---------------//----------------------------------------------
@@ -1661,6 +1726,17 @@ function moveFxdObj() {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
 		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y + AltDif*0.01;
 	}
+}
+
+//- Init Hangar Fire -----------//----------------------------------------------
+function initHgrFyr() {
+	grf_.ObjTxt = txt_.ObjTxt[grf_.ObjTxt];
+	initGrdFyr(grf_);
+	//-	Link	
+	grf_.SmkMsh[0].position.copy(grf_.MapPos[0]);
+	grf_.ObjRef[0].add(grf_.SmkMsh[0]);
+	grf_.FyrMsh[0].position.copy(grf_.MapPos[0]);
+	grf_.ObjRef[0].add(grf_.FyrMsh[0]);
 }
 
 //= MOVING AIRPLANES ===========//==============================================
@@ -1709,23 +1785,33 @@ function initMovPln() {
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 		scene.add(xac_.ObjAdr[n]);
 	};
-	initXACGun();
-	initXACSmk();
+	initXACGun();				// Enemy Airplane Only
+	initXACExp(1);				// Enemy Airplane Only
+	initXACSmk(0);				// Friendly Airplane Only
+	initXACFyr(1);				// Enemy Airplane Only
 }
 
 //- Move Plane -----------------//----------------------------------------------
 function moveMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		// Rotation
-		let XPHSpd = Math.tan(xac_.ObjRot[n].z*DegRad)*xac_.SpdMPS[n]/GrvMPS;
-		XPHSpd = XPHSpd * DLTime;
-		xac_.ObjRot[n].y = xac_.ObjRot[n].y + XPHSpd;
-		xac_.ObjAdr[n].rotation.set(0,xac_.ObjRot[n].y*DegRad,xac_.ObjRot[n].z*DegRad);
-		// Speed (Only Horizontal for Now)
+		if (!xac_.EndSeq[n]) {	// Horizontal Turning Flight
+			let XPHSpd = Math.tan(xac_.ObjRot[n].z*DegRad)*xac_.SpdMPS[n]/GrvMPS;
+			XPHSpd = XPHSpd * DLTime;
+			xac_.ObjRot[n].y = xac_.ObjRot[n].y + XPHSpd;
+		}
+		else {moveXACEnd(n)}	// If Ending Sequence
+		xac_.ObjAdr[n].rotation.set(xac_.ObjRot[n].x*DegRad,xac_.ObjRot[n].y*DegRad,xac_.ObjRot[n].z*DegRad);
+		// May Speed
 		let SpdMPF = xac_.SpdMPS[n] * DLTime; // Speed (m/t)
-		let SpeedZ = -SpdMPF * Math.cos(xac_.ObjRot[n].y * DegRad);
-		let SpeedX = -SpdMPF * Math.sin(xac_.ObjRot[n].y * DegRad);
+		let SpeedY = SpdMPF * Math.sin(xac_.ObjRot[n].x * DegRad);
+		if (xac_.ObjRot[n].x == 0) SpeedY = 0; // Prevent Rounding Errors
+//		console.log(SpeedY);
+		let GS = -SpdMPF * Math.cos(xac_.ObjRot[n].x * DegRad)
+		let SpeedZ = GS * Math.cos(xac_.ObjRot[n].y * DegRad);
+		let SpeedX = GS * Math.sin(xac_.ObjRot[n].y * DegRad);	
 		// Recompute Map Position
+		xac_.MapPos[n].y = xac_.MapPos[n].y + SpeedX;
 		xac_.MapPos[n].x = xac_.MapPos[n].x + SpeedX;
 		xac_.MapPos[n].z = xac_.MapPos[n].z - SpeedZ;
 		// Animation - Prop (same as mine)
@@ -1736,21 +1822,21 @@ function moveMovPln() {
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 	}
-	moveXACGun();
+	moveXACGun(1);				// Enemy Airplane Only
 }
 
-//= AIRPLANE GUNS ==============//==============================================
+//= XAC GUNS ===================//==============================================
 
 //- Init Airplane Guns ---------//----------------------------------------------
 function initXACGun() {
 	initXACBul(xag_,scene);
 }
 
-//- Move Airplane Guns ---------//----------------------------------------------
-function moveXACGun() {
-	let n = 1;					// Japanese Aircraft
+//- Move XAC Guns --------------//----------------------------------------------
+//	Enemy Airplane Only
+function moveXACGun(n) {
 	// Turn Airplane 2 (Enemy) Guns On/Off
-	xag_.BulFlg[1] = 0;			// Default = Off
+	xag_.BulFlg[n] = 0;			// Default = Off
 	// Counter
 	XPGFlg = XPGFlg - 1;
 	if (XPGFlg < XPGMin) XPGFlg = XPGMax;
@@ -1761,21 +1847,100 @@ function moveXACGun() {
 	let Z = air_.MapPos.z - xag_.XACPos[n].z;
 	if (X < MinDst && Y < MinDst && Z < MinDst) // If Visible
 	    {
-		if (XPGFlg > 0) xag_.BulFlg[1] = 1;
-		else {xag_.BulFlg[1] = 0;}
+		if (XPGFlg > 0) xag_.BulFlg[n] = 1;
+		else {xag_.BulFlg[n] = 0;}
 	}
 	moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT);
 }
 
+//= XAC END SEQUENCE ===========//==============================================
+
+function moveXACEnd(n) {
+	// If Starting, Start 1st Explosion
+	if (xac_.EndSeq[n] == xac_.EndTim) begnXACExp(n);
+	// If 1st or 2nd Explosion in Progress, Continue
+	if (xae_.ExpLif) contXACExp(n);
+	// If 1st Explosion Done, Continue Sequence
+	if (xac_.EndSeq[n] > 1) {
+		xac_.ObjRot[n].z = Mod360(xac_.ObjRot[n].z - 6); // Roll Right
+		if (xac_.ObjRot[n].x > -90) {
+			xac_.ObjRot[n].x = xac_.ObjRot[n].x - 1; // Pitch Down
+			if (xac_.ObjRot[n].x < -90) xac_.ObjRot[n].x = -90;
+		}
+		xac_.EndSeq[n] = xac_.EndSeq[n] - DLTime;
+		// Almost End of Sequence
+		if (xac_.EndSeq[n] < 1) {
+			xac_.EndSeq[n] = 1;
+			begnXACExp(n);		// Start 2nd Explosion
+		}
+	}
+}
+
+//-	Start Explosion ------------//----------------------------------------------
+function begnXACExp(n) {
+	// Both Explosions
+	xae_.ExpSiz = 1/Ft2Mtr;		// Start Size
+	xae_.ExpLif = 0.1;			// Start Life (seconds)
+	xae_.ExpMsh.visible = true;
+	// 2nd Explosion
+	if (xac_.EndSeq[n] == 1) xae_.ExpLif = 0.3;
+}
+
+//- Continue Explosion ---------//----------------------------------------------
+function contXACExp(n) {
+	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz);
+	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr;
+	xae_.ExpLif = xae_.ExpLif - DLTime;
+	// If Explosion Over
+	if (xae_.ExpLif < 0) {
+		xae_.ExpLif = 0;
+		xae_.ExpMsh.visible = false;
+		// End 1st Explosion
+		if (xac_.EndSeq[n] > 1) {
+			xaf_.SmkMsh[0].visible = true;
+			xaf_.FyrMsh[0].visible = true;
+		}
+		// End 2nd Explosion
+		else {
+			xaf_.SmkMsh[0].visible = false;
+			xaf_.FyrMsh[0].visible = false;
+			xac_.ObjAdr[n].visible = false;
+			xac_.EndSeq[n] = 0;
+			// Trigger Final Radio Call
+		}
+	}
+}
+
 //= AIRPLANE SMOKE =============//==============================================
 
-//- Init Airplane Smoke --------//----------------------------------------------
-function initXACSmk() {
-	for (let n = 0; n < xas_.ObjNum; n ++) {
-		xas_.ObjTxt[n] = txt_.ObjTxt[xas_.ObjTxt[n]];
-	}
+//- Init Airplane Explosion ----//----------------------------------------------
+function initXACExp(n) {
+	// Attach Exploding Center
+	xac_.ObjAdr[n].add(xae_.ExpMsh); // Attach to Enemy Airplane
+	xae_.ExpMsh.visible = false;
+}
+
+//- Init Airplane White Smoke --//----------------------------------------------
+function initXACSmk(n) {
+	// Create Emitter
+	xas_.ObjTxt = txt_.ObjTxt[xas_.ObjTxt];
 	initAirSmk(xas_);
-	xac_.ObjAdr[0].add(xas_.ObjAdr[0]); // Attach smoke to Airplane 1
+	// Attach to Friendly Airplane
+	xac_.ObjAdr[n].add(xas_.SmkMsh[0]);
+//	xas_.SmkMsh[0].visible = false;	// Always On
+}
+
+//- Init Airplane Black Smoke --//----------------------------------------------
+function initXACFyr(n) {
+	// Create Emitter
+	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt];
+	initAirFyr(xaf_);
+	// Attach to Enemy Airplane
+	xac_.ObjAdr[n].add(xaf_.SmkMsh[0]);
+	xac_.ObjAdr[n].add(xaf_.FyrMsh[0]);
+	// Turn Off
+	xaf_.SmkMsh[0].visible = false;
+	xaf_.FyrMsh[0].visible = false;
 }
 
 //= MOVING SHIPS ===============//==============================================
@@ -2206,7 +2371,6 @@ function loadAirExt() {
 		mxr_.Adr.visible = false;
 		// Load Related Objects only after mxr_.Adr known
 		initBullet(myg_,scene);
-		initHitBox();
 	});		
 }
 
@@ -2406,66 +2570,26 @@ function moveAirObj() {
 
 //= HITBOX =====================//==============================================
 
-function initHitBox() {
-	// Create Exploding Center
-	myg_.ExpPtr = initSphere("yellow");
-	xac_.ObjAdr[1].add(myg_.ExpPtr); // Attach to Enemy Airplane
-}
-
 function testHitBox() {
-	// Check Bullets for Hit
-	for (let i = 0; i < myg_.BulNum; i ++) {
-		// Hitting Target?
-		if (Math.abs(xac_.ObjAdr[1].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
-			if (Math.abs(xac_.ObjAdr[1].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
-				if (Math.abs(xac_.ObjAdr[1].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
-					myg_.HitCnt++;
+	let n = myg_.HitTgt;
+	if (!xac_.EndSeq[n]) { // If Not Already in Sequence
+		// Check Bullets for Hit
+		for (let i = 0; i < myg_.BulNum; i ++) {
+			// Hitting Target?
+			if (Math.abs(xac_.ObjAdr[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
+				if (Math.abs(xac_.ObjAdr[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
+					if (Math.abs(xac_.ObjAdr[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
+						xac_.HitCnt[n]++;
+					}
 				}
 			}
 		}
 	}
-	// Start Death Sequence
-	if (myg_.HitCnt > myg_.HitNum && !myg_.xacDed) {
-		myg_.xacDed = DLTime * 10;
-		// Start Explosion
-		myg_.ExpSiz = 1/Ft2Mtr;	// Start Size
-		myg_.ExpLif = 0.1;		// Start Life (seconds)
-		myg_.ExpPtr.visible = true;
-		myg_.HitCnt = 0;		// Reset Hit Counter
+	// Start Ending Sequence
+	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
+		xac_.EndSeq[n] = xac_.EndTim;
+		xac_.HitCnt[n] = 0;		// Reset Hit Counter
 	}
-	// Continue Death Sequence
-	if (myg_.xacDed > 0) {
-		// Continue Explosion
-		if (myg_.ExpLif > 0) {
-			myg_.ExpPtr.scale.setScalar(myg_.ExpSiz);
-			myg_.ExpSiz = myg_.ExpSiz + 1/Ft2Mtr;
-			myg_.ExpLif = myg_.ExpLif - DLTime;
-			if (myg_.ExpLif < 0) {
-				myg_.ExpLif = 0;
-				myg_.ExpPtr.visible = false;
-			}
-		}
-		myg_.xacDed = myg_.xacDed - DLTime;
-		if (myg_.xacDed < 0) myg_.xacDed = 0;	
-		// Trigger Things
-			// Death Spiral
-			// Smoke Trail
-			// Radio Message
-	}
-//	console.log(myg_.HitCnt);
-}
-
-//= SPHERE =====================//===============================================
-//	Used to create flash explosions
-
-function initSphere(col) {
-	let geometry = new THREE.SphereGeometry(1,32,16);
-	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
-	let mesh = new THREE.Mesh(geometry,material);
-	mesh.visible = false;
-return mesh;}
-
-function moveSphere() {
 }
 
 //= 6. SOUNDS ==================//==============================================
