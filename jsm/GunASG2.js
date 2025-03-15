@@ -124,14 +124,14 @@ function initBullet(myg_,scene) {
 
 //= MOVE MY BULLETS ============//==============================================
 
-function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
+function moveBullet(myg_,air_,DLTime,GrvDLT) {
 	let BulSV3 = new Vector3();
 	let	BulSpT = myg_.BulSpd * DLTime;
 	myg_.BulSp2 = myg_.BulSp2 - DLTime;
 	if (myg_.BulSp2 < 0) myg_.BulSp2 = 0;
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		// Start New Bullets
-		if (!myg_.BulTim[i] && !myg_.BulSp2 && MYGFlg) {
+		if (!myg_.BulTim[i] && !myg_.BulSp2 && myg_.SndFlg) {
 			// Set Initial Position
 			myg_.BulPtr[i].position.set(0,0,0);
 			// Set Initial Rotation
@@ -169,14 +169,14 @@ function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
 
 function testHitBox(myg_) {
 	let n = myg_.HitSel;
-	if (!xac_.EndSeq[n]) { // If Not Already in Sequence
+	if (!myg_.HitTgt.EndSeq[n]) { // If Not Already in Sequence
 		// Check Bullets for Hit
 		for (let i = 0; i < myg_.BulNum; i ++) {
 			// Hitting Target?
 			if (Math.abs(myg_.HitTgt.ObjAdr[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitTgt.HitRad) {
 				if (Math.abs(myg_.HitTgt.ObjAdr[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitTgt.HitRad) {
 					if (Math.abs(myg_.HitTgt.ObjAdr[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitTgt.HitRad) {
-						xac_.HitCnt[n]++;
+						myg_.HitTgt.HitCnt[n]++;
 					}
 				}
 			}
