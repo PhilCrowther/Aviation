@@ -50,8 +50,8 @@ import {
 
 //- Load and Initialize Sounds -------------------------------------------------
 function loadSounds(audoLoader,listener,camera,air_,mys_,myg_,xac_,xag_,xsg_,aaf_) {
-	audoLoader = new THREE.AudioLoader();
-	listener = new THREE.AudioListener();
+	audoLoader = new AudioLoader();
+	listener = new AudioListener();
 	camera.add(listener);
 	// Load MYP Sounds .........................................................
 	let RefDst = 25;			// Reference distance for Positional Audio
@@ -152,15 +152,15 @@ function loadSounds(audoLoader,listener,camera,air_,mys_,myg_,xac_,xag_,xsg_,aaf
 	
 	// Init Sounds .............................................................
 	//- My Engine and Prop
-	mys_.EngSnd = new THREE.PositionalAudio(listener);
-	mys_.PrpSnd = new THREE.PositionalAudio(listener);
+	mys_.EngSnd = new PositionalAudio(listener);
+	mys_.PrpSnd = new PositionalAudio(listener);
 	mys_.AirMsh.add(mys_.EngSnd);			// Engine
 	mys_.AirMsh.add(mys_.PrpSnd);			// Prop
 	mys_.AirMsh.position.z = -5;
 	air_.AirObj.add(mys_.AirMsh);
 	//- My Guns (Left and Rite)
 	for (let n = 0; n < myg_.ObjNum; n ++) {
-		myg_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		myg_.SndPtr[n] = new PositionalAudio(listener);
 		myg_.SndMsh[n].add(myg_.SndPtr[n]);
 		myg_.SndMsh[n].position.x = -5;
 		air_.AirObj.add(myg_.SndMsh[n]);
@@ -168,27 +168,27 @@ function loadSounds(audoLoader,listener,camera,air_,mys_,myg_,xac_,xag_,xsg_,aaf
 	//- Moving Airplane Sounds (centered at ObjAdr)
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		// Engine
-		xac_.EngPtr[n] = new THREE.PositionalAudio(listener);
+		xac_.EngPtr[n] = new PositionalAudio(listener);
 		xac_.EngMsh[n].add(xac_.EngPtr[n]);
 		xac_.ObjAdr[n].add(xac_.EngMsh[n]);
 		// Guns
-		xag_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		xag_.SndPtr[n] = new PositionalAudio(listener);
 		xag_.SndMsh[n].add(xag_.SndPtr[n]);
 		xac_.ObjAdr[n].add(xag_.SndMsh[n]);
 		// End Explosion
-		xac_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		xac_.SndPtr[n] = new PositionalAudio(listener);
 		xac_.SndMsh[n].add(xac_.SndPtr[n]);
 		xac_.ObjAdr[n].add(xac_.SndMsh[n]);	
 	}
 	// Moving Ship AAA - End Explosions
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		xsg_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		xsg_.SndPtr[n] = new PositionalAudio(listener);
 		xsg_.SndMsh[n].add(xsg_.SndPtr[n]);
 		xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
 	}
 	// Fixed Ground AAA - End Explosions
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		aaf_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		aaf_.SndPtr[n] = new PositionalAudio(listener);
 		aaf_.SndMsh[n].add(aaf_.SndPtr[n]);
 		aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
 	}
