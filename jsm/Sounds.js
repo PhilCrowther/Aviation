@@ -133,23 +133,7 @@ function loadSounds(audoLoader,listener,camera,air_,mys_,myg_,xac_,xag_,xsg_,aaf
 			aaf_.SndPtr[n].setRefDistance(RefDst);
 			aaf_.SndPtr[n].setVolume(0);
 		});	
-	}
-		//-	Static
-	rad_.SndAdr[0] = new Audio(listener);	
-	audoLoader.load(rad_.SndSrc[0],function(buffer) {
-		rad_.SndAdr[0].setBuffer(buffer);
-		rad_.SndAdr[0].setVolume(1.0);
-	});
-	//-	Radio
-	rad_.SndAdr[1] = new Audio(listener);	
-	audoLoader.load(rad_.SndSrc[1],function(buffer) {
-		rad_.SndAdr[1].setBuffer(buffer);
-		rad_.SndAdr[1].setVolume(0.7);
-		rad_.SndAdr[0].setPlaybackRate(1.05);
-	});
-
-	
-	
+	}	
 	// Init Sounds .............................................................
 	//- My Engine and Prop
 	mys_.EngSnd = new PositionalAudio(listener);
