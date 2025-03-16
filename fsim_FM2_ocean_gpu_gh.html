@@ -144,6 +144,12 @@ OK
 
 	VARIABLES (also see Data File)
 	1. MAIN VARIABLES
+	   Inputs						Starting Values
+	   Constants
+	   Input Values
+	   Sun Values					Inputs for Directional Light
+	   Standard Setup
+	   Fad2Black Plane				Used for scene transitions
 	2. SKYBOX VARIABLES
 	3. GEOMAT VARIABLES
 		GRDWTR MODULE				(grd_)
@@ -164,36 +170,43 @@ OK
 	    	Airplane Smoke Trail	(xas_)
 	    	Airplane Fire Trail		(xaf_)
 	    	Ship Wakes				(wak_)
-		GUNASG MODULE
+		MYPEEPS						(myp_)
+		MINIMUM ALTITUDE			(alt_)
+	5. MY AIRPLANE VARIABLES		(air_)
+		FLIGHT MODULE
+		ANIMFM2 MODULE				(anm_,mxr_,vxr_)
+	x. GUNASG MODULE
 			My Guns					(myg_)
 			Moving Airplanes		(xag_)
 			Moving Ships			(xsg_)
 			Fixed Guns				(aaf_)
-		MYPEEPS						(myp_)
-		MINIMUM ALTITUDE			(alt_)
-	5. MY AIRPLANE VARIABLES (air_)
-		FLIGHT MODULE
-		ANIMFM2 MODULE				(anm_)
-		GUNASG MODULE				(myg_)
 	6. SOUND VARIABLES
-	   RADIO VARIABLES				(rad_)
+		My Sounds					(mys_)
+		Radio Variables				(rad_)
 	7. CAMERA VARIABLES				(cam_)
-	8. OUTPUT VAIABLES
+	8. OUTPUT VARIABLES
 	9. INPUT VARIABLES
+	   Pointer Lock Control
 
 	PROGRAM
-	1. MAIN			Main Program
-	2. SKYBOX		SkyCube
-	3. GEOMAT		Grids and Textures
-	4. OBJECTS		Static and Moving Objects and Animations
-	   XAC			Moving Airplanes (0 = Friendly; 1 = Enemy)
-	   XAS			Moving Ships (0 = Carrier; 1 = Destroyer)
-	5. MY AIRPLANE	My Airplane and Animations
-	6. SOUNDS		All Sounds
-	   RADIO SOUNDS
-	7. CAMERA		Camera Views
-	8. OUTPUTS		Screen Text and Numbers
-	9. INPUTS		Key and Mouse Inputs
+	1. MAIN							Main Program
+	   LoadAll						Load All Images
+	   InitAll						Intialize
+	   RendAll						Render
+	   FadMsh						Fade to Black
+	2. SKYBOX						SkyCube
+	3. GEOMAT						Grids and Textures
+	4. OBJECTS						Static and Moving Objects and Animations
+	    Isl							Islands
+	    Fxd							Fixed Objects
+	    XAC							Moving Airplanes (0 = Friendly; 1 = Enemy)
+	    XAS							Moving Ships (0 = Carrier; 1 = Destroyer)
+	5. MY AIRPLANE					My Airplane and Animations
+	6. SOUNDS						All Sounds
+	   RADIO SOUNDS					Radio Calls
+	7. CAMERA						Camera Views
+	8. OUTPUTS						Screen Text and Numbers
+	9. INPUTS						Keyboard and Mouse Inputs
 */
 
 /*******************************************************************************
@@ -540,8 +553,8 @@ let xac_ = {
 		MixBnk: [0,0],			// Animation Mixer - Bank
 		AnmBnk: [0,0],			// Animation
 		// Engine Sounds
-		EngSrc: ["fm2.wav",
-				 "fm2.wav"],
+		EngSrc: [XPPath + "sounds/fm2.wav",
+				 XPPath + "sounds/fm2.wav"],
 		EngPtr: [0,0],
 		EngMsh: [new makMsh(),new makMsh()],
 		EngVol: [0.1,0.1],		// Volume
@@ -689,193 +702,6 @@ let wak_ = {
 				 new THREE.Vector3(50,75,25)],
 		ObjRef: [xsh_.ObjGrp[0], // Parent Object
 				 xsh_.ObjGrp[1]],
-	};
-
-//= GUNASG MODULE ==============//==============================================
-//- Aircraft Guns
-//	M2 Browning .50 caliber
-let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
-let BulDLT = 0.5;				// Bullet Maximum Time in Flight
-let BulNum = 16;				// Number of bullets
-let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
-//	AA Guns
-//	Bofors anti-aircraft guns - 40 mm (1.57 in)
-let AAANum = 16;				// Number of bullets
-let AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
-let AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
-let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
-//	Adjust y-Rotation
-let AARYBg = [90,0];			// Starting Y-Rotation
-let AARYDf = [0,0];				// Y-Rotation Adjustment
-//	Smoke
-//let SmkOpR = 0.01;			// Opacity Reduction per Frame
-let SmkOpR = 0.005;				// Opacity Reduction per Frame
-
-//- My Guns --------------------//----------------------------------------------
-let myg_ = {
-		// Data
-		BulSpd: BulSpd,			// Muzzle Velocity (mps)
-		BulDLT: BulDLT,			// Max Bullet Time in Flight
-		BulNum: BulNum,			// Number of bullets
-		BulSpc: BulSpc,			// Bullet spacing
-		BulSp2: BulSpc,
-		// Object
-		BulClr: new THREE.Vector2(0xff80ff,0x804080), // Red
-		BulPtr: [0],			// Bullet Objects
-		BulMpS: [0],			// Bullet Speed
-		BulTim: [0],			// Bullet Time in Flight
-		// Sound
-		ObjNum: 2,
-		SndSrc: "fm2_gun.mp3",	// File (my guns)
-		SndPtr: [0,0],
-		SndVol: 0.5,			// Volume
-		SndMsh: [new makMsh(),new makMsh()],
-		// HitBox
-		HitTgt: 1,				// Hit Target (1 = enemy airplane_
-		HitDst: 10,				// Hit Radius
-	}
-
-//- Moving Airplanes -----------//----------------------------------------------
-let XPGMax = 120;				// Guns Firing (2 secs)
-let XPGFlg = XPGMax;
-let XPGMin = -600;				// Guns Not Firing (10 secs)
-let xag_ = {
-		ObjNum: 2,
-		// Parent
-		XACRot: [xac_.ObjRot[1],xac_.ObjRot[1]],
-		XACPos: [xac_.MapPos[1],xac_.MapPos[1]],
-		// Gun Object (Fixed Firing Forward)
-		// GunPtr = Airplane Object
-		GunPtr: [0,0], // Not Used Yet
-		GunRot: [new THREE.Euler(0,0,0), // Gun Rotation (degrees)
-				 new THREE.Euler(0,0,0)], // if not firing forward
-		GunPos: [new THREE.Vector3(0,0,0), // Map Position
-				 new THREE.Vector3(0,0,0)], // if not at center
-		// Bullet Data
-		BulFlg: [0,1],			// 1 = Guns Firing
-		BulNum: BulNum,			// Number of bullets		
-		BulSpd: BulSpd,			// Muzzle Velocity (mps)
-		BulDLT: BulDLT,			// Max Bullet Time in Flight
-		BulSpc: BulSpc,			// Bullet spacing
-		BulSp2: [BulSpc,BulSpc],
-		// Bullet Colors
-		BulClr: new THREE.Vector2(0xff80ff,0x804080), // Red
-		// Bullets for each gun
-		BulPtr: [[],[]],		// Bullet Objects
-		BulMpS: [[0],[0]],		// Bullet Map Speed (V3)
-		BulMpP: [[0],[0]],		// Bullet Map Position (V3)
-		BulTim: [[],[]],		// Bullet Time in Flight
-		// Gun Sounds
-		SndSrc: ["fm2_gun.mp3",	// File (my guns)
-				 "fm2_gun.mp3"],
-		SndPtr: [0,0],
-		SndVol: [0.5,0.5],		// Volume
-		SndMsh: [new makMsh(),new makMsh()],		
-	};
-
-//- Moving Ships ---------------//----------------------------------------------
-let XSGMax = 1200;				// Guns Firing (20 secs)
-let XSGFlg = XSGMax;
-let XSGMin = -1200;				// Guns Not Firing (20 secs)
-let xsg_ = {
-		ObjNum: 2,				// Number of guns
-		// Parent
-		XSHRot: [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
-		XSHPos: [xsh_.MapPos[1],xsh_.MapPos[1]],
-		// Gun Object
-		GunPtr: [new makMsh(),new makMsh()], // Gun Object
-		GunRot: [new THREE.Euler(0,0,0), // Gun Rotation
-				 new THREE.Euler(60,315,0)],
-		GunPos: [new THREE.Vector3(0,0,0), // Relative Map Position (meters) [used by Mesh]
-				 new THREE.Vector3(0,0,0)],
-		// Bullet Data
-		AAAFlg: [0,0],			// 1 = Guns Firing
-		AAANum: AAANum,			// Number of bullets
-		AAASpd: AAASpd,			// Muzzle Velocity (mps)
-		AAADLT: AAADLT,			// Max Bullet Time in Flight
-		AAASpc: AAASpc,			// Bullet spacing
-		AAASp2: [AAASpc,AAASpc],
-		// Bullet Colors
-		AAACol: new THREE.Vector2(0xff80ff,0x804080), // Red
-		// Bullets for each gun		
-		AAAPtr: [[],[]],		// Bullet Objects
-		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
-		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
-		AAATim: [[],[]],		// Bullet Time in Flight
-		// Smoke
-		SmkFlg: [0,0],			// 1 = Start Smoke ### new
-		SmkMap: 2,				// Shared Texture Reference Number
-		SmkMat: [0,0],			// Smoke Material
-		SmkPtr: [0,0],			// Smoke Sprite
-		SmkRot: [0,165],		// Z-rotation of smoke
-		SmkMpP: [new THREE.Vector3(), // Map Position
-				 new THREE.Vector3()],
-		SmkDMx: [12,14],		// Delay between Smoke events (secs)
-		SmkDTm: [0,7],			// Delay Counter
-		SmkOpR:	SmkOpR,			// Opacity Reduction
-		// Smoke Sounds
-		SndFlg: [0,1],			// 1 = Explosion
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [0,0],
-		SndVol: 15,				// Volume
-		SndMsh: [new makMsh(),new makMsh()],
-		SndDTm: [0,0],
-		// Exploding Center
-		ExpPtr: [0,0],			// Pointer to Exploding Center
-		ExpSiz: [0,0],			// Expanding Size
-		ExpLif: [0,0],			// Life of Explosion (seconds)
-	};
-
-//- Fixed Guns -----------------//----------------------------------------------
-let aaf_ = {
-		ObjNum: 2,
-		// No Parent
-		XSHRot: [new THREE.Euler(0,0,0),
-				 new THREE.Euler(0,0,0)],
-		XSHPos: [new THREE.Vector3(0,0,0),
-				 new THREE.Vector3(0,0,0)],
-		// Gun Object
-		GunPtr: [new makMsh(),new makMsh()], // Gun Object
-		GunRot: [new THREE.Euler(45,90,0), // Gun Rotation (degrees)
-				 new THREE.Euler(30,0,0)],
-		GunPos: [new THREE.Vector3(48,8,5638), // Map Position
-				 new THREE.Vector3(-1225,5,3355)],
-		// Bullet Data
-		AAAFlg: [1,1],			// 1 = Gun Firing
-		AAANum: AAANum,			// Number of Bullets
-		AAASpd: AAASpd,			// Muzzle Velocity (mps)
-		AAADLT: AAADLT,			// Max Bullet Time in Flight
-		AAASpc: AAASpc,			// Bullet Spacing
-		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
-		// Bullet Colors
-		AAACol: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
-		// Bullets for each gun
-		AAAPtr: [[],[]],		// Bullet Objects
-		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
-		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
-		AAATim: [[],[]],		// Bullet Time in flight
-		// Smoke
-		SmkFlg: [0,0],			// 1 = Start Smoke ### new
-		SmkMap: 2,				// Shared Texture Reference Number
-		SmkMat: [0,0],			// Smoke Material
-		SmkPtr: [0,0],			// Smoke Sprite
-		SmkRot: [0,165],		// Z-rotation of smoke
-		SmkMpP: [new THREE.Vector3(), // Map Position
-				 new THREE.Vector3()],
-		SmkDMx: [12,11],		// Delay between Smoke events (secs)
-		SmkDTm: [0,6],			// Delay Counter
-		SmkOpR:	SmkOpR,			// Opacity Reduction
-		// Smoke Sounds
-		SndFlg: [1,1],			// 1 = Start Explosion Sound
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [0,0],
-		SndVol: 15,				// Volume
-		SndMsh: [new makMsh(),new makMsh()],
-		SndDTm: [0,0],
-		// Explosion
-		ExpPtr: [0,0],			// Pointer to Exploding Center
-		ExpSiz: [0,0],			// Expanding Size
-		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
 
 //= MY PEEPS ===================//==============================================
@@ -1032,20 +858,207 @@ const vxrSrc = AirSrc + vxrFNm;
 		anm_.flppos = 180;		// Flaps Up
 	}
 
-//=	6. SOUND VARIABLES =========//==============================================
-//- My Airplane ................................................................
-//- Engine and Prop
-let AirMsh = new makMsh();		// For Engine and Prop
-//- Engine
-const EngSrc = "fm2.wav";		// File (my engine)
-let EngVol = 0.1;				// Volume
-let EngSnd = 0;
-//- Prop
-const PrpSrc = "fm2_prop.wav";	// File (my prop)
-let PrpVol = 0.5;				// Volume
-let PrpSnd = 0;
+//= GUNASG MODULE ==============//==============================================
+//- Aircraft Guns
+//	M2 Browning .50 caliber
+let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
+let BulDLT = 0.5;				// Bullet Maximum Time in Flight
+let BulNum = 16;				// Number of bullets
+let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
+//	AA Guns
+//	Bofors anti-aircraft guns - 40 mm (1.57 in)
+let AAANum = 16;				// Number of bullets
+let AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
+let AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
+let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
+//	Adjust y-Rotation
+let AARYBg = [90,0];			// Starting Y-Rotation
+let AARYDf = [0,0];				// Y-Rotation Adjustment
+//	Smoke
+//let SmkOpR = 0.01;			// Opacity Reduction per Frame
+let SmkOpR = 0.005;				// Opacity Reduction per Frame
 
-//- RADIO Variables ============//==============================================
+//- My Guns --------------------//----------------------------------------------
+let myg_ = {
+		// Data
+		BulSpd: BulSpd,			// Muzzle Velocity (mps)
+		BulDLT: BulDLT,			// Max Bullet Time in Flight
+		BulNum: BulNum,			// Number of bullets
+		BulSpc: BulSpc,			// Bullet spacing
+		BulSp2: BulSpc,
+		// Object
+		BulClr: new THREE.Vector2(0xff80ff,0x804080), // Red
+		BulPtr: [0],			// Bullet Objects
+		BulMpS: [0],			// Bullet Speed
+		BulTim: [0],			// Bullet Time in Flight
+		// Sound
+		ObjNum: 2,
+		SndSrc: AirSrc + "sounds/" + "fm2_gun.mp3",	// File (my guns)
+		SndPtr: [0,0],
+		SndVol: 0.5,			// Volume
+		SndMsh: [new makMsh(),new makMsh()],
+		// HitBox
+		HitTgt: 1,				// Hit Target (1 = enemy airplane_
+		HitDst: 10,				// Hit Radius
+	}
+
+//- Moving Airplanes -----------//----------------------------------------------
+let XPGMax = 120;				// Guns Firing (2 secs)
+let XPGFlg = XPGMax;
+let XPGMin = -600;				// Guns Not Firing (10 secs)
+let xag_ = {
+		ObjNum: 2,
+		// Parent
+		XACRot: [xac_.ObjRot[1],xac_.ObjRot[1]],
+		XACPos: [xac_.MapPos[1],xac_.MapPos[1]],
+		// Gun Object (Fixed Firing Forward)
+		// GunPtr = Airplane Object
+		GunPtr: [0,0], // Not Used Yet
+		GunRot: [new THREE.Euler(0,0,0), // Gun Rotation (degrees)
+				 new THREE.Euler(0,0,0)], // if not firing forward
+		GunPos: [new THREE.Vector3(0,0,0), // Map Position
+				 new THREE.Vector3(0,0,0)], // if not at center
+		// Bullet Data
+		BulFlg: [0,1],			// 1 = Guns Firing
+		BulNum: BulNum,			// Number of bullets		
+		BulSpd: BulSpd,			// Muzzle Velocity (mps)
+		BulDLT: BulDLT,			// Max Bullet Time in Flight
+		BulSpc: BulSpc,			// Bullet spacing
+		BulSp2: [BulSpc,BulSpc],
+		// Bullet Colors
+		BulClr: new THREE.Vector2(0xff80ff,0x804080), // Red
+		// Bullets for each gun
+		BulPtr: [[],[]],		// Bullet Objects
+		BulMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		BulMpP: [[0],[0]],		// Bullet Map Position (V3)
+		BulTim: [[],[]],		// Bullet Time in Flight
+		// Gun Sounds
+		SndSrc: [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
+				 XPPath + "sounds/" + "fm2_gun.mp3"],
+		SndPtr: [0,0],
+		SndVol: [0.5,0.5],		// Volume
+		SndMsh: [new makMsh(),new makMsh()],		
+	};
+
+//- Moving Ships ---------------//----------------------------------------------
+let XSGMax = 1200;				// Guns Firing (20 secs)
+let XSGFlg = XSGMax;
+let XSGMin = -1200;				// Guns Not Firing (20 secs)
+let xsg_ = {
+		ObjNum: 2,				// Number of guns
+		// Parent
+		XSHRot: [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
+		XSHPos: [xsh_.MapPos[1],xsh_.MapPos[1]],
+		// Gun Object
+		GunPtr: [new makMsh(),new makMsh()], // Gun Object
+		GunRot: [new THREE.Euler(0,0,0), // Gun Rotation
+				 new THREE.Euler(60,315,0)],
+		GunPos: [new THREE.Vector3(0,0,0), // Relative Map Position (meters) [used by Mesh]
+				 new THREE.Vector3(0,0,0)],
+		// Bullet Data
+		AAAFlg: [0,0],			// 1 = Guns Firing
+		AAANum: AAANum,			// Number of bullets
+		AAASpd: AAASpd,			// Muzzle Velocity (mps)
+		AAADLT: AAADLT,			// Max Bullet Time in Flight
+		AAASpc: AAASpc,			// Bullet spacing
+		AAASp2: [AAASpc,AAASpc],
+		// Bullet Colors
+		AAACol: new THREE.Vector2(0xff80ff,0x804080), // Red
+		// Bullets for each gun		
+		AAAPtr: [[],[]],		// Bullet Objects
+		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
+		AAATim: [[],[]],		// Bullet Time in Flight
+		// Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke ### new
+		SmkMap: 2,				// Shared Texture Reference Number
+		SmkMat: [0,0],			// Smoke Material
+		SmkPtr: [0,0],			// Smoke Sprite
+		SmkRot: [0,165],		// Z-rotation of smoke
+		SmkMpP: [new THREE.Vector3(), // Map Position
+				 new THREE.Vector3()],
+		SmkDMx: [12,14],		// Delay between Smoke events (secs)
+		SmkDTm: [0,7],			// Delay Counter
+		SmkOpR:	SmkOpR,			// Opacity Reduction
+		// Smoke Sounds
+		SndFlg: [0,1],			// 1 = Explosion
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: [0,0],
+		SndVol: 15,				// Volume
+		SndMsh: [new makMsh(),new makMsh()],
+		SndDTm: [0,0],
+		// Exploding Center
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
+	};
+
+//- Fixed Guns -----------------//----------------------------------------------
+let aaf_ = {
+		ObjNum: 2,
+		// No Parent
+		XSHRot: [new THREE.Euler(0,0,0),
+				 new THREE.Euler(0,0,0)],
+		XSHPos: [new THREE.Vector3(0,0,0),
+				 new THREE.Vector3(0,0,0)],
+		// Gun Object
+		GunPtr: [new makMsh(),new makMsh()], // Gun Object
+		GunRot: [new THREE.Euler(45,90,0), // Gun Rotation (degrees)
+				 new THREE.Euler(30,0,0)],
+		GunPos: [new THREE.Vector3(48,8,5638), // Map Position
+				 new THREE.Vector3(-1225,5,3355)],
+		// Bullet Data
+		AAAFlg: [1,1],			// 1 = Gun Firing
+		AAANum: AAANum,			// Number of Bullets
+		AAASpd: AAASpd,			// Muzzle Velocity (mps)
+		AAADLT: AAADLT,			// Max Bullet Time in Flight
+		AAASpc: AAASpc,			// Bullet Spacing
+		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
+		// Bullet Colors
+		AAACol: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
+		// Bullets for each gun
+		AAAPtr: [[],[]],		// Bullet Objects
+		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
+		AAATim: [[],[]],		// Bullet Time in flight
+		// Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke ### new
+		SmkMap: 2,				// Shared Texture Reference Number
+		SmkMat: [0,0],			// Smoke Material
+		SmkPtr: [0,0],			// Smoke Sprite
+		SmkRot: [0,165],		// Z-rotation of smoke
+		SmkMpP: [new THREE.Vector3(), // Map Position
+				 new THREE.Vector3()],
+		SmkDMx: [12,11],		// Delay between Smoke events (secs)
+		SmkDTm: [0,6],			// Delay Counter
+		SmkOpR:	SmkOpR,			// Opacity Reduction
+		// Smoke Sounds
+		SndFlg: [1,1],			// 1 = Start Explosion Sound
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: [0,0],
+		SndVol: 15,				// Volume
+		SndMsh: [new makMsh(),new makMsh()],
+		SndDTm: [0,0],
+		// Explosion
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
+	};
+
+//- 6. SOUND VARIABLES =========//==============================================
+
+//- My Sounds ------------------//----------------------------------------------
+let mys_ = {
+		AirMsh:	new makMsh(),	// For Engine and Prop
+		EngSrc: AirSrc + "sounds/fm2.wav",
+		EngSnd: 0,				// Address
+		EngVol: 0.1,			// Volume
+		PrpSrc: AirSrc + "sounds/fm2_prop.wav",
+		PrpSnd: 0,				// Address
+		PrpVol: 0.5,			// Volume
+	}
+
+//- Radio Variables ------------//----------------------------------------------
 let RadTim = 0;					// Start this timer for Linear Segment
 let	rad_ = {
 		// Sound Files (voice plus static)
@@ -1899,7 +1912,7 @@ function begnXACExp(n) {
 	xae_.ExpMsh.visible = true;
 	if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play();
 	// 2nd Explosion
-	if (xac_.EndSeq[n] == 1) xae_.ExpLif = 0.3;
+	if (xac_.EndSeq[n] == 1) xae_.ExpLif = 0.2;
 }
 
 //- Continue Explosion ---------//----------------------------------------------
@@ -2613,130 +2626,84 @@ function testHitBox() {
 
 //= 6. SOUNDS ==================//==============================================
 
-//- Load and Initialize Sounds -------------------------------------------------
+//- Load and Initialize Positional Sounds --------------------------------------
 function loadSounds() {
-	// Load MYP Sounds .........................................................
+	air_.AirObj.add(mys_.AirMsh);
+	mys_.AirMsh.position.z = -5;
 	let RefDst = 25;			// Reference distance for Positional Audio
-	// My Engine
-	let fname = AirSrc + "sounds/" + EngSrc;
-	audoLoader.load(fname, function(buffer) {
-		EngSnd.setBuffer(buffer);
-		EngSnd.setRefDistance(RefDst);
-		EngSnd.setVolume(0);
-		EngSnd.setLoop(true);
+	// My Airplane .............................................................
+	// Engine
+	mys_.EngSnd = new THREE.PositionalAudio(listener);
+	audoLoader.load(mys_.EngSrc,function(buffer) {
+		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);
+		mys_.EngSnd.setBuffer(buffer);
 	});
 	// My Prop
-	fname = AirSrc + "sounds/" + PrpSrc;
-	audoLoader.load(fname, function(buffer) {
-		PrpSnd.setBuffer(buffer);
-		PrpSnd.setRefDistance(RefDst);
-		PrpSnd.setVolume(0);
-		PrpSnd.setLoop(true);
+	mys_.PrpSnd = new THREE.PositionalAudio(listener);
+	audoLoader.load(mys_.PrpSrc,function(buffer) {
+		mys_.PrpSnd.setBuffer(buffer);
+		init1Sound(mys_.PrpSnd,RefDst,0,1,1,mys_.AirMsh);
 	});
 	// My Guns (Left and Rite)
-	fname = AirSrc + "sounds/" + myg_.SndSrc;
+	let xoff = 5
 	for (let n = 0; n < myg_.ObjNum; n ++) {
-		audoLoader.load(fname, function(buffer) {
+		myg_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		audoLoader.load(myg_.SndSrc,function(buffer) {
 			myg_.SndPtr[n].setBuffer(buffer);
-			myg_.SndPtr[n].setRefDistance(RefDst);
-			myg_.SndPtr[n].setVolume(0);
-			myg_.SndPtr[n].setLoop(true);
+			init1Sound(myg_.SndPtr[n],RefDst,0,1,1,myg_.SndMsh[n]);
+			xoff = -xoff;
+			myg_.SndMsh[n].position.x = xoff;
+			air_.AirObj.add(myg_.SndMsh[n]);
 		});
 	}
 	// Load XAC Sounds .........................................................
 	// XP Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		fname = XPPath + "sounds/" + xac_.EngSrc[n];	
-		audoLoader.load(fname, function(buffer) {
+		xac_.EngPtr[n] = new THREE.PositionalAudio(listener);
+		audoLoader.load(xac_.EngSrc[n],function(buffer) {
 			xac_.EngPtr[n].setBuffer(buffer);
-			xac_.EngPtr[n].setRefDistance(RefDst); // Distance at which sound is full volume
-			xac_.EngPtr[n].setVolume(0);
-			xac_.EngPtr[n].setLoop(true);
-			xac_.EngPtr[n].playbackRate = 1.3;
+			init1Sound(xac_.EngPtr[n],RefDst,0,1.3,1),xac_.EngMsh[n];
+			xac_.ObjAdr[n].add(xac_.EngMsh[n]);
 		});
 	}
 	// XP Guns
 	for (let n = 0; n < xag_.ObjNum; n ++) {
-		fname = XPPath + "sounds/" + xag_.SndSrc[n];	
-		audoLoader.load(fname, function(buffer) {
+		xag_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		audoLoader.load(xag_.SndSrc[n],function(buffer) {
 			xag_.SndPtr[n].setBuffer(buffer);
-			xag_.SndPtr[n].setRefDistance(RefDst); // Distance at which sound is full volume
-			xag_.SndPtr[n].setVolume(0);
-			xag_.SndPtr[n].setLoop(true);
-			xag_.SndPtr[n].playbackRate = 1.3;
-		});	
+			init1Sound(xag_.SndPtr[n],RefDst,0,1.3,1,xag_.SndMsh[n]);
+			xac_.ObjAdr[n].add(xag_.SndMsh[n]);
+		});
 	}
 	// The Next 3 Sounds Are All the Same (for now)
 	//
 	// XP End Explosion
-	fname = xac_.SndSrc;
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		audoLoader.load(fname, function(buffer) {
+		xac_.SndPtr[n] = new THREE.PositionalAudio(listener);
+		audoLoader.load(xac_.SndSrc,function(buffer) {
 			xac_.SndPtr[n].setBuffer(buffer);
-			xac_.SndPtr[n].setRefDistance(RefDst);
-			xac_.SndPtr[n].setVolume(0);
-		});	
+			init1Sound(xac_.SndPtr[n],RefDst,0,1,0,xac_.SndMsh[n]);
+			xac_.ObjAdr[n].add(xac_.SndMsh[n]);
+		});
 	}
 	// Load AAA Sounds .........................................................
 	// XS Guns - End Explosion
-	fname = xsg_.SndSrc;
-	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		audoLoader.load(fname, function(buffer) {
-			xsg_.SndPtr[n].setBuffer(buffer);
-			xsg_.SndPtr[n].setRefDistance(RefDst);
-			xsg_.SndPtr[n].setVolume(0);
-		});	
-	}
-	// AA Guns - End Explosion
-	fname = aaf_.SndSrc;
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		audoLoader.load(fname, function(buffer) {
-			aaf_.SndPtr[n].setBuffer(buffer);
-			aaf_.SndPtr[n].setRefDistance(RefDst);
-			aaf_.SndPtr[n].setVolume(0);
-		});	
-	}
-	// Init Sounds .............................................................
-	//- My Engine and Prop
-	EngSnd = new THREE.PositionalAudio(listener);
-	PrpSnd = new THREE.PositionalAudio(listener);
-	AirMsh.add(EngSnd);			// Engine
-	AirMsh.add(PrpSnd);			// Prop
-	AirMsh.position.z = -5;
-	air_.AirObj.add(AirMsh);
-	//- My Guns (Left and Rite)
-	for (let n = 0; n < myg_.ObjNum; n ++) {
-		myg_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		myg_.SndMsh[n].add(myg_.SndPtr[n]);
-		myg_.SndMsh[n].position.x = -5;
-		air_.AirObj.add(myg_.SndMsh[n]);
-	}
-	//- Moving Airplane Sounds (centered at ObjAdr)
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		// Engine
-		xac_.EngPtr[n] = new THREE.PositionalAudio(listener);
-		xac_.EngMsh[n].add(xac_.EngPtr[n]);
-		xac_.ObjAdr[n].add(xac_.EngMsh[n]);
-		// Guns
-		xag_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		xag_.SndMsh[n].add(xag_.SndPtr[n]);
-		xac_.ObjAdr[n].add(xag_.SndMsh[n]);
-		// End Explosion
-		xac_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		xac_.SndMsh[n].add(xac_.SndPtr[n]);
-		xac_.ObjAdr[n].add(xac_.SndMsh[n]);	
-	}
-	// Moving Ship AAA - End Explosions
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		xsg_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		xsg_.SndMsh[n].add(xsg_.SndPtr[n]);
-		xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
+		audoLoader.load(xsg_.SndSrc,function(buffer) {
+			xsg_.SndPtr[n].setBuffer(buffer);
+			init1Sound(xsg_.SndPtr[n],RefDst,0,1,0,xsg_.SndMsh[n]);
+			xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
+		});
 	}
-	// Fixed Ground AAA - End Explosions
+	// AA Guns - End Explosion
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		aaf_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		aaf_.SndMsh[n].add(aaf_.SndPtr[n]);
-		aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
+		audoLoader.load(aaf_.SndSrc, function(buffer) {
+			aaf_.SndPtr[n].setBuffer(buffer);
+			init1Sound(aaf_.SndPtr[n],RefDst,0,1,0,aaf_.SndMsh[n]);
+			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
+		});	
 	}
 	//- Set Flag
 	LodSnd = 1;
@@ -2746,106 +2713,49 @@ function loadSounds() {
 function moveSounds() {
 	//- My Airplane ............................................................
 	//-	Engine Running
-	EngSnd.setVolume(EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
-	EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
+	mys_.EngSnd.setVolume(mys_.EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
+	mys_.EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
 	//-	Prop Spinning
-	PrpSnd.setVolume(PrpVol + air_.PwrPct * 0.15); // Range = .1 to .4
-	PrpSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
+	mys_.PrpSnd.setVolume(mys_.PrpVol + air_.PwrPct * 0.15); // Range = .1 to .4
+	mys_.PrpSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
 	//-	Guns Firing (Left and Rite)
-	for (let n = 0; n < myg_.ObjNum; n ++) {
-		myg_.SndPtr[n].setVolume(myg_.SndVol);
-	}
+	for (let n = 0; n < myg_.ObjNum; n ++) {myg_.SndPtr[n].setVolume(myg_.SndVol);}
 	//- XAC ....................................................................
-	//-	Engine Running
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		xac_.EngPtr[n].setVolume(xac_.EngVol[n]);
-	}
-	//-	Gun Firing
-	for (let n = 0; n < xag_.ObjNum; n ++) {
-		xag_.SndPtr[n].setVolume(xag_.SndVol[n]);
-	}
-	//-	Ending Explosion
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		xac_.SndPtr[n].setVolume(xac_.SndVol);
-	}
-	//- XAS ....................................................................
-	//-	Ending Explosion
-	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		xsg_.SndPtr[n].setVolume(xsg_.SndVol);
-	}
-	//- AAA ....................................................................	
-	//-	Ending Explosion
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		aaf_.SndPtr[n].setVolume(aaf_.SndVol);
-	}
+	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Endinge
+	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);} // Gun
+	//-	Ending Explosions ......................................................
+	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.SndPtr[n].setVolume(xac_.SndVol);} // XAC
+	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);} // XAS
+	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);} // AAA
 }
 
 //- Play All Sounds ------------//----------------------------------------------
 function playSounds() {
 	// This leaves SndFlg = 1 and MYGFlg unchanged.
 	//- My Airplane ............................................................
-	//-	Engine Running
-	if (!EngSnd.isPlaying) EngSnd.play();
-	//-	Prop Spinning
-	if (!PrpSnd.isPlaying) PrpSnd.play();
-	//-	Guns Firing (Left and Rite)
-	for (let n = 0; n < myg_.ObjNum; n ++) {
-		if (MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();
-	}
+	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play(); // Engine
+	if (!mys_.PrpSnd.isPlaying) mys_.PrpSnd.play(); // Prop
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();} // Guns (L/R)
 	//- XAC ....................................................................
-	// Engine Running
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		if (!xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].play();
-	}
-	//-	Guns Firing
-	for (let n = 0; n < xag_.ObjNum; n ++) {
-//		if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play(); // ### FIX THIS - only when firing
-	}
-	//- Ending Explosion
-	//	Activated in EndSeq
-	//- XAS ....................................................................
-	//	Ending Explosion
-	//	Activated in PlayXS
-	//- AAA ....................................................................
-	//	Ending Explosion
-	//	Activated in PlayAA
+	for (let n = 0; n < xac_.ObjNum; n ++) {if (!xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].play();} // Engine
+//	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();} // ### FIX THIS - only when firing}
+	//- Ending Explosions Activated Elsewhere (XAC,XAG,AAF)
 }
 
 //- Stop All Sounds ------------//----------------------------------------------
 function stopSounds() {
 	// This leaves SndFlg = 0 and MYGFlg unchanged.
 	//- My Airplane ............................................................
-	//-	Engine Running
-	if (EngSnd.isPlaying) EngSnd.stop();
-	//-	Prop Spinning
-	if (PrpSnd.isPlaying) PrpSnd.stop();
-	//-	Guns Firing (Left and Rite)
-	for (let n = 0; n < myg_.ObjNum; n ++) {
-		if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();
-	}
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop(); // Engine
+	if (mys_.PrpSnd.isPlaying) mys_.PrpSnd.stop(); // Prop
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();} // Guns (L/R)
 	//- XAC ....................................................................
-	//-	Engine Running
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		if (xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].stop();
-	}
-	//	Guns Firing
-	for (let n = 0; n < xag_.ObjNum; n ++) {
-		if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();
-	}
-	//-	End Explosion
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();
-	}	
-	//- XAS ....................................................................
-	// Ending Explosion
-	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		if (xsg_.SndPtr[n].isPlaying) xsg_.SndPtr[n].stop();
-	}
-	//- AAA ....................................................................
-	// Ending Explosion
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();
-	}
+	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].stop();} // Engine
+	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();} // Guns
+	//-	End Explosions
+	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();} // XAC
+	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.SndPtr[n].isPlaying) xsg_.SndPtr[n].stop();}
+	for (let n = 0; n < aaf_.ObjNum; n ++) {if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();}
 }
 
 //= RADIO SOUNDS ===============//==============================================
@@ -2856,14 +2766,13 @@ function loadRadios() {
 	rad_.SndAdr[0] = new THREE.Audio(listener);	
 	audoLoader.load(rad_.SndSrc[0],function(buffer) {
 		rad_.SndAdr[0].setBuffer(buffer);
-		rad_.SndAdr[0].setVolume(1.0);
+		initASound(rad_.SndAdr[0],1.0,1);
 	});
 	//-	Radio
 	rad_.SndAdr[1] = new THREE.Audio(listener);	
 	audoLoader.load(rad_.SndSrc[1],function(buffer) {
 		rad_.SndAdr[1].setBuffer(buffer);
-		rad_.SndAdr[1].setVolume(0.7);
-		rad_.SndAdr[0].setPlaybackRate(1.05);
+		initASound(rad_.SndAdr[1],0.7,1.05);
 	});
 }
 
@@ -2901,6 +2810,23 @@ function playRadSeg(n) {
 			rad_.SndAdr[1].stop(rad_.SegEnd[rad_.SegIdx]);
 		}
 	}
+}
+
+//- INIT 1 SOUND ---------------//----------------------------------------------
+
+//- Positional Audio
+function init1Sound(dest,dist,volm,rate,loop,link) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+	link.add(dest);
+}
+
+//- Audio
+function initASound(dest,volm,rate) {
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
 }
 
 //= 7. CAMERA ==================//==============================================
