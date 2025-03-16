@@ -176,8 +176,6 @@ function loadSounds(audoLoader,listener,camera,air_,mys_,myg_,xac_,xag_,xsg_,aaf
 		aaf_.SndMsh[n].add(aaf_.SndPtr[n]);
 		aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
 	}
-	//- Set Flag
-	LodSnd = 1;
 }
 
 //- Change All Sounds ----------//----------------------------------------------
