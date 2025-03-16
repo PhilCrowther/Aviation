@@ -4,6 +4,11 @@
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
 
+/* PROBLEM:
+	setBuffer,setVolume, etc. are not functions
+*/
+
+
 /* NOTES:
 	Sounds for fsim_FM2_ocean_gpu air
 */
@@ -22,6 +27,8 @@
 
 import {
 	Audio,
+	AudioListener,
+	AudioLoader,
 	PositionalAudio,
 } from 'three';
 
@@ -42,7 +49,10 @@ import {
 *******************************************************************************/
 
 //- Load and Initialize Sounds -------------------------------------------------
-function loadSounds(audoLoader,listener,air_,mys_,myg_,xac_,xag_,xsg_,aaf_) {
+function loadSounds(audoLoader,listener,camera,air_,mys_,myg_,xac_,xag_,xsg_,aaf_) {
+	audoLoader = new THREE.AudioLoader();
+	listener = new THREE.AudioListener();
+	camera.add(listener);
 	// Load MYP Sounds .........................................................
 	let RefDst = 25;			// Reference distance for Positional Audio
 	// My Engine
@@ -124,6 +134,22 @@ function loadSounds(audoLoader,listener,air_,mys_,myg_,xac_,xag_,xsg_,aaf_) {
 			aaf_.SndPtr[n].setVolume(0);
 		});	
 	}
+		//-	Static
+	rad_.SndAdr[0] = new Audio(listener);	
+	audoLoader.load(rad_.SndSrc[0],function(buffer) {
+		rad_.SndAdr[0].setBuffer(buffer);
+		rad_.SndAdr[0].setVolume(1.0);
+	});
+	//-	Radio
+	rad_.SndAdr[1] = new Audio(listener);	
+	audoLoader.load(rad_.SndSrc[1],function(buffer) {
+		rad_.SndAdr[1].setBuffer(buffer);
+		rad_.SndAdr[1].setVolume(0.7);
+		rad_.SndAdr[0].setPlaybackRate(1.05);
+	});
+
+	
+	
 	// Init Sounds .............................................................
 	//- My Engine and Prop
 	mys_.EngSnd = new THREE.PositionalAudio(listener);
