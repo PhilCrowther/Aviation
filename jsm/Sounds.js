@@ -209,7 +209,7 @@ function moveSounds(air_,mys_,myg_,xac_,xag_,xsg_,aaf_) {
 }
 
 //- Play All Sounds ------------//----------------------------------------------
-function playSounds(MYGFlg,mys_,myg_,xac_,xag_,xsg_,aaf_) {
+function playSounds(mys_,myg_,xac_,xag_,xsg_,aaf_,MYGFlg,) {
 	// This leaves SndFlg = 1 and MYGFlg unchanged.
 	//- My Airplane ............................................................
 	//-	Engine Running
@@ -240,7 +240,7 @@ function playSounds(MYGFlg,mys_,myg_,xac_,xag_,xsg_,aaf_) {
 }
 
 //- Stop All Sounds ------------//----------------------------------------------
-function stopSounds() {
+function stopSounds(mys_,myg_,xac_,xag_,xsg_,aaf_) {
 	// This leaves SndFlg = 0 and MYGFlg unchanged.
 	//- My Airplane ............................................................
 	//-	Engine Running
@@ -283,7 +283,7 @@ function stopSounds() {
 *******************************************************************************/
 
 //=	Load Radio Sounds ==========//=============================================
-function loadRadios(audioloader,listener,rad_) {	
+function loadRadios(audoloader,listener,rad_) {	
 	//-	Static
 	rad_.SndAdr[0] = new Audio(listener);	
 	audoLoader.load(rad_.SndSrc[0],function(buffer) {
@@ -300,13 +300,13 @@ function loadRadios(audioloader,listener,rad_) {
 }
 
 //= Start Radio Sequence =======//==============================================
-function strtRadSeq() {
+function strtRadSeq(rad_) {
 	rad_.SeqTim = 1;			// Start timer when leave ground
 	rad_.SegPtr = 0;			// Restart Event Pointer
 }
 
 //= Continue Radio Sequence ====//==============================================
-function contRadSeq() {
+function contRadSeq(rad_) {
 	rad_.SeqTim = rad_.SeqTim + difTim; // Once started, keep updating
 	if (rad_.SeqTim > rad_.SegBeg[rad_.SegPtr]) { // If Arrived at Target Time
 		playRadSeg(rad_.SegSel[rad_.SegPtr]); // Play This Segment
@@ -316,7 +316,7 @@ function contRadSeq() {
 }
 
 //=	Play Radio Segment =========//==============================================
-function playRadSeg(n) {
+function playRadSeg(rad_,n) {
 	// SegIdx 0 = "Over Island"; SegIdx 1 = "Help"; SegIdx 2 = "Thanks"
 	rad_.SegIdx = n;
 	if (SndFlg) {
@@ -334,26 +334,6 @@ function playRadSeg(n) {
 		}
 	}
 }
-
-/*******************************************************************************
-*
-*	SUBROUTINES
-*
-*******************************************************************************/
-
-/* Converts degrees to 360 */
-function Mod360(deg) {
-	while (deg < 0) deg = deg + 360; // Make deg a positive number
-	deg = deg % 360;				 // Compute remainder of any number divided by 360
-return deg;}
-
-//- Make Mesh ------------------------------------------------------------------
-function makMsh() {
-	let geometry = new BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
-	let mesh = new Mesh(geometry,material);
-return mesh;}
-
 
 /*******************************************************************************
 *
