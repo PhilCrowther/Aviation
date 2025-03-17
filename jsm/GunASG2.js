@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.02.06)
+ * Warfare.js (vers 25.03.17)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -191,18 +191,16 @@ function initXACBul(xag_,scene) {
 		point1.push(new Vector3(0,0,-lnB));
 		point1.push(new Vector3(0,0,lnB));
 	let BulGeD = new BufferGeometry().setFromPoints(point1);	
-	let BulMtL = new LineBasicNodeMaterial({
-			colorNode: color(xag_.BulClr.x),
-			transparent:true,
-			opacity: xag_.AAAOpa,
-			depthWrite:false,
-		});
-	let BulMtD = new LineBasicNodeMaterial({
-			colorNode: color(xag_.BulClr.y),
-			transparent:true,
-			opacity: xag_.AAAOpa,
-			depthWrite:false,
-		});
+	let BulMtL = new LineBasicNodeMaterial();
+		BulMtL.colorNode = color(xag_.BulClr.x);
+		BulMtL.transparent = true;
+		BulMtL.opacityNode = xag_.AAAOpa;
+		BulMtL.depthWrite = false;
+	let BulMtD = new LineBasicNodeMaterial();
+		BulMtD.colorNode = color(xag_.BulClr.y);
+		BulMtD.transparent = true;
+		BulMtD.opacityNode = xag_.AAAOpa;
+		BulMtD.depthWrite = false;
 	let xp = 2;
 	// For Each Gun
 	for (let n = 0; n < xag_.ObjNum; n ++) {
@@ -320,18 +318,16 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 		point1.push(new Vector3(0,0,-lnB));
 		point1.push(new Vector3(0,0,lnB));
 	let AAAGeD = new BufferGeometry().setFromPoints(point1);	
-	let AAAMtL = new LineBasicNodeMaterial({
-			colorNode: color(aag_.AAACol.x),
-			transparent:true,
-			opacity: aag_.AAAOpa,
-			depthWrite:false,
-		});
-	let AAAMtD = new LineBasicNodeMaterial({
-			colorNode: color(aag_.AAACol.y),
-			transparent:true,
-			opacity: aag_.AAAOpa,
-			depthWrite:false,
-		});
+	let AAAMtL = new LineBasicNodeMaterial();
+		AAAMtL.colorNode = color(aag_.AAACol.x);
+		AAAMtL.transparent = true;
+		AAAMtL.opacityNode = aag_.AAAOpa;
+		AAAMtL.depthWrite = false;
+	let AAAMtD = new LineBasicNodeMaterial();
+		AAAMtD.colorNode = color(aag_.AAACol.y);
+		AAAMtD.transparent = true;
+		AAAMtD.opacityNode = aag_.AAAOpa;
+		AAAMtD.depthWrite = false;
 	//- For Each Gun
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Combined Rotation and Map Position of Parent plus Gun
@@ -367,13 +363,13 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 			aag_.AAAMpP[n][i] = new Vector3();
 		}
 		// Smoke
-		aag_.SmkMat[n] = new SpriteNodeMaterial({
-			colorNode: color(0xffffff),
-			colorNode: texture(aag_.SmkMap),
-			transparent:true,
-			opacity: 1.0,
-//			depthTest:false,	// Same as volcano
-			depthWrite:false,
+		aag_.SmkMat[n] = new SpriteNodeMaterial();
+		aag_.SmkMat[n].colorNode = color(0xffffff);
+		aag_.SmkMat[n].colorNode = texture(aag_.SmkMap);
+		aag_.SmkMat[n].transparent = true;
+		aag_.SmkMat[n].opacityNode = 1.0;
+//		aag_.SmkMat[n].depthTest = false;	// Same as volcano
+		aag_.SmkMat[n].depthWrite = false;
 		});
 		aag_.SmkPtr[n] = new Sprite(aag_.SmkMat[n]);
 		aag_.SmkPtr[n].scale.set(100,100,100);	
