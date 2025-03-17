@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.03.17)
+ * Warfare.js (vers 25.02.06)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -98,16 +98,16 @@ function initBullet(myg_,scene) {
 	let BulMtD = new LineBasicNodeMaterial({colorNode: color(myg_.BulClr.y)});
 	let xp = 2;
 	for (let i = 0; i < myg_.BulNum; i ++) {
-		//	Create Bullet Meshes - 2 Double Lines
+		// Create Bullet Meshes - 2 Double Lines
 		myg_.BulPtr[i] = new makMsh();
-		//	Left
+		// Left
 		line = new Line(BltGeo,BulMtL); // Lite Color
 		line.position.x = -xp-0.1;
 		myg_.BulPtr[i].add(line);
 		line = new Line(BltGeo,BulMtD); // Dark Color
 		line.position.x = -xp;
 		myg_.BulPtr[i].add(line);
-		//	Rite
+		// Rite
 		line = new Line(BltGeo,BulMtL); // Lite Color
 		line.position.x = xp+0.1;
 		myg_.BulPtr[i].add(line);
@@ -117,7 +117,7 @@ function initBullet(myg_,scene) {
 		//
 		scene.add(myg_.BulPtr[i]);
 		myg_.BulPtr[i].visible = false;
-		//	Initialize Speed and Position
+		// Initialize Speed and Position
 		myg_.BulMpS[i] = new Vector3();
 	}
 }
@@ -132,11 +132,11 @@ function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		// Start New Bullets
 		if (!myg_.BulTim[i] && !myg_.BulSp2 && MYGFlg) {
-			//	Set Initial Position
+			// Set Initial Position
 			myg_.BulPtr[i].position.set(0,0,0);
-			//	Set Initial Rotation
+			// Set Initial Rotation
 			myg_.BulPtr[i].rotation.copy(air_.AirObj.rotation);
-			//	Set Initial Speed
+			// Set Initial Speed
 			BulSV3 = new Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
 			BulSV3 = new Vector3().setFromSpherical(BulSV3);
 			myg_.BulMpS[i].copy(BulSV3);
@@ -145,16 +145,16 @@ function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
 			myg_.BulSp2 = myg_.BulSpc;
 			myg_.BulPtr[i].visible = true;
 		}
-		//	Continue Bullets
+		// Continue Bullets
 		myg_.BulTim[i] = myg_.BulTim[i] + DLTime;
-		//	End Bullet
+		// End Bullet
 		if (myg_.BulTim[i] > myg_.BulDLT) {
 			myg_.BulTim[i] = 0;
 			myg_.BulPtr[i].visible = false;
 		}
 		// Continue Bullet
 		else {
-			//	Speed lost due to Drag (approx)
+			// Speed lost due to Drag (approx)
 			myg_.BulMpS[i].multiplyScalar(.995);
 			// New Relative Position
 			myg_.BulPtr[i].position.x = myg_.BulPtr[i].position.x - myg_.BulMpS[i].x;
@@ -191,24 +191,16 @@ function initXACBul(xag_,scene) {
 		point1.push(new Vector3(0,0,-lnB));
 		point1.push(new Vector3(0,0,lnB));
 	let BulGeD = new BufferGeometry().setFromPoints(point1);	
-	let BulMtL = new LineBasicNodeMaterial();
-		BulMtL.colorNode = color(xag_.BulClr.x);
-		BulMtL.transparent = true;
-		BulMtL.opacityNode = xag_.AAAOpa;
-		BulMtL.depthWrite = false;
-	let BulMtD = new LineBasicNodeMaterial();
-		BulMtD.colorNode = color(xag_.BulClr.y);
-		BulMtD.transparent = true;
-		BulMtD.opacityNode = xag_.AAAOpa;
-		BulMtD.depthWrite = false;
+	let BulMtL = new LineBasicNodeMaterial({colorNode: color(xag_.BulClr.x)});
+	let BulMtD = new LineBasicNodeMaterial({colorNode: color(xag_.BulClr.y)});
 	let xp = 2;
 	// For Each Gun
 	for (let n = 0; n < xag_.ObjNum; n ++) {
 		// Load Bullets
 		for (let i = 0; i < xag_.BulNum; i ++) {	
-			//	Create Bull Meshes - Double Line 2 Colors
+			// Create Bull Meshes - Double Line 2 Colors
 			xag_.BulPtr[n][i] = new makMsh();
-			//	Left
+			// Left
 			line = new Line(BulGeL,BulMtL); // Lite Color
 			line.position.z = -lnF;
 			line.position.x = -xp;
@@ -217,7 +209,7 @@ function initXACBul(xag_,scene) {
 			line.position.z = lnB;
 			line.position.x = -xp;
 			xag_.BulPtr[n][i].add(line);
-			//	Rite
+			// Rite
 			line = new Line(BulGeL,BulMtL); // Lite Color
 			line.position.z = -lnF;
 			line.position.x = xp;
@@ -230,7 +222,7 @@ function initXACBul(xag_,scene) {
 		//
 			scene.add(xag_.BulPtr[n][i]);
 			xag_.BulPtr[n][i].visible = false;
-			//	Initialize Speed and Position
+			// Initialize Speed and Position
 			xag_.BulMpS[n][i] = new Vector3();
 			xag_.BulMpP[n][i] = new Vector3();
 		} // end i
@@ -246,7 +238,7 @@ function moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT) {
 		xag_.BulSp2[n] = xag_.BulSp2[n] - DLTime;
 		if (xag_.BulSp2[n] < 0) xag_.BulSp2[n] = 0;
 		for (let i = 0; i < xag_.BulNum; i ++) {
-			//	Start New Bullets
+			// Start New Bullets
 			if (!xag_.BulTim[n][i] && !xag_.BulSp2[n] && xag_.BulFlg[n]) {		
 				// Set Initial Rotation
 				xag_.BulPtr[n][i].rotation.x = xag_.XACRot[n].x*DegRad; // Latitude
@@ -262,14 +254,14 @@ function moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT) {
 				xag_.BulSp2[n] = xag_.BulSpc;
 				xag_.BulPtr[n][i].visible = true;
 			}
-			//	Continue Bullets
+			// Continue Bullets
 			xag_.BulTim[n][i] = xag_.BulTim[n][i] + DLTime;
 			// Stop
 			if (xag_.BulTim[n][i] > xag_.BulDLT) {
 				xag_.BulTim[n][i] = 0;
 				xag_.BulPtr[n][i].visible = false;
 			}
-			//	Continue Bullet
+			// Continue Bullet
 			else {
 				// Speed lost due to Drag (approx)
 				xag_.BulMpS[n][i].multiplyScalar(.995);
@@ -318,32 +310,34 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 		point1.push(new Vector3(0,0,-lnB));
 		point1.push(new Vector3(0,0,lnB));
 	let AAAGeD = new BufferGeometry().setFromPoints(point1);	
-	let AAAMtL = new LineBasicNodeMaterial();
-		AAAMtL.colorNode = color(aag_.AAACol.x);
-		AAAMtL.transparent = true;
-		AAAMtL.opacityNode = aag_.AAAOpa;
-		AAAMtL.depthWrite = false;
-	let AAAMtD = new LineBasicNodeMaterial();
-		AAAMtD.colorNode = color(aag_.AAACol.y);
-		AAAMtD.transparent = true;
-		AAAMtD.opacityNode = aag_.AAAOpa;
-		AAAMtD.depthWrite = false;
+	let AAAMtL = new LineBasicNodeMaterial({
+			colorNode: color(aag_.AAACol.x),
+			transparent:true,
+			opacity: 0.5,
+			depthWrite:false,
+		});
+	let AAAMtD = new LineBasicNodeMaterial({
+			colorNode: color(aag_.AAACol.y),
+			transparent:true,
+			opacity: 0.5,
+			depthWrite:false,
+		});
 	//- For Each Gun
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Combined Rotation and Map Position of Parent plus Gun
 		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]);
 		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
-		//	Gun Object Rotation (for show only)
+		// Gun Object Rotation (for show only)
 		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
 		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
-		//	Combined Map Position of Parent plus Gun
+		// Combined Map Position of Parent plus Gun
 		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
 		// Compute Gun Relative Position (for show only)
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aag_.GunPtr[n].position.y = MapPos.y-AltDif;
 		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
 		scene.add(aag_.GunPtr[n]);
-		//	Load Bullets
+		// Load Bullets
 		for (let i = 0; i < aag_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
 			aag_.AAAPtr[n][i] = new makMsh();
@@ -362,15 +356,15 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 			aag_.AAAMpS[n][i] = new Vector3();
 			aag_.AAAMpP[n][i] = new Vector3();
 		}
-		//	Smoke Material
-		aag_.SmkMat[n] = new SpriteNodeMaterial();
-		aag_.SmkMat[n].colorNode = color(0xffffff);
-		aag_.SmkMat[n].colorNode = texture(aag_.SmkMap);
-		aag_.SmkMat[n].transparent = true;
-		aag_.SmkMat[n].opacityNode = 1.0;
-//		aag_.SmkMat[n].depthTest = false;	// Same as volcano
-		aag_.SmkMat[n].depthWrite = false;
-		//	Smoke Sprite
+		// Smoke
+		aag_.SmkMat[n] = new SpriteNodeMaterial({
+			colorNode: color(0xffffff),
+			colorNode: texture(aag_.SmkMap),
+			transparent:true,
+			opacity: 1.0,
+//			depthTest:false,	// Same as volcano
+			depthWrite:false,
+		});
 		aag_.SmkPtr[n] = new Sprite(aag_.SmkMat[n]);
 		aag_.SmkPtr[n].scale.set(100,100,100);	
 		scene.add(aag_.SmkPtr[n]);
@@ -504,7 +498,5 @@ export {initBullet,moveBullet,initXACBul,moveXACBul,initAAGuns,moveAAGuns};
 *	REVISIONS
 *
 *******************************************************************************/
-/*
-250125:	Version 1
-250317:	Added opacity
-*/
+
+// * 250125:	Created
