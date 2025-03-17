@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 14 Mar 2025
+Version dated 17 Mar 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -561,8 +561,8 @@ let xac_ = {
 		// End Sequence
 		HitCnt: [0,0],			// Hits Taken
 		HitMax: 5,				// Hits Requred
-		EndSeq: [0,0],			// End Sequence On
-		EndTim: 10,				// End Sequance (Seconds)
+		EndSeq: [0,0],			// End Sequence Running
+		EndTim: 5,				// End Sequence Time (Seconds)
 		// End Sound
 		SndFlg: [0,0],			// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
@@ -617,6 +617,19 @@ let	flg_ = {
 		ObjDst: [152.4],		// Visibility Distance from Parent (meters)
 		ObjAdj: [0]
 	};
+
+//= AIRPLANE END SEQUENCE ======//==============================================
+let xat_ = {
+		// Segments:
+		// 0 = 1st Explosion
+		// 1 = Spinning and Burning
+		// 2 = 2nd Explosion
+		// 3 = Delay
+		// 4 = Radio Call
+		SegTim: [0.05,5,0.1,2,2],		
+		SegIdx: -1,				// Start at -1 so can increment at beginning
+		TimRem: 0,
+	}
 
 //= AIRPLANE EXPLOSION =========//==============================================
 let xae_ = {
@@ -1157,7 +1170,7 @@ let R90flg = 0;					// Right 90 degrees
 
 //- POINTER LOCK CONTROL -------//----------------------------------------------
 //	Variables
-let InpMos = new THREE.Vector2(); // Inputs - Mouse
+let InpMos = new THREE.Vector2(); // Mouse Inputs
 let _changeEvent = {type: "change"};
 let _lockEvent = {type: "lock"};
 let _unlockEvent = {type: "unlock"};
@@ -1884,62 +1897,77 @@ function moveXACGun(n) {
 //= XAC END SEQUENCE ===========//==============================================
 
 function moveXACEnd(n) {
-	// If Starting, Start 1st Explosion
-	if (xac_.EndSeq[n] == xac_.EndTim) begnXACExp(n);
-	// If 1st or 2nd Explosion in Progress, Continue
-	if (xae_.ExpLif) contXACExp(n);
-	// If 1st Explosion Done, Continue Sequence
-	if (xac_.EndSeq[n] > 1) {
-		xac_.ObjRot[n].z = Mod360(xac_.ObjRot[n].z - 1); // Roll Right
-		if (xac_.ObjRot[n].x > -90) {
-			xac_.ObjRot[n].x = xac_.ObjRot[n].x - 0.1; // Pitch Down
-			if (xac_.ObjRot[n].x < -90) xac_.ObjRot[n].x = -90;
+	// n = xac number
+	// this sequence called if xac_.EndSeq[n] = 1;
+	// TimRem Starts at 0, So Starts Next Event
+	if (!xat_.TimRem) {			// Start New Actions
+		xat_.SegIdx ++;
+		// Set Timd
+		xat_.TimRem = xat_.SegTim[xat_.SegIdx];
+		// Select Actions
+		if (xat_.SegIdx == 0) begnXACExp(n); // Begin Explosion 1
+		if (xat_.SegIdx == 1) {
+			stopXACExp(n); // Stop Explosion 1
+			begnXACFyr(n); // Start Smoke and Fire
 		}
-		xac_.EndSeq[n] = xac_.EndSeq[n] - DLTime;
-		// Almost End of Sequence
-		if (xac_.EndSeq[n] < 1) {
-			xac_.EndSeq[n] = 1;
-			begnXACExp(n);		// Start 2nd Explosion
+		if (xat_.SegIdx == 2) {
+			begnXACExp(n);		// Begin Explosion 2
+			stopXACFyr(n);		// End Smoke and Fire
 		}
+		if (xat_.SegIdx == 3) {
+			stopXACExp(n);
+			xac_.ObjAdr[n].visible = false; // Airplane gone
+		}
+		if (xat_.SegIdx == 4) playRadSeg(2); // Play Radio Call
+		if (xat_.SegIdx == 5) xac_.EndSeq[n] = 1;
+	}
+	else {						// Continuing Actions
+		if (xat_.SegIdx == 0) contXACExp(n);
+		if (xat_.SegIdx == 1) makeXACSpn(n);
+		if (xat_.SegIdx == 2) contXACExp(n);
+		xat_.TimRem = xat_.TimRem - DLTime;
+		if (xat_.TimRem < 0) xat_.TimRem = 0;
 	}
 }
 
-//-	Start Explosion ------------//----------------------------------------------
+//-	Begin Explosion ------------//----------------------------------------------
 function begnXACExp(n) {
-	// Both Explosions
 	xae_.ExpSiz = 0.1;			// Start Size
-	xae_.ExpLif = 0.1;			// Start Life (seconds)
 	xae_.ExpMsh.visible = true;
 	if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play();
-	// 2nd Explosion
-	if (xac_.EndSeq[n] == 1) xae_.ExpLif = 0.2;
 }
 
 //- Continue Explosion ---------//----------------------------------------------
 function contXACExp(n) {
 	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz);
 	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr;
-	xae_.ExpLif = xae_.ExpLif - DLTime;
-	// If Explosion Over
-	if (xae_.ExpLif < 0) {
-		xae_.ExpLif = 0;
-		xae_.ExpMsh.visible = false;
-		// End 1st Explosion
-		if (xac_.EndSeq[n] > 1) {
-			xaf_.SmkMsh[0].visible = true;
-			xaf_.FyrMsh[0].visible = true;
-			if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();
-		}
-		// End 2nd Explosion
-		else {
-			xaf_.SmkMsh[0].visible = false;
-			xaf_.FyrMsh[0].visible = false;
-			xac_.ObjAdr[n].visible = false;
-			if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();
-			xac_.EndSeq[n] = 0;
-			// Trigger Final Radio Call
-			playRadSeg(2);
-		}
+}
+
+//-	Stop Explosion -------------//----------------------------------------------
+function stopXACExp(n) {
+	xae_.ExpSiz = 0.01;			// End Size
+	xae_.ExpMsh.visible = false;
+	if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();
+}
+
+//-	Begin Smoke and Fire -------//----------------------------------------------
+function begnXACFyr(n) {
+	xaf_.SmkMsh[0].visible = true;
+	xaf_.FyrMsh[0].visible = true;
+}
+
+//-	End Smoke and Fire ---------//----------------------------------------------
+function stopXACFyr(n) {
+	xaf_.SmkMsh[0].visible = false;
+	xaf_.FyrMsh[0].visible = false;
+}
+
+//-	Make Airplane Spin ---------//----------------------------------------------
+function makeXACSpn(n) {
+	xac_.ObjRot[n].z = Mod360(xac_.ObjRot[n].z - 1); // Roll Right
+	if (xac_.ObjRot[n].x > -90) {
+		xac_.ObjRot[n].x = xac_.ObjRot[n].x - 0.1; // Pitch Down
+		if (xac_.ObjRot[n].x < -90) xac_.ObjRot[n].x = -90;
 	}
 }
 
@@ -2635,8 +2663,8 @@ function loadSounds() {
 	// Engine
 	mys_.EngSnd = new THREE.PositionalAudio(listener);
 	audoLoader.load(mys_.EngSrc,function(buffer) {
-		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);
 		mys_.EngSnd.setBuffer(buffer);
+		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
 	});
 	// My Prop
 	mys_.PrpSnd = new THREE.PositionalAudio(listener);
@@ -2662,7 +2690,7 @@ function loadSounds() {
 		xac_.EngPtr[n] = new THREE.PositionalAudio(listener);
 		audoLoader.load(xac_.EngSrc[n],function(buffer) {
 			xac_.EngPtr[n].setBuffer(buffer);
-			init1Sound(xac_.EngPtr[n],RefDst,0,1.3,1),xac_.EngMsh[n];
+			init1Sound(xac_.EngPtr[n],RefDst,0,1.3,1,xac_.EngMsh[n]);
 			xac_.ObjAdr[n].add(xac_.EngMsh[n]);
 		});
 	}
@@ -2821,6 +2849,14 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	dest.playbackRate = rate;
 	if (loop) dest.setLoop(true);
 	link.add(dest);
+}
+
+//- Positional Audio
+function init2Sound(dest,dist,volm,rate,loop) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
 }
 
 //- Audio
