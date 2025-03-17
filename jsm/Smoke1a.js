@@ -271,7 +271,7 @@ export {initGrdSmk,initGrdFyr,initAirSmk,initAirFyr,initShpWak};
 *******************************************************************************/
 /*
 250125:	Version 1
-250311:	Version 2: Changed labels and added subroutines with Fire
+250311:	Version 1a: Changed labels and added subroutines with Fire
 */
 
 
