@@ -1,5 +1,5 @@
 /*
- * Smoke.js (vers 25.03.11)
+ * Smoke.js (vers 25.03.17)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
  * Adapted from three.js examples.
@@ -12,9 +12,9 @@
  */
 
 /*******************************************************************************
-*                                                                              *
-*	IMPORTS                                                                    *
-*                                                                              *
+*
+*	IMPORTS
+*
 *******************************************************************************/
 
 import {
@@ -257,17 +257,17 @@ function initShpWak(wak_) {
 }
 
 /*******************************************************************************
-*                                                                              *
-*	EXPORTS                                                                    *
-*                                                                              *
+*
+*	EXPORTS
+*
 *******************************************************************************/
 
 export {initGrdSmk,initGrdFyr,initAirSmk,initAirFyr,initShpWak};
 
 /*******************************************************************************
-*                                                                              *
-*	REVISIONS                                                                  *
-*                                                                              *
+*
+*	REVISIONS
+*
 *******************************************************************************/
 /*
 250125:	Version 1
