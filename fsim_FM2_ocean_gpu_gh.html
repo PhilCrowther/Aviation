@@ -93,7 +93,7 @@ import {initBullet,moveBullet,	// My Airplane Bullets
 import {initGrdSmk,initGrdFyr,	// Ground Based
 		initAirSmk,initAirFyr,	// Air Based
 		initShpWak				// Ship Based
-} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke2.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke1a.js";
 2
 /*= GENERAL ====================//==============================================
 
@@ -937,9 +937,11 @@ let xag_ = {
 		BulSpd: BulSpd,			// Muzzle Velocity (mps)
 		BulDLT: BulDLT,			// Max Bullet Time in Flight
 		BulSpc: BulSpc,			// Bullet spacing
-		BulSp2: [BulSpc,BulSpc],
-		// Bullet Colors
+		BulSp2: [BulSpc,		// Bullet spacing time remaining
+				 BulSpc],
+		// Bullet Colors and Opacity
 		BulClr: new THREE.Vector2(0xff80ff,0x804080), // Red
+		BulOpa: 0.8,
 		// Bullets for each gun
 		BulPtr: [[],[]],		// Bullet Objects
 		BulMpS: [[0],[0]],		// Bullet Map Speed (V3)
@@ -974,9 +976,11 @@ let xsg_ = {
 		AAASpd: AAASpd,			// Muzzle Velocity (mps)
 		AAADLT: AAADLT,			// Max Bullet Time in Flight
 		AAASpc: AAASpc,			// Bullet spacing
-		AAASp2: [AAASpc,AAASpc],
-		// Bullet Colors
+		AAASp2: [AAASpc,		// Bullet spacing time remaining
+				 AAASpc],
+		// Bullet Colors and Opacity
 		AAACol: new THREE.Vector2(0xff80ff,0x804080), // Red
+		AAAOpa: 0.3,			// Opacity		
 		// Bullets for each gun		
 		AAAPtr: [[],[]],		// Bullet Objects
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
@@ -1026,9 +1030,11 @@ let aaf_ = {
 		AAASpd: AAASpd,			// Muzzle Velocity (mps)
 		AAADLT: AAADLT,			// Max Bullet Time in Flight
 		AAASpc: AAASpc,			// Bullet Spacing
-		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
-		// Bullet Colors
+		AAASp2: [AAASpc,		// Bullet spacing time remaining
+				 AAASpc],
+		// Bullet Colors and Opacity
 		AAACol: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
+		AAAOpa: 0.5,			// Opacity
 		// Bullets for each gun
 		AAAPtr: [[],[]],		// Bullet Objects
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
