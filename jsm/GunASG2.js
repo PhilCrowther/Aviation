@@ -367,7 +367,7 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 		aag_.SmkMat[n].colorNode = color(0xffffff);
 		aag_.SmkMat[n].colorNode = texture(aag_.SmkMap);
 		aag_.SmkMat[n].transparent = true;
-		aag_.SmkMat[n].opacityNode = 1.0;
+		aag_.SmkMat[n].opacity = 1.0;
 //		aag_.SmkMat[n].depthTest = false;	// Same as volcano
 		aag_.SmkMat[n].depthWrite = false;
 		//	Smoke Sprite
