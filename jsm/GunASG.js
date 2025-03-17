@@ -310,8 +310,18 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 		point1.push(new Vector3(0,0,-lnB));
 		point1.push(new Vector3(0,0,lnB));
 	let AAAGeD = new BufferGeometry().setFromPoints(point1);	
-	let AAAMtL = new LineBasicNodeMaterial({colorNode: color(aag_.AAACol.x)});
-	let AAAMtD = new LineBasicNodeMaterial({colorNode: color(aag_.AAACol.y)});
+	let AAAMtL = new LineBasicNodeMaterial({
+			colorNode: color(aag_.AAACol.x),
+			transparent:true,
+			opacity: 0.5,
+			depthWrite:false,
+		});
+	let AAAMtD = new LineBasicNodeMaterial({
+			colorNode: color(aag_.AAACol.y),
+			transparent:true,
+			opacity: 0.5,
+			depthWrite:false,
+		});
 	//- For Each Gun
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Combined Rotation and Map Position of Parent plus Gun
