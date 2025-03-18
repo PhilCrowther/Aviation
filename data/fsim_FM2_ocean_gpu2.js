@@ -195,7 +195,7 @@ let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
 let Air_CfLNode = document.createTextNode("");
 	Air_CfLElement.appendChild(Air_CfLNode);
 		
-let air_GFmElement = document.getElementById("air_GFm"); // GFmult
+let air_GFmElement = document.getElementById("Air_GFm"); // GFmult
 let air_GFmNode = document.createTextNode("");
 	air_GFmElement.appendChild(air_GFmNode);
 
