@@ -95,6 +95,184 @@ let vxr_ = {
 		Cam: -0.1
 	}
 
+//= GUNASG MODULE ==============//==============================================
+//- Aircraft Guns
+//	M2 Browning .50 caliber
+let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
+let BulDLT = 0.5;				// Bullet Maximum Time in Flight
+let BulNum = 16;				// Number of bullets
+let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
+//	AA Guns
+//	Bofors anti-aircraft guns - 40 mm (1.57 in)
+let AAANum = 16;				// Number of bullets
+let AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
+let AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
+let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
+//	Adjust y-Rotation
+let AARYBg = [90,0];			// Starting Y-Rotation
+let AARYDf = [0,0];				// Y-Rotation Adjustment
+//	Smoke
+let SmkOpR = 0.005;				// Opacity Reduction per Frame
+
+//- My Guns --------------------//----------------------------------------------
+let myg_ = {
+		// Data
+		BulSpd: BulSpd,			// Muzzle Velocity (mps)
+		BulDLT: BulDLT,			// Max Bullet Time in Flight
+		BulNum: BulNum,			// Number of bullets
+		BulSpc: BulSpc,			// Bullet spacing
+		BulSp2: BulSpc,
+		// Object
+		BulClr: 0,				// Red (Vector2)
+		BulPtr: [0],			// Bullet Objects
+		BulMpS: [0],			// Bullet Speed
+		BulTim: [0],			// Bullet Time in Flight
+		// Sound
+		ObjNum: 2,
+		SndSrc: 0,				// File (my guns)
+		SndPtr: [0,0],
+		SndVol: 0.5,			// Volume
+		SndMsh: [0,0],			// (makMsh)
+		// HitBox
+		HitTgt: 1,				// Hit Target (1 = enemy airplane_
+		HitDst: 10,				// Hit Radius
+	}
+
+//- Moving Airplanes -----------//----------------------------------------------
+let XPGMax = 120;				// Guns Firing (2 secs)
+let XPGFlg = XPGMax;
+let XPGMin = -600;				// Guns Not Firing (10 secs)
+let xag_ = {
+		ObjNum: 2,
+		// Parent
+		XACRot: [0,0],
+		XACPos: [0,0],
+		// Gun Object (Fixed Firing Forward)
+		// GunPtr = Airplane Object
+		GunPtr: [0,0],			// Not Used Yet
+		GunRot: [0,0],			// Gun Rotation (Euler degrees)
+		GunPos: [0,0],			// Map Position (Vector3)
+		// Bullet Data
+		BulFlg: [0,1],			// 1 = Guns Firing
+		BulNum: BulNum,			// Number of bullets		
+		BulSpd: BulSpd,			// Muzzle Velocity (mps)
+		BulDLT: BulDLT,			// Max Bullet Time in Flight
+		BulSpc: BulSpc,			// Bullet spacing
+		BulSp2: [BulSpc,BulSpc], // Bullet spacing time remaining
+		// Bullet Colors and Opacity
+		BulClr: 0,				// Red (Vector2)
+		BulOpa: 0.8,
+		// Bullets for each gun
+		BulPtr: [[],[]],		// Bullet Objects
+		BulMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		BulMpP: [[0],[0]],		// Bullet Map Position (V3)
+		BulTim: [[],[]],		// Bullet Time in Flight
+		// Gun Sounds
+		SndSrc: [0,0],			// File (my guns)
+		SndPtr: [0,0],
+		SndVol: [0.5,0.5],		// Volume
+		SndMsh: [0,0],			// (makMsh)	
+	};
+
+//- Moving Ships ---------------//----------------------------------------------
+let XSGMax = 1200;				// Guns Firing (20 secs)
+let XSGFlg = XSGMax;
+let XSGMin = -1200;				// Guns Not Firing (20 secs)
+let xsg_ = {
+		ObjNum: 2,				// Number of guns
+		// Parent
+		XSHRot: [0,0],			// Fletcher
+		XSHPos: [0,0],
+		// Gun Object
+		GunPtr: [0,0],			// Gun Object (makMsh)
+		GunRot: [0,0],			// Gun Rotation (Euler - degrees)
+		GunPos: [0,0],			// Relative Map Position (Vector3) [used by Mesh]
+		// Bullet Data
+		AAAFlg: [0,0],			// 1 = Guns Firing
+		AAANum: AAANum,			// Number of bullets
+		AAASpd: AAASpd,			// Muzzle Velocity (mps)
+		AAADLT: AAADLT,			// Max Bullet Time in Flight
+		AAASpc: AAASpc,			// Bullet spacing
+		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining	 
+		// Bullet Colors and Opacity
+		AAACol: 0,				// Red (Vector2)
+		AAAOpa: 0.4,			// Opacity
+		// Bullets for each gun		
+		AAAPtr: [[],[]],		// Bullet Objects
+		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
+		AAATim: [[],[]],		// Bullet Time in Flight
+		// Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke ### new
+		SmkMap: 2,				// Shared Texture Reference Number
+		SmkMat: [0,0],			// Smoke Material
+		SmkPtr: [0,0],			// Smoke Sprite
+		SmkRot: [0,165],		// Z-rotation of smoke
+		SmkMpP: [0,0],			// Map Position (Vector3)
+		SmkDMx: [12,14],		// Delay between Smoke events (secs)
+		SmkDTm: [0,7],			// Delay Counter
+		SmkOpR:	SmkOpR,			// Opacity Reduction
+		// Smoke Sounds
+		SndFlg: [0,1],			// 1 = Explosion
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: [0,0],
+		SndVol: 15,				// Volume
+		SndMsh: [0,0],			// Sound Mesh (makMsh())
+		SndDTm: [0,0],
+		// Exploding Center
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
+	};
+
+//- Fixed Guns -----------------//----------------------------------------------
+let aaf_ = {
+		ObjNum: 2,
+		// No Parent
+		XSHRot: [0,0],			//
+		XSHPos: [0,0],			//
+		// Gun Object
+		GunPtr: [0,0],			// Gun Object (makMsh)
+		GunRot: [0,0],			// Gun Rotation (Euler - degrees)
+		GunPos: [0,0],			// Map Position (Vector3)
+		// Bullet Data
+		AAAFlg: [1,1],			// 1 = Gun Firing
+		AAANum: AAANum,			// Number of Bullets
+		AAASpd: AAASpd,			// Muzzle Velocity (mps)
+		AAADLT: AAADLT,			// Max Bullet Time in Flight
+		AAASpc: AAASpc,			// Bullet Spacing
+		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
+		// Bullet Colors and Opacity
+		AAACol: 0,				// Green-Blue (Vector2)
+		AAAOpa: 0.5,			// Opacity
+		// Bullets for each gun
+		AAAPtr: [[],[]],		// Bullet Objects
+		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
+		AAATim: [[],[]],		// Bullet Time in flight
+		// Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke ### new
+		SmkMap: 2,				// Shared Texture Reference Number
+		SmkMat: [0,0],			// Smoke Material
+		SmkPtr: [0,0],			// Smoke Sprite
+		SmkRot: [0,165],		// Z-rotation of smoke
+		SmkMpP: [0,0],			 // Map Position (Vector3)
+		SmkDMx: [12,11],		// Delay between Smoke events (secs)
+		SmkDTm: [0,6],			// Delay Counter
+		SmkOpR:	SmkOpR,			// Opacity Reduction
+		// Smoke Sounds
+		SndFlg: [1,1],			// 1 = Start Explosion Sound
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: [0,0],
+		SndVol: 15,				// Volume
+		SndMsh: [0,0],			// makMsh()
+		SndDTm: [0,0],
+		// Explosion
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
+	};
+
 //= 8. OUTPUTS VARIABLES =======//==============================================
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
