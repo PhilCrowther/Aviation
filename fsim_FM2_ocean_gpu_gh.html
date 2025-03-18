@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Mar 2025
+Version dated 18 Mar 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -872,197 +872,61 @@ const vxrSrc = AirSrc + vxrFNm;
 	}
 
 //= GUNASG MODULE ==============//==============================================
-//- Aircraft Guns
-//	M2 Browning .50 caliber
-let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
-let BulDLT = 0.5;				// Bullet Maximum Time in Flight
-let BulNum = 16;				// Number of bullets
-let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
-//	AA Guns
-//	Bofors anti-aircraft guns - 40 mm (1.57 in)
-let AAANum = 16;				// Number of bullets
-let AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
-let AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
-let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
-//	Adjust y-Rotation
-let AARYBg = [90,0];			// Starting Y-Rotation
-let AARYDf = [0,0];				// Y-Rotation Adjustment
-//	Smoke
-//let SmkOpR = 0.01;			// Opacity Reduction per Frame
-let SmkOpR = 0.005;				// Opacity Reduction per Frame
 
 //- My Guns --------------------//----------------------------------------------
-let myg_ = {
-		// Data
-		BulSpd: BulSpd,			// Muzzle Velocity (mps)
-		BulDLT: BulDLT,			// Max Bullet Time in Flight
-		BulNum: BulNum,			// Number of bullets
-		BulSpc: BulSpc,			// Bullet spacing
-		BulSp2: BulSpc,
-		// Object
-		BulClr: new THREE.Vector2(0xff80ff,0x804080), // Red
-		BulPtr: [0],			// Bullet Objects
-		BulMpS: [0],			// Bullet Speed
-		BulTim: [0],			// Bullet Time in Flight
-		// Sound
-		ObjNum: 2,
-		SndSrc: AirSrc + "sounds/" + "fm2_gun.mp3",	// File (my guns)
-		SndPtr: [0,0],
-		SndVol: 0.5,			// Volume
-		SndMsh: [new makMsh(),new makMsh()],
-		// HitBox
-		HitTgt: 1,				// Hit Target (1 = enemy airplane_
-		HitDst: 10,				// Hit Radius
-	}
+
+//	Specific Adjustments
+myg_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
+myg_.SndSrc = AirSrc + "sounds/" + "fm2_gun.mp3", // File (my guns)
+myg_.SndMsh = [new makMsh(),new makMsh()];
 
 //- Moving Airplanes -----------//----------------------------------------------
-let XPGMax = 120;				// Guns Firing (2 secs)
-let XPGFlg = XPGMax;
-let XPGMin = -600;				// Guns Not Firing (10 secs)
-let xag_ = {
-		ObjNum: 2,
-		// Parent
-		XACRot: [xac_.ObjRot[1],xac_.ObjRot[1]],
-		XACPos: [xac_.MapPos[1],xac_.MapPos[1]],
-		// Gun Object (Fixed Firing Forward)
-		// GunPtr = Airplane Object
-		GunPtr: [0,0], // Not Used Yet
-		GunRot: [new THREE.Euler(0,0,0), // Gun Rotation (degrees)
-				 new THREE.Euler(0,0,0)], // if not firing forward
-		GunPos: [new THREE.Vector3(0,0,0), // Map Position
-				 new THREE.Vector3(0,0,0)], // if not at center
-		// Bullet Data
-		BulFlg: [0,1],			// 1 = Guns Firing
-		BulNum: BulNum,			// Number of bullets		
-		BulSpd: BulSpd,			// Muzzle Velocity (mps)
-		BulDLT: BulDLT,			// Max Bullet Time in Flight
-		BulSpc: BulSpc,			// Bullet spacing
-		BulSp2: [BulSpc,		// Bullet spacing time remaining
-				 BulSpc],
-		// Bullet Colors and Opacity
-		BulClr: new THREE.Vector2(0xff80ff,0x804080), // Red
-		BulOpa: 0.8,
-		// Bullets for each gun
-		BulPtr: [[],[]],		// Bullet Objects
-		BulMpS: [[0],[0]],		// Bullet Map Speed (V3)
-		BulMpP: [[0],[0]],		// Bullet Map Position (V3)
-		BulTim: [[],[]],		// Bullet Time in Flight
-		// Gun Sounds
-		SndSrc: [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
-				 XPPath + "sounds/" + "fm2_gun.mp3"],
-		SndPtr: [0,0],
-		SndVol: [0.5,0.5],		// Volume
-		SndMsh: [new makMsh(),new makMsh()],		
-	};
+
+//	General Format Adjustments
+for (let n = 0; n < aaf_.ObjNum; n ++) {
+	xag_.GunRot[n] = new THREE.Euler();  // Gun Rotation (degrees)
+	xag_.GunPos[n] = new THREE.Vector3();
+	xag_.SndMsh[n] = new makMsh();
+}
+
+//	Specific Adjustments
+xag_.XACRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]];
+xag_.XACPos = [xsh_.MapPos[1],xsh_.MapPos[1]];
+xag_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
+xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
+			   XPPath + "sounds/" + "fm2_gun.mp3"];
 
 //- Moving Ships ---------------//----------------------------------------------
-let XSGMax = 1200;				// Guns Firing (20 secs)
-let XSGFlg = XSGMax;
-let XSGMin = -1200;				// Guns Not Firing (20 secs)
-let xsg_ = {
-		ObjNum: 2,				// Number of guns
-		// Parent
-		XSHRot: [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
-		XSHPos: [xsh_.MapPos[1],xsh_.MapPos[1]],
-		// Gun Object
-		GunPtr: [new makMsh(),new makMsh()], // Gun Object
-		GunRot: [new THREE.Euler(0,0,0), // Gun Rotation
-				 new THREE.Euler(60,315,0)],
-		GunPos: [new THREE.Vector3(0,0,0), // Relative Map Position (meters) [used by Mesh]
-				 new THREE.Vector3(0,0,0)],
-		// Bullet Data
-		AAAFlg: [0,0],			// 1 = Guns Firing
-		AAANum: AAANum,			// Number of bullets
-		AAASpd: AAASpd,			// Muzzle Velocity (mps)
-		AAADLT: AAADLT,			// Max Bullet Time in Flight
-		AAASpc: AAASpc,			// Bullet spacing
-		AAASp2: [AAASpc,		// Bullet spacing time remaining
-				 AAASpc],
-		// Bullet Colors and Opacity
-		AAACol: new THREE.Vector2(0xff80ff,0x804080), // Red
-		AAAOpa: 0.3,			// Opacity		
-		// Bullets for each gun		
-		AAAPtr: [[],[]],		// Bullet Objects
-		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
-		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
-		AAATim: [[],[]],		// Bullet Time in Flight
-		// Smoke
-		SmkFlg: [0,0],			// 1 = Start Smoke ### new
-		SmkMap: 2,				// Shared Texture Reference Number
-		SmkMat: [0,0],			// Smoke Material
-		SmkPtr: [0,0],			// Smoke Sprite
-		SmkRot: [0,165],		// Z-rotation of smoke
-		SmkMpP: [new THREE.Vector3(), // Map Position
-				 new THREE.Vector3()],
-		SmkDMx: [12,14],		// Delay between Smoke events (secs)
-		SmkDTm: [0,7],			// Delay Counter
-		SmkOpR:	SmkOpR,			// Opacity Reduction
-		// Smoke Sounds
-		SndFlg: [0,1],			// 1 = Explosion
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [0,0],
-		SndVol: 15,				// Volume
-		SndMsh: [new makMsh(),new makMsh()],
-		SndDTm: [0,0],
-		// Exploding Center
-		ExpPtr: [0,0],			// Pointer to Exploding Center
-		ExpSiz: [0,0],			// Expanding Size
-		ExpLif: [0,0],			// Life of Explosion (seconds)
-	};
 
+//	General Format Adjustments
+for (let n = 0; n < aaf_.ObjNum; n ++) {
+	xsg_.GunPtr[n] = new makMsh();
+	xsg_.SmkMpP[n] = new THREE.Vector3();
+	xsg_.SndMsh[n] = new makMsh();
+}
+
+//	Specific Adjustments
+xsg_.XSHRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
+xsg_.XSHPos = [xsh_.MapPos[1],xsh_.MapPos[1]],
+xsg_.GunRot = [new THREE.Euler(0,0,0),new THREE.Euler(60,315,0)]; // Gun Rotation (degrees)
+xsg_.GunPos = [new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0)]; // Map Position
+xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red
+		
 //- Fixed Guns -----------------//----------------------------------------------
-let aaf_ = {
-		ObjNum: 2,
-		// No Parent
-		XSHRot: [new THREE.Euler(0,0,0),
-				 new THREE.Euler(0,0,0)],
-		XSHPos: [new THREE.Vector3(0,0,0),
-				 new THREE.Vector3(0,0,0)],
-		// Gun Object
-		GunPtr: [new makMsh(),new makMsh()], // Gun Object
-		GunRot: [new THREE.Euler(45,90,0), // Gun Rotation (degrees)
-				 new THREE.Euler(30,0,0)],
-		GunPos: [new THREE.Vector3(48,8,5638), // Map Position
-				 new THREE.Vector3(-1225,5,3355)],
-		// Bullet Data
-		AAAFlg: [1,1],			// 1 = Gun Firing
-		AAANum: AAANum,			// Number of Bullets
-		AAASpd: AAASpd,			// Muzzle Velocity (mps)
-		AAADLT: AAADLT,			// Max Bullet Time in Flight
-		AAASpc: AAASpc,			// Bullet Spacing
-		AAASp2: [AAASpc,		// Bullet spacing time remaining
-				 AAASpc],
-		// Bullet Colors and Opacity
-		AAACol: new THREE.Vector2(0x80ffff,0x408080), // Green-Blue
-		AAAOpa: 0.5,			// Opacity
-		// Bullets for each gun
-		AAAPtr: [[],[]],		// Bullet Objects
-		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
-		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
-		AAATim: [[],[]],		// Bullet Time in flight
-		// Smoke
-		SmkFlg: [0,0],			// 1 = Start Smoke ### new
-		SmkMap: 2,				// Shared Texture Reference Number
-		SmkMat: [0,0],			// Smoke Material
-		SmkPtr: [0,0],			// Smoke Sprite
-		SmkRot: [0,165],		// Z-rotation of smoke
-		SmkMpP: [new THREE.Vector3(), // Map Position
-				 new THREE.Vector3()],
-		SmkDMx: [12,11],		// Delay between Smoke events (secs)
-		SmkDTm: [0,6],			// Delay Counter
-		SmkOpR:	SmkOpR,			// Opacity Reduction
-		// Smoke Sounds
-		SndFlg: [1,1],			// 1 = Start Explosion Sound
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [0,0],
-		SndVol: 15,				// Volume
-		SndMsh: [new makMsh(),new makMsh()],
-		SndDTm: [0,0],
-		// Explosion
-		ExpPtr: [0,0],			// Pointer to Exploding Center
-		ExpSiz: [0,0],			// Expanding Size
-		ExpLif: [0,0],			// Life of Explosion (seconds)
-	};
+
+//	General Format Adjustments
+for (let n = 0; n < aaf_.ObjNum; n ++) {
+	aaf_.XSHRot[n] = new THREE.Euler();
+	aaf_.XSHPos[n] = new THREE.Vector3();
+	aaf_.GunPtr[n] = new makMsh();
+	aaf_.SmkMpP[n] = new THREE.Vector3();
+	aaf_.SndMsh[n] = new makMsh();
+}
+
+//	Specific Adjustments
+aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
+aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
+aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
 
 //- 6. SOUND VARIABLES =========//==============================================
 
