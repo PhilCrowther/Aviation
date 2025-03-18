@@ -96,6 +96,23 @@ let vxr_ = {
 	}
 
 //= GUNASG MODULE ==============//==============================================
+//- Aircraft Guns
+//	M2 Browning .50 caliber
+let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
+let BulDLT = 0.5;				// Bullet Maximum Time in Flight
+let BulNum = 16;				// Number of bullets
+let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
+//	AA Guns
+//	Bofors anti-aircraft guns - 40 mm (1.57 in)
+let AAANum = 16;				// Number of bullets
+let AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
+let AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
+let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
+//	Adjust y-Rotation
+let AARYBg = [90,0];			// Starting Y-Rotation
+let AARYDf = [0,0];				// Y-Rotation Adjustment
+//	Smoke
+let SmkOpR = 0.005;				// Opacity Reduction per Frame
 
 //- Fixed Guns -----------------//----------------------------------------------
 let aaf_ = {
@@ -158,8 +175,6 @@ let aaf_ = {
 		ExpSiz: [0,0],			// Expanding Size
 		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
-
-
 
 //= 8. OUTPUTS VARIABLES =======//==============================================
 
