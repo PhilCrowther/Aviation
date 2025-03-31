@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 Mar 2025
+Version dated 29 Mar 2025
 
 This demo program uses included versions of the GrdMap module.
 
@@ -40,10 +40,10 @@ This demo program uses included versions of the GrdMap module.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.175.0/build/three.webgpu.js",
-			"three/webgpu": "https://unpkg.com/three@0.175.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.175.0/build/three.tsl.js",
-			"three/addons/": "https://unpkg.com/three@0.175.0/examples/jsm/",
+			"three": "https://threejs.org/build/three.webgpu.js",
+			"three/webgpu": "https://threejs.org/build/three.webgpu.js",
+			"three/tsl": "https://threejs.org/build/three.tsl.js",
+			"three/addons/": "https://threejs.org/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -583,7 +583,8 @@ function rendAll() {
 	}
 	prntHUDval(air_);
 	moveCamera(camera,cam_);
-	renderer.renderAsync(scene, camera); // Render
+//	renderer.renderAsync(scene, camera); // Render
+	renderer.render(scene, camera); // Render
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
