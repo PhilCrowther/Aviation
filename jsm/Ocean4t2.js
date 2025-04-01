@@ -12,11 +12,11 @@
 // As with the original wave generators, this module is licensed under a
 // Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
-//**************************************|****************************************
-//																				*
-//									IMPORTS										*
-//																				*
-//*******************************************************************************
+//******************************************************************************
+//*
+//*	IMPORTS
+//*
+//******************************************************************************
 
 import {
 	ClampToEdgeWrapping,
@@ -41,14 +41,14 @@ import {
 	time,						// r170 changed timerLocal to time
 } from 'three/tsl';
 
-//**************************************|****************************************
-//																				*
-//								  OCEAN MODULE									*
-//																				*
-//*******************************************************************************
+//******************************************************************************
+//*
+//*	OCEAN MODULE
+//*
+//******************************************************************************
 
 
-//= NOTES =======================================================================
+//= NOTES ======================================================================
 /*
  *	Don't Change After Initialization
  *	@param {float} Res		Resolution of Computation
@@ -67,11 +67,11 @@ import {
 // Modified 2023: Attila Schroeder - many improvements
 // Modified 2024: Attila Schroeder - converted to GPU and added butterfly texture
 
-//**************************************|****************************************
-//																				*
-//								INITIALIZE CLASS								*
-//																				*
-//*******************************************************************************
+//******************************************************************************
+//*
+//*	INITIALIZE CLASS
+//*
+//******************************************************************************
 
 class Ocean {
 
@@ -82,7 +82,6 @@ constructor(renderer,wav_) {
 	// Load Variables
 	this.Res = wav_.Res;
 	this.Siz = wav_.Siz;
-//	this.Spd = wav_.Spd;
 	this.Spd = uniform(wav_.Spd);		// r170	
 	this.windX = wav_.WSp*Math.sin(wav_.WHd*Math.PI/180);
 	this.windY = wav_.WSp*Math.cos(wav_.WHd*Math.PI/180);
@@ -149,19 +148,19 @@ constructor(renderer,wav_) {
 	this.phaseArrayTexture.minFilter = this.phaseArrayTexture.magFilter = NearestFilter;
 	this.phaseArrayTexture.needsUpdate = true;
 
-//**************************************|****************************************
-//																				*
-//									 SHADERS									*
-//																				*
-//*******************************************************************************
+//******************************************************************************
+//*
+//*	SHADERS
+//*
+//******************************************************************************
 
-	//- Common Subroutines ------------------------------------------------------
+	//- Common Subroutines -----------------------------------------------------
 	let subroutines = code(`
 		fn multiplyComplex(a: vec2f, b: vec2f) -> vec2f {
 			return vec2f(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
 	`);
-	//- Shader 1 ----------------------------------------------------------------
+	//- Shader 1 ---------------------------------------------------------------
 	//	Set intitial wave frequency at a texel coordinate (AS V2)
 	this.initSpectrum = wgslFn(`
 		fn computeWGSL(
@@ -229,7 +228,7 @@ constructor(renderer,wav_) {
 			return (1.-exp(-2*x))/(1.+exp(-2*x));
 		}		
 	`, [subroutines]);
-	//- Shader 2 ----------------------------------------------------------------
+	//- Shader 2 ---------------------------------------------------------------
 	//	Current Phase (AS V2)
 	this.compPhase = wgslFn(`	
 		fn computeWGSL(
@@ -266,7 +265,7 @@ constructor(renderer,wav_) {
 			return sqrt(G*k*(1+(k*k)/(KM*KM)));
 		}
 	`, [subroutines]);
-	//- Shader 3 ----------------------------------------------------------------
+	//- Shader 3 ---------------------------------------------------------------
 	//	Current Spectrum (AS V2)
 	this.compSpectrum = wgslFn(`
 		fn computeWGSL(
@@ -316,7 +315,7 @@ constructor(renderer,wav_) {
 			return vec2f(-z.y,z.x);
 		}
 	`, [subroutines]);
-	//- Butterfly ---------------------------------------------------------------
+	//- Butterfly --------------------------------------------------------------
 	//  This assists with Ping/Pong computations
 	this.butterfly = wgslFn(`
 		fn computeWGSL(
@@ -367,7 +366,7 @@ constructor(renderer,wav_) {
 		// Variables
 		const P2: f32 = 6.28318530718;
 	`, [subroutines]);
-	//- Shader 4A ---------------------------------------------------------------
+	//- Shader 4A --------------------------------------------------------------
 	//	Displacement Map (AS WebGPU)
 	this.compDspHrz = wgslFn(`
 		fn computeWGSL(
@@ -390,7 +389,7 @@ constructor(renderer,wav_) {
 			textureStore(w_horz,idx,vec4<f32>(H,0,1));
 		}
 	`, [subroutines]);
-	//- Shader 4B ---------------------------------------------------------------
+	//- Shader 4B --------------------------------------------------------------
 	//	Displacement Map (AS WebGPU)
 	this.compDspVrt = wgslFn(`
 		fn computeWGSL(
@@ -413,7 +412,7 @@ constructor(renderer,wav_) {
 			textureStore(w_vert,idx,vec4<f32>(H,0,1));
 		}
 	`, [subroutines]);
-	//- Shader 5 ----------------------------------------------------------------
+	//- Shader 5 ---------------------------------------------------------------
 	// Permutation
 	// Technically, the Ping/Pong method above results in only a vec2 value
 	// where H.x = real number (vertical displacement) and H.y is an imaginary number.
@@ -445,7 +444,7 @@ constructor(renderer,wav_) {
 			textureStore(w_disp,idx,input);
 		}     
 	`, [subroutines]);
-	//- Shader 6 ----------------------------------------------------------------
+	//- Shader 6 ---------------------------------------------------------------
 	//  Normal Map
 	this.compNormal = wgslFn(`
 		fn computeWGSL(
@@ -486,13 +485,13 @@ constructor(renderer,wav_) {
 		}
 	`, [subroutines]);
 
-//**************************************|****************************************
-//																				*
-//							INITIALIZE CLASS (continue)							*
-//																				*
-//*******************************************************************************
+//******************************************************************************
+//*
+//*	INITIALIZE CLASS (continue)
+//*
+//******************************************************************************
 
-	//= Instructions ===========//===============================================
+	//= Instructions ===========//==============================================
 	//- Shader 1. Initial Frequency
 	this.initSpectrumComp = this.initSpectrum({
 		u_tsiz: this.Res,
@@ -601,7 +600,7 @@ constructor(renderer,wav_) {
 		u_indx: instanceIndex,
 		u_gsiz: this.Siz
 	}).compute(this.Res**2)	
-	//= Render ==================================================================
+	//= Render =================================================================
 	this.renderer.computeAsync(this.initSpectrumComp);
 	this.renderer.computeAsync(this.butterflyComp,[1,8,1]);
 	// Static Targets
@@ -609,13 +608,13 @@ constructor(renderer,wav_) {
 	wav_.Nrm = this.normMapTexture;
 };	// End of Initialize
 
-//**************************************|****************************************
-//																				*
-//								  UPDATE CLASS									*
-//																				*
-//*******************************************************************************
+//******************************************************************************
+//*
+//*	UPDATE CLASS
+//*
+//******************************************************************************
 
-// = (called by Main Program) ===================================================
+// = (called by Main Program) ==================================================
 update() {
 	// 2. Initial
 	if (this.initPhase) {
@@ -654,19 +653,19 @@ update() {
 
 };	// End of Module
 
-//**************************************|****************************************
-//																				*
-//									 EXPORTS									*
-//																				*
-//*******************************************************************************
+//******************************************************************************
+//*
+//*	EXPORTS
+//*
+//******************************************************************************
 
 export {Ocean};
 
-//**************************************|****************************************
-//																				*
-//									REVISIONS									*
-//																				*
-//*******************************************************************************
+//******************************************************************************
+//*
+//*	REVISIONS
+//*
+//******************************************************************************
 /*
 // 230519: Version 1	:
 // 230614: Vecsion 2	: Changed to Class; on initialization, only imput renderer and wav_; on render, only input wavTim; moved wavTim variables to main program
