@@ -208,6 +208,29 @@ let xac_ = {
 		SndDTm: [0,0],
 	};
 
+//. Moving Ships ...............//..............................................
+let xsh_ = {
+		ObjNum: 2,				// Number of ships
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
+				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"], // Source File
+		ObjTxt: [0,0],			// Texture Source File (not used)
+		ObjAdr: [0,0],			// Object Address
+		ObjSiz: [Ft2Mtr,Ft2Mtr], // Scale		 
+		RndOrd: [0,0],			// renderOrder (not used)
+		ObjRot: [0,0],			// Object Rotation
+		MapPos: [0,0],			// Object Map Position (meters) [used by Mesh]
+		ObjGrp: [0,0],			// Group
+		// Speed
+		SpdMPS: [9,11],			// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
+		MapSpd: [0,0],			// Object Map Speed (mtr/sec) used by airplane if landed
+		// Animations
+		ObjDst: [0,0],			// Object distance (meters) used to activate effects
+		MixRdr: [0,0],			// Animation Mixer - Radar
+		AnmRdr: [0,0],			// Animation
+		ShpPit: [0,0],			// Ship Pitch
+		ShpLok: [0,0],			// Deck Lock
+	};
+
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
 
