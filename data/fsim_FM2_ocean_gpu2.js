@@ -16,6 +16,121 @@ const GrvMPS = 9.80665; 		// Gravity (mps)
 // These values could also be used by modules, but that would require that all 
 // module users also create a data file - which complicates the use of modules.
 
+//= FADE2BLACK PLANE ===========//==============================================
+//	If FadBeg > 0, Prop Invisible.
+//	Therefore, limit use to where Prop would be invisible.
+let FadFlr = 0.25;				// Floor (Fade Not Visible)
+let FadBeg = 0.99;				// Beg Opacity
+let FadEnd = FadFlr;			// Beg Target
+let FadSpd = 0.005;				// Fade Speed
+let FadMat = 0;					// Allows change of color
+let FadCol = "black";			// Beg Color
+
+//= 2. SKYBOX VARIABLES ========//==============================================
+const FogCol = 0xbab4a6;		// Sky (for Fog only)
+//- SkyBox
+const SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+//-	LensFlare
+const LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
+const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
+let LF0Txt, LF1Txt = 0;
+let envMap = 0;
+
+//= 3. GEOMAT VARIABLES ========//==============================================
+
+//- GRDWTR TEXTURES ------------//----------------------------------------------
+//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
+const WtrCol = 0x0066cc;		// Water (Nodes)
+//- Textures
+const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
+const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg"; // Size = 1024x1024
+
+//- GRDWTR MODULE --------------//----------------------------------------------
+//	This ocean map has 3 nested grids of squares.
+//	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
+//	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
+//	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
+const GrdSiz = 1600;			// 1600 = 1 mile
+const GrdRes = 512;
+const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
+const WavMax = 5;				// Maximum wave height (set height of outer waves)
+let grids = 0;
+let grd_ = {
+		MSP: 0, 				// MSX, MPY, MSZ (meters) (from Flight)
+		RCs: 16,				// Squares in each of first 2 grids
+		Siz: GrdSiz,			// Size of smallest square
+		Stp: 4,					// Squares in each of first 2 grids
+		Seg: GrdSeg,			// Segments for smallest square
+		Grx: [],				// Index of Grids (0-2)
+		Geo: [],				// Master Index of Basic Geometries
+		Col: 0, 				// Color
+		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
+		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
+		NMS: 0,					// Grid 0-1 Normal Map Scale (from Ocean)
+		Df0: [],				// Grid 0-1 Diffuse Maps
+		Rf0: [],				// Grid 0-1 Roughness Maps
+		Mt0: [],				// Grid 0 Materials
+		Mt1: [],				// Grid 1 Materials
+		Dif: 0,					// Grid 2 Diffuse Map
+		Ruf: 0,					// Grid 2 Roughness Maps
+		Gr2: 0,					// Grid 2 Normal Map
+		Mat: [],				// Grid 2 Materials
+		WMx: WavMax,			// Max wave height, used to lower outer squares
+	};
+
+//- OCEAN MODULE ---------------//----------------------------------------------
+let WndSpd = 10.0;
+let WndHdg = 90;
+let Choppy = 1.5;
+let AnmSpd = 0.5;				// Can vary with GrdSiz
+let waves = 0;
+let wav_ = {
+		// Sources
+		Res: GrdRes,			// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
+		WSp: WndSpd,			// Wind Speed
+		WHd: WndHdg,			// Wind Heading (0=0,Spd; 90=Spd,0; 180=0,-Spd; 270=-Spd,0)
+		Chp: Choppy,			// default = 1
+		// Animated Maps
+		Dsp: 0,					// The Displacement Map
+		Nrm: 0,					// The Normal Map
+		NMS: 0, 				// Normal Map Scale (flip Y for left-handed maps)
+		Spd: AnmSpd
+	};
+
+//= 4. OBJECT VARIABLES ========//==============================================
+
+// Sample Variable
+//let var_ = {
+//		ObjNum: 1,				// Number of Objects
+//		ObjSrc: [0],			// Source File
+//		ObjTxt: [0],			// Texture Source File
+//		ObjAdr: [0],			// Object Address
+//		ObjSiz: [],				// Scale (e.g. Ft2Mtr)
+//		RndOrd: [0],			// renderOrder
+//		ObjRot: [new THREE.Euler(0,0,0)], // Object Rotation (in radians)
+//		MapPos: [new THREE.Vector3(0,0,0)], // Map Position - Absolute or Relative
+//		ObjRef: [0],			// Child: Reference to Parent or Group
+//		ObjGrp: [0],			// Group: new makMsh()
+		// Moving
+//		SpdMPS: [0],			// Speed - if Moving (mtr/sec)
+//		MapSpd: [new THREE.Vector3()], // Map Speed (mtr/sec)
+		// Animations (Varies by Object)
+//		ObjDst: [0],			// Object distance (meters) used to activate effects
+//		MixNam: [0],			// Animation Mixer
+//		AnmNam: [0]				// Animation
+//	};
+
+//= SHARED TEXTURES ============//===============================================
+let txt_ = {
+		ObjNum: 3,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
+		ObjTxt: [],
+	};
+
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
 
