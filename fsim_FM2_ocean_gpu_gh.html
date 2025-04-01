@@ -149,7 +149,7 @@ OK
 	   Standard Setup
 	   Fad2Black Plane				Used for scene transitions
 	2. SKYBOX VARIABLES
-	3. GEOMAT VARIABLES
+	3. OCEAN GRID VARIABLES
 		GRDWTR MODULE				(grd_)
 		OCEAN MODULE				(wav_)
 	4. OBJECT VARIABLES
@@ -345,7 +345,7 @@ let FadMsh = initFadMsh();		// Initialize
 //= 2. SKYBOX VARIABLES ========//==============================================
 //	Variables loaded from Data File
 
-//= 3. GEOMAT VARIABLES ========//==============================================
+//= 3. OCEAN GRID VARIABLES ====//==============================================
 
 //- GRDWTR TEXTURES ------------//----------------------------------------------
 //	Variables loaded from Data File
@@ -414,80 +414,22 @@ let fxd_ = {
 //- MOVING VEHICLES ------------//----------------------------------------------
 
 //. Moving Airplanes ...........//..............................................
-const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
-const XP2Nam = "A6M_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
-let xac_ = {
-		ObjNum: 2,				// Number of airplanes
-		ObjSrc: [XPPath+XP1Nam, // Model Source file
-				 XPPath+XP2Nam],
-		ObjTxt: [0,0],			// Texture Source File (not used)
-		ObjAdr: [0,0],			// Object Address
-		ObjSiz: [Ft2Mtr,Ft2Mtr], // Scale
-		RndOrd: [0,0],			// renderOrder (not used)
-		ObjRot: [new THREE.Euler(0,0,30), // Rotation
-				 new THREE.Euler(0,0,30)],
-		MapPos: [new THREE.Vector3(180,1524,5300), // meters
-				 new THREE.Vector3(180,1524,5300)],
-		ObjRef: [0,0],			// 0 = not linked
-		// Speed
-		SpdMPS: [91.5,91,5],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-		MapSpd: [new THREE.Vector3(), // not used
-				 new THREE.Vector3()],
-		// Basic Animations
-		ObjDst: [0,0],			// Object distance (meters) used to activate effects
-		MixSpn: [0,0],			// Animation Mixer - Prop
-		MixPit: [0,0],			// Animation Mixer - Pitch
-		AnmPit: [0,0],			// Animation
-		MixBnk: [0,0],			// Animation Mixer - Bank
-		AnmBnk: [0,0],			// Animation
-		// Engine Sounds
-		EngSrc: [XPPath + "sounds/fm2.wav",
-				 XPPath + "sounds/fm2.wav"],
-		EngPtr: [0,0],
-		EngMsh: [new makMsh(),new makMsh()],
-		EngVol: [0.1,0.1],		// Volume
-		// End Sequence
-		HitCnt: [0,0],			// Hits Taken
-		HitMax: 5,				// Hits Requred
-		EndSeq: [0,0],			// End Sequence Running
-		EndTim: 5,				// End Sequence Time (Seconds)
-		// End Sound
-		SndFlg: [0,0],			// 1 = Start Explosion Sound
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [0,0],
-		SndVol: 15,				// Volume
-		SndMsh: [new makMsh(),new makMsh()],
-		SndDTm: [0,0],
-	};
+//	Variables loaded from Data File
+// Adjustments
+	xac_.ObjRot = [new THREE.Euler(0,0,30),new THREE.Euler(0,0,30)];  // Rotation
+	xac_.MapPos = [new THREE.Vector3(180,1524,5300),new THREE.Vector3(180,1524,5300)]; // meters
+	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3()]; // not used
+	xac_.EngMsh = [new makMsh(),new makMsh()];
+	xac_.SndMsh = [new makMsh(),new makMsh()];
 
 //. Moving Ships ...............//..............................................
-let xsh_ = {
-		ObjNum: 2,				// Number of ships
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
-				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"], // Source File
-		ObjTxt: [0,0],			// Texture Source File (not used)
-		ObjAdr: [0,0],			// Object Address
-		ObjSiz: [Ft2Mtr,		// Scale
-				 Ft2Mtr],
-		RndOrd: [0,0],			// renderOrder (not used)
-		ObjRot: [new THREE.Euler(0,0,0), // Object Rotation
-				 new THREE.Euler(0,0,0)],
-		MapPos: [new THREE.Vector3(-4100,0.1,150),  // Object Map Position (meters) [used by Mesh]
-				 new THREE.Vector3(-4200,0.2,350)],
-		ObjGrp: [new makMsh(),	// Group
-				 new makMsh()],
-		// Speed
-		SpdMPS: [9,11],			// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
-		MapSpd: [new THREE.Vector3(),  // Object Map Speed (mtr/sec) used by airplane if landed
-				 new THREE.Vector3()],
-		// Animations
-		ObjDst: [0,0],			// Object distance (meters) used to activate effects
-		MixRdr: [0,0],			// Animation Mixer - Radar
-		AnmRdr: [0,0],			// Animation
-		ShpPit: [0,0],			// Ship Pitch
-		ShpLok: [new makMsh(),0], // Deck Lock
-	};
+//	Variables loaded from Data File
+// Adjustments
+	xsh_.ObjRot = [new THREE.Euler(0,0,0),new THREE.Euler(0,0,0)];  // Rotation
+	xsh_.MapPos = [new THREE.Vector3(-4100,0.1,150),new THREE.Vector3(-4200,0.2,350)]; // meters
+	xsh_.ObjGrp = [new makMsh(),new makMsh()];
+	xsh_.MapSpd = [new THREE.Vector3(),new THREE.Vector3()];
+	xsh_.ShpLok = [new makMsh(),0];
 
 //= ANIMATED FLAGS =============//==============================================
 //	Can attach to Ships or Flagpoles
