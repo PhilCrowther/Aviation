@@ -32,12 +32,11 @@ function init3dFlyt() {
 		ThrstK = 550 * PropEf;			// Thrust (US units)
 		if (USorSI == "SI") ThrstK = 1000 * PwrMax * PropEf;	// (SI units)
 	}
-	WingAs = WingSp*WingSp/WingAr;		// Wing Aspect Ratio
 	ACPMax = CfLMax * 10;				// Max aircraft pitch adjustment (+/- 15)
 	ACPInc = ACPMax - AngInc;			// Net max aircraft pitch adjustment (10)
 	TDrAdj = TDrAng - ACPInc;			// Pitch change required for taildragger (7.5)
 	// Time
-	DLTim2 = DLTime * DLTime;
+	DLTim2 = DLTime**2;
 	GrvDLT = GrvUPS * DLTim2;			// Gravity (upt)
 	FrcAcc = DLTim2 / ACMass;			// Convert Force to Acceleration
 	// Starting Altitude
