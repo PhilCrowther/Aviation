@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Mar 2025
+Version dated 1 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -241,50 +241,28 @@ let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
 let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys
 let LagAtP = new THREE.Vector3(0.967,0,0.099);	// CfL - Autopilot
-//- POINTER LOCK CONTROLS ------------------------------------------------------.
-//- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) ........
+//- POINTER LOCK CONTROLS ------------------------------------------------------
+//- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
 let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
 
 //- CONSTANTS ------------------//----------------------------------------------
-//	Conversions (Loaded from Data File)
+//	Variables loaded from Data File
 //	Time
-let	DLTime = 1/60;				// Delta Time (1/60 seconds)
-let DLTim2 = DLTime*DLTime;
-let GrvDLT = GrvMPS*DLTim2;
+//let	DLTime = 1/60;				// Delta Time (1/60 seconds)
+//let DLTim2 = DLTime**2;
+//let GrvDLT = GrvMPS*DLTim2;
 //	Set Zero Values
 let V3Zero = new THREE.Vector3(0,0,0);
 let E3Zero = new THREE.Euler(0,0,0);
 
 //- INPUT VALUES ---------------//----------------------------------------------
-//- Display
-let PawsOn = 0;					// Pause
-let InfoOn = 0;					// Info
-let SndFlg = 0;					// Sound (0 = off; 1 = on)
-let StatOn = 1;					// Stats (0 = off, 1 = on)
-let LnFFlg = 1;					// Lensflare
-//	Program Flags
-let LodFlg = 0;					// Set at end of initialization
-let LodSnd = 0;					// Set when sound initialized
-let MYGFlg = 0;					// My Guns (1 = firing)
-//	Altitude Adjustment
-let AltAdj = 0.99;				// Raises objects above map as altitude increases
-let AltDif = 0;
+//	Variables loaded from Data File
 
 //- SUN VALUES -----------------//----------------------------------------------
-const SunCol = "white";			// Sun
-let SunInt = 3;					// Default intensity of light/sun
-//- Rotation and Position (fixed)
-let SunDst = 50;				// Distance (for shadows)
-let SunLat = 23;				// Direction - Vert (+/- 90) deg
-let SunLon = 312;				// Direction - Horz (0->360) deg
+//	Variables loaded from Data File
 //- Computations
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
-//	Shadows
-let ShdBox = 15;				// Size of shadow box
-let ShdBLR = 12;
-let ShdBTB = 4;
-let ShdDst = 1500;				// Shadow Distance (meters)
 
 //= STANDARD SETUP =============//==============================================
 // 	Scene
@@ -361,36 +339,16 @@ let loadingScreen = {
 let boxrot = 0;
 
 //= FADE2BLACK PLANE ===========//==============================================
-//	If FadBeg > 0, Prop Invisible.
-//	Therefore, limit use to where Prop would be invisible.
-let FadFlr = 0.25;				// Floor (Fade Not Visible)
-let FadBeg = 0.99;				// Beg Opacity
-let FadEnd = FadFlr;			// Beg Target
-let FadSpd = 0.005;				// Fade Speed
-let FadMat = 0;					// Allows change of color
-let FadCol = "black";			// Beg Color
+//	Variables loaded from Data File
 let FadMsh = initFadMsh();		// Initialize
 
 //= 2. SKYBOX VARIABLES ========//==============================================
-
-const FogCol = 0xbab4a6;		// Sky (for Fog only)
-//- SkyBox
-const SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
-//-	LensFlare
-const LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
-let LF0Txt, LF1Txt = 0;
-let envMap = 0;
+//	Variables loaded from Data File
 
 //= 3. GEOMAT VARIABLES ========//==============================================
 
 //- GRDWTR TEXTURES ------------//----------------------------------------------
-//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
-const WtrCol = 0x0066cc;		// Water (Nodes)
-//- Textures
-const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
-const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
-const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg"; // Size = 1024x1024
+//	Variables loaded from Data File
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
@@ -401,92 +359,25 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	context.scale(1,-1);
 
 //- GRDWTR MODULE --------------//----------------------------------------------
-//	This ocean map has 3 nested grids of squares.
-//	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
-//	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
-//	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-const GrdSiz = 1600;			// 1600 = 1 mile
-const GrdRes = 512;
-const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
-const WavMax = 5;				// Maximum wave height (set height of outer waves)
-let grids = 0;
-let grd_ = {
-		MSP: new THREE.Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
-		RCs: 16,				// Squares in each of first 2 grids
-		Siz: GrdSiz,			// Size of smallest square
-		Stp: 4,					// Squares in each of first 2 grids
-		Seg: GrdSeg,			// Segments for smallest square
-		Grx: [],				// Index of Grids (0-2)
-		Geo: [],				// Master Index of Basic Geometries
-		Col: new THREE.Color(WtrCol), // Color
-		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
-		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
-		NMS: new THREE.Vector2(),	// Grid 0-1 Normal Map Scale (from Ocean)
-		Df0: [],				// Grid 0-1 Diffuse Maps
-		Rf0: [],				// Grid 0-1 Roughness Maps
-		Mt0: [],				// Grid 0 Materials
-		Mt1: [],				// Grid 1 Materials
-		Dif: 0,					// Grid 2 Diffuse Map
-		Ruf: 0,					// Grid 2 Roughness Maps
-		Gr2: 0,					// Grid 2 Normal Map
-		Mat: [],				// Grid 2 Materials
-		WMx: WavMax,			// Max wave height, used to lower outer squares
-	};
+//	Variables loaded from Data File
+//	Adjustments
+	grd_.MSP = new THREE.Vector3();
+	grd_.Col = new THREE.Color(WtrCol);
+	grd_.NMS = new THREE.Vector2();
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
 
 //- OCEAN MODULE ---------------//----------------------------------------------
-let WndSpd = 10.0;
-let WndHdg = 90;
-let Choppy = 1.5;
-let AnmSpd = 0.5;				// Can vary with GrdSiz
-let waves = 0;
-let wav_ = {
-		// Sources
-		Res: GrdRes,			// Resolution - segments per square (default = 512)
-		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
-		WSp: WndSpd,			// Wind Speed
-		WHd: WndHdg,			// Wind Heading (0=0,Spd; 90=Spd,0; 180=0,-Spd; 270=-Spd,0)
-		Chp: Choppy,			// default = 1
-		// Animated Maps
-		Dsp: 0,					// The Displacement Map
-		Nrm: 0,					// The Normal Map
-		NMS: new THREE.Vector2(1,1), // Normal Map Scale (flip Y for left-handed maps)
-		Spd: AnmSpd
-	};
+//	Variables loaded from Data File
+//	Adjustments
+	wav_.NMS = new THREE.Vector2(1,1);
 
 //= 4. OBJECT VARIABLES ========//==============================================
-
-// Sample Variable
-//let var_ = {
-//		ObjNum: 1,				// Number of Objects
-//		ObjSrc: [0],			// Source File
-//		ObjTxt: [0],			// Texture Source File
-//		ObjAdr: [0],			// Object Address
-//		ObjSiz: [],				// Scale (e.g. Ft2Mtr)
-//		RndOrd: [0],			// renderOrder
-//		ObjRot: [new THREE.Euler(0,0,0)], // Object Rotation (in radians)
-//		MapPos: [new THREE.Vector3(0,0,0)], // Map Position - Absolute or Relative
-//		ObjRef: [0],			// Child: Reference to Parent or Group
-//		ObjGrp: [0],			// Group: new makMsh()
-		// Moving
-//		SpdMPS: [0],			// Speed - if Moving (mtr/sec)
-//		MapSpd: [new THREE.Vector3()], // Map Speed (mtr/sec)
-		// Animations (Varies by Object)
-//		ObjDst: [0],			// Object distance (meters) used to activate effects
-//		MixNam: [0],			// Animation Mixer
-//		AnmNam: [0]				// Animation
-//	};
+//	Variables loaded from Data File
 
 //= SHARED TEXTURES ============//===============================================
-let txt_ = {
-		ObjNum: 3,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
-				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
-				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
-		ObjTxt: [],
-	};
+//	Variables loaded from Data File
 
 //= STATIC OBJECTS =============//==============================================
 
@@ -872,25 +763,20 @@ const vxrSrc = AirSrc + vxrFNm;
 //= GUNASG MODULE ==============//==============================================
 
 //- My Guns --------------------//----------------------------------------------
-
-//	myg_ loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
-
+//	Variables loaded from Data File
 //	Specific Adjustments
-myg_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
-myg_.SndSrc = AirSrc + "sounds/" + "fm2_gun.mp3", // File (my guns)
-myg_.SndMsh = [new makMsh(),new makMsh()];
+	myg_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
+	myg_.SndSrc = AirSrc + "sounds/" + "fm2_gun.mp3", // File (my guns)
+	myg_.SndMsh = [new makMsh(),new makMsh()];
 
 //- Moving Airplanes -----------//----------------------------------------------
-
-//	xag_ loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
-
+//	Variables loaded from Data File
 //	General Format Adjustments
 for (let n = 0; n < aaf_.ObjNum; n ++) {
 	xag_.GunRot[n] = new THREE.Euler();  // Gun Rotation (degrees)
 	xag_.GunPos[n] = new THREE.Vector3();
 	xag_.SndMsh[n] = new makMsh();
 }
-
 //	Specific Adjustments
 xag_.XACRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]];
 xag_.XACPos = [xsh_.MapPos[1],xsh_.MapPos[1]];
@@ -899,16 +785,13 @@ xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
 			   XPPath + "sounds/" + "fm2_gun.mp3"];
 
 //- Moving Ships ---------------//----------------------------------------------
-
-//	xsg_ loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
-
+//	Variables loaded from Data File
 //	General Format Adjustments
 for (let n = 0; n < aaf_.ObjNum; n ++) {
 	xsg_.GunPtr[n] = new makMsh();
 	xsg_.SmkMpP[n] = new THREE.Vector3();
 	xsg_.SndMsh[n] = new makMsh();
 }
-
 //	Specific Adjustments
 xsg_.XSHRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
 xsg_.XSHPos = [xsh_.MapPos[1],xsh_.MapPos[1]],
@@ -917,9 +800,7 @@ xsg_.GunPos = [new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0)]; // Map Positi
 xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red
 		
 //- Fixed Guns -----------------//----------------------------------------------
-
-//	aaf_ loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
-
+//	Variables loaded from Data File
 //	General Format Adjustments
 for (let n = 0; n < aaf_.ObjNum; n ++) {
 	aaf_.XSHRot[n] = new THREE.Euler();
@@ -928,7 +809,6 @@ for (let n = 0; n < aaf_.ObjNum; n ++) {
 	aaf_.SmkMpP[n] = new THREE.Vector3();
 	aaf_.SndMsh[n] = new makMsh();
 }
-
 //	Specific Adjustments
 aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
 aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
