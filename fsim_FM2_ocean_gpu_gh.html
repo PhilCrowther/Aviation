@@ -4,14 +4,14 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Mar 2025
+Version dated 31 Mar 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
 -->
 
 <head>
-<title>fsim FM2 ocean gpu r174</title>
+<title>fsim FM2 ocean gpu r175</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
@@ -62,10 +62,10 @@ This demo has now been expanded to include a battle scenario which will eventual
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
-			"three/webgpu": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.174.0/build/three.tsl.js",
-			"three/addons/": "https://unpkg.com/three@0.174.0/examples/jsm/",
+			"three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -75,9 +75,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 
 // Basic Modules
 import * as THREE from "three";
-import {color,texture,posterize,oscSine,time,output,
-		range,uniform,positionLocal,rotateUV,uv,mix,
-} from "three/tsl";
+import {color,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
@@ -283,7 +281,7 @@ let SunLon = 312;				// Direction - Horz (0->360) deg
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //	Shadows
-let ShdBox = 15;					// Size of shadow box
+let ShdBox = 15;				// Size of shadow box
 let ShdBLR = 12;
 let ShdBTB = 4;
 let ShdDst = 1500;				// Shadow Distance (meters)
@@ -710,7 +708,7 @@ let wak_ = {
 		ObjSiz: [4000,4000],	// Scale
 		RndOrd: [1,1],			// renderOrder
 		ObjRot: [new THREE.Euler(), // Rotation (not used)
-				new THREE.Euler()],
+				 new THREE.Euler()],
 		MapPos: [new THREE.Vector3(50,75,25),  // Map Position
 				 new THREE.Vector3(50,75,25)],
 		ObjRef: [xsh_.ObjGrp[0], // Parent Object
@@ -875,12 +873,16 @@ const vxrSrc = AirSrc + vxrFNm;
 
 //- My Guns --------------------//----------------------------------------------
 
+//	myg_ loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
+
 //	Specific Adjustments
 myg_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
 myg_.SndSrc = AirSrc + "sounds/" + "fm2_gun.mp3", // File (my guns)
 myg_.SndMsh = [new makMsh(),new makMsh()];
 
 //- Moving Airplanes -----------//----------------------------------------------
+
+//	xag_ loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
 //	General Format Adjustments
 for (let n = 0; n < aaf_.ObjNum; n ++) {
@@ -898,6 +900,8 @@ xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
 
 //- Moving Ships ---------------//----------------------------------------------
 
+//	xsg_ loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
+
 //	General Format Adjustments
 for (let n = 0; n < aaf_.ObjNum; n ++) {
 	xsg_.GunPtr[n] = new makMsh();
@@ -913,6 +917,8 @@ xsg_.GunPos = [new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0)]; // Map Positi
 xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red
 		
 //- Fixed Guns -----------------//----------------------------------------------
+
+//	aaf_ loaded from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
 
 //	General Format Adjustments
 for (let n = 0; n < aaf_.ObjNum; n ++) {
@@ -1329,7 +1335,7 @@ function loadGeoMat() {
 	// Load Diffuse Texture
 	if (DifSrc) {
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		imagLoader.load(DifSrc, function(image) { // Load, Split and Save Textures
+		imagLoader.load(DifSrc,function(image) { // Load, Split and Save Textures
 			context.drawImage(image,0,0,ImgSiz,ImgSiz);
 			let idx = 0;
 			let siz = ImgSiz/4;
@@ -1348,7 +1354,7 @@ function loadGeoMat() {
 			}
 		});
 		// Grid2 - Static Color Map Texture
-		txtrLoader.load(DifSrc, function(texture) {	// Load and Save entire Texture
+		txtrLoader.load(DifSrc,function(texture) {	// Load and Save entire Texture
 			texture.format = THREE.RGBAFormat;
 			texture.magFilter = THREE.LinearFilter;
 			texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -1362,7 +1368,7 @@ function loadGeoMat() {
 	// Load Roughness Texture
 	if (RufSrc) {
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		imagLoader.load(RufSrc, function(image) { // Load, Split and Save Textures
+		imagLoader.load(RufSrc,function(image) { // Load, Split and Save Textures
 			context.drawImage(image,0,0,ImgSiz,ImgSiz);
 			let idx = 0;
 			let siz = ImgSiz/4;
@@ -1381,7 +1387,7 @@ function loadGeoMat() {
 			}
 		});
 		// Grid2 - Static Color Map Texture
-		txtrLoader.load(RufSrc, function(texture) {	// Load and Save entire Texture
+		txtrLoader.load(RufSrc,function(texture) {	// Load and Save entire Texture
 			texture.format = THREE.RGBAFormat;
 			texture.magFilter = THREE.LinearFilter;
 			texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -1393,14 +1399,15 @@ function loadGeoMat() {
 		});
 	}
 	// Grid2 - Static Normal Map
-	txtrLoader.load(NrmSrc, function(texture) {
+	txtrLoader.load(NrmSrc,function(texture) {
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 		texture.offset.set(0,0);
-		texture.repeat.set(grd_.Stp*grd_.Stp/2,grd_.Stp*grd_.Stp/2);
+//		texture.repeat.set(grd_.Stp*grd_.Stp/2,grd_.Stp*grd_.Stp/2);
+		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
 		texture.needsUpdate = true;
 		grd_.Gr2 = texture;
 	});
@@ -1978,7 +1985,7 @@ function initXSHWak() {
 //- Move Ship Wake -------------//----------------------------------------------
 function moveXSHWak() {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.ObjAdr[n].rotation.x = Math.PI/2-wak_.ObjRef[n].rotation.x;
+		wak_.ObjAdr[n].rotation.x = Math.PI/2-wak_.ObjRef[n].rotation.x; // Remain flat
 	}
 }
 
@@ -1988,7 +1995,6 @@ function moveXSHWak() {
 function initXSHGun() {
 	xsg_.SmkMap = txt_.ObjTxt[xsg_.SmkMap];
 	initAAGuns(xsg_,air_,AltDif,scene);
-
 }
 
 //- Move Ship Guns -------------//----------------------------------------------
@@ -3074,7 +3080,7 @@ function posnRSet() {
 
 //- Subroutines ----------------//----------------------------------------------
 
-//. Toggle Pause ...............///..............................................
+//. Toggle Pause ...............//..............................................
 function toglPaws() {
 	PawsOn = 1 - PawsOn;
 	if (PawsOn && SndFlg) {		//On to Off
