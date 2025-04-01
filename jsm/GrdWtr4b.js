@@ -227,7 +227,7 @@ _init1GrMap(grx_, grd_, scene) {
 	grx_.MXV[grx_.RCi] = 0;					// X-Values
 	grx_.Nor = grx_.RCi;					// Max North Square (updated)
 	grx_.Est = grx_.RCi;					// Max East Square (updated)
-	grx_.Num = grx_.RCs * grx_.RCs;			// Size of array
+	grx_.Num = grx_.RCs**2;					// Size of array
 	grx_.Ptr[grx_.Num-1] = 0;				// Mesh Pointers
 	if (grx_.Typ > 0) {
 		grx_.NSA = (grx_.RCs-grx_.RCF)/2;	// (27-3=6)
@@ -435,4 +435,5 @@ export {GrdMap};
 		grx_ changed to grd_ and, in subroutines, grx_.Grd[] to grd_.Grx[]
 240903	Converted to Class
 240908	Turned off shadows for outer grids (due to changes made by r168)
+250331	Use **2 to square numbers
 */
