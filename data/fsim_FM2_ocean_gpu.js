@@ -163,6 +163,74 @@ let txt_ = {
 		ObjTxt: [],
 	};
 
+//. Moving Airplanes ...........//..............................................
+const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
+const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
+const XP2Nam = "A6M_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
+let xac_ = {
+		ObjNum: 2,				// Number of airplanes
+		ObjSrc: [XPPath+XP1Nam, // Model Source file
+				 XPPath+XP2Nam],
+		ObjTxt: [0,0],			// Texture Source File (not used)
+		ObjAdr: [0,0],			// Object Address
+		ObjSiz: [Ft2Mtr,Ft2Mtr], // Scale
+		RndOrd: [0,0],			// renderOrder (not used)
+		ObjRot: [0,0],			// Rotation
+		MapPos: [0,0],			// meters
+		ObjRef: [0,0],			// 0 = not linked
+		// Speed
+		SpdMPS: [91.5,91,5],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+		MapSpd: [0,0],			// not used
+		// Basic Animations
+		ObjDst: [0,0],			// Object distance (meters) used to activate effects
+		MixSpn: [0,0],			// Animation Mixer - Prop
+		MixPit: [0,0],			// Animation Mixer - Pitch
+		AnmPit: [0,0],			// Animation
+		MixBnk: [0,0],			// Animation Mixer - Bank
+		AnmBnk: [0,0],			// Animation
+		// Engine Sounds
+		EngSrc: [XPPath + "sounds/fm2.wav",
+				 XPPath + "sounds/fm2.wav"],
+		EngPtr: [0,0],
+		EngMsh: [0,0],
+		EngVol: [0.1,0.1],		// Volume
+		// End Sequence
+		HitCnt: [0,0],			// Hits Taken
+		HitMax: 5,				// Hits Requred
+		EndSeq: [0,0],			// End Sequence Running
+		EndTim: 5,				// End Sequence Time (Seconds)
+		// End Sound
+		SndFlg: [0,0],			// 1 = Start Explosion Sound
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: [0,0],
+		SndVol: 15,				// Volume
+		SndMsh: [0,0],
+		SndDTm: [0,0],
+	};
+
+//. Moving Ships ...............//..............................................
+let xsh_ = {
+		ObjNum: 2,				// Number of ships
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
+				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"], // Source File
+		ObjTxt: [0,0],			// Texture Source File (not used)
+		ObjAdr: [0,0],			// Object Address
+		ObjSiz: [Ft2Mtr,Ft2Mtr], // Scale		 
+		RndOrd: [0,0],			// renderOrder (not used)
+		ObjRot: [0,0],			// Object Rotation
+		MapPos: [0,0],			// Object Map Position (meters) [used by Mesh]
+		ObjGrp: [0,0],			// Group
+		// Speed
+		SpdMPS: [9,11],			// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
+		MapSpd: [0,0],			// Object Map Speed (mtr/sec) used by airplane if landed
+		// Animations
+		ObjDst: [0,0],			// Object distance (meters) used to activate effects
+		MixRdr: [0,0],			// Animation Mixer - Radar
+		AnmRdr: [0,0],			// Animation
+		ShpPit: [0,0],			// Ship Pitch
+		ShpLok: [0,0],			// Deck Lock
+	};
+
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
 
