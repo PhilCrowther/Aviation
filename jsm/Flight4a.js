@@ -55,12 +55,12 @@ constructor(air_) {
 	this.air_.CfLMax = this.dat_.CfLMax;
 	this.air_.BnkMax = this.dat_.BnkMax;
 	// Comps
-	let DLTim2 = this.air_.DLTime*this.air_.DLTime;
+	let DLTim2 = this.air_.DLTime**2;
 	let GrvDLT = this.air_.GrvMPS*DLTim2;
 	this.FrcAcc = DLTim2/this.air_.ACMass; 		// Convert Force to Acceleration
 	// Constants
 	if (this.dat_.JetMax == 0) this.ThrstK = 1000*this.dat_.PropEf;	// (SI units)
-	this.WingAs = this.dat_.WingSp*this.dat_.WingSp/this.dat_.WingAr; // Wing Aspect Ratio
+	this.WingAs = this.dat_.WingSp**2/this.dat_.WingAr; // Wing Aspect Ratio
 	let ACPMax = this.air_.CfLMax*10;			// Max aircraft pitch adjustment (+/- 15)
 	let ACPInc = ACPMax-this.dat_.AngInc;		// Net max aircraft pitch adjustment (10)
 	// If Starting on Ground ---------------------------------------------------
@@ -82,7 +82,7 @@ constructor(air_) {
 		this.air_.SpdMPS = this.air_.SpdKPH/3.6; // (MPS)
 		this.air_.SpdMPF = this.air_.SpdMPS*this.air_.DLTime; // Aircraft Speed (DLT)
 		// DynPres
-		let DynPrs = (this.air_.SpdMPS*this.air_.SpdMPS)*this.air_.AirDSL/2; // Dynamic Pressure
+		let DynPrs = (this.air_.SpdMPS**2)*this.air_.AirDSL/2; // Dynamic Pressure
 		// Compute Vectors
 		// If Starting in Flight, Compute Starting this.air_.CfLift and Power for Level Flight and Given Bank
 		// Coefficient of Lift for Level Flight
@@ -132,7 +132,7 @@ update() {
 	// Most of these comps are also used while on ground, so compute and adjust
 	// Inputs: this.air_.SpdMPS, this.air_.GrvMPS
 	// Comps
-	let DLTim2 = this.air_.DLTime*this.air_.DLTime;
+	let DLTim2 = this.air_.DLTime**2;
 	let GrvDLT = this.air_.GrvMPS*DLTim2;
 	this.FrcAcc = DLTim2/this.air_.ACMass;		// Convert Force to Acceleration
 	this.air_.SpdMPF = this.air_.SpdMPS*this.air_.DLTime;
@@ -140,7 +140,7 @@ update() {
 	this.air_.AirDSL = AirDns(this.air_.BegTmp,this.air_.MapSPS.y);
 	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.air_.SpdKPH);
 	// Compute Dynamic Pressure
-	let DynPrs = (this.air_.SpdMPS*this.air_.SpdMPS)*this.air_.AirDSL/2;	// Dynamic Pressure
+	let DynPrs = (this.air_.SpdMPS**2)*this.air_.AirDSL/2;	// Dynamic Pressure
 	let ACPrad = this.air_.AirRot.x*this.DegRad;
 	let QSTval = DynPrs*this.dat_.WingAr;
 	// Compute Max Lift
@@ -429,6 +429,7 @@ export {Flight, Mod360, PoM360, MaxVal, makMsh};
 241012:	Add adjustment for Ship Bank (just in case)
 241115:	Make changes to handling of GrdFlg and ACPAdj
 240304:	Save GFmult
+250331: Use **2 to square
 */
 
 /*= FUTURE PLANNED REVISIONS (make as part of version change) ===================
