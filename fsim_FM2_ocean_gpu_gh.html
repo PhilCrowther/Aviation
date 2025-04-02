@@ -415,7 +415,7 @@ let fxd_ = {
 
 //. Moving Airplanes ...........//..............................................
 //	Variables loaded from Data File
-// Adjustments
+//	Adjustments
 	xac_.ObjRot = [new THREE.Euler(0,0,30),new THREE.Euler(0,0,30)];  // Rotation
 	xac_.MapPos = [new THREE.Vector3(180,1524,5300),new THREE.Vector3(180,1524,5300)]; // meters
 	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3()]; // not used
@@ -424,7 +424,7 @@ let fxd_ = {
 
 //. Moving Ships ...............//..............................................
 //	Variables loaded from Data File
-// Adjustments
+//	Adjustments
 	xsh_.ObjRot = [new THREE.Euler(0,0,0),new THREE.Euler(0,0,0)];  // Rotation
 	xsh_.MapPos = [new THREE.Vector3(-4100,0.1,150),new THREE.Vector3(-4200,0.2,350)]; // meters
 	xsh_.ObjGrp = [new makMsh(),new makMsh()];
@@ -610,72 +610,24 @@ let alt_ = {
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 
 //- Flight Module --------------//----------------------------------------------
-let	flight = 0;
-let air_ = {
-		// General Variables
-		DLTime: DLTime,			// Seconds per frame (can vary)
-		GrvMPS: GrvMPS,			// Gravity (ups)
-		AirDSL: 0,				// Air Density (varies with altitude)
-		// Designators
-		AirDat: data_,			// Aircraft Data
-		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
-		AirRot: new THREE.Euler(), // Rotation (in degrees)
-		AirObj: new makMsh(),	// Airplane Object 
-		AirPBY: new makMsh(),	// Changes in radians
-		// Changes to Airplane Pitch Bank and Yaw
-		RotDif: new THREE.Vector3(), // Change
-		// Airplane Speed
-		SpdKPH: 0,				// Speed in KPH
-		SpdMPS: 0,				// Speed - meters per second
-		SpdMPF: 0, 				// Speed - meters per frame	
-		// Airplane Map Speed and Position		
-		MapSpd: new THREE.Vector3(), // Map Speed (meters)
-		MapPos: new THREE.Vector3(), // Map Position (meters)
-		MapSPS: new THREE.Vector3(), // MSX, MPY, MSZ (meters)	
-		// Variables Obtained from Flight
-		PwrPct: 0,				// % of Primary Power (0 to 1) (Main and Flight)
-		SupPct: 0,				// Percent of Supplemental Power (War Enmergency or Afterburner)
-		CfLift: 0,				// Coefficient of Lift (user input) - determines lift
-		CfFlap: 0,				// Coefficient of Lift due to flaps (user input)
-		FlpPct: 0,				// Percent of Flaps
-		LngPct: 0,				// Percent of Landing Gear
-		BrkPct: 0,				// Percent of Air Brakes
-		SplPct: 0,				// Percent of Spoiler
-		AGBank: 0,				// Aileron Bank on Ground
-		BrkVal: 0,				// Brakes
-		GrdZed: 0,				// Ground level (default)
-		GrdFlg: 0,				// Ground Flag (1 = on ground)
-		ACPAdj: 0,				// Airplane pitch adjustment
-		// Values for the Selected Airplane Type (obtained from Flight)
-		CfLMax: 0,				// Maximum Coefficient of Lift
-		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
-		ACMass: 0,				// Airplane Mass
-		Weight: 0,				// Used by AutoPilot
-		PYBmul: new THREE.Vector3().copy(PYBmul), // Airplane Pitch/Yaw/Bank Multiplier
-		BnkMax: 0,				// Maximum bank rate
-		// AutoPilot - Additional Variables
-		AutoOn: 0,				// Autopilot Flag
-		InpKey: new THREE.Vector3(), // Inputs - Keys (replace InpKey)
-		OldRot: new THREE.Euler(), // Old Rotation (radians)
-		CfLDif: 0,				// Change in CfL
-		MaxBnk: 0,				// Max Bank (display only)
-		HdgDif: 0,				// Horizontal Turn Rate (display only)
-		// Air Density and IAS Comps
-		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
-		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
-		SpdIAS: 0,				// Indicated Airspeed
-		// Ship Pitch and Bank
-		MovFlg: 0,				// If Sitting on Moving Ship
-		ShpPit: 0,
-		ShpBnk: 0,
-		// G-Force
-		GFmult: 0,
-	}
+//	Variables loaded from Data File
 //	Adjustments
+	air_.AirDat = data_;
+	air_.AirRot = new THREE.Euler();
+	air_.AirObj = new makMsh;
 	air_.AirObj.rotation.order = "YXZ";
+	air_.AirPBY = new makMsh;
 	air_.AirPBY.rotation.order = "YXZ";
 	air_.AirObj.add(air_.AirPBY); // PBY includes air_.ACPAdj
 	scene.add(air_.AirObj);	// Airplane
+	air_.RotDif = new THREE.Vector3();
+	air_.MapSpd = new THREE.Vector3();
+	air_.MapPos = new THREE.Vector3();
+	air_.MapSPS = new THREE.Vector3();
+	air_.PYBmul = new THREE.Vector3().copy(PYBmul);
+	air_.InpKey = new THREE.Vector3();
+	air_.OldRot = new THREE.Euler();
+	air_.BegTmp = BegTmp;
 
 //- Load Models and Animations -//----------------------------------------------
 //	File Paths
@@ -685,7 +637,7 @@ const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated b
 const mxrSrc = AirSrc + mxrFNm;
 const vxrSrc = AirSrc + vxrFNm;
 //- FM2 Animations -------------//----------------------------------------------
-//	Load from "https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js">
+//	Variables loaded from Data File
 	mxr_.Adr = new makMsh();
 	vxr_.Adr = new makMsh();
 	if (BegLoc == 0) {
