@@ -296,9 +296,16 @@ let air_ = {
 		GFmult: 0,
 	}
 
-let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
+//- Load Models and Animations -//----------------------------------------------
+//	File Paths
+const AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/"; // Used to load models and sounds
+const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
+const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
+const mxrSrc = AirSrc + mxrFNm;
+const vxrSrc = AirSrc + vxrFNm;
 
 //- FM2 Animations -------------------------------------------------------------
+let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm_ = {
 		anmfps: anmfps,			// Blender FPS
