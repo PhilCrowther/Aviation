@@ -241,7 +241,7 @@ let air_ = {
 		GrvMPS: GrvMPS,			// Gravity (ups)
 		AirDSL: 0,				// Air Density (varies with altitude)
 		// Designators
-		AirDat: data_,			// Aircraft Data
+		AirDat: 0,				// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: 0, 				// Rotation (in degrees)
 		AirObj: 0,				// Airplane Object 
@@ -285,7 +285,7 @@ let air_ = {
 		MaxBnk: 0,				// Max Bank (display only)
 		HdgDif: 0,				// Horizontal Turn Rate (display only)
 		// Air Density and IAS Comps
-		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
+		BegTmp: 0,			// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0,				// Indicated Airspeed
 		// Ship Pitch and Bank
@@ -296,9 +296,16 @@ let air_ = {
 		GFmult: 0,
 	}
 
-let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
+//- Load Models and Animations -//----------------------------------------------
+//	File Paths
+const AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/"; // Used to load models and sounds
+const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
+const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
+const mxrSrc = AirSrc + mxrFNm;
+const vxrSrc = AirSrc + vxrFNm;
 
 //- FM2 Animations -------------------------------------------------------------
+let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm_ = {
 		anmfps: anmfps,			// Blender FPS
