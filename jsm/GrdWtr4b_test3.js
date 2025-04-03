@@ -165,7 +165,7 @@ _initGeoMat(grd_,scene) {
 				normalNode: normalMap(texture(grd_.Nrm),normalMapScale),
 //				positionNode: positionLocal.add(texture(grd_.Dsp)),
 				positionNode: positionLocal.add(grd_.Dsp),
-				envMap: scene.background,			
+				envMap: scene.background,
 				envMapIntensity: 0.5,		// max reflection suggested = 5
 			});
 			idx++
