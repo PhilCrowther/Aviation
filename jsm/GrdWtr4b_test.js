@@ -161,9 +161,9 @@ _initGeoMat(grd_,scene) {
 				map: texture(grd_.Df0[idx]),
 				metalness: 0.5,			// 1 for max reflection
 				roughness: 0.5,			// 0 for max reflection
-				roughnessMap: grd_.Rf0[idx],
+				roughnessMap: grd_.Rf0[idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),normalMapScale),
-				positionNode: positionLocal.add(texture(grd_.Dsp)),
+				positionNode: positionLocal.add(texture(grd_.Dsp)), // must be texture
 				envMap: scene.background,			
 				envMapIntensity: 0.5,		// max reflection suggested = 5
 			});
@@ -187,7 +187,7 @@ _initGeoMat(grd_,scene) {
 				map: texture(grd_.Df0[idx]),
 				metalness: 0.5,		// 1 for max reflection
 				roughness: 0.5,		// 0 for max reflection
-				roughnessMap: grd_.Rf0[idx],
+				roughnessMap: grd_.Rf0[idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),normalMapScale),
 				envMap: scene.background,
 				envMapIntensity: 0.5,	// max reflection suggested = 5	
@@ -205,7 +205,7 @@ _initGeoMat(grd_,scene) {
 		map: texture(grd_.Dif),	// Full-Sized Texture
 		metalness: 0.5,			// 1 for max reflection
 		roughness: 0.5,			// 0 for max reflection
-		roughnessMap: grd_.Ruf,
+		roughnessMap: grd_.Ruf,	// not texture
 		normalNode: normalMap(texture(grd_.Nrm),normalMapScale),
 		envMap: scene.background,
 		envMapIntensity: 0.5,		// max reflection suggested = 5
