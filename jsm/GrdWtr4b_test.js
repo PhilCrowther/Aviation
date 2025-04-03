@@ -207,7 +207,8 @@ _initGeoMat(grd_,scene) {
 		metalness: 0.5,			// 1 for max reflection
 		roughness: 0.5,			// 0 for max reflection
 		roughnessMap: grd_.Ruf,
-		normalMap: grd_.Nrm,	// Static normalMap
+//		normalMap: grd_.Nrm,	// Static normalMap
+		normalNode: normalMap(texture(grd_.Nrm),normalMapScale),
 		envMap: scene.background,
 		envMapIntensity: 0.5,		// max reflection suggested = 5
 //		premultipliedAlpha: true,
