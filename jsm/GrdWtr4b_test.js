@@ -158,7 +158,7 @@ _initGeoMat(grd_,scene) {
 		for (let x = 0; x < 4; x++) {
 			grd_.Mt0[idx] = new MeshStandardNodeMaterial({
 				colorNode: color(grd_.Col),
-				map: grd_.Df0[idx],
+				map: texture(grd_.Df0[idx]),
 				metalness: 0.5,			// 1 for max reflection
 				roughness: 0.5,			// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx],
@@ -184,14 +184,13 @@ _initGeoMat(grd_,scene) {
 		for (let x = 0; x < 4; x++) {
 			grd_.Mt1[idx] = new MeshStandardNodeMaterial({	// Normal Map Only, 
 				colorNode: color(grd_.Col),
-				map: grd_.Df0[idx],
+				map: texture(grd_.Df0[idx]),
 				metalness: 0.5,		// 1 for max reflection
 				roughness: 0.5,		// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx],
 				normalNode: normalMap(texture(grd_.Nrm),normalMapScale),
 				envMap: scene.background,
 				envMapIntensity: 0.5,	// max reflection suggested = 5	
-//				premultipliedAlpha: true,
 			});
 			idx++
 		}
@@ -203,15 +202,13 @@ _initGeoMat(grd_,scene) {
 	n = 2;
 	grd_.Mat[n] = new MeshStandardNodeMaterial({
 		colorNode: color(grd_.Col),
-		map: grd_.Dif,			// Full-Sized Texture
+		map: texture(grd_.Dif),	// Full-Sized Texture
 		metalness: 0.5,			// 1 for max reflection
 		roughness: 0.5,			// 0 for max reflection
 		roughnessMap: grd_.Ruf,
-//		normalMap: grd_.Nrm,	// Static normalMap
 		normalNode: normalMap(texture(grd_.Nrm),normalMapScale),
 		envMap: scene.background,
 		envMapIntensity: 0.5,		// max reflection suggested = 5
-//		premultipliedAlpha: true,
 	});
 	// Single Geometry works for all
 	let sz1 = sz0*grd_.Stp;
