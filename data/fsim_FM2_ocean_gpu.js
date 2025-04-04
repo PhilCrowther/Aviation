@@ -110,6 +110,8 @@ let grd_ = {
 		Mat: [],				// Grid 2 Materials
 		WMx: WavMax,			// Max wave height, used to lower outer squares
 		EMI: [0.5,0.42,0.42],	// EnvMap Intensity
+		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
+		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
 	};
 
 //- OCEAN MODULE ---------------//----------------------------------------------
