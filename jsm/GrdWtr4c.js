@@ -159,7 +159,7 @@ _initGeoMat(grd_,scene) {
 				colorNode: color(grd_.Col),
 				map: grd_.Df0[idx], // not texture
 				metalness: grd_.Mtl[0], // 1 for max reflection
-				roughness: grd_.Ruf[0],	// 0 for max reflection
+				roughness: grd_.RfV[0],	// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				positionNode: positionLocal.add(texture(grd_.Dsp)), // must be texture
@@ -180,7 +180,7 @@ _initGeoMat(grd_,scene) {
 				colorNode: color(grd_.Col),
 				map: grd_.Df0[idx], // not texture
 				metalness: grd_.Mtl[1], // 1 for max reflection
-				roughness: grd_.Ruf[1],	// 0 for max reflection
+				roughness: grd_.RfV[1],	// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				envMap: scene.background,			
@@ -195,7 +195,7 @@ _initGeoMat(grd_,scene) {
 		colorNode: color(grd_.Col),
 		map: grd_.Dif,			// Full-Sized Texture
 		metalness: grd_.Mtl[2], // 1 for max reflection
-		roughness: grd_.Ruf[2],	// 0 for max reflection
+		roughness: grd_.RfV[2],	// 0 for max reflection
 		roughnessMap: grd_.Ruf,	// not texture
 		normalNode: normalMap(texture(grd_.Gr2),grd_.NMS),
 		envMap: scene.background,
