@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 1 Apr 2025
+Version dated 3 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -80,7 +80,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js"; // r171
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // add grd_.EMI
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
@@ -119,16 +119,17 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
-	* Red Out not red.
+	* Fix problem with Ocean grids:
+		- Solution #1: in Grid1, need to repeat normal map w/o repeating diffuse/roughness maps
+		- Solution #2: make Ocena darker again
+	* Red Out not very red.
 	* Don't hear EA guns or engines (used to hear engines)
 	* Move Variables to Data File (not variables with three.js functions) - WIP
 	* Reset landed airplane to starting position (R) - WIP
-	* Create Flame and Smoke Trail for Damaged Airplane - WIP
-	* Add plane to simulate black/red out and for transitions
 	* Convert waving flag to GPU shader
 -	Flight Module:
 	* Add supercharger/turbocharger effect
-	* Fix Autopilot
+	* Fix Autopilot ***
 OK
 - Program:
 	* My Guns seem to be aimed too high - but if fly level, guns shoot at horizon
@@ -1067,6 +1068,7 @@ function loadSkyBox() {
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = envMap;
+	scene.environment = envMap;
 	// LensFlare
 	if (LnFFlg) {				// SunFlare	
 		LF0Txt = txtrLoader.load(LF0Src);
