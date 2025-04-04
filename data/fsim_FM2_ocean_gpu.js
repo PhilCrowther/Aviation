@@ -109,6 +109,7 @@ let grd_ = {
 		Gr2: 0,					// Grid 2 Normal Map
 		Mat: [],				// Grid 2 Materials
 		WMx: WavMax,			// Max wave height, used to lower outer squares
+		EMI: [0.5,0.42,0.42],	// EnvMap Intensity Multiplier
 	};
 
 //- OCEAN MODULE ---------------//----------------------------------------------
