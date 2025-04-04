@@ -57,7 +57,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Custom Modules
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // Allows fine-tune of EMI
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
 
 //= NOTES
@@ -76,7 +76,7 @@ let CamLon = 315;				// Camera Direction - Horz (0->360)
 //- Airplane -------------------------------------------------------------------
 let USorSI = "US";				// Starting Units of Measurement (US or SI)
 let BegSpd = 500;				// Aircraft Speed (miles per hour)
-let BegPos = new THREE.Vector3(0,15000,0); // Position (ft)
+let BegPos = new THREE.Vector3(0,5000,0); // Position (ft)
 let InpVal = new THREE.Vector3(1,0.1,1); // Rotation Change
 let BnkSpd = 1;					// Bank Speed
 let PitSpd = 1;					// Pitch Speed
@@ -205,9 +205,11 @@ let LF0Txt, LF1Txt = 0;
 
 //= GRDWTR TEXTURES ============//==============================================
 //const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
-const WtrCol = 0x0066cc;		// Water (Nodes)
+//const WtrCol = 0x0066cc;		// Water (Nodes)
+const WtrCol = 0x004080;		// Water (Nodes)
 //- Textures
 const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
+//const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg";
 const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
@@ -225,7 +227,8 @@ let WavMax = 5;					// Maximum wave height (set height of outer waves)
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-const GrdSiz = 3200;				// Smallest Grid Square (3200 meters = 2 miles)
+//const GrdSiz = 3200;			// Smallest Grid Square (3200 meters = 2 miles)
+const GrdSiz = 1600;			// Smallest Grid Square (3200 meters = 2 miles)
 const GrdRes = 512;
 const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 let grids = 0;
@@ -250,6 +253,7 @@ let grd_ = {
 		Gr2: 0,					// Grid 2 Normal Map
 		Mat: [],				// Grid 2 Materials
 		WMx: WavMax,			// Max wave height, used to lower outer squares
+		EMI: [0.5,0.42,0.42],	// EnvMap Intensity Multiplier
 	};
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
@@ -456,6 +460,7 @@ function loadSkyBox() {
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = envMap;
+//	scene.environment = envMap;
 	// LensFlare
 	if (LnFFlg) {				// SunFlare	
 		LF0Txt = txtrLoader.load(LF0Src);
