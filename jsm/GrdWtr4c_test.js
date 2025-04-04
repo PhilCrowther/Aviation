@@ -5,7 +5,7 @@
 *******************************************************************************/
 
 // GrdWtr variation
-// Version 4c (dated 3 Apr 2025)
+// Version 4c (dated 4 Apr 2025)
 // Copyright 2022-2025, Phil Crowther
 // Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 //
@@ -159,7 +159,7 @@ _initGeoMat(grd_,scene) {
 				colorNode: color(grd_.Col),
 				map: grd_.Df0[idx], // not texture
 				metalness: grd_.Mtl[0], // 1 for max reflection
-				roughness: grd_.Ruf[0],	// 0 for max reflection
+				roughness: grd_.RfV[0],	// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				positionNode: positionLocal.add(texture(grd_.Dsp)), // must be texture
@@ -180,7 +180,7 @@ _initGeoMat(grd_,scene) {
 				colorNode: color(grd_.Col),
 				map: grd_.Df0[idx], // not texture
 				metalness: grd_.Mtl[1], // 1 for max reflection
-				roughness: grd_.Ruf[1],	// 0 for max reflection
+				roughness: grd_.RfV[1],	// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				envMap: scene.background,			
@@ -195,7 +195,7 @@ _initGeoMat(grd_,scene) {
 		colorNode: color(grd_.Col),
 		map: grd_.Dif,			// Full-Sized Texture
 		metalness: grd_.Mtl[2], // 1 for max reflection
-		roughness: grd_.Ruf[2],	// 0 for max reflection
+		roughness: grd_.RfV[2],	// 0 for max reflection
 		roughnessMap: grd_.Ruf,	// not texture
 		normalNode: normalMap(texture(grd_.Gr2),grd_.NMS),
 		envMap: scene.background,
@@ -434,5 +434,5 @@ export {GrdMap};
 240903	Converted to Class
 240908	Turned off shadows for outer grids (due to changes made by r168)
 250331	Use **2 to square numbers
-250403	Added grd_.EMI to allow for fine-tuning of EnvMap Intensity
+250403	Add grd_.EMI, Mtl and Ruf to allow fine-tuning of EMI, metalness and roughness
 */
