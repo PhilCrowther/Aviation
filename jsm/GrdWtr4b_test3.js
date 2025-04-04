@@ -184,7 +184,7 @@ _initGeoMat(grd_,scene) {
 				roughnessMap: grd_.Rf0[idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				envMap: scene.background,			
-				envMapIntensity: 0.25, // max reflection suggested = 5
+				envMapIntensity: 0.4, // max reflection suggested = 5
 			});
 			idx++
 		}
@@ -199,7 +199,7 @@ _initGeoMat(grd_,scene) {
 		roughnessMap: grd_.Ruf,	// not texture
 		normalNode: normalMap(texture(grd_.Gr2),grd_.NMS),
 		envMap: scene.background,
-		envMapIntensity: 0.25,	// max reflection suggested = 5
+		envMapIntensity: 0.4,	// max reflection suggested = 5
 	});
 	// Geometries --------------------------------------------------------------
 	// Grid0
