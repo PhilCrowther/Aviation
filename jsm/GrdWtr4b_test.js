@@ -164,7 +164,7 @@ _initGeoMat(grd_,scene) {
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				positionNode: positionLocal.add(texture(grd_.Dsp)), // must be texture
 				envMap: scene.background,			
-				envMapIntensity: EMI[0], // max reflection suggested = 5
+				envMapIntensity: grd_.EMI[0], // max reflection suggested = 5
 			});
 			idx++
 		}
@@ -184,7 +184,7 @@ _initGeoMat(grd_,scene) {
 				roughnessMap: grd_.Rf0[idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				envMap: scene.background,			
-				envMapIntensity: 0.5*grd_.EMI[1], // adjusted for absense of displacement
+				envMapIntensity: grd_.EMI[1], // adjusted for absence of displacement
 			});
 			idx++
 		}
@@ -199,7 +199,7 @@ _initGeoMat(grd_,scene) {
 		roughnessMap: grd_.Ruf,	// not texture
 		normalNode: normalMap(texture(grd_.Gr2),grd_.NMS),
 		envMap: scene.background,
-		envMapIntensity: 0.5*grd_.EMI[2], // adjusted for absense of displacement
+		envMapIntensity: grd_.EMI[2], // adjusted for absence of displacement
 	});
 	// Geometries --------------------------------------------------------------
 	// Grid0
