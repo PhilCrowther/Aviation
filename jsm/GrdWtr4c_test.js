@@ -242,7 +242,7 @@ _init1GrMap(grx_,grd_,scene) {
 	}
 	// Load Geometry and Material
 	let geometry = grd_.Geo[grx_.Typ];
-	let material = grd_.Mat[grx_.Typ]; // Grid 2 only
+	let material = grd_.Mat[grx_.Typ]; // default (Grid2)
 	// Set Starting Position of Squares
 	let n = 0;
 	let idx;
@@ -250,11 +250,11 @@ _init1GrMap(grx_,grd_,scene) {
 		for (let x = 0; x < grx_.RCs; x++) { // Column
 			if (grx_.Typ == 0) {	// Grid 0 Load one of 4x4 materials into 4x4 places
 				idx = ((x%4)+2)%4 + ((z%4)+2)%4*4;	// Center X and Z
-				material = grd_.Mt0[idx];
+				material = grd_.Mat[grx_.Typ][idx];
 			}
 			if (grx_.Typ == 1) { // Grid 1 Load one of 4x4 materials into 16x16 places
 				idx = (x%4) + (z%4)*4;
-				material = grd_.Mt1[idx];
+				material = grd_.Mat[grx_.Typ][idx];
 			}
 			grx_.Ptr[n] = new Mesh(geometry,material);
 			if (grx_.Shd == 1) grx_.Ptr[n].receiveShadow = true;
