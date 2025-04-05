@@ -218,7 +218,7 @@ OK
 
 //- INPUTS ---------------------//----------------------------------------------
 //- AIRPLANE: Start .............................................................
-let BegLoc = 1;					// Starting Location (0 = Island; 1 = CVE; 2 = Air)
+let BegLoc = 2;					// Starting Location (0 = Island; 1 = CVE; 2 = Air)
 let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
 let HedRot = new THREE.Vector2(); // Used to rotation head in beginning internal view
 if (BegLoc == 1) {
@@ -366,9 +366,9 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	grd_.Col = new THREE.Color(WtrCol);
 	grd_.NMS = new THREE.Vector2();
 //	Fine-Tune Graphics
-	grd_.EMI = [0.5,0.42,0.42];	// EnvMap Intensity
 	grd_.Mtl = [0.5,0.5,0.5];	// Metalness (1 for max reflection)
 	grd_.Ruf = [0.5,0.5,0.5];	// Roughness (0 for max reflection)
+	grd_.EMI = [0.5,0.48,0.48];	// EnvMap Intensity
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
@@ -899,7 +899,7 @@ let instructions = document.getElementById("instructions");
 function loadAll() {
 	WaitScreen();				// load loading screen
 	loadSkyBox();
-	loadGeoMat();
+	loadGeoMat(grd_);
 	loadAirObj();
 	AltDif = air_.MapPos.y*AltAdj; // Used by everything
 	loadObject();				// load objects
@@ -1104,7 +1104,7 @@ function initSkyBox() {
 // Can't be exported since uses html context to split images
 // Or can you pass address of loader to module?
 
-function loadGeoMat() {
+function loadGeoMat(grd_) {
 	// Load Diffuse Texture
 	if (DifSrc) {
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
@@ -1121,7 +1121,8 @@ function loadGeoMat() {
 					texture.minFilter = THREE.LinearMipMapLinearFilter;
 					texture.generateMipmaps = true;
 					texture.needsUpdate = true;
-					grd_.Df0[idx] = texture;
+					grd_.DfM[0][idx] = texture;
+					grd_.DfM[1][idx] = texture;
 					idx++;
 				}
 			}
@@ -1135,7 +1136,7 @@ function loadGeoMat() {
 			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 			texture.offset.set(0,0);
 			texture.needsUpdate = true;
-			grd_.Dif = texture;
+			grd_.DfM[2] = texture;
 		});
 	}
 	// Load Roughness Texture
@@ -1154,7 +1155,8 @@ function loadGeoMat() {
 					texture.minFilter = THREE.LinearMipMapLinearFilter;
 					texture.generateMipmaps = true;
 					texture.needsUpdate = true;
-					grd_.Rf0[idx] = texture;
+					grd_.RfM[0][idx] = texture;
+					grd_.RfM[1][idx] = texture;
 					idx++;
 				}
 			}
@@ -1168,7 +1170,7 @@ function loadGeoMat() {
 			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 			texture.offset.set(0,0);
 			texture.needsUpdate = true;
-			grd_.Ruf = texture;
+			grd_.RfM[2] = texture;
 		});
 	}
 	// Grid2 - Static Normal Map
@@ -1182,7 +1184,7 @@ function loadGeoMat() {
 //		texture.repeat.set(grd_.Stp*grd_.Stp/2,grd_.Stp*grd_.Stp/2);
 		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
 		texture.needsUpdate = true;
-		grd_.Gr2 = texture;
+		grd_.NM2 = texture;
 	});
 }
 

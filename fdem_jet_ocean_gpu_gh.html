@@ -208,8 +208,8 @@ let LF0Txt, LF1Txt = 0;
 //const WtrCol = 0x0066cc;		// Water (Nodes)
 const WtrCol = 0x004080;		// Water (Nodes)
 //- Textures
+//const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg"; // TEST
 const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
-//const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg";
 const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
@@ -220,7 +220,6 @@ let canvas = document.createElement("canvas");
 let context = canvas.getContext('2d',{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
-let WavMax = 5;					// Maximum wave height (set height of outer waves)
 
 //= GRDWTR MODULE ==============//==============================================
 //	This ocean map has 3 nested grids of squares.
@@ -231,6 +230,7 @@ let WavMax = 5;					// Maximum wave height (set height of outer waves)
 const GrdSiz = 1600;			// Smallest Grid Square (3200 meters = 2 miles)
 const GrdRes = 512;
 const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
+let WavMax = 5;					// Maximum wave height (set height of outer waves)
 let grids = 0;
 let grd_ = {
 		MSP: new THREE.Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
@@ -239,23 +239,25 @@ let grd_ = {
 		Stp: 4,					// Squares in each of first 2 grids
 		Seg: GrdSeg,			// Segments for smallest square
 		Grx: [],				// Index of Grids (0-2)
+		// Geometry and Materials
 		Geo: [],				// Master Index of Basic Geometries
-		Col: new THREE.Color(WtrCol), // Color
+		Mat: [[0],[0],0],		// Materials
+		// Displacement
 		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
+		// Normal Map
 		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
-		NMS: new THREE.Vector2(), // Grid 0-1 Normal Map Scale (from Ocean)		
-		Df0: [],				// Grid 0-1 Diffuse Maps
-		Rf0: [],				// Grid 0-1 Roughness Maps
-		Mt0: [],				// Grid 0 Materials
-		Mt1: [],				// Grid 1 Materials
-		Dif: 0,					// Grid 2 Diffuse Map
-		Ruf: 0,					// Grid 2 Roughness Maps
-		Gr2: 0,					// Grid 2 Normal Map
-		Mat: [],				// Grid 2 Materials
-		WMx: WavMax,			// Max wave height, used to lower outer squares
-		EMI: [0.5,0.42,0.42],	// EnvMap Intensity
+		NMS: new THREE.Vector2(), // Grid 0-1 Normal Map Scale (from Ocean)
+		NM2: 0,					// Grid 2 Normal Map
+		// Indices
+		Col: new THREE.Color(WtrCol), // Color		
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
-		RfV: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
+		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
+		EMI: [0.5,0.43,0.43],	// EnvMap Intensity
+		// Maps
+		DfM: [[0],[0],0],		// Diffuse
+		RfM: [[0],[0],0],		// Roughness
+		// Other
+		WMx: WavMax,			// Max wave height, used to lower outer squares
 	};
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
@@ -495,8 +497,8 @@ function initSkyBox() {
 function loadGeoMat(grd_) {
 	// Diffuse Texture
 	if (DifSrc) {
-		// Grid0 and Grid1 - Load Image, Split into 4 and Save Textures
-		imagLoader.load(DifSrc, function(image) {
+		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
+		imagLoader.load(DifSrc, function(image) { // Load, Split and Save Textures
 			context.drawImage(image,0,0,ImgSiz,ImgSiz);
 			let idx = 0;
 			let siz = ImgSiz/4;
@@ -509,7 +511,8 @@ function loadGeoMat(grd_) {
 					texture.minFilter = THREE.LinearMipMapLinearFilter;
 					texture.generateMipmaps = true;
 					texture.needsUpdate = true;
-					grd_.Df0[idx] = texture;
+					grd_.DfM[0][idx] = texture;
+					grd_.DfM[1][idx] = texture;
 					idx++;				
 				}
 			}
@@ -523,7 +526,7 @@ function loadGeoMat(grd_) {
 			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 			texture.offset.set(0,0);
 			texture.needsUpdate = true;
-			grd_.Dif = texture;
+			grd_.DfM[2] = texture;
 		});
 	}
 	// Roughness Texture
@@ -542,7 +545,8 @@ function loadGeoMat(grd_) {
 					texture.minFilter = THREE.LinearMipMapLinearFilter;
 					texture.generateMipmaps = true;
 					texture.needsUpdate = true;
-					grd_.Rf0[idx] = texture;
+					grd_.RfM[0][idx] = texture;
+					grd_.RfM[1][idx] = texture;
 					idx++;				
 				}
 			}
@@ -556,7 +560,7 @@ function loadGeoMat(grd_) {
 			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 			texture.offset.set(0,0);
 			texture.needsUpdate = true;
-			grd_.Ruf = texture;
+			grd_.RfM[2] = texture;
 		});
 	}
 	// Normal Texture - Grid2 Only
@@ -569,7 +573,7 @@ function loadGeoMat(grd_) {
 		texture.offset.set(0,0);
 		texture.repeat.set(grd_.Stp*grd_.Stp/2,grd_.Stp*grd_.Stp/2);
 		texture.needsUpdate = true;
-		grd_.Gr2 = texture;
+		grd_.NM2 = texture;
 	});
 }
 
