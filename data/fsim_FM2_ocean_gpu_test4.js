@@ -89,7 +89,7 @@ const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 const WavMax = 5;				// Maximum wave height (set height of outer waves)
 let grids = 0;
 let grd_ = {
-		MSP: new THREE.Vector3(), // MSX, MPY, MSZ (meters) (from Flight)
+		MSP: 0, // MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,				// Squares in each of first 2 grids
 		Siz: GrdSiz,			// Size of smallest square
 		Stp: 4,					// Squares in each of first 2 grids
@@ -102,10 +102,10 @@ let grd_ = {
 		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
 		// Normal Map
 		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
-		NMS: new THREE.Vector2(), // Grid 0-1 Normal Map Scale (from Ocean)
+		NMS: 0,					// Grid 0-1 Normal Map Scale (from Ocean)
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
-		Col: new THREE.Color(WtrCol), // Color		
+		Col: 0, // Color		
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
 		EMI: [0.5,0.42,0.42],	// EnvMap Intensity
