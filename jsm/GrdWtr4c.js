@@ -151,69 +151,71 @@ _initGeoMat(grd_,scene) {
 	// Grid0 -------------------//----------------------------------------------
 	// For Grid0, using geometry = siz*stp since flip over stp at a time
 	// Color texture is full-sized, normal and displacement maps repeat (lines 140-141)
+	let n = 0;
 	let idx = 0;
 	// Create 4 Textures
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
-			grd_.Mt0[idx] = new MeshStandardNodeMaterial({ // Grid0 textures
+			grd_.Mat[n][idx] = new MeshStandardNodeMaterial({ // Grid0 textures
 				colorNode: color(grd_.Col),
-				map: grd_.Df0[idx], // not texture
-				metalness: grd_.Mtl[0], // 1 for max reflection
-				roughness: grd_.RfV[0],	// 0 for max reflection
-				roughnessMap: grd_.Rf0[idx], // not texture
+				map: grd_.DfM[n][idx], // not texture
+				metalness: grd_.Mtl[n], // 1 for max reflection
+				roughness: grd_.Ruf[n],	// 0 for max reflection
+				roughnessMap: grd_.RfM[n][idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				positionNode: positionLocal.add(texture(grd_.Dsp)), // must be texture
 				envMap: scene.background,			
-				envMapIntensity: grd_.EMI[0], // max reflection suggested = 5
+				envMapIntensity: grd_.EMI[n], // max reflection suggested = 5
 			});
 			idx++
 		}
 	}
+	// Geometry
+	let sz0 = grd_.Siz*grd_.Stp;
+	let sg0 = grd_.Seg*grd_.Stp;
+	grd_.Geo[n] = new PlaneGeometry(sz0,sz0,sg0,sg0);
+	grd_.Geo[n].rotateX(-Math.PI/2);
 	//- Grid1 ------------------//----------------------------------------------
 	// For Grid1, using geometry = siz*stp
 	// Grid1 has no displacement
 	// Color texture is full-sized, normal map repeats (line 140)
+	n = 1;
 	idx = 0;
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
-			grd_.Mt1[idx] = new MeshStandardNodeMaterial({ // Grid1 textures
+			grd_.Mat[n][idx] = new MeshStandardNodeMaterial({ // Grid1 textures
 				colorNode: color(grd_.Col),
-				map: grd_.Df0[idx], // not texture
-				metalness: grd_.Mtl[1], // 1 for max reflection
-				roughness: grd_.RfV[1],	// 0 for max reflection
-				roughnessMap: grd_.Rf0[idx], // not texture
+				map: grd_.DfM[n][idx], // not texture
+				metalness: grd_.Mtl[n], // 1 for max reflection
+				roughness: grd_.Ruf[n],	// 0 for max reflection
+				roughnessMap: grd_.RfM[n][idx], // not texture
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				envMap: scene.background,			
-				envMapIntensity: grd_.EMI[1], // adjusted for absence of displacement
+				envMapIntensity: grd_.EMI[n], // adjusted for absence of displacement
 			});
 			idx++
 		}
 	}
+	// Geometry (same as Grid0, but no segments)
+	grd_.Geo[1] = new PlaneGeometry(sz0,sz0);
+	grd_.Geo[1].rotateX(-Math.PI/2);
 	//- Grid2 ------------------//----------------------------------------------
 	// Grid2 has generic normal map
-	grd_.Mat[2] = new MeshStandardNodeMaterial({
+	n = 2;
+	grd_.Mat[n] = new MeshStandardNodeMaterial({
 		colorNode: color(grd_.Col),
-		map: grd_.Dif,			// Full-Sized Texture
-		metalness: grd_.Mtl[2], // 1 for max reflection
-		roughness: grd_.RfV[2],	// 0 for max reflection
-		roughnessMap: grd_.Ruf,	// not texture
-		normalNode: normalMap(texture(grd_.Gr2),grd_.NMS),
+		map: grd_.DfM[n],			// Full-Sized Texture
+		metalness: grd_.Mtl[n], // 1 for max reflection
+		roughness: grd_.Ruf[n],	// 0 for max reflection
+		roughnessMap: grd_.RfM[n],	// not texture
+		normalNode: normalMap(texture(grd_.NM2),grd_.NMS),
 		envMap: scene.background,
-		envMapIntensity: grd_.EMI[2], // adjusted for absence of displacement
+		envMapIntensity: grd_.EMI[n], // adjusted for absence of displacement
 	});
-	// Geometries --------------------------------------------------------------
-	// Grid0
-	let sz0 = grd_.Siz*grd_.Stp;
-	let sg0 = grd_.Seg*grd_.Stp;
-	grd_.Geo[0] = new PlaneGeometry(sz0,sz0,sg0,sg0);
-	grd_.Geo[0].rotateX(-Math.PI/2);
-	// Grid1 (same size, no segments)
-	grd_.Geo[1] = new PlaneGeometry(sz0,sz0);
-	grd_.Geo[1].rotateX(-Math.PI/2);	
-	// Grid2
+	// Geometry
 	let sz1 = sz0*grd_.Stp;
-	grd_.Geo[2] = new PlaneGeometry(sz1,sz1);
-	grd_.Geo[2].rotateX(-Math.PI/2);
+	grd_.Geo[n] = new PlaneGeometry(sz1,sz1);
+	grd_.Geo[n].rotateX(-Math.PI/2);
 }
 
 //- Init Moving Map (Ocean) ----//----------------------------------------------
@@ -240,7 +242,7 @@ _init1GrMap(grx_,grd_,scene) {
 	}
 	// Load Geometry and Material
 	let geometry = grd_.Geo[grx_.Typ];
-	let material = grd_.Mat[grx_.Typ]; // Grid 2 only
+	let material = grd_.Mat[grx_.Typ]; // default (Grid2)
 	// Set Starting Position of Squares
 	let n = 0;
 	let idx;
@@ -248,11 +250,11 @@ _init1GrMap(grx_,grd_,scene) {
 		for (let x = 0; x < grx_.RCs; x++) { // Column
 			if (grx_.Typ == 0) {	// Grid 0 Load one of 4x4 materials into 4x4 places
 				idx = ((x%4)+2)%4 + ((z%4)+2)%4*4;	// Center X and Z
-				material = grd_.Mt0[idx];
+				material = grd_.Mat[grx_.Typ][idx];
 			}
 			if (grx_.Typ == 1) { // Grid 1 Load one of 4x4 materials into 16x16 places
 				idx = (x%4) + (z%4)*4;
-				material = grd_.Mt1[idx];
+				material = grd_.Mat[grx_.Typ][idx];
 			}
 			grx_.Ptr[n] = new Mesh(geometry,material);
 			if (grx_.Shd == 1) grx_.Ptr[n].receiveShadow = true;
