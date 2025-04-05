@@ -151,11 +151,12 @@ _initGeoMat(grd_,scene) {
 	// Grid0 -------------------//----------------------------------------------
 	// For Grid0, using geometry = siz*stp since flip over stp at a time
 	// Color texture is full-sized, normal and displacement maps repeat (lines 140-141)
+	let n = 0;
 	let idx = 0;
 	// Create 4 Textures
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
-			grd_.Mt0[idx] = new MeshStandardNodeMaterial({ // Grid0 textures
+			grd_.Mat[n][idx] = new MeshStandardNodeMaterial({ // Grid0 textures
 				colorNode: color(grd_.Col),
 				map: grd_.Df0[idx], // not texture
 				metalness: grd_.Mtl[0], // 1 for max reflection
@@ -169,14 +170,20 @@ _initGeoMat(grd_,scene) {
 			idx++
 		}
 	}
+	// Geometry
+	let sz0 = grd_.Siz*grd_.Stp;
+	let sg0 = grd_.Seg*grd_.Stp;
+	grd_.Geo[n] = new PlaneGeometry(sz0,sz0,sg0,sg0);
+	grd_.Geo[n].rotateX(-Math.PI/2);
 	//- Grid1 ------------------//----------------------------------------------
 	// For Grid1, using geometry = siz*stp
 	// Grid1 has no displacement
 	// Color texture is full-sized, normal map repeats (line 140)
+	n = 1;
 	idx = 0;
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
-			grd_.Mt1[idx] = new MeshStandardNodeMaterial({ // Grid1 textures
+			grd_.Mat[n][idx] = new MeshStandardNodeMaterial({ // Grid1 textures
 				colorNode: color(grd_.Col),
 				map: grd_.Df0[idx], // not texture
 				metalness: grd_.Mtl[1], // 1 for max reflection
@@ -189,9 +196,13 @@ _initGeoMat(grd_,scene) {
 			idx++
 		}
 	}
+	// Geometry (same as Grid0, but no segments)
+	grd_.Geo[1] = new PlaneGeometry(sz0,sz0);
+	grd_.Geo[1].rotateX(-Math.PI/2);
 	//- Grid2 ------------------//----------------------------------------------
 	// Grid2 has generic normal map
-	grd_.Mat[2] = new MeshStandardNodeMaterial({
+	n = 2;
+	grd_.Mat[n] = new MeshStandardNodeMaterial({
 		colorNode: color(grd_.Col),
 		map: grd_.Dif,			// Full-Sized Texture
 		metalness: grd_.Mtl[2], // 1 for max reflection
@@ -201,19 +212,10 @@ _initGeoMat(grd_,scene) {
 		envMap: scene.background,
 		envMapIntensity: grd_.EMI[2], // adjusted for absence of displacement
 	});
-	// Geometries --------------------------------------------------------------
-	// Grid0
-	let sz0 = grd_.Siz*grd_.Stp;
-	let sg0 = grd_.Seg*grd_.Stp;
-	grd_.Geo[0] = new PlaneGeometry(sz0,sz0,sg0,sg0);
-	grd_.Geo[0].rotateX(-Math.PI/2);
-	// Grid1 (same size, no segments)
-	grd_.Geo[1] = new PlaneGeometry(sz0,sz0);
-	grd_.Geo[1].rotateX(-Math.PI/2);	
-	// Grid2
+	// Geometry
 	let sz1 = sz0*grd_.Stp;
-	grd_.Geo[2] = new PlaneGeometry(sz1,sz1);
-	grd_.Geo[2].rotateX(-Math.PI/2);
+	grd_.Geo[n] = new PlaneGeometry(sz1,sz1);
+	grd_.Geo[n].rotateX(-Math.PI/2);
 }
 
 //- Init Moving Map (Ocean) ----//----------------------------------------------
