@@ -65,10 +65,11 @@ This demo uses a simplified version of the Flight module.
 
 <script type="importmap">
 	{
-		"imports": {
-			"three": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.170.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+		"imports": {			
+			"three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/"	
 		}
 	}
 </script>
@@ -104,14 +105,14 @@ let BnkMsD = new THREE.Vector3(0.967,0.067,0);	// Bank
 //= CONSTANTS ==================//==============================================
 let DLTime = 1/60;				// Frames per Second
 //- Math Predefined
-let	DegRad = Math.PI/180;		// Convert Degrees to Radians
-let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
-let Ft2Mtr = 0.3048;			// Feet to Meters
-let Mtr2Ft = 3.28084;			// Meters to Feet
-let Km2Mil = 0.621371;
-let Mil2Km = 1.60934;
+const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+const Ft2Mtr = 0.3048;			// Feet to Meters
+const Mtr2Ft = 1/Ft2Mtr;			// Meters to Feet
+const Km2Mil = 0.621371;
+const Mil2Km = 1.60934;
 //- Basic Data
-let GrvUPS = 9.80665;			// Gravity (m/s2)
+const GrvUPS = 9.80665;			// Gravity (m/s2)
 let	AirDen = 1.225;				// Air Density - sea level (kg/m3)
 //- Convert Starting Values
 if (USorSI = "US") {
@@ -916,12 +917,12 @@ function initFlight() {
 
 function moveFlight() {
 	// 1. COMPUTE VECTORS ======================================================
-	let DLTim2 = air_.DLTime*air_.DLTime;		// Time ^ 2
+	let DLTim2 = air_.DLTime**2;		// Time ^ 2
 	let GrvDLT = GrvUPS*DLTim2;			// Gravity acceleration
 	let FrcAcc = DLTim2/typ_.ACMass;	// Convert Force to Acceleration
 	air_.SpdMPF = air_.SpdMPS*air_.DLTime;	
 	// Compute Dynamic Pressure
-	let DynPrs = 0.5*(air_.SpdMPS*air_.SpdMPS)*AirDen;	// Dynamic Pressure (Sea Level)
+	let DynPrs = 0.5*(air_.SpdMPS**2)*AirDen;	// Dynamic Pressure (Sea Level)
 	let QSTval = DynPrs*typ_.WingAr;	// Common Variable
 	// Compute Max Lift
 	let LftMax = typ_.GrvMax*GrvDLT;	// Maximum G-accel
