@@ -53,7 +53,7 @@ function loadAirObj(gltfLoader,air_,mxr_,vxr_,anm_) {
 }
 
 //-	Load Airplane Model --------//----------------------------------------------
-function loadAirExt() {
+function loadAirExt(gltfLoader,air_,mxr_,anm_) {
 	gltfLoader.load(mxrSrc, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
@@ -84,7 +84,7 @@ function loadAirExt() {
 }
 
 //-	Load Virtual Cockpit -------//----------------------------------------------
-function loadAirInt() {
+function loadAirInt(gltfLoader,air_,vxr_,anm_) {
 	gltfLoader.load(vxrSrc, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
