@@ -83,7 +83,7 @@ import Stats from "stats-gl";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // add grd_.EMI
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
-import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
+import {loadAirExt,loadAirInt,moveAirExt,moveAirInt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2a.js";
 import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
 		initAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
@@ -1161,6 +1161,7 @@ function loadObject() {
 }
 
 function initObject() {
+	initBullet(myg_,scene);
 	initAAAGun();
 	initStatic();
 	initMoving();
@@ -1841,67 +1842,9 @@ function moveShpAlt() {
 
 //= Load Airplane ==============//==============================================
 function loadAirObj() {
-	loadAirExt();
-	loadAirInt();
+	loadAirExt(gltfLoader,air_,mxr_,anm_);
+	loadAirInt(gltfLoader,air_,vxr_,anm_);
 }
-
-//-	Load Airplane Model --------//----------------------------------------------
-function loadAirExt() {
-	gltfLoader.load(mxrSrc, function (gltf) {
-		gltf.scene.traverse(function (child) {
-			if (child.isMesh) {
-				child.material.envMap = envMap; // ??? required?
-				child.castShadow = true;
-				child.receiveShadow = true;
-			}
-			if (child.name == "propeller" ||
-				child.name == "canopy1glass" ||
-				child.name == "canopy2glass")
-			{
-				child.castShadow = false;
-				child.receiveShadow = false;
-				child.renderOrder = 1;
-			}
-		});
-		mxr_.GLT = gltf;
-		mxr_.Adr = gltf.scene;
-		mxr_.Adr.rotation.order = "YXZ";
-		mxr_.Adr.scale.setScalar(Ft2Mtr);
-		loadACanimX(air_,mxr_,anm_);
-		air_.AirPBY.add(mxr_.Adr);
-		// Initialize
-		mxr_.Adr.visible = false;
-		// Load Related Objects only after mxr_.Adr known
-		initBullet(myg_,scene);
-	});		
-}
-
-//-	Load Virtual Cockpit -------//----------------------------------------------
-function loadAirInt() {
-	gltfLoader.load(vxrSrc, function (gltf) {
-		gltf.scene.traverse(function (child) {
-			if (child.isMesh) {
-				child.castShadow = true;
-				child.receiveShadow = true;
-			}
-			if (child.name == "propeller" ||
-				child.name == "glass")
-			{
-				child.castShadow = false;
-				child.receiveShadow = false;
-				child.renderOrder = 1;
-			}
-		});
-		vxr_.GLT = gltf;
-		vxr_.Adr = gltf.scene;
-		vxr_.Adr.rotation.order = "YXZ";
-		vxr_.Adr.scale.setScalar(Ft2Mtr);
-		loadACanimV(vxr_,anm_);
-		air_.AirPBY.add(vxr_.Adr);	
-		// Initialize
-		vxr_.Adr.visible = true;
-	});
-}	
 
 //= Init Airplane ==============//==============================================
 // This section initializes starting location and variables before passing to Flight Module
@@ -1923,6 +1866,7 @@ function initAirObj() {
 		xsh_.ShpLok[0].position.z = ZDst;
 		xsh_.ShpLok[0].add(air_.AirObj);
 		anm_.lngpos = 0;		// Landing Gear Down
+		anm_.canpos = 0;		// Canopy Open
 	}
 	if (BegLoc == 2) { 			// Air
 		PwrDif = 1000;
@@ -2011,60 +1955,9 @@ function moveAirObj() {
 	air_.BrkVal = InpBrk;		// Brakes
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
-	// View Keys ---------------------------------------------------------------
-	if (!cam_.OrbFlg) {			// Only If Not Orbiting		
-		// If No Keys Pressed, Set Default View
-		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
-			if (cam_.CamFlg) cam_.CamLLD.x = 0; // Internal view
-			else cam_.CamLLD.x = -12.5; // External view
-			cam_.CamLLD.y = 0;
-		}
-		// Down 45
-		else if (D45flg) {
-			cam_.CamLLD.x = 0;
-			// Look Back
-			if ((L90flg) && (L90flg) && (R90flg)) cam_.CamLLD.y = 180;
-			// Look Back Left 90 + 45
-			else if (L90flg) cam_.CamLLD.y = 135;
-			// Look Back Right 270 - 45
-			else if (R90flg) cam_.CamLLD.y = 225;
-			// Look Down
-			else {
-				cam_.CamLLD.y = 0;
-				cam_.CamLLD.x = 45;
-			}
-		}
-		// Up 45
-		else if (U45flg) {
-			cam_.CamLLD.x = 315;
-			if (!cam_.CamFlg && (air_.GrdFlg)) cam_.CamLLD.x = 0;
-			// Look Up Left 45
-			if (L45flg) cam_.CamLLD.y = 45;
-			// Look Up Right 45
-			else if (R45flg) cam_.CamLLD.y = 315;
-			// Look Up Left 90
-			else if (L90flg) cam_.CamLLD.y = 90;
-			// Look Up Right 90
-			else if (R90flg) cam_.CamLLD.y = 270;
-			// Look Up
-			else cam_.CamLLD.y = 0;
-		}
-		// Level
-		else {
-			cam_.CamLLD.x = 0;
-			// Look Left 45
-			if (L45flg) cam_.CamLLD.y = 45;
-			// Look Right 45
-			else if (R45flg) cam_.CamLLD.y = 315;
-			// Look Left 90
-			else if (L90flg) cam_.CamLLD.y = 90;
-			// Look Right 90
-			else if (R90flg) cam_.CamLLD.y = 270;
-		}
-	}
 	// Animate -----------------------------------------------------------------	
-	if (cam_.CamFlg) moveACanimV(air_,vxr_,anm_,cam_.CamLLD); // VC
-	else moveACanimX(air_,mxr_,anm_); // External
+	if (cam_.CamFlg) moveAirInt(air_,vxr_,anm_,cam_.CamLLD); // VC
+	else moveAirExt(air_,mxr_,anm_); // External
 	// Bullets
 	moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg);
 	testHitBox();
@@ -2372,6 +2265,7 @@ function moveCamera(camera,cam_) {
 		}
 		if (!HedRot.x && !HedRot.y) BegFlg = 0;
 	}
+	// Special Camera Views (deleted because keyboards not uniform)
 	// Move Camera In/Out
 	camera.position.z = -cam_.CamLLD.z;
 	// PointerLockControls
@@ -2390,6 +2284,11 @@ function moveCamera(camera,cam_) {
 		}
 		InpMos.x = 0;
 		InpMos.y = 0;
+	}
+	else {						// Re-Center
+		if (cam_.CamFlg) cam_.CamLLD.x = 0; // Internal view
+		else cam_.CamLLD.x = -12.5; // External view
+		cam_.CamLLD.y = 0;
 	}
 	// Adjust Camera Rotators
 	// In internal view, the camera is facing out - view matches rotation
@@ -2564,12 +2463,6 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_Hook) anm_.thkflg = 1; 	// Tailhook
 	// Views
 	if (event.keyCode == K_Look) cam_.OrbFlg = 1;	// Orbit View
-	if (event.keyCode == K_VU45) D45flg = 1;		// View - 45 deg up
-	if (event.keyCode == K_VD45) U45flg = 1;		// View - 45 deg down
-	if (event.keyCode == K_VL45) L45flg = 1;		// View - 45 deg left
-	if (event.keyCode == K_VR45) R45flg = 1;		// View - 45 deg right
-	if (event.keyCode == K_VL90) L90flg = 1;		// View - 90 deg left
-	if (event.keyCode == K_VR90) R90flg = 1;		// View - 90 deg right
 	// Guns
 	if (event.keyCode == K_Guns) { // Guns
 		if (!PawsOn) {
@@ -2613,12 +2506,6 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_Hook) anm_.thkflg = 0;	// Taihook
 	// Views
 	if (event.keyCode == K_Look) cam_.OrbFlg = 0;	// Orbit View
-	if (event.keyCode == K_VU45) D45flg = 0;		// View - 45 deg up
-	if (event.keyCode == K_VD45) U45flg = 0;		// View - 45 deg down
-	if (event.keyCode == K_VL45) L45flg = 0;		// View - 45 deg left
-	if (event.keyCode == K_VR45) R45flg = 0;		// View - 45 deg right
-	if (event.keyCode == K_VL90) L90flg = 0;		// View - 90 deg left
-	if (event.keyCode == K_VR90) R90flg = 0;		// View - 90 deg right
 	// Guns
 	if (event.keyCode == K_Guns) {					// Guns
 		for (let n = 0; n < myg_.ObjNum; n ++) {
