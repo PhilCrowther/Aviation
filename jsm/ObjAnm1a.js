@@ -169,7 +169,7 @@ function loadMyPeep(gltfLoader,myp_) {
 }
 
 //= MOVE MY PEEPS ==============//==============================================
-function moveMyPeep(myp_) {
+function moveMyPeep(myp_,difTim) {
 	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
