@@ -236,6 +236,65 @@ let xsh_ = {
 		ShpLok: [0,0],			// Deck Lock
 	};
 
+//= ANIMATED FLAGS =============//==============================================
+//	Can attach to Ships or Flagpoles
+let	flg_ = {
+		ObjNum:	1,				// Number of Flags
+		// Material and Geometry
+		ObjSrc: [0],			// Geometry Address (can use this for all flags)
+		ObjTxt: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA_48.png"],
+		ObjAdr: [0],
+		ObjSiz: [0.125],		// Scale (flag height = 2 meters)
+		RndOrd: [0],			// renderOrder (not used)
+		// Position and Rotation
+		ObjRot: [0],			// Adjust to make the flag visible at start
+		MapPos: [0],			// Relative Map Position
+		ObjRef: [0],			// Parent Object
+		// Animation
+		ObjDst: [152.4],		// Visibility Distance from Parent (meters)
+		ObjAdj: [0]
+	};
+
+//= MY PEEPS ===================//==============================================
+//- Animated Objects: Linked ---//----------------------------------------------
+let myp_ = {
+		ObjNum: 2,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Wave2.glb",
+				 "https://PhilCrowther.github.io/Aviation/peeps/Brian_Anim.glb"],
+		ObjTxt: [0,0],
+		ObjAdr: [0,0],			// Loaded Object
+		ObjSiz: [1,1],			// Scale
+		RndOrd: [0,0],			// renderOrder
+		ObjRot: [0,0],			// Rotation (degrees)
+		MapPos: [0,0],			// Relative Position (if parent)
+		ObjRef: [0,0],			// Parent, if any
+		// Animation Action
+		AnmAct: [0,0],			// Animation Action
+		AnmMxr: [0,0],			// Animation Mixer
+		AnmTim: [0,0],			// Animation
+		AnmRep: [0,0],			// Number of Times to Repeat
+		AnmRng: [80,360],
+		// Animation Segments (within single Animation)
+		SegNum: [2,1],			// Number of Segments
+		SegRef: [0,0],			// Currently Playing
+		SegBeg: [[0,40],[0]],	// Animation Segment Beg (Absolute Position)
+		SegEnd: [[40,80],[360]], // Animation Segment End (Absolute Position)
+		// Repetitions
+		RepNum: [[10,0],[99]],	// Number of Times to Repeat Before Moving On
+		RepRem: [0,0],			// Animation Reps Remaining		
+		// Delay
+		DlyBeg: [[0,3],[0]],	// Delay Time Between Animation Segments (Secs)
+		DlyPos: [[0,60],[0]],	// Absolute Position in Range where Delay Starts
+		DlyMid: [[0,3],[0]],		// Delay Time Within Animation Segments (Secs)
+		DlyFlg: [0,0],			// Flag for Middle Delay - So Only Delay Once
+		DlyRem: [0,0],			// Delay Time Remaining (Shared)
+		// Visibility
+		MaxDst: 1000,			// Max Distance where visible (meters)
+		ObjViz: [1,1],			// Visibility Flag On
+		// Segment Names (Optional)
+		SegNam: [["Chocks Removed","Set Brakes"]],
+	};
+
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 
 //- Flight Module --------------//----------------------------------------------
