@@ -28,11 +28,11 @@ Version dated 27 Feb 2025
 <div id = "container"></div>
 <script type="importmap">
 	{
-		"imports": {
-			"three": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
-			"three/webgpu": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.174.0/build/three.tsl.js",
-			"three/addons/": "https://unpkg.com/three@0.174.0/examples/jsm/"
+		"imports": {		
+			"three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/"		
 		}
 	}
 </script>
@@ -146,7 +146,7 @@ let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
 //= MY PEEPS VARIABLE ==========//===============================================
 let myp_ = {
 		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Wave2.glb"],
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/Brian_Wave2.glb"],
 		ObjTxt: [0],
 		ObjAdr: [0],			// Loaded Object
 		ObjSiz: [1],			// Scale
@@ -175,7 +175,7 @@ let myp_ = {
 		DlyFlg: [0],			// Flag for Middle Delay - So Only Delay Once
 		DlyRem: [0],			// Delay Time Remaining (Shared)
 		// Visibility
-		MaxDst: 1000,			// Max Distance where visible (meters)
+		MaxDst: 5,				// Max Distance where visible (meters)
 		ObjViz: [1],			// Visibility Flag On
 		// Segment Names (Optional)
 		SegNam: [["Chocks Removed","Set Brakes"]],
@@ -297,27 +297,6 @@ function moveMyPeep() {
 				myp_.DlyRem[n] = myp_.DlyMid[n][myp_.SegRef[n]];
 				myp_.DlyFlg[n] = 0; // so don't keep repeating delay
 			}
-		}
-		//- Distance -----------//-----------------------------------------------
-		// Turn On or Off Based on Distance
-		// (Not Computed for OrbitControls)
-		// Get Distances
-		if (myp_.ObjRef[n]) { // If Linked
-			ObjRef = myp_.ObjRef[n];
-			ObjDst = ObjRef.position;
-		}
-		else {ObjDst.copy(myp_.MapPos[n]);}
-		// Turn On
-		if (!myp_.ObjViz[n] && ObjDst.x < myp_.MaxDst && ObjDst.y < myp_.MaxDst && ObjDst.z < myp_.MaxDst) {
-			myp_.ObjViz[n] = 1;
-			myp_.ObjAdr[n].visible = true;
-			myp_.AnmAct[n].play(); // Start Playing
-		}
-		// Continue
-		if (myp_.ObjViz[n] && ObjDst.x > myp_.MaxDst || ObjDst.y > myp_.MaxDst || ObjDst.z > myp_.MaxDst) {
-			myp_.ObjViz[n] = 0;
-			myp_.ObjAdr[n].visible = false;
-			myp_.AnmAct[n].stop();
 		}
 	}
 }
