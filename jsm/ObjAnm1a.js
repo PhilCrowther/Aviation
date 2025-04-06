@@ -1,5 +1,5 @@
 /*
- * ObjAnm.js (vers 25.04.05)
+ * ObjAnm1a.js (vers 25.04.05)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -93,7 +93,7 @@ function loadAnmFlg(txtrLoader,flg_) {
 }
 
 //=	MOVE FLAG MESHES ===========//==============================================
-function moveAnmFlg(flg_) {
+function moveAnmFlg(flg_,nowTim) {
 //	let n = 0;
 	for (let n = 0; n < flg_.ObjNum; n++) {
 		let flgSgX = 30;		// Segments X
