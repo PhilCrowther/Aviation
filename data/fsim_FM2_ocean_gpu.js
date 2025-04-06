@@ -259,8 +259,8 @@ let	flg_ = {
 //- Animated Objects: Linked ---//----------------------------------------------
 let myp_ = {
 		ObjNum: 2,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/peeps/Brian_Wave2.glb",
-				 "https://PhilCrowther.github.io/Aviation/peeps/Brian_Anim.glb"],
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/Brian_Wave2.glb",
+				 "https://PhilCrowther.github.io/Aviation/people/Brian_Anim.glb"],
 		ObjTxt: [0,0],
 		ObjAdr: [0,0],			// Loaded Object
 		ObjSiz: [1,1],			// Scale
