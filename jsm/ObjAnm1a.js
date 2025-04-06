@@ -38,7 +38,10 @@ import {
 	Mesh,
 	PlaneGeometry,
 	RGBAFormat,
-	// Subroutines
+	// Peeps
+	AnimationMixer,
+	Vector3,
+	// makMsh
 	BoxGeometry,
 	MeshBasicNodeMaterial,
 } from 'three';
@@ -132,6 +135,103 @@ function moveAnmFlg(flg_,nowTim) {
 
 /*******************************************************************************
 *
+*	ANIMATED PEOPLE
+*
+*******************************************************************************/
+
+//= LOAD MY PEEPS ==============//==============================================
+function loadMyPeep(gltfLoader,myp_) {
+	for (let n = 0; n < myp_.ObjNum; n++) {
+		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
+			// Cast Shadow (but not in shadow zone)
+			gltf.scene.traverse(function (child) {
+				if (child.isMesh) child.castShadow = true;
+			});
+			myp_.ObjAdr[n] = gltf.scene;
+			// Play Animation
+			myp_.AnmMxr[n] = new AnimationMixer(myp_.ObjAdr[n]);
+			myp_.AnmMxr[n].clipAction(gltf.animations[0]).play();
+			//- Set Initial Values
+			myp_.AnmTim[n] = 0;
+			myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]]; // Reps Remaining
+			myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Load Beg Delay (if any)
+			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // Set Mid Delay Flag = Time
+			//- Position
+			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
+			myp_.ObjAdr[n].rotation.x = myp_.ObjRot[n].x * DegRad;
+			myp_.ObjAdr[n].rotation.y = myp_.ObjRot[n].y * DegRad;
+			myp_.ObjAdr[n].rotation.z = myp_.ObjRot[n].z * DegRad;
+			myp_.ObjAdr[n].position.copy(myp_.MapPos[n]); // Relative to moving object
+			if (myp_.ObjRef[n]) myp_.ObjRef[n].add(myp_.ObjAdr[n]); // Link to moving object
+			else {scene.add(myp_.ObjAdr[n]);}
+		});
+	}
+}
+
+//= MOVE MY PEEPS ==============//==============================================
+function moveMyPeep(myp_) {
+	// To compute position, use AnmTim * anmfps
+	let ObjRef = 0;
+	let ObjDst = new Vector3();
+	for (let n = 0; n < myp_.ObjNum; n++) {
+		//= Play Animations ----//----------------------------------------------
+		if (myp_.ObjViz[n]) {	// If in Visual Range
+			// Set Position - AnmTim = time on timeline - setTime converts to position
+			myp_.AnmMxr[n].setTime(myp_.AnmTim[n]);
+			//. Update or Delay Counter .........................................
+			// If No Delay, Update Positon Time
+			if (!myp_.DlyRem[n]) myp_.AnmTim[n] = myp_.AnmTim[n] + difTim;
+			// If Delay, Don't Change Position Time
+			else {
+				myp_.DlyRem[n] = myp_.DlyRem[n] - difTim;
+				if (myp_.DlyRem[n] < 0) myp_.DlyRem[n] = 0;
+			}
+			//. If Exceed Max, Repeat or Move to Next Animation
+			if (myp_.AnmTim[n] * anmfps > (myp_.SegEnd[n][myp_.SegRef[n]])) {
+				// Repeat Animation?
+				if (myp_.RepRem[n]) myp_.RepRem[n] = myp_.RepRem[n] - 1;
+				// Or Move On to Next Animation?
+				else {
+					myp_.SegRef[n] = myp_.SegRef[n] + 1;
+					if (myp_.SegRef[n] == myp_.SegNum[n]) myp_.SegRef[n] = 0;		
+					myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]];
+					myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Start Delay
+				}
+				myp_.AnmTim[n] = myp_.SegBeg[n][myp_.SegRef[n]]/anmfps; // old or new start time
+				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // load delay flag = delay time	
+			}
+			//	When Reach Mid Delay Time, Set Delay Counter
+			if (myp_.DlyFlg[n] && myp_.AnmTim[n] > myp_.DlyFlg[n]) {
+				myp_.DlyRem[n] = myp_.DlyMid[n][myp_.SegRef[n]];
+				myp_.DlyFlg[n] = 0; // so don't keep repeating delay
+			}
+		}
+		//- Distance -----------//----------------------------------------------
+		// Turn On or Off Based on Distance
+		// (Not Computed for OrbitControls)
+		// Get Distances
+		if (myp_.ObjRef[n]) { // If Linked
+			ObjRef = myp_.ObjRef[n];
+			ObjDst = ObjRef.position;
+		}
+		else {ObjDst.copy(myp_.MapPos[n]);}
+		// Turn On
+		if (!myp_.ObjViz[n] && ObjDst.x < myp_.MaxDst && ObjDst.y < myp_.MaxDst && ObjDst.z < myp_.MaxDst) {
+			myp_.ObjViz[n] = 1;
+			myp_.ObjAdr[n].visible = true;
+//			myp_.AnmAct[n].play(); // Start Playing
+		}
+		// Continue
+		if (myp_.ObjViz[n] && ObjDst.x > myp_.MaxDst || ObjDst.y > myp_.MaxDst || ObjDst.z > myp_.MaxDst) {
+			myp_.ObjViz[n] = 0;
+			myp_.ObjAdr[n].visible = false;
+//			myp_.AnmAct[n].stop(); // causes err (not a function)
+		}
+	}
+}
+
+/*******************************************************************************
+*
 *	SUBROUTINES
 *
 *******************************************************************************/
@@ -156,7 +256,7 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {loadAnmFlg,moveAnmFlg};
+export {loadAnmFlg,moveAnmFlg,loadMyPeep,moveMyPeep};
 
 /*******************************************************************************
 *
