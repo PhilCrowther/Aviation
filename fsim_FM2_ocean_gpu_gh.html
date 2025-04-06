@@ -119,14 +119,13 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
-	* Red Out not very red.
-	* Don't hear EA guns or engines (used to hear engines)
 	* Move Variables to Data File (not variables with three.js functions) - WIP
+	* Red Out not very red.
+	* Don't hear EA guns or engines (used to hear engines)9
 	* Reset landed airplane to starting position (R) - WIP
 	* Convert waving flag to GPU shader
 -	Flight Module:
 	* Add supercharger/turbocharger effect
-	* Fix Autopilot ***
 OK
 - Program:
 	* My Guns seem to be aimed too high - but if fly level, guns shoot at horizon
@@ -238,7 +237,7 @@ let LagPwr = new THREE.Vector3(1-1/30,1/15,0);	// Power
 let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
 let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys
-let LagAtP = new THREE.Vector3(0.967,0,0.099);	// CfL - Autopilot
+let LagAtP = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
 let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
@@ -2166,19 +2165,19 @@ function moveAirObj() {
 	if (air_.PwrPct > 1) air_.PwrPct = 1;
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
 	PwrDif = 0;					// Reset
-	// Coefficient of Lift .....................................................
+	// Coefficient of Lift .....//..............................................
 	if (air_.AutoOn) {			// Autopilot
 		air_.CfLDif = air_.InpKey.x;
 		// Add Delay to Lift
 		gal = air_.CfLDif * LagAtP.x; // Current input delayed
-		lag = LagCfL.y * LagAtP.z; // Released from Cumulator
+		lag = LagCfL.z * LagAtP.y; // Released from Cumulator
 		LagCfL.z = LagCfL.z + gal - lag; // Change in Cumulator
 	}
 	else {
-		air_.CfLDif = (InpMos.y)*air_.PYBmul.x;	// Input Coefficient of Lift
+		air_.CfLDif = InpMos.y * air_.PYBmul.x; // Input Coefficient of Lift
 		// Add Delay to Lift
 		gal = air_.CfLDif * LagCfL.x; // Current input delayed
-		lag = LagCfL.y * LagCfL.z; // Released from Cumulator
+		lag = LagCfL.z * LagCfL.y; // Released from Cumulator
 		LagCfL.z = LagCfL.z + gal - lag; // Change in Cumulator
 	}
 	air_.CfLDif = air_.CfLDif - gal + lag;

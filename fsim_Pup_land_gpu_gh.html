@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Mar 2025
+Version dated 5 Apr 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -92,7 +92,7 @@ let InpBrk = 0;					// Brakes
 //- (x = diverted, y = released, z = stored)
 let LagPwr = new THREE.Vector3(1-1/30,1/15,0);	// Power
 let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
-let LagAtP = new THREE.Vector3(0.967,0,0.099);	// CfL - Autopilot
+let LagAtP = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
 let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- POINTER LOCK CONTROLS ------------------------------------------------------
 let InpMos = new THREE.Vector2(); // Inputs - Mouse
@@ -1607,14 +1607,14 @@ function moveAirObj() {
 		air_.CfLDif = air_.InpKey.x;
 		// Add Delay to Lift
 		gal = air_.CfLDif * LagAtP.x; // Current input delayed
-		lag = LagCfL.y * LagAtP.z; // Released from Cumulator
+		lag = LagCfL.z * LagAtP.y; // Released from Cumulator
 		LagCfL.z = LagCfL.z + gal - lag; // Change in Cumulator
 	}
 	else {
 		air_.CfLDif = (InpMos.y)*air_.PYBmul.x;	// Input Coefficient of Lift
 		// Add Delay to Lift
 		gal = air_.CfLDif * LagCfL.x; // Current input delayed
-		lag = LagCfL.y * LagCfL.z; // Released from Cumulator
+		lag = LagCfL.z * LagCfL.y; // Released from Cumulator
 		LagCfL.z = LagCfL.z + gal - lag; // Change in Cumulator
 	}
 	air_.CfLDif = air_.CfLDif - gal + lag;
