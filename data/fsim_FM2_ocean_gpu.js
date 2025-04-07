@@ -706,12 +706,12 @@ let InfoData = [
 			"VIEW KEYS",
 			"V Key toggles views",
 			"Shift Key and Mouse orbits around airplane",
-			"With NumLock Set:
-			"NumLock 7/9 Keys look left/right 45 degrees",
-			"NumLock 4/6 Keys look left/right 90 degrees",
-			"NumLock 8 Key looks up 45 degrees
-			"NumLock 5 Key looks down/back 45 degrees",
-			"NumLock 4, 5 and 6 Keys look straight back"
+			"With NumLock Set:",
+			"7/9 Keys look left/right 45 degrees",
+			"4/6 Keys look left/right 90 degrees",
+			"8 Key looks up 45 degrees",
+			"5 Key looks down/back 45 degrees",
+			"4, 5 and 6 Keys look straight back"
 		]
 	];
 
