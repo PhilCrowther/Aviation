@@ -706,11 +706,12 @@ let InfoData = [
 			"VIEW KEYS",
 			"V Key toggles views",
 			"Shift Key and Mouse orbits around airplane",
-			"END Key looks down",
-			"DELETE or PAGE DOWN Keys look left/right",
-			"HOME Key and above Keys look up",
-			"END Key and DELETE or PAGE DOWN Keys look back",
-			"All 3 Keys look back"
+			"With NumLock Set:
+			"NumLock 7/9 Keys look left/right 45 degrees",
+			"NumLock 4/6 Keys look left/right 90 degrees",
+			"NumLock 8 Key looks up 45 degrees
+			"NumLock 5 Key looks down/back 45 degrees",
+			"NumLock 4, 5 and 6 Keys look straight back"
 		]
 	];
 
@@ -740,12 +741,12 @@ const K_Hook =  72;				// Tailhook (h)
 const K_Canp =  67;				// Canopy (c)
 //	Views
 const K_Look =  16;				// Orbit (shift)
-const K_VU45 =  36;				// View Up (alone or modifier)
-const K_VD45 =  35;				// View Down (alone or modifier)
-const K_VL45 =  33;				// Left 45 degrees
-const K_VR45 =  45;				// Right 45 degrees
-const K_VL90 =  34;				// Left 90 degrees
-const K_VR90 =  46;				// Right 90 degrees
+const K_VU45 =  104;			// View Up (alone or modifier)
+const K_VD45 =  101;			// View Down (alone or modifier)
+const K_VL45 =  103;			// Left 45 degrees
+const K_VR45 =  105;			// Right 45 degrees
+const K_VL90 =  100;			// Left 90 degrees
+const K_VR90 =  102;			// Right 90 degrees
 //	Toggle
 const K_View =  86;				// Toggle Visibility (v)
 const K_Soun =  83;				// Toggle sound (s)
