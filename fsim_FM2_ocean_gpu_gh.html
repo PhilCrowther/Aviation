@@ -56,7 +56,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu_test.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/fm2/data/data.js"></script>
 
 <script type="importmap">
@@ -122,6 +122,8 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
+	* Make R45 = starting default view
+	* Allow ailerons to move when locked down
 	* Move Variables to Data File (not variables with three.js functions) - WIP
 	* Red Out not very red.
 	* Don't hear EA guns or engines (used to hear engines)9
@@ -222,6 +224,7 @@ let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
 let HedRot = new THREE.Vector2(); // Used to rotation head in beginning internal view
 if (BegLoc == 1) {
 	CamSel = 1;
+//	R45flg = 1;					// To Do - Use this, even if NumLock nor on
 	HedRot.x = -10;
 	HedRot.y = 45;
 }
@@ -553,17 +556,19 @@ let wak_ = {
 	myp_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[0]]; // Parent, if any
 
 //= MINIMUM ALTITUDE ===========//==============================================
-let alt_ = {
-		Num: 2,
-		Ref: [isl_.ObjGrp[0],xsh_.ObjGrp[0]],
-		Var: [0,xsh_],
-		Typ: [0,1], 			// 0 = stationary, 1 = moving
-		Alt: [7.57,13.1],
-		Lft: [-635,-13.2],
-		Rgt: [-585,13.2],
-		Fnt: [410,70.5],
-		Bak: [-335,-70.5]
-	};
+//let alt_ = {
+//		Num: 2,
+//		Ref: [isl_.ObjGrp[0],xsh_.ObjGrp[0]],
+//		Var: [0,xsh_],
+//		Typ: [0,1], 			// 0 = stationary, 1 = moving
+//		Alt: [7.57,13.1],
+//		Lft: [-635,-13.2],
+//		Rgt: [-585,13.2],
+//		Fnt: [410,70.5],
+//		Bak: [-335,-70.5]
+//	};
+//- Adjustments
+	alt_.Ref = [isl_.ObjGrp[0],xsh_.ObjGrp[0]]; // can't load until object exists
 //- Carrier Deck Lock Down
 	xsh_.ShpLok[0].position.y = 1.4+(alt_.Alt[1]-xsh_.MapPos[0].y);
 	xsh_.ObjGrp[0].add(xsh_.ShpLok[0]);
@@ -748,14 +753,6 @@ let CmAdjX = 0;					// Airborne Pitch Adjustment
 let CmGrdF = 0;					// Camera Ground Flag (1 = On Ground)
 let CmMulX = 35;				// Pitch Adjustment Multiplier
 let CmLagX = 0;					// Transition Offset
-
-//-	Camera View Keys -----------//----------------------------------------------
-let U45flg = 0;					// Up 45 degrees
-let D45flg = 0;					// Down 45 degrees
-let	L45flg = 0;					// Left 45 degrees
-let R45flg = 0;					// Right 45 degrees
-let L90flg = 0;					// Left 90 degrees
-let R90flg = 0;					// Right 90 degrees
 
 //= 8. OUTPUT VARIABLES ========//==============================================
 
