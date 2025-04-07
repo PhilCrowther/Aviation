@@ -1,6 +1,62 @@
 ﻿//= PRE-LOAD DATA ==============================================================
 //	No three.js routines allowed since three.js has not been loaded yet.
 
+/*******************************************************************************
+*
+*	INDEX TO VARIABLES
+*
+*******************************************************************************
+
+	1. MAIN VARIABLES
+	   Constants
+	   Input Values
+	   Sun Values					Inputs for Directional Light
+	   Fad2Black Plane				Used for scene transitions
+	2. SKYBOX VARIABLES
+	3. OCEAN GRID VARIABLES
+		GRDWTR MODULE				(grd_)
+		OCEAN MODULE				(wav_)
+	4. OBJECT VARIABLES
+		SHARED TEXTURES				(txt_)
+		STATIC OBJECTS
+			Islands					(isl_)
+			Fixed Objects			(fxd_)
+		MOVING VEHICLES
+			Moving Airplanes		(xac_)
+			Moving Ships			(xsh_)
+		ANIMATED FLAG				(flg_)
+		AIRPLANE EXPLOSION			(xae_)
+	    SMOKE MODULE
+	    	Volcano Smoke			(vlk_)
+	    	Ground Fire				(grf_)
+	    	Airplane Smoke Trail	(xas_)
+	    	Airplane Fire Trail		(xaf_)
+	    	Ship Wakes				(wak_)
+		MYPEEPS						(myp_)
+		MINIMUM ALTITUDE			(alt_)
+	5. MY AIRPLANE VARIABLES		(air_)
+		FLIGHT MODULE
+		ANIMFM2 MODULE				(anm_,mxr_,vxr_)
+	x. GUNASG MODULE
+			My Guns					(myg_)
+			Moving Airplanes		(xag_)
+			Moving Ships			(xsg_)
+			Fixed Guns				(aaf_)
+	6. SOUND VARIABLES
+		My Sounds					(mys_)
+		Radio Variables				(rad_)
+	7. CAMERA VARIABLES				(cam_)
+	8. OUTPUT VARIABLES
+	9. INPUT VARIABLES
+	   Pointer Lock Control
+*/
+
+/*******************************************************************************
+*
+*	VARIABLES
+*
+*******************************************************************************/
+
 //= 1. MAIN VARIABLES ==========//==============================================
 
 //- CONSTANTS ------------------//----------------------------------------------
@@ -293,6 +349,19 @@ let myp_ = {
 		ObjViz: [1,1],			// Visibility Flag On
 		// Segment Names (Optional)
 		SegNam: [["Chocks Removed","Set Brakes"]],
+	};
+
+//= MINIMUM ALTITUDE ===========//==============================================
+let alt_ = {
+		Num: 2,
+		Ref: [0,0],
+		Var: [0,xsh_],
+		Typ: [0,1], 			// 0 = stationary, 1 = moving
+		Alt: [7.57,13.1],
+		Lft: [-635,-13.2],
+		Rgt: [-585,13.2],
+		Fnt: [410,70.5],
+		Bak: [-335,-70.5]
 	};
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
@@ -622,6 +691,16 @@ let aaf_ = {
 		ExpSiz: [0,0],			// Expanding Size
 		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
+
+//= 7. CAMERA VARIABLES ========//==============================================
+
+//-	Camera View Keys -----------//----------------------------------------------
+let U45flg = 0;					// Up 45 degrees
+let D45flg = 0;					// Down 45 degrees
+let	L45flg = 0;					// Left 45 degrees
+let R45flg = 0;					// Right 45 degrees
+let L90flg = 0;					// Left 90 degrees
+let R90flg = 0;					// Right 90 degrees
 
 //= 8. OUTPUTS VARIABLES =======//==============================================
 
