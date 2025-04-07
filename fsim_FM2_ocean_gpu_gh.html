@@ -1764,8 +1764,6 @@ function moveXSHGun() {
 	}
 }
 
-
-
 //= HARDENED SURFACES ==========//==============================================
 // The hardened surfaces are the Home Airfield and the CVE Deck (moving)
 // Where CVE not facing north, can we rotate ref points and airplane to north?
@@ -2286,9 +2284,54 @@ function moveCamera(camera,cam_) {
 		InpMos.y = 0;
 	}
 	else {						// Re-Center
-		if (cam_.CamFlg) cam_.CamLLD.x = 0; // Internal view
-		else cam_.CamLLD.x = -12.5; // External view
-		cam_.CamLLD.y = 0;
+		// If No Keys Pressed, Set Default View
+		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
+			if (cam_.CamFlg) cam_.CamLLD.x = 0; // Internal view
+			else cam_.CamLLD.x = -12.5; // External view
+			cam_.CamLLD.y = 0;
+		}
+		// Down 45
+		else if (D45flg) {
+			cam_.CamLLD.x = 0;
+			// Look Back
+			if ((L90flg) && (R90flg)) cam_.CamLLD.y = 180;
+			// Look Back Left 270 - 45
+			else if (L90flg) cam_.CamLLD.y = 225;
+			// Look Back Right 90 + 45
+			else if (R90flg) cam_.CamLLD.y = 135;
+			// Look Down
+			else {
+				cam_.CamLLD.y = 0;
+				cam_.CamLLD.x = 45;
+			}
+		}
+		// Up 45
+		else if (U45flg) {
+			cam_.CamLLD.x = 315;
+			if (!cam_.CamFlg && (air_.GrdFlg)) cam_.CamLLD.x = 0;
+			// Look Up Left 45
+			if (L45flg) cam_.CamLLD.y = 315;
+			// Look Up Right 45
+			else if (R45flg) cam_.CamLLD.y = 45;
+			// Look Up Left 90
+			else if (L90flg) cam_.CamLLD.y = 270;
+			// Look Up Right 90
+			else if (R90flg) cam_.CamLLD.y = 90;
+			// Look Up
+			else cam_.CamLLD.y = 0;
+		}
+		// Level
+		else {
+			cam_.CamLLD.x = 0;
+			// Look Left 45
+			if (L45flg) cam_.CamLLD.y = 315;
+			// Look Right 45
+			else if (R45flg) cam_.CamLLD.y = 45;
+			// Look Left 90
+			else if (L90flg) cam_.CamLLD.y = 270;
+			// Look Right 90
+			else if (R90flg) cam_.CamLLD.y = 90;
+		}
 	}
 	// Adjust Camera Rotators
 	// In internal view, the camera is facing out - view matches rotation
@@ -2463,6 +2506,12 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_Hook) anm_.thkflg = 1; 	// Tailhook
 	// Views
 	if (event.keyCode == K_Look) cam_.OrbFlg = 1;	// Orbit View
+	if (event.keyCode == K_VU45) D45flg = 1;		// View - 45 deg up
+	if (event.keyCode == K_VD45) U45flg = 1;		// View - 45 deg down
+	if (event.keyCode == K_VL45) L45flg = 1;		// View - 45 deg left
+	if (event.keyCode == K_VR45) R45flg = 1;		// View - 45 deg right
+	if (event.keyCode == K_VL90) L90flg = 1;		// View - 90 deg left
+	if (event.keyCode == K_VR90) R90flg = 1;		// View - 90 deg right
 	// Guns
 	if (event.keyCode == K_Guns) { // Guns
 		if (!PawsOn) {
@@ -2506,6 +2555,12 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_Hook) anm_.thkflg = 0;	// Taihook
 	// Views
 	if (event.keyCode == K_Look) cam_.OrbFlg = 0;	// Orbit View
+	if (event.keyCode == K_VU45) D45flg = 0;		// View - 45 deg up
+	if (event.keyCode == K_VD45) U45flg = 0;		// View - 45 deg down
+	if (event.keyCode == K_VL45) L45flg = 0;		// View - 45 deg left
+	if (event.keyCode == K_VR45) R45flg = 0;		// View - 45 deg right
+	if (event.keyCode == K_VL90) L90flg = 0;		// View - 90 deg left
+	if (event.keyCode == K_VR90) R90flg = 0;		// View - 90 deg right
 	// Guns
 	if (event.keyCode == K_Guns) {					// Guns
 		for (let n = 0; n < myg_.ObjNum; n ++) {
