@@ -215,7 +215,7 @@ let wav_ = {
 //		AnmNam: [0]				// Animation
 //	};
 
-//= SHARED TEXTURES ============//===============================================
+//= SHARED TEXTURES ============//==============================================
 let txt_ = {
 		ObjNum: 3,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
@@ -224,7 +224,7 @@ let txt_ = {
 		ObjTxt: [],
 	};
 
-//. Moving Airplanes ...........//..............................................
+//- Moving Airplanes -----------//----------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
 const XP2Nam = "A6M_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
@@ -269,7 +269,32 @@ let xac_ = {
 		SndDTm: [0,0],
 	};
 
-//. Moving Ships ...............//..............................................
+//- Airplane Smoke Trail .......//..............................................
+let xas_ = {
+		// Shared Values
+		ObjNum: 1,				// Number of Smoke Trails
+		ObjTxt: 0,				// Shared Texture Reference Number
+		ObjSiz: 800,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+	};
+
+//- Airplane Flame Trail .......//..............................................
+let xaf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: 0,				// Texture
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+	};
+
+//. Moving Ships ---------------//----------------------------------------------
 let xsh_ = {
 		ObjNum: 2,				// Number of ships
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
@@ -793,7 +818,6 @@ let InfoData = [
 			"* 4, 5 and 6 Keys look straight back"
 		]
 	];
-
 
 //= 9. INPUTS VARIABLES ========//==============================================
 
