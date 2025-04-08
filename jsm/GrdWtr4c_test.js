@@ -156,10 +156,10 @@ _loadGeoMat(grd_,imagLoader,txtrLoader,context) {
 	let texture = 0;
 	//- Load Diffuse Texture ----//----------------------------------------------
 	imagLoader.load(grd_.DfS,function(image) { // Load, Split and Save Textures
-		context.drawImage(image,0,0,ImgSiz,ImgSiz);
+		context.drawImage(image,0,0,512,512);
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
 		let idx = 0;
-		let siz = ImgSiz/4;
+		let siz = 512/4;
 		for (let z = 0; z < 4; z++) {
 			for (let x = 0; x < 4; x++) {
 				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
@@ -175,8 +175,8 @@ _loadGeoMat(grd_,imagLoader,txtrLoader,context) {
 			}
 		}
 		// Grid2 - Static Color Map Texture
-		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
-		texture = new DataTexture(ImgDat.data,ImgSiz,ImgSiz);
+		ImgDat = context.getImageData(0,0,512,512);
+		texture = new DataTexture(ImgDat.data,512,512);
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
 		texture.minFilter = LinearMipMapLinearFilter;
@@ -188,10 +188,10 @@ _loadGeoMat(grd_,imagLoader,txtrLoader,context) {
 	});
 	// Load Roughness Texture --//----------------------------------------------
 	imagLoader.load(grd_.RfS,function(image) { // Load, Split and Save Textures
-		context.drawImage(image,0,0,ImgSiz,ImgSiz);
+		context.drawImage(image,0,0,512,512);
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
 		let idx = 0;
-		let siz = ImgSiz/4;
+		let siz = 512/4;
 		for (let z = 0; z < 4; z++) {
 			for (let x = 0; x < 4; x++) {
 				ImgDat = context.getImageData(siz*x, siz*z,siz,siz);
@@ -207,8 +207,8 @@ _loadGeoMat(grd_,imagLoader,txtrLoader,context) {
 			}
 		}
 		// Grid2 - Static Color Map Texture
-		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
-		texture = new DataTexture(ImgDat.data,ImgSiz,ImgSiz);			
+		ImgDat = context.getImageData(0,0,512,512);
+		texture = new DataTexture(ImgDat.data,512,512);			
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
 		texture.minFilter = LinearMipMapLinearFilter;
