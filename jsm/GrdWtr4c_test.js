@@ -68,7 +68,10 @@
 *
 *******************************************************************************/
 
-import {Mesh,PlaneGeometry,MeshStandardNodeMaterial} from 'three';
+import {
+			Mesh,PlaneGeometry,MeshStandardNodeMaterial,
+			DataTexture,RGBAFormat,LinearFilter,LinearMipMapLinearFilter,RepeatWrapping,
+	} from 'three';
 import {color,texture,normalMap,positionLocal} from 'three/tsl';
 
 /*******************************************************************************
@@ -160,10 +163,10 @@ _loadGeoMat(grd_,imagLoader,txtrLoader) {
 		for (let z = 0; z < 4; z++) {
 			for (let x = 0; x < 4; x++) {
 				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
-				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
-				texture.format = THREE.RGBAFormat;
-				texture.magFilter = THREE.LinearFilter;
-				texture.minFilter = THREE.LinearMipMapLinearFilter;
+				texture = new DataTexture(ImgDat.data,siz,siz);
+				texture.format = RGBAFormat;
+				texture.magFilter = LinearFilter;
+				texture.minFilter = LinearMipMapLinearFilter;
 				texture.generateMipmaps = true;
 				texture.needsUpdate = true;
 				grd_.DfM[0][idx] = texture;
@@ -173,12 +176,12 @@ _loadGeoMat(grd_,imagLoader,txtrLoader) {
 		}
 		// Grid2 - Static Color Map Texture
 		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
-		texture = new THREE.DataTexture(ImgDat.data,ImgSiz,ImgSiz);
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture = new DataTexture(ImgDat.data,ImgSiz,ImgSiz);
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.offset.set(0,0);
 		texture.needsUpdate = true;
 		grd_.DfM[2] = texture;
@@ -192,10 +195,10 @@ _loadGeoMat(grd_,imagLoader,txtrLoader) {
 		for (let z = 0; z < 4; z++) {
 			for (let x = 0; x < 4; x++) {
 				ImgDat = context.getImageData(siz*x, siz*z,siz,siz);
-				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
-				texture.format = THREE.RGBAFormat;
-				texture.magFilter = THREE.LinearFilter;
-				texture.minFilter = THREE.LinearMipMapLinearFilter;
+				texture = new DataTexture(ImgDat.data,siz,siz);
+				texture.format = RGBAFormat;
+				texture.magFilter = LinearFilter;
+				texture.minFilter = LinearMipMapLinearFilter;
 				texture.generateMipmaps = true;
 				texture.needsUpdate = true;
 				grd_.RfM[0][idx] = texture;
@@ -205,23 +208,23 @@ _loadGeoMat(grd_,imagLoader,txtrLoader) {
 		}
 		// Grid2 - Static Color Map Texture
 		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
-		texture = new THREE.DataTexture(ImgDat.data,ImgSiz,ImgSiz);			
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture = new DataTexture(ImgDat.data,ImgSiz,ImgSiz);			
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.offset.set(0,0);
 		texture.needsUpdate = true;
 		grd_.RfM[2] = texture;
 	});
 	// Static Normal Map (Grid 2 Only) -----------------------------------------
 	txtrLoader.load(grd_.N2S,function(texture) {
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.offset.set(0,0);
 		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
 		texture.needsUpdate = true;
