@@ -143,7 +143,7 @@ constructor(grd_,scene,imagLoader,txtrLoader,context) {
 	this.grd_.Nrm.repeat.set(this.grd_.Stp,this.grd_.Stp);
 	this.grd_.Dsp.repeat.set(this.grd_.Stp,this.grd_.Stp);
 	// Load Grid Materials
-	this._loadGeoMat(this.grd_,imagLoader,txtrLoader);
+	this._loadGeoMat(this.grd_,imagLoader,txtrLoader,context);
 	// Init Grid Materials
 	this._initGeoMat(this.grd_,this.scene);
 	this._init1GrMap(this.grd_.Grx[0], grd_,this.scene);
@@ -151,7 +151,7 @@ constructor(grd_,scene,imagLoader,txtrLoader,context) {
 	this._init1GrMap(this.grd_.Grx[2], grd_,this.scene);
 }
 
-_loadGeoMat(grd_,imagLoader,txtrLoader) {
+_loadGeoMat(grd_,imagLoader,txtrLoader,context) {
 	let ImgDat = 0;
 	let texture = 0;
 	//- Load Diffuse Texture ----//----------------------------------------------
