@@ -356,6 +356,9 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	grd_.Mtl = [0.5,0.5,0.5];	// Metalness (1 for max reflection)
 	grd_.Ruf = [0.5,0.5,0.5];	// Roughness (0 for max reflection)
 	grd_.EMI = [0.5,0.48,0.48];	// EnvMap Intensity
+//	Tests
+//	grd_.Col = new THREE.Color(0x000040);
+//	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg";
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and goemetry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
@@ -906,87 +909,82 @@ function initSkyBox() {
 }
 
 //= 3. GEOMAT ===================//==============================================
-// Can't be exported since uses html context to split images
-// Or can you pass address of loader to module?
-
+// Not exported since GrdWtr is a module
 function loadGeoMat(grd_) {
-	// Load Diffuse Texture
-	if (DifSrc) {
+	let ImgDat = 0;
+	let texture = 0;
+	//- Load Diffuse Texture ----//----------------------------------------------
+	imagLoader.load(grd_.DfS,function(image) { // Load, Split and Save Textures
+		context.drawImage(image,0,0,ImgSiz,ImgSiz);
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		imagLoader.load(DifSrc,function(image) { // Load, Split and Save Textures
-			context.drawImage(image,0,0,ImgSiz,ImgSiz);
-			let idx = 0;
-			let siz = ImgSiz/4;
-			for (let z = 0; z < 4; z++) {
-				for (let x = 0; x < 4; x++) {
-					let ImgDat = context.getImageData(siz*x, siz*z, siz, siz);
-					let texture = new THREE.DataTexture(ImgDat.data, siz, siz);
-					texture.format = THREE.RGBAFormat;
-					texture.magFilter = THREE.LinearFilter;
-					texture.minFilter = THREE.LinearMipMapLinearFilter;
-					texture.generateMipmaps = true;
-					texture.needsUpdate = true;
-					grd_.DfM[0][idx] = texture;
-					grd_.DfM[1][idx] = texture;
-					idx++;
-				}
+		let idx = 0;
+		let siz = ImgSiz/4;
+		for (let z = 0; z < 4; z++) {
+			for (let x = 0; x < 4; x++) {
+				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
+				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
+				texture.format = THREE.RGBAFormat;
+				texture.magFilter = THREE.LinearFilter;
+				texture.minFilter = THREE.LinearMipMapLinearFilter;
+				texture.generateMipmaps = true;
+				texture.needsUpdate = true;
+				grd_.DfM[0][idx] = texture;
+				grd_.DfM[1][idx] = texture;
+				idx++;
 			}
-		});
+		}
 		// Grid2 - Static Color Map Texture
-		txtrLoader.load(DifSrc,function(texture) {	// Load and Save entire Texture
-			texture.format = THREE.RGBAFormat;
-			texture.magFilter = THREE.LinearFilter;
-			texture.minFilter = THREE.LinearMipMapLinearFilter;
-			texture.generateMipmaps = true;
-			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-			texture.offset.set(0,0);
-			texture.needsUpdate = true;
-			grd_.DfM[2] = texture;
-		});
-	}
-	// Load Roughness Texture
-	if (RufSrc) {
-		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		imagLoader.load(RufSrc,function(image) { // Load, Split and Save Textures
-			context.drawImage(image,0,0,ImgSiz,ImgSiz);
-			let idx = 0;
-			let siz = ImgSiz/4;
-			for (let z = 0; z < 4; z++) {
-				for (let x = 0; x < 4; x++) {
-					let ImgDat = context.getImageData(siz*x, siz*z, siz, siz);
-					let texture = new THREE.DataTexture(ImgDat.data, siz, siz);
-					texture.format = THREE.RGBAFormat;
-					texture.magFilter = THREE.LinearFilter;
-					texture.minFilter = THREE.LinearMipMapLinearFilter;
-					texture.generateMipmaps = true;
-					texture.needsUpdate = true;
-					grd_.RfM[0][idx] = texture;
-					grd_.RfM[1][idx] = texture;
-					idx++;
-				}
-			}
-		});
-		// Grid2 - Static Color Map Texture
-		txtrLoader.load(RufSrc,function(texture) {	// Load and Save entire Texture
-			texture.format = THREE.RGBAFormat;
-			texture.magFilter = THREE.LinearFilter;
-			texture.minFilter = THREE.LinearMipMapLinearFilter;
-			texture.generateMipmaps = true;
-			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-			texture.offset.set(0,0);
-			texture.needsUpdate = true;
-			grd_.RfM[2] = texture;
-		});
-	}
-	// Grid2 - Static Normal Map
-	txtrLoader.load(NrmSrc,function(texture) {
+		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
+		texture = new THREE.DataTexture(ImgDat.data,ImgSiz,ImgSiz);
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 		texture.offset.set(0,0);
-//		texture.repeat.set(grd_.Stp*grd_.Stp/2,grd_.Stp*grd_.Stp/2);
+		texture.needsUpdate = true;
+		grd_.DfM[2] = texture;
+	});
+	// Load Roughness Texture --//----------------------------------------------
+	imagLoader.load(grd_.RfS,function(image) { // Load, Split and Save Textures
+		context.drawImage(image,0,0,ImgSiz,ImgSiz);
+		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
+		let idx = 0;
+		let siz = ImgSiz/4;
+		for (let z = 0; z < 4; z++) {
+			for (let x = 0; x < 4; x++) {
+				ImgDat = context.getImageData(siz*x, siz*z,siz,siz);
+				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
+				texture.format = THREE.RGBAFormat;
+				texture.magFilter = THREE.LinearFilter;
+				texture.minFilter = THREE.LinearMipMapLinearFilter;
+				texture.generateMipmaps = true;
+				texture.needsUpdate = true;
+				grd_.RfM[0][idx] = texture;
+				grd_.RfM[1][idx] = texture;
+				idx++;
+			}
+		}
+		// Grid2 - Static Color Map Texture
+		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
+		texture = new THREE.DataTexture(ImgDat.data,ImgSiz,ImgSiz);			
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.offset.set(0,0);
+		texture.needsUpdate = true;
+		grd_.RfM[2] = texture;
+	});
+	// Static Normal Map (Grid 2 Only) -----------------------------------------
+	txtrLoader.load(grd_.N2S,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.offset.set(0,0);
 		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
 		texture.needsUpdate = true;
 		grd_.NM2 = texture;
