@@ -125,7 +125,6 @@ TO DO:
 -	Program:
 	* Fix NumLock views
 	* Make R45 = starting default view
-	* Allow ailerons to move when locked down
 	* Move Variables to Data File (not variables with three.js functions) - WIP
 	* Red Out not very red.
 	* Don't hear EA guns or engines (used to hear engines)9
@@ -159,22 +158,24 @@ OK
 	4. OBJECT VARIABLES
 		SHARED TEXTURES				txt_
 		STATIC OBJECTS
-			Islands					isl_
-			Fixed Objects			fxd_
+			Islands									isl_
+			Fixed Objects							fxd_
 		MOVING VEHICLES
 			Moving Airplanes		xac_			adj
 			Moving Ships			xsh_			adj
 		ANIMATED FLAG				flg_			adj
-		AIRPLANE EXPLOSION			xae_
+		AIRPLANE END SEQUENCE						xat_
+		AIRPLANE EXPLOSION							xae_
 	    SMOKE MODULE
 	    	Volcano Smoke			vlk_
-	    	Ground Fire				grf_
-	    	Airplane Smoke Trail	xas_
-	    	Airplane Fire Trail		xaf_
-	    	Ship Wakes				wak_
-		MYPEEPS						myp_
-		MINIMUM ALTITUDE			alt_
-	5. MY AIRPLANE VARIABLES		air_
+			Vertical SMOKE							grs_
+	    	Ground Fire								grf_
+	    	Airplane Smoke Trail					xas_
+	    	Airplane Fire Trail						xaf_
+	    	Ship Wake								wak_
+		MYPEEPS						myp_			adj
+		MINIMUM ALTITUDE			alt_			adj
+	5. MY AIRPLANE VARIABLES		air_			adj
 		FLIGHT MODULE
 		ANIMFM2 MODULE				anm_,mxr_,vxr_
 	x. GUNASG MODULE
@@ -183,12 +184,12 @@ OK
 			Moving Ships			xsg_
 			Fixed Guns				aaf_
 	6. SOUND VARIABLES
-		My Sounds					mys_
-		Radio Variables				rad_
-	7. CAMERA VARIABLES				cam_
-	8. OUTPUT VARIABLES
+		My Sounds									mys_
+		Radio Variables								rad_
+	7. CAMERA VARIABLES								cam_
+	8. OUTPUT VARIABLES				X
 	9. INPUT VARIABLES
-	   Pointer Lock Control
+	   Pointer Lock Control			X
 
 	PROGRAM
 	1. MAIN							Main Program
@@ -474,7 +475,7 @@ let grf_ = {
 		ObjRef: [isl_.ObjGrp[0]], // Parent Object
 	};
 
-//- Ship Wakes -----------------//------------------------------------------
+//- Ship Wake ------------------//------------------------------------------
 let wak_ = {
 		ObjNum: xsh_.ObjNum,	// Number of Wakes
 		ObjSrc: [0,0],			// Not Used
@@ -558,11 +559,11 @@ for (let n = 0; n < aaf_.ObjNum; n ++) {
 	xag_.SndMsh[n] = new makMsh();
 }
 //	Specific Adjustments
-xag_.XACRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]];
-xag_.XACPos = [xsh_.MapPos[1],xsh_.MapPos[1]];
-xag_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
-xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
-			   XPPath + "sounds/" + "fm2_gun.mp3"];
+	xag_.XACRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]];
+	xag_.XACPos = [xsh_.MapPos[1],xsh_.MapPos[1]];
+	xag_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
+	xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
+				   XPPath + "sounds/" + "fm2_gun.mp3"];
 //- Moving Ships ---------------//----------------------------------------------
 //	General Format Adjustments
 for (let n = 0; n < aaf_.ObjNum; n ++) {
@@ -571,11 +572,11 @@ for (let n = 0; n < aaf_.ObjNum; n ++) {
 	xsg_.SndMsh[n] = new makMsh();
 }
 //	Specific Adjustments
-xsg_.XSHRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
-xsg_.XSHPos = [xsh_.MapPos[1],xsh_.MapPos[1]],
-xsg_.GunRot = [new THREE.Euler(0,0,0),new THREE.Euler(60,315,0)]; // Gun Rotation (degrees)
-xsg_.GunPos = [new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0)]; // Map Position
-xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red	
+	xsg_.XSHRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
+	xsg_.XSHPos = [xsh_.MapPos[1],xsh_.MapPos[1]],
+	xsg_.GunRot = [new THREE.Euler(0,0,0),new THREE.Euler(60,315,0)]; // Gun Rotation (degrees)
+	xsg_.GunPos = [new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0)]; // Map Position
+	xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red	
 //- Fixed Guns -----------------//----------------------------------------------
 //	General Format Adjustments
 for (let n = 0; n < aaf_.ObjNum; n ++) {
@@ -586,9 +587,9 @@ for (let n = 0; n < aaf_.ObjNum; n ++) {
 	aaf_.SndMsh[n] = new makMsh();
 }
 //	Specific Adjustments
-aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
-aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
-aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
+	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
+	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
+	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
 
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
@@ -911,72 +912,8 @@ function initSkyBox() {
 //= 3. GEOMAT ===================//==============================================
 // Not exported since GrdWtr is a module
 function loadGeoMat(grd_) {
-	let ImgDat = 0;
-	let texture = 0;
-	//- Load Diffuse Texture ----//----------------------------------------------
-	imagLoader.load(grd_.DfS,function(image) { // Load, Split and Save Textures
-		context.drawImage(image,0,0,ImgSiz,ImgSiz);
-		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		let idx = 0;
-		let siz = ImgSiz/4;
-		for (let z = 0; z < 4; z++) {
-			for (let x = 0; x < 4; x++) {
-				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
-				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
-				texture.format = THREE.RGBAFormat;
-				texture.magFilter = THREE.LinearFilter;
-				texture.minFilter = THREE.LinearMipMapLinearFilter;
-				texture.generateMipmaps = true;
-				texture.needsUpdate = true;
-				grd_.DfM[0][idx] = texture;
-				grd_.DfM[1][idx] = texture;
-				idx++;
-			}
-		}
-		// Grid2 - Static Color Map Texture
-		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
-		texture = new THREE.DataTexture(ImgDat.data,ImgSiz,ImgSiz);
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-		texture.offset.set(0,0);
-		texture.needsUpdate = true;
-		grd_.DfM[2] = texture;
-	});
-	// Load Roughness Texture --//----------------------------------------------
-	imagLoader.load(grd_.RfS,function(image) { // Load, Split and Save Textures
-		context.drawImage(image,0,0,ImgSiz,ImgSiz);
-		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		let idx = 0;
-		let siz = ImgSiz/4;
-		for (let z = 0; z < 4; z++) {
-			for (let x = 0; x < 4; x++) {
-				ImgDat = context.getImageData(siz*x, siz*z,siz,siz);
-				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
-				texture.format = THREE.RGBAFormat;
-				texture.magFilter = THREE.LinearFilter;
-				texture.minFilter = THREE.LinearMipMapLinearFilter;
-				texture.generateMipmaps = true;
-				texture.needsUpdate = true;
-				grd_.RfM[0][idx] = texture;
-				grd_.RfM[1][idx] = texture;
-				idx++;
-			}
-		}
-		// Grid2 - Static Color Map Texture
-		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
-		texture = new THREE.DataTexture(ImgDat.data,ImgSiz,ImgSiz);			
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-		texture.offset.set(0,0);
-		texture.needsUpdate = true;
-		grd_.RfM[2] = texture;
-	});
+	loadGe1Mat(grd_.DfS,grd_.DfM); // Diffuse Textures
+	loadGe1Mat(grd_.RfS,grd_.RfM); // Roughness Textures
 	// Static Normal Map (Grid 2 Only) -----------------------------------------
 	txtrLoader.load(grd_.N2S,function(texture) {
 		texture.format = THREE.RGBAFormat;
@@ -990,6 +927,43 @@ function loadGeoMat(grd_) {
 		grd_.NM2 = texture;
 	});
 }
+
+//- Load One GeoMap
+function loadGe1Mat(fnam,dest) {
+	let ImgDat = 0;
+	let texture = 0;
+	imagLoader.load(fnam,function(image) { // Load, Split and Save Textures
+		context.drawImage(image,0,0,ImgSiz,ImgSiz);
+		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
+		let idx = 0;
+		let siz = ImgSiz/4;
+		for (let z = 0; z < 4; z++) {
+			for (let x = 0; x < 4; x++) {
+				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
+				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
+				texture.format = THREE.RGBAFormat;
+				texture.magFilter = THREE.LinearFilter;
+				texture.minFilter = THREE.LinearMipMapLinearFilter;
+				texture.generateMipmaps = true;
+				texture.needsUpdate = true;
+				dest[0][idx] = texture;
+				dest[1][idx] = texture;
+				idx++;
+			}
+		}
+		// Grid2 - Static Color Map Texture
+		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
+		texture = new THREE.DataTexture(ImgDat.data,ImgSiz,ImgSiz);
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.offset.set(0,0);
+		texture.needsUpdate = true;
+		dest[2] = texture;
+	});
+} 
 
 //= 4. OBJECTS =================//==============================================
 
