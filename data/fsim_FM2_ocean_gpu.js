@@ -135,7 +135,7 @@ const WtrCol = 0x004080;		// Water (Nodes)
 const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
 const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg"; // Size = 1024x1024
-const GrdSiz = 1600;			// 1600 = 1 mile
+const GrdSiz = 2400;			// 1600 = 1 mile
 const GrdRes = 512;
 const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 const WavMax = 5;				// Maximum wave height (set height of outer waves)
