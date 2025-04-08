@@ -82,7 +82,7 @@ import {color,texture,normalMap,positionLocal} from 'three/tsl';
 
 class GrdMap {
 
-constructor(grd_,scene,imagLoader,txtrLoader) {
+constructor(grd_,scene,imagLoader,txtrLoader,context) {
 	this.grd_ = grd_;
 	this.scene = scene;
 
