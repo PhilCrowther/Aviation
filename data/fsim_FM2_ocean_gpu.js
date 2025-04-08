@@ -833,3 +833,10 @@ const K_Paws =  80;				// Pause (p)
 const K_Auto =  65;				// Autopilot (a)
 const K_Info =  73;				// Info (i)
 const K_RSet =  82;				// Reset (r)
+
+//- POINTER LOCK CONTROL -------//----------------------------------------------
+//	Variables
+let InpMos = 0;					// Mouse Inputs
+let _changeEvent = {type: "change"};
+let _lockEvent = {type: "lock"};
+let _unlockEvent = {type: "unlock"};
