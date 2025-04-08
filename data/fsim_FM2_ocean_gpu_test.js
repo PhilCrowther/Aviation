@@ -125,20 +125,16 @@ let LF0Txt, LF1Txt = 0;
 let envMap = 0;
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
-
-//- GRDWTR TEXTURES ------------//----------------------------------------------
-//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
-const WtrCol = 0x004080;		// Water (Nodes)
-//- Textures
-const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
-const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
-const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg"; // Size = 1024x1024
-
-//- GRDWTR MODULE --------------//----------------------------------------------
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
+//- GrtWtr ---------------------//----------------------------------------------
+//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
+const WtrCol = 0x004080;		// Water (Nodes)
+const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
+const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg"; // Size = 1024x1024
 const GrdSiz = 1600;			// 1600 = 1 mile
 const GrdRes = 512;
 const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
@@ -159,10 +155,13 @@ let grd_ = {
 		// Normal Map
 		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
 		NMS: 0,					// Grid 0-1 Normal Map Scale (from Ocean)
+		N2S: NrmSrc,
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
-		Col: 0,					// Color		
+		Col: 0,					// Color
+		DfS: DifSrc,
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
+		RfS: RufSrc,
 		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
 		EMI: [0.5,0.42,0.42],	// EnvMap Intensity
 		// Maps
