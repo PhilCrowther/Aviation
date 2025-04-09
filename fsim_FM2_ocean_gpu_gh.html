@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Apr 2025
+Version dated 9 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -123,8 +123,6 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
-	* Fix NumLock views
-	* Make R45 = starting default view
 	* Move Variables to Data File (not variables with three.js functions) - WIP
 	* Red Out not very red.
 	* Don't hear EA guns or engines (used to hear engines)9
@@ -223,12 +221,10 @@ OK
 //- AIRPLANE: Start ............................................................
 let BegLoc = 1;					// Starting Location (0 = Island; 1 = CVE; 2 = Air)
 let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
-let HedRot = new THREE.Vector2(); // Used to rotation head in beginning internal view
+let HedRot = 0					// Used to rotation head in beginning internal view
 if (BegLoc == 1) {
 	CamSel = 1;
-//	R45flg = 1;					// To Do - Use this, even if NumLock nor on
-	HedRot.x = -10;
-	HedRot.y = 45;
+	HedRot = 45;				// Use this in case no access to View Keys
 }
 let BegFlg = 1;					// 1 = At Start
 let BegTmp = 303.15;			// K = 86F
@@ -1648,7 +1644,7 @@ function moveShpAlt() {
 				air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
 				xsh_.ShpLok[0].remove(air_.AirObj); // Unlock
 				scene.add(air_.AirObj); // Was detached from scene
-				if (!cam_.CamSel) sunLight.shadow.camera.far = SunDst+ShdBox+ShdDst;		
+				if (!cam_.CamSel) sunLight.shadow.camera.far = SunDst+ShdBox+ShdDst;
 			}
 			sunLight.shadow.camera.updateProjectionMatrix();
 			// Point Same Direction as Carrier
@@ -2076,19 +2072,27 @@ function initCamera(camera,cam_) {
 //- Move Camera View -----------//----------------------------------------------
 function moveCamera(camera,cam_) {
 	if (BegFlg) {
+		// If Started
 		if (air_.PwrPct) {		// Throttle is trigger - for now
-			HedRot.x = 0.95 * HedRot.x;
-			HedRot.y = 0.95 * HedRot.y;
-			if (Math.abs(HedRot.x < 0.1)) HedRot.x = 0;
-			if (Math.abs(HedRot.y < 0.1)) HedRot.y = 0;
+			HedRot = 0.95*HedRot;
+			if (Math.abs(HedRot < 0.1)) HedRot = 0;
+			if (!HedRot) BegFlg = 0;
 		}
-		if (!HedRot.x && !HedRot.y) BegFlg = 0;
+		// If Not Started
+		else {
+			// If External View, Ignore HedRot = 0
+			if (!cam_.CamFlg) HedRot = 0;
+			// If Internal View
+			else {
+				HedRot = 45;
+				if (U45flg || D45flg || L45flg || R45flg || L90flg || R90flg) HedRot = 0;
+			}
+		}
 	}
-	// Special Camera Views (deleted because keyboards not uniform)
 	// Move Camera In/Out
 	camera.position.z = -cam_.CamLLD.z;
 	// PointerLockControls
-	if (cam_.OrbFlg) {
+	if (cam_.OrbFlg) {			// If Orbiting
 		cam_.CamLLD.x = cam_.CamLLD.x - InpMos.y * cam_.CamMMR.z; // Camera Position (Lat)
 		cam_.CamLLD.x = MaxVal(cam_.CamLLD.x,cam_.CamMMR.x);
 		cam_.CamLLD.y = Mod360(cam_.CamLLD.y + InpMos.x * cam_.CamMMR.z); // Camera Position (Lon)
@@ -2104,61 +2108,35 @@ function moveCamera(camera,cam_) {
 		InpMos.x = 0;
 		InpMos.y = 0;
 	}
-	else {						// Re-Center
-		// If No Keys Pressed, Set Default View
-		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
-			if (cam_.CamFlg) cam_.CamLLD.x = 0; // Internal view
-			else cam_.CamLLD.x = -12.5; // External view
-			cam_.CamLLD.y = 0;
+	// Key Views
+	else {						// If Not Orbiting
+		if (cam_.CamFlg) {		// Internal View
+			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg)	cam_.CamLLD.x = cam_.CamLLD.y = 0;
+			if (U45flg) cam_.CamLLD.x = 315;
+			if (D45flg) cam_.CamLLD.x = 45;
+			if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
+			if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
+			if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
+			if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90
 		}
-		// Down 45
-		else if (D45flg) {
-			cam_.CamLLD.x = 0;
-			// Look Back
-			if ((L90flg) && (R90flg)) cam_.CamLLD.y = 180;
-			// Look Back Left 270 - 45
-			else if (L90flg) cam_.CamLLD.y = 225;
-			// Look Back Right 90 + 45
-			else if (R90flg) cam_.CamLLD.y = 135;
-			// Look Down
-			else {
+		else {					// External View
+			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg)	{
+				cam_.CamLLD.x = -15;
 				cam_.CamLLD.y = 0;
-				cam_.CamLLD.x = 45;
 			}
-		}
-		// Up 45
-		else if (U45flg) {
-			cam_.CamLLD.x = 315;
-			if (!cam_.CamFlg && (air_.GrdFlg)) cam_.CamLLD.x = 0;
-			// Look Up Left 45
-			if (L45flg) cam_.CamLLD.y = 315;
-			// Look Up Right 45
-			else if (R45flg) cam_.CamLLD.y = 45;
-			// Look Up Left 90
-			else if (L90flg) cam_.CamLLD.y = 270;
-			// Look Up Right 90
-			else if (R90flg) cam_.CamLLD.y = 90;
-			// Look Up
-			else cam_.CamLLD.y = 0;
-		}
-		// Level
-		else {
-			cam_.CamLLD.x = 0;
-			// Look Left 45
-			if (L45flg) cam_.CamLLD.y = 315;
-			// Look Right 45
-			else if (R45flg) cam_.CamLLD.y = 45;
-			// Look Left 90
-			else if (L90flg) cam_.CamLLD.y = 270;
-			// Look Right 90
-			else if (R90flg) cam_.CamLLD.y = 90;
+			if (U45flg) cam_.CamLLD.x = 315;
+			if (D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
+			if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
+			if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
+			if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
+			if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90		
 		}
 	}
 	// Adjust Camera Rotators
 	// In internal view, the camera is facing out - view matches rotation
 	if (cam_.CamFlg) {			
-		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x+HedRot.x)*DegRad; // Include BegAdj
-		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y-HedRot.y)*DegRad; // Include BegAdj
+		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad; // Include BegAdj
+		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y-HedRot)*DegRad; // Include BegAdj
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
