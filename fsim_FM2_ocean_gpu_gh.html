@@ -224,9 +224,8 @@ let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
 let HedRot = 0					// Used to rotation head in beginning internal view
 if (BegLoc == 1) {
 	CamSel = 1;
-	HedRot = 45;				// Use this in case no access to View Keys
+	HedRot = 45;				// Use this instead of R45, in case no access to View Keys
 }
-let BegFlg = 1;					// 1 = At Start
 let BegTmp = 303.15;			// K = 86F
 //- AIRPLANE: Flight ...........................................................
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
@@ -657,6 +656,9 @@ let cam_ = {
 		CamLnk: CamLnk[CamSel],
 		MshObj: new makMsh(),
 		MshDeg: new makMsh(),
+		// Beginning Head Rotation - Cockpit View Only
+		BegFlg: HedRot,			// Need both
+		HedRot: HedRot,
 	}
 //- Adjustments
 	camera.rotation.order = "YXZ";
@@ -2071,72 +2073,83 @@ function initCamera(camera,cam_) {
 
 //- Move Camera View -----------//----------------------------------------------
 function moveCamera(camera,cam_) {
-	if (BegFlg) {
-		// If Started
-		if (air_.PwrPct) {		// Throttle is trigger - for now
-			HedRot = 0.95*HedRot;
-			if (Math.abs(HedRot < 0.1)) HedRot = 0;
-			if (!HedRot) BegFlg = 0;
+	if (cam_.BegFlg) {
+		// If Started - Look Forward
+		if (air_.PwrPct) {		// Throttle is trigger
+			cam_.BegFlg = 0.95*cam_.BegFlg;
+			if (Math.abs(cam_.BegFlg < 0.1)) cam_.BegFlg = 0;
+			cam_.HedRot = cam_.BegFlg;
 		}
-		// If Not Started
-		else {
-			// If External View, Ignore HedRot = 0
-			if (!cam_.CamFlg) HedRot = 0;
-			// If Internal View
-			else {
-				HedRot = 45;
-				if (U45flg || D45flg || L45flg || R45flg || L90flg || R90flg) HedRot = 0;
-			}
+		// If Not Started - Cockpit View Only
+		else if (cam_.CamFlg) {
+			cam_.HedRot = cam_.BegFlg;
+			if (U45flg || D45flg || L45flg || R45flg || L90flg || R90flg || LBkflg || RBkflg) cam_.HedRot = 0;
 		}
 	}
-	// Move Camera In/Out
+	// Camera In/Out
 	camera.position.z = -cam_.CamLLD.z;
 	// PointerLockControls
 	if (cam_.OrbFlg) {			// If Orbiting
 		cam_.CamLLD.x = cam_.CamLLD.x - InpMos.y * cam_.CamMMR.z; // Camera Position (Lat)
 		cam_.CamLLD.x = MaxVal(cam_.CamLLD.x,cam_.CamMMR.x);
 		cam_.CamLLD.y = Mod360(cam_.CamLLD.y + InpMos.x * cam_.CamMMR.z); // Camera Position (Lon)
-		// Internal View
+		// Cockpit View
 		if (cam_.CamFlg) {		// Range: 250 to 360/0 to 110
 			if (cam_.CamLLD.y > 180 && cam_.CamLLD.y < (360-cam_.CamMMR.y)) cam_.CamLLD.y = (360-cam_.CamMMR.y);
 			if (cam_.CamLLD.y < 180 && cam_.CamLLD.y > cam_.CamMMR.y) cam_.CamLLD.y = cam_.CamMMR.y;
 		}
-		// External View
+		// Outside View
 		else {
 			if (air_.GrdFlg && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
 		}
 		InpMos.x = 0;
 		InpMos.y = 0;
 	}
-	// Key Views
+	// View Keys (NumLock)
 	else {						// If Not Orbiting
-		if (cam_.CamFlg) {		// Internal View
-			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg)	cam_.CamLLD.x = cam_.CamLLD.y = 0;
+		// Interior View
+		if (cam_.CamFlg) {
+			// Use Default View if No View Keys Set
+			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg && !LBkflg && !RBkflg) {
+				cam_.CamLLD.x = 0;
+				cam_.CamLLD.y = 0;
+			}
+			// View Keys
 			if (U45flg) cam_.CamLLD.x = 315;
 			if (D45flg) cam_.CamLLD.x = 45;
 			if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
 			if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
 			if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
 			if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90
+			if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
+			if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
 		}
-		else {					// External View
-			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg)	{
+		// External View
+		else {
+			// Use Default View if No View Keys Set
+			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg && !LBkflg && !RBkflg && !CBkflg) {
 				cam_.CamLLD.x = -15;
 				cam_.CamLLD.y = 0;
 			}
+			// View Keys
 			if (U45flg) cam_.CamLLD.x = 315;
 			if (D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
 			if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
 			if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
 			if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-			if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90		
+			if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90
+			if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
+			if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
+			if (CBkflg) cam_.CamLLD.y = 180;	// Look Back			
 		}
 	}
 	// Adjust Camera Rotators
 	// In internal view, the camera is facing out - view matches rotation
 	if (cam_.CamFlg) {			
-		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad; // Include BegAdj
-		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y-HedRot)*DegRad; // Include BegAdj
+		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad;
+		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y)*DegRad;
+		// If Beg Adj
+		if (cam_.HedRot) cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y-cam_.HedRot)*DegRad;
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
@@ -2303,6 +2316,9 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_VR45) R45flg = 1;		// View - 45 deg right
 	if (event.keyCode == K_VL90) L90flg = 1;		// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 1;		// View - 90 deg right
+	if (event.keyCode == K_VLBk) LBkflg = 1;		// View - 135 deg left
+	if (event.keyCode == K_VRBk) RBkflg = 1;		// View - 135 deg right
+	if (event.keyCode == K_VCBk) CBkflg = 1;		// View - 180 deg back
 	// Guns
 	if (event.keyCode == K_Guns) { // Guns
 		if (!PawsOn) {
@@ -2352,6 +2368,9 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_VR45) R45flg = 0;		// View - 45 deg right
 	if (event.keyCode == K_VL90) L90flg = 0;		// View - 90 deg left
 	if (event.keyCode == K_VR90) R90flg = 0;		// View - 90 deg right
+	if (event.keyCode == K_VLBk) LBkflg = 0;		// View - 135 deg left
+	if (event.keyCode == K_VRBk) RBkflg = 0;		// View - 135 deg right
+	if (event.keyCode == K_VCBk) CBkflg = 0;		// View - 180 deg back
 	// Guns
 	if (event.keyCode == K_Guns) {					// Guns
 		for (let n = 0; n < myg_.ObjNum; n ++) {
