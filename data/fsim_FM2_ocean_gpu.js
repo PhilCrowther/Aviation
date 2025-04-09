@@ -841,14 +841,18 @@ const K_Flap =  70;				// Flaps (f)
 const K_Gear =  71;				// Landing Gear (g)
 const K_Hook =  72;				// Tailhook (h)
 const K_Canp =  67;				// Canopy (c)
-//	Views
+//	View
 const K_Look =  16;				// Orbit (shift)
-const K_VR45 =  105;			// [9] Right 45 degrees
-const K_VU45 =  104;			// [8] View Up 45 degrees
-const K_VL45 =  103;			// [7] Left 45 degrees
-const K_VR90 =  102;			// [6] Right 90 degrees
-const K_VD45 =  101;			// [5] View Down or Back 45 degrees
-const K_VL90 =  100;			// [4] Left 90 degrees
+//	View Keys (Num Lock)
+const K_VR45 =  105;			// [9] Right 45 deg
+const K_VU45 =  104;			// [8] View Up 45 deg
+const K_VL45 =  103;			// [7] Left 45 deg (315 deg)
+const K_VR90 =  102;			// [6] Right 90 deg
+const K_VD45 =  101;			// [5] View Down or Back 45 deg
+const K_VL90 =  100;			// [4] Left 90 deg (270 deg)
+const K_V135 =	 99;			// [3] Right Back (135 deg)
+const K_V180 =	 98;			// [2] Center Back (180 deg)
+const K_V225 =	 97;			// [1] Left Back (225 deg)
 //	Toggle
 const K_View =  86;				// Toggle Visibility (v)
 const K_Soun =  83;				// Toggle sound (s)
