@@ -719,12 +719,15 @@ let aaf_ = {
 //= 7. CAMERA VARIABLES ========//==============================================
 
 //-	Camera View Keys -----------//----------------------------------------------
-let U45flg = 0;					// Up 45 degrees
-let D45flg = 0;					// Down 45 degrees
-let	L45flg = 0;					// Left 45 degrees
-let R45flg = 0;					// Right 45 degrees
-let L90flg = 0;					// Left 90 degrees
-let R90flg = 0;					// Right 90 degrees
+let U45flg = 0;					// Up 45 deg
+let D45flg = 0;					// Down 45 deg
+let	L45flg = 0;					// Left 45 deg (315 deg)
+let R45flg = 0;					// Right 45 deg
+let L90flg = 0;					// Left 90 deg (270 deg)
+let R90flg = 0;					// Right 90 deg
+let LBkflg = 0;					// Left Back 45 deg (225 deg)
+let RBkflg = 0;					// Right Back 45 deg (135 deg)
+let CBkflg = 0;					// Center Back (180 degrees)
 
 //= 8. OUTPUTS VARIABLES =======//==============================================
 
@@ -850,9 +853,9 @@ const K_VL45 =  103;			// [7] Left 45 deg (315 deg)
 const K_VR90 =  102;			// [6] Right 90 deg
 const K_VD45 =  101;			// [5] View Down or Back 45 deg
 const K_VL90 =  100;			// [4] Left 90 deg (270 deg)
-const K_V135 =	 99;			// [3] Right Back (135 deg)
-const K_V180 =	 98;			// [2] Center Back (180 deg)
-const K_V225 =	 97;			// [1] Left Back (225 deg)
+const K_VRBk =	 99;			// [3] Right Back (135 deg)
+const K_VCBk =	 98;			// [2] Center Back (180 deg)
+const K_VLBk =	 97;			// [1] Left Back (225 deg)
 //	Toggle
 const K_View =  86;				// Toggle Visibility (v)
 const K_Soun =  83;				// Toggle sound (s)
