@@ -844,10 +844,10 @@ const K_Canp =  67;				// Canopy (c)
 //	Views
 const K_Look =  16;				// Orbit (shift)
 const K_VR45 =  105;			// [9] Right 45 degrees
-const K_VU45 =  104;			// [8] View Up 45 degrees
+const K_VU45 =  101;			// [8] View Up 45 degrees
 const K_VL45 =  103;			// [7] Left 45 degrees
 const K_VR90 =  102;			// [6] Right 90 degrees
-const K_VD45 =  101;			// [5] View Down or Back 45 degrees
+const K_VD45 =  104;			// [5] View Down or Back 45 degrees
 const K_VL90 =  100;			// [4] Left 90 degrees
 //	Toggle
 const K_View =  86;				// Toggle Visibility (v)
