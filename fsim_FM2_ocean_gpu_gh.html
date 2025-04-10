@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Apr 2025
+Version dated 10 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -585,8 +585,7 @@ let cam_ = {
 		CamLnk: CamLnk[CamSel],
 		MshObj: new makMsh(),
 		MshDeg: new makMsh(),
-		// Beginning Head Rotation - Cockpit View Only
-		BegFlg: HedRot,			// Need both
+		// Beginning Head Rotation
 		HedRot: HedRot,
 	}
 //- Adjustments
@@ -2002,17 +2001,13 @@ function initCamera(camera,cam_) {
 
 //- Move Camera View -----------//----------------------------------------------
 function moveCamera(camera,cam_) {
-	if (cam_.BegFlg) {
-		// If Started - Look Forward
+	if (cam_.HedRot) {			// Beginning Head Rotation
+		// Zero Out If Press Any View Key
+		if (cam_.CamFlg && (U45flg || D45flg || L45flg || R45flg || L90flg || R90flg || LBkflg || RBkflg)) cam_.HedRot = 0;
+		// Otherwise, Zero Out When Moving Forward
 		if (air_.PwrPct) {		// Throttle is trigger
-			cam_.BegFlg = 0.95*cam_.BegFlg;
-			if (Math.abs(cam_.BegFlg < 0.1)) cam_.BegFlg = 0;
-			cam_.HedRot = cam_.BegFlg;
-		}
-		// If Not Started - Cockpit View Only
-		else if (cam_.CamFlg) {
-			cam_.HedRot = cam_.BegFlg;
-			if (U45flg || D45flg || L45flg || R45flg || L90flg || R90flg || LBkflg || RBkflg) cam_.HedRot = 0;
+			cam_.HedRot = 0.95*cam_.HedRot;
+			if (Math.abs(cam_.HedRot < 0.1)) cam_.HedRot = 0;
 		}
 	}
 	// Camera In/Out
@@ -2036,7 +2031,7 @@ function moveCamera(camera,cam_) {
 	}
 	// View Keys (NumLock)
 	else {						// If Not Orbiting
-		// Interior View
+		// Cockpit View
 		if (cam_.CamFlg) {
 			// Use Default View if No View Keys Set
 			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg && !LBkflg && !RBkflg) {
@@ -2044,7 +2039,7 @@ function moveCamera(camera,cam_) {
 				cam_.CamLLD.y = 0;
 			}
 			// View Keys
-			if (U45flg) cam_.CamLLD.x = 315;
+			if (U45flg && !cam_.HedRot) cam_.CamLLD.x = 315;
 			if (D45flg) cam_.CamLLD.x = 45;
 			if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
 			if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
@@ -2053,7 +2048,7 @@ function moveCamera(camera,cam_) {
 			if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
 			if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
 		}
-		// External View
+		// Outside View
 		else {
 			// Use Default View if No View Keys Set
 			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg && !LBkflg && !RBkflg && !CBkflg) {
