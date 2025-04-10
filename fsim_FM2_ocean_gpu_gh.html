@@ -47,7 +47,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 	</div>
 </div>
 
-<div id="bloc9ker">
+<div id="blocker">
 	<div id="instructions">
 		<span style="font-size:24px">Click to play</span><br>
 		Fly: MOUSE<br>
@@ -218,21 +218,37 @@ OK
 
 //= 1. MAIN VARIABLES ==========//==============================================
 //- INPUTS ---------------------//----------------------------------------------
+//- AIRPLANE: Start ............//..............................................
+//	Default
+let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
+let BodRot = 0;					// Used to rotation head in beginning internal view
+//	Beginning Location
 let BegLoc = 1;					// 0 = Island; 1 = CVE; 2 = Air
-//- FLIGHT CONTROLS ------------//----------------------------------------------
+if (BegLoc == 1) {
+	CamSel = 1;
+	BodRot = 45;				// Use this instead of R45, in case no access to View Keys
+}
+//	Beginning Temperature
+let BegTmp = 303.15;			// K = 86F
+//- AIRPLANE: Flight Controls ..//..............................................
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-//- Input Lag (x = diverted, y = released, z = stored)
+let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
+let PwrDif = 0;					// Power % Input - Value
+let InpBrk = 0;					// Brakes
+//- Input Lag ...................................................................
+//- (x = diverted, y = released, z = stored)
 //-  Mouse
 let LagPwr = new THREE.Vector3(1-1/30,1/15,0);	// Power
 let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
 let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys
 let LagAtP = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
-//- Autopilot Key Values (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key)
+//- Autopilot Key Vaulues
+//	(XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key)
 let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
 //- CONSTANTS ------------------//----------------------------------------------
-//	Zero Values
+//	Set Zero Values
 let V3Zero = new THREE.Vector3(0,0,0);
 let E3Zero = new THREE.Euler(0,0,0);
 //- SUN VALUES -----------------//----------------------------------------------
@@ -505,7 +521,6 @@ for (let n = 0; n < aaf_.ObjNum; n ++) {
 	mys_.AirMsh = new makMsh();	// For Engine and Prop
 
 //= 7. CAMERA VARIABLES ========//==============================================
-let CamSel = 1;					// Camera Selection (0 = External; 1 = Internal)
 //- Create Cockpit Attach Point
 const CamPVC = new makMsh();
 	CamPVC.rotation.order = "YXZ";
@@ -523,8 +538,6 @@ let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
 let CamPar = [air_.AirObj,CamPVC];
 let CamFlg = [0,1];				// 1 = cockpit view
 let CamLnk = [1,1];				// 1 = Linked to Airplane
-let BodRot = 0;					// Used to rotation head in beginning internal view
-if (BegLoc == 1) BodRot = 45;	// Use this instead of R45, in case no access to View Keys
 //- Shared Variables
 let cam_ = {
 		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
