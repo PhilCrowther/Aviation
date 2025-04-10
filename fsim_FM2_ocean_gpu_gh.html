@@ -221,12 +221,12 @@ OK
 //- AIRPLANE: Start ............//..............................................
 //	Default
 let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
-let HedRot = 0;					// Used to rotation head in beginning internal view
+let BodRot = 0;					// Used to rotation head in beginning internal view
 //	Beginning Location
 let BegLoc = 1;					// 0 = Island; 1 = CVE; 2 = Air
 if (BegLoc == 1) {
 	CamSel = 1;
-	HedRot = 45;				// Use this instead of R45, in case no access to View Keys
+	BodRot = 45;				// Use this instead of R45, in case no access to View Keys
 }
 //	Beginning Temperature
 let BegTmp = 303.15;			// K = 86F
@@ -558,7 +558,7 @@ let cam_ = {
 		MshObj: new makMsh(),
 		MshDeg: new makMsh(),
 		// Beginning Head Rotation
-		HedRot: HedRot,
+		BodRot: BodRot,
 	}
 //- Adjustments
 	camera.rotation.order = "YXZ";
@@ -1973,13 +1973,13 @@ function initCamera(camera,cam_) {
 
 //- Move Camera View -----------//----------------------------------------------
 function moveCamera(camera,cam_) {
-	if (cam_.HedRot) {			// Beginning Head Rotation
+	if (cam_.BodRot) {			// Beginning Head Rotation
 		// Zero Out If Press Any View Key
-		if (cam_.CamFlg && (U45flg || D45flg || L45flg || R45flg || L90flg || R90flg || LBkflg || RBkflg)) cam_.HedRot = 0;
+//		if (cam_.CamFlg && (U45flg || D45flg || L45flg || R45flg || L90flg || R90flg || LBkflg || RBkflg)) cam_.BodRot = 0;
 		// Otherwise, Zero Out When Moving Forward
 		if (air_.PwrPct) {		// Throttle is trigger
-			cam_.HedRot = 0.95*cam_.HedRot;
-			if (Math.abs(cam_.HedRot < 0.1)) cam_.HedRot = 0;
+			cam_.BodRot = 0.95*cam_.BodRot;
+			if (Math.abs(cam_.BodRot < 0.1)) cam_.BodRot = 0;
 		}
 	}
 	// Camera In/Out
@@ -2011,14 +2011,14 @@ function moveCamera(camera,cam_) {
 				cam_.CamLLD.y = 0;
 			}
 			// View Keys
-			if (U45flg && !cam_.HedRot) cam_.CamLLD.x = 315;
+			if (U45flg) cam_.CamLLD.x = 315;
 			if (D45flg) cam_.CamLLD.x = 45;
 			if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
 			if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
 			if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-			if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90
+			if (R90flg && !cam_.BodRot) cam_.CamLLD.y = 90; // Look Right 90  (temp fix)
 			if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-			if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
+			if (RBkflg && !cam_.BodRot) cam_.CamLLD.y = 135; // Look Right 135 (temp fix)
 		}
 		// Outside View
 		else {
@@ -2045,7 +2045,7 @@ function moveCamera(camera,cam_) {
 		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad;
 		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y)*DegRad;
 		// If Beg Adj
-		if (cam_.HedRot) cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y-cam_.HedRot)*DegRad;
+		if (cam_.BodRot) cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y-cam_.BodRot)*DegRad;
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
