@@ -156,21 +156,21 @@ OK
 	4. OBJECT VARIABLES
 		SHARED TEXTURES				txt_
 		STATIC OBJECTS
-			Islands									isl_
-			Fixed Objects							fxd_
+			Islands					isl_			adj
+			Fixed Objects			fxd_			adj
 		MOVING VEHICLES
 			Moving Airplanes		xac_			adj
 			Moving Ships			xsh_			adj
 		ANIMATED FLAG				flg_			adj
-		AIRPLANE END SEQUENCE						xat_
-		AIRPLANE EXPLOSION							xae_
+		AIRPLANE END SEQUENCE		xat_
+		AIRPLANE EXPLOSION			xae_			adj
 	    SMOKE MODULE
-	    	Volcano Smoke			vlk_
-			Vertical SMOKE							grs_
-	    	Ground Fire								grf_
-	    	Airplane Smoke Trail					xas_
-	    	Airplane Fire Trail						xaf_
-	    	Ship Wake								wak_
+	    	Volcano Smoke			vlk_			adj
+			Vertical Smoke			grs_			adj
+	    	Ground Fire				grf_			adj
+	    	Airplane Smoke Trail	xas_			adj
+	    	Airplane Fire Trail		xaf_			adj
+	    	Ship Wake				wak_			adj
 		MYPEEPS						myp_			adj
 		MINIMUM ALTITUDE			alt_			adj
 	5. MY AIRPLANE VARIABLES		air_			adj
@@ -331,6 +331,7 @@ let loadingScreen = {
 };
 let boxrot = 0;
 
+//= 2. SKYBOX ==================//==============================================
 //= FADE2BLACK PLANE ===========//==============================================
 let FadMsh = initFadMsh();		// Initialize
 
@@ -365,35 +366,15 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //= 4. OBJECT VARIABLES ========//==============================================
 //= STATIC OBJECTS =============//==============================================
 //- Islands --------------------//----------------------------------------------
-let isl_ = {
-		ObjNum: 2,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
-				 "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
-		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.png",
-				 "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png"],
-		ObjAdr: [],
-		ObjSiz: [MtrMil,1.5*MtrMil], // Scale
-		RndOrd: [0,0],			// renderOrder (not used)
-		ObjRot: [new THREE.Euler(),
-				 new THREE.Euler()], // Rotation
-		MapPos: [new THREE.Vector3(610,30,5275),
-				 new THREE.Vector3(-1610,10,2440)],
-		ObjGrp: [new makMsh(),new makMsh()], // Group
-	};
+//	Adjustments
+	isl_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation
+	isl_.MapPos = [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)];
+	isl_.ObjGrp = [new makMsh(),new makMsh()]; // Group
 //- Static Objects -------------//----------------------------------------------
-//- 0 = Hangar;
-let fxd_ = {
-		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
-		ObjTxt: [0],
-		ObjAdr: [0],			// Loaded Object
-		ObjSiz: [Ft2Mtr],		// Scale
-		RndOrd: [0],			// renderOrder
-		ObjRot: [new THREE.Euler()], // Rotation
-		MapPos: [new THREE.Vector3(-562,-22.5,-363)], // Relative Position
-		ObjRef: [isl_.ObjGrp[0]],
-	};
-
+//	Adjustments
+	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
+	fxd_.MapPos = [new THREE.Vector3(-562,-22.5,-363)]; // Relative Position
+	fxd_.ObjRef = [isl_.ObjGrp[0]];
 //- MOVING VEHICLES ------------//----------------------------------------------
 //. Moving Airplanes ...........//..............................................
 //	Adjustments
@@ -402,7 +383,6 @@ let fxd_ = {
 	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3()]; // not used
 	xac_.EngMsh = [new makMsh(),new makMsh()];
 	xac_.SndMsh = [new makMsh(),new makMsh()];
-
 //. Moving Ships ...............//..............................................
 //	Adjustments
 	xsh_.ObjRot = [new THREE.Euler(0,0,0),new THREE.Euler(0,0,0)];  // Rotation
@@ -417,75 +397,24 @@ let fxd_ = {
 	flg_.MapPos = [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)]; // Relative Map Position
 	flg_.ObjRef = [xsh_.ObjGrp[0]]; // Parent Object
 
-//= AIRPLANE END SEQUENCE ======//==============================================
-let xat_ = {
-		// Segments:
-		// 0 = 1st Explosion
-		// 1 = Spinning and Burning
-		// 2 = 2nd Explosion
-		// 3 = Delay
-		// 4 = Radio Call
-		SegTim: [0.05,5,0.1,2,2],		
-		SegIdx: -1,				// Start at -1 so can increment at beginning
-		TimRem: 0,
-	}
-
 //= AIRPLANE EXPLOSION =========//==============================================
-let xae_ = {
-		ExpSiz: 0,				// Explosion Size
-		ExpLif: 0,				// Remaining Life
-		ExpMsh: makeSphere("yellow"),
-	};
+	xae_.ExpMsh = makeSphere("yellow");
 
 //= SMOKE MODULE ===============//==============================================
 //- Vertical Smoke -------------//----------------------------------------------
-let grs_ = {
-		ObjNum: 1,				// Number of Smokes
-		// Shared Values		
-		ObjTxt: 1,				// Shared Texture Reference Number
-		ObjSiz: 4000,			// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Emitter Address
-		// Rotaton and Position
-		ObjRot: [new THREE.Euler()], // Rotation (not used)
-		MapPos: [new THREE.Vector3(50,75,25)], // Map Position
-		ObjRef: [isl_.ObjGrp[0]], // Parent Object
-	};
+//	Adjustments
+	grs_.ObjRot = [new THREE.Euler()];				// Rotation (not used)
+	grs_.MapPos = [new THREE.Vector3(50,75,25)];	// Map Position
+	grs_.ObjRef = [isl_.ObjGrp[0]];					// Parent Object
 //- Ground Fire ----------------//----------------------------------------------
-let grf_ = {
-		ObjNum: 1,				// Number of Smoke Trails
-		// Shared Values
-		ObjTxt: 0,				// Texture
-		ObjSiz: 40,				// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Mesh
-		// Fire
-		FyrMat: [0],			// Material
-		FyrMsh: [0],			// Mesh
-		// Rotation and Position
-		ObjRot: [new THREE.Euler()], // Rotation
-		MapPos: [new THREE.Vector3(-562,-22.5,-363)], // Map Position
-		ObjRef: [isl_.ObjGrp[0]], // Parent Object
-	};
-
+	grf_.ObjRot = [new THREE.Euler()];				// Rotation
+	grf_.MapPos = [new THREE.Vector3(-562,-22.5,-363)]; // Map Position
+	grf_.ObjRef = [isl_.ObjGrp[0]],					// Parent Object
 //- Ship Wake ------------------//------------------------------------------
-let wak_ = {
-		ObjNum: xsh_.ObjNum,	// Number of Wakes
-		ObjSrc: [0,0],			// Not Used
-		ObjTxt: [0,0],			// Shared Texture Reference Number
-		ObjMat: [0,0],			// Material
-		ObjAdr: [0,0],			// Emitter Address
-		ObjSiz: [4000,4000],	// Scale
-		RndOrd: [1,1],			// renderOrder
-		ObjRot: [new THREE.Euler(), // Rotation (not used)
-				 new THREE.Euler()],
-		MapPos: [new THREE.Vector3(50,75,25),  // Map Position
-				 new THREE.Vector3(50,75,25)],
-		ObjRef: [xsh_.ObjGrp[0], // Parent Object
-				 xsh_.ObjGrp[1]],
-	};
+	wak_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation (not used)
+	wak_.MapPos = [new THREE.Vector3(50,75,25),		// Map Position
+				   new THREE.Vector3(50,75,25)],
+	wak_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[1]];	// Parent Object			 
 
 //= MY PEEPS ===================//==============================================
 //- Animated Objects: Linked ---//----------------------------------------------
