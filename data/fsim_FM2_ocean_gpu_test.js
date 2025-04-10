@@ -362,6 +362,73 @@ let	flg_ = {
 		ObjAdj: [0]
 	};
 
+//= AIRPLANE END SEQUENCE ======//==============================================
+let xat_ = {
+		// Segments:
+		// 0 = 1st Explosion
+		// 1 = Spinning and Burning
+		// 2 = 2nd Explosion
+		// 3 = Delay
+		// 4 = Radio Call
+		SegTim: [0.05,5,0.1,2,2],		
+		SegIdx: -1,				// Start at -1 so can increment at beginning
+		TimRem: 0,
+	}
+
+//= AIRPLANE EXPLOSION =========//==============================================
+let xae_ = {
+		ExpSiz: 0,				// Explosion Size
+		ExpLif: 0,				// Remaining Life
+		ExpMsh: 0,				// Mesh
+	};
+
+//= SMOKE MODULE ===============//==============================================
+//- Vertical Smoke -------------//----------------------------------------------
+let grs_ = {
+		ObjNum: 1,				// Number of Smokes
+		// Shared Values		
+		ObjTxt: 1,				// Shared Texture Reference Number
+		ObjSiz: 4000,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+		// Rotaton and Position
+		ObjRot: [0],			// Rotation (not used)
+		MapPos: [0], 			// Map Position
+		ObjRef: [0],			// Parent Object
+	};
+//- Ground Fire ----------------//----------------------------------------------
+let grf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: 0,				// Texture
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+		// Rotation and Position
+		ObjRot: [0],			// Rotation
+		MapPos: [0],			// Map Position
+		ObjRef: [0],			// Parent Object
+	};
+
+//- Ship Wake ------------------//------------------------------------------
+let wak_ = {
+		ObjNum: xsh_.ObjNum,	// Number of Wakes
+		ObjSrc: [0,0],			// Not Used
+		ObjTxt: [0,0],			// Shared Texture Reference Number
+		ObjMat: [0,0],			// Material
+		ObjAdr: [0,0],			// Emitter Address
+		ObjSiz: [4000,4000],	// Scale
+		RndOrd: [1,1],			// renderOrder
+		ObjRot: [0,0],			// Rotation (not used)
+		MapPos: [0,0],			// Map Position
+		ObjRef: [0,0],			// Parent Object
+	};
+
 //= MY PEEPS ===================//==============================================
 //- Animated Objects: Linked ---//----------------------------------------------
 let myp_ = {
