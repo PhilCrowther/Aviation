@@ -218,16 +218,19 @@ OK
 
 //= 1. MAIN VARIABLES ==========//==============================================
 //- INPUTS ---------------------//----------------------------------------------
-//- AIRPLANE: Start ............................................................
-let BegLoc = 1;					// Starting Location (0 = Island; 1 = CVE; 2 = Air)
+//- AIRPLANE: Start ............//..............................................
+//	Default
 let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
-let HedRot = 0					// Used to rotation head in beginning internal view
+let HedRot = 0;					// Used to rotation head in beginning internal view
+//	Beginning Location
+let BegLoc = 1;					// 0 = Island; 1 = CVE; 2 = Air
 if (BegLoc == 1) {
 	CamSel = 1;
 	HedRot = 45;				// Use this instead of R45, in case no access to View Keys
 }
+//	Beginning Temperature
 let BegTmp = 303.15;			// K = 86F
-//- AIRPLANE: Flight ...........................................................
+//- AIRPLANE: Flight Controls ..//..............................................
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
 let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
@@ -241,14 +244,10 @@ let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
 let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys
 let LagAtP = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
-//- POINTER LOCK CONTROLS ------------------------------------------------------
-//- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
+//- Autopilot Key Vaulues
+//	(XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key)
 let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
 //- CONSTANTS ------------------//----------------------------------------------
-//	Time
-//let	DLTime = 1/60;				// Delta Time (1/60 seconds)
-//let DLTim2 = DLTime**2;
-//let GrvDLT = GrvMPS*DLTim2;
 //	Set Zero Values
 let V3Zero = new THREE.Vector3(0,0,0);
 let E3Zero = new THREE.Euler(0,0,0);
@@ -332,6 +331,7 @@ let loadingScreen = {
 let boxrot = 0;
 
 //= 2. SKYBOX ==================//==============================================
+
 //= FADE2BLACK PLANE ===========//==============================================
 let FadMsh = initFadMsh();		// Initialize
 
