@@ -810,6 +810,39 @@ let aaf_ = {
 		ExpLif: [0,0],			// Life of Explosion (seconds)
 	};
 
+//- 6. SOUND VARIABLES =========//==============================================
+//- My Sounds ------------------//----------------------------------------------
+let mys_ = {
+		AirMsh:	0,				// For Engine and Prop
+		EngSrc: AirSrc + "sounds/fm2.wav",
+		EngSnd: 0,				// Address
+		EngVol: 0.1,			// Volume
+		PrpSrc: AirSrc + "sounds/fm2_prop.wav",
+		PrpSnd: 0,				// Address
+		PrpVol: 0.5,			// Volume
+	}
+//- Radio Variables ------------//----------------------------------------------
+let RadTim = 0;					// Start this timer for Linear Segment
+let	rad_ = {
+		// Sound Files (voice plus static)
+		SndSrc: ["https://PhilCrowther.github.io/Aviation/sounds/radio/noise.mp3",
+				 "https://PhilCrowther.github.io/Aviation/sounds/radio/radio.wav"],
+		SndAdr: [0,0],			// Pointer to Radio and Static Sounds
+		// All Segments
+		SegIdx: 0,				// Index to Segment
+		SegSrc: [1,1,1],		// Index to Radio Source
+		SegSta: [1,1,1],		// Static Offset within Source (best)	
+		SegOff: [0.0,1.0,3.5],	// Radio Offset within Source
+		SegEnd: [1.0,2.5,2.0],	// Radio Offset within Source
+		// Timed Segments
+		SeqTim: 0,				// Sequence Timer
+		SegNum: 2,				// Number of Events
+		SegPtr: 0,				// Pointer to Next Segment 
+		SegBeg: [10,30],		// When Segment Starts (in Seconds)
+		SegSel: [0,1],			// Segment to Play
+		SeqFlg: 0,				// 1 = Sequence Already Played
+	}
+
 //= 7. CAMERA VARIABLES ========//==============================================
 
 //-	Camera View Keys -----------//----------------------------------------------
