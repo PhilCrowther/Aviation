@@ -222,7 +222,34 @@ let txt_ = {
 				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
 		ObjTxt: [],
 	};
-
+//= STATIC OBJECTS =============//==============================================
+//- Islands --------------------//----------------------------------------------
+let isl_ = {
+		ObjNum: 2,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
+				 "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
+		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.png",
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png"],
+		ObjAdr: [],
+		ObjSiz: [MtrMil,1.5*MtrMil], // Scale
+		RndOrd: [0,0],			// renderOrder (not used)
+		ObjRot: [0,0],			// Rotation
+		MapPos: [0,0],			// Absolute Position
+		ObjGrp: [0,0],			// Group
+	};
+//- Static Objects -------------//----------------------------------------------
+//- 0 = Hangar;
+let fxd_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],			// Loaded Object
+		ObjSiz: [Ft2Mtr],		// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [0],			// Rotation
+		MapPos: [0],			// Relative Position
+		ObjRef: [0],			// Parent
+	};
 //- Moving Airplanes -----------//----------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
@@ -333,6 +360,73 @@ let	flg_ = {
 		// Animation
 		ObjDst: [152.4],		// Visibility Distance from Parent (meters)
 		ObjAdj: [0]
+	};
+
+//= AIRPLANE END SEQUENCE ======//==============================================
+let xat_ = {
+		// Segments:
+		// 0 = 1st Explosion
+		// 1 = Spinning and Burning
+		// 2 = 2nd Explosion
+		// 3 = Delay
+		// 4 = Radio Call
+		SegTim: [0.05,5,0.1,2,2],		
+		SegIdx: -1,				// Start at -1 so can increment at beginning
+		TimRem: 0,
+	}
+
+//= AIRPLANE EXPLOSION =========//==============================================
+let xae_ = {
+		ExpSiz: 0,				// Explosion Size
+		ExpLif: 0,				// Remaining Life
+		ExpMsh: 0,				// Mesh
+	};
+
+//= SMOKE MODULE ===============//==============================================
+//- Vertical Smoke -------------//----------------------------------------------
+let grs_ = {
+		ObjNum: 1,				// Number of Smokes
+		// Shared Values		
+		ObjTxt: 1,				// Shared Texture Reference Number
+		ObjSiz: 4000,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+		// Rotaton and Position
+		ObjRot: [0],			// Rotation (not used)
+		MapPos: [0], 			// Map Position
+		ObjRef: [0],			// Parent Object
+	};
+//- Ground Fire ----------------//----------------------------------------------
+let grf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: 0,				// Texture
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+		// Rotation and Position
+		ObjRot: [0],			// Rotation
+		MapPos: [0],			// Map Position
+		ObjRef: [0],			// Parent Object
+	};
+
+//- Ship Wake ------------------//------------------------------------------
+let wak_ = {
+		ObjNum: xsh_.ObjNum,	// Number of Wakes
+		ObjSrc: [0,0],			// Not Used
+		ObjTxt: [0,0],			// Shared Texture Reference Number
+		ObjMat: [0,0],			// Material
+		ObjAdr: [0,0],			// Emitter Address
+		ObjSiz: [4000,4000],	// Scale
+		RndOrd: [1,1],			// renderOrder
+		ObjRot: [0,0],			// Rotation (not used)
+		MapPos: [0,0],			// Map Position
+		ObjRef: [0,0],			// Parent Object
 	};
 
 //= MY PEEPS ===================//==============================================
