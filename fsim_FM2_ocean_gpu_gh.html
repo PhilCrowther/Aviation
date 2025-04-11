@@ -1989,44 +1989,28 @@ function moveCamera(camera,cam_) {
 	}
 	// View Keys (NumLock)
 	else {						// If Not Orbiting
+		// Default
+		cam_.CamLLD.x = cam_.CamLLD.y = 0;
 		// Cockpit View
 		if (cam_.CamFlg) {
-			// Use Default View if No View Keys Set
-			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg && !LBkflg && !RBkflg) {
-				cam_.CamLLD.x = 0;
-				cam_.CamLLD.y = cam_.VewRot;
-			}
-			// View Keys
-			else {
-				cam_.CamLLD.y = cam_.VewRot;
-				if (U45flg) cam_.CamLLD.x = 315;
-				if (D45flg) cam_.CamLLD.x = 45;
-				if (L45flg) cam_.CamLLD.y = Mod360(315+cam_.CamLLD.y);	// Look Left 45
-				if (R45flg) cam_.CamLLD.y = Mod360(45+cam_.CamLLD.y);		// Look Right 45
-				if (L90flg) cam_.CamLLD.y = Mod360(270+cam_.CamLLD.y);	// Look Left 90
-				if (R90flg) cam_.CamLLD.y = Mod360(90+cam_.CamLLD.y);		// Look Right 90  (temp fix)			
-				if (LBkflg) cam_.CamLLD.y = Mod360(225+cam_.CamLLD.y);	// Look Left 135
-				if (RBkflg) cam_.CamLLD.y = Mod360(135+cam_.CamLLD.y);	// Look Right 135 (temp fix)
-			}
+			cam_.CamLLD.y = cam_.VewRot;
+			if (D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
+			if (D45flg && cam_.VewRot) cam_.CamLLD.y = 0;
+			if (U45flg) cam_.CamLLD.x = 315; // Down
 		}
-		// Outside View
+		// Exterior View
 		else {
-			// Use Default View if No View Keys Set
-			if (!U45flg && !D45flg && !L45flg && !R45flg && !L90flg && !R90flg && !LBkflg && !RBkflg && !CBkflg) {
-				cam_.CamLLD.x = -15;
-				cam_.CamLLD.y = 0;
-			}
-			// View Keys
+			cam_.CamLLD.x = -15;
 			if (U45flg) cam_.CamLLD.x = 315;
 			if (D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
-			if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
-			if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
-			if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-			if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90
-			if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-			if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
-			if (CBkflg) cam_.CamLLD.y = 180;	// Look Back			
 		}
+		if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
+		if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
+		if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
+		if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90
+		if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
+		if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
+		if (CBkflg) cam_.CamLLD.y = 180;	// Look Back			
 	}
 	// Adjust Camera Rotators
 	// In Cockpit View, the camera is facing out - view matches rotation
