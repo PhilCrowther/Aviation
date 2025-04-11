@@ -218,34 +218,18 @@ OK
 
 //= 1. MAIN VARIABLES ==========//==============================================
 //- INPUTS ---------------------//----------------------------------------------
-//- AIRPLANE: Start ............//..............................................
-//	Default
-let CamSel = 0;					// Camera Selection (0 = External; 1 = Internal)
-let BodRot = 0;					// Used to rotation head in beginning internal view
-//	Beginning Location
 let BegLoc = 1;					// 0 = Island; 1 = CVE; 2 = Air
-if (BegLoc == 1) {
-	CamSel = 1;
-	BodRot = 45;				// Use this instead of R45, in case no access to View Keys
-}
-//	Beginning Temperature
-let BegTmp = 303.15;			// K = 86F
-//- AIRPLANE: Flight Controls ..//..............................................
+//- FLIGHT CONTROLS ------------//----------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
-let PwrDif = 0;					// Power % Input - Value
-let InpBrk = 0;					// Brakes
-//- Input Lag ...................................................................
-//- (x = diverted, y = released, z = stored)
-//-  Mouse
+//- Input Lag (x = diverted, y = released, z = stored)
+//- Mouse
 let LagPwr = new THREE.Vector3(1-1/30,1/15,0);	// Power
 let LagCfL = new THREE.Vector3(1-1/30,1/15,0);	// CfL
 let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys
 let LagAtP = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
-//- Autopilot Key Vaulues
-//	(XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key)
+//- Autopilot Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key)
 let	KeyVal = new THREE.Vector3(0.5,0.05,0.25); // (Yaw = turn rate in 15 deg bank)
 //- CONSTANTS ------------------//----------------------------------------------
 //	Set Zero Values
@@ -527,6 +511,8 @@ const CamPVC = new makMsh();
 	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
+//- AIRPLANE: Start ............//..............................................
+let CamSel = 1;					// Camera Selection (0 = External; 1 = Internal)
 let CamNum = 2;
 let CamLLD = [new THREE.Vector3(-10,0,30),
 			  new THREE.Vector3(0,0,0.001)];
@@ -538,6 +524,8 @@ let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
 let CamPar = [air_.AirObj,CamPVC];
 let CamFlg = [0,1];				// 1 = cockpit view
 let CamLnk = [1,1];				// 1 = Linked to Airplane
+let VewRot = 0;					// Used to rotation head in beginning internal view
+if (BegLoc == 1) VewRot = 45;	// Use this instead of R45, in case no access to View Keys
 //- Shared Variables
 let cam_ = {
 		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
@@ -558,7 +546,7 @@ let cam_ = {
 		MshObj: new makMsh(),
 		MshDeg: new makMsh(),
 		// Beginning Head Rotation
-		BodRot: BodRot,
+		VewRot: VewRot,
 	}
 //- Adjustments
 	camera.rotation.order = "YXZ";
@@ -1973,13 +1961,11 @@ function initCamera(camera,cam_) {
 
 //- Move Camera View -----------//----------------------------------------------
 function moveCamera(camera,cam_) {
-	if (cam_.BodRot) {			// Beginning Head Rotation
-		// Zero Out If Press Any View Key
-//		if (cam_.CamFlg && (U45flg || D45flg || L45flg || R45flg || L90flg || R90flg || LBkflg || RBkflg)) cam_.BodRot = 0;
-		// Otherwise, Zero Out When Moving Forward
+	if (cam_.VewRot) {			// Beginning Head Rotation
+		// Zero Out When Moving Forward
 		if (air_.PwrPct) {		// Throttle is trigger
-			cam_.BodRot = 0.95*cam_.BodRot;
-			if (Math.abs(cam_.BodRot < 0.1)) cam_.BodRot = 0;
+			cam_.VewRot = 0.95*cam_.VewRot;
+			if (Math.abs(cam_.VewRot < 0.1)) cam_.VewRot = 0;
 		}
 	}
 	// Camera In/Out
@@ -2016,9 +2002,9 @@ function moveCamera(camera,cam_) {
 			if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
 			if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
 			if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-			if (R90flg && !cam_.BodRot) cam_.CamLLD.y = 90; // Look Right 90  (temp fix)
+			if (R90flg && !cam_.VewRot) cam_.CamLLD.y = 90; // Look Right 90  (temp fix)
 			if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-			if (RBkflg && !cam_.BodRot) cam_.CamLLD.y = 135; // Look Right 135 (temp fix)
+			if (RBkflg && !cam_.VewRot) cam_.CamLLD.y = 135; // Look Right 135 (temp fix)
 		}
 		// Outside View
 		else {
@@ -2045,7 +2031,7 @@ function moveCamera(camera,cam_) {
 		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad;
 		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y)*DegRad;
 		// If Beg Adj
-		if (cam_.BodRot) cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y-cam_.BodRot)*DegRad;
+		if (cam_.VewRot) cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y-cam_.VewRot)*DegRad;
 	}
 	// In external view, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
