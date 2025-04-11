@@ -68,7 +68,9 @@ const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
 const Km2Mil = 0.621371;		// Kilometers to Miles
 const Mil2Km = 1.60934;			// Miles to Kilometers
 const MtrMil = 1609.34;			// Meters per Mile
+//	Environmental
 const GrvMPS = 9.80665; 		// Gravity (mps)
+const BegTmp = 303.15;			// K = 86F (loaded into _air)
 // These values could also be used by modules, but that would require that all 
 // module users also create a data file - which complicates the use of modules.
 //	Time
@@ -77,6 +79,10 @@ let DLTim2 = DLTime**2;
 let GrvDLT = GrvMPS*DLTim2;
 
 //- INPUT VALUES ---------------//----------------------------------------------
+//- Flght Controls
+let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
+let PwrDif = 0;					// Power % Input - Value
+let InpBrk = 0;					// Brakes
 //- Display
 let PawsOn = 0;					// Pause
 let InfoOn = 0;					// Info
@@ -536,7 +542,7 @@ let air_ = {
 		MaxBnk: 0,				// Max Bank (display only)
 		HdgDif: 0,				// Horizontal Turn Rate (display only)
 		// Air Density and IAS Comps
-		BegTmp: 0,			// Beginning Sea Level Temperature (K)
+		BegTmp: 0,				// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0,				// Indicated Airspeed
 		// Ship Pitch and Bank
