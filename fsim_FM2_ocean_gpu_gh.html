@@ -111,8 +111,8 @@ This flight simulation demo uses the most advanced version of three.js
 	* Islands, including Volcano with Animated Smoke
 	* SunFlare
 -My Airplane:
-	* Detailed Airplane Model - Outside and Cockpit (created in Blender)
-	* Animated Controls and Gauges - Outside and Cockpit (AnimFM2 Module)
+	* Detailed Airplane Model - External and Internal (created in Blender)
+	* Animated Controls and Gauges - External and Internal (AnimFM2 Module)
 	* Animated Pilot
 	* 3D Sounds
 -	Traffic:
@@ -505,30 +505,30 @@ for (let n = 0; n < aaf_.ObjNum; n ++) {
 	mys_.AirMsh = new makMsh();	// For Engine and Prop
 
 //= 7. CAMERA VARIABLES ========//==============================================
-//- Create Cockpit Attach Point
+//- Create Internal Attach Point
 const CamPVC = new makMsh();
 	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
+	CamPVC.position.set(0,1.0668,0.762);	// Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
-//- Camera Inputs (Outside Camera linked to air_.AirPBY; 1 Cockpit Camera Linked to cam_.PVC)
+//- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
 //- AIRPLANE: Start ............//..............................................
-let CamSel = 1;					// Camera Selection (0 = Outside; 1 = Cockpit)
+let CamSel = 1;					// Camera Selection (0 = External; 1 = Internal)
 let CamNum = 2;
 let CamLLD = [new THREE.Vector3(-10,0,30),
 			  new THREE.Vector3(0,0,0.001)];
 let CamAdj = [180,0];			// 180 = Looking In
 let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
-			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
+			  new THREE.Vector3(0,1,0.001)];	// Internal View: Throttle - min,max,spd
 let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
 			  new THREE.Vector3(45,110,0.5)];
 let CamPar = [air_.AirObj,CamPVC];
-let CamFlg = [0,1];				// 1 = cockpit view
+let CamFlg = [0,1];				// 1 = Internal View
 let CamLnk = [1,1];				// 1 = Linked to Airplane
-let VewRot = 0;					// Used to rotation head in beginning Cockpit view
+let VewRot = 0;					// Used to rotation head in beginning Internal View
 if (BegLoc == 1) VewRot = 45;	// Use this instead of R45, in case no access to View Keys
 //- Shared Variables
 let cam_ = {
-		CamSel: CamSel,			// View Selector (0 = Outside, 1 = Cockpit)
+		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
 		CamNum: CamNum,
 		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
 		// Camera
@@ -540,7 +540,7 @@ let cam_ = {
 		CamMMR: new THREE.Vector3().copy(CamMMR[CamSel]), // Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
 		CamPar: CamPar[CamSel],	// Center of Rotation	
-		CamFlg: CamFlg[CamSel],	// View Flag (0 = Outside, 1 = Cockpit)
+		CamFlg: CamFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
 		// Linked Airplane
 		CamLnk: CamLnk[CamSel],
 		MshObj: new makMsh(),
@@ -1662,7 +1662,7 @@ function moveAirObj() {
 	flight.update();
 	// Animate -----------------------------------------------------------------	
 	if (cam_.CamFlg) moveAirInt(air_,vxr_,anm_,cam_.CamLLD); // VC
-	else moveAirExt(air_,mxr_,anm_); // Outside
+	else moveAirExt(air_,mxr_,anm_); // External
 	// Bullets
 	moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg);
 	testHitBox();
@@ -1913,7 +1913,7 @@ function initCamera(camera,cam_) {
 	camera.rotation.y = cam_.CamAdj*DegRad;
 	cam_.MshRot.add(camera);	// Attach to rotator
 	//
-	if (!cam_.CamSel) {			// 0 = Outside View
+	if (!cam_.CamSel) {			// 0 = External View
 		sunLight.shadow.mapSize.set(2048,2048);
 		sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
 		sunLight.shadow.camera.updateProjectionMatrix();
@@ -1936,7 +1936,7 @@ function initCamera(camera,cam_) {
 		// Tailhook
 		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anm_.anmfps);
 	}	
-	if (cam_.CamSel) {			// 1 = Cockpit View
+	if (cam_.CamSel) {			// 1 = Internal View
 		sunLight.shadow.mapSize.set(8192,8192);
 		sunLight.shadow.camera.far = SunDst+2*ShdBox;
 		sunLight.shadow.camera.updateProjectionMatrix();
@@ -1953,7 +1953,7 @@ function initCamera(camera,cam_) {
 	cam_.CamMMR.copy(CamMMR[cam_.CamSel]);	// Rotation min, max, spd
 	cam_.CamPar = CamPar[cam_.CamSel]		// Load New Parent
 	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators
-	cam_.CamFlg = CamFlg[cam_.CamSel];		// 1 = cockpit
+	cam_.CamFlg = CamFlg[cam_.CamSel];		// 1 = Internal
 	cam_.CamLnk = CamLnk[cam_.CamSel];		// 1 = Linked to Airplane
 	//
 	moveCamera(camera,cam_);
@@ -1976,12 +1976,12 @@ function moveCamera(camera,cam_) {
 		cam_.CamLLD.x = cam_.CamLLD.x - InpMos.y * cam_.CamMMR.z; // Camera Position (Lat)
 		cam_.CamLLD.x = MaxVal(cam_.CamLLD.x,cam_.CamMMR.x);
 		cam_.CamLLD.y = Mod360(cam_.CamLLD.y + InpMos.x * cam_.CamMMR.z); // Camera Position (Lon)
-		// Cockpit View
+		// Internal View
 		if (cam_.CamFlg) {		// Range: 250 to 360/0 to 110
 			if (cam_.CamLLD.y > 180 && cam_.CamLLD.y < (360-cam_.CamMMR.y)) cam_.CamLLD.y = (360-cam_.CamMMR.y);
 			if (cam_.CamLLD.y < 180 && cam_.CamLLD.y > cam_.CamMMR.y) cam_.CamLLD.y = cam_.CamMMR.y;
 		}
-		// Outside View
+		// External View
 		else {
 			if (air_.GrdFlg && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
 		}
@@ -1992,7 +1992,7 @@ function moveCamera(camera,cam_) {
 	else {						// If Not Orbiting
 		// Default
 		cam_.CamLLD.x = cam_.CamLLD.y = 0;
-		// Cockpit View
+		// Internal View
 		if (cam_.CamFlg) {
 			cam_.CamLLD.y = cam_.VewRot;
 			if (D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
@@ -2004,22 +2004,22 @@ function moveCamera(camera,cam_) {
 			cam_.CamLLD.x = -15;
 			if (U45flg) cam_.CamLLD.x = 315;
 			if (D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
+			if (CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
 		}
 		if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
 		if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
 		if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
 		if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90
 		if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-		if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
-		if (CBkflg) cam_.CamLLD.y = 180;	// Look Back			
+		if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135		
 	}
 	// Adjust Camera Rotators
-	// In Cockpit View, the camera is facing out - view matches rotation
+	// In Internal View, the camera is facing out - view matches rotation
 	if (cam_.CamFlg) {
 		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad;
 		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y)*DegRad;
 	}
-	// In Outside View, the camera is facing in and the armature is pointing out:
+	// In External View, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
 		if (!cam_.OrbFlg && air_.GrdFlg) { // Air to Ground
 			if (!CmGrdF) {		// if just landed
