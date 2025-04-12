@@ -97,7 +97,7 @@ function moveCamera(camera,cam_,air_,key_) {
 	camera.rotation.x = 0;		// Default
 	if (cam_.VewRot) {			// Beginning Head Rotation
 		// Zero Out When Moving Forward
-		if (air_.PwrPct) {		// Throttle is trigger
+		if (!air_.MovFlg) {		// Throttle is trigger
 			cam_.VewRot = 0.95*cam_.VewRot;
 			if (Math.abs(cam_.VewRot < 0.1)) cam_.VewRot = 0;
 		}
