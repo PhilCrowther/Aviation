@@ -80,7 +80,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {PointerLockControls,moveCamera} from "https://PhilCrowther.github.io/Aviation/jsm/Controls1a.js";
+import {PointerLockControls,moveCamera} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // add grd_.EMI
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
@@ -143,7 +143,7 @@ OK
 
 	VARIABLES						Data			Main
 	1. MAIN VARIABLES
-	   Inputs										X
+	   Inputs						gen_				X
 	   Constants					X				X
 	   Variables					X				X
 	   Sun Values					X				X
@@ -512,9 +512,14 @@ const CamPVC = new makMsh();
 	CamPVC.position.set(0,1.0668,0.762);	// Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
-//- AIRPLANE: Start ............//..............................................
+//- Start ......................//..............................................
 let CamSel = 1;					// Camera Selection (0 = External; 1 = Internal)
+let VewRot = 0;					// Used to rotation head in beginning Internal View
+if (BegLoc == 1) VewRot = 45;	// Use this instead of R45, in case no access to View Keys
+//- Variables
 let CamNum = 2;
+let CamFlg = [0,1];				// 1 = Internal View
+let CamLnk = [1,1];				// 1 = Linked to Airplane
 let CamLLD = [new THREE.Vector3(-10,0,30),
 			  new THREE.Vector3(0,0,0.001)];
 let CamAdj = [180,0];			// 180 = Looking In
@@ -523,10 +528,6 @@ let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out 
 let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
 			  new THREE.Vector3(45,110,0.5)];
 let CamPar = [air_.AirObj,CamPVC];
-let CamFlg = [0,1];				// 1 = Internal View
-let CamLnk = [1,1];				// 1 = Linked to Airplane
-let VewRot = 0;					// Used to rotation head in beginning Internal View
-if (BegLoc == 1) VewRot = 45;	// Use this instead of R45, in case no access to View Keys
 //- Shared Variables
 let cam_ = {
 		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
@@ -597,7 +598,7 @@ function loadAll() {
 	loadSkyBox();
 	loadGeoMat(grd_);
 	loadAirObj();
-	AltDif = air_.MapPos.y*AltAdj; // Used by everything
+	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadObject();				// load objects
 }
 
@@ -621,7 +622,7 @@ function initAll() {
 	initSkyBox();
 	// Objects
 	initAirObj();
-	AltDif = air_.MapPos.y*AltAdj; // Used by everything
+	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	initObject();				// Determine relative XZ location of all objects
 	// Grid
 	waves = new Ocean(renderer,wav_); // Init Ocean
@@ -637,17 +638,17 @@ function initAll() {
 	AutoText();
 	InfoText();
 	// Show stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
+	if (gen_.StatOn) {				// show stats
+		gen_.StatOn = new Stats({
 			precision: 3,
 			horizontal: false
 		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
+		gen_.StatOn.init(renderer);
+		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(gen_.StatOn.dom);
 	}
 	nowTim = clock.getElapsedTime();
-	LodFlg = 1;
+	gen_.LodFlg = 1;
 }
 
 //- RENDER ---------------------//----------------------------------------------
@@ -660,11 +661,11 @@ async function rendAll() {		// r173 added async
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;					// Stop the function here.
 	}
-	if (controls.isLocked === true && !LodSnd) {
+	if (controls.isLocked === true && !gen_.LodSnd) {
 		loadSounds();
 		loadRadios();
 	}
-	if (!PawsOn && LodFlg && controls.isLocked === true) {		
+	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {		
 		difTim = clock.getDelta();
 		nowTim = nowTim + difTim;
 		// Black Out/Red Out
@@ -679,7 +680,7 @@ async function rendAll() {		// r173 added async
 		moveCamera(camera,cam_,air_,key_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
-		AltDif = air_.MapPos.y*AltAdj; // Used by everything
+		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
 		moveMyPeep(myp_,difTim);
@@ -693,14 +694,14 @@ async function rendAll() {		// r173 added async
 		if (!air_.GrdFlg && !rad_.SeqTim && !rad_.SeqDun) strtRadSeq();
 		if (rad_.SeqTim) contRadSeq();
 		prntHUDval();			// print HUD values
-		if (StatOn) StatOn.update(); // update stats
+		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 		// Shadow Tests (confirms that shadow values changed)
 		// console.log(sunLight.shadow.mapSize.width);
 		// console.log(sunLight.shadow.camera.far);
 	}
-	if (controls.isLocked === false && LodSnd) {
+	if (controls.isLocked === false && gen_.LodSnd) {
 		stopSounds();
-		SndFlg = MYGFlg = 0;
+		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
 	await renderer.renderAsync(scene, camera); // ### WebGPU requires Async, r173 added await
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
@@ -770,7 +771,7 @@ function loadSkyBox() {
 	scene.background = envMap;
 	scene.environment = envMap;
 	// LensFlare
-	if (LnFFlg) {				// SunFlare	
+	if (gen_.LnFFlg) {				// SunFlare	
 		LF0Txt = txtrLoader.load(LF0Src);
 		LF1Txt = txtrLoader.load(LF1Src);
 	}
@@ -783,7 +784,7 @@ function initSkyBox() {
 	// Fog (doesn't work with Normal Material)
 	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
 	// Lensflare
-	if (LnFFlg) {				// SunFlare		
+	if (gen_.LnFFlg) {				// SunFlare		
 		let	spotLight = new THREE.PointLight("white");
 		scene.add(spotLight);
 		spotLight.position.copy(SunPos).normalize;
@@ -931,7 +932,7 @@ function moveAnmObj() {
 function initAAAGun() {
 	if (aaf_.ObjNum) {
 		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
-		initAAGuns(aaf_,air_,AltDif,scene);
+		initAAGuns(aaf_,air_,gen_,scene);
 		// Create Exploding Center
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
 			aaf_.ExpPtr[n] = makeSphere("crimson");
@@ -947,7 +948,7 @@ function moveAAAGun() {
 			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
 			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
 		}
-		moveAAGuns(aaf_,air_,AltDif,DLTime,GrvDLT,SndFlg);
+		moveAAGuns(aaf_,air_,gen_,DLTime,GrvDLT);
 		// Explosion
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
 			if (aaf_.SmkFlg[n]) {
@@ -967,7 +968,7 @@ function moveAAAGun() {
 		}	
 		// Play Sound (No Delay)
 //		for (let n = 0; n < aaf_.ObjNum; n ++) {
-//			if (SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
+//			if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
 //		}
 		// Play Sound With Delay
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
@@ -983,7 +984,7 @@ function moveAAAGun() {
 			if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - DLTime;
 			if (aaf_.SndDTm[n] < 0) {
 				aaf_.SndDTm[n] = 0;
-				if (SndFlg) aaf_.SndPtr[n].play();
+				if (gen_.SndFlg) aaf_.SndPtr[n].play();
 			}
 		}
 	}
@@ -1035,7 +1036,7 @@ function initIsland() {
 		// Set Relative Position
 		// (cause Objects to elevate above water as we climb to prevent flicker)
 		X = isl_.MapPos[i].x-air_.MapPos.x;
-		Y = isl_.MapPos[i].y-AltDif;
+		Y = isl_.MapPos[i].y-gen_.AltDif;
 		Z = air_.MapPos.z-isl_.MapPos[i].z;
 		isl_.ObjGrp[i].position.set(X,Y,Z);
 	}
@@ -1050,7 +1051,7 @@ function moveIsland() {
 		// Compute New Relative Position
 		// (cause Islands to elevate above water as we climb to prevent flicker)
 		X = isl_.MapPos[i].x-air_.MapPos.x;
-		Y = isl_.MapPos[i].y-AltDif;
+		Y = isl_.MapPos[i].y-gen_.AltDif;
 		Z = air_.MapPos.z-isl_.MapPos[i].z;
 		isl_.ObjGrp[i].position.set(X,Y,Z);
 	}
@@ -1083,7 +1084,7 @@ function loadFxdObj() {
 //- Move Objects ---------------//----------------------------------------------
 function moveFxdObj() {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
-		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y + AltDif*0.01;
+		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y + gen_.AltDif*0.01;
 	}
 }
 
@@ -1139,7 +1140,7 @@ function initMovPln() {
 		// Compute Relative Position
 		// (cause Objects to elevate above water as we climb to prevent flicker)
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
-		let Y = xac_.MapPos[n].y-AltDif;
+		let Y = xac_.MapPos[n].y-gen_.AltDif;
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 		scene.add(xac_.ObjAdr[n]);
@@ -1177,7 +1178,7 @@ function moveMovPln() {
 		if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
 		//. Compute New Relative Position ......................................
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
-		let Y = xac_.MapPos[n].y-AltDif;
+		let Y = xac_.MapPos[n].y-gen_.AltDif;
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 	}
@@ -1202,13 +1203,13 @@ function moveXACGun(n) {
 	// On or Off
 	let MinDst = 500;
 	let X = xag_.XACPos[n].x - air_.MapPos.x;
-	let Y = xag_.XACPos[n].y - AltDif;
+	let Y = xag_.XACPos[n].y - gen_.AltDif;
 	let Z = air_.MapPos.z - xag_.XACPos[n].z;
 	if (X < MinDst && Y < MinDst && Z < MinDst) { // If Visible
 		if (XPGFlg > 0) xag_.BulFlg[n] = 1;
 		else {xag_.BulFlg[n] = 0;}
 	}
-	moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT);
+	moveXACBul(xag_,air_,gen_,DLTime,GrvDLT);
 }
 
 //= XAC END SEQUENCE ===========//==============================================
@@ -1357,7 +1358,7 @@ function initMovShp() {
 		// Compute Relative Position
 		// (cause Objects to elevate above water as we climb to prevent flicker)
 		X = xsh_.MapPos[n].x-air_.MapPos.x;
-		Y = xsh_.MapPos[n].y-AltDif;
+		Y = xsh_.MapPos[n].y-gen_.AltDif;
 		Z = air_.MapPos.z-xsh_.MapPos[n].z;
 		xsh_.ObjGrp[n].position.set(X,Y,Z);
 		xsh_.ObjGrp[n].add(xsh_.ObjAdr[n]);
@@ -1392,7 +1393,7 @@ function moveMovShp() {
 		xsh_.MapPos[n].z = xsh_.MapPos[n].z - xsh_.MapSpd[n].z;
 		// Compute New Relative Position
 		X = xsh_.MapPos[n].x-air_.MapPos.x;
-		Y = xsh_.MapPos[n].y-AltDif;
+		Y = xsh_.MapPos[n].y-gen_.AltDif;
 		Z = air_.MapPos.z-xsh_.MapPos[n].z;
 		xsh_.ObjGrp[n].position.set(X,Y,Z);
 		// Compute Distance (for Viz Tests)
@@ -1434,7 +1435,7 @@ function moveXSHWak() {
 //- Init Ship Guns -------------//----------------------------------------------
 function initXSHGun() {
 	xsg_.SmkMap = txt_.ObjTxt[xsg_.SmkMap];
-	initAAGuns(xsg_,air_,AltDif,scene);
+	initAAGuns(xsg_,air_,gen_,scene);
 }
 
 //- Move Ship Guns -------------//----------------------------------------------
@@ -1447,10 +1448,10 @@ function moveXSHGun() {
 			xsg_.AAAFlg[1] = 0;
 			if (XSGFlg < XSGMin) XSGFlg = XSGMax;
 		}
-		moveAAGuns(xsg_,air_,AltDif,DLTime,GrvDLT,SndFlg);
+		moveAAGuns(xsg_,air_,gen_,DLTime,GrvDLT);
 		// Play Sound (No Delay)
 //		for (let n = 0; n < xsg_.ObjNum; n ++) {
-//			if (xsg_.SmkFlg[n] && SndFlg) xsg_.SndPtr[n].play()
+//			if (xsg_.SmkFlg[n] && gen_.SndFlg) xsg_.SndPtr[n].play()
 //		}
 		// Play Sound With Delay
 		for (let n = 0; n < xsg_.ObjNum; n ++) {
@@ -1466,7 +1467,7 @@ function moveXSHGun() {
 			if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - DLTime;
 			if (xsg_.SndDTm[n] < 0) {
 				xsg_.SndDTm[n] = 0;
-				if (SndFlg) xsg_.SndPtr[n].play();
+				if (gen_.SndFlg) xsg_.SndPtr[n].play();
 			}
 		}
 	}
@@ -1493,7 +1494,7 @@ function moveMinAlt() {
 }
 
 function moveShpAlt() {
-	InpBrk = 0;					// Default = no brake
+	gen_.InpBrk = 0;					// Default = no brake
 	air_.ShpPit = 0;			// Default
 	// Recompute GrdZed
 	let ZDst = xsh_.MapPos[0].z - air_.MapPos.z; // Z-distance from ship center
@@ -1501,12 +1502,12 @@ function moveShpAlt() {
 	air_.GrdZed = alt_.Alt[1] - YDif;
 	//
 	if (air_.GrdFlg) {		// If Landed
-		if (air_.PwrPct < 0.5 && anm_.thkpos < 180) InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
+		if (air_.PwrPct < 0.5 && anm_.thkpos < 180) gen_.InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
 		let ShpKPH = xsh_.SpdMPS[0]*3.6; // Ship speed
 		if (!air_.MovFlg) {
 			if (air_.SpdKPH <= ShpKPH) { // If airplane speed <= Ship speed, lock to deck	
 				air_.MovFlg = 1; // Flag
-				InpBrk = 0;	// Brake off
+				gen_.InpBrk = 0;	// Brake off
 				let XOff = air_.MapPos.x - xsh_.MapPos[0].x;
 				let ZOff = air_.MapPos.z - xsh_.MapPos[0].z; // Z-distance from ship center
 				xsh_.ShpLok[0].position.x = XOff;
@@ -1575,7 +1576,7 @@ function initAirObj() {
 		anm_.canpos = 0;		// Canopy Open
 	}
 	if (BegLoc == 2) { 			// Air
-		PwrDif = 1000;
+		gen_.PwrDif = 1000;
 		air_.SpdKPH = 200;
 		air_.MapPos.y = air_.MapSPS.y = 200;
 		anm_.lngpos = 180;		// Landing Gear Up
@@ -1601,15 +1602,15 @@ function moveAirObj() {
 	// Compute Inputs ----------..----------------------------------------------
 	// Power Percent ...........................................................
 	// Add Delay
-	let gal = PwrDif * LagPwr.x; // Current input delayed
+	let gal = gen_.PwrDif * LagPwr.x; // Current input delayed
 	let lag = LagPwr.y * LagPwr.z; // Released from Cumulator
 	LagPwr.z = LagPwr.z + gal - lag; // Change in Cumulator
-	PwrDif = PwrDif - gal + lag;
+	gen_.PwrDif = gen_.PwrDif - gal + lag;
 	// Input Engine Power
-	air_.PwrPct = air_.PwrPct + PwrDif;
+	air_.PwrPct = air_.PwrPct + gen_.PwrDif;
 	if (air_.PwrPct > 1) air_.PwrPct = 1;
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
-	PwrDif = 0;					// Reset
+	gen_.PwrDif = 0;					// Reset
 	// Coefficient of Lift .....//..............................................
 	if (air_.AutoOn) {			// Autopilot
 		air_.CfLDif = air_.InpKey.x;
@@ -1658,14 +1659,14 @@ function moveAirObj() {
 	// Input Yaw
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
 	// Input Brakes
-	air_.BrkVal = InpBrk;		// Brakes
+	air_.BrkVal = gen_.InpBrk;		// Brakes
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
 	// Animate -----------------------------------------------------------------	
 	if (cam_.CamFlg) moveAirInt(air_,vxr_,anm_,cam_.CamLLD); // VC
 	else moveAirExt(air_,mxr_,anm_); // External
 	// Bullets
-	moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg);
+	moveBullet(myg_,air_,gen_,DLTime,GrvDLT);
 	testHitBox();
 }
 
@@ -1775,7 +1776,7 @@ function loadSounds() {
 		});	
 	}
 	//- Set Flag
-	LodSnd = 1;
+	gen_.LodSnd = 1;
 }
 
 //- Change All Sounds ----------//----------------------------------------------
@@ -1800,11 +1801,11 @@ function moveSounds() {
 
 //- Play All Sounds ------------//----------------------------------------------
 function playSounds() {
-	// This leaves SndFlg = 1 and MYGFlg unchanged.
+	// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 	//- My Airplane ............................................................
 	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play(); // Engine
 	if (!mys_.PrpSnd.isPlaying) mys_.PrpSnd.play(); // Prop
-	for (let n = 0; n < myg_.ObjNum; n ++) {if (MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();} // Guns (L/R)
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();} // Guns (L/R)
 	//- XAC ....................................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {if (!xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].play();} // Engine
 //	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();} // ### FIX THIS - only when firing}
@@ -1813,7 +1814,7 @@ function playSounds() {
 
 //- Stop All Sounds ------------//----------------------------------------------
 function stopSounds() {
-	// This leaves SndFlg = 0 and MYGFlg unchanged.
+	// This leaves gen_.SndFlg = 0 and gen_.MYGFlg unchanged.
 	//- My Airplane ............................................................
 	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop(); // Engine
 	if (mys_.PrpSnd.isPlaying) mys_.PrpSnd.stop(); // Prop
@@ -1865,7 +1866,7 @@ function contRadSeq() {
 function playRadSeg(n) {
 	// SegIdx 0 = "Over Island"; SegIdx 1 = "Help"; SegIdx 2 = "Thanks"
 	rad_.SegIdx = n;
-	if (SndFlg) {
+	if (gen_.SndFlg) {
 		// Static
 		if (!rad_.SndAdr[0].isPlaying) {
 			rad_.SndAdr[0].offset = rad_.SegSta[rad_.SegIdx];
@@ -1980,7 +1981,7 @@ function prntHUDval() {
 
 //-	Pause Text -----------------//----------------------------------------------
 function PawsText(){
-	if (PawsOn) On_PawsNode.nodeValue = "Paused";
+	if (gen_.PawsOn) On_PawsNode.nodeValue = "Paused";
 	else {On_PawsNode.nodeValue = "Pause: Press P";}
 }
 
@@ -2014,9 +2015,9 @@ let InfoData = [
 	];
 
 function InfoText() {
-	if (!InfoOn) onInfo(0);
-	else if (InfoOn == 1) onInfo(1);
-	else if (InfoOn == 2) onInfo(2);
+	if (!gen_.InfoOn) onInfo(0);
+	else if (gen_.InfoOn == 1) onInfo(1);
+	else if (gen_.InfoOn == 2) onInfo(2);
 }
 
 //	Info Off
@@ -2063,7 +2064,7 @@ function onDocumentMouseUp(event) {
 //- Mousewheel -----------------//----------------------------------------------
 function onDocumentMouseWheel(event) {
 	event.preventDefault();
-	PwrDif = - event.deltaY * PwrMul; // Increment = 1%
+	gen_.PwrDif = - event.deltaY * gen_.PwrMul; // Increment = 1%
 }
 
 //- KEYBOARD -------------------//----------------------------------------------
@@ -2072,10 +2073,10 @@ function onDocumentMouseWheel(event) {
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == key_.K_PwLU) PwrDif = 0.1;		// Power Up - keyboard left
-	if (event.keyCode == key_.K_PwLD) PwrDif = -0.1;		// Power Down - keyboard left
-	if (event.keyCode == key_.K_PwRU) PwrDif = 0.1;		// Power Up - keyboard right
-	if (event.keyCode == key_.K_PwRD) PwrDif = -0.1;		// Power Down - keyboard right
+	if (event.keyCode == key_.K_PwLU) gen_.PwrDif = 0.1;		// Power Up - keyboard left
+	if (event.keyCode == key_.K_PwLD) gen_.PwrDif = -0.1;		// Power Down - keyboard left
+	if (event.keyCode == key_.K_PwRU) gen_.PwrDif = 0.1;		// Power Up - keyboard right
+	if (event.keyCode == key_.K_PwRD) gen_.PwrDif = -0.1;		// Power Down - keyboard right
 	if (event.keyCode == key_.K_BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left - autopilot only
 	if (event.keyCode == key_.K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right - autopilot only
 	if (event.keyCode == key_.K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up - autopilot only
@@ -2084,7 +2085,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.K_YwLR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard left
 	if (event.keyCode == key_.K_YwRL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard right
 	if (event.keyCode == key_.K_YwRR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard right
-	if (event.keyCode == key_.K_Brak) InpBrk = 0.01;		// Brakes
+	if (event.keyCode == key_.K_Brak) gen_.InpBrk = 0.01;		// Brakes
 	// Additional
 	if (event.keyCode == key_.K_Gear) anm_.lngflg = 1; 	// Gear
 	if (event.keyCode == key_.K_Flap) anm_.flpflg = 1; 	// Flaps
@@ -2103,12 +2104,12 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.K_VCBk) key_.CBkflg = 1;	// View - 180 deg back
 	// Guns
 	if (event.keyCode == key_.K_Guns) { // Guns
-		if (!PawsOn) {
+		if (!gen_.PawsOn) {
 			for (let n = 0; n < myg_.ObjNum; n ++) {
-				if (SndFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();
+				if (gen_.SndFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();
 			}
 		};
-		MYGFlg = 1;
+		gen_.MYGFlg = 1;
 	}
 	// Reset
 	if (event.keyCode == key_.K_RSet) posnRSet();		// Do Reset	
@@ -2124,10 +2125,10 @@ function onDocumentKeyDown(event) {
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == key_.K_PwLU) PwrDif = 0;		// Power Up - keyboard left
-	if (event.keyCode == key_.K_PwLD) PwrDif = 0;		// Power Down - keyboard left
-	if (event.keyCode == key_.K_PwRU) PwrDif = 0;		// Power Up - keyboard right
-	if (event.keyCode == key_.K_PwRD) PwrDif = 0;		// Power Down - keyboard right
+	if (event.keyCode == key_.K_PwLU) gen_.PwrDif = 0;		// Power Up - keyboard left
+	if (event.keyCode == key_.K_PwLD) gen_.PwrDif = 0;		// Power Down - keyboard left
+	if (event.keyCode == key_.K_PwRU) gen_.PwrDif = 0;		// Power Up - keyboard right
+	if (event.keyCode == key_.K_PwRD) gen_.PwrDif = 0;		// Power Down - keyboard right
 	if (event.keyCode == key_.K_BnkL) air_.InpKey.z = 0;	// Bank Left - autopilot only
 	if (event.keyCode == key_.K_BnkR) air_.InpKey.z = 0;	// Bank Right - autopilot only
 	if (event.keyCode == key_.K_PitU) air_.InpKey.x = 0;	// Pitch Up - autopilot only
@@ -2136,7 +2137,7 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == key_.K_YwLR) air_.RotDif.y = 0;	// YawR - keyboard left
 	if (event.keyCode == key_.K_YwRL) air_.RotDif.y = 0;	// YawL - keyboard right
 	if (event.keyCode == key_.K_YwRR) air_.RotDif.y = 0;	// YawR - keyboard right
-	if (event.keyCode == key_.K_Brak) InpBrk = 0;		// Brakes
+	if (event.keyCode == key_.K_Brak) gen_.InpBrk = 0;		// Brakes
 	// Additional
 	if (event.keyCode == key_.K_Gear) anm_.lngflg = 0;	// Gear
 	if (event.keyCode == key_.K_Flap) anm_.flpflg = 0;	// Flaps
@@ -2158,12 +2159,12 @@ function onDocumentKeyUp(event) {
 		for (let n = 0; n < myg_.ObjNum; n ++) {
 			myg_.SndPtr[n].stop();
 		}
-		if (!PawsOn) {
+		if (!gen_.PawsOn) {
 			for (let n = 0; n < myg_.ObjNum; n ++) {
 				if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();
 			}
 		};
-		MYGFlg = 0;
+		gen_.MYGFlg = 0;
 	}
 }
 
@@ -2182,11 +2183,11 @@ function posnRSet() {
 
 //. Toggle Pause ...............//..............................................
 function toglPaws() {
-	PawsOn = 1 - PawsOn;
-	if (PawsOn && SndFlg) {		//On to Off
+	gen_.PawsOn = 1 - gen_.PawsOn;
+	if (gen_.PawsOn && gen_.SndFlg) {		//On to Off
 		stopSounds();
 	}
-	if (!PawsOn && SndFlg) {	// Off to On
+	if (!gen_.PawsOn && gen_.SndFlg) {	// Off to On
 		playSounds();
 	}
 	PawsText();
@@ -2200,8 +2201,8 @@ function toglAuto() {
 
 //. Toggle Info ................//..............................................
 function toglInfo() {
-	InfoOn++
-	if (InfoOn == 3) InfoOn = 0;
+	gen_.InfoOn++
+	if (gen_.InfoOn == 3) gen_.InfoOn = 0;
 	InfoText();
 }
 
@@ -2218,9 +2219,9 @@ function toglView() {
 
 //. Toggle Sound ...............//..............................................
 function toglSoun() {
-	if (!PawsOn) {
-		SndFlg = 1 - SndFlg;
-		if (SndFlg) {			// Off to On
+	if (!gen_.PawsOn) {
+		gen_.SndFlg = 1 - gen_.SndFlg;
+		if (gen_.SndFlg) {			// Off to On
 			playSounds();
 		}
 		else {					// On to Off
