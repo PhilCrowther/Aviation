@@ -124,14 +124,14 @@ function initBullet(myg_,scene) {
 
 //= MOVE MY BULLETS ============//==============================================
 
-function moveBullet(myg_,air_,DLTime,GrvDLT,MYGFlg) {
+function moveBullet(myg_,air_,gen_,DLTime,GrvDLT) {
 	let BulSV3 = new Vector3();
 	let	BulSpT = myg_.BulSpd * DLTime;
 	myg_.BulSp2 = myg_.BulSp2 - DLTime;
 	if (myg_.BulSp2 < 0) myg_.BulSp2 = 0;
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		// Start New Bullets
-		if (!myg_.BulTim[i] && !myg_.BulSp2 && MYGFlg) {
+		if (!myg_.BulTim[i] && !myg_.BulSp2 && gen_.MYGFlg) {
 			//	Set Initial Position
 			myg_.BulPtr[i].position.set(0,0,0);
 			//	Set Initial Rotation
@@ -239,7 +239,7 @@ function initXACBul(xag_,scene) {
 
 //= MOVE XAC BULLETS ===========//==============================================
 
-function moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT) {
+function moveXACBul(xag_,air_,gen_,DLTime,GrvDLT) {
 	let BulSV3 = new Vector3();
 	let	BulSpT = xag_.BulSpd * DLTime;
 	for (let n = 0; n < xag_.ObjNum; n ++) {
@@ -279,7 +279,7 @@ function moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT) {
 				xag_.BulMpP[n][i].z = xag_.BulMpP[n][i].z + xag_.BulMpS[n][i].z;
 				// Relative Position
 				xag_.BulPtr[n][i].position.x = xag_.BulMpP[n][i].x - air_.MapPos.x;
-				xag_.BulPtr[n][i].position.y = xag_.BulMpP[n][i].y - AltDif;
+				xag_.BulPtr[n][i].position.y = xag_.BulMpP[n][i].y - gen_.AltDif;
 				xag_.BulPtr[n][i].position.z = air_.MapPos.z - xag_.BulMpP[n][i].z;
 			}
 		} // end i
@@ -299,7 +299,7 @@ function moveXACBul(xag_,air_,AltDif,DLTime,GrvDLT) {
 
 //= INIT AA GUNS ===============//==============================================
 
-function initAAGuns(aag_,air_,AltDif,scene) {
+function initAAGuns(aag_,air_,gen_,scene) {
 	//- Combined Rotation and Map Position of Parent plus Gun
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
@@ -340,7 +340,7 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
 		// Compute Gun Relative Position (for show only)
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
-		aag_.GunPtr[n].position.y = MapPos.y-AltDif;
+		aag_.GunPtr[n].position.y = MapPos.y-gen_.AltDif;
 		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
 		scene.add(aag_.GunPtr[n]);
 		//	Load Bullets
@@ -380,7 +380,7 @@ function initAAGuns(aag_,air_,AltDif,scene) {
 
 //= MOVE AA GUNS ===============//==============================================
 
-function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
+function moveAAGuns(aag_,air_,gen_,DLTime,GrvDLT) {
 	//- Combined Rotation and Map Position of Parent plus Gun
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
@@ -396,7 +396,7 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
 		// Compute Gun Relative Position (for show only)
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
-		aag_.GunPtr[n].position.y = MapPos.y-AltDif;
+		aag_.GunPtr[n].position.y = MapPos.y-gen_.AltDif;
 		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
 		// Smoke Flag Default
 		aag_.SmkFlg[n] = 0;
@@ -449,14 +449,14 @@ function moveAAGuns(aag_,air_,AltDif,DLTime,GrvDLT,SndFlg) {
 				aag_.AAAMpP[n][i].z = aag_.AAAMpP[n][i].z + aag_.AAAMpS[n][i].z;
 				// Relative Position
 				aag_.AAAPtr[n][i].position.x = aag_.AAAMpP[n][i].x - air_.MapPos.x;
-				aag_.AAAPtr[n][i].position.y = aag_.AAAMpP[n][i].y - AltDif;
+				aag_.AAAPtr[n][i].position.y = aag_.AAAMpP[n][i].y - gen_.AltDif;
 				aag_.AAAPtr[n][i].position.z = air_.MapPos.z - aag_.AAAMpP[n][i].z;
 			}
 		} // end of i
 		// Smoke Relative Position
 		if (aag_.SmkPtr[n].visible = true) {
 			aag_.SmkPtr[n].position.x = aag_.SmkMpP[n].x - air_.MapPos.x;
-			aag_.SmkPtr[n].position.y = aag_.SmkMpP[n].y - AltDif;
+			aag_.SmkPtr[n].position.y = aag_.SmkMpP[n].y - gen_.AltDif;
 			aag_.SmkPtr[n].position.z = air_.MapPos.z - aag_.SmkMpP[n].z;
 			aag_.SmkMat[n].rotation = Mod360((air_.AirRot.z + aag_.SmkRot[n])) * DegRad;
 			// Reduce Opacity
