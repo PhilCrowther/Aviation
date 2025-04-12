@@ -97,7 +97,7 @@ let gen_ = {
 		MYGFlg:	0,					// My Guns (1 = firing)
 		//	Altitude Adjustment
 		AltAdj:	0.99,				// Raises objects above map as altitude increases
-		AltDif:	0;
+		AltDif:	0,
 	}
 //- Flght Controls
 //let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
