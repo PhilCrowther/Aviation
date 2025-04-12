@@ -79,23 +79,43 @@ let DLTim2 = DLTime**2;
 let GrvDLT = GrvMPS*DLTim2;
 
 //- INPUT VALUES ---------------//----------------------------------------------
+
+let gen_ = {
+		//- Flght Controls
+		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
+		PwrDif:	0,					// Power % Input - Value
+		InpBrk:	0,					// Brakes
+		//- Display
+		PawsOn:	0,					// Pause
+		InfoOn:	0,					// Info
+		SndFlg:	0,					// Sound (0 = off; 1 = on)
+		StatOn:	1,					// Stats (0 = off, 1 = on)
+		LnFFlg:	1,					// Lensflare
+		//	Program Flags
+		LodFlg:	0,					// Set at end of initialization
+		LodSnd:	0,					// Set when sound initialized
+		MYGFlg:	0,					// My Guns (1 = firing)
+		//	Altitude Adjustment
+		AltAdj:	0.99,				// Raises objects above map as altitude increases
+		AltDif:	0,
+	}
 //- Flght Controls
-let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
-let PwrDif = 0;					// Power % Input - Value
-let InpBrk = 0;					// Brakes
+//let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
+//let PwrDif = 0;					// Power % Input - Value
+//let InpBrk = 0;					// Brakes
 //- Display
-let PawsOn = 0;					// Pause
-let InfoOn = 0;					// Info
-let SndFlg = 0;					// Sound (0 = off; 1 = on)
-let StatOn = 1;					// Stats (0 = off, 1 = on)
-let LnFFlg = 1;					// Lensflare
+//let PawsOn = 0;					// Pause
+//let InfoOn = 0;					// Info
+//let SndFlg = 0;					// Sound (0 = off; 1 = on)
+//let StatOn = 1;					// Stats (0 = off, 1 = on)
+//let LnFFlg = 1;					// Lensflare
 //	Program Flags
-let LodFlg = 0;					// Set at end of initialization
-let LodSnd = 0;					// Set when sound initialized
-let MYGFlg = 0;					// My Guns (1 = firing)
+//let LodFlg = 0;					// Set at end of initialization
+//let LodSnd = 0;					// Set when sound initialized
+//let MYGFlg = 0;					// My Guns (1 = firing)
 //	Altitude Adjustment
-let AltAdj = 0.99;				// Raises objects above map as altitude increases
-let AltDif = 0;
+//let AltAdj = 0.99;				// Raises objects above map as altitude increases
+//let AltDif = 0;
 
 //- SUN VALUES -----------------//----------------------------------------------
 const SunCol = "white";			// Sun
