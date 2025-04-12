@@ -96,7 +96,7 @@ let gen_ = {
 		LodSnd:	0,					// Set when sound initialized
 		MYGFlg:	0,					// My Guns (1 = firing)
 		//	Altitude Adjustment
-		AltAdj:	0.99;				// Raises objects above map as altitude increases
+		AltAdj:	0.99,				// Raises objects above map as altitude increases
 		AltDif:	0;
 	}
 //- Flght Controls
