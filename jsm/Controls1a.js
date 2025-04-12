@@ -93,7 +93,7 @@ class PointerLockControls extends EventDispatcher {
 *******************************************************************************/
 
 //- Move Camera View -----------//----------------------------------------------
-function moveCamera(camera,cam_,air_) {
+function moveCamera(camera,cam_,air_,key_) {
 	camera.rotation.x = 0;		// Default
 	if (cam_.VewRot) {			// Beginning Head Rotation
 		// Zero Out When Moving Forward
@@ -128,23 +128,23 @@ function moveCamera(camera,cam_,air_) {
 		// Internal View
 		if (cam_.CamFlg) {
 			cam_.CamLLD.y = cam_.VewRot;
-			if (D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
-			if (D45flg && cam_.VewRot) cam_.CamLLD.y = 0;
-			if (U45flg) cam_.CamLLD.x = 315; // Down
+			if (key_.D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
+			if (key_.D45flg && cam_.VewRot) cam_.CamLLD.y = 0;
+			if (key_.U45flg) cam_.CamLLD.x = 315; // Down
 		}
 		// Exterior View
 		else {
 			cam_.CamLLD.x = -15;
-			if (U45flg) cam_.CamLLD.x = 315;
-			if (D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
-			if (CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
+			if (key_.U45flg) cam_.CamLLD.x = 315;
+			if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
+			if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
 		}
-		if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
-		if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
-		if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-		if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90
-		if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-		if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135		
+		if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
+		if (key_.R45flg) cam_.CamLLD.y = 45;		// Look Right 45
+		if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
+		if (key_.R90flg) cam_.CamLLD.y = 90;		// Look Right 90
+		if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
+		if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135		
 	}
 	// Adjust Camera Rotators
 	// In Internal View, the camera is facing out - view matches rotation
