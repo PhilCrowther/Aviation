@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Apr 2025
+Version dated 11 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -1961,6 +1961,7 @@ function initCamera(camera,cam_) {
 
 //- Move Camera View -----------//----------------------------------------------
 function moveCamera(camera,cam_) {
+	camera.rotation.x = 0;		// Default
 	if (cam_.VewRot) {			// Beginning Head Rotation
 		// Zero Out When Moving Forward
 		if (air_.PwrPct) {		// Throttle is trigger
