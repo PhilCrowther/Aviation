@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Apr 2025
+Version dated 12 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -80,7 +80,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {PointerLockControls} from "https://PhilCrowther.github.io/Aviation/jsm/Controls1.js";
+import {PointerLockControls,moveCamera} from "https://PhilCrowther.github.io/Aviation/jsm/Controls1a.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // add grd_.EMI
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
@@ -188,6 +188,7 @@ OK
 	8. OUTPUT VARIABLES				X
 	9. INPUT VARIABLES
 	   Pointer Lock Control			X
+	   Keys							key_
 
 	PROGRAM
 	1. MAIN							Main Program
@@ -545,6 +546,11 @@ let cam_ = {
 		CamLnk: CamLnk[CamSel],
 		MshObj: new makMsh(),
 		MshDeg: new makMsh(),
+		//- Adjust Camera x.rotation
+		CmAdjX: 0,				// Airborne Pitch Adjustment
+		CmGrdF: 0,				// Camera Ground Flag (1 = On Ground)
+		CmMulX: 35,				// Pitch Adjustment Multiplier
+		CmLagX: 0,				// Transition Offset
 		// Beginning Head Rotation
 		VewRot: VewRot,
 	}
@@ -555,11 +561,6 @@ let cam_ = {
 	cam_.MshDeg.rotation.order = "YXZ";
 	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
 	cam_.MshObj.add(cam_.MshDeg);
-//- Adjust Camera x.rotation
-let CmAdjX = 0;					// Airborne Pitch Adjustment
-let CmGrdF = 0;					// Camera Ground Flag (1 = On Ground)
-let CmMulX = 35;				// Pitch Adjustment Multiplier
-let CmLagX = 0;					// Transition Offset
 
 //= 9. INPUT VARIABLES =========//==============================================
 //- Pointer Lock Control -------//----------------------------------------------
@@ -675,7 +676,7 @@ async function rendAll() {		// r173 added async
 		else {FadEnd = FadFlr};
 		if (FadEnd != FadBeg) moveFadMsh(); // Fade In/Out
 		// Camera
-		moveCamera(camera,cam_);
+		moveCamera(camera,cam_,air_,key_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
 		AltDif = air_.MapPos.y*AltAdj; // Used by everything
@@ -1956,94 +1957,7 @@ function initCamera(camera,cam_) {
 	cam_.CamFlg = CamFlg[cam_.CamSel];		// 1 = Internal
 	cam_.CamLnk = CamLnk[cam_.CamSel];		// 1 = Linked to Airplane
 	//
-	moveCamera(camera,cam_);
-}
-
-//- Move Camera View -----------//----------------------------------------------
-function moveCamera(camera,cam_) {
-	camera.rotation.x = 0;		// Default
-	if (cam_.VewRot) {			// Beginning Head Rotation
-		// Zero Out When Moving Forward
-		if (air_.PwrPct) {		// Throttle is trigger
-			cam_.VewRot = 0.95*cam_.VewRot;
-			if (Math.abs(cam_.VewRot < 0.1)) cam_.VewRot = 0;
-		}
-	}
-	// Camera In/Out
-	camera.position.z = -cam_.CamLLD.z;
-	// PointerLockControls
-	if (cam_.OrbFlg) {			// If Orbiting
-		cam_.CamLLD.x = cam_.CamLLD.x - InpMos.y * cam_.CamMMR.z; // Camera Position (Lat)
-		cam_.CamLLD.x = MaxVal(cam_.CamLLD.x,cam_.CamMMR.x);
-		cam_.CamLLD.y = Mod360(cam_.CamLLD.y + InpMos.x * cam_.CamMMR.z); // Camera Position (Lon)
-		// Internal View
-		if (cam_.CamFlg) {		// Range: 250 to 360/0 to 110
-			if (cam_.CamLLD.y > 180 && cam_.CamLLD.y < (360-cam_.CamMMR.y)) cam_.CamLLD.y = (360-cam_.CamMMR.y);
-			if (cam_.CamLLD.y < 180 && cam_.CamLLD.y > cam_.CamMMR.y) cam_.CamLLD.y = cam_.CamMMR.y;
-		}
-		// External View
-		else {
-			if (air_.GrdFlg && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
-		}
-		InpMos.x = 0;
-		InpMos.y = 0;
-	}
-	// View Keys (NumLock)
-	else {						// If Not Orbiting
-		// Default
-		cam_.CamLLD.x = cam_.CamLLD.y = 0;
-		// Internal View
-		if (cam_.CamFlg) {
-			cam_.CamLLD.y = cam_.VewRot;
-			if (D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
-			if (D45flg && cam_.VewRot) cam_.CamLLD.y = 0;
-			if (U45flg) cam_.CamLLD.x = 315; // Down
-		}
-		// Exterior View
-		else {
-			cam_.CamLLD.x = -15;
-			if (U45flg) cam_.CamLLD.x = 315;
-			if (D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
-			if (CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
-		}
-		if (L45flg) cam_.CamLLD.y = 315;	// Look Left 45
-		if (R45flg) cam_.CamLLD.y = 45;		// Look Right 45
-		if (L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-		if (R90flg) cam_.CamLLD.y = 90;		// Look Right 90
-		if (LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-		if (RBkflg) cam_.CamLLD.y = 135;	// Look Right 135		
-	}
-	// Adjust Camera Rotators
-	// In Internal View, the camera is facing out - view matches rotation
-	if (cam_.CamFlg) {
-		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad;
-		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y)*DegRad;
-	}
-	// In External View, the camera is facing in and the armature is pointing out:
-	if (!cam_.CamFlg) {
-		if (!cam_.OrbFlg && air_.GrdFlg) { // Air to Ground
-			if (!CmGrdF) {		// if just landed
-				CmLagX = CmAdjX; // All landings are smooth
-//				if (CmLagX > 0.5) CmLagX = 0.5; // Make extreme landings more jarring
-				CmGrdF = 1;
-			}
-			CmAdjX = CmLagX;	// From Landing Value to 0
-		}	
-		if (!cam_.OrbFlg && !air_.GrdFlg) { // Ground to Air
-			if (CmGrdF) {		// if just took off
-				CmLagX = CmMulX*air_.RotDif.x;
-				CmGrdF = 0;
-			}
-			CmAdjX = (CmMulX*air_.RotDif.x)-CmLagX; // From 0 to Take-Off Value
-		}
-		if (CmLagX) {			// Reduce Lag
-			CmLagX = 0.99*CmLagX; // Reduction in Adj/AdjOff
-			if (Math.abs(CmLagX) < 0.1) CmLagX = 0;
-		}
-		camera.rotation.x = CmAdjX*DegRad; // + = up/airplane down
-		cam_.MshRot.rotation.x = Mod360(-cam_.CamLLD.x)*DegRad;
-		cam_.MshRot.rotation.y = Mod360(180-cam_.CamLLD.y)*DegRad;
-	}
+	moveCamera(camera,cam_,air_,key_);
 }
 
 //= 8. OUTPUTS =================//==============================================
@@ -2158,37 +2072,37 @@ function onDocumentMouseWheel(event) {
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == K_PwLU) PwrDif = 0.1;		// Power Up - keyboard left
-	if (event.keyCode == K_PwLD) PwrDif = -0.1;		// Power Down - keyboard left
-	if (event.keyCode == K_PwRU) PwrDif = 0.1;		// Power Up - keyboard right
-	if (event.keyCode == K_PwRD) PwrDif = -0.1;		// Power Down - keyboard right
-	if (event.keyCode == K_BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left - autopilot only
-	if (event.keyCode == K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right - autopilot only
-	if (event.keyCode == K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up - autopilot only
-	if (event.keyCode == K_PitD) air_.InpKey.x = -KeyVal.x;	// Pitch Down - autopilot only
-	if (event.keyCode == K_YwLL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard left
-	if (event.keyCode == K_YwLR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard left
-	if (event.keyCode == K_YwRL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard right
-	if (event.keyCode == K_YwRR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard right
-	if (event.keyCode == K_Brak) InpBrk = 0.01;		// Brakes
+	if (event.keyCode == key_.K_PwLU) PwrDif = 0.1;		// Power Up - keyboard left
+	if (event.keyCode == key_.K_PwLD) PwrDif = -0.1;		// Power Down - keyboard left
+	if (event.keyCode == key_.K_PwRU) PwrDif = 0.1;		// Power Up - keyboard right
+	if (event.keyCode == key_.K_PwRD) PwrDif = -0.1;		// Power Down - keyboard right
+	if (event.keyCode == key_.K_BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left - autopilot only
+	if (event.keyCode == key_.K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right - autopilot only
+	if (event.keyCode == key_.K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up - autopilot only
+	if (event.keyCode == key_.K_PitD) air_.InpKey.x = -KeyVal.x;	// Pitch Down - autopilot only
+	if (event.keyCode == key_.K_YwLL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard left
+	if (event.keyCode == key_.K_YwLR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard left
+	if (event.keyCode == key_.K_YwRL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard right
+	if (event.keyCode == key_.K_YwRR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard right
+	if (event.keyCode == key_.K_Brak) InpBrk = 0.01;		// Brakes
 	// Additional
-	if (event.keyCode == K_Gear) anm_.lngflg = 1; 	// Gear
-	if (event.keyCode == K_Flap) anm_.flpflg = 1; 	// Flaps
-	if (event.keyCode == K_Canp) anm_.canflg = 1; 	// Canopy
-	if (event.keyCode == K_Hook) anm_.thkflg = 1; 	// Tailhook
+	if (event.keyCode == key_.K_Gear) anm_.lngflg = 1; 	// Gear
+	if (event.keyCode == key_.K_Flap) anm_.flpflg = 1; 	// Flaps
+	if (event.keyCode == key_.K_Canp) anm_.canflg = 1; 	// Canopy
+	if (event.keyCode == key_.K_Hook) anm_.thkflg = 1; 	// Tailhook
 	// Views
-	if (event.keyCode == K_Look) cam_.OrbFlg = 1;	// Orbit View
-	if (event.keyCode == K_VU45) D45flg = 1;		// View - 45 deg up
-	if (event.keyCode == K_VD45) U45flg = 1;		// View - 45 deg down
-	if (event.keyCode == K_VL45) L45flg = 1;		// View - 45 deg left
-	if (event.keyCode == K_VR45) R45flg = 1;		// View - 45 deg right
-	if (event.keyCode == K_VL90) L90flg = 1;		// View - 90 deg left
-	if (event.keyCode == K_VR90) R90flg = 1;		// View - 90 deg right
-	if (event.keyCode == K_VLBk) LBkflg = 1;		// View - 135 deg left
-	if (event.keyCode == K_VRBk) RBkflg = 1;		// View - 135 deg right
-	if (event.keyCode == K_VCBk) CBkflg = 1;		// View - 180 deg back
+	if (event.keyCode == key_.K_Look) cam_.OrbFlg = 1;	// Orbit View
+	if (event.keyCode == key_.K_VU45) key_.D45flg = 1;	// View - 45 deg up
+	if (event.keyCode == key_.K_VD45) key_.U45flg = 1;	// View - 45 deg down
+	if (event.keyCode == key_.K_VL45) key_.L45flg = 1;	// View - 45 deg left
+	if (event.keyCode == key_.K_VR45) key_.R45flg = 1;	// View - 45 deg right
+	if (event.keyCode == key_.K_VL90) key_.L90flg = 1;	// View - 90 deg left
+	if (event.keyCode == key_.K_VR90) key_.R90flg = 1;	// View - 90 deg right
+	if (event.keyCode == key_.K_VLBk) key_.LBkflg = 1;	// View - 135 deg left
+	if (event.keyCode == key_.K_VRBk) key_.RBkflg = 1;	// View - 135 deg right
+	if (event.keyCode == key_.K_VCBk) key_.CBkflg = 1;	// View - 180 deg back
 	// Guns
-	if (event.keyCode == K_Guns) { // Guns
+	if (event.keyCode == key_.K_Guns) { // Guns
 		if (!PawsOn) {
 			for (let n = 0; n < myg_.ObjNum; n ++) {
 				if (SndFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();
@@ -2197,50 +2111,50 @@ function onDocumentKeyDown(event) {
 		MYGFlg = 1;
 	}
 	// Reset
-	if (event.keyCode == K_RSet) posnRSet();		// Do Reset	
+	if (event.keyCode == key_.K_RSet) posnRSet();		// Do Reset	
 	// Toggle
-	if (event.keyCode == K_Paws) toglPaws();		// Toggle Pause
-	if (event.keyCode == K_Auto) toglAuto();		// Toggle AutoPilot
-	if (event.keyCode == K_Info) toglInfo();		// Toggle Information
-	if (event.keyCode == K_View) toglView();		// Switch View
-	if (event.keyCode == K_Soun) toglSoun();		// Toggle Sound
+	if (event.keyCode == key_.K_Paws) toglPaws();		// Toggle Pause
+	if (event.keyCode == key_.K_Auto) toglAuto();		// Toggle AutoPilot
+	if (event.keyCode == key_.K_Info) toglInfo();		// Toggle Information
+	if (event.keyCode == key_.K_View) toglView();		// Switch View
+	if (event.keyCode == key_.K_Soun) toglSoun();		// Toggle Sound
 }
 
 //-	Keyboard (Up) --------------//----------------------------------------------
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == K_PwLU) PwrDif = 0;		// Power Up - keyboard left
-	if (event.keyCode == K_PwLD) PwrDif = 0;		// Power Down - keyboard left
-	if (event.keyCode == K_PwRU) PwrDif = 0;		// Power Up - keyboard right
-	if (event.keyCode == K_PwRD) PwrDif = 0;		// Power Down - keyboard right
-	if (event.keyCode == K_BnkL) air_.InpKey.z = 0;	// Bank Left - autopilot only
-	if (event.keyCode == K_BnkR) air_.InpKey.z = 0;	// Bank Right - autopilot only
-	if (event.keyCode == K_PitU) air_.InpKey.x = 0;	// Pitch Up - autopilot only
-	if (event.keyCode == K_PitD) air_.InpKey.x = 0;	// Pitch Down - autopilot only
-	if (event.keyCode == K_YwLL) air_.RotDif.y = 0;	// YawL - keyboard left
-	if (event.keyCode == K_YwLR) air_.RotDif.y = 0;	// YawR - keyboard left
-	if (event.keyCode == K_YwRL) air_.RotDif.y = 0;	// YawL - keyboard right
-	if (event.keyCode == K_YwRR) air_.RotDif.y = 0;	// YawR - keyboard right
-	if (event.keyCode == K_Brak) InpBrk = 0;		// Brakes
+	if (event.keyCode == key_.K_PwLU) PwrDif = 0;		// Power Up - keyboard left
+	if (event.keyCode == key_.K_PwLD) PwrDif = 0;		// Power Down - keyboard left
+	if (event.keyCode == key_.K_PwRU) PwrDif = 0;		// Power Up - keyboard right
+	if (event.keyCode == key_.K_PwRD) PwrDif = 0;		// Power Down - keyboard right
+	if (event.keyCode == key_.K_BnkL) air_.InpKey.z = 0;	// Bank Left - autopilot only
+	if (event.keyCode == key_.K_BnkR) air_.InpKey.z = 0;	// Bank Right - autopilot only
+	if (event.keyCode == key_.K_PitU) air_.InpKey.x = 0;	// Pitch Up - autopilot only
+	if (event.keyCode == key_.K_PitD) air_.InpKey.x = 0;	// Pitch Down - autopilot only
+	if (event.keyCode == key_.K_YwLL) air_.RotDif.y = 0;	// YawL - keyboard left
+	if (event.keyCode == key_.K_YwLR) air_.RotDif.y = 0;	// YawR - keyboard left
+	if (event.keyCode == key_.K_YwRL) air_.RotDif.y = 0;	// YawL - keyboard right
+	if (event.keyCode == key_.K_YwRR) air_.RotDif.y = 0;	// YawR - keyboard right
+	if (event.keyCode == key_.K_Brak) InpBrk = 0;		// Brakes
 	// Additional
-	if (event.keyCode == K_Gear) anm_.lngflg = 0;	// Gear
-	if (event.keyCode == K_Flap) anm_.flpflg = 0;	// Flaps
-	if (event.keyCode == K_Canp) anm_.canflg = 0;	// Canopy
-	if (event.keyCode == K_Hook) anm_.thkflg = 0;	// Taihook
+	if (event.keyCode == key_.K_Gear) anm_.lngflg = 0;	// Gear
+	if (event.keyCode == key_.K_Flap) anm_.flpflg = 0;	// Flaps
+	if (event.keyCode == key_.K_Canp) anm_.canflg = 0;	// Canopy
+	if (event.keyCode == key_.K_Hook) anm_.thkflg = 0;	// Taihook
 	// Views
-	if (event.keyCode == K_Look) cam_.OrbFlg = 0;	// Orbit View
-	if (event.keyCode == K_VU45) D45flg = 0;		// View - 45 deg up
-	if (event.keyCode == K_VD45) U45flg = 0;		// View - 45 deg down
-	if (event.keyCode == K_VL45) L45flg = 0;		// View - 45 deg left
-	if (event.keyCode == K_VR45) R45flg = 0;		// View - 45 deg right
-	if (event.keyCode == K_VL90) L90flg = 0;		// View - 90 deg left
-	if (event.keyCode == K_VR90) R90flg = 0;		// View - 90 deg right
-	if (event.keyCode == K_VLBk) LBkflg = 0;		// View - 135 deg left
-	if (event.keyCode == K_VRBk) RBkflg = 0;		// View - 135 deg right
-	if (event.keyCode == K_VCBk) CBkflg = 0;		// View - 180 deg back
+	if (event.keyCode == key_.K_Look) cam_.OrbFlg = 0;	// Orbit View
+	if (event.keyCode == key_.K_VU45) key_.D45flg = 0;	// View - 45 deg up
+	if (event.keyCode == key_.K_VD45) key_.U45flg = 0;	// View - 45 deg down
+	if (event.keyCode == key_.K_VL45) key_.L45flg = 0;	// View - 45 deg left
+	if (event.keyCode == key_.K_VR45) key_.R45flg = 0;	// View - 45 deg right
+	if (event.keyCode == key_.K_VL90) key_.L90flg = 0;	// View - 90 deg left
+	if (event.keyCode == key_.K_VR90) key_.R90flg = 0;	// View - 90 deg right
+	if (event.keyCode == key_.K_VLBk) key_.LBkflg = 0;	// View - 135 deg left
+	if (event.keyCode == key_.K_VRBk) key_.RBkflg = 0;	// View - 135 deg right
+	if (event.keyCode == key_.K_VCBk) key_.CBkflg = 0;	// View - 180 deg back
 	// Guns
-	if (event.keyCode == K_Guns) {					// Guns
+	if (event.keyCode == key_.K_Guns) {					// Guns
 		for (let n = 0; n < myg_.ObjNum; n ++) {
 			myg_.SndPtr[n].stop();
 		}
