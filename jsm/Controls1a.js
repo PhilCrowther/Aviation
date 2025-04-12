@@ -155,25 +155,25 @@ function moveCamera(camera,cam_,air_,key_) {
 	// In External View, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
 		if (!cam_.OrbFlg && air_.GrdFlg) { // Air to Ground
-			if (!CmGrdF) {		// if just landed
-				CmLagX = CmAdjX; // All landings are smooth
-//				if (CmLagX > 0.5) CmLagX = 0.5; // Make extreme landings more jarring
-				CmGrdF = 1;
+			if (!cam_.CmGrdF) {		// if just landed
+				cam_.CmLagX = cam_.CmAdjX; // All landings are smooth
+//				if (cam_.CmLagX > 0.5) cam_.CmLagX = 0.5; // Make extreme landings more jarring
+				cam_.CmGrdF = 1;
 			}
-			CmAdjX = CmLagX;	// From Landing Value to 0
+			cam_.CmAdjX = cam_.CmLagX;	// From Landing Value to 0
 		}	
 		if (!cam_.OrbFlg && !air_.GrdFlg) { // Ground to Air
-			if (CmGrdF) {		// if just took off
-				CmLagX = CmMulX*air_.RotDif.x;
-				CmGrdF = 0;
+			if (cam_.CmGrdF) {		// if just took off
+				cam_.CmLagX = cam_.CmMulX*air_.RotDif.x;
+				cam_.CmGrdF = 0;
 			}
-			CmAdjX = (CmMulX*air_.RotDif.x)-CmLagX; // From 0 to Take-Off Value
+			cam_.CmAdjX = (cam_.CmMulX*air_.RotDif.x)-cam_.CmLagX; // From 0 to Take-Off Value
 		}
-		if (CmLagX) {			// Reduce Lag
-			CmLagX = 0.99*CmLagX; // Reduction in Adj/AdjOff
-			if (Math.abs(CmLagX) < 0.1) CmLagX = 0;
+		if (cam_.CmLagX) {			// Reduce Lag
+			cam_.CmLagX = 0.99*cam_.CmLagX; // Reduction in Adj/AdjOff
+			if (Math.abs(cam_.CmLagX) < 0.1) cam_.CmLagX = 0;
 		}
-		camera.rotation.x = CmAdjX*DegRad; // + = up/airplane down
+		camera.rotation.x = cam_.CmAdjX*DegRad; // + = up/airplane down
 		cam_.MshRot.rotation.x = Mod360(-cam_.CamLLD.x)*DegRad;
 		cam_.MshRot.rotation.y = Mod360(180-cam_.CamLLD.y)*DegRad;
 	}
