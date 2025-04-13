@@ -73,6 +73,10 @@ const GrvMPS = 9.80665; 		// Gravity (mps)
 const BegTmp = 303.15;			// K = 86F (loaded into _air)
 // These values could also be used by modules, but that would require that all 
 // module users also create a data file - which complicates the use of modules.
+//	Time
+let	DLTime = 1/60;				// Delta Time (1/60 seconds)
+let DLTim2 = DLTime**2;
+let GrvDLT = GrvMPS*DLTim2;
 
 //- INPUT VALUES ---------------//----------------------------------------------
 
@@ -501,7 +505,7 @@ let alt_ = {
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: DLTime,			// Seconds per frame (can vary)
+		DLTime: tim_.DLTime,			// Seconds per frame (can vary)
 		GrvMPS: GrvMPS,			// Gravity (ups)
 		AirDSL: 0,				// Air Density (varies with altitude)
 		// Designators
