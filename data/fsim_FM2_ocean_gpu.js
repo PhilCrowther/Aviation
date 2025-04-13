@@ -100,6 +100,14 @@ let gen_ = {
 		AltDif:	0,
 	}
 
+let tim_ = {
+		DLTime: 1/60,
+		DLTim2: 0,
+		GrvDLT: 0,
+		NowTim: 0,
+		DifTim: 0,
+	}
+
 //- SUN VALUES -----------------//----------------------------------------------
 const SunCol = "white";			// Sun
 let SunInt = 3;					// Default intensity of light/sun
@@ -497,7 +505,7 @@ let alt_ = {
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: DLTime,			// Seconds per frame (can vary)
+		DLTime: tim_.DLTime,			// Seconds per frame (can vary)
 		GrvMPS: GrvMPS,			// Gravity (ups)
 		AirDSL: 0,				// Air Density (varies with altitude)
 		// Designators
