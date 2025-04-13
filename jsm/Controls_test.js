@@ -191,6 +191,12 @@ function Mod360(deg) {
 	deg = deg % 360;			// Compute remainder of any number divided by 360
 return deg;}
 
+//- Limit Maximum +/- Value
+function MaxVal(x, max) {
+	if (x > 0 && x >  max) x =  max;
+	if (x < 0 && x < -max) x = -max;
+return x;}
+
 /*******************************************************************************
 *
 *	EXPORTS
