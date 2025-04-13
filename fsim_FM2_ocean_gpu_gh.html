@@ -92,10 +92,10 @@ import {initBullet,moveBullet,	// My Airplane Bullets
 import {initGrdSmk,initGrdFyr,	// Ground Based
 		initAirSmk,initAirFyr,	// Air Based
 		initShpWak				// Ship Based
-} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke1a.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 import {loadAnmFlg,moveAnmFlg,	// Animated Flag
 		loadMyPeep,moveMyPeep,	// Animated People
-} from "https://PhilCrowther.github.io/Aviation/jsm/ObjAnm1a.js";
+} from "https://PhilCrowther.github.io/Aviation/jsm/ObjAnm.js";
 2
 /*= GENERAL ====================//==============================================
 
@@ -281,7 +281,6 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 let maxAnisotropy = renderer.getMaxAnisotropy();
 // 	Clock
 const clock = new THREE.Clock();
-let oldTim, nowTim, difTim = 0;
 // 	Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);
@@ -619,6 +618,11 @@ function WaitScreen() {
 //-	INITIALIZE -----------------//----------------------------------------------
 
 function initAll() {
+	// Time
+	tim_.DLTime = 1/60;			// Delta Time (1/60 seconds)
+	tim_.DLTim2 = tim_.DLTime**2;
+	tim_.GrvDLT = GrvMPS*tim_.DLTim2;
+	// SkyBox
 	initSkyBox();
 	// Objects
 	initAirObj();
@@ -647,7 +651,7 @@ function initAll() {
 		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(gen_.StatOn.dom);
 	}
-	nowTim = clock.getElapsedTime();
+	tim_.NowTim = clock.getElapsedTime();
 	gen_.LodFlg = 1;
 }
 
@@ -665,9 +669,13 @@ async function rendAll() {		// r173 added async
 		loadSounds();
 		loadRadios();
 	}
-	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {		
-		difTim = clock.getDelta();
-		nowTim = nowTim + difTim;
+	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
+		// Time
+		tim_.DLTime = 1/60;			// Delta Time (1/60 seconds)
+		tim_.DLTim2 = tim_.DLTime**2;
+		tim_.GrvDLT = GrvMPS*tim_.DLTim2;
+		tim_.DifTim = clock.getDelta();
+		tim_.NowTim = tim_.NowTim + tim_.DifTim;
 		// Black Out/Red Out
 		if (air_.GFmult*10>7.5 || air_.GFmult*10<-5) {
 			FadEnd = 0.99;
@@ -683,7 +691,7 @@ async function rendAll() {		// r173 added async
 		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
-		moveMyPeep(myp_,difTim);
+		moveMyPeep(myp_,tim_);
 		// Move Grids
 		waves.update();			// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
@@ -924,7 +932,7 @@ function loadAnmObj() {
 }
 
 function moveAnmObj() {
-	moveAnmFlg(flg_,nowTim);
+	moveAnmFlg(flg_,tim_);
 }
 
 //- AAA Guns -------------------//----------------------------------------------
@@ -948,7 +956,7 @@ function moveAAAGun() {
 			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
 			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
 		}
-		moveAAGuns(aaf_,air_,gen_,DLTime,GrvDLT);
+		moveAAGuns(aaf_,air_,gen_,tim_);
 		// Explosion
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
 			if (aaf_.SmkFlg[n]) {
@@ -959,7 +967,7 @@ function moveAAAGun() {
 			if (aaf_.ExpLif[n] > 0) {
 				aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
 				aaf_.ExpSiz[n] = aaf_.ExpSiz[n] + 1/200;
-				aaf_.ExpLif[n] = aaf_.ExpLif[n] - DLTime;
+				aaf_.ExpLif[n] = aaf_.ExpLif[n] - tim_.DLTime;
 				if (aaf_.ExpLif[n] < 0) {
 					aaf_.ExpLif[n] = 0;
 					aaf_.ExpPtr[n].visible = false;
@@ -981,7 +989,7 @@ function moveAAAGun() {
 				aaf_.SndDTm[n] = delay;	
 			}
 			// If End of Delay Start Sound
-			if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - DLTime;
+			if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - tim_.DLTime;
 			if (aaf_.SndDTm[n] < 0) {
 				aaf_.SndDTm[n] = 0;
 				if (gen_.SndFlg) aaf_.SndPtr[n].play();
@@ -1157,14 +1165,14 @@ function moveMovPln() {
 		// Rotation
 		if (!xac_.EndSeq[n]) {	// Horizontal Turning Flight
 			let XPHSpd = Math.tan(xac_.ObjRot[n].z*DegRad)*xac_.SpdMPS[n]/GrvMPS;
-			XPHSpd = XPHSpd * DLTime;
+			XPHSpd = XPHSpd * tim_.DLTime;
 			xac_.ObjRot[n].y = xac_.ObjRot[n].y + XPHSpd;
 		}
 		else {moveXACEnd(n)}	// If Ending Sequence
 		xac_.ObjAdr[n].rotation.set(xac_.ObjRot[n].x*DegRad,xac_.ObjRot[n].y*DegRad,xac_.ObjRot[n].z*DegRad);
 		//- Map Speed ..........................................................
 		//- Default = Horizontal Only
-		let SpdMPF = xac_.SpdMPS[n] * DLTime; // Speed (m/t)
+		let SpdMPF = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
 		let SpeedY = SpdMPF * Math.sin(xac_.ObjRot[n].x * DegRad);
 		if (!xac_.EndSeq[n]) SpeedY = 0; // avoid rounding errors
 		let GS = -SpdMPF * Math.cos(xac_.ObjRot[n].x * DegRad)
@@ -1209,7 +1217,7 @@ function moveXACGun(n) {
 		if (XPGFlg > 0) xag_.BulFlg[n] = 1;
 		else {xag_.BulFlg[n] = 0;}
 	}
-	moveXACBul(xag_,air_,gen_,DLTime,GrvDLT);
+	moveXACBul(xag_,air_,gen_,tim_);
 }
 
 //= XAC END SEQUENCE ===========//==============================================
@@ -1243,7 +1251,7 @@ function moveXACEnd(n) {
 		if (xat_.SegIdx == 0) contXACExp(n);
 		if (xat_.SegIdx == 1) makeXACSpn(n);
 		if (xat_.SegIdx == 2) contXACExp(n);
-		xat_.TimRem = xat_.TimRem - DLTime;
+		xat_.TimRem = xat_.TimRem - tim_.DLTime;
 		if (xat_.TimRem < 0) xat_.TimRem = 0;
 	}
 }
@@ -1375,7 +1383,7 @@ function moveMovShp() {
 		// Change in Heading
 		let XSHSpd = 0;		// for now
 		let XSHPit = 0;
-		XSHSpd = XSHSpd * DLTime;
+		XSHSpd = XSHSpd * tim_.DLTime;
 		xsh_.ObjRot[n].y = xsh_.ObjRot[n].y + XSHSpd;	
 		// Rock the boat
 		if (n == 0) {
@@ -1385,7 +1393,7 @@ function moveMovShp() {
 			xsh_.ObjGrp[n].rotation.copy(xsh_.ObjRot[n]);
 		}
 		// Speed (Only Horizontal)
-		let SpdMPF = xsh_.SpdMPS[n] * DLTime; // Speed (u/t)
+		let SpdMPF = xsh_.SpdMPS[n] * tim_.DLTime; // Speed (u/t)
 		xsh_.MapSpd[n].z = -SpdMPF * Math.cos(xsh_.ObjRot[n].y*DegRad);
 		xsh_.MapSpd[n].x = -SpdMPF * Math.sin(xsh_.ObjRot[n].y*DegRad);
 		// Recompute Map Postion
@@ -1448,7 +1456,7 @@ function moveXSHGun() {
 			xsg_.AAAFlg[1] = 0;
 			if (XSGFlg < XSGMin) XSGFlg = XSGMax;
 		}
-		moveAAGuns(xsg_,air_,gen_,DLTime,GrvDLT);
+		moveAAGuns(xsg_,air_,gen_,tim_);
 		// Play Sound (No Delay)
 //		for (let n = 0; n < xsg_.ObjNum; n ++) {
 //			if (xsg_.SmkFlg[n] && gen_.SndFlg) xsg_.SndPtr[n].play()
@@ -1464,7 +1472,7 @@ function moveXSHGun() {
 				xsg_.SndDTm[n] = delay;
 			}
 			// If End of Delay Start Sound
-			if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - DLTime;
+			if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - tim_.DLTime;
 			if (xsg_.SndDTm[n] < 0) {
 				xsg_.SndDTm[n] = 0;
 				if (gen_.SndFlg) xsg_.SndPtr[n].play();
@@ -1584,7 +1592,7 @@ function initAirObj() {
 	// Speed
 	if (air_.SpdKPH) {
 		air_.SpdMPS = air_.SpdKPH/3.6; // Speed - meters per second
-		air_.SpdMPF = (air_.SpdKPH/3.6)*DLTime; // Speed - meters per frame
+		air_.SpdMPF = (air_.SpdKPH/3.6)*tim_.DLTime; // Speed - meters per frame
 	}
 	// Altitude
 	if (air_.MapPos.y == 0) air_.GrdFlg = 1;
@@ -1666,7 +1674,7 @@ function moveAirObj() {
 	if (cam_.CamFlg) moveAirInt(air_,vxr_,anm_,cam_.CamLLD); // VC
 	else moveAirExt(air_,mxr_,anm_); // External
 	// Bullets
-	moveBullet(myg_,air_,gen_,DLTime,GrvDLT);
+	moveBullet(myg_,air_,gen_,tim_);
 	testHitBox();
 }
 
@@ -1854,7 +1862,7 @@ function strtRadSeq() {
 
 //- Continue Radio Sequence ----//----------------------------------------------
 function contRadSeq() {
-	rad_.SeqTim = rad_.SeqTim + difTim; // Once started, keep updating
+	rad_.SeqTim = rad_.SeqTim + tim_.DifTim; // Once started, keep updating
 	if (rad_.SeqTim > rad_.SegBeg[rad_.SegPtr]) { // If Arrived at Target Time
 		playRadSeg(rad_.SegSel[rad_.SegPtr]); // Play This Segment
 		rad_.SegPtr++;			// Go to next segment in list
