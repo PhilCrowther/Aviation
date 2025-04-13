@@ -1,5 +1,5 @@
 /*
- * ObjAnm1a.js (vers 25.04.12)
+ * ObjFixd.js (vers 25.04.13)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -22,7 +22,7 @@ This currently includes animated objects which are attached to the scenery
 
 import {
 	// Island
-	MeshLambertNodeMaterial
+	MeshLambertNodeMaterial,
 	// makMsh
 	BoxGeometry,
 	MeshBasicNodeMaterial,

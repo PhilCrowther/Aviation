@@ -1,5 +1,5 @@
 /*
- * ObjAnm1a.js (vers 25.04.13)
+ * ObjAnm.js (vers 25.04.13)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
