@@ -103,12 +103,6 @@ let tim_ = {
 		NowTim: 0,
 		DifTim: 0,
 	}
-	
-//	Time
-//let DLTime = 1/60;				// Delta Time (1/60 seconds)
-//let DLTim2 = DLTime**2;
-//let GrvDLT = GrvMPS*DLTim2;
-//let nowTim, difTim = 0;
 
 //- SUN VALUES -----------------//----------------------------------------------
 const SunCol = "white";			// Sun
@@ -507,7 +501,7 @@ let alt_ = {
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: tim_.DLTime,	// Seconds per frame (can vary)
+		DLTime: DLTime,			// Seconds per frame (can vary)
 		GrvMPS: GrvMPS,			// Gravity (ups)
 		AirDSL: 0,				// Air Density (varies with altitude)
 		// Designators
@@ -861,19 +855,6 @@ let	rad_ = {
 		SegSel: [0,1],			// Segment to Play
 		SeqFlg: 0,				// 1 = Sequence Already Played
 	}
-
-//= 7. CAMERA VARIABLES ========//==============================================
-
-//-	Camera View Keys -----------//----------------------------------------------
-let U45flg = 0;					// Up 45 deg
-let D45flg = 0;					// Down 45 deg
-let	L45flg = 0;					// Left 45 deg (315 deg)
-let R45flg = 0;					// Right 45 deg
-let L90flg = 0;					// Left 90 deg (270 deg)
-let R90flg = 0;					// Right 90 deg
-let LBkflg = 0;					// Left Back 45 deg (225 deg)
-let RBkflg = 0;					// Right Back 45 deg (135 deg)
-let CBkflg = 0;					// Center Back (180 degrees)
 
 //= 8. OUTPUTS VARIABLES =======//==============================================
 
