@@ -1,11 +1,7 @@
 /*
- * ObjAnm1a.js (vers 25.04.05)
+ * ObjAnm1a.js (vers 25.04.13)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-*/
-
-/* NOTES:
-
 */
 
 /*
@@ -14,12 +10,7 @@
  * See http://philcrowther.com/Aviation for more details.
  */
 
-/*******************************************************************************
-*
-*	NOTES
-*
-*******************************************************************************/
-/*
+/* NOTES:
 This currently includes animated objects which are attached to the scenery
 */
 
@@ -67,7 +58,7 @@ const DegRad = Math.PI/180;		// Convert Degrees to Radians
 *******************************************************************************/
 //	Adapted from example at https://codepen.io/okada-web/pen/OJydGzy. Thanks!
 
-//=	LOAD AND INITIALIZE FLAGES ==//==============================================
+//=	LOAD AND INITIALIZE FLAGS ==//==============================================
 function loadAnmFlg(txtrLoader,flg_) {
 	let flgSzX = 30;			// Size X
 	let flgSzY = 16;			// Size Y
@@ -264,5 +255,5 @@ export {loadAnmFlg,moveAnmFlg,loadMyPeep,moveMyPeep};
 *
 *******************************************************************************/
 /*
-250405:	Version 1
+250405:	In development
 */
