@@ -96,6 +96,38 @@ function moveIsland(isl_,air_,gen_) {
 
 /*******************************************************************************
 *
+*	FIXED OBJECTS - Only Objects Attached to Islands (for Now)
+*
+*******************************************************************************/
+
+//=	LOAD OBJECTS ===============//==============================================
+function loadFxdObj(scene,fxd_,gltfLoader) {
+	for (let i = 0; i < fxd_.ObjNum; i++) {
+		gltfLoader.load(fxd_.ObjSrc[i], function (gltf) {
+			fxd_.ObjAdr[i] = gltf.scene;
+			fxd_.ObjAdr[i].scale.setScalar(fxd_.ObjSiz[i]);
+			fxd_.ObjAdr[i].rotation.copy(fxd_.ObjRot[i]);
+			fxd_.ObjAdr[i].position.copy(fxd_.MapPos[i]);
+			fxd_.ObjRef[i].add(fxd_.ObjAdr[i]);
+		});
+	}
+}
+
+//=	INIT OBJECTS ===============//==============================================
+function initFxdObj(fxd_,air_,gen_) {
+	moveFxdObj(fxd_,air_,gen_);
+}
+
+//=	MOVE OBJECTS ===============//==============================================
+function moveFxdObj(fxd_,air_,gen_) {
+	// Change Altitude on Linked Objects to Prevent Flicker
+	for (let i = 0; i < fxd_.ObjNum; i++) {
+		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y + gen_.AltDif*0.01;
+	}
+}
+
+/*******************************************************************************
+*
 *	SUBROUTINES
 *
 *******************************************************************************/
@@ -119,7 +151,7 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {loadIsland,initIsland,moveIsland};
+export {loadIsland,initIsland,moveIsland,loadFxdObj,initFxdObj,moveFxdObj};
 
 /*******************************************************************************
 *
