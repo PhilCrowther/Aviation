@@ -124,10 +124,10 @@ function initBullet(myg_,scene) {
 
 //= MOVE MY BULLETS ============//==============================================
 
-function moveBullet(myg_,air_,gen_,DLTime,GrvDLT) {
+function moveBullet(myg_,air_,gen_,tim_) {
 	let BulSV3 = new Vector3();
-	let	BulSpT = myg_.BulSpd * DLTime;
-	myg_.BulSp2 = myg_.BulSp2 - DLTime;
+	let	BulSpT = myg_.BulSpd * tim_.DLTime;
+	myg_.BulSp2 = myg_.BulSp2 - tim_.DLTime;
 	if (myg_.BulSp2 < 0) myg_.BulSp2 = 0;
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		// Start New Bullets
@@ -141,12 +141,12 @@ function moveBullet(myg_,air_,gen_,DLTime,GrvDLT) {
 			BulSV3 = new Vector3().setFromSpherical(BulSV3);
 			myg_.BulMpS[i].copy(BulSV3);
 			//
-			myg_.BulTim[i] = DLTime;
+			myg_.BulTim[i] = tim_.DLTime;
 			myg_.BulSp2 = myg_.BulSpc;
 			myg_.BulPtr[i].visible = true;
 		}
 		//	Continue Bullets
-		myg_.BulTim[i] = myg_.BulTim[i] + DLTime;
+		myg_.BulTim[i] = myg_.BulTim[i] + tim_.DLTime;
 		//	End Bullet
 		if (myg_.BulTim[i] > myg_.BulDLT) {
 			myg_.BulTim[i] = 0;
@@ -158,7 +158,7 @@ function moveBullet(myg_,air_,gen_,DLTime,GrvDLT) {
 			myg_.BulMpS[i].multiplyScalar(.995);
 			// New Relative Position
 			myg_.BulPtr[i].position.x = myg_.BulPtr[i].position.x - myg_.BulMpS[i].x;
-			myg_.BulPtr[i].position.y = myg_.BulPtr[i].position.y + myg_.BulMpS[i].y - GrvDLT; // Bullet drop
+			myg_.BulPtr[i].position.y = myg_.BulPtr[i].position.y + myg_.BulMpS[i].y - tim_.GrvDLT; // Bullet drop
 			myg_.BulPtr[i].position.z = myg_.BulPtr[i].position.z - myg_.BulMpS[i].z;
 		}
 	} // end i
@@ -239,11 +239,11 @@ function initXACBul(xag_,scene) {
 
 //= MOVE XAC BULLETS ===========//==============================================
 
-function moveXACBul(xag_,air_,gen_,DLTime,GrvDLT) {
+function moveXACBul(xag_,air_,gen_,tim_) {
 	let BulSV3 = new Vector3();
-	let	BulSpT = xag_.BulSpd * DLTime;
+	let	BulSpT = xag_.BulSpd * tim_.DLTime;
 	for (let n = 0; n < xag_.ObjNum; n ++) {
-		xag_.BulSp2[n] = xag_.BulSp2[n] - DLTime;
+		xag_.BulSp2[n] = xag_.BulSp2[n] - tim_.DLTime;
 		if (xag_.BulSp2[n] < 0) xag_.BulSp2[n] = 0;
 		for (let i = 0; i < xag_.BulNum; i ++) {
 			//	Start New Bullets
@@ -258,12 +258,12 @@ function moveXACBul(xag_,air_,gen_,DLTime,GrvDLT) {
 				BulSV3 = new Vector3().setFromSpherical(BulSV3);
 				xag_.BulMpS[n][i].copy(BulSV3);
 				//
-				xag_.BulTim[n][i] = DLTime;
+				xag_.BulTim[n][i] = tim_.DLTime;
 				xag_.BulSp2[n] = xag_.BulSpc;
 				xag_.BulPtr[n][i].visible = true;
 			}
 			//	Continue Bullets
-			xag_.BulTim[n][i] = xag_.BulTim[n][i] + DLTime;
+			xag_.BulTim[n][i] = xag_.BulTim[n][i] + tim_.DLTime;
 			// Stop
 			if (xag_.BulTim[n][i] > xag_.BulDLT) {
 				xag_.BulTim[n][i] = 0;
@@ -275,7 +275,7 @@ function moveXACBul(xag_,air_,gen_,DLTime,GrvDLT) {
 				xag_.BulMpS[n][i].multiplyScalar(.995);
 				// New Map Position
 				xag_.BulMpP[n][i].x = xag_.BulMpP[n][i].x + xag_.BulMpS[n][i].x;
-				xag_.BulMpP[n][i].y = xag_.BulMpP[n][i].y + xag_.BulMpS[n][i].y - GrvDLT;
+				xag_.BulMpP[n][i].y = xag_.BulMpP[n][i].y + xag_.BulMpS[n][i].y - tim_.GrvDLT;
 				xag_.BulMpP[n][i].z = xag_.BulMpP[n][i].z + xag_.BulMpS[n][i].z;
 				// Relative Position
 				xag_.BulPtr[n][i].position.x = xag_.BulMpP[n][i].x - air_.MapPos.x;
@@ -380,13 +380,13 @@ function initAAGuns(aag_,air_,gen_,scene) {
 
 //= MOVE AA GUNS ===============//==============================================
 
-function moveAAGuns(aag_,air_,gen_,DLTime,GrvDLT) {
+function moveAAGuns(aag_,air_,gen_,tim_) {
 	//- Combined Rotation and Map Position of Parent plus Gun
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
 	//
 	let AAASV3 = new Vector3();
-	let	AAASpT = aag_.AAASpd * DLTime;
+	let	AAASpT = aag_.AAASpd * tim_.DLTime;
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Combined Rotation and Map Position of Parent plus Gun
 		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]);
@@ -401,7 +401,7 @@ function moveAAGuns(aag_,air_,gen_,DLTime,GrvDLT) {
 		// Smoke Flag Default
 		aag_.SmkFlg[n] = 0;
 		// For Each Bullet String	
-		aag_.AAASp2[n] = aag_.AAASp2[n] - DLTime; // When reach 0, fire next bullet
+		aag_.AAASp2[n] = aag_.AAASp2[n] - tim_.DLTime; // When reach 0, fire next bullet
 		if (aag_.AAASp2[n] < 0) aag_.AAASp2[n] = 0; // Ready to fire next bullet
 		for (let i = 0; i < aag_.AAANum; i ++) {
 			// Start New Bullets
@@ -417,14 +417,14 @@ function moveAAGuns(aag_,air_,gen_,DLTime,GrvDLT) {
 				AAASV3 = new Vector3().setFromSpherical(AAASV3);
 				aag_.AAAMpS[n][i] = AAASV3;
 				//
-				aag_.AAATim[n][i] = DLTime; // First jump
+				aag_.AAATim[n][i] = tim_.DLTime; // First jump
 				aag_.AAASp2[n] = aag_.AAASpc; // restart delay
 				aag_.AAAPtr[n][i].visible = true;
 				// End Smoke When Bullet0 Begins
 				if (!i) aag_.SmkPtr[n].visible = false;
 			}
 			// Continue Bullets
-			aag_.AAATim[n][i] = aag_.AAATim[n][i] + DLTime;
+			aag_.AAATim[n][i] = aag_.AAATim[n][i] + tim_.DLTime;
 			// Stop
 			if (aag_.AAATim[n][i] > aag_.AAADLT) {
 				aag_.AAATim[n][i] = 0;
@@ -445,7 +445,7 @@ function moveAAGuns(aag_,air_,gen_,DLTime,GrvDLT) {
 				aag_.AAAMpS[n][i].multiplyScalar(.995);
 				// New Map Position
 				aag_.AAAMpP[n][i].x = aag_.AAAMpP[n][i].x + aag_.AAAMpS[n][i].x;
-				aag_.AAAMpP[n][i].y = aag_.AAAMpP[n][i].y + aag_.AAAMpS[n][i].y - GrvDLT;
+				aag_.AAAMpP[n][i].y = aag_.AAAMpP[n][i].y + aag_.AAAMpS[n][i].y - tim_.GrvDLT;
 				aag_.AAAMpP[n][i].z = aag_.AAAMpP[n][i].z + aag_.AAAMpS[n][i].z;
 				// Relative Position
 				aag_.AAAPtr[n][i].position.x = aag_.AAAMpP[n][i].x - air_.MapPos.x;
@@ -466,7 +466,7 @@ function moveAAGuns(aag_,air_,gen_,DLTime,GrvDLT) {
 			}
 		}
 		// Smoke Timer
-		if (aag_.SmkDTm[n] > 0) aag_.SmkDTm[n] = aag_.SmkDTm[n] - DLTime;
+		if (aag_.SmkDTm[n] > 0) aag_.SmkDTm[n] = aag_.SmkDTm[n] - tim_.DLTime;
 		if (aag_.SmkDTm[n] < 0) aag_.SmkDTm[n] = 0;
 	} // end of n
 }
