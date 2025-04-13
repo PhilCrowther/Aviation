@@ -99,23 +99,6 @@ let gen_ = {
 		AltAdj:	0.99,				// Raises objects above map as altitude increases
 		AltDif:	0,
 	}
-//- Flght Controls
-//let PwrMul = 0.0005;			// Power % Input - Mouse Multiplier
-//let PwrDif = 0;					// Power % Input - Value
-//let InpBrk = 0;					// Brakes
-//- Display
-//let PawsOn = 0;					// Pause
-//let InfoOn = 0;					// Info
-//let SndFlg = 0;					// Sound (0 = off; 1 = on)
-//let StatOn = 1;					// Stats (0 = off, 1 = on)
-//let LnFFlg = 1;					// Lensflare
-//	Program Flags
-//let LodFlg = 0;					// Set at end of initialization
-//let LodSnd = 0;					// Set when sound initialized
-//let MYGFlg = 0;					// My Guns (1 = firing)
-//	Altitude Adjustment
-//let AltAdj = 0.99;				// Raises objects above map as altitude increases
-//let AltDif = 0;
 
 //- SUN VALUES -----------------//----------------------------------------------
 const SunCol = "white";			// Sun
@@ -868,19 +851,6 @@ let	rad_ = {
 		SegSel: [0,1],			// Segment to Play
 		SeqFlg: 0,				// 1 = Sequence Already Played
 	}
-
-//= 7. CAMERA VARIABLES ========//==============================================
-
-//-	Camera View Keys -----------//----------------------------------------------
-let U45flg = 0;					// Up 45 deg
-let D45flg = 0;					// Down 45 deg
-let	L45flg = 0;					// Left 45 deg (315 deg)
-let R45flg = 0;					// Right 45 deg
-let L90flg = 0;					// Left 90 deg (270 deg)
-let R90flg = 0;					// Right 90 deg
-let LBkflg = 0;					// Left Back 45 deg (225 deg)
-let RBkflg = 0;					// Right Back 45 deg (135 deg)
-let CBkflg = 0;					// Center Back (180 degrees)
 
 //= 8. OUTPUTS VARIABLES =======//==============================================
 
