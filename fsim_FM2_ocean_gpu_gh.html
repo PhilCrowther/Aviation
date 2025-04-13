@@ -1225,7 +1225,7 @@ function makeXACSpn(n) {
 	}
 }
 
-//= AIRPLANE SMOKE =============//==============================================
+//= XAC SMOKE ==================//==============================================
 
 //- Init Airplane Explosion ----//----------------------------------------------
 function initXACExp(n) {
@@ -1259,7 +1259,7 @@ function initXACFyr(n) {
 
 //= MOVING SHIPS ===============//==============================================
 
-//	Load Ship
+//-	Load Ship ------------------//----------------------------------------------
 function loadMovShp() {
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		gltfLoader.load(xsh_.ObjSrc[n], function (gltf) {
@@ -1285,7 +1285,7 @@ function loadMovShp() {
 	}
 }
 
-//	Init Ship
+//-	Init Ship ------------------//----------------------------------------------
 function initMovShp() {
 // Always use group
 	let X, Y, Z;
@@ -1304,7 +1304,7 @@ function initMovShp() {
 	initXSHGun();	
 }
 
-//	Move Ship
+//-	Move Ship ------------------//----------------------------------------------
 function moveMovShp() {
 	let X, Y, Z;
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
@@ -1413,7 +1413,7 @@ function moveXSHGun() {
 // The hardened surfaces are the Home Airfield and the CVE Deck (moving)
 // Where CVE not facing north, can we rotate ref points and airplane to north?
 
-// Compute Minimum Altitude
+//- Compute Minimum Altitude ---//----------------------------------------------
 function moveMinAlt() {
 	air_.GrdZed = 0;			// Default
 	let PX,PZ;
@@ -1429,6 +1429,7 @@ function moveMinAlt() {
 	}
 }
 
+//- Subroutine: Min Alt for Moving Carrier -------------------------------------
 function moveShpAlt() {
 	gen_.InpBrk = 0;					// Default = no brake
 	air_.ShpPit = 0;			// Default
