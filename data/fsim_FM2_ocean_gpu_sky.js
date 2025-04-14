@@ -126,20 +126,19 @@ let sky_ = {
 		// SkyBox
 		SBxSrc: "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
 		SunLat: 23,				// Direction - Vert (+/- 90) deg
-		SunLon: 312;			// Direction - Horz (0->360) deg
+		SunLon: 312,			// Direction - Horz (0->360) deg
+		EnvMap: 0,
 		// Lensflare
 		LF0Src: "https://threejs.org/examples/textures/lensflare/lensflare1.png",
 		LF0Txt: 0,
 		LF1Txt: 0,
 		// Shadow Beg Info
 		SunDst: 50,				// Distance
-		ShdBox = 15;			// Size of shadow box
-		ShdBLR = 12;
-		ShdBTB = 4;
-		ShdDst = 1500;			// Shadow Distance (meters)	
+		ShdBox = 15,			// Size of shadow box
+		ShdBLR = 12,
+		ShdBTB = 4,
+		ShdDst = 1500,			// Shadow Distance (meters)
 	}
-
-let envMap = 0;
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
 //	This ocean map has 3 nested grids of squares.
