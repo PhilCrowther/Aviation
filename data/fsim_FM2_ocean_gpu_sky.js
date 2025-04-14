@@ -9,10 +9,9 @@
 
 	1. MAIN VARIABLES
 	   Constants
-	   Input Values
-	   Sun Values					Inputs for Directional Light
-	   Fad2Black Plane				Used for scene transitions
-	2. SKYBOX VARIABLES
+	   Input Values					(gen_)
+	   Fad2Black					(f2b_)
+	2. SKY VARIABLES				(sky_)
 	3. OCEAN GRID VARIABLES
 		GRDWTR MODULE				(grd_)
 		OCEAN MODULE				(wav_)
@@ -134,10 +133,10 @@ let sky_ = {
 		LF1Txt: 0,
 		// Shadow Beg Info
 		SunDst: 50,				// Distance
-		ShdBox = 15,			// Size of shadow box
-		ShdBLR = 12,
-		ShdBTB = 4,
-		ShdDst = 1500,			// Shadow Distance (meters)
+		ShdBox: 15,				// Size of shadow box
+		ShdBLR: 12,
+		ShdBTB: 4,
+		ShdDst: 1500,			// Shadow Distance (meters)
 	}
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
