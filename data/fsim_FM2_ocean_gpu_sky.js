@@ -128,6 +128,7 @@ let sky_ = {
 		SunLon: 312,			// Direction - Horz (0->360) deg
 		// Lensflare
 		LF0Src: "https://threejs.org/examples/textures/lensflare/lensflare1.png",
+		LF1Src: "https://threejs.org/examples/textures/lensflare/lensflare3.png",
 		LF0Txt: 0,
 		LF1Txt: 0,
 		// Shadow Beg Info
