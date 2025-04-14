@@ -94,9 +94,9 @@ import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
 		initAAGuns,moveAAGuns	// AA Guns (Fixed and Ship)
 	} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
-import {initGrdSmk,initGrdFyr,	// Ground Based
-		initAirSmk,initAirFyr,	// Air Based
-		initShpWak				// Ship Based
+import {initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
+		initAirSmk,initAirFyr,	// Air Smoke and Fire
+		initXSHWak,moveXSHWak	// Ship Wake
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 
 /*= GENERAL ====================//==============================================
@@ -1300,7 +1300,7 @@ function initMovShp() {
 		xsh_.ObjGrp[n].add(xsh_.ObjAdr[n]);
 		scene.add(xsh_.ObjGrp[n]);		// Uses position of CVE to compute relative position
 	}
-	initXSHWak();			// Init Ship Wake
+	initXSHWak(wak_,txt_);		// Init Ship Wake
 	initXSHGun();	
 }
 
@@ -1343,26 +1343,9 @@ function moveMovShp() {
 			if (xsh_.AnmRdr[n] < 0) xsh_.AnmRdr[n] = 359;
 			if (xsh_.MixRdr[n]) xsh_.MixRdr[n].setTime(xsh_.AnmRdr[n]/anm_.anmfps);
 			// Wake
-			moveXSHWak();
+			moveXSHWak(wak_);
 			moveXSHGun();
 		}
-	}
-}
-
-//= SHIP WAKE ==================//==============================================
-
-//- Init Ship Wake -------------//----------------------------------------------
-function initXSHWak() {
-	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.ObjTxt[n] = txt_.ObjTxt[wak_.ObjTxt[n]];
-	}
-	initShpWak(wak_);
-};
-
-//- Move Ship Wake -------------//----------------------------------------------
-function moveXSHWak() {
-	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.ObjAdr[n].rotation.x = Math.PI/2-wak_.ObjRef[n].rotation.x; // Remain flat
 	}
 }
 
