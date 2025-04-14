@@ -213,10 +213,10 @@ function initAirFyr(xaf_) {
 *
 *******************************************************************************/
 
-//= INITIALIZE SHIP WAKE =======================================================
-
-function initShpWak(wak_) {
+//= INIT SHIP WAKE =============//==============================================
+function initXSHWak(wak_,txt_) {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
+		wak_.ObjTxt[n] = txt_.ObjTxt[wak_.ObjTxt[n]];
 		//- Timer
 		let speed = uniform(.001); // r170 Lower = slower
 		let scaledTime = time.add(125).mul(speed); // r170
@@ -256,13 +256,20 @@ function initShpWak(wak_) {
 	}
 }
 
+//= MOVE SHIP WAKE =============//==============================================
+function moveXSHWak() {
+	for (let n = 0; n < wak_.ObjNum; n ++) {
+		wak_.ObjAdr[n].rotation.x = Math.PI/2-wak_.ObjRef[n].rotation.x; // Remain flat
+	}
+}
+
 /*******************************************************************************
 *
 *	EXPORTS
 *
 *******************************************************************************/
 
-export {initGrdSmk,initGrdFyr,initAirSmk,initAirFyr,initShpWak};
+export {initGrdSmk,initGrdFyr,initAirSmk,initAirFyr,initXSHWak,moveXSHWak};
 
 /*******************************************************************************
 *
