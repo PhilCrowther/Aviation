@@ -124,12 +124,14 @@ let ShdDst = 1500;				// Shadow Distance (meters)
 //= FADE2BLACK PLANE ===========//==============================================
 //	If FadBeg > 0, Prop Invisible.
 //	Therefore, limit use to where Prop would be invisible.
-let FadFlr = 0.25;				// Floor (Fade Not Visible)
-let FadBeg = 0.99;				// Beg Opacity
-let FadEnd = FadFlr;			// Beg Target
-let FadSpd = 0.005;				// Fade Speed
-let FadMat = 0;					// Allows change of color
-let FadCol = "black";			// Beg Color
+let f2b_ {
+		Flr: 0.25,
+		Beg: 0.99,
+		End: 0.25,
+		Spd: 0.005,
+		Mat: 0,
+		Col: "black",
+	}
 
 //= 2. SKYBOX VARIABLES ========//==============================================
 const FogCol = 0xbab4a6;		// Sky (for Fog only)
