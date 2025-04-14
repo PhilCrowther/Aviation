@@ -56,7 +56,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu_sky.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/fm2/data/data.js"></script>
 
 <script type="importmap">
@@ -240,7 +240,7 @@ let V3Zero = new THREE.Vector3(0,0,0);
 let E3Zero = new THREE.Euler(0,0,0);
 //- SUN VALUES -----------------//----------------------------------------------
 //- Computations
-let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 
 //= STANDARD SETUP =============//==============================================
@@ -248,20 +248,20 @@ let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 const scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
 // 	Light
-const ambLight = new THREE.AmbientLight(SunCol,0.2);
+const ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 	scene.add(ambLight);
 //- SunLight
-const sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+const sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = SunDst*0.75;
-	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
+	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.camera.left = -ShdBLR;
-	sunLight.shadow.camera.right = ShdBLR+1;
-	sunLight.shadow.camera.top = ShdBTB;
-	sunLight.shadow.camera.bottom = -ShdBTB;
+	sunLight.shadow.camera.left = -sky_.ShdBLR;
+	sunLight.shadow.camera.right = sky_.ShdBLR+1;
+	sunLight.shadow.camera.top = sky_.ShdBTB;
+	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
 //	sunLight.shadow.bias = -0.0002; // WebGPU
 	sunLight.shadow.bias = -0.0005; // WebGPU
 	scene.add(sunLight);
@@ -338,7 +338,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //	Fine-Tune Graphics
 	grd_.Mtl = [0.5,0.5,0.5];	// Metalness (1 for max reflection)
 	grd_.Ruf = [0.5,0.5,0.5];	// Roughness (0 for max reflection)
-	grd_.EMI = [0.5,0.48,0.48];	// EnvMap Intensity
+	grd_.EMI = [0.5,0.48,0.48];	// envMap Intensity
 //	Tests
 //	grd_.Col = new THREE.Color(0x000040);
 //	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg";
@@ -776,7 +776,7 @@ function moveFadMsh() {
 //- Load SkyBox ----------------//----------------------------------------------
 function loadSkyBox() {
 	envMap = cubeLoader
-		.setPath(SBxSrc)
+		.setPath(sky_.SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
@@ -784,8 +784,8 @@ function loadSkyBox() {
 	scene.environment = envMap;
 	// LensFlare
 	if (gen_.LnFFlg) {				// SunFlare	
-		LF0Txt = txtrLoader.load(LF0Src);
-		LF1Txt = txtrLoader.load(LF1Src);
+		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
+		sky_.LF1Txt = txtrLoader.load(sky_.LF1Src);
 	}
 }
 
@@ -794,7 +794,7 @@ function initSkyBox() {
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
 	// Fog (doesn't work with Normal Material)
-	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
+	scene.fog = new THREE.Fog(sky_.FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
 	// Lensflare
 	if (gen_.LnFFlg) {				// SunFlare		
 		let	spotLight = new THREE.PointLight("white");
@@ -802,9 +802,9 @@ function initSkyBox() {
 		spotLight.position.copy(SunPos).normalize;
 		spotLight.position.multiplyScalar(1000);
 		let LF = new LensflareMesh();
-			LF.addElement(new LensflareElement(LF0Txt,256,0));
-			LF.addElement(new LensflareElement(LF1Txt,32,0.2));
-			LF.addElement(new LensflareElement(LF1Txt,256,0.9));
+			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
 		spotLight.add(LF);
 	}
 }
@@ -1440,7 +1440,7 @@ function moveShpAlt() {
 		}
 		if (air_.MovFlg && air_.SpdKPH > ShpKPH) air_.MovFlg = 0; // Unlock from deck if moving faster than Ship
 		if (air_.MovFlg) {	// Otherwise remain locked to deck
-			sunLight.shadow.camera.far = SunDst+2*ShdBox; // Default on deck
+			sunLight.shadow.camera.far = sky_.SunDst+2*sky_.ShdBox; // Default on deck
 			// Recompute Speed and Position
 			air_.MapSpd.z = -xsh_.MapSpd[0].z;
 			air_.MapSpd.x = -xsh_.MapSpd[0].x;
@@ -1458,7 +1458,7 @@ function moveShpAlt() {
 				air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
 				xsh_.ShpLok[0].remove(air_.AirObj); // Unlock
 				scene.add(air_.AirObj); // Was detached from scene
-				if (!cam_.CamSel) sunLight.shadow.camera.far = SunDst+ShdBox+ShdDst;
+				if (!cam_.CamSel) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst;
 			}
 			sunLight.shadow.camera.updateProjectionMatrix();
 			// Point Same Direction as Carrier
@@ -1839,7 +1839,7 @@ function initCamera(camera,cam_) {
 	//
 	if (!cam_.CamSel) {			// 0 = External View
 		sunLight.shadow.mapSize.set(2048,2048);
-		sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
+		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
 		sunLight.shadow.camera.updateProjectionMatrix();
 		mxr_.Adr.visible = true;
 		vxr_.Adr.visible = false;
@@ -1862,7 +1862,7 @@ function initCamera(camera,cam_) {
 	}	
 	if (cam_.CamSel) {			// 1 = Internal View
 		sunLight.shadow.mapSize.set(8192,8192);
-		sunLight.shadow.camera.far = SunDst+2*ShdBox;
+		sunLight.shadow.camera.far = sky_.SunDst+2*sky_.ShdBox;
 		sunLight.shadow.camera.updateProjectionMatrix();
 		mxr_.Adr.visible = false;
 		vxr_.Adr.visible = true;
