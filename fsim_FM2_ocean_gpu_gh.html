@@ -145,13 +145,13 @@ OK
 
 	VARIABLES						Data			Main
 	1. MAIN VARIABLES
-	   Inputs						gen_,tim_		X
-	   Constants					X				X
-	   Variables					X				X
-	   Sun Values					X				X
-	   Standard Setup								X
-	   Fad2Black Plane				X				X
-	2. SKYBOX VARIABLES				X
+	   Inputs										X
+	   Flight Controls								X
+	   Constants					X
+	   General						gen_,tim_		X
+	   Fad2Black					f2b_
+	2. SKY VARIABLES				sky_			envMap
+	   STANDARD SETUP								X
 	3. OCEAN GRID VARIABLES
 		GRDWTR MODULE				grd_			adj
 		OCEAN MODULE				wav_			adj
@@ -198,7 +198,7 @@ OK
 	   InitAll						Intialize
 	   RendAll						Render
 	   FadMsh						Fade to Black
-	2. SKYBOX						SkyCube
+	2. SKYBOX						Fog, SkyCube and Lensflare
 	3. GEOMAT						Grids and Textures
 	4. OBJECTS						Static and Moving Objects and Animations
 	    Isl							Islands
