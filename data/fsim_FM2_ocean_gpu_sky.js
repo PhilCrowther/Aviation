@@ -73,25 +73,25 @@ const BegTmp = 303.15;			// K = 86F (loaded into _air)
 // These values could also be used by modules, but that would require that all 
 // module users also create a data file - which complicates the use of modules.
 
-//- INPUT VALUES ---------------//----------------------------------------------
+//- GENERAL VARIABLES ----------//----------------------------------------------
 
 let gen_ = {
 		//- Flght Controls
 		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
-		PwrDif:	0,					// Power % Input - Value
-		InpBrk:	0,					// Brakes
+		PwrDif:	0,				// Power % Input - Value
+		InpBrk:	0,				// Brakes
 		//- Display
-		PawsOn:	0,					// Pause
-		InfoOn:	0,					// Info
-		SndFlg:	0,					// Sound (0 = off; 1 = on)
-		StatOn:	1,					// Stats (0 = off, 1 = on)
-		LnFFlg:	1,					// Lensflare
+		PawsOn:	0,				// Pause
+		InfoOn:	0,				// Info
+		SndFlg:	0,				// Sound (0 = off; 1 = on)
+		StatOn:	1,				// Stats (0 = off, 1 = on)
+		LnFFlg:	1,				// Lensflare
 		//	Program Flags
-		LodFlg:	0,					// Set at end of initialization
-		LodSnd:	0,					// Set when sound initialized
-		MYGFlg:	0,					// My Guns (1 = firing)
+		LodFlg:	0,				// Set at end of initialization
+		LodSnd:	0,				// Set when sound initialized
+		MYGFlg:	0,				// My Guns (1 = firing)
 		//	Altitude Adjustment
-		AltAdj:	0.99,				// Raises objects above map as altitude increases
+		AltAdj:	0.99,			// Raises objects above map as altitude increases
 		AltDif:	0,
 	}
 
@@ -126,7 +126,6 @@ let sky_ = {
 		SBxSrc: "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
 		SunLat: 23,				// Direction - Vert (+/- 90) deg
 		SunLon: 312,			// Direction - Horz (0->360) deg
-		EnvMap: 0,
 		// Lensflare
 		LF0Src: "https://threejs.org/examples/textures/lensflare/lensflare1.png",
 		LF0Txt: 0,
@@ -138,6 +137,7 @@ let sky_ = {
 		ShdBTB: 4,
 		ShdDst: 1500,			// Shadow Distance (meters)
 	}
+let	envMap = 0;
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
 //	This ocean map has 3 nested grids of squares.
