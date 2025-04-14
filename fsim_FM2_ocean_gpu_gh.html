@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Apr 2025
+Version dated 14 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -680,12 +680,12 @@ async function rendAll() {		// r173 added async
 		tim_.NowTim = tim_.NowTim + tim_.DifTim;
 		// Black Out/Red Out
 		if (air_.GFmult*10>7.5 || air_.GFmult*10<-5) {
-			FadEnd = 0.99;
-			if (air_.GFmult*10>7.5) FadCol = "black";
-			else {FadCol = "red"};
+			f2b_.End = 0.99;
+			if (air_.GFmult*10>7.5) f2b_.Col = "black";
+			else {f2b_.Col = "red"};
 		}		
-		else {FadEnd = FadFlr};
-		if (FadEnd != FadBeg) moveFadMsh(); // Fade In/Out
+		else {f2b_.End = f2b_.Flr};
+		if (f2b_.End != f2b_.Beg) moveFadMsh(); // Fade In/Out
 		// Camera
 		moveCamera(camera,cam_,air_,key_);
 		// Move Objects
@@ -717,24 +717,26 @@ async function rendAll() {		// r173 added async
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-//= FADE =======================//==============================================
+//= FADE TO BLACK ==============//==============================================
+//	Use this to fade to or from black or other color
+//	In flight, this can emulate black-out, gray-out, or red-out	
 
 //-	Init Fade Mesh -------------//----------------------------------------------
 function initFadMsh() {
 	let geometry = new THREE.SphereGeometry(0.15,64,64);
-	FadMat = new THREE.MeshBasicNodeMaterial({
+	f2b_.Mat = new THREE.MeshBasicNodeMaterial({
 		side:THREE.BackSide,
-		colorNode:color(FadCol),
-		opacity:FadBeg,
+		colorNode:color(f2b_.Col),
+		opacity:f2b_.Beg,
 //		depthTest:false,		// No effect
 //		depthWrite:false,		// NG - prop shines through
 		transparent:true,
 	});
-	let mesh = new THREE.Mesh(geometry,FadMat);
+	let mesh = new THREE.Mesh(geometry,f2b_.Mat);
 	camera.add(mesh);
 	//- Range and Visibility Tests
-	if (FadBeg < FadFlr) FedBeg = FadFlr;
-	if (FadBeg == FadFlr) mesh.visible = false;
+	if (f2b_.Beg < f2b_.Flr) FedBeg = f2b_.Flr;
+	if (f2b_.Beg == f2b_.Flr) mesh.visible = false;
 	else {mesh.visible = true};
 
 return mesh;}
@@ -742,30 +744,30 @@ return mesh;}
 //-	Move Fade Mesh -------------//----------------------------------------------
 function moveFadMsh() {
 	// Set Color
-	FadMat.colorNode = color(FadCol);
-	// Limit Range (FadFlr to 1)
-	if (FadBeg < FadFlr) FadBeg = FadFlr;
-	if (FadEnd < FadFlr) FadEnd = FadFlr;
-	if (FadBeg > 1) FadBeg = 1;
-	if (FadEnd > 1) FadBeg = 1;
+	f2b_.Mat.colorNode = color(f2b_.Col);
+	// Limit Range (f2b_.Flr to 1)
+	if (f2b_.Beg < f2b_.Flr) f2b_.Beg = f2b_.Flr;
+	if (f2b_.End < f2b_.Flr) f2b_.End = f2b_.Flr;
+	if (f2b_.Beg > 1) f2b_.Beg = 1;
+	if (f2b_.End > 1) f2b_.Beg = 1;
 	//
 	FadMsh.visible = true;
 	// If Black to Clear
-	if (FadEnd < FadBeg) {
-		FadBeg = FadBeg - FadSpd/FadBeg;
-		if (FadBeg < FadEnd) {
-			FadBeg = FadEnd;
-//			if (FadBeg == FadEnd) FadMsh.visible = false;
+	if (f2b_.End < f2b_.Beg) {
+		f2b_.Beg = f2b_.Beg - f2b_.Spd/f2b_.Beg;
+		if (f2b_.Beg < f2b_.End) {
+			f2b_.Beg = f2b_.End;
+//			if (f2b_.Beg == f2b_.End) FadMsh.visible = false;
 		}
 	}
 	// If Fade to Black
 	else {
-		FadBeg = FadBeg + FadSpd/FadBeg;
-		if (FadBeg > FadEnd) FadBeg = FadEnd;
+		f2b_.Beg = f2b_.Beg + f2b_.Spd/f2b_.Beg;
+		if (f2b_.Beg > f2b_.End) f2b_.Beg = f2b_.End;
 	}
 	// Set Opacity
-	FadMsh.material.opacity = FadBeg;
-	if (FadBeg == FadFlr) FadMsh.visible = false;
+	FadMsh.material.opacity = f2b_.Beg;
+	if (f2b_.Beg == f2b_.Flr) FadMsh.visible = false;
 	else {FadMsh.visible = true};
 }
 
@@ -1997,10 +1999,10 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.K_PwLD) gen_.PwrDif = -0.1;		// Power Down - keyboard left
 	if (event.keyCode == key_.K_PwRU) gen_.PwrDif = 0.1;		// Power Up - keyboard right
 	if (event.keyCode == key_.K_PwRD) gen_.PwrDif = -0.1;		// Power Down - keyboard right
-	if (event.keyCode == key_.K_BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left - autopilot only
+	if (event.keyCode == key_.K_BnkL) air_.InpKey.z = -KeyVal.z; // Bank Left - autopilot only
 	if (event.keyCode == key_.K_BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right - autopilot only
 	if (event.keyCode == key_.K_PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up - autopilot only
-	if (event.keyCode == key_.K_PitD) air_.InpKey.x = -KeyVal.x;	// Pitch Down - autopilot only
+	if (event.keyCode == key_.K_PitD) air_.InpKey.x = -KeyVal.x; // Pitch Down - autopilot only
 	if (event.keyCode == key_.K_YwLL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard left
 	if (event.keyCode == key_.K_YwLR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard left
 	if (event.keyCode == key_.K_YwRL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard right
