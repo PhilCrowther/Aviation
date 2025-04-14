@@ -73,10 +73,6 @@ const GrvMPS = 9.80665; 		// Gravity (mps)
 const BegTmp = 303.15;			// K = 86F (loaded into _air)
 // These values could also be used by modules, but that would require that all 
 // module users also create a data file - which complicates the use of modules.
-//	Time
-let	DLTime = 1/60;				// Delta Time (1/60 seconds)
-let DLTim2 = DLTime**2;
-let GrvDLT = GrvMPS*DLTim2;
 
 //- INPUT VALUES ---------------//----------------------------------------------
 
@@ -124,7 +120,7 @@ let ShdDst = 1500;				// Shadow Distance (meters)
 //= FADE2BLACK PLANE ===========//==============================================
 //	If FadBeg > 0, Prop Invisible.
 //	Therefore, limit use to where Prop would be invisible.
-let f2b_ {
+let f2b_ = {
 		Flr: 0.25,
 		Beg: 0.99,
 		End: 0.25,
