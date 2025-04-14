@@ -9,10 +9,9 @@
 
 	1. MAIN VARIABLES
 	   Constants
-	   Input Values
-	   Sun Values					Inputs for Directional Light
-	   Fad2Black Plane				Used for scene transitions
-	2. SKYBOX VARIABLES
+	   Input Values					(gen_)
+	   Fad2Black					(f2b_)
+	2. SKY VARIABLES				(sky_)
 	3. OCEAN GRID VARIABLES
 		GRDWTR MODULE				(grd_)
 		OCEAN MODULE				(wav_)
@@ -74,25 +73,25 @@ const BegTmp = 303.15;			// K = 86F (loaded into _air)
 // These values could also be used by modules, but that would require that all 
 // module users also create a data file - which complicates the use of modules.
 
-//- INPUT VALUES ---------------//----------------------------------------------
+//- GENERAL VARIABLES ----------//----------------------------------------------
 
 let gen_ = {
 		//- Flght Controls
 		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
-		PwrDif:	0,					// Power % Input - Value
-		InpBrk:	0,					// Brakes
+		PwrDif:	0,				// Power % Input - Value
+		InpBrk:	0,				// Brakes
 		//- Display
-		PawsOn:	0,					// Pause
-		InfoOn:	0,					// Info
-		SndFlg:	0,					// Sound (0 = off; 1 = on)
-		StatOn:	1,					// Stats (0 = off, 1 = on)
-		LnFFlg:	1,					// Lensflare
+		PawsOn:	0,				// Pause
+		InfoOn:	0,				// Info
+		SndFlg:	0,				// Sound (0 = off; 1 = on)
+		StatOn:	1,				// Stats (0 = off, 1 = on)
+		LnFFlg:	1,				// Lensflare
 		//	Program Flags
-		LodFlg:	0,					// Set at end of initialization
-		LodSnd:	0,					// Set when sound initialized
-		MYGFlg:	0,					// My Guns (1 = firing)
+		LodFlg:	0,				// Set at end of initialization
+		LodSnd:	0,				// Set when sound initialized
+		MYGFlg:	0,				// My Guns (1 = firing)
 		//	Altitude Adjustment
-		AltAdj:	0.99,				// Raises objects above map as altitude increases
+		AltAdj:	0.99,			// Raises objects above map as altitude increases
 		AltDif:	0,
 	}
 
@@ -104,20 +103,7 @@ let tim_ = {
 		DifTim: 0,
 	}
 
-//- SUN VALUES -----------------//----------------------------------------------
-const SunCol = "white";			// Sun
-let SunInt = 3;					// Default intensity of light/sun
-//- Rotation and Position (fixed)
-let SunDst = 50;				// Distance (for shadows)
-let SunLat = 23;				// Direction - Vert (+/- 90) deg
-let SunLon = 312;				// Direction - Horz (0->360) deg
-//	Shadows
-let ShdBox = 15;				// Size of shadow box
-let ShdBLR = 12;
-let ShdBTB = 4;
-let ShdDst = 1500;				// Shadow Distance (meters)
-
-//= FADE2BLACK PLANE ===========//==============================================
+//- Fade2Black Values -----------//----------------------------------------------
 //	If FadBeg > 0, Prop Invisible.
 //	Therefore, limit use to where Prop would be invisible.
 let f2b_ = {
@@ -128,16 +114,31 @@ let f2b_ = {
 		Mat: 0,
 		Col: "black",
 	}
-
-//= 2. SKYBOX VARIABLES ========//==============================================
-const FogCol = 0xbab4a6;		// Sky (for Fog only)
-//- SkyBox
-const SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
-//-	LensFlare
-const LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
-let LF0Txt, LF1Txt = 0;
-let envMap = 0;
+	
+//= 2. SKY VARIABLES ===========//==============================================
+let sky_ = {
+		// Sun
+		SunCol: "white",		// Sun
+		SunInt: 3,
+		// Fog
+		FogCol: 0xbab4a6,		// Sky (for Fog only)
+		// SkyBox
+		SBxSrc: "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
+		SunLat: 23,				// Direction - Vert (+/- 90) deg
+		SunLon: 312,			// Direction - Horz (0->360) deg
+		// Lensflare
+		LF0Src: "https://threejs.org/examples/textures/lensflare/lensflare1.png",
+		LF1Src: "https://threejs.org/examples/textures/lensflare/lensflare3.png",
+		LF0Txt: 0,
+		LF1Txt: 0,
+		// Shadow Beg Info
+		SunDst: 50,				// Distance
+		ShdBox: 15,				// Size of shadow box
+		ShdBLR: 12,
+		ShdBTB: 4,
+		ShdDst: 1500,			// Shadow Distance (meters)
+	}
+let	envMap = 0;
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
 //	This ocean map has 3 nested grids of squares.
