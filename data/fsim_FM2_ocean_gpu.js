@@ -147,7 +147,6 @@ let	envMap = 0;
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
 //- GRDWTR ---------------------//----------------------------------------------
-let WtrCol = 0x004080;			// Water Color (was Navy Blue = 0x1060ff, but that appeared purple)
 let grids = 0;
 let grd_ = {
 		MSP: 0,					// MSX, MPY, MSZ (meters) (from Flight)
