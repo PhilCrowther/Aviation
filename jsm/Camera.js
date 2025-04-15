@@ -6,7 +6,7 @@
 
 /*
  * @fileoverview
- * A Fade2Black Subroutine
+ * Two Position Camera Controls
  * See http://philcrowther.com/Aviation for more details.
  */
 
