@@ -147,6 +147,7 @@ let	envMap = 0;
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
 //- GRDWTR ---------------------//----------------------------------------------
+let WtrCol = 0x004080,			// Water Color (was Navy Blue = 0x1060ff, but that appeared purple)
 let grids = 0;
 let grd_ = {
 		MSP: 0,					// MSX, MPY, MSZ (meters) (from Flight)
@@ -166,7 +167,7 @@ let grd_ = {
 		N2S: "https://threejs.org/examples/textures/waternormals.jpg", // Size = 1024x1024
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
-		Col: 0x004080,			// Water Color (was Navy Blue = 0x1060ff, but that appeared purple)
+		Col: 0,
 		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png",
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
