@@ -146,23 +146,15 @@ let	envMap = 0;
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-//- GrtWtr ---------------------//----------------------------------------------
-//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
-const WtrCol = 0x004080;		// Water (Nodes)
-const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
-const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
-const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg"; // Size = 1024x1024
-const GrdSiz = 2400;			// 1600 = 1 mile
-const GrdRes = 512;
-const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
-const WavMax = 5;				// Maximum wave height (set height of outer waves)
+//- GRDWTR ---------------------//----------------------------------------------
+let WtrCol = 0x004080;			// Water Color (was Navy Blue = 0x1060ff, but that appeared purple)
 let grids = 0;
 let grd_ = {
 		MSP: 0,					// MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,				// Squares in each of first 2 grids
-		Siz: GrdSiz,			// Size of smallest square
+		Siz: 2400,			// Size of smallest square
 		Stp: 4,					// Squares in each of first 2 grids
-		Seg: GrdSeg,			// Segments for smallest square
+		Seg: 256,				// Segments for smallest square (512 = too much)
 		Grx: [],				// Index of Grids (0-2)
 		// Geometry and Materials
 		Geo: [],				// Master Index of Basic Geometries
@@ -172,40 +164,36 @@ let grd_ = {
 		// Normal Map
 		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
 		NMS: 0,					// Grid 0-1 Normal Map Scale (from Ocean)
-		N2S: NrmSrc,
+		N2S: "https://threejs.org/examples/textures/waternormals.jpg", // Size = 1024x1024
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
-		Col: 0,					// Color
-		DfS: DifSrc,
+		Col: 0,
+		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png",
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
-		RfS: RufSrc,
+		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
 		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
 		EMI: [0.5,0.42,0.42],	// EnvMap Intensity
 		// Maps
+		MSz: 512,				// Image Size
 		DfM: [[0],[0],0],		// Diffuse
 		RfM: [[0],[0],0],		// Roughness
 		// Other
-		WMx: WavMax,			// Max wave height, used to lower outer squares
+		WMx: 5,					// Max wave height, used to lower outer squares
 	};
-
-//- OCEAN MODULE ---------------//----------------------------------------------
-let WndSpd = 10.0;
-let WndHdg = 90;
-let Choppy = 1.5;
-let AnmSpd = 0.5;				// Can vary with GrdSiz
+//- OCEAN MODULE ---------------//----------------------------------------------			
 let waves = 0;
 let wav_ = {
 		// Sources
-		Res: GrdRes,			// Resolution - segments per square (default = 512)
-		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
-		WSp: WndSpd,			// Wind Speed
-		WHd: WndHdg,			// Wind Heading (0=0,Spd; 90=Spd,0; 180=0,-Spd; 270=-Spd,0)
-		Chp: Choppy,			// default = 1
+		Res: 512,				// Resolution - segments per square (default = 512)
+		Siz: grd_.Siz,			// Size of Smallest Square
+		WSp: 10.0,				// Wind Speed
+		WHd: 90,				// Wind Heading (0=0,Spd; 90=Spd,0; 180=0,-Spd; 270=-Spd,0)
+		Chp: 1.5,				// default = 1
 		// Animated Maps
 		Dsp: 0,					// The Displacement Map
 		Nrm: 0,					// The Normal Map
 		NMS: 0, 				// Normal Map Scale (flip Y for left-handed maps)
-		Spd: AnmSpd
+		Spd: 0.5,				// Can vary with GrdSiz
 	};
 
 //= 4. OBJECT VARIABLES ========//==============================================
