@@ -203,7 +203,7 @@ function initFad2Blk(camera,f2b_) {
 //		depthWrite:false,		// NG - prop shines through
 		transparent:true,
 	});
-	let f2b_.Msh = new Mesh(geometry,f2b_.Mat);
+	f2b_.Msh = new Mesh(geometry,f2b_.Mat);
 	camera.add(f2b_.Msh);
 	//- Range and Visibility Tests
 	if (f2b_.Beg < f2b_.Flr) FedBeg = f2b_.Flr;
