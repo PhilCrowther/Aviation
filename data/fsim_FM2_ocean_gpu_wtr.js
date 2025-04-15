@@ -151,7 +151,7 @@ let grids = 0;
 let grd_ = {
 		MSP: 0,					// MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,				// Squares in each of first 2 grids
-		Siz: GrdSiz,			// Size of smallest square
+		Siz: 2400,			// Size of smallest square
 		Stp: 4,					// Squares in each of first 2 grids
 		Seg: 256,				// Segments for smallest square (512 = too much)
 		Grx: [],				// Index of Grids (0-2)
