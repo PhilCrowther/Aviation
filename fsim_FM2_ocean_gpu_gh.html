@@ -325,8 +325,8 @@ let boxrot = 0;
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
-	canvas.width = ImgSiz;
-	canvas.height = ImgSiz;
+	canvas.width = grd_.MSz;
+	canvas.height = grd_.MSz;
 let context = canvas.getContext("2d",{willReadFrequently: true});
 	context.translate(0, ImgSiz); // Flips vertical for three.js
 	context.scale(1,-1);
