@@ -859,6 +859,43 @@ let	rad_ = {
 		SeqFlg: 0,				// 1 = Sequence Already Played
 	}
 
+//= 7. CAMERA VARIABLES ========//==============================================
+//-	Start
+let CamSel = 1;					// Camera Selection (0 = External; 1 = Internal)
+//- Variables
+let CamNum = 2;
+let CamFlg = [0,1];				// 1 = Internal View
+let CamLnk = [1,1];				// 1 = Linked to Airplane
+//- Variables
+let CamAdj = [180,0];
+//- Shared Variables
+let cam_ = {
+		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
+		CamNum: CamNum,
+		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
+		// Camera
+		CamLLD: 0, // cam_.MshRot Lat, Lon, Dst
+		CamAdj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
+		CamMMD: 0,				// In/Out - min,max,spd
+		// Rotator
+		MshRot: 0,				// Camera Rotator
+		CamMMR: 0,				// Rotate - min/max Lat/Lon,rspd
+		// Center of Rotation
+		CamPar: 0,				// Center of Rotation	
+		CamFlg: 0,				// View Flag (0 = External, 1 = Internal)
+		// Linked Airplane
+		CamLnk: 0,
+		MshObj: 0,
+		MshDeg: 0,
+		//- Adjust Camera x.rotation
+		CmAdjX: 0,				// Airborne Pitch Adjustment
+		CmGrdF: 0,				// Camera Ground Flag (1 = On Ground)
+		CmMulX: 35,				// Pitch Adjustment Multiplier
+		CmLagX: 0,				// Transition Offset
+		// Beginning Head Rotation
+		VewRot: 0,
+	}
+
 //= 8. OUTPUTS VARIABLES =======//==============================================
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
