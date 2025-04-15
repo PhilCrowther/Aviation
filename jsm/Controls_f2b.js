@@ -34,6 +34,8 @@ import {
 	Mesh,
 } from 'three';
 
+import {color,texture} from "three/tsl";
+
 //= VARIABLES ==================//==============================================
 
 /*******************************************************************************
@@ -236,7 +238,7 @@ function moveFad2Blk(f2b_) {
 		if (f2b_.Beg > f2b_.End) f2b_.Beg = f2b_.End;
 	}
 	// Set Opacity
-	f2b_.Msh.material.opacity = f2b_.Beg;
+	f2b_.Mat.opacity = f2b_.Beg;
 	if (f2b_.Beg == f2b_.Flr) f2b_.Msh.visible = false;
 	else {f2b_.Msh.visible = true};
 }
