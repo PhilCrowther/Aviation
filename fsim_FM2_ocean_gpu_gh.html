@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 14 Apr 2025
+Version dated 15 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -80,7 +80,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {PointerLockControls,moveCamera} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
+import {PointerLockControls,moveCamera,initFad2Blk,moveFad2Blk} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // add grd_.EMI
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
 import {loadIsland,initIsland,moveIsland, // Islands
@@ -186,7 +186,7 @@ OK
 	6. SOUND VARIABLES
 		My Sounds					mys_			adj
 		Radio Variables				rad_
-	7. CAMERA VARIABLES								cam_
+	7. CAMERA VARIABLES				cam_			adj
 	8. OUTPUT VARIABLES				X
 	9. INPUT VARIABLES
 	   Pointer Lock Control			X
@@ -317,9 +317,6 @@ let loadingScreen = {
 let boxrot = 0;
 
 //= 2. SKYBOX ==================//==============================================
-
-//= FADE2BLACK PLANE ===========//==============================================
-let FadMsh = initFadMsh();		// Initialize
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
 //- GrdWtr Textures ------------//----------------------------------------------
@@ -513,54 +510,31 @@ const CamPVC = new makMsh();
 	CamPVC.position.set(0,1.0668,0.762);	// Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
-//- Start ......................//..............................................
-let CamSel = 1;					// Camera Selection (0 = External; 1 = Internal)
-let VewRot = 0;					// Used to rotation head in beginning Internal View
+//- Start
+let VewRot = 0;					// Used to rotate head in beginning Internal View
 if (BegLoc == 1) VewRot = 45;	// Use this instead of R45, in case no access to View Keys
 //- Variables
-let CamNum = 2;
-let CamFlg = [0,1];				// 1 = Internal View
-let CamLnk = [1,1];				// 1 = Linked to Airplane
 let CamLLD = [new THREE.Vector3(-10,0,30),
 			  new THREE.Vector3(0,0,0.001)];
-let CamAdj = [180,0];			// 180 = Looking In
 let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
 			  new THREE.Vector3(0,1,0.001)];	// Internal View: Throttle - min,max,spd
 let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
 			  new THREE.Vector3(45,110,0.5)];
 let CamPar = [air_.AirObj,CamPVC];
-//- Shared Variables
-let cam_ = {
-		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
-		CamNum: CamNum,
-		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
-		// Camera
-		CamLLD: new THREE.Vector3().copy(CamLLD[CamSel]), // cam_.MshRot Lat, Lon, Dst
-		CamAdj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
-		CamMMD: new THREE.Vector3().copy(CamMMD[CamSel]), // In/Out - min,max,spd
-		// Rotator
-		MshRot: new makMsh(),	// Camera Rotator
-		CamMMR: new THREE.Vector3().copy(CamMMR[CamSel]), // Rotate - min/max Lat/Lon,rspd
-		// Center of Rotation
-		CamPar: CamPar[CamSel],	// Center of Rotation	
-		CamFlg: CamFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
-		// Linked Airplane
-		CamLnk: CamLnk[CamSel],
-		MshObj: new makMsh(),
-		MshDeg: new makMsh(),
-		//- Adjust Camera x.rotation
-		CmAdjX: 0,				// Airborne Pitch Adjustment
-		CmGrdF: 0,				// Camera Ground Flag (1 = On Ground)
-		CmMulX: 35,				// Pitch Adjustment Multiplier
-		CmLagX: 0,				// Transition Offset
-		// Beginning Head Rotation
-		VewRot: VewRot,
-	}
 //- Adjustments
-	camera.rotation.order = "YXZ";
+	cam_.CamLLD = new THREE.Vector3().copy(CamLLD[CamSel]); // cam_.MshRot Lat, Lon, Dst
+	cam_.CamMMD = new THREE.Vector3().copy(CamMMD[CamSel]); // In/Out - min,max,spd
+	cam_.MshRot = new makMsh();	// Camera Rotator
 	cam_.MshRot.rotation.order = "YXZ";
+	cam_.CamMMR = new THREE.Vector3().copy(CamMMR[CamSel]); // Rotate - min/max Lat/Lon,rspd
+	cam_.CamPar = CamPar[CamSel];	// Center of Rotation	
+	cam_.MshObj = new makMsh();
 	cam_.MshObj.rotation.order = "YXZ";
+	cam_.MshDeg = new makMsh();
 	cam_.MshDeg.rotation.order = "YXZ";
+	cam_.VewRot = VewRot;
+//- Adjustments and Links
+	camera.rotation.order = "YXZ";
 	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
 	cam_.MshObj.add(cam_.MshDeg);
 
@@ -624,6 +598,8 @@ function initAll() {
 	tim_.DLTime = 1/60;			// Delta Time (1/60 seconds)
 	tim_.DLTim2 = tim_.DLTime**2;
 	tim_.GrvDLT = GrvMPS*tim_.DLTim2;
+	// Fad2Blk
+	initFad2Blk(camera,f2b_);
 	// SkyBox
 	initSkyBox();
 	// Objects
@@ -685,7 +661,7 @@ async function rendAll() {		// r173 added async
 			else {f2b_.Col = "red"};
 		}		
 		else {f2b_.End = f2b_.Flr};
-		if (f2b_.End != f2b_.Beg) moveFadMsh(); // Fade In/Out
+		if (f2b_.End != f2b_.Beg) moveFad2Blk(f2b_); // Fade In/Out
 		// Camera
 		moveCamera(camera,cam_,air_,key_);
 		// Move Objects
@@ -717,61 +693,7 @@ async function rendAll() {		// r173 added async
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-//= FADE TO BLACK ==============//==============================================
-//	Use this to fade to or from black or other color
-//	In flight, this can emulate black-out, gray-out, or red-out	
-
-//-	Init Fade Mesh -------------//----------------------------------------------
-function initFadMsh() {
-	let geometry = new THREE.SphereGeometry(0.15,64,64);
-	f2b_.Mat = new THREE.MeshBasicNodeMaterial({
-		side:THREE.BackSide,
-		colorNode:color(f2b_.Col),
-		opacity:f2b_.Beg,
-//		depthTest:false,		// No effect
-//		depthWrite:false,		// NG - prop shines through
-		transparent:true,
-	});
-	let mesh = new THREE.Mesh(geometry,f2b_.Mat);
-	camera.add(mesh);
-	//- Range and Visibility Tests
-	if (f2b_.Beg < f2b_.Flr) FedBeg = f2b_.Flr;
-	if (f2b_.Beg == f2b_.Flr) mesh.visible = false;
-	else {mesh.visible = true};
-
-return mesh;}
-
-//-	Move Fade Mesh -------------//----------------------------------------------
-function moveFadMsh() {
-	// Set Color
-	f2b_.Mat.colorNode = color(f2b_.Col);
-	// Limit Range (f2b_.Flr to 1)
-	if (f2b_.Beg < f2b_.Flr) f2b_.Beg = f2b_.Flr;
-	if (f2b_.End < f2b_.Flr) f2b_.End = f2b_.Flr;
-	if (f2b_.Beg > 1) f2b_.Beg = 1;
-	if (f2b_.End > 1) f2b_.Beg = 1;
-	//
-	FadMsh.visible = true;
-	// If Black to Clear
-	if (f2b_.End < f2b_.Beg) {
-		f2b_.Beg = f2b_.Beg - f2b_.Spd/f2b_.Beg;
-		if (f2b_.Beg < f2b_.End) {
-			f2b_.Beg = f2b_.End;
-//			if (f2b_.Beg == f2b_.End) FadMsh.visible = false;
-		}
-	}
-	// If Fade to Black
-	else {
-		f2b_.Beg = f2b_.Beg + f2b_.Spd/f2b_.Beg;
-		if (f2b_.Beg > f2b_.End) f2b_.Beg = f2b_.End;
-	}
-	// Set Opacity
-	FadMsh.material.opacity = f2b_.Beg;
-	if (f2b_.Beg == f2b_.Flr) FadMsh.visible = false;
-	else {FadMsh.visible = true};
-}
-
-//= 2. SKYBOX ==================//==============================================
+//= 2. SKY =====================//==============================================
 
 //- Load SkyBox ----------------//----------------------------------------------
 function loadSkyBox() {
@@ -810,7 +732,7 @@ function initSkyBox() {
 }
 
 //= 3. GEOMAT ===================//==============================================
-// Not exported since GrdWtr is a module
+// Not exported because GrdWtr is a module
 function loadGeoMat(grd_) {
 	loadGe1Mat(grd_.DfS,grd_.DfM); // Diffuse Textures
 	loadGe1Mat(grd_.RfS,grd_.RfM); // Roughness Textures
