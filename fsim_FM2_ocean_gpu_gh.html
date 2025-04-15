@@ -147,11 +147,13 @@ OK
 
 	VARIABLES						Data			Main
 	1. MAIN VARIABLES
-	   Inputs										X
-	   Flight Controls								X
 	   Constants					X
 	   General						gen_,tim_		X
 	   Fad2Black					f2b_
+	   Inputs										X
+	   Flight Controls								X
+	   Sky Values					sky_			comps
+	   Standard Setup								X
 	2. SKY VARIABLES				sky_			envMap
 	   STANDARD SETUP								X
 	3. OCEAN GRID VARIABLES
@@ -191,7 +193,7 @@ OK
 	7. CAMERA VARIABLES				cam_			adj
 	8. OUTPUT VARIABLES				X
 	9. INPUT VARIABLES
-	   Pointer Lock Control			X
+	   Pointer Lock Control			plc_			X
 	   Keys							key_
 
 	PROGRAM
@@ -318,17 +320,16 @@ let loadingScreen = {
 };
 let boxrot = 0;
 
-//= 2. SKYBOX ==================//==============================================
+//= 2. SKY VARIABLES ===========//==============================================
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
 //- GrdWtr Textures ------------//----------------------------------------------
 //- Canvas (for splitting up textures)
-let ImgSiz = 512;				// !!! Change this for each image
 let canvas = document.createElement("canvas");
 	canvas.width = grd_.MSz;
 	canvas.height = grd_.MSz;
 let context = canvas.getContext("2d",{willReadFrequently: true});
-	context.translate(0, ImgSiz); // Flips vertical for three.js
+	context.translate(0, grd_.MSz); // Flips vertical for three.js
 	context.scale(1,-1);
 //	Adjustments
 	grd_.MSP = new THREE.Vector3();
@@ -375,16 +376,13 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	xsh_.ObjGrp = [new makMsh(),new makMsh()];
 	xsh_.MapSpd = [new THREE.Vector3(),new THREE.Vector3()];
 	xsh_.ShpLok = [new makMsh(),0];
-
 //= ANIMATED FLAGS =============//==============================================
 //	Adjustments
 	flg_.ObjRot = [new THREE.Euler(0,97.5*DegRad,0)]; // Adjust to make the flag visible at start
 	flg_.MapPos = [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)]; // Relative Map Position
 	flg_.ObjRef = [xsh_.ObjGrp[0]]; // Parent Object
-
 //= AIRPLANE EXPLOSION =========//==============================================
 	xae_.ExpMsh = makeSphere("yellow");
-
 //= SMOKE MODULE ===============//==============================================
 //- Vertical Smoke -------------//----------------------------------------------
 //	Adjustments
@@ -400,7 +398,6 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	wak_.MapPos = [new THREE.Vector3(50,75,25),		// Map Position
 				   new THREE.Vector3(50,75,25)],
 	wak_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[1]];	// Parent Object			 
-
 //= MY PEEPS ===================//==============================================
 //- Animated Objects: Linked ---//----------------------------------------------
 //	Adjustments
@@ -409,7 +406,6 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	myp_.MapPos = [new THREE.Vector3(6,12.9,40), // Relative Position (if parent)
 				   new THREE.Vector3(12.22,11.39,35)];
 	myp_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[0]]; // Parent, if any
-
 //= MINIMUM ALTITUDE ===========//==============================================
 //- Adjustments
 	alt_.Ref = [isl_.ObjGrp[0],xsh_.ObjGrp[0]]; // can't load until object exists
@@ -418,7 +414,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	xsh_.ObjGrp[0].add(xsh_.ShpLok[0]);
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
-//- Flight Module --------------//----------------------------------------------
+//- FLIGHT MODULE --------------//----------------------------------------------
 //	Adjustments
 	air_.AirDat = data_;
 	air_.AirRot = new THREE.Euler();
@@ -436,8 +432,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	air_.InpKey = new THREE.Vector3();
 	air_.OldRot = new THREE.Euler();
 	air_.BegTmp = BegTmp;
-
-//- FM2 Animations -------------//----------------------------------------------
+//- FM2 ANIMATIONS -------------//----------------------------------------------
 	mxr_.Adr = new makMsh();
 	vxr_.Adr = new makMsh();
 	if (BegLoc == 0) {
@@ -453,7 +448,6 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //		anm_.lngpos = 180;		// Landing Gear Up (later)
 		anm_.flppos = 180;		// Flaps Up
 	}
-
 //= GUNASG MODULE ==============//==============================================
 //- My Guns --------------------//----------------------------------------------
 //	Specific Adjustments
@@ -541,7 +535,7 @@ let CamPar = [air_.AirObj,CamPVC];
 	cam_.MshObj.add(cam_.MshDeg);
 
 //= 9. INPUT VARIABLES =========//==============================================
-//- Pointer Lock Control -------//----------------------------------------------
+//- POINTER LOCK CONTROLS ------//----------------------------------------------
 //	Adjustments
 	InpMos = new THREE.Vector2(); // Mouse Inputs
 //. Setup ......................................................................
@@ -565,11 +559,9 @@ let instructions = document.getElementById("instructions");
 *******************************************************************************/
 
 //= 1. MAIN PROGRAMS ===========//==============================================
-
 	loadAll();
 	
 //-	0 LOAD ALL------------------//----------------------------------------------
-
 function loadAll() {
 	WaitScreen();				// load loading screen
 	loadSkyBox();
@@ -580,7 +572,6 @@ function loadAll() {
 }
 
 //- WAIT SCREEN ----------------//----------------------------------------------
-
 function WaitScreen() {
 	// Set up the loading screen scene - it can be treated just like our main scene.
 	let BoxGeo = new THREE.PlaneGeometry(1,1);
@@ -594,7 +585,6 @@ function WaitScreen() {
 }
 
 //-	INITIALIZE -----------------//----------------------------------------------
-
 function initAll() {
 	// Time
 	tim_.DLTime = 1/60;			// Delta Time (1/60 seconds)
@@ -636,7 +626,6 @@ function initAll() {
 }
 
 //- RENDER ---------------------//----------------------------------------------
-
 async function rendAll() {		// r173 added async
 	// This block runs while resources are loading.
 	if(RESOURCES_LOADED == false){
@@ -757,10 +746,10 @@ function loadGe1Mat(fnam,dest) {
 	let ImgDat = 0;
 	let texture = 0;
 	imagLoader.load(fnam,function(image) { // Load, Split and Save Textures
-		context.drawImage(image,0,0,ImgSiz,ImgSiz);
+		context.drawImage(image,0,0,grd_.MSz,grd_.MSz);
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
 		let idx = 0;
-		let siz = ImgSiz/4;
+		let siz = grd_.MSz/4;
 		for (let z = 0; z < 4; z++) {
 			for (let x = 0; x < 4; x++) {
 				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
@@ -776,8 +765,8 @@ function loadGe1Mat(fnam,dest) {
 			}
 		}
 		// Grid2 - Static Color Map Texture
-		ImgDat = context.getImageData(0,0,ImgSiz,ImgSiz);
-		texture = new THREE.DataTexture(ImgDat.data,ImgSiz,ImgSiz);
+		ImgDat = context.getImageData(0,0,grd_.MSz,grd_.MSz);
+		texture = new THREE.DataTexture(ImgDat.data,grd_.MSz,grd_.MSz);
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -1198,7 +1187,7 @@ function loadMovShp() {
 			xsh_.ObjAdr[n] = gltf.scene;
 			xsh_.ObjAdr[n].scale.setScalar(xsh_.ObjSiz[n]); // Scale
 			// Animated Radar
-			if (n == 0) {
+			if (n == 0) {		// if CVE
 				// Radar
 				let clip = THREE.AnimationClip.findByName(gltf.animations, "RadarAction");
 				xsh_.MixRdr[n] = new THREE.AnimationMixer(xsh_.ObjAdr[n]);
