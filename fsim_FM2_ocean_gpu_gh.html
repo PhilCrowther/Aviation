@@ -1033,7 +1033,15 @@ function moveMovPln() {
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 	}
-	if (!xac_.EndSeq[1]) moveXACGun(1); // Enemy Airplane Only
+	// Test Enemy Airplene Only
+	let n = myg_.HitTgt;	
+	// Fire Guns Until End Sequence Starts
+	if (!xac_.EndSeq[n]) moveXACGun(n); // Stop Firing
+	// If Enough Hits, Start Ending Sequence 
+	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
+		xac_.EndSeq[n] = xac_.EndTim;
+		xac_.HitCnt[n] = 0;		// Reset Hit Counter
+	}
 }
 
 //= XAC GUNS ===================//==============================================
@@ -1501,32 +1509,7 @@ function moveAirObj() {
 	if (cam_.CamFlg) moveAirInt(air_,vxr_,anm_,cam_.CamLLD); // VC
 	else moveAirExt(air_,mxr_,anm_); // External
 	// Bullets
-	moveBullet(myg_,air_,gen_,tim_);
-	testHitBox();
-}
-
-//= HITBOX =====================//==============================================
-
-function testHitBox() {
-	let n = myg_.HitTgt;
-	if (!xac_.EndSeq[n]) { // If Not Already in Sequence
-		// Check Bullets for Hit
-		for (let i = 0; i < myg_.BulNum; i ++) {
-			// Hitting Target?
-			if (Math.abs(xac_.ObjAdr[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
-				if (Math.abs(xac_.ObjAdr[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
-					if (Math.abs(xac_.ObjAdr[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
-						xac_.HitCnt[n]++;
-					}
-				}
-			}
-		}
-	}
-	// Start Ending Sequence
-	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
-		xac_.EndSeq[n] = xac_.EndTim;
-		xac_.HitCnt[n] = 0;		// Reset Hit Counter
-	}
+	moveBullet(myg_,air_,gen_,tim_,xac_);
 }
 
 //= 6. SOUNDS ==================//==============================================
