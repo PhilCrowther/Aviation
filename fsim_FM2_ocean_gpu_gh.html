@@ -587,7 +587,7 @@ function WaitScreen() {
 //-	INITIALIZE -----------------//----------------------------------------------
 function initAll() {
 	// Time
-	tim_.DLTime = 1/60;			// Delta Time (1/60 seconds)
+	tim_.DLTime = 1/60;			// Seconds per frame (default)
 	tim_.DLTim2 = tim_.DLTime**2;
 	tim_.GrvDLT = GrvMPS*tim_.DLTim2;
 	// Fad2Blk
@@ -621,7 +621,7 @@ function initAll() {
 		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(gen_.StatOn.dom);
 	}
-	tim_.NowTim = clock.getElapsedTime();
+	tim_.NowTim = clock.getElapsedTime(); // Start Clock
 	gen_.LodFlg = 1;
 }
 
@@ -639,12 +639,12 @@ async function rendAll() {		// r173 added async
 		loadRadios();
 	}
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
-		// Time
-		tim_.DLTime = 1/60;			// Delta Time (1/60 seconds)
-		tim_.DLTim2 = tim_.DLTime**2;
-		tim_.GrvDLT = GrvMPS*tim_.DLTim2;
+		// Time (fixed for now)
 		tim_.DifTim = clock.getDelta();
 		tim_.NowTim = tim_.NowTim + tim_.DifTim;
+		tim_.DLTime = 1/60;			// Seconds per frame
+		tim_.DLTim2 = tim_.DLTime**2;
+		tim_.GrvDLT = GrvMPS*tim_.DLTim2;
 		// Black Out/Red Out
 		if (air_.GFmult*10>7.5 || air_.GFmult*10<-5) {
 			f2b_.End = 0.99;
@@ -656,6 +656,7 @@ async function rendAll() {		// r173 added async
 		// Camera
 		moveCamera(camera,cam_,air_,key_);
 		// Move Objects
+		air_.DLTime = tim_.DLTime;
 		moveAirObj();			// Move aircaft
 		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
