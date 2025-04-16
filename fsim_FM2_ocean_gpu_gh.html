@@ -90,6 +90,9 @@ import {loadIsland,initIsland,moveIsland, // Islands
 		loadAnmFlg,moveAnmFlg,	// Animated Flag
 		loadMyPeep,moveMyPeep,	// Animated People
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
+import {loadXACVeh,initXACVeh,	// Airplanes
+		loadXSHVeh,initXSHVeh,	// Ships
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Vehicles.js";
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {loadAirExt,loadAirInt,moveAirExt,moveAirInt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2a.js";
 import {initBullet,moveBullet,	// My Airplane Bullets
@@ -831,17 +834,23 @@ function moveStatic() {
 //- Moving Objects -------------//----------------------------------------------
 
 function loadMoving() {
-	loadMovPln();
-	loadMovShp();
+	// Airplanes
+	loadXACVeh(gltfLoader,xac_);
+	// Ships
+	loadXSHVeh(gltfLoader,xsh_);
 }
 
 function initMoving() {
+	// Airplanes
 	initMovPln();
+	// Ships
 	initMovShp();
 }
 
 function moveMoving() {
-	moveMovPln();
+	// Airplanes
+	moveMovPln(xac_);
+	// Ships
 	moveMovShp();
 }
 
@@ -953,50 +962,9 @@ function initHgrFyr() {
 
 //= MOVING AIRPLANES ===========//==============================================
 
-//-	Load Airplane --------------//----------------------------------------------
-function loadMovPln() {
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		gltfLoader.load(xac_.ObjSrc[n], function (gltf) {
-			xac_.ObjAdr[n] = gltf.scene;
-			// Convert from feet to meters
-			xac_.ObjAdr[n].scale.setScalar(xac_.ObjSiz[n]);
-			// Propeller
-			let clip = THREE.AnimationClip.findByName(gltf.animations, "propellerAction");
-			xac_.MixSpn[n] = new THREE.AnimationMixer(xac_.ObjAdr[n]);
-			let actun = xac_.MixSpn[n].clipAction(clip);
-			actun.play();
-			if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
-			// Bank
-			clip = THREE.AnimationClip.findByName(gltf.animations, "AC_BankAction");
-			xac_.MixBnk[n] = new THREE.AnimationMixer(xac_.ObjAdr[n]);
-			actun = xac_.MixBnk[n].clipAction(clip);
-			actun.play();
-			if (xac_.MixBnk[n]) xac_.MixBnk[n].setTime(xac_.AnmBnk[n]/anm_.anmfps);
-			// Pitch
-			clip = THREE.AnimationClip.findByName(gltf.animations, "AC_PtchAction");
-			xac_.MixPit[n] = new THREE.AnimationMixer(xac_.ObjAdr[n]);
-			actun = xac_.MixPit[n].clipAction(clip);
-			actun.play();
-			if (xac_.MixPit[n]) xac_.MixPit[n].setTime(xac_.AnmPit[n]/anm_.anmfps);
-			// Rotation
-			xac_.ObjAdr[n].rotation.order = "YXZ"; // Heading, Pitch, Bank
-			xac_.ObjAdr[n].rotation.y = xac_.ObjRot[n].y*DegRad;
-		});
-	}
-
-}
-
 //- Init Airplane --------------//----------------------------------------------
 function initMovPln() {
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		// Compute Relative Position
-		// (cause Objects to elevate above water as we climb to prevent flicker)
-		let X = xac_.MapPos[n].x-air_.MapPos.x;
-		let Y = xac_.MapPos[n].y-gen_.AltDif;
-		let Z = air_.MapPos.z-xac_.MapPos[n].z;
-		xac_.ObjAdr[n].position.set(X,Y,Z);
-		scene.add(xac_.ObjAdr[n]);
-	};
+	initXACVeh(xac_,air_,scene);
 	initXACGun();				// Enemy Airplane Only
 	initXACExp(1);				// Enemy Airplane Only
 	initXACSmk(0);				// Friendly Airplane Only
@@ -1183,47 +1151,9 @@ function initXACFyr(n) {
 
 //= MOVING SHIPS ===============//==============================================
 
-//-	Load Ship ------------------//----------------------------------------------
-function loadMovShp() {
-	for (let n = 0; n < xsh_.ObjNum; n ++) {
-		gltfLoader.load(xsh_.ObjSrc[n], function (gltf) {
-			gltf.scene.traverse(function (child) {
-				if (child.isMesh) {
-					child.castShadow = true;
-					child.receiveShadow = true;
-				}
-			});
-			xsh_.ObjAdr[n] = gltf.scene;
-			xsh_.ObjAdr[n].scale.setScalar(xsh_.ObjSiz[n]); // Scale
-			// Animated Radar
-			if (n == 0) {		// if CVE
-				// Radar
-				let clip = THREE.AnimationClip.findByName(gltf.animations, "RadarAction");
-				xsh_.MixRdr[n] = new THREE.AnimationMixer(xsh_.ObjAdr[n]);
-				let actun = xsh_.MixRdr[n].clipAction(clip);
-				actun.play();
-				if (xsh_.MixRdr[n]) xsh_.MixRdr[n].setTime(xsh_.AnmRdr[n]/anm_.anmfps);
-			}
-			xsh_.ObjAdr[n].position.set(0,0,0); // position within group is always 0,0,0
-		});
-	}
-}
-
 //-	Init Ship ------------------//----------------------------------------------
 function initMovShp() {
-// Always use group
-	let X, Y, Z;
-	for (let n = 0; n < xsh_.ObjNum; n ++) {
-		xsh_.ObjGrp[n].rotation.order = "YXZ";
-		// Compute Relative Position
-		// (cause Objects to elevate above water as we climb to prevent flicker)
-		X = xsh_.MapPos[n].x-air_.MapPos.x;
-		Y = xsh_.MapPos[n].y-gen_.AltDif;
-		Z = air_.MapPos.z-xsh_.MapPos[n].z;
-		xsh_.ObjGrp[n].position.set(X,Y,Z);
-		xsh_.ObjGrp[n].add(xsh_.ObjAdr[n]);
-		scene.add(xsh_.ObjGrp[n]);		// Uses position of CVE to compute relative position
-	}
+	initXSHVeh(xsh_,air_,scene);
 	initXSHWak(wak_,txt_);		// Init Ship Wake
 	initXSHGun();	
 }
