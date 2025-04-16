@@ -145,6 +145,46 @@ function initXSHVeh(xsh_,air_,scene) {
 
 //=	MOVE SHIPS =================//==============================================
 
+function moveXSHVeh(xsh_,air_) {
+	let X,Y,Z;
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		// Change in Heading
+		let XSHSpd = 0;		// for now
+		let XSHPit = 0;
+		XSHSpd = XSHSpd * tim_.DLTime;
+		xsh_.ObjRot[n].y = xsh_.ObjRot[n].y + XSHSpd;	
+		// Rock the boat
+		if (n == 0) {
+			xsh_.ShpPit[n] = Mod360(xsh_.ShpPit[n] + 0.5);
+			let PitAdj = 1.5*DegRad*Math.sin(xsh_.ShpPit[n]*DegRad);
+			xsh_.ObjRot[n].x = PitAdj;
+			xsh_.ObjGrp[n].rotation.copy(xsh_.ObjRot[n]);
+		}
+		// Speed (Only Horizontal)
+		let SpdMPF = xsh_.SpdMPS[n] * tim_.DLTime; // Speed (u/t)
+		xsh_.MapSpd[n].z = -SpdMPF * Math.cos(xsh_.ObjRot[n].y*DegRad);
+		xsh_.MapSpd[n].x = -SpdMPF * Math.sin(xsh_.ObjRot[n].y*DegRad);
+		// Recompute Map Postion
+		xsh_.MapPos[n].x = xsh_.MapPos[n].x + xsh_.MapSpd[n].x;
+		xsh_.MapPos[n].z = xsh_.MapPos[n].z - xsh_.MapSpd[n].z;
+		// Compute New Relative Position
+		X = xsh_.MapPos[n].x-air_.MapPos.x;
+		Y = xsh_.MapPos[n].y-gen_.AltDif;
+		Z = air_.MapPos.z-xsh_.MapPos[n].z;
+		xsh_.ObjGrp[n].position.set(X,Y,Z);
+		// Compute Distance (for Viz Tests)
+		X = xsh_.ObjGrp[n].position.x;
+		Z = xsh_.ObjGrp[n].position.z;
+		xsh_.ObjDst[n] = Math.sqrt(X*X+Z*Z); // Compute distance
+		// Attached Objects
+		if (n == 0) {
+			// Radar
+			xsh_.AnmRdr[n] = xsh_.AnmRdr[n] - 0.1;
+			if (xsh_.AnmRdr[n] < 0) xsh_.AnmRdr[n] = 359;
+			if (xsh_.MixRdr[n]) xsh_.MixRdr[n].setTime(xsh_.AnmRdr[n]/anm_.anmfps);
+		}
+	}
+};
 
 /*******************************************************************************
 *
@@ -165,7 +205,7 @@ return deg;}
 *******************************************************************************/
 
 export {loadXACVeh,initXACVeh,
-		loadXSHVeh,initXSHVeh
+		loadXSHVeh,initXSHVeh,moveXSHVeh
 };
 
 /*******************************************************************************
