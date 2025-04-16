@@ -21,12 +21,9 @@ This contains subroutines to create moving airplanes and ships
 *******************************************************************************/
 
 import {
-	// Airplanes
 	AnimationClip,
 	AnimationMixer,
 } from 'three';
-
-import {color,texture} from "three/tsl";
 
 /*******************************************************************************
 *
@@ -103,9 +100,48 @@ function initXACVeh(xac_,air_,scene) {
 
 //=	LOAD SHIPS =================//==============================================
 
+function loadXSHVeh(gltfLoader,xsh_) {
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		gltfLoader.load(xsh_.ObjSrc[n], function (gltf) {
+			gltf.scene.traverse(function (child) {
+				if (child.isMesh) {
+					child.castShadow = true;
+					child.receiveShadow = true;
+				}
+			});
+			xsh_.ObjAdr[n] = gltf.scene;
+			xsh_.ObjAdr[n].scale.setScalar(xsh_.ObjSiz[n]); // Scale
+			// Animated Radar
+			if (n == 0) {		// if CVE
+				// Radar
+				let clip = AnimationClip.findByName(gltf.animations, "RadarAction");
+				xsh_.MixRdr[n] = new AnimationMixer(xsh_.ObjAdr[n]);
+				let actun = xsh_.MixRdr[n].clipAction(clip);
+				actun.play();
+				if (xsh_.MixRdr[n]) xsh_.MixRdr[n].setTime(xsh_.AnmRdr[n]/anm_.anmfps);
+			}
+			xsh_.ObjAdr[n].position.set(0,0,0); // position within group is always 0,0,0
+		});
+	}
+}
 
 //=	INIT SHIPS =================//==============================================
 
+function initXSHVeh(xsh_,air_,scene) {
+// Always use group
+	let X, Y, Z;
+	for (let n = 0; n < xsh_.ObjNum; n ++) {
+		xsh_.ObjGrp[n].rotation.order = "YXZ";
+		// Compute Relative Position
+		// (cause Objects to elevate above water as we climb to prevent flicker)
+		X = xsh_.MapPos[n].x-air_.MapPos.x;
+		Y = xsh_.MapPos[n].y-gen_.AltDif;
+		Z = air_.MapPos.z-xsh_.MapPos[n].z;
+		xsh_.ObjGrp[n].position.set(X,Y,Z);
+		xsh_.ObjGrp[n].add(xsh_.ObjAdr[n]);
+		scene.add(xsh_.ObjGrp[n]);		// Uses position of CVE to compute relative position
+	}
+}
 
 //=	MOVE SHIPS =================//==============================================
 
@@ -122,21 +158,15 @@ function Mod360(deg) {
 	deg = deg % 360;				 // Compute remainder of any number divided by 360
 return deg;}
 
-//- Make Mesh ------------------------------------------------------------------
-function makMsh() {
-	let geometry = new BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
-	let mesh = new Mesh(geometry,material);
-return mesh;}
-
-
 /*******************************************************************************
 *
 *	EXPORTS
 *
 *******************************************************************************/
 
-export {loadXACVeh,initXACVeh};
+export {loadXACVeh,initXACVeh,
+		loadXSHVeh,initXSHVeh
+};
 
 /*******************************************************************************
 *
