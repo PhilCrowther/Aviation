@@ -50,8 +50,6 @@ import {color,texture} from "three/tsl";
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 
-//= VARIABLES ==================//==============================================
-
 /*******************************************************************************
 *
 *	ISLANDS
