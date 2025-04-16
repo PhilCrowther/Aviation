@@ -124,7 +124,7 @@ function initBullet(myg_,scene) {
 
 //= MOVE MY BULLETS ============//==============================================
 
-function moveBullet(myg_,air_,gen_,tim_) {
+function moveBullet(myg_,air_,gen_,tim_,xac_) {
 	let BulSV3 = new Vector3();
 	let	BulSpT = myg_.BulSpd * tim_.DLTime;
 	myg_.BulSp2 = myg_.BulSp2 - tim_.DLTime;
@@ -162,7 +162,28 @@ function moveBullet(myg_,air_,gen_,tim_) {
 			myg_.BulPtr[i].position.z = myg_.BulPtr[i].position.z - myg_.BulMpS[i].z;
 		}
 	} // end i
+	testHitBox(myg_,xac_)
 }
+
+//= HITBOX =====================//==============================================
+
+function testHitBox(myg_,xac_) {
+	let n = myg_.HitTgt;		// Only 1 enemy airplane for now
+	if (!xac_.EndSeq[n]) {		// Only if Not Already in Sequence
+		// Check All Bullets for Hit
+		for (let i = 0; i < myg_.BulNum; i ++) {
+			// Hitting Target?
+			if (Math.abs(xac_.ObjAdr[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
+				if (Math.abs(xac_.ObjAdr[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
+					if (Math.abs(xac_.ObjAdr[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
+						xac_.HitCnt[n]++;
+					}
+				}
+			}
+		}
+	}
+}
+
 
 /*******************************************************************************
 *
