@@ -675,7 +675,7 @@ let myg_ = {
 		SndVol: 0.5,			// Volume
 		SndMsh: [0,0],			// (makMsh)
 		// HitBox
-		HitTgt: 1,				// Hit Target (1 = enemy airplane_
+		HitTgt: 1,				// Hit Target (1 = enemy airplane)
 		HitDst: 10,				// Hit Radius
 	}
 
