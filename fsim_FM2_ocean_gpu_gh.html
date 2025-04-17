@@ -1023,18 +1023,17 @@ function initXACGun() {
 //- Move XAC Guns --------------//----------------------------------------------
 //	Enemy Airplane Only
 function moveXACGun(n) {
-	// Turn Airplane 1 (Enemy) Guns On/Off
-	xag_.BulFlg[n] = 0;			// Default = Off
 	// Counter
-	xag_.XPGFlg[n] = xag_.XPGFlg[n] - 1;
-	if (xag_.XPGFlg[n] < xag_.XPGMin[n]) xag_.XPGFlg[n] = xag_.XPGMax[n];
-	// On or Off
+	xag_.TimFlg[n] = xag_.TimFlg[n] - 1;
+	if (xag_.TimFlg[n] < xag_.TimMin[n]) xag_.TimFlg[n] = xag_.TimMax[n];
+	// Visibility Test
+	xag_.BulFlg[n] = 0;			// Default = Not Visible
 	let MinDst = 500;
 	let X = xag_.XACPos[n].x - air_.MapPos.x;
 	let Y = xag_.XACPos[n].y - gen_.AltDif;
 	let Z = air_.MapPos.z - xag_.XACPos[n].z;
 	if (X < MinDst && Y < MinDst && Z < MinDst) { // If Visible
-		if (xag_.XPGFlg > 0) xag_.BulFlg[n] = 1;
+		if (xag_.TimFlg > 0) xag_.BulFlg[n] = 1;
 		else {xag_.BulFlg[n] = 0;}
 	}
 	moveXACBul(xag_,air_,gen_,tim_);
@@ -1155,7 +1154,7 @@ function initXACFyr(n) {
 function initMovShp() {
 	initXSHVeh(xsh_,air_,scene);
 	initXSHWak(wak_,txt_);		// Init Ship Wake
-	initXSHGun();
+	initXSHGun();				// Init Common Testure
 }
 
 //-	Move Ship ------------------//----------------------------------------------
@@ -1176,11 +1175,11 @@ function initXSHGun() {
 //- Move Ship Guns -------------//----------------------------------------------
 function moveXSHGun(n) {
 	// Turn Guns On/Off
-	xsg_.XSGFlg[n] = xsg_.XSGFlg[n] - 1;
-	if (xsg_.XSGFlg[n] > 0) xsg_.AAAFlg[n] = 1;
+	xsg_.TimFlg[n] = xsg_.TimFlg[n] - 1;
+	if (xsg_.TimFlg[n] > 0) xsg_.AAAFlg[n] = 1;
 	else {
 		xsg_.AAAFlg[n] = 0;
-		if (xsg_.XSGFlg[n] < xsg_.XSGMin[n]) xsg_.XSGFlg[n] = xsg_.XSGMax[n];
+		if (xsg_.TimFlg[n] < xsg_.TimMin[n]) xsg_.TimFlg[n] = xsg_.TimMax[n];
 	}
 	moveAAGuns(xsg_,air_,gen_,tim_);
 	// Play Sound (No Delay)
