@@ -56,7 +56,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu_test.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/fm2/data/data.js"></script>
 
 <script type="importmap">
@@ -1023,18 +1023,18 @@ function initXACGun() {
 //- Move XAC Guns --------------//----------------------------------------------
 //	Enemy Airplane Only
 function moveXACGun(n) {
-	// Turn Airplane 2 (Enemy) Guns On/Off
+	// Turn Airplane 1 (Enemy) Guns On/Off
 	xag_.BulFlg[n] = 0;			// Default = Off
 	// Counter
-	XPGFlg = XPGFlg - 1;
-	if (XPGFlg < XPGMin) XPGFlg = XPGMax;
+	xag_.XPGFlg[n] = xag_.XPGFlg[n] - 1;
+	if (xag_.XPGFlg[n] < xag_.XPGMin[n]) xag_.XPGFlg[n] = xag_.XPGMax[n];
 	// On or Off
 	let MinDst = 500;
 	let X = xag_.XACPos[n].x - air_.MapPos.x;
 	let Y = xag_.XACPos[n].y - gen_.AltDif;
 	let Z = air_.MapPos.z - xag_.XACPos[n].z;
 	if (X < MinDst && Y < MinDst && Z < MinDst) { // If Visible
-		if (XPGFlg > 0) xag_.BulFlg[n] = 1;
+		if (xag_.XPGFlg > 0) xag_.BulFlg[n] = 1;
 		else {xag_.BulFlg[n] = 0;}
 	}
 	moveXACBul(xag_,air_,gen_,tim_);
@@ -1155,14 +1155,14 @@ function initXACFyr(n) {
 function initMovShp() {
 	initXSHVeh(xsh_,air_,scene);
 	initXSHWak(wak_,txt_);		// Init Ship Wake
-	initXSHGun();	
+	initXSHGun();
 }
 
 //-	Move Ship ------------------//----------------------------------------------
 function moveMovShp() {
-	moveXSHVeh(xsh_,air_);
-	moveXSHWak(wak_);
-	moveXSHGun();
+	moveXSHVeh(xsh_,air_);		// Both Ships
+	moveXSHWak(wak_);			// Both Ships
+	moveXSHGun(1);				// Only Ship 1
 }
 
 //= SHIP GUNS ==================//==============================================
@@ -1174,36 +1174,34 @@ function initXSHGun() {
 }
 
 //- Move Ship Guns -------------//----------------------------------------------
-function moveXSHGun() {
-	if (xsg_.ObjNum) {
-		// Turn Ship 2 Guns On/Off
-		XSGFlg = XSGFlg - 1;
-		if (XSGFlg > 0) xsg_.AAAFlg[1] = 1;
-		else {
-			xsg_.AAAFlg[1] = 0;
-			if (XSGFlg < XSGMin) XSGFlg = XSGMax;
+function moveXSHGun(n) {
+	// Turn Guns On/Off
+	xsg_.XSGFlg[n] = xsg_.XSGFlg[n] - 1;
+	if (xsg_.XSGFlg[n] > 0) xsg_.AAAFlg[n] = 1;
+	else {
+		xsg_.AAAFlg[n] = 0;
+		if (xsg_.XSGFlg[n] < xsg_.XSGMin[n]) xsg_.XSGFlg[n] = xsg_.XSGMax[n];
+	}
+	moveAAGuns(xsg_,air_,gen_,tim_);
+	// Play Sound (No Delay)
+	//	for (let n = 0; n < xsg_.ObjNum; n ++) {
+	//		if (xsg_.SmkFlg[n] && gen_.SndFlg) xsg_.SndPtr[n].play()
+	//	}
+	// Play Sound With Delay
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		// Start Delay
+		if (xsg_.SmkFlg[n]) {
+			let X = xsg_.SmkPtr[n].position.x;
+			let Z = xsg_.SmkPtr[n].position.z;
+			let delay = Math.sqrt(X*X+Z*Z)/343;
+			if (delay > (xsg_.SmkDMx[n]-1)) delay = (xsg_.SmkDMx[n]-1); // Avoid overlap issues
+			xsg_.SndDTm[n] = delay;
 		}
-		moveAAGuns(xsg_,air_,gen_,tim_);
-		// Play Sound (No Delay)
-//		for (let n = 0; n < xsg_.ObjNum; n ++) {
-//			if (xsg_.SmkFlg[n] && gen_.SndFlg) xsg_.SndPtr[n].play()
-//		}
-		// Play Sound With Delay
-		for (let n = 0; n < xsg_.ObjNum; n ++) {
-			// Start Delay
-			if (xsg_.SmkFlg[n]) {
-				let X = xsg_.SmkPtr[n].position.x;
-				let Z = xsg_.SmkPtr[n].position.z;
-				let delay = Math.sqrt(X*X+Z*Z)/343;
-				if (delay > (xsg_.SmkDMx[n]-1)) delay = (xsg_.SmkDMx[n]-1); // Avoid overlap issues
-				xsg_.SndDTm[n] = delay;
-			}
-			// If End of Delay Start Sound
-			if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - tim_.DLTime;
-			if (xsg_.SndDTm[n] < 0) {
-				xsg_.SndDTm[n] = 0;
-				if (gen_.SndFlg) xsg_.SndPtr[n].play();
-			}
+		// If End of Delay Start Sound
+		if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - tim_.DLTime;
+		if (xsg_.SndDTm[n] < 0) {
+			xsg_.SndDTm[n] = 0;
+			if (gen_.SndFlg) xsg_.SndPtr[n].play();
 		}
 	}
 }
