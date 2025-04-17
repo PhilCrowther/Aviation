@@ -715,7 +715,7 @@ let xag_ = {
 		SndMsh: [0,0],			// (makMsh)
 		// Timer
 		XPGMax: [0,120],		// Guns On (frames)
-		XPGMin: [0,-600]		// Guns Off (frames)
+		XPGMin: [0,-600],		// Guns Off (frames)
 		XPGFlg: [0,120],		// Timer (set to Max)
 	};
 
@@ -770,7 +770,7 @@ let xsg_ = {
 		ExpLif: [0,0],			// Life of Explosion (seconds)
 		// Timer
 		XPGMax: [0,1200],		// Guns On (frames)
-		XPGMin: [0,-1200]		// Guns Off (frames)
+		XPGMin: [0,-1200],		// Guns Off (frames)
 		XPGFlg: [0,1200],		// Timer (set to Max)
 	};
 
