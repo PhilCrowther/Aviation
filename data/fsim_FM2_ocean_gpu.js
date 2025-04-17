@@ -680,9 +680,6 @@ let myg_ = {
 	}
 
 //- Moving Airplanes -----------//----------------------------------------------
-let XPGMax = 120;				// Guns Firing (2 secs)
-let XPGFlg = XPGMax;
-let XPGMin = -600;				// Guns Not Firing (10 secs)
 let xag_ = {
 		ObjNum: 2,
 		// Parent
@@ -712,13 +709,14 @@ let xag_ = {
 		SndSrc: [0,0],			// File (my guns)
 		SndPtr: [0,0],
 		SndVol: [0.5,0.5],		// Volume
-		SndMsh: [0,0],			// (makMsh)	
+		SndMsh: [0,0],			// (makMsh)
+		// Timer
+		XPGMax: [0,120],		// Guns On (frames)
+		XPGMin: [0,-600],		// Guns Off (frames)
+		XPGFlg: [0,120],		// Timer (set to Max)
 	};
 
 //- Moving Ships ---------------//----------------------------------------------
-let XSGMax = 1200;				// Guns Firing (20 secs)
-let XSGFlg = XSGMax;
-let XSGMin = -1200;				// Guns Not Firing (20 secs)
 let xsg_ = {
 		ObjNum: 2,				// Number of guns
 		// Parent
@@ -764,6 +762,10 @@ let xsg_ = {
 		ExpPtr: [0,0],			// Pointer to Exploding Center
 		ExpSiz: [0,0],			// Expanding Size
 		ExpLif: [0,0],			// Life of Explosion (seconds)
+		// Timer
+		XSGMax: [0,1200],		// Guns On (frames)
+		XSGMin: [0,-1200],		// Guns Off (frames)
+		XSGFlg: [0,1200],		// Timer (set to Max)
 	};
 
 //- Fixed Guns -----------------//----------------------------------------------
