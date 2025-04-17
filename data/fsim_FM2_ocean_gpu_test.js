@@ -711,12 +711,13 @@ let xag_ = {
 		SndVol: [0.5,0.5],		// Volume
 		SndMsh: [0,0],			// (makMsh)
 		// Timer
-		XPGMax: [0,120],		// Guns On (frames)
-		XPGMin: [0,-600],		// Guns Off (frames)
-		XPGFlg: [0,120],		// Timer (set to Max)
+		TimMax: [0,120],		// Time On (frames)
+		TimMin: [0,-600],		// Time Off (frames)
+		TimFlg: [0,120],		// Timer (pos = On, neg = Off)
 	};
 
 //- Moving Ships ---------------//----------------------------------------------
+//	Same variable used for Fixed Guns
 let xsg_ = {
 		ObjNum: 2,				// Number of guns
 		// Parent
@@ -763,12 +764,13 @@ let xsg_ = {
 		ExpSiz: [0,0],			// Expanding Size
 		ExpLif: [0,0],			// Life of Explosion (seconds)
 		// Timer
-		XSGMax: [0,1200],		// Guns On (frames)
-		XSGMin: [0,-1200],		// Guns Off (frames)
-		XSGFlg: [0,1200],		// Timer (set to Max)
+		TimMax: [0,1200],		// Time On (frames)
+		TimMin: [0,-1200],		// Time Off (frames)
+		TimFlg: [0,1200],		// Timer (pos = On, neg = Off)
 	};
 
 //- Fixed Guns -----------------//----------------------------------------------
+//	Same variable used for Ship Guns
 let aaf_ = {
 		ObjNum: 2,
 		// No Parent
@@ -814,6 +816,10 @@ let aaf_ = {
 		ExpPtr: [0,0],			// Pointer to Exploding Center
 		ExpSiz: [0,0],			// Expanding Size
 		ExpLif: [0,0],			// Life of Explosion (seconds)
+		// Timer (not used)
+		TimMax: [0,1000],		// Time On (frames)
+		TimMin: [0,0],			// Time Off (frames)
+		TimFlg: [0,1000],		// Timer (pos = On, neg = Off)		
 	};
 
 //- 6. SOUND VARIABLES =========//==============================================
