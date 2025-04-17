@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 16 Apr 2025
+Version dated 17 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -26,7 +26,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 		<div>Altitude: <span id="Air_Alt"></span> ft</div>
 		<div>Heading&nbsp: <span id="Air_Hdg"></span> deg</div>
 		<div>CfLift&nbsp&nbsp: <span id="Air_CfL"></span></div>
-		<div>GFmult&nbsp&nbsp: <span id="Air_GFm"></span></div>
+		<div>GForce&nbsp&nbsp: <span id="Air_GFm"></span></div>
 
 	</div>
 	<div class="overlay2">
@@ -1172,13 +1172,14 @@ function initXSHGun() {
 	initAAGuns(xsg_,air_,gen_,scene);
 }
 
-//- Move Ship Guns -------------//----------------------------------------------
+//- Move Ship Gun --------------//----------------------------------------------
+//	Used for Ship 1 Only
 function moveXSHGun(n) {
 	// Turn Guns On/Off
 	xsg_.TimFlg[n] = xsg_.TimFlg[n] - 1;
-	if (xsg_.TimFlg[n] > 0) xsg_.AAAFlg[n] = 1;
+	if (xsg_.TimFlg[n] > 0) xsg_.AAAFlg[n] = 1; // Gun On
 	else {
-		xsg_.AAAFlg[n] = 0;
+		xsg_.AAAFlg[n] = 0; // Gun Off
 		if (xsg_.TimFlg[n] < xsg_.TimMin[n]) xsg_.TimFlg[n] = xsg_.TimMax[n];
 	}
 	moveAAGuns(xsg_,air_,gen_,tim_);
@@ -1187,21 +1188,18 @@ function moveXSHGun(n) {
 	//		if (xsg_.SmkFlg[n] && gen_.SndFlg) xsg_.SndPtr[n].play()
 	//	}
 	// Play Sound With Delay
-	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		// Start Delay
-		if (xsg_.SmkFlg[n]) {
-			let X = xsg_.SmkPtr[n].position.x;
-			let Z = xsg_.SmkPtr[n].position.z;
-			let delay = Math.sqrt(X*X+Z*Z)/343;
-			if (delay > (xsg_.SmkDMx[n]-1)) delay = (xsg_.SmkDMx[n]-1); // Avoid overlap issues
-			xsg_.SndDTm[n] = delay;
-		}
-		// If End of Delay Start Sound
-		if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - tim_.DLTime;
-		if (xsg_.SndDTm[n] < 0) {
-			xsg_.SndDTm[n] = 0;
-			if (gen_.SndFlg) xsg_.SndPtr[n].play();
-		}
+	if (xsg_.SmkFlg[n]) {		// Start Delay
+		let X = xsg_.SmkPtr[n].position.x;
+		let Z = xsg_.SmkPtr[n].position.z;
+		let delay = Math.sqrt(X*X+Z*Z)/343;
+		if (delay > (xsg_.SmkDMx[n]-1)) delay = (xsg_.SmkDMx[n]-1); // Avoid overlap issues
+		xsg_.SndDTm[n] = delay;
+	}
+	// If End of Delay Start Sound
+	if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - tim_.DLTime;
+	if (xsg_.SndDTm[n] < 0) {
+		xsg_.SndDTm[n] = 0;
+		if (gen_.SndFlg) xsg_.SndPtr[n].play();
 	}
 }
 
@@ -1833,19 +1831,19 @@ function onDocumentKeyDown(event) {
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == key_.K_PwLU) gen_.PwrDif = 0;		// Power Up - keyboard left
-	if (event.keyCode == key_.K_PwLD) gen_.PwrDif = 0;		// Power Down - keyboard left
-	if (event.keyCode == key_.K_PwRU) gen_.PwrDif = 0;		// Power Up - keyboard right
-	if (event.keyCode == key_.K_PwRD) gen_.PwrDif = 0;		// Power Down - keyboard right
+	if (event.keyCode == key_.K_PwLU) gen_.PwrDif = 0;	// Power Up - keyboard left
+	if (event.keyCode == key_.K_PwLD) gen_.PwrDif = 0;	// Power Down - keyboard left
+	if (event.keyCode == key_.K_PwRU) gen_.PwrDif = 0;	// Power Up - keyboard right
+	if (event.keyCode == key_.K_PwRD) gen_.PwrDif = 0;	// Power Down - keyboard right
 	if (event.keyCode == key_.K_BnkL) air_.InpKey.z = 0;	// Bank Left - autopilot only
 	if (event.keyCode == key_.K_BnkR) air_.InpKey.z = 0;	// Bank Right - autopilot only
 	if (event.keyCode == key_.K_PitU) air_.InpKey.x = 0;	// Pitch Up - autopilot only
 	if (event.keyCode == key_.K_PitD) air_.InpKey.x = 0;	// Pitch Down - autopilot only
-	if (event.keyCode == key_.K_YwLL) air_.RotDif.y = 0;	// YawL - keyboard left
-	if (event.keyCode == key_.K_YwLR) air_.RotDif.y = 0;	// YawR - keyboard left
-	if (event.keyCode == key_.K_YwRL) air_.RotDif.y = 0;	// YawL - keyboard right
-	if (event.keyCode == key_.K_YwRR) air_.RotDif.y = 0;	// YawR - keyboard right
-	if (event.keyCode == key_.K_Brak) gen_.InpBrk = 0;		// Brakes
+	if (event.keyCode == key_.K_YwLL) air_.RotDif.y = 0;	// YawL - keyboard left side
+	if (event.keyCode == key_.K_YwLR) air_.RotDif.y = 0;	// YawR - keyboard left side
+	if (event.keyCode == key_.K_YwRL) air_.RotDif.y = 0;	// YawL - keyboard right side
+	if (event.keyCode == key_.K_YwRR) air_.RotDif.y = 0;	// YawR - keyboard right side
+	if (event.keyCode == key_.K_Brak) gen_.InpBrk = 0;	// Brakes
 	// Additional
 	if (event.keyCode == key_.K_Gear) anm_.lngflg = 0;	// Gear
 	if (event.keyCode == key_.K_Flap) anm_.flpflg = 0;	// Flaps
