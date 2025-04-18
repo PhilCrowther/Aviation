@@ -637,32 +637,18 @@ let vxr_ = {
 	}
 
 //= GUNASG MODULE ==============//==============================================
-//- Aircraft Guns
 //	M2 Browning .50 caliber
-let BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
-let BulDLT = 0.5;				// Bullet Maximum Time in Flight
-let BulNum = 16;				// Number of bullets
-let BulSpc = 4*BulDLT/BulNum;	// Bullet spacing
-//	AA Guns
-//	Bofors anti-aircraft guns - 40 mm (1.57 in)
-let AAANum = 16;				// Number of bullets
-let AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
-let AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
-let AAASpc = 4*AAADLT/AAANum;	// Bullet spacing
-//	Adjust y-Rotation
-let AARYBg = [90,0];			// Starting Y-Rotation
-let AARYDf = [0,0];				// Y-Rotation Adjustment
-//	Smoke
-let SmkOpR = 0.005;				// Opacity Reduction per Frame
+//	BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
+//	BulDLT = 0.5;				// Bullet Maximum Time in Flight
 
 //- My Guns --------------------//----------------------------------------------
 let myg_ = {
 		// Data
-		BulSpd: BulSpd,			// Muzzle Velocity (mps)
-		BulDLT: BulDLT,			// Max Bullet Time in Flight
-		BulNum: BulNum,			// Number of bullets
-		BulSpc: BulSpc,			// Bullet spacing
-		BulSp2: BulSpc,
+		BulSpd: 887,			// Muzzle Velocity (mps)
+		BulDLT: 0.5,			// Max Bullet Time in Flight
+		BulNum: 16,				// Number of Tracers
+		BulSpc: 0.125,			// Bullet Spacing (4*BulDLT/BulNum)
+		BulSp2: 0.125,			// Bullet Spacing - time remaining
 		// Object
 		BulClr: 0,				// Red (Vector2)
 		BulPtr: [0],			// Bullet Objects
@@ -691,12 +677,12 @@ let xag_ = {
 		GunRot: [0,0],			// Gun Rotation (Euler degrees)
 		GunPos: [0,0],			// Map Position (Vector3)
 		// Bullet Data
-		BulFlg: [0,1],			// 1 = Guns Firing
-		BulNum: BulNum,			// Number of bullets		
-		BulSpd: BulSpd,			// Muzzle Velocity (mps)
-		BulDLT: BulDLT,			// Max Bullet Time in Flight
-		BulSpc: BulSpc,			// Bullet spacing
-		BulSp2: [BulSpc,BulSpc], // Bullet spacing time remaining
+		BulFlg: [0,1],			// 1 = Guns Firing	
+		BulSpd: 887,			// Muzzle Velocity (mps)
+		BulDLT: 0.5,			// Max Bullet Time in Flight
+		BulNum: 16,				// Number of Tracers
+		BulSpc: 0.125,			// Bullet Spacing (4*BulDLT/BulNum)
+		BulSp2: [0.125,0.125],	// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
 		BulClr: 0,				// Red (Vector2)
 		BulOpa: 0.8,
@@ -716,10 +702,15 @@ let xag_ = {
 		TimFlg: [0,120],		// Timer (pos = On, neg = Off)
 	};
 
+//-	AA Guns --------------------//----------------------------------------------
+//	Bofors anti-aircraft guns - 40 mm (1.57 in)
+//	AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
+//	AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
+
 //- Moving Ships ---------------//----------------------------------------------
 //	Same variable used for Fixed Guns
 let xsg_ = {
-		ObjNum: 2,				// Number of guns
+		ObjNum: 1,				// Number of guns
 		// Parent
 		XSHRot: [0,0],			// Fletcher
 		XSHPos: [0,0],
@@ -727,13 +718,14 @@ let xsg_ = {
 		GunPtr: [0,0],			// Gun Object (makMsh)
 		GunRot: [0,0],			// Gun Rotation (Euler - degrees)
 		GunPos: [0,0],			// Relative Map Position (Vector3) [used by Mesh]
+		ObjRef: [0,0],			// 0 = not linked
 		// Bullet Data
 		AAAFlg: [0,0],			// 1 = Guns Firing
-		AAANum: AAANum,			// Number of bullets
-		AAASpd: AAASpd,			// Muzzle Velocity (mps)
-		AAADLT: AAADLT,			// Max Bullet Time in Flight
-		AAASpc: AAASpc,			// Bullet spacing
-		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining	 
+		AAASpd: 850,			// Muzzle Velocity (mps)
+		AAADLT: 4.0,			// Max Bullet Time in Flight
+		AAANum: 16,				// Number of Tracers
+		AAASpc: 1,				// Bullet Spacing (4*BulDLT/BulNum)
+		AAASp2: [1,1],			// Bullet Spacing - time remaining	 
 		// Bullet Colors and Opacity
 		AAACol: 0,				// Red (Vector2)
 		AAAOpa: 0.4,			// Opacity
@@ -743,7 +735,7 @@ let xsg_ = {
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
 		AAATim: [[],[]],		// Bullet Time in Flight
 		// Smoke
-		SmkFlg: [0,0],			// 1 = Start Smoke ### new
+		SmkFlg: [0,0],			// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
@@ -751,7 +743,7 @@ let xsg_ = {
 		SmkMpP: [0,0],			// Map Position (Vector3)
 		SmkDMx: [12,14],		// Delay between Smoke events (secs)
 		SmkDTm: [0,7],			// Delay Counter
-		SmkOpR:	SmkOpR,			// Opacity Reduction
+		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
 		SndFlg: [0,1],			// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
@@ -769,6 +761,7 @@ let xsg_ = {
 		TimFlg: [0,1200],		// Timer (pos = On, neg = Off)
 	};
 
+
 //- Fixed Guns -----------------//----------------------------------------------
 //	Same variable used for Ship Guns
 let aaf_ = {
@@ -780,13 +773,14 @@ let aaf_ = {
 		GunPtr: [0,0],			// Gun Object (makMsh)
 		GunRot: [0,0],			// Gun Rotation (Euler - degrees)
 		GunPos: [0,0],			// Map Position (Vector3)
+		ObjRef: [0,0],			// 0 = not linked
 		// Bullet Data
 		AAAFlg: [1,1],			// 1 = Gun Firing
-		AAANum: AAANum,			// Number of Bullets
-		AAASpd: AAASpd,			// Muzzle Velocity (mps)
-		AAADLT: AAADLT,			// Max Bullet Time in Flight
-		AAASpc: AAASpc,			// Bullet Spacing
-		AAASp2: [AAASpc,AAASpc], // Bullet spacing time remaining
+		AAASpd: 850,			// Muzzle Velocity (mps)
+		AAADLT: 4.0,			// Max Bullet Time in Flight
+		AAANum: 16,				// Number of Tracers
+		AAASpc: 1,				// Bullet Spacing (4*BulDLT/BulNum)
+		AAASp2: [1,1],			// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
 		AAACol: 0,				// Green-Blue (Vector2)
 		AAAOpa: 0.5,			// Opacity
@@ -796,7 +790,7 @@ let aaf_ = {
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
 		AAATim: [[],[]],		// Bullet Time in flight
 		// Smoke
-		SmkFlg: [0,0],			// 1 = Start Smoke ### new
+		SmkFlg: [0,0],			// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
@@ -804,7 +798,7 @@ let aaf_ = {
 		SmkMpP: [0,0],			 // Map Position (Vector3)
 		SmkDMx: [12,11],		// Delay between Smoke events (secs)
 		SmkDTm: [0,6],			// Delay Counter
-		SmkOpR:	SmkOpR,			// Opacity Reduction
+		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
 		SndFlg: [1,1],			// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
