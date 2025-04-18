@@ -339,7 +339,7 @@ function initAAAGun(aag_,txt_,air_,gen_,scene) {
 
 //= MOVE FIXED GUNS ============//==============================================
 
-function moveFxdGun(aaf_,air_,gen_,tim_) {
+function moveAAFGun(aaf_,air_,gen_,tim_) {
 	moveAAGuns(aaf_,air_,gen_,tim_);
 	// Explosion
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
@@ -386,14 +386,6 @@ function moveFxdGun(aaf_,air_,gen_,tim_) {
 *	AA GUNS - SHIP
 *
 *******************************************************************************/
-
-//= INIT SHIP GUNS =============//==============================================
-
-//- Init Ship Guns -------------//----------------------------------------------
-function initXSGGun(xsg_,txt_,air_,gen_,scene) {
-	xsg_.SmkMap = txt_.ObjTxt[xsg_.SmkMap];
-	initAAGuns(xsg_,air_,gen_,scene);
-}
 
 //= MOVE SHIP GUNS =============//==============================================
 
