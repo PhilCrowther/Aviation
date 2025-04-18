@@ -58,8 +58,11 @@ import {
 	SpriteNodeMaterial,
 	// makMsh
 	BoxGeometry,
+	// makSphere
+	SphereGeometry,
+	// Common
+	MeshBasicNodeMaterial,
 	Mesh,
-	MeshBasicNodeMaterial
 } from 'three';
 
 import {color,texture} from "three/tsl";
@@ -307,6 +310,71 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 	} // end n
 }
 
+
+/*******************************************************************************
+*
+*	AA GUNS - FIXED
+*
+*******************************************************************************/
+
+//= INIT AA GUNS ===============//==============================================
+
+function initAAFGun(aaf_,txt_,air_,gen_,scene) {
+	if (aaf_.ObjNum) {
+		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
+		initAAGuns(aaf_,air_,gen_,scene);
+		// Create Exploding Center
+		for (let n = 0; n < aaf_.ObjNum; n ++) {
+			aaf_.ExpPtr[n] = makeSphere();
+			aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
+		}
+	}
+}
+
+//= MOVE AA GUNS ===============//==============================================
+
+function moveAAFGun(aaf_,air_,gen_,tim_) {
+	moveAAGuns(aaf_,air_,gen_,tim_);
+	// Explosion
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		if (aaf_.SmkFlg[n]) {
+			aaf_.ExpSiz[n] = 1/200; // Start Size
+			aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
+			aaf_.ExpPtr[n].visible = true;
+		}
+		if (aaf_.ExpLif[n] > 0) {
+			aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
+			aaf_.ExpSiz[n] = aaf_.ExpSiz[n] + 1/200;
+			aaf_.ExpLif[n] = aaf_.ExpLif[n] - tim_.DLTime;
+			if (aaf_.ExpLif[n] < 0) {
+				aaf_.ExpLif[n] = 0;
+				aaf_.ExpPtr[n].visible = false;
+			}
+		}
+	}	
+	// Play Sound (No Delay)
+//	for (let n = 0; n < aaf_.ObjNum; n ++) {
+//		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
+//	}
+	// Play Sound With Delay
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		// Start Delay
+		if (aaf_.SmkFlg[n]) { // Start Countdown
+			let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
+			let Z = aaf_.SmkPtr[n].position.z;
+			let delay = (Math.sqrt(X*X+Z*Z)/343);
+			if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
+			aaf_.SndDTm[n] = delay;	
+		}
+		// If End of Delay Start Sound
+		if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - tim_.DLTime;
+		if (aaf_.SndDTm[n] < 0) {
+			aaf_.SndDTm[n] = 0;
+			if (gen_.SndFlg) aaf_.SndPtr[n].play();
+		}
+	}
+}
+
 /*******************************************************************************
 *
 *	AA GUNS WITH SMOKE
@@ -498,7 +566,7 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 *
 *******************************************************************************/
 
-/* Converts degrees to 360 */
+//- Converts degrees to 360 ----//----------------------------------------------
 function Mod360(deg) {
 	while (deg < 0) deg = deg + 360; // Make deg a positive number
 	deg = deg % 360;				 // Compute remainder of any number divided by 360
@@ -511,6 +579,15 @@ function makMsh() {
 	let mesh = new Mesh(geometry,material);
 return mesh;}
 
+//- Sphere ---------------------//---------------------------------------------
+//	Used to create flash explosions
+
+function makeSphere() {
+	let geometry = new SphereGeometry(1,32,16);
+	let	material = new MeshBasicNodeMaterial({colorNode:color("crimson"),transparent:true,opacity:1});
+	let mesh = new Mesh(geometry,material);
+	mesh.visible = false;
+return mesh;}
 
 /*******************************************************************************
 *
@@ -518,7 +595,9 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {initBullet,moveBullet,initXACBul,moveXACBul,initAAGuns,moveAAGuns};
+export {initBullet,moveBullet,initXACBul,moveXACBul,initAAGuns,moveAAGuns,
+		initAAFGun,moveAAFGun,
+	};
 
 /*******************************************************************************
 *
