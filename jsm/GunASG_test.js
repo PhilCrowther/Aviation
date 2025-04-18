@@ -313,27 +313,33 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 
 /*******************************************************************************
 *
-*	AA GUNS - FIXED
+*	AA GUNS - FIXED AND SHIP
 *
 *******************************************************************************/
 
-//= INIT AA GUNS ===============//==============================================
+//= INIT AAA GUNS ==============//==============================================
 
-function initAAFGun(aaf_,txt_,air_,gen_,scene) {
-	if (aaf_.ObjNum) {
-		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
-		initAAGuns(aaf_,air_,gen_,scene);
+function initAAAGun(aag_,txt_,air_,gen_,scene) {
+	if (aag_.ObjNum) {
+		aag_.SmkMap = txt_.ObjTxt[aag_.SmkMap];
+		initAAGuns(aag_,air_,gen_,scene);
 		// Create Exploding Center
-		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			aaf_.ExpPtr[n] = makeSphere();
-			aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
+		for (let n = 0; n < aag_.ObjNum; n ++) {
+			aag_.ExpPtr[n] = makeSphere();
+			aag_.SmkPtr[n].add(aag_.ExpPtr[n]);
 		}
 	}
 }
 
-//= MOVE AA GUNS ===============//==============================================
+/*******************************************************************************
+*
+*	AA GUNS - FIXED
+*
+*******************************************************************************/
 
-function moveAAFGun(aaf_,air_,gen_,tim_) {
+//= MOVE FIXED GUNS ============//==============================================
+
+function moveFxdGun(aaf_,air_,gen_,tim_) {
 	moveAAGuns(aaf_,air_,gen_,tim_);
 	// Explosion
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
@@ -374,6 +380,22 @@ function moveAAFGun(aaf_,air_,gen_,tim_) {
 		}
 	}
 }
+
+/*******************************************************************************
+*
+*	AA GUNS - SHIP
+*
+*******************************************************************************/
+
+//= INIT SHIP GUNS =============//==============================================
+
+//- Init Ship Guns -------------//----------------------------------------------
+function initXSGGun(xsg_,txt_,air_,gen_,scene) {
+	xsg_.SmkMap = txt_.ObjTxt[xsg_.SmkMap];
+	initAAGuns(xsg_,air_,gen_,scene);
+}
+
+//= MOVE SHIP GUNS =============//==============================================
 
 /*******************************************************************************
 *
@@ -595,8 +617,8 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {initBullet,moveBullet,initXACBul,moveXACBul,initAAGuns,moveAAGuns,
-		initAAFGun,moveAAFGun,
+export {initBullet,moveBullet,initXACBul,moveXACBul,
+		initAAAGun,moveAAFGun,moveAAGuns,
 	};
 
 /*******************************************************************************
