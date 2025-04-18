@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Apr 2025
+Version dated 18 Apr 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -472,7 +472,7 @@ for (let n = 0; n < aaf_.ObjNum; n ++) {
 				   XPPath + "sounds/" + "fm2_gun.mp3"];
 //- Moving Ships ---------------//----------------------------------------------
 //	General Format Adjustments
-for (let n = 0; n < aaf_.ObjNum; n ++) {
+for (let n = 0; n < xsg_.ObjNum; n ++) {
 	xsg_.GunPtr[n] = new makMsh();
 	xsg_.SmkMpP[n] = new THREE.Vector3();
 	xsg_.SndMsh[n] = new makMsh();
@@ -496,6 +496,9 @@ for (let n = 0; n < aaf_.ObjNum; n ++) {
 	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
 	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
+//	Gun Y-Rotation
+let	AARYBg = [90,0];			// Starting Y-Rotation
+let	AARYDf = [0,0];				// Y-Rotation Adjustment		
 
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
@@ -872,14 +875,16 @@ function initAAAGun() {
 		initAAGuns(aaf_,air_,gen_,scene);
 		// Create Exploding Center
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			aaf_.ExpPtr[n] = makeSphere("crimson");
+			aaf_.ExpPtr[n] = makeSphere();
 			aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
 		}
 	}
 }
 
 function moveAAAGun() {
+
 	if (aaf_.ObjNum) {
+		// Targeting Information
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
 			// Adjust Gun Longitude
 			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
@@ -930,9 +935,9 @@ function moveAAAGun() {
 //- Sphere ---------------------//---------------------------------------------
 //	Used to create flash explosions
 
-function makeSphere(col) {
+function makeSphere() {
 	let geometry = new THREE.SphereGeometry(1,32,16);
-	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
+	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color("crimson"),transparent:true,opacity:1});
 	let mesh = new THREE.Mesh(geometry,material);
 	mesh.visible = false;
 return mesh;}
