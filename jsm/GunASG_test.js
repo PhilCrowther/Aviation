@@ -319,7 +319,7 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 
 //= INIT AA GUNS ===============//==============================================
 
-function initAAAGun(aaf_,txt_,air_,gen_,scene) {
+function initAAFGun(aaf_,txt_,air_,gen_,scene) {
 	if (aaf_.ObjNum) {
 		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
 		initAAGuns(aaf_,air_,gen_,scene);
@@ -551,7 +551,9 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {initBullet,moveBullet,initXACBul,moveXACBul,initAAGuns,moveAAGuns};
+export {initBullet,moveBullet,initXACBul,moveXACBul,initAAGuns,moveAAGuns,
+		initAAFGun,
+	};
 
 /*******************************************************************************
 *
