@@ -710,7 +710,7 @@ let xag_ = {
 //- Moving Ships ---------------//----------------------------------------------
 //	Same variable used for Fixed Guns
 let xsg_ = {
-		ObjNum: 1,				// Number of guns
+		ObjNum: 2,				// Number of guns
 		// Parent
 		XSHRot: [0,0],			// Fletcher
 		XSHPos: [0,0],
