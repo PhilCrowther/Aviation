@@ -97,8 +97,7 @@ import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io
 import {loadAirExt,loadAirInt,moveAirExt,moveAirInt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2a.js";
 import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
-		initAAGuns,moveAAGuns,	// AA Guns (Fixed and Ship)
-		initAAFGun,moveAAFGun,	// AA Guns Fixed
+		initAAAGun,moveAAAGun,	// Fixed and Ship
 	} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
 import {initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initAirSmk,initAirFyr,	// Air Smoke and Fire
@@ -799,14 +798,14 @@ function loadObject() {
 function initObject() {
 	initStatic();
 	initMoving();
-	initAAFGun(aaf_,txt_,air_,gen_,scene);
+	initAAAGun(aaf_,txt_,air_,gen_,scene);
 }
 
 function moveObject() {
 	moveStatic();
 	moveMoving();
 	moveAnmObj();
-	moveAAAGun();				// Perform Targeting
+	moveFxdGun();				// Perform Targeting
 }
 
 //- Shared Textures ------------//----------------------------------------------
@@ -860,15 +859,15 @@ function moveAnmObj() {moveAnmFlg(flg_,tim_);}
 
 //- AAA Guns -------------------//----------------------------------------------
 
-function moveAAAGun() {
+function moveFxdGun() {
 	if (aaf_.ObjNum) {
-		// Targeting Information
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			// Adjust Gun Longitude
+			// Targeting - Adjust Gun Longitude
 			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
 			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
+			// Continuous Fire
 		}
-		moveAAFGun(aaf_,air_,gen_,tim_);
+		moveAAAGun(aaf_,air_,gen_,tim_);
 	}
 }
 
@@ -1099,7 +1098,7 @@ function initXACFyr(n) {
 function initMovShp() {
 	initXSHVeh(xsh_,air_,scene);
 	initXSHWak(wak_,txt_);		// Init Ship Wake
-	initXSHGun();				// Init Common Testure
+	initAAAGun(xsg_,txt_,air_,gen_,scene); // Init Common Testure
 }
 
 //-	Move Ship ------------------//----------------------------------------------
@@ -1111,40 +1110,21 @@ function moveMovShp() {
 
 //= SHIP GUNS ==================//==============================================
 
-//- Init Ship Guns -------------//----------------------------------------------
-function initXSHGun() {
-	xsg_.SmkMap = txt_.ObjTxt[xsg_.SmkMap];
-	initAAGuns(xsg_,air_,gen_,scene);
-}
-
 //- Move Ship Gun --------------//----------------------------------------------
 //	Used for Ship 1 Only
 function moveXSHGun(n) {
-	// Turn Guns On/Off
-	xsg_.TimFlg[n] = xsg_.TimFlg[n] - 1;
-	if (xsg_.TimFlg[n] > 0) xsg_.AAAFlg[n] = 1; // Gun On
-	else {
-		xsg_.AAAFlg[n] = 0; // Gun Off
-		if (xsg_.TimFlg[n] < xsg_.TimMin[n]) xsg_.TimFlg[n] = xsg_.TimMax[n];
-	}
-	moveAAGuns(xsg_,air_,gen_,tim_);
-	// Play Sound (No Delay)
-	//	for (let n = 0; n < xsg_.ObjNum; n ++) {
-	//		if (xsg_.SmkFlg[n] && gen_.SndFlg) xsg_.SndPtr[n].play()
-	//	}
-	// Play Sound With Delay
-	if (xsg_.SmkFlg[n]) {		// Start Delay
-		let X = xsg_.SmkPtr[n].position.x;
-		let Z = xsg_.SmkPtr[n].position.z;
-		let delay = Math.sqrt(X*X+Z*Z)/343;
-		if (delay > (xsg_.SmkDMx[n]-1)) delay = (xsg_.SmkDMx[n]-1); // Avoid overlap issues
-		xsg_.SndDTm[n] = delay;
-	}
-	// If End of Delay Start Sound
-	if (xsg_.SndDTm[n] > 0) xsg_.SndDTm[n] = xsg_.SndDTm[n] - tim_.DLTime;
-	if (xsg_.SndDTm[n] < 0) {
-		xsg_.SndDTm[n] = 0;
-		if (gen_.SndFlg) xsg_.SndPtr[n].play();
+	if (xsg_.ObjNum) {
+		for (let n = 0; n < xsg_.ObjNum; n ++) {
+			// Turn Guns On/Off
+			xsg_.TimFlg[n] = xsg_.TimFlg[n] - 1;
+			if (xsg_.TimFlg[n] > 0) xsg_.AAAFlg[n] = 1; // Gun On
+			else {
+				xsg_.AAAFlg[n] = 0; // Gun Off
+				if (xsg_.TimFlg[n] < xsg_.TimMin[n]) xsg_.TimFlg[n] = xsg_.TimMax[n];
+			}
+			// Targeting - Not Yet
+		}
+		moveAAAGun(xsg_,air_,gen_,tim_);
 	}
 }
 
