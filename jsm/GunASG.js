@@ -1,5 +1,5 @@
 /*
- * Warfare.js (vers 25.03.17)
+ * Warfare.js (vers 25.04.18)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -313,64 +313,64 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 
 /*******************************************************************************
 *
-*	AA GUNS - FIXED
+*	AA GUNS - FIXED AND SHIP
 *
 *******************************************************************************/
 
-//= INIT AA GUNS ===============//==============================================
+//= INIT AAA GUN ===============//==============================================
 
-function initAAFGun(aaf_,txt_,air_,gen_,scene) {
-	if (aaf_.ObjNum) {
-		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
-		initAAGuns(aaf_,air_,gen_,scene);
+function initAAAGun(aag_,txt_,air_,gen_,scene) {
+	if (aag_.ObjNum) {
+		aag_.SmkMap = txt_.ObjTxt[aag_.SmkMap];
+		initAAGuns(aag_,air_,gen_,scene);
 		// Create Exploding Center
-		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			aaf_.ExpPtr[n] = makeSphere();
-			aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
+		for (let n = 0; n < aag_.ObjNum; n ++) {
+			aag_.ExpPtr[n] = makeSphere();
+			aag_.SmkPtr[n].add(aag_.ExpPtr[n]);
 		}
 	}
 }
 
-//= MOVE AA GUNS ===============//==============================================
+//= MOVE AAA GUN ===============//==============================================
 
-function moveAAFGun(aaf_,air_,gen_,tim_) {
-	moveAAGuns(aaf_,air_,gen_,tim_);
+function moveAAAGun(aag_,air_,gen_,tim_) {
+	moveAAGuns(aag_,air_,gen_,tim_);
 	// Explosion
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		if (aaf_.SmkFlg[n]) {
-			aaf_.ExpSiz[n] = 1/200; // Start Size
-			aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
-			aaf_.ExpPtr[n].visible = true;
+	for (let n = 0; n < aag_.ObjNum; n ++) {
+		if (aag_.SmkFlg[n]) {
+			aag_.ExpSiz[n] = 1/200; // Start Size
+			aag_.ExpLif[n] = 0.15; // Start Life (seconds)
+			aag_.ExpPtr[n].visible = true;
 		}
-		if (aaf_.ExpLif[n] > 0) {
-			aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
-			aaf_.ExpSiz[n] = aaf_.ExpSiz[n] + 1/200;
-			aaf_.ExpLif[n] = aaf_.ExpLif[n] - tim_.DLTime;
-			if (aaf_.ExpLif[n] < 0) {
-				aaf_.ExpLif[n] = 0;
-				aaf_.ExpPtr[n].visible = false;
+		if (aag_.ExpLif[n] > 0) {
+			aag_.ExpPtr[n].scale.setScalar(aag_.ExpSiz[n]);
+			aag_.ExpSiz[n] = aag_.ExpSiz[n] + 1/200;
+			aag_.ExpLif[n] = aag_.ExpLif[n] - tim_.DLTime;
+			if (aag_.ExpLif[n] < 0) {
+				aag_.ExpLif[n] = 0;
+				aag_.ExpPtr[n].visible = false;
 			}
 		}
 	}	
 	// Play Sound (No Delay)
-//	for (let n = 0; n < aaf_.ObjNum; n ++) {
-//		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
+//	for (let n = 0; n < aag_.ObjNum; n ++) {
+//		if (gen_.SndFlg && aag_.SmkFlg[n]) aag_.SndPtr[n].play();
 //	}
 	// Play Sound With Delay
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
+	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Start Delay
-		if (aaf_.SmkFlg[n]) { // Start Countdown
-			let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
-			let Z = aaf_.SmkPtr[n].position.z;
+		if (aag_.SmkFlg[n]) { // Start Countdown
+			let X = aag_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
+			let Z = aag_.SmkPtr[n].position.z;
 			let delay = (Math.sqrt(X*X+Z*Z)/343);
-			if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
-			aaf_.SndDTm[n] = delay;	
+			if (delay > (aag_.SmkDMx[n]-1)) delay = (aag_.SmkDMx[n]-1); // Avoid overlap issues
+			aag_.SndDTm[n] = delay;	
 		}
 		// If End of Delay Start Sound
-		if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - tim_.DLTime;
-		if (aaf_.SndDTm[n] < 0) {
-			aaf_.SndDTm[n] = 0;
-			if (gen_.SndFlg) aaf_.SndPtr[n].play();
+		if (aag_.SndDTm[n]) aag_.SndDTm[n] = aag_.SndDTm[n] - tim_.DLTime;
+		if (aag_.SndDTm[n] < 0) {
+			aag_.SndDTm[n] = 0;
+			if (gen_.SndFlg) aag_.SndPtr[n].play();
 		}
 	}
 }
@@ -380,9 +380,8 @@ function moveAAFGun(aaf_,air_,gen_,tim_) {
 *	AA GUNS WITH SMOKE
 *
 *******************************************************************************/
-
 // Many objects
-// Bullet = Single Lines - 2 Color (Series)
+// Tracers = Single Lines - 2 Color (Series)
 // Smoke
 // Gun Object = Gun at Relative Position to Ship
 
@@ -595,9 +594,7 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {initBullet,moveBullet,initXACBul,moveXACBul,initAAGuns,moveAAGuns,
-		initAAFGun,moveAAFGun,
-	};
+export {initBullet,moveBullet,initXACBul,moveXACBul,initAAAGun,moveAAAGun};
 
 /*******************************************************************************
 *
@@ -605,6 +602,5 @@ export {initBullet,moveBullet,initXACBul,moveXACBul,initAAGuns,moveAAGuns,
 *
 *******************************************************************************/
 /*
-250125:	Version 1
-250317:	Added opacity
+250125:	In Development
 */
