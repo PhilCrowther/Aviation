@@ -130,6 +130,7 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
+	* Confirm ship guns linking to parent groups and working (not used).
 	* Move Variables to Data File (not variables with three.js functions) - WIP
 	* Red Out not very red.
 	* Don't hear EA guns or engines (used to hear engines)9
@@ -899,7 +900,7 @@ function initHgrFyr() {
 //- Init Airplane --------------//----------------------------------------------
 function initMovPln() {
 	initXACVeh(xac_,air_,scene);
-	initXACGun();				// All Airplanes
+	initXACBul(xag_,scene);		// For All Airplanes
 	initXACSmk(0);				// Friendly Airplane Only	
 	initXACFyr(1);				// Enemy Airplane Only
 	initXACExp(1);				// Enemy Airplane Only
@@ -948,11 +949,6 @@ function moveMovPln() {
 }
 
 //= XAC GUNS ===================//==============================================
-
-//- Init Airplane Guns ---------//----------------------------------------------
-function initXACGun() {
-	initXACBul(xag_,scene);
-}
 
 //- Move XAC Guns --------------//----------------------------------------------
 //	Enemy Airplane Only
