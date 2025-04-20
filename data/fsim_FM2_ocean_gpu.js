@@ -668,7 +668,7 @@ let myg_ = {
 //- Moving Airplanes -----------//----------------------------------------------
 let xag_ = {
 		ObjNum: 2,
-		// Parent
+		// Parent (use this instead of link because bullets not attached)
 		XACRot: [0,0],
 		XACPos: [0,0],
 		// Gun Object (Fixed Firing Forward)
@@ -711,14 +711,13 @@ let xag_ = {
 //	Same variable used for Fixed Guns
 let xsg_ = {
 		ObjNum: 2,				// Number of guns
-		// Parent
+		// Parent (use this instead of link because bullets not attached)
 		XSHRot: [0,0],			// Fletcher
 		XSHPos: [0,0],
 		// Gun Object
 		GunPtr: [0,0],			// Gun Object (makMsh)
 		GunRot: [0,0],			// Gun Rotation (Euler - degrees)
 		GunPos: [0,0],			// Relative Map Position (Vector3) [used by Mesh]
-		ObjRef: [0,0],			// 0 = not linked
 		// Bullet Data
 		AAAFlg: [0,0],			// 1 = Guns Firing
 		AAASpd: 850,			// Muzzle Velocity (mps)
@@ -766,14 +765,13 @@ let xsg_ = {
 //	Same variable used for Ship Guns
 let aaf_ = {
 		ObjNum: 2,
-		// No Parent
+		// Parent (use this instead of link because bullets not attached)
 		XSHRot: [0,0],			//
 		XSHPos: [0,0],			//
 		// Gun Object
 		GunPtr: [0,0],			// Gun Object (makMsh)
 		GunRot: [0,0],			// Gun Rotation (Euler - degrees)
 		GunPos: [0,0],			// Map Position (Vector3)
-		ObjRef: [0,0],			// 0 = not linked
 		// Bullet Data
 		AAAFlg: [1,1],			// 1 = Gun Firing
 		AAASpd: 850,			// Muzzle Velocity (mps)
