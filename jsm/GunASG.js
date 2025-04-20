@@ -276,7 +276,7 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 				xag_.BulPtr[n][i].rotation.x = xag_.XACRot[n].x*DegRad; // Latitude
 				xag_.BulPtr[n][i].rotation.y = xag_.XACRot[n].y*DegRad; // Longitude
 				// Initial Map Position
-				xag_.BulMpP[n][i].copy(xag_.XACPos[n]);	
+				xag_.BulMpP[n][i].copy(xag_.XACPos[n]); // Use XACPos instead of link
 				// Set Initial Speed
 				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(-xag_.XACRot[n].y)*DegRad);
 				BulSV3 = new Vector3().setFromSpherical(BulSV3);
@@ -419,8 +419,8 @@ function initAAGuns(aag_,air_,gen_,scene) {
 	//- For Each Gun
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Combined Rotation and Map Position of Parent plus Gun
-		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]);
-		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
+		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]); // Use XSHRot since bullets not linked
+		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]); // Use XSHPos since bullets not linked
 		//	Gun Object Rotation (for show only)
 		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
 		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
@@ -477,8 +477,8 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 	let	AAASpT = aag_.AAASpd * tim_.DLTime;
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Combined Rotation and Map Position of Parent plus Gun
-		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]);
-		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
+		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]); // Use XSHRot since bullets not linked
+		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]); // Use XSHPos since bullets not linked
 		// Update Gun Object Rotation (for show only)
 		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
 		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
