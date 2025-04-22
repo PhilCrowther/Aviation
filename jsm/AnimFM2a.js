@@ -32,12 +32,9 @@ import {
 //- CONSTANTS ------------------//----------------------------------------------
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 //-	Conversions
-const DegRad = Math.PI/180;		// Convert Degrees to Radians
-const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
 const Km2Mil = 0.621371;
-const Mil2Km = 1.60934;
 
 /*******************************************************************************
 *
@@ -49,7 +46,7 @@ const Mil2Km = 1.60934;
 
 //-	Load Airplane Model --------//----------------------------------------------
 function loadAirExt(gltfLoader,air_,mxr_,anm_) {
-	gltfLoader.load(mxrSrc, function (gltf) {
+	gltfLoader.load(mxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
 				child.material.envMap = envMap; // ??? required?
@@ -201,7 +198,7 @@ function loadAirAnmX(air_,mxr_,anm_) {
 
 //-	Load Virtual Cockpit -------//----------------------------------------------
 function loadAirInt(gltfLoader,air_,vxr_,anm_) {
-	gltfLoader.load(vxrSrc, function (gltf) {
+	gltfLoader.load(vxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
 				child.castShadow = true;
