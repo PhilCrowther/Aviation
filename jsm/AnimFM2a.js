@@ -430,9 +430,9 @@ function moveAirExt(air_,mxr_,anm_) {
 		if (mxr_.FlR) mxr_.FlR.setTime(anm_.flppos/anm_.anmfps);
 	}
 	// Canopy
-	if (anm_.canspd) {
+//	if (anm_.canspd) {
 		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
-	}
+//	}
 	// Tailhook
 	if (anm_.thkspd) {
 		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anm_.anmfps);
@@ -450,9 +450,9 @@ function moveAirInt(air_,vxr_,anm_,CamRot) {
 	if (vxr_.AiL) vxr_.AiL.setTime(anm_.aillft/anm_.anmfps);
 	if (vxr_.AiR) vxr_.AiR.setTime(anm_.ailrgt/anm_.anmfps);
 	// Canopy
-	if (anm_.canspd) {
+//	if (anm_.canspd) {
 		if (vxr_.Cnp) vxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
-	}
+//	}
 	// Gauge - Compass Heading
 	anm_.cmphdg = Mod360(air_.AirRot.y);
 	if (vxr_.GaH) vxr_.GaH.setTime(anm_.cmphdg/anm_.anmfps);
@@ -607,8 +607,8 @@ function moveAirCom(air_,anm_) {
 	if (anm_.canflg) {
 		anm_.canflg = 0;							// one read per keypress only
 		if (anm_.canspd) anm_.canspd = -anm_.canspd; // if already in motion
-		if (anm_.canpos == 0) anm_.canspd = 1;		// if full down
-		if (anm_.canpos == 180) anm_.canspd = -1;	// if full up
+		if (anm_.canpos == 0) anm_.canspd = 1;		// if open
+		if (anm_.canpos == 180) anm_.canspd = -1;	// if closed
 	}
 	if (anm_.canspd) {
 		anm_.canpos = anm_.canpos + anm_.canspd;
