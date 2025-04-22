@@ -1,5 +1,5 @@
 /*
- * AnimFM2.js (vers 25.04.06)
+ * AnimFM2.js (vers 25.04.22)
  * Copyright 2022-2024, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -430,9 +430,7 @@ function moveAirExt(air_,mxr_,anm_) {
 		if (mxr_.FlR) mxr_.FlR.setTime(anm_.flppos/anm_.anmfps);
 	}
 	// Canopy
-//	if (anm_.canspd) {
-		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
-//	}
+	if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
 	// Tailhook
 	if (anm_.thkspd) {
 		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anm_.anmfps);
@@ -450,9 +448,7 @@ function moveAirInt(air_,vxr_,anm_,CamRot) {
 	if (vxr_.AiL) vxr_.AiL.setTime(anm_.aillft/anm_.anmfps);
 	if (vxr_.AiR) vxr_.AiR.setTime(anm_.ailrgt/anm_.anmfps);
 	// Canopy
-//	if (anm_.canspd) {
-		if (vxr_.Cnp) vxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
-//	}
+	if (vxr_.Cnp) vxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
 	// Gauge - Compass Heading
 	anm_.cmphdg = Mod360(air_.AirRot.y);
 	if (vxr_.GaH) vxr_.GaH.setTime(anm_.cmphdg/anm_.anmfps);
