@@ -556,8 +556,6 @@ let air_ = {
 const AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/"; // Used to load models and sounds
 const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
 const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
-const mxrSrc = AirSrc + mxrFNm;
-const vxrSrc = AirSrc + vxrFNm;
 
 //- FM2 Animations -------------------------------------------------------------
 let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
@@ -603,6 +601,8 @@ let anm_ = {
 	}
 //	Animation Mixers - External Model
 let mxr_ = {
+		// Source
+		Src: AirSrc + mxrFNm,
 		// GLTF
 		GLT: 0,
 		// Address
@@ -616,6 +616,8 @@ let mxr_ = {
 	}
 //	Animation Mixers - Internal Model
 let vxr_ = {
+		// Source
+		Src: AirSrc + vxrFNm,
 		// GLTF
 		GLT: 0,
 		// Address
