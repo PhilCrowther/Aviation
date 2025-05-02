@@ -45,11 +45,11 @@ const Km2Mil = 0.621371;
 //= LOAD AIR EXTERNAL ==========================================================
 
 //-	Load Airplane Model --------//----------------------------------------------
-function loadAirExt(gltfLoader,air_,mxr_,anm_) {
+function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 	gltfLoader.load(mxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
-				child.material.envMap = envMap; // ??? required?
+				child.material.envMap = scene.envMap; // ??? required?
 				child.castShadow = true;
 				child.receiveShadow = true;
 			}
@@ -197,7 +197,7 @@ function loadAirAnmX(air_,mxr_,anm_) {
 //= LOAD AIR INTERNAL ==========================================================
 
 //-	Load Virtual Cockpit -------//----------------------------------------------
-function loadAirInt(gltfLoader,air_,vxr_,anm_) {
+function loadAirInt(scene,gltfLoader,air_,vxr_,anm_) {
 	gltfLoader.load(vxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
