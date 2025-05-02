@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Apr 2025
+Version dated 2 May 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -691,13 +691,13 @@ async function rendAll() {		// r173 added async
 
 //- Load SkyBox ----------------//----------------------------------------------
 function loadSkyBox() {
-	envMap = cubeLoader
+	sky_.envMap = cubeLoader
 		.setPath(sky_.SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
-	envMap.format = THREE.RGBAFormat;
-	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
-	scene.background = envMap;
-	scene.environment = envMap;
+	sky_.envMap.format = THREE.RGBAFormat;
+	sky_.envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
+	scene.background = sky_.envMap;
+	scene.environment = sky_.envMap;
 	// LensFlare
 	if (gen_.LnFFlg) {				// SunFlare	
 		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
@@ -1196,8 +1196,8 @@ function moveShpAlt() {
 
 //= Load Airplane ==============//==============================================
 function loadAirObj() {
-	loadAirExt(gltfLoader,air_,mxr_,anm_);
-	loadAirInt(gltfLoader,air_,vxr_,anm_);
+	loadAirExt(scene,gltfLoader,air_,mxr_,anm_);
+	loadAirInt(scene,gltfLoader,air_,vxr_,anm_);
 }
 
 //= Init Airplane ==============//==============================================
