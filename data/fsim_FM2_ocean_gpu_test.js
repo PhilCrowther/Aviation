@@ -125,6 +125,8 @@ let sky_ = {
 		FogCol: 0xbab4a6,		// Sky (for Fog only)
 		// SkyBox
 		SBxSrc: "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
+		envMap: 0,				// For this SkyBox
+		// Sun (position in SkyBox)
 		SunLat: 23,				// Direction - Vert (+/- 90) deg
 		SunLon: 312,			// Direction - Horz (0->360) deg
 		// Lensflare
@@ -138,10 +140,7 @@ let sky_ = {
 		ShdBLR: 12,
 		ShdBTB: 4,
 		ShdDst: 1500,			// Shadow Distance (meters)
-		// envMap
-		envMap: 0;
 	}
-//let	envMap = 0;
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
 //	This ocean map has 3 nested grids of squares.
