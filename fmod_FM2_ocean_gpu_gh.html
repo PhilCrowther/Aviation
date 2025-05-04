@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 May 2025
+Version dated 4 May 2025
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -47,10 +47,10 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/",
+			"three": "https://cdn.jsdelivr.net/npm/three@0.176.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.176.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.176.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -67,7 +67,8 @@ import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMes
 import Stats from 'stats-gl';
 // Special Modules
 import {Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
-import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
+//import {loadACanimX,loadACanimV,moveACanimX,moveACanimV} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
+import {loadAirExt,loadAirInt,moveAirExt,moveAirInt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2a.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js"; // r171
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
 
@@ -230,7 +231,6 @@ const SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun2
 const LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
 const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
-let envMap = 0;
 
 //= GRDWTR TEXTURES ============//==============================================
 //const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
@@ -374,16 +374,19 @@ let quaternion = new THREE.Quaternion();
 let InpPwr = 0;					// Power
 
 //- Load Models and Animations -------------------------------------------------
-//-	File Path
-const ACPath = "https://PhilCrowther.github.io/Aviation/models/fm2/";	// Used to load models and sounds
+//	File Paths
+const AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/"; // Used to load models and sounds
+const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
+const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
+const mxrSrc = AirSrc + mxrFNm;
+const vxrSrc = AirSrc + vxrFNm;
 //-	Animation Mixers
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
 //-	External Model and Mixers
-const ACFile = "fm2_flyt_caf_npa.glb"; // Name of aircraft model file (rotated blender file)
 let mxr_ = {
 		// File Name
-		Src: ACPath + ACFile,
+		Src: mxrSrc,
 		// GLTF
 		GLT: 0,
 		// Address
@@ -396,10 +399,9 @@ let mxr_ = {
 		Cnp:0, THk:0,
 	}
 //- Internal Model and Mixers
-const VCFile = "fm2_flyt_vcp_npa.glb"; // Name of aircraft model file (rotated blender file)
 let vxr_ = {
 		// File Name
-		Src: ACPath + VCFile,
+		Src: vxrSrc,
 		// GLTF
 		GLT: 0,
 		// Address
@@ -494,7 +496,6 @@ const K_Soun = 83;				// Toggle Sound (s)
 const K_Paws = 80;				// Pause (p)
 
 //= MY CAMERA ==================//==============================================
-//let CamSel = 0;	// Starting Camera View (0 = attached to grid, 1 = attached to airplane)
 //- Create Default Center Mesh
 const CamCtr = makMsh();
 	CamCtr.rotation.order = "YXZ";
@@ -645,7 +646,7 @@ function rendAll() {
 //= SKYBOX =====================//==============================================
 
 function loadSkyBox() {
-	envMap = cubeLoader
+	let envMap = cubeLoader
 		.setPath(SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
@@ -764,72 +765,9 @@ function loadGeoMat(grd_) {
 //= AIROBJ =====================================================================
 
 function loadAirObj() {
-	loadAirExt();
-	loadAirInt();
+	loadAirExt(scene,gltfLoader,air_,mxr_,anm_);
+	loadAirInt(scene,gltfLoader,air_,vxr_,anm_);
 }
-
-//-	Load Airplane Model --------------------------------------------------------
-function loadAirExt() {
-	gltfLoader.load(mxr_.Src, function (gltf) {
-		gltf.scene.traverse(function (child) {
-			if (child.isMesh) {
-				child.material.envMap = envMap; // ??? required?
-				child.castShadow = true;
-				child.receiveShadow = true;
-			}
-			if (
-				child.name == "propeller" ||
-				child.name == "canopy1glass" ||
-				child.name == "canopy2glass")
-			{
-				child.castShadow = false;
-				child.receiveShadow = false;
-			}
-		});
-		mxr_.GLT = gltf;
-		mxr_.Adr = gltf.scene;
-		mxr_.Adr.rotation.order = "YXZ";
-		mxr_.Adr.scale.setScalar(Ft2Mtr);
-		//
-		loadACanimX(air_, mxr_,anm_);
-		//
-		air_.AirObj.add(mxr_.Adr);
-		mxr_.Adr.visible = true;
-		// Load Sounds
-		loadSounds();
-	});		
-}
-
-//-	Load Virtual Cockpit -------------------------------------------------------
-function loadAirInt() {
-	gltfLoader.load(vxr_.Src, function (gltf) {
-		gltf.scene.traverse(function (child) {
-			if (child.isMesh) {
-				child.castShadow = true;
-				child.receiveShadow = true;
-			}
-			if (
-				child.name == "propeller" ||
-				child.name == "glass")
-			{
-				child.castShadow = false;
-				child.receiveShadow = false;
-			}
-		});
-		vxr_.GLT = gltf;
-		vxr_.Adr = gltf.scene;
-		vxr_.Adr.rotation.order = "YXZ";
-		// Convert from feet to meters
-//		vxr_.Adr.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);
-		vxr_.Adr.scale.setScalar(Ft2Mtr);
-		//
-		loadACanimV(vxr_,anm_);
-		//
-		air_.AirObj.add(vxr_.Adr);	
-		// Initialize
-		vxr_.Adr.visible = false;
-	});
-}	
 
 //- Move Airplane Model / Virtual Cockpit --------------------------------------
 function moveAirObj() {
@@ -888,9 +826,9 @@ function moveAirObj() {
 		anm_.stkbcm = 0;		// Reset Cumulative	
 		anm_.stkbnk = 180+InpKey.z*200;	// Joystick bank animation (range = 0 to 360)
 		//
-		moveACanimV(air_,vxr_,anm_,cam_.lld); // VC
+		moveAirInt(air_,vxr_,anm_,cam_.lld); // VC
 	}	
-	else moveACanimX(air_,mxr_,anm_); // External
+	else moveAirExt(air_,mxr_,anm_); // External
 }
 
 //= SOUNDS =====================//==============================================
@@ -898,7 +836,7 @@ function moveAirObj() {
 // Load Sounds
 function loadSounds() {	
 	//- My Engine --------------------------------------------------------------
-	let fname = ACPath + "sounds/" + acsnd1;
+	let fname = AirSrc + "sounds/" + acsnd1;
 	audioLoader.load(fname, function(buffer) {
 		EngSnd.setBuffer(buffer);
 		EngSnd.setRefDistance(RefDst);
@@ -906,7 +844,7 @@ function loadSounds() {
 		EngSnd.setVolume(0);
 	});
 	//- My Prop ----------------------------------------------------------------
-	fname = ACPath + "sounds/" + acsnd2;
+	fname = AirSrc + "sounds/" + acsnd2;
 	audioLoader.load(fname, function(buffer) {
 		PrpSnd.setBuffer(buffer);
 		PrpSnd.setRefDistance(RefDst);
@@ -932,6 +870,10 @@ function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
 	camera.rotation.y = cam_.adj*DegRad;
 	cam_.rot.add(camera);		// Attach to rotator
+	if (cam_.sel == 0) {
+		mxr_.Adr.visible = true;
+		vxr_.Adr.visible = false;
+	};
 }
 
 function moveCamera(camera,cam_) {
