@@ -280,9 +280,7 @@ function moveMyPeep(myp_,tim_) {
 				myp_.DlyFlg[n] = 0; // so don't keep repeating delay
 			}
 		}
-		//- Distance -----------//----------------------------------------------
-		// Turn On or Off Based on Distance
-		// (Not Computed for OrbitControls)
+		//- Turn On or Off Based on Distance -----------------------------------
 		// Get Distances
 		if (myp_.ObjRef[n]) { // If Linked
 			ObjRef = myp_.ObjRef[n];
@@ -331,6 +329,32 @@ function loadMyCrew(gltfLoader,myc_) {
 	}
 }
 
+//= MOVE MY CREW ===============//==============================================
+function moveMyCrew(myc_) {
+	// To compute position, use AnmTim * anmfps
+	let ObjRef = 0;
+	let ObjDst = new Vector3();
+	for (let n = 0; n < myc_.ObjNum; n++) {
+		// Turn On or Off Based on Distance ------------------------------------
+		// Get Distances
+		if (myc_.ObjRef[n]) { // If Linked
+			ObjRef = myc_.ObjRef[n];
+			ObjDst = ObjRef.position;
+		}
+		else {ObjDst.copy(myc_.MapPos[n]);}
+		// Turn On
+		if (!myc_.ObjViz[n] && ObjDst.x < myc_.MaxDst && ObjDst.y < myc_.MaxDst && ObjDst.z < myc_.MaxDst) {
+			myc_.ObjViz[n] = 1;
+			myc_.ObjAdr[n].visible = true;
+		}
+		// Continue
+		if (myc_.ObjViz[n] && ObjDst.x > myc_.MaxDst || ObjDst.y > myc_.MaxDst || ObjDst.z > myc_.MaxDst) {
+			myc_.ObjViz[n] = 0;
+			myc_.ObjAdr[n].visible = false;
+		}
+	}
+}
+
 /*******************************************************************************
 *
 *	SUBROUTINES
@@ -361,7 +385,7 @@ export {loadIsland,initIsland,moveIsland,
 		loadFxdObj,initFxdObj,moveFxdObj,
 		loadAnmFlg,moveAnmFlg,
 		loadMyPeep,moveMyPeep,
-		loadMyCrew
+		loadMyCrew,moveMyCrew,
 	};
 
 /*******************************************************************************
