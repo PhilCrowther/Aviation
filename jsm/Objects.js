@@ -209,11 +209,11 @@ function moveAnmFlg(flg_,tim_) {
 
 /*******************************************************************************
 *
-*	ANIMATED PEOPLE
+*	RIGGED ANIMATED PEOPLE
 *
 *******************************************************************************/
 
-//= LOAD MY PEEPS ==============//==============================================
+//= LOAD MY PEOPLE =============//==============================================
 function loadMyPeep(gltfLoader,myp_) {
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
@@ -242,7 +242,7 @@ function loadMyPeep(gltfLoader,myp_) {
 	}
 }
 
-//= MOVE MY PEEPS ==============//==============================================
+//= MOVE MY PEOPLE =============//==============================================
 function moveMyPeep(myp_,tim_) {
 	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
@@ -280,9 +280,7 @@ function moveMyPeep(myp_,tim_) {
 				myp_.DlyFlg[n] = 0; // so don't keep repeating delay
 			}
 		}
-		//- Distance -----------//----------------------------------------------
-		// Turn On or Off Based on Distance
-		// (Not Computed for OrbitControls)
+		//- Turn On or Off Based on Distance -----------------------------------
 		// Get Distances
 		if (myp_.ObjRef[n]) { // If Linked
 			ObjRef = myp_.ObjRef[n];
@@ -300,6 +298,59 @@ function moveMyPeep(myp_,tim_) {
 			myp_.ObjViz[n] = 0;
 			myp_.ObjAdr[n].visible = false;
 //			myp_.AnmAct[n].stop(); // causes err (not a function)
+		}
+	}
+}
+
+/*******************************************************************************
+*
+*	ANIMATED PEOPLE (Not Rigged)
+*
+*******************************************************************************/
+
+//= LOAD MY CREW ===============//==============================================
+function loadMyCrew(gltfLoader,myc_) {
+	for (let n = 0; n < myc_.ObjNum; n++) {
+		gltfLoader.load(myc_.ObjSrc[n], function (gltf) {
+			// Cast Shadow (but not in shadow zone)
+			gltf.scene.traverse(function (child) {
+				if (child.isMesh) child.castShadow = true;
+			});
+			myc_.ObjAdr[n] = gltf.scene;
+			//- Position
+			myc_.ObjAdr[n].scale.setScalar(myc_.ObjSiz[n]);
+			myc_.ObjAdr[n].rotation.x = myc_.ObjRot[n].x * DegRad;
+			myc_.ObjAdr[n].rotation.y = myc_.ObjRot[n].y * DegRad;
+			myc_.ObjAdr[n].rotation.z = myc_.ObjRot[n].z * DegRad;
+			myc_.ObjAdr[n].position.copy(myc_.MapPos[n]); // Relative to moving object
+			if (myc_.ObjRef[n]) myc_.ObjRef[n].add(myc_.ObjAdr[n]); // Link to moving object
+			else {scene.add(myc_.ObjAdr[n]);}
+		});
+	}
+}
+
+//= MOVE MY CREW ===============//==============================================
+function moveMyCrew(myc_) {
+	// To compute position, use AnmTim * anmfps
+	let ObjRef = 0;
+	let ObjDst = new Vector3();
+	for (let n = 0; n < myc_.ObjNum; n++) {
+		// Turn On or Off Based on Distance ------------------------------------
+		// Get Distances
+		if (myc_.ObjRef[n]) { // If Linked
+			ObjRef = myc_.ObjRef[n];
+			ObjDst = ObjRef.position;
+		}
+		else {ObjDst.copy(myc_.MapPos[n]);}
+		// Turn On
+		if (!myc_.ObjViz[n] && ObjDst.x < myc_.MaxDst && ObjDst.y < myc_.MaxDst && ObjDst.z < myc_.MaxDst) {
+			myc_.ObjViz[n] = 1;
+			myc_.ObjAdr[n].visible = true;
+		}
+		// Continue
+		if (myc_.ObjViz[n] && ObjDst.x > myc_.MaxDst || ObjDst.y > myc_.MaxDst || ObjDst.z > myc_.MaxDst) {
+			myc_.ObjViz[n] = 0;
+			myc_.ObjAdr[n].visible = false;
 		}
 	}
 }
@@ -333,7 +384,8 @@ return mesh;}
 export {loadIsland,initIsland,moveIsland,
 		loadFxdObj,initFxdObj,moveFxdObj,
 		loadAnmFlg,moveAnmFlg,
-		loadMyPeep,moveMyPeep
+		loadMyPeep,moveMyPeep,
+		loadMyCrew,moveMyCrew,
 	};
 
 /*******************************************************************************
