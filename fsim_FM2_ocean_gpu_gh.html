@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 May 2025
+Version dated 22 May 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -21,7 +21,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 
 <div id="container">
 	<div class="overlay1">
-		<div>Throttle: <span id="Air_Pwr"></span></div>
+		<div>9Throttle: <span id="Air_Pwr"></span></div>
 		<div>AirSpeed: <span id="Air_Spd"></span> mph</div>
 		<div>Altitude: <span id="Air_Alt"></span> ft</div>
 		<div>Heading&nbsp: <span id="Air_Hdg"></span> deg</div>
@@ -88,7 +88,8 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; /
 import {loadIsland,initIsland,moveIsland, // Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects (only attached to Islands - for now)
 		loadAnmFlg,moveAnmFlg,	// Animated Flag
-		loadMyPeep,moveMyPeep,	// Animated People
+		loadMyPeep,moveMyPeep,	// Rigged Animated People
+		loadMyCrew,moveMyCrew,	// Ship Crew
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
 import {loadXACVeh,initXACVeh,	// Airplanes
 		loadXSHVeh,initXSHVeh,moveXSHVeh	// Ships
@@ -176,7 +177,8 @@ TO DO:
 	    	Airplane Smoke Trail	xas_			adj
 	    	Airplane Fire Trail		xaf_			adj
 	    	Ship Wake				wak_			adj
-		MYPEEPS						myp_			adj
+		MYPEOPLE					myp_			adj
+		MYCREW						myc_			adj
 		MINIMUM ALTITUDE			alt_			adj
 	5. MY AIRPLANE VARIABLES		air_			adj
 		FLIGHT MODULE
@@ -397,14 +399,18 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	wak_.MapPos = [new THREE.Vector3(50,75,25),		// Map Position
 				   new THREE.Vector3(50,75,25)],
 	wak_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[1]];	// Parent Object			 
-//= MY PEEPS ===================//==============================================
-//- Animated Objects: Linked ---//----------------------------------------------
+//= MY PEOPLE (Rigged Animated Characters( =====================================
 //	Adjustments
-	myp_.ObjRot = [new THREE.Euler(0,-45,0), // Rotation (degrees)
+	myp_.ObjRot = [new THREE.Euler(0,-45,0),		// Rotation (degrees)
 				   new THREE.Euler(0,-90,0)];
-	myp_.MapPos = [new THREE.Vector3(6,12.9,40), // Relative Position (if parent)
+	myp_.MapPos = [new THREE.Vector3(6,12.9,40),	// Relative Position (if parent)
 				   new THREE.Vector3(12.22,11.39,35)];
-	myp_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[0]]; // Parent, if any
+	myp_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[0]];	// Parent, if any
+//= MY CREW (Ship Crew - Not Rigged or Animated - Yet) =========================
+//	Adjustments
+	myc_.ObjRot = [new THREE.Euler(0,0,0)];			// Rotation (degrees)
+	myc_.MapPos = [new THREE.Vector3(0,0,0)];		// Relative Position (if parent)
+	myc_.ObjRef = [xsh_.ObjGrp[0]];					// Parent, if any
 //= MINIMUM ALTITUDE ===========//==============================================
 //- Adjustments
 	alt_.Ref = [isl_.ObjGrp[0],xsh_.ObjGrp[0]]; // can't load until object exists
@@ -663,7 +669,6 @@ async function rendAll() {		// r173 added async
 		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
-		moveMyPeep(myp_,tim_);
 		// Move Grids
 		waves.update();			// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
@@ -697,7 +702,7 @@ function loadSkyBox() {
 	sky_.envMap.format = THREE.RGBAFormat;
 	sky_.envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = sky_.envMap;
-	scene.environment = sky_.envMap;
+//	scene.environment = sky_.envMap;
 	// LensFlare
 	if (gen_.LnFFlg) {				// SunFlare	
 		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
@@ -789,6 +794,7 @@ function loadObject() {
 	loadMoving();
 	loadAnmFlg(txtrLoader,flg_);
 	loadMyPeep(gltfLoader,myp_);
+	loadMyCrew(gltfLoader,myc_);
 }
 
 function initObject() {
@@ -802,6 +808,8 @@ function moveObject() {
 	moveMoving();
 	moveAnmObj();
 	moveFxdGun();				// Perform Targeting
+	moveMyPeep(myp_,tim_);
+	moveMyCrew(myc_);
 }
 
 //- Shared Textures ------------//----------------------------------------------
