@@ -434,45 +434,60 @@ let wak_ = {
 		ObjRef: [0,0],			// Parent Object
 	};
 
-//= MY PEOPLE ===================//=============================================
-//- Animated Objects: Linked ---//----------------------------------------------
+//= MY PEOPLE ==================//==============================================
+//- Animated Rigged Characters: Linked -----------------------------------------
 let myp_ = {
-		ObjNum: 3,
+		ObjNum: 2,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/Brian_Wave2.glb",
-				 "https://PhilCrowther.github.io/Aviation/people/Brian_Anim.glb",
-				 "https://PhilCrowther.github.io/Aviation/people/CVE_crew.glb"],
-		ObjTxt: [0,0,0],
-		ObjAdr: [0,0,0],		// Loaded Object
-		ObjSiz: [1,1,1],		// Scale
-		RndOrd: [0,0,0],		// renderOrder
-		ObjRot: [0,0,0],		// Rotation (degrees)
-		MapPos: [0,0,0],		// Relative Position (if parent)
-		ObjRef: [0,0,0],		// Parent, if any
+				 "https://PhilCrowther.github.io/Aviation/people/Brian_Anim.glb"],
+		ObjTxt: [0,0],
+		ObjAdr: [0,0],			// Loaded Object
+		ObjSiz: [1,1],			// Scale
+		RndOrd: [0,0],			// renderOrder
+		ObjRot: [0,0],			// Rotation (degrees)
+		MapPos: [0,0],			// Relative Position (if parent)
+		ObjRef: [0,0],			// Parent, if any
 		// Animation Action
-		AnmAct: [0,0,0],		// Animation Action
-		AnmMxr: [0,0,0],		// Animation Mixer
-		AnmTim: [0,0,0],		// Animation
-		AnmRep: [0,0,0],		// Number of Times to Repeat
-		AnmRng: [80,360,0],
+		AnmAct: [0,0],			// Animation Action
+		AnmMxr: [0,0],			// Animation Mixer
+		AnmTim: [0,0],			// Animation
+		AnmRep: [0,0],			// Number of Times to Repeat
+		AnmRng: [80,360],
 		// Animation Segments (within single Animation)
-		SegNum: [2,1,0],		// Number of Segments
-		SegRef: [0,0,0],		// Currently Playing
-		SegBeg: [[0,40],[0],[0]], // Animation Segment Beg (Absolute Position)
-		SegEnd: [[40,80],[360],[0]], // Animation Segment End (Absolute Position)
+		SegNum: [2,1],			// Number of Segments
+		SegRef: [0,0],			// Currently Playing
+		SegBeg: [[0,40],[0]],	// Animation Segment Beg (Absolute Position)
+		SegEnd: [[40,80],[360]], // Animation Segment End (Absolute Position)
 		// Repetitions
-		RepNum: [[10,0],[99],[0]], // Number of Times to Repeat Before Moving On
-		RepRem: [0,0,0],		// Animation Reps Remaining		
+		RepNum: [[10,0],[99]],	// Number of Times to Repeat Before Moving On
+		RepRem: [0,0],			// Animation Reps Remaining		
 		// Delay
-		DlyBeg: [[0,3],[0],[0]], // Delay Time Between Animation Segments (Secs)
-		DlyPos: [[0,60],[0],[0]], // Absolute Position in Range where Delay Starts
-		DlyMid: [[0,3],[0],[0]], // Delay Time Within Animation Segments (Secs)
-		DlyFlg: [0,0,0],		// Flag for Middle Delay - So Only Delay Once
-		DlyRem: [0,0,0],		// Delay Time Remaining (Shared)
+		DlyBeg: [[0,3],[0]],	// Delay Time Between Animation Segments (Secs)
+		DlyPos: [[0,60],[0]],	// Absolute Position in Range where Delay Starts
+		DlyMid: [[0,3],[0]],		// Delay Time Within Animation Segments (Secs)
+		DlyFlg: [0,0],			// Flag for Middle Delay - So Only Delay Once
+		DlyRem: [0,0],			// Delay Time Remaining (Shared)
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
-		ObjViz: [1,1,1],		// Visibility Flag On
+		ObjViz: [1,1],			// Visibility Flag On
 		// Segment Names (Optional)
 		SegNam: [["Chocks Removed","Set Brakes"]],
+	};
+
+//- Ship Crew (Not Rigged) -----------------------------------------------------
+let myc_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/CVE_crew.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],			// Loaded Object
+		ObjSiz: [1],			// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [0],			// Rotation (degrees)
+		MapPos: [0],			// Relative Position (if parent)
+		ObjRef: [0],			// Parent, if any
+		// Visibility
+		MaxDst: 1000,			// Max Distance where visible (meters)
+		ObjViz: [1,1],			// Visibility Flag On
 	};
 
 //= MINIMUM ALTITUDE ===========//==============================================
