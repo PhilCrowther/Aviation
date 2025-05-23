@@ -480,7 +480,7 @@ let myc_ = {
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/CVE_crew.glb"],
 		ObjTxt: [0],
 		ObjAdr: [0],			// Loaded Object
-		ObjSiz: [1],			// Scale
+		ObjSiz: [Ft2Mtr],		// Scale
 		RndOrd: [0],			// renderOrder
 		ObjRot: [0],			// Rotation (degrees)
 		MapPos: [0],			// Relative Position (if parent)
