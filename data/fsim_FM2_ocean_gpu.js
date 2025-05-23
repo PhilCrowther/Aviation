@@ -434,8 +434,8 @@ let wak_ = {
 		ObjRef: [0,0],			// Parent Object
 	};
 
-//= MY PEEPS ===================//==============================================
-//- Animated Objects: Linked ---//----------------------------------------------
+//= MY PEOPLE ==================//==============================================
+//- Animated Rigged Characters: Linked -----------------------------------------
 let myp_ = {
 		ObjNum: 2,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/Brian_Wave2.glb",
@@ -472,6 +472,22 @@ let myp_ = {
 		ObjViz: [1,1],			// Visibility Flag On
 		// Segment Names (Optional)
 		SegNam: [["Chocks Removed","Set Brakes"]],
+	};
+
+//- Ship Crew (Not Rigged) -----------------------------------------------------
+let myc_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/CVE_crew.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],			// Loaded Object
+		ObjSiz: [Ft2Mtr],		// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [0],			// Rotation (degrees)
+		MapPos: [0],			// Relative Position (if parent)
+		ObjRef: [0],			// Parent, if any
+		// Visibility
+		MaxDst: 1000,			// Max Distance where visible (meters)
+		ObjViz: [1,1],			// Visibility Flag On
 	};
 
 //= MINIMUM ALTITUDE ===========//==============================================
