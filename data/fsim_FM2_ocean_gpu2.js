@@ -444,7 +444,7 @@ let xss_ = {
 		ObjSiz: [2000],			// Scale
 		RndOrd: [1],			// renderOrder
 		ObjRot: [0],			// Rotation (not used)
-		MapPos: [0],			// Map Position
+		ObjPos: [0],			// Offset Position
 		ObjRef: [0],			// Parent Object
 	};
 
