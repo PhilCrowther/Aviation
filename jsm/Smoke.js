@@ -1,5 +1,5 @@
 /*
- * Smoke.js (vers 25.03.17)
+ * Smoke.js (vers 25.05.26)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
  * Adapted from three.js examples.
@@ -268,18 +268,18 @@ function initXSHSmk(xss_,txt_) {
 	for (let n = 0; n < xss_.ObjNum; n ++) {
 		xss_.ObjTxt[n] = txt_.ObjTxt[xss_.ObjTxt[n]];
 		//- Timer
-		let speed = uniform(.01); // r170 Lower = slower
+		let speed = uniform(.001); // r170 Lower = slower
 		let scaledTime = time.add(5).mul(speed); // r170
 		//- Life
-		let lifeRange = range(0.1,1);
+		let lifeRange = range(0.1,10); // ###
 		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
 		let life = lifeTime.div(lifeRange);
 		//- Rotation Range
-		let rotateRange = range(.1,.2);
+		let rotateRange = range(1,2); // ###
 		let textureNode = texture(xss_.ObjTxt[n], rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
 		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
 		//- Lateral Offset	
-		let offsetRange = range(new Vector3(0,3,0), new Vector3(0,5,5));
+		let offsetRange = range(new Vector3(-.5,1,2), new Vector3(1,3,6)); // ###
 		//- Size Range
 		let scaleRange = range(.1,.2);
 		//
