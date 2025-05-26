@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 May 2025
+Version dated 26 May 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -406,11 +406,11 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //	Adjustments
 	xss_.ObjRot = [new THREE.Euler(), 				// Rotation (not used)
 				   new THREE.Euler()];
-	xss_.ObjPos = [new THREE.Vector3(0,16,-8),		// Offset Position
-				   new THREE.Vector3(0,15,8)];	
+	xss_.ObjPos = [new THREE.Vector3(0,13,-10.5),		// Offset Position
+				   new THREE.Vector3(0,12.5,5)];	
 	xss_.ObjRef = [xsh_.ObjGrp[1],					// Parent Object (destroyer only)
 				   xsh_.ObjGrp[1]];
-	xss_.ObjSiz = [200,200];
+	xss_.ObjSiz = [75,75];
 //= MY PEOPLE (Rigged Animated Characters( =====================================
 //	Adjustments
 	myp_.ObjRot = [new THREE.Euler(0,-45,0),		// Rotation (degrees)
