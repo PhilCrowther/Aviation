@@ -298,7 +298,8 @@ function initXSHSmk(xss_,txt_) {
 		xss_.ObjAdr[n] = new Mesh(new PlaneGeometry(1, 1),xss_.ObjMat[n]);
 		xss_.ObjAdr[n].scale.setScalar(xss_.ObjSiz[n]);
 		xss_.ObjAdr[n].isInstancedMesh = true;
-		xss_.ObjAdr[n].count = 600; // Increases continuity (was 100)
+		xss_.ObjAdr[n].count = 300; // Increases continuity (was 100)
+		xss_.ObjAdr[n].position.copy(xss_.ObjPos[n]);
 		//	Link
 		xss_.ObjRef[n].add(xss_.ObjAdr[n]);
 	}
