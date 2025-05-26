@@ -436,16 +436,16 @@ let wak_ = {
 
 //- Ship Smoke (destroyer only) ------------------------------------------------
 let xss_ = {
-		ObjNum: 1,				// Number of Smokes
-		ObjSrc: [0],			// Not Used
-		ObjTxt: [0],			// Shared Texture Reference Number
-		ObjMat: [0],			// Material
-		ObjAdr: [0],			// Emitter Address
-		ObjSiz: [2000],			// Scale
-		RndOrd: [1],			// renderOrder
-		ObjRot: [0],			// Rotation (not used)
-		ObjPos: [0],			// Offset Position
-		ObjRef: [0],			// Parent Object
+		ObjNum: 2,				// Number of Stacks
+		ObjSrc: [0,0],			// Not Used
+		ObjTxt: [0,0],			// Shared Texture Reference Number
+		ObjMat: [0,0],			// Material
+		ObjAdr: [0,0],			// Emitter Address
+		ObjSiz: [0,0],			// Scale
+		RndOrd: [1,1],			// renderOrder
+		ObjRot: [0,0],			// Rotation (not used)
+		ObjPos: [0,0],			// Offset Position
+		ObjRef: [0,0],			// Parent Object
 	};
 
 //= MY PEOPLE ==================//==============================================
