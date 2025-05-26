@@ -26,7 +26,7 @@
 		ANIMATED FLAG				(flg_)
 		AIRPLANE EXPLOSION			(xae_)
 	    SMOKE MODULE
-	    	Volcano Smoke			(vlk_)
+	    	Volcano Smoke			(grs_)
 	    	Ground Fire				(grf_)
 	    	Airplane Smoke Trail	(xas_)
 	    	Airplane Fire Trail		(xaf_)
