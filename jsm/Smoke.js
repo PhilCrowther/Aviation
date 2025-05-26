@@ -263,13 +263,55 @@ function moveXSHWak() {
 	}
 }
 
+//= INIT SHIP SMOKE ============//==============================================
+function initXSHSmk(xss_,txt_) {
+	for (let n = 0; n < xss_.ObjNum; n ++) {
+		xss_.ObjTxt[n] = txt_.ObjTxt[xss_.ObjTxt[n]];
+		//- Timer
+		let speed = uniform(.01); // r170 Lower = slower
+		let scaledTime = time.add(5).mul(speed); // r170
+		//- Life
+		let lifeRange = range(0.1,1);
+		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
+		let life = lifeTime.div(lifeRange);
+		//- Rotation Range
+		let rotateRange = range(.1,.2);
+		let textureNode = texture(xss_.ObjTxt[n], rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
+		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
+		//- Lateral Offset	
+		let offsetRange = range(new Vector3(0,3,0), new Vector3(0,5,5));
+		//- Size Range
+		let scaleRange = range(.1,.2);
+		//
+		let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
+		//	Color
+		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+		//	Material
+		xss_.ObjMat[n] = new SpriteNodeMaterial();
+		xss_.ObjMat[n].colorNode = mix(color("black"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
+		xss_.ObjMat[n].opacityNode = opacityNode;
+		xss_.ObjMat[n].positionNode = offsetRange.mul(lifeTime);
+		xss_.ObjMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		xss_.ObjMat[n].depthWrite = false;
+		xss_.ObjMat[n].transparent = true;
+		//	Mesh
+		xss_.ObjAdr[n] = new Mesh(new PlaneGeometry(1, 1),xss_.ObjMat[n]);
+		xss_.ObjAdr[n].scale.setScalar(xss_.ObjSiz[n]);
+		xss_.ObjAdr[n].isInstancedMesh = true;
+		xss_.ObjAdr[n].count = 300; // Increases continuity (was 100)
+		xss_.ObjAdr[n].position.copy(xss_.ObjPos[n]);
+		//	Link
+		xss_.ObjRef[n].add(xss_.ObjAdr[n]);
+	}
+}
+
 /*******************************************************************************
 *
 *	EXPORTS
 *
 *******************************************************************************/
 
-export {initGrdSmk,initGrdFyr,initAirSmk,initAirFyr,initXSHWak,moveXSHWak};
+export {initGrdSmk,initGrdFyr,initAirSmk,initAirFyr,initXSHWak,moveXSHWak,initXSHSmk};
 
 /*******************************************************************************
 *
