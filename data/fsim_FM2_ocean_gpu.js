@@ -420,7 +420,7 @@ let grf_ = {
 		ObjRef: [0],			// Parent Object
 	};
 
-//- Ship Wake ------------------//------------------------------------------
+//- Ship Wake ------------------//----------------------------------------------
 let wak_ = {
 		ObjNum: xsh_.ObjNum,	// Number of Wakes
 		ObjSrc: [0,0],			// Not Used
@@ -431,6 +431,20 @@ let wak_ = {
 		RndOrd: [1,1],			// renderOrder
 		ObjRot: [0,0],			// Rotation (not used)
 		MapPos: [0,0],			// Map Position
+		ObjRef: [0,0],			// Parent Object
+	};
+
+//- Ship Smoke (destroyer only) ------------------------------------------------
+let xss_ = {
+		ObjNum: 2,				// Number of Stacks
+		ObjSrc: [0,0],			// Not Used
+		ObjTxt: [0,0],			// Shared Texture Reference Number
+		ObjMat: [0,0],			// Material
+		ObjAdr: [0,0],			// Emitter Address
+		ObjSiz: [0,0],			// Scale
+		RndOrd: [1,1],			// renderOrder
+		ObjRot: [0,0],			// Rotation (not used)
+		ObjPos: [0,0],			// Offset Position
 		ObjRef: [0,0],			// Parent Object
 	};
 
