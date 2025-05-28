@@ -30,7 +30,8 @@ import {
 	Mesh,
 	PlaneGeometry,
 	RGBAFormat,
-	// Peeps
+	// People
+	AnimationClip,
 	AnimationMixer,
 	Vector3,
 	// makMsh
@@ -222,7 +223,7 @@ function loadMyPeep(gltfLoader,myp_) {
 				if (child.isMesh) child.castShadow = true;
 			});
 			myp_.ObjAdr[n] = gltf.scene;
-			// Play Animation
+			// Load Animation
 			myp_.AnmMxr[n] = new AnimationMixer(myp_.ObjAdr[n]);
 			myp_.AnmMxr[n].clipAction(gltf.animations[0]).play();
 			//- Set Initial Values
@@ -310,6 +311,7 @@ function moveMyPeep(myp_,tim_) {
 
 //= LOAD MY CREW ===============//==============================================
 function loadMyCrew(gltfLoader,myc_) {
+	let clip = 0;
 	for (let n = 0; n < myc_.ObjNum; n++) {
 		gltfLoader.load(myc_.ObjSrc[n], function (gltf) {
 			// Cast Shadow (but not in shadow zone)
@@ -325,6 +327,13 @@ function loadMyCrew(gltfLoader,myc_) {
 			myc_.ObjAdr[n].position.copy(myc_.MapPos[n]); // Relative to moving object
 			if (myc_.ObjRef[n]) myc_.ObjRef[n].add(myc_.ObjAdr[n]); // Link to moving object
 			else {scene.add(myc_.ObjAdr[n]);}
+			// Load Animations
+			for (let a = 0; a < myc_.AnmNum[n][a]; a++) {
+				clip = AnimationClip.findByName(gltf.animations,myc_.AnmNam[n][a]);
+				myc_.AnmMxr[n][a] = new AnimationMixer(gltf.scene);
+				myc_.AnmAct[n][a] = myc_.AnmMxr[n][a].clipAction(clip);
+				myc_.AnmAct[n][a].play();				
+			}
 		});
 	}
 }
@@ -351,6 +360,14 @@ function moveMyCrew(myc_) {
 		if (myc_.ObjViz[n] && ObjDst.x > myc_.MaxDst || ObjDst.y > myc_.MaxDst || ObjDst.z > myc_.MaxDst) {
 			myc_.ObjViz[n] = 0;
 			myc_.ObjAdr[n].visible = false;
+		}
+		// Play Animations
+		if (myc_.ObjViz[n]) {
+			for (let a = 0; a < myc_.AnmNum[n][a]; a++) {			
+				myc_.AnmMxr[n][a].setTime(myc_.AnmCnt/24);	
+			}
+			myc_.AnmCnt = myc_.AnmCnt + 1/60;
+			Mod360(myc_.AnmCnt);
 		}
 	}
 }
