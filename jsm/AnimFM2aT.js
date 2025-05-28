@@ -62,15 +62,13 @@ function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 				child.renderOrder = 1;
 			}
 		});
-//		mxr_.Adr = gltf.scene;
+		mxr_.Adr = gltf.scene;
 		mxr_.Adr.rotation.order = "YXZ";
 		mxr_.Adr.scale.setScalar(Ft2Mtr);
 		loadAirAnmX(gltf,air_,mxr_,anm_);
 		air_.AirPBY.add(mxr_.Adr);
 		// Initialize
 		mxr_.Adr.visible = false;
-		// Load Related Objects only after mxr_.Adr known
-//		initBullet(myg_,scene);
 	});		
 }
 
@@ -211,7 +209,7 @@ function loadAirInt(scene,gltfLoader,air_,vxr_,anm_) {
 				child.renderOrder = 1;
 			}
 		});
-//		vxr_.Adr = gltf.scene;
+		vxr_.Adr = gltf.scene;
 		vxr_.Adr.rotation.order = "YXZ";
 		vxr_.Adr.scale.setScalar(Ft2Mtr);
 		loadAirAnmI(gltf,vxr_,anm_);
