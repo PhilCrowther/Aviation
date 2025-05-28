@@ -332,7 +332,7 @@ function loadMyCrew(gltfLoader,myc_) {
 				clip = AnimationClip.findByName(gltf.animations,myc_.AnmNam[n][a]);
 				myc_.AnmMxr[n][a] = new AnimationMixer(gltf.scene);
 				myc_.AnmAct[n][a] = myc_.AnmMxr[n][a].clipAction(clip);
-				myc_.AnmAct[n][a].setDuration(1).play();
+				myc_.AnmAct[n][a].play();				
 			}
 		});
 	}
@@ -360,6 +360,13 @@ function moveMyCrew(myc_) {
 		if (myc_.ObjViz[n] && ObjDst.x > myc_.MaxDst || ObjDst.y > myc_.MaxDst || ObjDst.z > myc_.MaxDst) {
 			myc_.ObjViz[n] = 0;
 			myc_.ObjAdr[n].visible = false;
+		}
+		// Play Animations
+		if (myc_.ObjViz[n]) {
+			for (let a = 0; a < myc_.AnmNum[n][a]; a++) {			
+				myc_.AnmMxr[n][a].setTime(myc_.AnmCnt/24);	
+			}
+			Mod360(myc_.AnmCnt++);
 		}
 	}
 }
