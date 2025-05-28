@@ -75,116 +75,116 @@ function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 // Load Animations -------------//----------------------------------------------
 function loadAirAnmX(gltf,air_,mxr_,anm_) {
 	// Propeller
-	let clip = AnimationClip.findByName(gltf.animations, "propellerAction");
+	let clip = AnimationClip.findByName(gltf.animations,"propellerAction");
 	mxr_.Prp = new AnimationMixer(gltf.scene);
 	let actun = mxr_.Prp.clipAction(clip);
 	actun.play();
 	if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
 	// Rudder
-	clip = AnimationClip.findByName(gltf.animations, "rudderAction");
+	clip = AnimationClip.findByName(gltf.animations,"rudderAction");
 	mxr_.Rdr = new AnimationMixer(gltf.scene);
 	actun = mxr_.Rdr.clipAction(clip);
 	actun.play();
 	if (mxr_.Rdr) mxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
 	// Elevator
-	clip = AnimationClip.findByName(gltf.animations, "elevatorAction");
+	clip = AnimationClip.findByName(gltf.animations,"elevatorAction");
 	mxr_.Elv = new AnimationMixer(gltf.scene);
 	actun = mxr_.Elv.clipAction(clip);
 	actun.play();
 	if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
 	// AileronL
-	clip = AnimationClip.findByName(gltf.animations, "aileronLAction");
+	clip = AnimationClip.findByName(gltf.animations,"aileronLAction");
 	mxr_.AiL = new AnimationMixer(gltf.scene);
 	actun = mxr_.AiL .clipAction(clip);
 	actun.play();
 	if (mxr_.AiL) mxr_.AiL.setTime(anm_.aillft/anm_.anmfps);
 	// AileronR
-	clip = AnimationClip.findByName(gltf.animations, "aileronRAction");
+	clip = AnimationClip.findByName(gltf.animations,"aileronRAction");
 	mxr_.AiR = new AnimationMixer(gltf.scene);
 	actun = mxr_.AiR.clipAction(clip);
 	actun.play();
 	if (mxr_.AiR) mxr_.AiR.setTime(anm_.ailrgt/anm_.anmfps);
 	// Flap Left
-	clip = AnimationClip.findByName(gltf.animations, "flapLAction");
+	clip = AnimationClip.findByName(gltf.animations,"flapLAction");
 	mxr_.FlL = new AnimationMixer(gltf.scene);
 	actun = mxr_.FlL.clipAction(clip);
 	actun.play();
 	if (mxr_.FlL) mxr_.FlL.setTime(anm_.flppos/anm_.anmfps);
 	// Flap Right
-	clip = AnimationClip.findByName(gltf.animations, "flapRAction");
+	clip = AnimationClip.findByName(gltf.animations,"flapRAction");
 	mxr_.FlR = new AnimationMixer(gltf.scene);
 	actun = mxr_.FlR.clipAction(clip);
 	actun.play();
 	if (mxr_.FlR) mxr_.FlR.setTime(anm_.flppos/anm_.anmfps);
 	// WheelL Hinge
 	if (!air_.GrdFlg) anm_.lngpos = 180;
-	clip = AnimationClip.findByName(gltf.animations, "wheel_linkLAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_linkLAction");
 	mxr_.WHL = new AnimationMixer(gltf.scene);
 	actun = mxr_.WHL.clipAction(clip);
 	actun.play();
 	if (mxr_.WHL) mxr_.WHL.setTime(anm_.lngpos/anm_.anmfps);
 	// WheelR Hinge
-	clip = AnimationClip.findByName(gltf.animations, "wheel_linkRAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_linkRAction");
 	mxr_.WHR = new AnimationMixer(gltf.scene);
 	actun = mxr_.WHR.clipAction(clip);
 	actun.play();
 	if (mxr_.WHR) mxr_.WHR.setTime(anm_.lngpos/anm_.anmfps);
 	// WheelL Strut Low
-	clip = AnimationClip.findByName(gltf.animations, "wheel_strutLLAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_strutLLAction");
 	mxr_.WBL = new AnimationMixer(gltf.scene);
 	actun = mxr_.WBL.clipAction(clip);
 	actun.play();
 	if (mxr_.WBL) mxr_.WBL.setTime(anm_.lngpos/anm_.anmfps);
 	// WheelR Strut Low
-	clip = AnimationClip.findByName(gltf.animations, "wheel_strutLRAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_strutLRAction");
 	mxr_.WBR = new AnimationMixer(gltf.scene);
 	actun = mxr_.WBR.clipAction(clip);
 	actun.play();
 	if (mxr_.WBR) mxr_.WBR.setTime(anm_.lngpos/anm_.anmfps);
 	// WheelL Strut Top
-	clip = AnimationClip.findByName(gltf.animations, "wheel_strutTLAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_strutTLAction");
 	mxr_.WTL = new AnimationMixer(gltf.scene);
 	actun = mxr_.WTL.clipAction(clip);
 	actun.play();
 	if (mxr_.WTL) mxr_.WTL.setTime(anm_.lngpos/anm_.anmfps);
 	// WheelR Strut Top
-	clip = AnimationClip.findByName(gltf.animations, "wheel_strutTRAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_strutTRAction");
 	mxr_.WTR = new AnimationMixer(gltf.scene);
 	actun = mxr_.WTR.clipAction(clip);
 	actun.play();
 	if (mxr_.WTR) mxr_.WTR.setTime(anm_.lngpos/anm_.anmfps);
 	// WheelL Shock
-	clip = AnimationClip.findByName(gltf.animations, "wheel_shockLAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_shockLAction");
 	mxr_.WSL = new AnimationMixer(gltf.scene);
 	actun = mxr_.WSL.clipAction(clip);
 	actun.play();
 	if (mxr_.WSL) mxr_.WSL.setTime(anm_.lngpos/anm_.anmfps);
 	// WheelR Shock
-	clip = AnimationClip.findByName(gltf.animations, "wheel_shockRAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_shockRAction");
 	mxr_.WSR = new AnimationMixer(gltf.scene);
 	actun = mxr_.WSR.clipAction(clip);
 	actun.play();
 	if (mxr_.WSR) mxr_.WSR.setTime(anm_.lngpos/anm_.anmfps);
 	// WheelL TopTop
-	clip = AnimationClip.findByName(gltf.animations, "wheel_toptopLAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_toptopLAction");
 	mxr_.WUL = new AnimationMixer(gltf.scene);
 	actun = mxr_.WUL.clipAction(clip);
 	actun.play();
 	if (mxr_.WUL) mxr_.WUL.setTime(anm_.lngpos/anm_.anmfps);
 	// WheelR TopTop
-	clip = AnimationClip.findByName(gltf.animations, "wheel_toptopRAction");
+	clip = AnimationClip.findByName(gltf.animations,"wheel_toptopRAction");
 	mxr_.WUR = new AnimationMixer(gltf.scene);
 	actun = mxr_.WUR.clipAction(clip);
 	actun.play();
 	if (mxr_.WUR) mxr_.WUR.setTime(anm_.lngpos/anm_.anmfps);
 	// Canopy
-	clip = AnimationClip.findByName(gltf.animations, "canopyAction");
+	clip = AnimationClip.findByName(gltf.animations,"canopyAction");
 	mxr_.Cnp = new AnimationMixer(gltf.scene);
 	actun = mxr_.Cnp.clipAction(clip);
 	actun.play();
 	if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
 	// Animation #09 Tailhook
-	clip = AnimationClip.findByName(gltf.animations, "tailhookAction");
+	clip = AnimationClip.findByName(gltf.animations,"tailhookAction");
 	mxr_.THk = new AnimationMixer(gltf.scene);
 	actun = mxr_.THk.clipAction(clip);
 	actun.play();
@@ -222,163 +222,163 @@ function loadAirInt(scene,gltfLoader,air_,vxr_,anm_) {
 // Load Animations -------------//----------------------------------------------
 function loadAirAnmI(gltf,vxr_,anm_) {		
 	// Propeller
-	let clip = AnimationClip.findByName(gltf.animations, "propellerAction");
+	let clip = AnimationClip.findByName(gltf.animations,"propellerAction");
 	vxr_.Prp = new AnimationMixer(gltf.scene);
 	let actun = vxr_.Prp.clipAction(clip);
 	actun.play();
 	if (vxr_.Prp) vxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
 	// AileronL
-	clip = AnimationClip.findByName(gltf.animations, "aileronLAction");
+	clip = AnimationClip.findByName(gltf.animations,"aileronLAction");
 	vxr_.AiL = new AnimationMixer(gltf.scene);
 	actun = vxr_.AiL .clipAction(clip);
 	actun.play();
 	if (vxr_.AiL) vxr_.AiL.setTime(anm_.aillft/anm_.anmfps);
 	// AileronR
-	clip = AnimationClip.findByName(gltf.animations, "aileronRAction");
+	clip = AnimationClip.findByName(gltf.animations,"aileronRAction");
 	vxr_.AiR = new AnimationMixer(gltf.scene);
 	actun = vxr_.AiR.clipAction(clip);
 	actun.play();
 	if (vxr_.AiR) vxr_.AiR.setTime(anm_.ailrgt/anm_.anmfps);
 	// Canopy
-	clip = AnimationClip.findByName(gltf.animations, "canopyAction");
+	clip = AnimationClip.findByName(gltf.animations,"canopyAction");
 	vxr_.Cnp = new AnimationMixer(gltf.scene);
 	actun = vxr_.Cnp.clipAction(clip);
 	actun.play();
 	if (vxr_.Cnp) vxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
 	// Gauge - Compass
-	clip = AnimationClip.findByName(gltf.animations, "gau_compassAction");
+	clip = AnimationClip.findByName(gltf.animations,"gau_compassAction");
 	vxr_.GaH = new AnimationMixer(gltf.scene);
 	actun = vxr_.GaH.clipAction(clip);
 	actun.play();
 	if (vxr_.GaH) vxr_.GaH.setTime(anm_.cmphdg/anm_.anmfps);
 	// Gauge - AI - Arrow
-	clip = AnimationClip.findByName(gltf.animations, "gau_ai_ptrAction");
+	clip = AnimationClip.findByName(gltf.animations,"gau_ai_ptrAction");
 	vxr_.GaA = new AnimationMixer(gltf.scene);
 	actun = vxr_.GaA.clipAction(clip);
 	actun.play();
 	if (vxr_.GaA) vxr_.GaA.setTime(anm_.atiarr/anm_.anmfps);
 	// Gauge - AI - Bank
-	clip = AnimationClip.findByName(gltf.animations, "gau_ai_bankAction");
+	clip = AnimationClip.findByName(gltf.animations,"gau_ai_bankAction");
 	vxr_.GaB = new AnimationMixer(gltf.scene);
 	actun = vxr_.GaB.clipAction(clip);
 	actun.play();
 	if (vxr_.GaB) vxr_.GaB.setTime(anm_.atibnk/anm_.anmfps);
 	// Gauge - AI - Pitch
-	clip = AnimationClip.findByName(gltf.animations, "gau_ai_pitchAction");
+	clip = AnimationClip.findByName(gltf.animations,"gau_ai_pitchAction");
 	vxr_.GaP = new AnimationMixer(gltf.scene);
 	actun = vxr_.GaP.clipAction(clip);
 	actun.play();
 	if (vxr_.GaP) vxr_.GaP.setTime(anm_.atipit/anm_.anmfps);	
 	// Pointer - Altitude
-	clip = AnimationClip.findByName(gltf.animations, "pointer_alt0Action");
+	clip = AnimationClip.findByName(gltf.animations,"pointer_alt0Action");
 	vxr_.PtA = new AnimationMixer(gltf.scene);
 	actun = vxr_.PtA.clipAction(clip);
 	actun.play();
 	if (vxr_.PtA) vxr_.PtA.setTime(anm_.altft0/anm_.anmfps);
 	// Pointer - Altitude X 1000
-	clip = AnimationClip.findByName(gltf.animations, "pointer_alt1Action");
+	clip = AnimationClip.findByName(gltf.animations,"pointer_alt1Action");
 	vxr_.PtB = new AnimationMixer(gltf.scene);
 	actun = vxr_.PtB.clipAction(clip);
 	actun.play();
 	if (vxr_.PtB) vxr_.PtB.setTime(anm_.altft1/anm_.anmfps);
 	// Pointer - Speed
-	clip = AnimationClip.findByName(gltf.animations, "pointer_mphAction");
+	clip = AnimationClip.findByName(gltf.animations,"pointer_mphAction");
 	vxr_.PtS = new AnimationMixer(gltf.scene);
 	actun = vxr_.PtS.clipAction(clip);
 	actun.play();
 	if (vxr_.PtS) vxr_.PtS.setTime(anm_.spdmph/anm_.anmfps);
 	// Pointer - Turn Coordinator
-	clip = AnimationClip.findByName(gltf.animations, "pointer_tcAction");
+	clip = AnimationClip.findByName(gltf.animations,"pointer_tcAction");
 	vxr_.PtT = new AnimationMixer(gltf.scene);
 	actun = vxr_.PtT.clipAction(clip);
 	actun.play();
 	if (vxr_.PtT) vxr_.PtT.setTime(anm_.hdgdif/anm_.anmfps);
 	// Pointer - Ball
-	clip = AnimationClip.findByName(gltf.animations, "pointer_tbAction");
+	clip = AnimationClip.findByName(gltf.animations,"pointer_tbAction");
 	vxr_.PtC = new AnimationMixer(gltf.scene);
 	actun = vxr_.PtC.clipAction(clip);
 	actun.play();
 	if (vxr_.PtC) vxr_.PtC.setTime(anm_.yawval/anm_.anmfps);		
 	// Pointer - Vertical Speed
-	clip = AnimationClip.findByName(gltf.animations, "pointer_vsiAction");
+	clip = AnimationClip.findByName(gltf.animations,"pointer_vsiAction");
 	vxr_.PtV = new AnimationMixer(gltf.scene);
 	actun = vxr_.PtV.clipAction(clip);
 	actun.play();
 	if (vxr_.PtV) vxr_.PtV.setTime(anm_.vsifpm/anm_.anmfps);
 	// Pointer - Manifold Pressure
-	clip = AnimationClip.findByName(gltf.animations, "pointer_mpAction");
+	clip = AnimationClip.findByName(gltf.animations,"pointer_mpAction");
 	vxr_.GaM = new AnimationMixer(gltf.scene);
 	actun = vxr_.GaM.clipAction(clip);
 	actun.play();
 	if (vxr_.GaM) vxr_.GaM.setTime(anm_.manprs/anm_.anmfps);
 	// Pointer - RPM
-	clip = AnimationClip.findByName(gltf.animations, "pointer_rpmAction");
+	clip = AnimationClip.findByName(gltf.animations,"pointer_rpmAction");
 	vxr_.PtR = new AnimationMixer(gltf.scene);
 	actun = vxr_.PtR.clipAction(clip);
 	actun.play();
 	if (vxr_.PtR) vxr_.PtR.setTime(anm_.rpmprp/anm_.anmfps);
 	// Pointer - Compass
-	clip = AnimationClip.findByName(gltf.animations, "pointer_hdgAction");
+	clip = AnimationClip.findByName(gltf.animations,"pointer_hdgAction");
 	vxr_.PtH = new AnimationMixer(gltf.scene);
 	actun = vxr_.PtH.clipAction(clip);
 	actun.play();
 	if (vxr_.PtH) vxr_.PtH.setTime(anm_.cmphdg/anm_.anmfps);
 	// Pilot - Left Arm
-	clip = AnimationClip.findByName(gltf.animations, "pilot_armLAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_armLAction");
 	vxr_.ArL = new AnimationMixer(gltf.scene);
 	actun = vxr_.ArL.clipAction(clip);
 	actun.play();
 	if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);
 	// Pilot - Left Hand
-	clip = AnimationClip.findByName(gltf.animations, "pilot_handLAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_handLAction");
 	vxr_.HLT = new AnimationMixer(gltf.scene);
 	actun = vxr_.HLT.clipAction(clip);
 	actun.play();
 	if (vxr_.HLT) vxr_.HLT.setTime(anm_.manprs/anm_.anmfps);
 	// Pilot - Right Hand - Pitch
-	clip = AnimationClip.findByName(gltf.animations, "pilot_handRPAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_handRPAction");
 	vxr_.HRP = new AnimationMixer(gltf.scene);
 	actun = vxr_.HRP.clipAction(clip);
 	actun.play();
 	if (vxr_.HRP) vxr_.HRP.setTime(anm_.stkpit/anm_.anmfps);
 	// Pilot - Right Hand - Bank
-	clip = AnimationClip.findByName(gltf.animations, "pilot_handRBAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_handRBAction");
 	vxr_.HRB = new AnimationMixer(gltf.scene);
 	actun = vxr_.HRB.clipAction(clip);
 	actun.play();
 	if (vxr_.HRB) vxr_.HRB.setTime(anm_.stkbnk/anm_.anmfps);
 	// Pilot - Right Arm - Bank
-	clip = AnimationClip.findByName(gltf.animations, "pilot_armRAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_armRAction");
 	vxr_.ArR = new AnimationMixer(gltf.scene);
 	actun = vxr_.ArR.clipAction(clip);
 	actun.play();
 	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbnk/anm_.anmfps);
 	// Pilot - Rudder - Left
-	clip = AnimationClip.findByName(gltf.animations, "pilot_rudderLAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_rudderLAction");
 	vxr_.RdL = new AnimationMixer(gltf.scene);
 	actun = vxr_.RdL.clipAction(clip);
 	actun.play();
 	if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
 	// Pilot - Rudder - Right
-	clip = AnimationClip.findByName(gltf.animations, "pilot_rudderRAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_rudderRAction");
 	vxr_.RdR = new AnimationMixer(gltf.scene);
 	actun = vxr_.RdR.clipAction(clip);
 	actun.play();
 	if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
 	// Pilot - Leg - Left
-	clip = AnimationClip.findByName(gltf.animations, "pilot_legLAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_legLAction");
 	vxr_.LgL = new AnimationMixer(gltf.scene);
 	actun = vxr_.LgL.clipAction(clip);
 	actun.play();
 	if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
 	// Pilot - Leg - Right
-	clip = AnimationClip.findByName(gltf.animations, "pilot_legRAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_legRAction");
 	vxr_.LgR = new AnimationMixer(gltf.scene);
 	actun = vxr_.LgR.clipAction(clip);
 	actun.play();
 	if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
 	// Pilot - Head
-	clip = AnimationClip.findByName(gltf.animations, "pilot_headAction");
+	clip = AnimationClip.findByName(gltf.animations,"pilot_headAction");
 	vxr_.Hed = new AnimationMixer(gltf.scene);
 	actun = vxr_.Hed.clipAction(clip);
 	actun.play();
