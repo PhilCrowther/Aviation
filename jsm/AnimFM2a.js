@@ -542,7 +542,8 @@ function moveAirCom(air_,anm_) {
 	// Propeller
 	let prpspd =  4*(air_.PwrPct-0.6);				// Range = -2.4 to + 1.6
 	anm_.spnprp = anm_.spnprp-prpspd;
-	if (anm_.spnprp < 0) anm_.spnprp = 359;			// A complete circle
+//	if (anm_.spnprp < 0) anm_.spnprp = 359;			// A complete circle
+	Mod360(anm_.spnprp);
 	// Ailerons
 	let ailbnk = air_.RotDif.z;
 	if (air_.GrdFlg) ailbnk = air_.AGBank;
