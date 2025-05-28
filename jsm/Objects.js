@@ -1,5 +1,5 @@
 /*
- * Objects.js (vers 25.04.13)
+ * Objects.js (vers 25.05.28)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -412,4 +412,6 @@ export {loadIsland,initIsland,moveIsland,
 *******************************************************************************/
 /*
 250405:	In development
+250523: Added loadMyCrew/moveMyCrew
+250528: Added animations to loadMyCrew/moveMyCrew
 */
