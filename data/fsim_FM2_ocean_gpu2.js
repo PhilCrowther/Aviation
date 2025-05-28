@@ -501,12 +501,11 @@ let myc_ = {
 		MapPos: [0],			// Relative Position (if parent)
 		ObjRef: [0],			// Parent, if any
 		// Animation Action
-		AnmNum: [2],
+		AnmNum: [[2]],
 		AnmNam: [["red1Action", // Animation Name
 				  "red2Action"]],
-		AnmClp: [[0,0]],		// Animation Clip
 		AnmMxr: [[0,0]],		// Animation Mixer
-		AnmAct: [[0,0]],		// Animation Actions
+		AnmAct: [[0,0]],		// Animation Action
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
 		ObjViz: [1,1],			// Visibility Flag On
