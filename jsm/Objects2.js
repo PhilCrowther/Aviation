@@ -310,6 +310,7 @@ function moveMyPeep(myp_,tim_) {
 
 //= LOAD MY CREW ===============//==============================================
 function loadMyCrew(gltfLoader,myc_) {
+	let clip = 0;
 	for (let n = 0; n < myc_.ObjNum; n++) {
 		gltfLoader.load(myc_.ObjSrc[n], function (gltf) {
 			// Cast Shadow (but not in shadow zone)
@@ -326,10 +327,10 @@ function loadMyCrew(gltfLoader,myc_) {
 			if (myc_.ObjRef[n]) myc_.ObjRef[n].add(myc_.ObjAdr[n]); // Link to moving object
 			else {scene.add(myc_.ObjAdr[n]);}
 			// Load Animations
-			for (let a = 0; a < myc_.AnmNum[n]; a++) {
-				myc_.AnmClp[n][a] = AnimationClip.findByName(gltf.animations,myc_.AnmNam[n][a]);
+			for (let a = 0; a < myc_.AnmNum[n][a]; a++) {
+				clip = AnimationClip.findByName(gltf.animations,myc_.AnmNam[n][a]);
 				myc_.AnmMxr[n][a] = new AnimationMixer(gltf.scene);
-				myc_.AnmAct[n][a] = myc_.AnmMxr[n][a].clipAction(myc_.AnmClp[n][a]);
+				myc_.AnmAct[n][a] = myc_.AnmMxr[n][a].clipAction(clip);
 				myc_.AnmAct[n][a].play();
 			}
 		});
