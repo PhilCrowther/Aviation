@@ -634,8 +634,6 @@ let anm_ = {
 let mxr_ = {
 		// Source
 		Src: AirSrc + mxrFNm,
-		// GLTF
-		GLT: 0,
 		// Address
 		Adr: 0,
 		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
@@ -649,8 +647,6 @@ let mxr_ = {
 let vxr_ = {
 		// Source
 		Src: AirSrc + vxrFNm,
-		// GLTF
-		GLT: 0,
 		// Address
 		Adr: 0,
 		// Propeller, AileronL, AileronR, Canopy
