@@ -31,7 +31,8 @@
 	    	Airplane Smoke Trail	(xas_)
 	    	Airplane Fire Trail		(xaf_)
 	    	Ship Wakes				(wak_)
-		MYPEEPS						(myp_)
+		MYPEOPLE					(myp_)
+		MYCREW						(myc_)
 		MINIMUM ALTITUDE			(alt_)
 	5. MY AIRPLANE VARIABLES		(air_)
 		FLIGHT MODULE
@@ -478,7 +479,7 @@ let myp_ = {
 		// Delay
 		DlyBeg: [[0,3],[0]],	// Delay Time Between Animation Segments (Secs)
 		DlyPos: [[0,60],[0]],	// Absolute Position in Range where Delay Starts
-		DlyMid: [[0,3],[0]],		// Delay Time Within Animation Segments (Secs)
+		DlyMid: [[0,3],[0]],	// Delay Time Within Animation Segments (Secs)
 		DlyFlg: [0,0],			// Flag for Middle Delay - So Only Delay Once
 		DlyRem: [0,0],			// Delay Time Remaining (Shared)
 		// Visibility
@@ -491,7 +492,7 @@ let myp_ = {
 //- Ship Crew (Not Rigged) -----------------------------------------------------
 let myc_ = {
 		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/CVE_crew.glb"],
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/CVE_crew_anm.glb"],
 		ObjTxt: [0],
 		ObjAdr: [0],			// Loaded Object
 		ObjSiz: [Ft2Mtr],		// Scale
@@ -499,6 +500,13 @@ let myc_ = {
 		ObjRot: [0],			// Rotation (degrees)
 		MapPos: [0],			// Relative Position (if parent)
 		ObjRef: [0],			// Parent, if any
+		// Animation Action
+		AnmNum: [[2]],
+		AnmNam: [["red1Action", // Animation Name
+				  "red2Action"]],
+		AnmMxr: [[0,0]],		// Animation Mixer
+		AnmAct: [[0,0]],		// Animation Action
+		AnmCnt: 0,				// Counter
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
 		ObjViz: [1,1],			// Visibility Flag On
