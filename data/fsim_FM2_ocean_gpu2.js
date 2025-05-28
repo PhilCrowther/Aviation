@@ -492,7 +492,7 @@ let myp_ = {
 //- Ship Crew (Not Rigged) -----------------------------------------------------
 let myc_ = {
 		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/CVE_crew_anim.glb"],
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/CVE_crew_anm.glb"],
 		ObjTxt: [0],
 		ObjAdr: [0],			// Loaded Object
 		ObjSiz: [Ft2Mtr],		// Scale
