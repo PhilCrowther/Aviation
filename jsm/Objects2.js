@@ -366,7 +366,8 @@ function moveMyCrew(myc_) {
 			for (let a = 0; a < myc_.AnmNum[n][a]; a++) {			
 				myc_.AnmMxr[n][a].setTime(myc_.AnmCnt/24);	
 			}
-			Mod360(myc_.AnmCnt++/60);
+			myc_.AnmCnt = myc_.AnmCnt + 1/60;
+			Mod360(myc_.AnmCnt);
 		}
 	}
 }
