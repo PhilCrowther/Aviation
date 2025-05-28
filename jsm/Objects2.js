@@ -31,6 +31,7 @@ import {
 	PlaneGeometry,
 	RGBAFormat,
 	// People
+	AnimationClip,
 	AnimationMixer,
 	Vector3,
 	// makMsh
