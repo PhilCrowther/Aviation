@@ -507,6 +507,7 @@ let myc_ = {
 		AnmMxr: [[0,0]],		// Animation Mixer
 		AnmAct: [[0,0]],		// Animation Action
 		AnmCnt: 0,				// Counter
+		AnmInc: 0.1,			// Counter Increment
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
 		ObjViz: [1,1],			// Visibility Flag On
