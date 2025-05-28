@@ -506,6 +506,7 @@ let myc_ = {
 				  "red2Action"]],
 		AnmMxr: [[0,0]],		// Animation Mixer
 		AnmAct: [[0,0]],		// Animation Action
+		AnmCnt: 0,				// Counter
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
 		ObjViz: [1,1],			// Visibility Flag On
