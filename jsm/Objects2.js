@@ -332,7 +332,7 @@ function loadMyCrew(gltfLoader,myc_) {
 				clip = AnimationClip.findByName(gltf.animations,myc_.AnmNam[n][a]);
 				myc_.AnmMxr[n][a] = new AnimationMixer(gltf.scene);
 				myc_.AnmAct[n][a] = myc_.AnmMxr[n][a].clipAction(clip);
-				myc_.AnmAct[n][a].play();
+				myc_.AnmAct[n][a].setDuration(1).play();
 			}
 		});
 	}
