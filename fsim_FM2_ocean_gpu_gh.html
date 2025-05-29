@@ -410,14 +410,12 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	xss_.ObjRef = [xsh_.ObjGrp[1],					// Parent Object (destroyer only)
 				   xsh_.ObjGrp[1]];
 	xss_.ObjSiz = [200,200];
-//= MY PEOPLE (Rigged Animated Characters( =====================================
+//= MY PEOPLE (Rigged Animated Characters) =====================================
 //	Adjustments
-	myp_.ObjRot = [new THREE.Euler(0,-45,0),		// Rotation (degrees)
-				   new THREE.Euler(0,-90,0)];
-	myp_.MapPos = [new THREE.Vector3(6,12.9,40),	// Relative Position (if parent)
-				   new THREE.Vector3(12.22,11.39,35)];
-	myp_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[0]];	// Parent, if any
-//= MY CREW (Ship Crew - Not Rigged or Animated - Yet) =========================
+	myp_.ObjRot = [new THREE.Euler(0,-45,0)];		// Rotation (degrees)
+	myp_.MapPos = [new THREE.Vector3(6,12.9,40)];	// Relative Position (if parent)
+	myp_.ObjRef = [xsh_.ObjGrp[0]];					// Parent, if any
+//= MY CREW (Ship Crew - Animated Not Rigged) ==================================
 //	Adjustments
 	myc_.ObjRot = [new THREE.Euler(0,0,0)];			// Rotation (degrees)
 	myc_.MapPos = [new THREE.Vector3(0,0,0)];		// Relative Position (if parent)
