@@ -80,19 +80,23 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules (in Alphabetical Order)
-import {loadAirExt,loadAirInt,
-		moveAirExt,moveAirInt
+import {loadAirExt,loadAirInt,	// Load External Model
+		moveAirExt,moveAirInt,	// Load Internal Model
 	} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
-import {PointerLockControls,
-		moveCamera
+import {PointerLockControls,	// three.js modified
+		moveCamera,				//
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
-import {initFad2Blk,moveFad2Blk} from "https://PhilCrowther.github.io/Aviation/jsm/Display.js";
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // add grd_.EMI
-import {initBullet,moveBullet,	// My Airplane Bullets
+import {initFad2Blk,moveFad2Blk, // Fade to/from Black
+		initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
 		initAAAGun,moveAAAGun,	// Fixed and Ship
-	} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
+		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
+		initAirSmk,initAirFyr,	// Air Smoke and Fire
+		initXSHWak,moveXSHWak,	// Ship Wake
+		initXSHSmk,				// Ship Smoke (destroyer only)
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // add grd_.EMI
 import {loadIsland,initIsland,moveIsland, // Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects (only attached to Islands - for now)
 		loadAnmFlg,moveAnmFlg,	// Animated Flag
@@ -102,11 +106,6 @@ import {loadIsland,initIsland,moveIsland, // Islands
 		loadMyCrew,moveMyCrew,	// Ship Crew
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
-import {initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
-		initAirSmk,initAirFyr,	// Air Smoke and Fire
-		initXSHWak,moveXSHWak,	// Ship Wake
-		initXSHSmk,				// Ship Smoke (destroyer only)
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Smoke.js";
 
 /*= GENERAL ====================//==============================================
 
