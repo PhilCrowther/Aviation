@@ -926,7 +926,7 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {initFad2Blk,moveFad2Blk
+export {initFad2Blk,moveFad2Blk,
 		initBullet,moveBullet,
 		initXACBul,moveXACBul,
 		initAAAGun,moveAAAGun
