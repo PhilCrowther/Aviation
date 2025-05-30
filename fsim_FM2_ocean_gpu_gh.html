@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 May 2025
+Version dated 30 May 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -79,12 +79,20 @@ import {color,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
-// Special Modules
-import {moveCamera} from "https://PhilCrowther.github.io/Aviation/jsm/Camera.js";
-import {PointerLockControls} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
+// Special Modules (in Alphabetical Order)
+import {loadAirExt,loadAirInt,
+		moveAirExt,moveAirInt
+	} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
+import {PointerLockControls,
+		moveCamera
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 import {initFad2Blk,moveFad2Blk} from "https://PhilCrowther.github.io/Aviation/jsm/Display.js";
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // add grd_.EMI
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
+import {initBullet,moveBullet,	// My Airplane Bullets
+		initXACBul,moveXACBul,	// Other Airplane Bullets
+		initAAAGun,moveAAAGun,	// Fixed and Ship
+	} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
 import {loadIsland,initIsland,moveIsland, // Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects (only attached to Islands - for now)
 		loadAnmFlg,moveAnmFlg,	// Animated Flag
@@ -93,12 +101,7 @@ import {loadIsland,initIsland,moveIsland, // Islands
 		loadMyPeep,moveMyPeep,	// Rigged Animated People
 		loadMyCrew,moveMyCrew,	// Ship Crew
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
-import {loadAirExt,loadAirInt,moveAirExt,moveAirInt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
-import {initBullet,moveBullet,	// My Airplane Bullets
-		initXACBul,moveXACBul,	// Other Airplane Bullets
-		initAAAGun,moveAAAGun,	// Fixed and Ship
-	} from "https://PhilCrowther.github.io/Aviation/jsm/GunASG.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
 import {initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initAirSmk,initAirFyr,	// Air Smoke and Fire
 		initXSHWak,moveXSHWak,	// Ship Wake
