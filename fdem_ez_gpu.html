@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Nov 2024
+Version dated 30 May 2025
 
 This simplified flight demonstrator shows how to set up animated parts, including a virtual cockpit.
 This demo uses a simplified version of the Flight module.
@@ -12,7 +12,7 @@ This demo uses a simplified version of the Flight module.
 
 <head>
 <meta charset="utf-8" />
-<title>fdem ez webgpu</title>
+<title>fdem ez webgpu r175</title>
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/main2pxD.css">
 </head>
 
@@ -98,8 +98,8 @@ let	KeyVal = new THREE.Vector3(0.5,0.25,1.0); // (Yaw = turn rate in 15 deg bank
 //- Input Delays ...............................................................
 //- (x = diverted, y = released, z = stored) [default was 1-1/30,1/15]
 let PwrMsD = new THREE.Vector3(0.967,0.067,0);	// Power
-let CfLMsD = new THREE.Vector3(0.967,0.033,0);	// CfL
-let CfLApD = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
+let LagCfL = new THREE.Vector3(0.967,0.033,0);	// CfL
+let LagAtP = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
 let BnkMsD = new THREE.Vector3(0.967,0.067,0);	// Bank
 
 //= CONSTANTS ==================//==============================================
@@ -311,7 +311,7 @@ let air_ = {
 		AirExt: makeMesh(),
 		AirInt: makeMesh(),
 		// AutoPilot
-		AtpFlg: 0,						// Autopilot Flag
+		AutoOn: 0,						// Autopilot Flag
 		InpKey: new THREE.Vector3(),	// Inputs - Keys
 		OldRot: new THREE.Vector3(),	// Old Rotation (radians)
 		// Optional
@@ -866,24 +866,26 @@ function moveAirObj() {
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
 	// Reset
 	PwrDif = 0;
-	//. CfL ....................................................................
-	if (air_.AtpFlg) {						// Autopilot
+	// Coefficient of Lift .....//..............................................
+	if (air_.AutoOn) {						// Autopilot
 		air_.CfLDif = air_.InpKey.x
-		gal = air_.CfLDif * CfLApD.x;		// Current input delayed
-		lag = CfLMsD.z * CfLApD.y;			// Released from Cumulator
-		CfLMsD.z = CfLMsD.z + gal - lag; 	// Change in Cumulator
+		// Add Delay to Lift
+		gal = air_.CfLDif * LagAtP.x;		// Current input delayed
+		lag = LagCfL.z * LagAtP.y;			// Released from Cumulator
+		LagCfL.z = LagCfL.z + gal - lag; 	// Change in Cumulator
 	}
 	else {
-		air_.CfLDif = InpMos.y * typ_.PitMul;	// Default
-		gal = air_.CfLDif * CfLMsD.x;		// Current input delayed
-		lag = CfLMsD.z * CfLMsD.y;			// Released from Cumulator
-		CfLMsD.z = CfLMsD.z + gal - lag; 	// Change in Cumulator
+		air_.CfLDif = InpMos.y * typ_.PitMul;
+		// Add Delay to Lift
+		gal = air_.CfLDif * LagCfL.x;		// Current input delayed
+		lag = LagCfL.z * LagCfL.y;			// Released from Cumulator
+		LagCfL.z = LagCfL.z + gal - lag; 	// Change in Cumulator
 	}	
 	air_.CfLDif = air_.CfLDif - gal + lag;
-	air_.CfLift = air_.CfLift + air_.CfLDif;		// New Coefficient of Lift
+	air_.CfLift = air_.CfLift + air_.CfLDif; // New Coefficient of Lift
 	InpMos.y = 0;							// Reset
 	//. Bank ...................................................................
-	if (air_.AtpFlg) {
+	if (air_.AutoOn) {
 		air_.RotDif.z = air_.InpKey.z;
 		air_.OldRot.z = air_.OldRot.z + air_.RotDif.z*DegRad;
 	}
@@ -935,8 +937,8 @@ function moveFlight() {
 	// a. COMPUTE LIFT ROTATION ................................................	
 	// Compute air_.CfLift
 	// Formula: Lift = Cl * DynPres * WingArea
-//	if (air_.AtpFlg && air_.InpKey.x == 0) {	// Autopilot
-	if (air_.AtpFlg) {	// Autopilot
+//	if (air_.AutoOn && air_.InpKey.x == 0) {	// Autopilot
+	if (air_.AutoOn) {	// Autopilot
 		let LftReq = Math.abs(Math.cos(air_.AirObj.rotation.x)*typ_.Weight);
 		air_.CfLift = LftReq/(DynPrs*typ_.WingAr*Math.abs(Math.cos(air_.AirObj.rotation.z)));
 //		air_.CfLift = air_.CfLift + air_.InpKey.x;
@@ -1000,7 +1002,7 @@ function moveFlight() {
 	air_.OldRot.y = air_.AirRot.y;					// Save old heading	
 	// Bank --------------------------------------------------------------------
 	// If Pitch Set ............................................................
-	if (air_.AtpFlg && air_.InpKey.z == 0) {
+	if (air_.AutoOn && air_.InpKey.z == 0) {
 		// Keep Same Bank
 		air_.AirObj.rotation.z = air_.OldRot.z;
 		// Self-Center .........................................................
@@ -1010,7 +1012,7 @@ function moveFlight() {
 	else {air_.OldRot.z = air_.AirObj.rotation.z;}
 	air_.AirRot.z = Mod360(-air_.AirObj.rotation.z*RadDeg); 	// 270 to 90 (if not limit to max bank)
 	// Limit to Max Bank .......................................................
-	if (air_.AtpFlg && (air_.AirRot.z > 270 || air_.AirRot.z < 90)) {	// Only if Flag Set and Not Upside Down
+	if (air_.AutoOn && (air_.AirRot.z > 270 || air_.AirRot.z < 90)) {	// Only if Flag Set and Not Upside Down
 		let ACBnew = air_.AirRot.z;	// 270 to 90
 		if (ACBnew > 180) ACBnew = ACBnew-360;	// -90 to 90
 		if (ACBnew >  air_.BnkMax) ACBnew = air_.BnkMax;	// Limit Pos Bank
@@ -1428,7 +1430,7 @@ function prntHUDval() {
 
 //	Autopilot Text
 function AutoPText(){
-	if (air_.AtpFlg) Air_AtPNode.nodeValue = "- Autopilot: On";
+	if (air_.AutoOn) Air_AtPNode.nodeValue = "- Autopilot: On";
 	else {Air_AtPNode.nodeValue = "- Autopilot: Press A";}
 }
 
@@ -1554,7 +1556,7 @@ function viewFlg() {
 
 // Toggle Autopilot
 function autoFlg() {
-	air_.AtpFlg = 1-air_.AtpFlg;
+	air_.AutoOn = 1-air_.AutoOn;
 	AutoPText();
 }
 
