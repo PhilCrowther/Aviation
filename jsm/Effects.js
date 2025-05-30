@@ -929,7 +929,7 @@ return mesh;}
 export {initFad2Blk,moveFad2Blk,
 		initBullet,moveBullet,
 		initXACBul,moveXACBul,
-		initAAAGun,moveAAAGun
+		initAAAGun,moveAAAGun,
 		initGrdSmk,initGrdFyr,
 		initAirSmk,initAirFyr,
 		initXSHWak,moveXSHWak,
