@@ -381,5 +381,5 @@ export {GrdMap};
 /*
 241220: Version3b	: NodeMaterials moved from tsl to main (r171)
 250331:	Use **2 to square numbers
-250531:	Numbering GrdMap3b => GrdMap
+250531:	Rename GrdMap3b as GrdMap
 */
