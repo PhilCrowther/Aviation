@@ -68,7 +68,7 @@ import Stats from 'stats-gl';
 // Special Modules
 import {Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadAirExt,loadAirInt,moveAirExt,moveAirInt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4b.js"; // r171
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // r171
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
 
 //= NOTES ======================================================================
@@ -231,28 +231,14 @@ const LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
 const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 
-//= GRDWTR TEXTURES ============//==============================================
-//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
-const WtrCol = 0x0066cc;		// Water (Nodes)
-//- Ocean
-const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
-const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
-const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
-//- Canvas (for splitting up textures)
-let ImgSiz = 512;				// !!! Change this for each image
-let canvas = document.createElement("canvas");
-	canvas.width = ImgSiz;
-	canvas.height = ImgSiz;
-let context = canvas.getContext('2d',{willReadFrequently: true});
-	context.translate(0, ImgSiz); // Flips vertical for three.js
-	context.scale(1,-1);
-let WavMax = 5;					// Maximum wave height (set height of outer waves)
-
 //= GRDWTR MODULE ==============//==============================================
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
+//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
+const WtrCol = 0x0066cc;		// Water (Nodes)
+let WavMax = 5;					// Maximum wave height (set height of outer waves)
 const GrdSiz = 3200;			// Smallest Grid Square (3200 meters = 2 miles)
 const GrdRes = 512;
 const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
@@ -264,24 +250,41 @@ let grd_ = {
 		Stp: 4,					// Squares in each of first 2 grids
 		Seg: GrdSeg,			// Segments for smallest square
 		Grx: [],				// Index of Grids (0-2)
+		// Geometry and Materials
 		Geo: [],				// Master Index of Basic Geometries
-		Col: new THREE.Color(WtrCol), // Color
+		Mat: [[0],[0],0],		// Materials
+		// Displacement		
 		Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
+		// Normal Map
 		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
 		NMS: new THREE.Vector2(), // Grid 0-1 Normal Map Scale (from Ocean)
-		Df0: [],				// Grid 0-1 Diffuse Maps
-		Rf0: [],				// Grid 0-1 Roughness Maps
-		Mt0: [],				// Grid 0 Materials
-		Mt1: [],				// Grid 1 Materials
-		Dif: 0,					// Grid 2 Diffuse Map
-		Ruf: 0,					// Grid 2 Roughness Maps
-		Gr2: 0,					// Grid 2 Normal Map
-		Mat: [],				// Grid 2 Materials
+		N2S: "https://threejs.org/examples/textures/waternormals.jpg", // Size = 1024x1024
+		NM2: 0,					// Grid 2 Normal Map
+		// Indices
+		Col: new THREE.Color(WtrCol), // Color
+		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png",
+		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
+		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
+		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
+		EMI: [0.5,0.48,0.48],	// EnvMap Intensity
+		// Maps
+		MSz: 512,				// Image Size
+		DfM: [[0],[0],0],		// Diffuse
+		RfM: [[0],[0],0],		// Roughness
+		// Other
 		WMx: WavMax,			// Max wave height, used to lower outer squares
 	};
 //	Since textures must be loaded in the Main Program and since design of materials 
 //	and geometry can vary, some of the Grid initialization is handled in the Main Program
 //  by the LoadGeoMat and InitGeoMat routines
+//- GrdWtr Textures ------------//----------------------------------------------
+//- Canvas (for splitting up textures)
+let canvas = document.createElement("canvas");
+	canvas.width = grd_.MSz;
+	canvas.height = grd_.MSz;
+let context = canvas.getContext("2d",{willReadFrequently: true});
+	context.translate(0, grd_.MSz); // Flips vertical for three.js
+	context.scale(1,-1);
 
 //= OCEAN MODULE ===============//==============================================
 //- Constants
@@ -308,6 +311,7 @@ let wav_ = {
 //= MY AIRCRAFT ================//==============================================
 //  NOTE: Flight Module not used in this display; air_ variable is used for internal comps
 let air_ = {
+		// General Variables
 		DLTime: DLTime,			// Seconds per frame (can vary)
 		GrvMPS: GrvMPS,			// Gravity (mps)
 		AirDSL: AirDSL,			// Air Density (varies with altitude)
@@ -317,7 +321,7 @@ let air_ = {
 		AirRot: new THREE.Vector3(), // Object Rotation (degrees)
 		AirObj: makMsh(),		// Airplane Object
 		AirPBY: makMsh(),		// 	
-		// Airplane PBY Changes
+		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
 		SpdKPH: BegSpd,			// Speed kMH
@@ -341,8 +345,7 @@ let air_ = {
 		GrdZed: 0,				// Ground level (default)
 		GrdFlg: 0,				// Ground Flag (1 = on ground)
 		ACPAdj: -2.5,			// Aircraft pitch adjustment [### anm_ ad])
-		MovFlg: 0,				// If Sitting on a Moving Object
-		// Fixed Values Obtained from Flight
+		// Values for the Selected Airplane Type (obtained from Flight)
 		CfLMax: 0,				// Maximum Coefficient of Lift
 		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
 		ACMass: 0,				// Airplane Mass
@@ -360,9 +363,12 @@ let air_ = {
 		BegTmp: 0,				// Beginning Sea Level Temperature (K)
 		BegPrs: 0,				// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0,				// Indicated Airspeed
-		// Ship Pitch and Bank (radians)
+		// Ship Pitch and Bank
+		MovFlg: 0,				// If Sitting on a Moving Object
 		ShpPit: 0,
 		ShpBnk: 0,
+		// G-Force
+		GFmult: 0,
 	}
 // Adjustments
 	air_.AirObj.rotation.order = "YXZ";
@@ -631,7 +637,7 @@ function rendAll() {
 		// Move Grids
 		waves.update(); 		// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
-		grids.update(grd_);		// MoveGrids
+		grids.update();			// MoveGrids
 		// Other
 		moveSounds(air_);
 		prntHUDval();			// print HUD values
@@ -677,89 +683,61 @@ function initSkyBox() {
 	}
 }
 
-//= GEOMAT =====================================================================
-// Can't be exported since uses html context to split images
-
+//= GEOMAT =====================//==============================================
+// Not exported because GrdWtr is a module
 function loadGeoMat(grd_) {
-	// Diffuse Texture
-	if (DifSrc) {
-		// Grid0 and Grid1 - Load Image, Split into 4 and Save Textures
-		imagLoader.load(DifSrc, function(image) {
-			context.drawImage(image,0,0,ImgSiz,ImgSiz);
-			let idx = 0;
-			let siz = ImgSiz/4;
-			for (let z = 0; z < 4; z++) {
-				for (let x = 0; x < 4; x++) {
-					let ImgDat = context.getImageData(siz*x, siz*z, siz, siz);
-					let texture = new THREE.DataTexture(ImgDat.data, siz, siz);
-					texture.format = THREE.RGBAFormat;
-					texture.magFilter = THREE.LinearFilter;
-					texture.minFilter = THREE.LinearMipMapLinearFilter;
-					texture.generateMipmaps = true;
-					texture.needsUpdate = true;
-					grd_.Df0[idx] = texture;
-					idx++;				
-				}
-			}
-		});
-		// Grid2 - Load and Save entire Texture
-		txtrLoader.load(DifSrc, function(texture) {
-			texture.format = THREE.RGBAFormat;
-			texture.magFilter = THREE.LinearFilter;
-			texture.minFilter = THREE.LinearMipMapLinearFilter;
-			texture.generateMipmaps = true;
-			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-			texture.offset.set(0,0);
-			texture.needsUpdate = true;
-			grd_.Dif = texture;
-		});
-	}
-	// Roughness Texture
-	if (RufSrc) {
-		// Grid0 and Grid1 - Load Image, Split into 4 and Save Textures
-		imagLoader.load(RufSrc, function(image) {
-			context.drawImage(image,0,0,ImgSiz,ImgSiz);
-			let idx = 0;
-			let siz = ImgSiz/4;
-			for (let z = 0; z < 4; z++) {
-				for (let x = 0; x < 4; x++) {
-					let ImgDat = context.getImageData(siz*x, siz*z, siz, siz);
-					let texture = new THREE.DataTexture(ImgDat.data, siz, siz);
-					texture.format = THREE.RGBAFormat;
-					texture.magFilter = THREE.LinearFilter;
-					texture.minFilter = THREE.LinearMipMapLinearFilter;
-					texture.generateMipmaps = true;
-					texture.needsUpdate = true;
-					grd_.Rf0[idx] = texture;
-					idx++;				
-				}
-			}
-		});
-		// Grid2 - Load and Save entire Texture
-		txtrLoader.load(RufSrc, function(texture) {
-			texture.format = THREE.RGBAFormat;
-			texture.magFilter = THREE.LinearFilter;
-			texture.minFilter = THREE.LinearMipMapLinearFilter;
-			texture.generateMipmaps = true;
-			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-			texture.offset.set(0,0);
-			texture.needsUpdate = true;
-			grd_.Ruf = texture;
-		});
-	}
-	// Normal Texture - Grid2 Only
-	txtrLoader.load(NrmSrc, function(texture) {
+	loadGe1Mat(grd_.DfS,grd_.DfM); // Diffuse Textures
+	loadGe1Mat(grd_.RfS,grd_.RfM); // Roughness Textures
+	// Static Normal Map (Grid 2 Only) -----------------------------------------
+	txtrLoader.load(grd_.N2S,function(texture) {
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 		texture.offset.set(0,0);
-		texture.repeat.set(grd_.Stp*grd_.Stp/2,grd_.Stp*grd_.Stp/2);
+		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
 		texture.needsUpdate = true;
-		grd_.Gr2 = texture;
+		grd_.NM2 = texture;
 	});
 }
+
+//- Load One GeoMap
+function loadGe1Mat(fnam,dest) {
+	let ImgDat = 0;
+	let texture = 0;
+	imagLoader.load(fnam,function(image) { // Load, Split and Save Textures
+		context.drawImage(image,0,0,grd_.MSz,grd_.MSz);
+		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
+		let idx = 0;
+		let siz = grd_.MSz/4;
+		for (let z = 0; z < 4; z++) {
+			for (let x = 0; x < 4; x++) {
+				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
+				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
+				texture.format = THREE.RGBAFormat;
+				texture.magFilter = THREE.LinearFilter;
+				texture.minFilter = THREE.LinearMipMapLinearFilter;
+				texture.generateMipmaps = true;
+				texture.needsUpdate = true;
+				dest[0][idx] = texture;
+				dest[1][idx] = texture;
+				idx++;
+			}
+		}
+		// Grid2 - Static Color Map Texture
+		ImgDat = context.getImageData(0,0,grd_.MSz,grd_.MSz);
+		texture = new THREE.DataTexture(ImgDat.data,grd_.MSz,grd_.MSz);
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.offset.set(0,0);
+		texture.needsUpdate = true;
+		dest[2] = texture;
+	});
+} 
 
 //= AIROBJ =====================================================================
 
