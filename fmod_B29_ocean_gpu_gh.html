@@ -163,6 +163,17 @@ const renderer = new THREE.WebGPURenderer({antialias:true});
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
+//	Depth Buffer
+	renderer.logarithmicDepthBuffer = true;				// 
+//	Tone Mapping
+	renderer.toneMapping = THREE.NoToneMapping;			// clouded
+//	renderer.toneMapping = THREE.LinearToneMapping;		// brighter?
+//	renderer.toneMapping = THREE.ReinhardToneMapping;	// clouded
+//	renderer.toneMapping = THREE.CineonToneMapping;		// contrast - dark
+//	renderer.toneMapping = THREE.ACESFilmicToneMapping;	// contrast - not as dark
+//	renderer.toneMapping = THREE.AgXToneMapping;		// normal
+//	renderer.toneMapping = THREE.NeutralToneMapping;	// contrast - dark
+	renderer.toneMappingExposure = 0.75;				// Higher = brighter (default = 1)
 //- Inputs
 	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
