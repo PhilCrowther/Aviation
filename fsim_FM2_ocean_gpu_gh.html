@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 May 2025
+Version dated 31 May 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -95,8 +95,8 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initXSHWak,moveXSHWak,	// Ship Wake
 		initXSHSmk,				// Ship Smoke (destroyer only)
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight4a.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr4c.js"; // add grd_.EMI
+import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // add grd_.EMI
 import {loadIsland,initIsland,moveIsland, // Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects (only attached to Islands - for now)
 		loadAnmFlg,moveAnmFlg,	// Animated Flag
@@ -105,7 +105,7 @@ import {loadIsland,initIsland,moveIsland, // Islands
 		loadMyPeep,moveMyPeep,	// Rigged Animated People
 		loadMyCrew,moveMyCrew,	// Ship Crew
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean4t2.js"; // r173 (uses TimestampQuery)
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
 
 /*= GENERAL ====================//==============================================
 
