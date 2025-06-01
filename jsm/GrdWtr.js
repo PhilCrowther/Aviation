@@ -67,12 +67,83 @@
 *
 *******************************************************************************/
 
-import {Mesh,PlaneGeometry,MeshStandardNodeMaterial} from 'three';
+import {DataTexture,
+		LinearFilter,
+		LinearMipMapLinearFilter,
+		Mesh,
+		MeshStandardNodeMaterial,
+		PlaneGeometry,
+		RepeatWrapping,
+		RGBAFormat,
+	} from 'three';
 import {color,texture,normalMap,positionLocal} from 'three/tsl';
+
 
 /*******************************************************************************
 *
-*	INITIALIZE CLASS
+*	LOADGEOMAT
+*
+*******************************************************************************/
+
+
+// Not exported because GrdWtr is a module
+function loadGeoMat(imagLoader,txtrLoader,grd_,context) {
+	loadGe1Mat(imagLoader,grd_,context,grd_.DfS,grd_.DfM); // Diffuse Textures
+	loadGe1Mat(imagLoader,grd_,context,grd_.RfS,grd_.RfM); // Roughness Textures
+	// Static Normal Map (Grid 2 Only) -----------------------------------------
+	txtrLoader.load(grd_.N2S,function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.offset.set(0,0);
+		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
+		texture.needsUpdate = true;
+		grd_.NM2 = texture;
+	});
+}
+
+//- Load One GeoMap
+function loadGe1Mat(imagLoader,grd_,context,fnam,dest) {
+	let ImgDat = 0;
+	let texture = 0;
+	imagLoader.load(fnam,function(image) { // Load, Split and Save Textures
+		context.drawImage(image,0,0,grd_.MSz,grd_.MSz);
+		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
+		let idx = 0;
+		let siz = grd_.MSz/4;
+		for (let z = 0; z < 4; z++) {
+			for (let x = 0; x < 4; x++) {
+				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
+				texture = new DataTexture(ImgDat.data,siz,siz);
+				texture.format = RGBAFormat;
+				texture.magFilter = LinearFilter;
+				texture.minFilter = LinearMipMapLinearFilter;
+				texture.generateMipmaps = true;
+				texture.needsUpdate = true;
+				dest[0][idx] = texture;
+				dest[1][idx] = texture;
+				idx++;
+			}
+		}
+		// Grid2 - Static Color Map Texture
+		ImgDat = context.getImageData(0,0,grd_.MSz,grd_.MSz);
+		texture = new DataTexture(ImgDat.data,grd_.MSz,grd_.MSz);
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.offset.set(0,0);
+		texture.needsUpdate = true;
+		dest[2] = texture;
+	});
+} 
+
+/*******************************************************************************
+*
+*	GRDMAP
 *
 *******************************************************************************/
 
@@ -420,7 +491,7 @@ _move1GrMap(grx_,grd_) {
 *
 *******************************************************************************/
 
-export {GrdMap};
+export {loadGeoMat,GrdMap};
 
 /*******************************************************************************
 *
@@ -437,4 +508,5 @@ export {GrdMap};
 250331	Use **2 to square numbers
 250403	Add grd_.EMI, Mtl and Ruf to allow fine-tuning of EMI, metalness and roughness
 250531: Rename as GrdWtr
+250601:	Add loadGeoMat to Module
 */
