@@ -80,8 +80,8 @@ import {color,texture,normalMap,positionLocal} from 'three/tsl';
 
 // Not exported because GrdWtr is a module
 function loadGeoMat(imagLoader,grd_) {
-	loadGe1Mat(grd_.DfS,grd_.DfM); // Diffuse Textures
-	loadGe1Mat(grd_.RfS,grd_.RfM); // Roughness Textures
+	loadGe1Mat(imagLoader,grd_.DfS,grd_.DfM); // Diffuse Textures
+	loadGe1Mat(imagLoader,grd_.RfS,grd_.RfM); // Roughness Textures
 	// Static Normal Map (Grid 2 Only) -----------------------------------------
 	txtrLoader.load(grd_.N2S,function(texture) {
 		texture.format = THREE.RGBAFormat;
