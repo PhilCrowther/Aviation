@@ -96,7 +96,9 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initXSHSmk,				// Ship Smoke (destroyer only)
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // add grd_.EMI
+import {loadGeoMat,
+		GrdMap,
+	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr2.js"; // add grd_.EMI
 import {loadIsland,initIsland,moveIsland, // Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects (only attached to Islands - for now)
 		loadAnmFlg,moveAnmFlg,	// Animated Flag
@@ -316,8 +318,8 @@ let RESOURCES_LOADED = false;
 		RESOURCES_LOADED = true;
 		initAll();
 	};
-const txtrLoader = new THREE.TextureLoader(loadingManager);
 const imagLoader = new THREE.ImageLoader(loadingManager);
+const txtrLoader = new THREE.TextureLoader(loadingManager);
 const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 const gltfLoader = new GLTFLoader(loadingManager);
 const audoLoader = new THREE.AudioLoader();
@@ -333,9 +335,10 @@ let loadingScreen = {
 let boxrot = 0;
 
 //= 2. SKY VARIABLES ===========//==============================================
+//	No Adjustments
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
-//- GrdWtr Textures ------------//----------------------------------------------
+//- GrdWtr Module --------------//----------------------------------------------
 //- Canvas (for splitting up textures)
 let canvas = document.createElement("canvas");
 	canvas.width = grd_.MSz;
@@ -354,9 +357,6 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //	Tests
 //	grd_.Col = new THREE.Color(0x000040);
 //	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg";
-//	Since textures must be loaded in the Main Program and since design of materials 
-//	and goemetry can vary, some of the Grid initialization is handled in the Main Program
-//  by the LoadGeoMat and InitGeoMat routines
 //- Ocean Module ---------------//----------------------------------------------
 //	Adjustments
 	wav_.NMS = new THREE.Vector2(1,1);
@@ -593,7 +593,7 @@ let instructions = document.getElementById("instructions");
 function loadAll() {
 	WaitScreen();				// load loading screen
 	loadSkyBox();
-	loadGeoMat(grd_);
+	loadGeoMat(imagLoader,txtrLoader,grd_,context);
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadObject();				// load objects
@@ -692,7 +692,7 @@ async function rendAll() {		// r173 added async
 		// Move Grids
 		waves.update();			// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
-		grids.update(grd_);		// Move Grids
+		grids.update();		// Move Grids
 		// Sounds
 		moveSounds();
 		// Timed Radio Sequence
@@ -749,62 +749,6 @@ function initSkyBox() {
 		spotLight.add(LF);
 	}
 }
-
-//= 3. GEOMAT ===================//==============================================
-// Not exported because GrdWtr is a module
-function loadGeoMat(grd_) {
-	loadGe1Mat(grd_.DfS,grd_.DfM); // Diffuse Textures
-	loadGe1Mat(grd_.RfS,grd_.RfM); // Roughness Textures
-	// Static Normal Map (Grid 2 Only) -----------------------------------------
-	txtrLoader.load(grd_.N2S,function(texture) {
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-		texture.offset.set(0,0);
-		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
-		texture.needsUpdate = true;
-		grd_.NM2 = texture;
-	});
-}
-
-//- Load One GeoMap
-function loadGe1Mat(fnam,dest) {
-	let ImgDat = 0;
-	let texture = 0;
-	imagLoader.load(fnam,function(image) { // Load, Split and Save Textures
-		context.drawImage(image,0,0,grd_.MSz,grd_.MSz);
-		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		let idx = 0;
-		let siz = grd_.MSz/4;
-		for (let z = 0; z < 4; z++) {
-			for (let x = 0; x < 4; x++) {
-				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
-				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
-				texture.format = THREE.RGBAFormat;
-				texture.magFilter = THREE.LinearFilter;
-				texture.minFilter = THREE.LinearMipMapLinearFilter;
-				texture.generateMipmaps = true;
-				texture.needsUpdate = true;
-				dest[0][idx] = texture;
-				dest[1][idx] = texture;
-				idx++;
-			}
-		}
-		// Grid2 - Static Color Map Texture
-		ImgDat = context.getImageData(0,0,grd_.MSz,grd_.MSz);
-		texture = new THREE.DataTexture(ImgDat.data,grd_.MSz,grd_.MSz);
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-		texture.offset.set(0,0);
-		texture.needsUpdate = true;
-		dest[2] = texture;
-	});
-} 
 
 //= 4. OBJECTS =================//==============================================
 

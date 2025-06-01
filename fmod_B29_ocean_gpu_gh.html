@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 May 2025
+Version dated 1 Jun 2025
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -61,7 +61,7 @@ import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMes
 import Stats from 'stats-gl';
 // Special Modules
 import {Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // r171
+import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr2.js"; // r171
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
 
 //= NOTES ======================================================================
@@ -208,8 +208,8 @@ let RESOURCES_LOADED = false;
 		RESOURCES_LOADED = true;
 		initAll();
 	};
-const txtrLoader = new THREE.TextureLoader(loadingManager);
 const imagLoader = new THREE.ImageLoader(loadingManager);
+const txtrLoader = new THREE.TextureLoader(loadingManager);
 const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 const gltfLoader = new GLTFLoader(loadingManager);
 const audioLoader = new THREE.AudioLoader(loadingManager);
@@ -274,9 +274,6 @@ let grd_ = {
 		// Other
 		WMx: WavMax,			// Max wave height, used to lower outer squares
 	};
-//	Since textures must be loaded in the Main Program and since design of materials 
-//	and geometry can vary, some of the Grid initialization is handled in the Main Program
-//  by the LoadGeoMat and InitGeoMat routines
 //- GrdWtr Textures ------------//----------------------------------------------
 //- Canvas (for splitting up textures)
 let canvas = document.createElement("canvas");
@@ -504,7 +501,7 @@ function loadAll() {
 	// Load Values Used to initialize my Aircraft and Objects		
 	WaitScreen();			// load loading screen
 	loadSkyBox();
-	loadGeoMat(grd_);
+	loadGeoMat(imagLoader,txtrLoader,grd_,context);
 	loadAirObj();
 }
 
@@ -611,62 +608,6 @@ function initSkyBox() {
 		spotLight.add(LF);
 	}
 }
-
-//= GEOMAT =====================//==============================================
-// Not exported because GrdWtr is a module
-function loadGeoMat(grd_) {
-	loadGe1Mat(grd_.DfS,grd_.DfM); // Diffuse Textures
-	loadGe1Mat(grd_.RfS,grd_.RfM); // Roughness Textures
-	// Static Normal Map (Grid 2 Only) -----------------------------------------
-	txtrLoader.load(grd_.N2S,function(texture) {
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-		texture.offset.set(0,0);
-		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
-		texture.needsUpdate = true;
-		grd_.NM2 = texture;
-	});
-}
-
-//- Load One GeoMap
-function loadGe1Mat(fnam,dest) {
-	let ImgDat = 0;
-	let texture = 0;
-	imagLoader.load(fnam,function(image) { // Load, Split and Save Textures
-		context.drawImage(image,0,0,grd_.MSz,grd_.MSz);
-		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
-		let idx = 0;
-		let siz = grd_.MSz/4;
-		for (let z = 0; z < 4; z++) {
-			for (let x = 0; x < 4; x++) {
-				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
-				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
-				texture.format = THREE.RGBAFormat;
-				texture.magFilter = THREE.LinearFilter;
-				texture.minFilter = THREE.LinearMipMapLinearFilter;
-				texture.generateMipmaps = true;
-				texture.needsUpdate = true;
-				dest[0][idx] = texture;
-				dest[1][idx] = texture;
-				idx++;
-			}
-		}
-		// Grid2 - Static Color Map Texture
-		ImgDat = context.getImageData(0,0,grd_.MSz,grd_.MSz);
-		texture = new THREE.DataTexture(ImgDat.data,grd_.MSz,grd_.MSz);
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-		texture.offset.set(0,0);
-		texture.needsUpdate = true;
-		dest[2] = texture;
-	});
-} 
 
 //= AIR OBJECT =================//==============================================
 
