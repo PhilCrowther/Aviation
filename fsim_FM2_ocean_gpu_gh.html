@@ -153,44 +153,45 @@ TO DO:
 	1. MAIN VARIABLES
 	   Constants					X
 	   General						gen_,tim_		X
-	   Fad2Black					f2b_
 	   Inputs										X
 	   Flight Controls								X
 	   Sky Values					sky_			comps
-	   Standard Setup								X
+	   Standard Setup								X	
 	2. SKY VARIABLES				sky_			envMap
 	   STANDARD SETUP								X
 	3. OCEAN GRID VARIABLES
 		GRDWTR MODULE				grd_			adj
 		OCEAN MODULE				wav_			adj
-	4. OBJECT VARIABLES
+	4. OBJECT VARIABLES (MODULE)
 		SHARED TEXTURES				txt_
 		STATIC OBJECTS
 			Islands					isl_			adj
 			Fixed Objects			fxd_			adj
+		ANIMATED FLAG				flg_			adj
 		MOVING VEHICLES
 			Moving Airplanes		xac_			adj
 			Moving Ships			xsh_			adj
-		ANIMATED FLAG				flg_			adj
 		AIRPLANE END SEQUENCE		xat_
 		AIRPLANE EXPLOSION			xae_			adj
-	    SMOKE MODULE
-			Vertical Smoke			grs_			adj
-	    	Ground Fire				grf_			adj
-	    	Airplane Smoke Trail	xas_			adj
-	    	Airplane Fire Trail		xaf_			adj
-	    	Ship Wake				wak_			adj
 		MYPEOPLE					myp_			adj
 		MYCREW						myc_			adj
 		MINIMUM ALTITUDE			alt_			adj
 	5. MY AIRPLANE VARIABLES		air_			adj
 		FLIGHT MODULE
 		ANIMFM2 MODULE				anm_,mxr_,vxr_
-	x. GUNASG MODULE
+	x. EFFECTS MODULE
+	   		Fad2Black				f2b_
+		Guns
 			My Guns					myg_
 			Moving Airplanes		xag_
 			Moving Ships			xsg_
 			Fixed Guns				aaf_
+		Smoke and Ship Wakes
+			Vertical Smoke			grs_			adj
+	    	Ground Fire				grf_			adj
+	    	Airplane Smoke Trail	xas_			adj
+	    	Airplane Fire Trail		xaf_			adj
+	    	Ship Wake				wak_			adj	
 	6. SOUND VARIABLES
 		My Sounds					mys_			adj
 		Radio Variables				rad_
