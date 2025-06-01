@@ -21,7 +21,7 @@ https://philcrowther.github.io/Aviation/fsim_FM2_ocean_gpu_gh.html
 
 NOTES:
 <p>
-The Modules are located in the JSM directory and include the Flight Module, the GrdMap Module (a grid for use with land-based programs), the Ocean Module (an iFFT wave generator), the GrdWtr Module (a grid for use with the Ocean Module), the AnimFM2 Module (loads and animates the FM2 model), and an Effects Module (contains subroutines to create gunfire and explosions, smoke ship wakes and fade to/from black). To avoid confusion, the JSM directory now contains only the latest versions of these Modules (except for the older WebGL version of the Ocean module).  These all work with WebGPU (r177).
+The Modules are located in the JSM directory and include the Flight Module, the GrdMap Module (a grid for use with land-based programs), the Ocean Module (a WebGPU iFFT wave generator), the GrdWtr Module (a grid for use with the Ocean Module), the AnimFM2 Module (loads and animates the FM2 model), and an Effects Module (contains subroutines to create gunfire and explosions, smoke and ship wakes, and fade to/from black). To avoid confusion, the JSM directory now contains only the latest versions of these Modules.  These all work with WebGPU (r177).
 </p><p>
 Special thanks to Attila Schroeder for his encouragement and assistance in converting everything to NodeMaterials and WebGPU. And to all the volunteers at three.js who took on the daunting task of modifying three.js to work with NodeMaterials and WebGPU. And to all the other three.js programmers who took the time to answer my questions.
 </p><p>
