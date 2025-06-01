@@ -67,7 +67,15 @@
 *
 *******************************************************************************/
 
-import {Mesh,PlaneGeometry,MeshStandardNodeMaterial} from 'three';
+import {DataTexture,
+		LinearFilter,
+		LinearMipMapLinearFilter,
+		Mesh,
+		MeshStandardNodeMaterial,
+		PlaneGeometry,
+		RepeatWrapping,
+		RGBAFormat,
+	} from 'three';
 import {color,texture,normalMap,positionLocal} from 'three/tsl';
 
 
@@ -84,11 +92,11 @@ function loadGeoMat(imagLoader,txtrLoader,context,grd_) {
 	loadGe1Mat(imagLoader,context,grd_.RfS,grd_.RfM); // Roughness Textures
 	// Static Normal Map (Grid 2 Only) -----------------------------------------
 	txtrLoader.load(grd_.N2S,function(texture) {
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.offset.set(0,0);
 		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
 		texture.needsUpdate = true;
@@ -108,10 +116,10 @@ function loadGe1Mat(imagLoader,context,fnam,dest) {
 		for (let z = 0; z < 4; z++) {
 			for (let x = 0; x < 4; x++) {
 				ImgDat = context.getImageData(siz*x,siz*z,siz,siz);
-				texture = new THREE.DataTexture(ImgDat.data,siz,siz);
-				texture.format = THREE.RGBAFormat;
-				texture.magFilter = THREE.LinearFilter;
-				texture.minFilter = THREE.LinearMipMapLinearFilter;
+				texture = new DataTexture(ImgDat.data,siz,siz);
+				texture.format = RGBAFormat;
+				texture.magFilter = LinearFilter;
+				texture.minFilter = LinearMipMapLinearFilter;
 				texture.generateMipmaps = true;
 				texture.needsUpdate = true;
 				dest[0][idx] = texture;
@@ -121,12 +129,12 @@ function loadGe1Mat(imagLoader,context,fnam,dest) {
 		}
 		// Grid2 - Static Color Map Texture
 		ImgDat = context.getImageData(0,0,grd_.MSz,grd_.MSz);
-		texture = new THREE.DataTexture(ImgDat.data,grd_.MSz,grd_.MSz);
-		texture.format = THREE.RGBAFormat;
-		texture.magFilter = THREE.LinearFilter;
-		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture = new DataTexture(ImgDat.data,grd_.MSz,grd_.MSz);
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.offset.set(0,0);
 		texture.needsUpdate = true;
 		dest[2] = texture;
