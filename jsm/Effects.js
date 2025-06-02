@@ -144,8 +144,9 @@ function moveFad2Blk(f2b_) {
 // Gun Object = Airplane
 
 //= INIT MY BULLETS ============//==============================================
+//	xp = distance left and right (FM2 = 2). If zero, single bullet
 
-function initBullet(myg_,scene) {
+function initBullet(myg_,scene,xp) {
 	// Line	
 	let line = 0
 	let points = [];
@@ -154,24 +155,33 @@ function initBullet(myg_,scene) {
 	let BltGeo = new BufferGeometry().setFromPoints(points);
 	let BulMtL = new LineBasicNodeMaterial({colorNode: color(myg_.BulClr.x)});
 	let BulMtD = new LineBasicNodeMaterial({colorNode: color(myg_.BulClr.y)});
-	let xp = 2;
 	for (let i = 0; i < myg_.BulNum; i ++) {
-		//	Create Bullet Meshes - 2 Double Lines
+		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new makMsh();
-		//	Left
-		line = new Line(BltGeo,BulMtL); // Lite Color
-		line.position.x = -xp-0.1;
-		myg_.BulPtr[i].add(line);
-		line = new Line(BltGeo,BulMtD); // Dark Color
-		line.position.x = -xp;
-		myg_.BulPtr[i].add(line);
-		//	Rite
-		line = new Line(BltGeo,BulMtL); // Lite Color
-		line.position.x = xp+0.1;
-		myg_.BulPtr[i].add(line);
-		line = new Line(BltGeo,BulMtD); // Dark Color
-		line.position.x = xp;
-		myg_.BulPtr[i].add(line);
+		//	2 Double Lines (FM2)
+		if (xp) {
+			//	Left
+			line = new Line(BltGeo,BulMtL); // Lite Color
+			line.position.x = -xp-0.1;
+			myg_.BulPtr[i].add(line);
+			line = new Line(BltGeo,BulMtD); // Dark Color
+			line.position.x = -xp;
+			myg_.BulPtr[i].add(line);
+			//	Rite
+			line = new Line(BltGeo,BulMtL); // Lite Color
+			line.position.x = xp+0.1;
+			myg_.BulPtr[i].add(line);
+			line = new Line(BltGeo,BulMtD); // Dark Color
+			line.position.x = xp;
+			myg_.BulPtr[i].add(line);
+		}
+		// I Single Line (Pup)
+		else {
+			line = new Line(BltGeo,BulMtL); // Lite Color
+			myg_.BulPtr[i].add(line);
+			line = new Line(BltGeo,BulMtD); // Dark Color
+			myg_.BulPtr[i].add(line);		
+		}
 		//
 		scene.add(myg_.BulPtr[i]);
 		myg_.BulPtr[i].visible = false;
@@ -181,6 +191,7 @@ function initBullet(myg_,scene) {
 }
 
 //= MOVE MY BULLETS ============//==============================================
+//	If no enemy target, xac_ = 0
 
 function moveBullet(myg_,air_,gen_,tim_,xac_) {
 	let BulSV3 = new Vector3();
@@ -220,7 +231,8 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 			myg_.BulPtr[i].position.z = myg_.BulPtr[i].position.z - myg_.BulMpS[i].z;
 		}
 	} // end i
-	testHitBox(myg_,xac_)
+	// If Enemy Target, Are We Hitting It?
+	if (xac_) testHitBox(myg_,xac_)
 }
 
 //= HITBOX =====================//==============================================
