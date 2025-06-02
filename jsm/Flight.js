@@ -386,20 +386,13 @@ function MaxVal(x, max) {
 	if (x < 0 && x < -max) x = -max;
 return x;}
 
-//= Make Mesh ==================//==============================================
-function makMsh() {
-	let geometry = new BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
-	let mesh = new Mesh(geometry,material);
-return mesh;}
-
 /*******************************************************************************
 *
 *	EXPORTS
 *
 *******************************************************************************/
 
-export {Flight, Mod360, PoM360, MaxVal, makMsh};
+export {Flight, Mod360, PoM360, MaxVal};
 
 /*******************************************************************************
 *
@@ -430,6 +423,7 @@ export {Flight, Mod360, PoM360, MaxVal, makMsh};
 240304:	Save GFmult
 250331: Use **2 to square
 250531: Rename Flight4a as Flight
+250603:	Eliminate makmsh (replaced with Object#D)
 */
 
 /*= FUTURE PLANNED REVISIONS (make as part of version change) ===================
