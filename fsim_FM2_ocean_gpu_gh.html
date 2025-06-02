@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 May 2025
+Version dated 2 Jun 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -1215,7 +1215,7 @@ function initAirObj() {
 	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 	// Init Bullets
-	initBullet(myg_,scene);
+	initBullet(myg_,scene,2);
 }
 
 //= Move Airplane ==============//==============================================
