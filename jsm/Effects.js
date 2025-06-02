@@ -1,5 +1,5 @@
 /*
- * Effects.js (vers 25.06.01)
+ * Effects.js (vers 25.05.30)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -157,7 +157,7 @@ function initBullet(myg_,scene) {
 	let xp = 2;
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes - 2 Double Lines
-		myg_.BulPtr[i] = new THREE.Object3D;
+		myg_.BulPtr[i] = new makMsh();
 		//	Left
 		line = new Line(BltGeo,BulMtL); // Lite Color
 		line.position.x = -xp-0.1;
@@ -286,7 +286,7 @@ function initXACBul(xag_,scene) {
 		// Load Bullets
 		for (let i = 0; i < xag_.BulNum; i ++) {	
 			//	Create Bull Meshes - Double Line 2 Colors
-			xag_.BulPtr[n][i] = new THREE.Object3D;
+			xag_.BulPtr[n][i] = new makMsh();
 			//	Left
 			line = new Line(BulGeL,BulMtL); // Lite Color
 			line.position.z = -lnF;
@@ -489,7 +489,7 @@ function initAAGuns(aag_,air_,gen_,scene) {
 		//	Load Bullets
 		for (let i = 0; i < aag_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
-			aag_.AAAPtr[n][i] = new THREE.Object3D;
+			aag_.AAAPtr[n][i] = new makMsh();
 			line = new Line(AAAGeL,AAAMtL); // Lite Color
 			line.position.z = -lnF;
 			aag_.AAAPtr[n][i].add(line);
@@ -904,6 +904,13 @@ function Mod360(deg) {
 	deg = deg % 360;				 // Compute remainder of any number divided by 360
 return deg;}
 
+//- Make Mesh ------------------------------------------------------------------
+function makMsh() {
+	let geometry = new BoxGeometry(0.01,0.01,0.01); 
+	let material = new MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
+	let mesh = new Mesh(geometry,material);
+return mesh;}
+
 //- Sphere ---------------------//---------------------------------------------
 //	Used to create flash explosions
 function makeSphere() {
@@ -936,5 +943,4 @@ export {initFad2Blk,moveFad2Blk,
 *******************************************************************************/
 /*
 250125:	In Development
-250602:	Replace makmsh with Object3D
 */
