@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 May 2025
+Version dated 1 Jun 2025
 
 A flight simulation of an animated airplane model over procedural land using
 -->
@@ -493,7 +493,7 @@ let air_ = {
 		AirDat: dat_,			// Aircraft Type: 1 = Pup
 		// Helicopter Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Euler(0,0,0).copy(BegRot), // Rotation (in degrees)
-		AirObj: makMsh(),
+		AirObj: new THREE.Object3D,
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(), // Change
 		AltDif: 0,
@@ -555,7 +555,7 @@ let doormn = 0;					// Main Doors
 let EngSrc = "xbell_rotor03a.wav"; // File (my engine)
 let EngVol = 0.1;				// Volume
 let EngSnd = 0;
-let EngMsh = new makMsh();		// Aircraft Engine
+let EngMsh = new THREE.Object3D;		// Aircraft Engine
 
 //= POINTER LOCK CONTROL =======================================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -655,7 +655,7 @@ let R90flg = 0;					// Right 90 degrees
 
 //= CAMERA =====================//==============================================
 //- Create Cockpit Attach Point
-let	CamPVC = makMsh();
+let	CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
 	air_.AirObj.add(CamPVC); 	// Attach CamPVC to AirObj
@@ -682,7 +682,7 @@ let cam_ = {
 		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
-		rot: makMsh(),			// Camera Rotator
+		rot: new THREE.Object3D,			// Camera Rotator
 		mmr: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
 		par: CamPar[CamSel],	// Center of Rotation	
@@ -690,8 +690,8 @@ let cam_ = {
 		// Linked Airplane
 		lnk: CamLnk[CamSel],
 		qat: new THREE.Quaternion(),
-		obj: makMsh(),
-		deg: makMsh()
+		obj: new THREE.Object3D,
+		deg: new THREE.Object3D
 	}
 //- Adjustments
 	camera.rotation.order = "YXZ";
@@ -1838,13 +1838,6 @@ function MaxVal(x, max) {
 	if (x > 0 && x >  max) x =  max;
 	if (x < 0 && x < -max) x = -max;
 return x;}
-
-//- Make Mesh ------------------------------------------------------------------
-function makMsh() {
-	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01);
-	let material = new THREE.MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
-	let mesh = new THREE.Mesh(geometry,material);
-return mesh;}
 
 //= SOUNDS =====================//==============================================
 

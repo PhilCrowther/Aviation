@@ -60,7 +60,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from 'stats-gl';
 // Special Modules
-import {Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
+import {Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // r171
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
 
@@ -316,8 +316,8 @@ let air_ = {
 		AirDat: 0,				// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(), // Object Rotation (degrees)
-		AirObj: makMsh(),		// Airplane Object
-		AirPBY: makMsh(),		// 	
+		AirObj: new THREE.Object3D,		// Airplane Object
+		AirPBY: new THREE.Object3D,		// 	
 		// Airplane PBY Changes
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
@@ -416,7 +416,7 @@ let	listener = new THREE.AudioListener();
 let RefDst = 25;				// Reference distance for Positional Sound
 //- Engine Sounds
 let EngSnd = new THREE.PositionalAudio(listener);
-let EngMsh = new makMsh;		// Aircraft Engine
+let EngMsh = new THREE.Object3D;		// Aircraft Engine
 	EngMsh.add(EngSnd);			// Engine
 	EngMsh.position.z = -5;
 	air_.AirObj.add(EngMsh);
@@ -435,7 +435,7 @@ const K_Paws = 80;				// Pause (p)
 //= CAMERA =====================//==============================================
 //let CamSel = 0;	// Starting Camera View (0 = attached to grid, 1 = attached to airplane)
 //- Create Default Center Mesh
-const CamCtr = makMsh();
+const CamCtr = new THREE.Object3D;
 	CamCtr.rotation.order = "YXZ";
 	scene.add(CamCtr);
 //- Camera Inputs (for 2 External Cameras)
@@ -460,7 +460,7 @@ let cam_ = {
 		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
-		rot: makMsh(),			// Camera Rotator
+		rot: new THREE.Object3D,			// Camera Rotator
 		mmr: new THREE.Vector3(90,0,0.2),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
 		par: CamPar[CamSel],	// Center of Rotation
@@ -468,8 +468,8 @@ let cam_ = {
 		// Linked Airplane
 		lnk: CamLnk[CamSel],
 		qat: new THREE.Quaternion(),
-		obj: makMsh(),
-		deg: makMsh()
+		obj: new THREE.Object3D,
+		deg: new THREE.Object3D
 }
 //- Adjustments
 	cam_.rot.rotation.order = "YXZ";

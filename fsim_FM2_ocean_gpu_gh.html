@@ -95,7 +95,7 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initXSHWak,moveXSHWak,	// Ship Wake
 		initXSHSmk,				// Ship Smoke (destroyer only)
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
-import {Flight,Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
+import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadGeoMat,
 		GrdMap,
 	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // add grd_.EMI
@@ -368,7 +368,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //	Adjustments
 	isl_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation
 	isl_.MapPos = [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)];
-	isl_.ObjGrp = [new makMsh(),new makMsh()]; // Group
+	isl_.ObjGrp = [new THREE.Object3D,new THREE.Object3D]; // Group
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
@@ -380,15 +380,15 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	xac_.ObjRot = [new THREE.Euler(0,0,30),new THREE.Euler(0,0,30)];  // Rotation
 	xac_.MapPos = [new THREE.Vector3(180,1524,5300),new THREE.Vector3(180,1524,5300)]; // meters
 	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3()]; // not used
-	xac_.EngMsh = [new makMsh(),new makMsh()];
-	xac_.SndMsh = [new makMsh(),new makMsh()];
+	xac_.EngMsh = [new THREE.Object3D,new THREE.Object3D];
+	xac_.SndMsh = [new THREE.Object3D,new THREE.Object3D];
 //. Moving Ships ...............//..............................................
 //	Adjustments
 	xsh_.ObjRot = [new THREE.Euler(0,0,0),new THREE.Euler(0,0,0)];  // Rotation
 	xsh_.MapPos = [new THREE.Vector3(-4100,0.1,150),new THREE.Vector3(-4200,0.2,350)]; // meters
-	xsh_.ObjGrp = [new makMsh(),new makMsh()];
+	xsh_.ObjGrp = [new THREE.Object3D,new THREE.Object3D];
 	xsh_.MapSpd = [new THREE.Vector3(),new THREE.Vector3()];
-	xsh_.ShpLok = [new makMsh(),0];
+	xsh_.ShpLok = [new THREE.Object3D,0];
 //= ANIMATED FLAGS =============//==============================================
 //	Adjustments
 	flg_.ObjRot = [new THREE.Euler(0,97.5*DegRad,0)]; // Adjust to make the flag visible at start
@@ -444,9 +444,9 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //	Adjustments
 	air_.AirDat = data_;
 	air_.AirRot = new THREE.Euler();
-	air_.AirObj = new makMsh;
+	air_.AirObj = new THREE.Object3D;
 	air_.AirObj.rotation.order = "YXZ";
-	air_.AirPBY = new makMsh;
+	air_.AirPBY = new THREE.Object3D;
 	air_.AirPBY.rotation.order = "YXZ";
 	air_.AirObj.add(air_.AirPBY); // PBY includes air_.ACPAdj
 	scene.add(air_.AirObj);	// Airplane
@@ -459,8 +459,8 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	air_.OldRot = new THREE.Euler();
 	air_.BegTmp = BegTmp;
 //- FM2 ANIMATIONS -------------//----------------------------------------------
-	mxr_.Adr = new makMsh();
-	vxr_.Adr = new makMsh();
+	mxr_.Adr = new THREE.Object3D;
+	vxr_.Adr = new THREE.Object3D;
 	if (BegLoc == 0) {
 //		anm_.lngpos = 0;		// Landing Gear Down (later)
 		anm_.flppos = 180;		// Flaps Up
@@ -479,13 +479,13 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //	Specific Adjustments
 	myg_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
 	myg_.SndSrc = AirSrc + "sounds/" + "fm2_gun.mp3", // File (my guns)
-	myg_.SndMsh = [new makMsh(),new makMsh()];
+	myg_.SndMsh = [new THREE.Object3D,new THREE.Object3D];
 //- Moving Airplanes -----------//----------------------------------------------
 //	General Format Adjustments
 for (let n = 0; n < aaf_.ObjNum; n ++) {
 	xag_.GunRot[n] = new THREE.Euler();  // Gun Rotation (degrees)
 	xag_.GunPos[n] = new THREE.Vector3();
-	xag_.SndMsh[n] = new makMsh();
+	xag_.SndMsh[n] = new THREE.Object3D;
 }
 //	Specific Adjustments
 	xag_.XACRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]];
@@ -496,9 +496,9 @@ for (let n = 0; n < aaf_.ObjNum; n ++) {
 //- Moving Ships ---------------//----------------------------------------------
 //	General Format Adjustments
 for (let n = 0; n < xsg_.ObjNum; n ++) {
-	xsg_.GunPtr[n] = new makMsh();
+	xsg_.GunPtr[n] = new THREE.Object3D;
 	xsg_.SmkMpP[n] = new THREE.Vector3();
-	xsg_.SndMsh[n] = new makMsh();
+	xsg_.SndMsh[n] = new THREE.Object3D;
 }
 //	Specific Adjustments
 	xsg_.XSHRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
@@ -511,9 +511,9 @@ for (let n = 0; n < xsg_.ObjNum; n ++) {
 for (let n = 0; n < aaf_.ObjNum; n ++) {
 	aaf_.XSHRot[n] = new THREE.Euler();
 	aaf_.XSHPos[n] = new THREE.Vector3();
-	aaf_.GunPtr[n] = new makMsh();
+	aaf_.GunPtr[n] = new THREE.Object3D;
 	aaf_.SmkMpP[n] = new THREE.Vector3();
-	aaf_.SndMsh[n] = new makMsh();
+	aaf_.SndMsh[n] = new THREE.Object3D;
 }
 //	Specific Adjustments
 	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
@@ -526,11 +526,11 @@ let	AARYDf = [0,0];				// Y-Rotation Adjustment
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
 //	Adjustments
-	mys_.AirMsh = new makMsh();	// For Engine and Prop
+	mys_.AirMsh = new THREE.Object3D;	// For Engine and Prop
 
 //= 7. CAMERA VARIABLES ========//==============================================
 //- Create Internal Attach Point
-const CamPVC = new makMsh();
+const CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,1.0668,0.762);	// Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
@@ -549,13 +549,13 @@ let CamPar = [air_.AirObj,CamPVC];
 //- Adjustments
 	cam_.CamLLD = new THREE.Vector3().copy(CamLLD[CamSel]); // cam_.MshRot Lat, Lon, Dst
 	cam_.CamMMD = new THREE.Vector3().copy(CamMMD[CamSel]); // In/Out - min,max,spd
-	cam_.MshRot = new makMsh();	// Camera Rotator
+	cam_.MshRot = new THREE.Object3D;	// Camera Rotator
 	cam_.MshRot.rotation.order = "YXZ";
 	cam_.CamMMR = new THREE.Vector3().copy(CamMMR[CamSel]); // Rotate - min/max Lat/Lon,rspd
 	cam_.CamPar = CamPar[CamSel];	// Center of Rotation	
-	cam_.MshObj = new makMsh();
+	cam_.MshObj = new THREE.Object3D;
 	cam_.MshObj.rotation.order = "YXZ";
-	cam_.MshDeg = new makMsh();
+	cam_.MshDeg = new THREE.Object3D;
 	cam_.MshDeg.rotation.order = "YXZ";
 	cam_.VewRot = VewRot;
 //- Adjustments and Links

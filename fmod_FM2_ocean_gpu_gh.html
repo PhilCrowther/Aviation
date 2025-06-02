@@ -66,7 +66,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from 'stats-gl';
 // Special Modules
-import {Mod360,PoM360,MaxVal,makMsh} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
+import {Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadAirExt,loadAirInt,moveAirExt,moveAirInt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // r171
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
@@ -326,8 +326,8 @@ let air_ = {
 		AirDat: 0,				// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(), // Object Rotation (degrees)
-		AirObj: makMsh(),		// Airplane Object
-		AirPBY: makMsh(),		// 	
+		AirObj: new THREE.Object3D,		// Airplane Object
+		AirPBY: new THREE.Object3D,		// 	
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
@@ -474,7 +474,7 @@ let anm_ = {
 	}
 
 //=	SOUNDS =====================//==============================================
-const acsnd1 = "fm2.wav";			// File (my engine)
+const acsnd1 = "fm2.wav";		// File (my engine)
 let acvol1 = 0.1;				// Volume
 const acsnd2 = "fm2_prop.wav";	// File (my prop)
 let acvol2 = 0.5;				// Volume
@@ -482,11 +482,11 @@ let acvol2 = 0.5;				// Volume
 let	listener = new THREE.AudioListener();
 	camera.add(listener);
 //
-let RefDst = 25;				// Reference distance for Positional Sound	
+let RefDst = 25;				// Reference distance for Positional Sound
 //- My Engine and Prop
 let EngSnd = new THREE.PositionalAudio(listener);
 let PrpSnd = new THREE.PositionalAudio(listener);
-let EngMsh = new makMsh();		// Aircraft Engine
+let EngMsh = new THREE.Object3D; // Aircraft Engine
 	EngMsh.add(EngSnd);			// Engine
 	EngMsh.add(PrpSnd);			// Prop
 	EngMsh.position.z = -5;
@@ -509,11 +509,11 @@ const K_Paws = 80;				// Pause (p)
 
 //= MY CAMERA ==================//==============================================
 //- Create Default Center Mesh
-const CamCtr = makMsh();
+const CamCtr = new THREE.Object3D;
 	CamCtr.rotation.order = "YXZ";
 	scene.add(CamCtr);
 //- Create Cockpit Attach Point
-const CamPVC = makMsh();
+const CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
 	air_.AirObj.add(CamPVC); // Attach CamPVC to airplane
@@ -542,7 +542,7 @@ let cam_ = {
 		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
-		rot: makMsh(),			// Camera Rotator
+		rot: new THREE.Object3D,			// Camera Rotator
 		mmr: new THREE.Vector3(90,0,0.2),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
 		par: CamPar[CamSel],	// Center of Rotation
@@ -550,8 +550,8 @@ let cam_ = {
 		// Linked Airplane
 		lnk: CamLnk[CamSel],
 		qat: new THREE.Quaternion(),
-		obj: makMsh(),
-		deg: makMsh()
+		obj: new THREE.Object3D,
+		deg: new THREE.Object3D
 }
 //- Adjustments
 	cam_.rot.rotation.order = "YXZ";

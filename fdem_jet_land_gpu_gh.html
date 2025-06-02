@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 May 2025
+Version dated 1 Jun 2025
 
 This demo program uses included versions of the GrdMap module.
 
@@ -58,7 +58,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Custom Modules
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap3b.js"; // r171
+import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap.js"; // r171
 
 //= NOTES
 //- Sections relating to my Camera Rotator are designated MY CAMERA
@@ -416,8 +416,8 @@ let treclr = [0x75b24c,0x2e471e]; // Colors
 let air_ = {
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(), // Object Rotation (degrees)
-		AirObj: makMsh(),		// Airplane Object
-		AirPBY: makMsh(),			
+		AirObj: new THREE.Object3D,		// Airplane Object
+		AirPBY: new THREE.Object3D,			
 		// Airplane PBY Changes
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Inputs
@@ -450,7 +450,7 @@ let life = lifeTime.div(lifeRange);
 //= MY CAMERA ==================//==============================================
 //let CamSel = 0;	// Starting Camera View (0 = attached to grid, 1 = attached to airplane)
 //- Create Default Center Mesh
-const CamCtr = makMsh();
+const CamCtr = new THREE.Object3D;
 	CamCtr.rotation.order = "YXZ";
 	scene.add(CamCtr);
 //- Camera Inputs (for 2 External Cameras, second linked to Airplane)
@@ -475,15 +475,15 @@ let cam_ = {
 		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
-		rot: makMsh(),			// Camera Rotator
+		rot: new THREE.Object3D,			// Camera Rotator
 		mmr: new THREE.Vector3(90,0,0.2),	// Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
 		par: CamPar[CamSel],	// Center of Rotation
 		// Linked Airplane
 		lnk: CamLnk[CamSel],
 		qat: new THREE.Quaternion(),
-		obj: makMsh(),
-		deg: makMsh()
+		obj: new THREE.Object3D,
+		deg: new THREE.Object3D
 }
 //- Adjustments
 	cam_.rot.rotation.order = "YXZ";
@@ -1345,13 +1345,6 @@ return deg;}
 function PoM360(deg) {
 	if (deg > 180) deg = deg-360;
 return deg;}
-
-//- Make Simple Mesh -----------------------------------------------------------
-function makMsh() {
-	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
-	let material = new THREE.MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
-	let mesh = new THREE.Mesh(geometry,material);
-return mesh;}
 
 //= OUTPUTS ====================================================================
 
