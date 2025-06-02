@@ -1,5 +1,5 @@
 /*
- * Effects.js (vers 25.05.30)
+ * Effects.js (vers 25.06.2)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
