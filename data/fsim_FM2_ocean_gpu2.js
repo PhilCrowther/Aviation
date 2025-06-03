@@ -857,7 +857,7 @@ let aaf_ = {
 let mys_ = {
 		AirMsh:	0,				// For Engine and Prop
 		// Engine Sound - Idle
-		IdlSrc: AirSrc + "sounds/fm2a.wav"
+		IdlSrc: AirSrc + "sounds/fm2a.wav",
 		IdlSnd: 0,				// Address
 		IdlVol: 0.1,			// Volume
 		// Engine Sound	
