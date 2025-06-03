@@ -1,5 +1,5 @@
 /*
- * Effects.js (vers 25.06.2)
+ * Effects.js (vers 25.06.3)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -146,7 +146,7 @@ function moveFad2Blk(f2b_) {
 //= INIT MY BULLETS ============//==============================================
 //	xp = distance left and right (FM2 = 2). If zero, single bullet
 
-function initBullet(myg_,scene,xp) {
+function initBullet(myg_,scene) {
 	// Line	
 	let line = 0
 	let points = [];
@@ -158,29 +158,13 @@ function initBullet(myg_,scene,xp) {
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new makMsh();
-		//	2 Double Lines (FM2)
-		if (xp) {
-			//	Left
+		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
 			line = new Line(BltGeo,BulMtL); // Lite Color
-			line.position.x = -xp-0.1;
+			line.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(line);
 			line = new Line(BltGeo,BulMtD); // Dark Color
-			line.position.x = -xp;
+			line.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(line);
-			//	Rite
-			line = new Line(BltGeo,BulMtL); // Lite Color
-			line.position.x = xp+0.1;
-			myg_.BulPtr[i].add(line);
-			line = new Line(BltGeo,BulMtD); // Dark Color
-			line.position.x = xp;
-			myg_.BulPtr[i].add(line);
-		}
-		// I Single Line (Pup)
-		else {
-			line = new Line(BltGeo,BulMtL); // Lite Color
-			myg_.BulPtr[i].add(line);
-			line = new Line(BltGeo,BulMtD); // Dark Color
-			myg_.BulPtr[i].add(line);		
 		}
 		//
 		scene.add(myg_.BulPtr[i]);
