@@ -542,8 +542,14 @@ let spnprp = 180;				// Taildrag 	degrees = 0 to 360
 let GunFlg = 0;
 
 //=	SOUNDS =====================//==============================================
+//- Engine Idle
+let IdlSrc = "xrpm1.wav";		// File (my engine at Idle)
+let IdlVol = 0.2;				// Volume
+let IdlSnd = 0;
+let IdlMsh = new THREE.Object3D;
 //- My Engine
-let EngSrc = "pup.mp3";			// File (my engine)
+//let EngSrc = "xrpm3.wav";		// File (my engine at Speed)
+let EngSrc = "pup.mp3";		// File (my engine at Speed)
 let EngVol = 0.1;				// Volume
 let EngSnd = 0;
 let EngMsh = new THREE.Object3D;
@@ -1750,8 +1756,16 @@ function loadSounds() {
 	// Load Sounds .............................................................
 	let audioLoader = new THREE.AudioLoader();
 	let RefDst = 25;			// Reference distance for Positional Audio
+	// My Engine at Idle
+	let fname = ACPath + "sounds/" + IdlSrc;
+	audioLoader.load(fname, function(buffer) {
+		IdlSnd.setBuffer(buffer);
+		IdlSnd.setRefDistance(RefDst);
+		IdlSnd.setLoop(true);
+		IdlSnd.setVolume(0);
+	});
 	// My Engine
-	let fname = ACPath + "sounds/" + EngSrc;
+	fname = ACPath + "sounds/" + EngSrc;
 	audioLoader.load(fname, function(buffer) {
 		EngSnd.setBuffer(buffer);
 		EngSnd.setRefDistance(RefDst);
@@ -1769,11 +1783,17 @@ function loadSounds() {
 	// Init Sounds .............................................................
 	let	listener = new THREE.AudioListener();
 	camera.add(listener);
-	//- My Engine and Prop
+	// Engine at Idle
+	IdlSnd = new THREE.PositionalAudio(listener);
+	IdlMsh.add(IdlSnd);			// Engine
+	IdlMsh.position.z = -5;
+	air_.AirObj.add(IdlMsh);
+	//- My Engine
 	EngSnd = new THREE.PositionalAudio(listener);
 	EngMsh.add(EngSnd);			// Engine
 	EngMsh.position.z = -5;
 	air_.AirObj.add(EngMsh);
+	// My Guns
 	GunSnd = new THREE.PositionalAudio(listener);
 	GunMsh.add(GunSnd);			// Guns
 	GunMsh.position.z = -5;
@@ -1784,6 +1804,17 @@ function loadSounds() {
 
 //- Change Sounds --------------------------------------------------------------
 function moveSounds() {
+	// Switch Between Idle and Engine Sounds
+	if (Throtl < .25 && EngSnd.isPlaying) {
+		IdlSnd.play();
+		EngSnd.stop();
+	}
+	if (Throtl >= .25 && IdlSnd.isPlaying) {
+		IdlSnd.stop();
+		EngSnd.play();
+	}
+	// Idle Sound
+	IdlSnd.setVolume(IdlVol);
 	// My Engine
 	EngSnd.setVolume(EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
 	EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
@@ -1794,6 +1825,7 @@ function moveSounds() {
 //- Play Sounds ----------------------------------------------------------------
 function playSounds() {
 	// This leaves SndFlg and GunFlg unchanged.
+	if (!IdlSnd.isPlaying) IdlSnd.play();
 	if (!EngSnd.isPlaying) EngSnd.play();
 	if (GunFlg && !GunSnd.isPlaying) GunSnd.play();
 }
@@ -1801,6 +1833,7 @@ function playSounds() {
 //- Stop Sounds ----------------------------------------------------------------
 function stopSounds() {
 	// This leaves SndFlg and GunFlg unchanged.
+	if (IdlSnd.isPlaying) IdlSnd.stop();
 	if (EngSnd.isPlaying) EngSnd.stop();
 	if (GunSnd.isPlaying) GunSnd.stop();
 }
@@ -1996,7 +2029,7 @@ function onDocumentMouseWheel(event) {
 		Throtl = 0;
 		PwrDif = 0;
 	}
-	if (Throtl < .25) PwrDif = 0;	// Engine Cut-Off for Pup
+9
 }
 
 //- KEYBOARD -------------------------------------------------------------------
