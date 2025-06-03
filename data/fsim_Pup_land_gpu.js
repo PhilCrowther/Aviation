@@ -137,7 +137,7 @@ let myg_ = {
 		BulTim: [0],			// Bullet Time in Flight
 		// Sound
 		ObjNum: 1,				// Number of Barrels
-		ObjPos: 0,				// Position of Each Barrel
+		ObjPos: [0],			// Position of Each Barrel
 		SndSrc: 0,				// File (my guns)
 		SndPtr: [0],			// For Each Gun
 		SndVol: 0.5,			// Volume
