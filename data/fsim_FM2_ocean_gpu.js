@@ -692,7 +692,8 @@ let myg_ = {
 		BulMpS: [0],			// Bullet Speed
 		BulTim: [0],			// Bullet Time in Flight
 		// Sound
-		ObjNum: 2,
+		ObjNum: 2,				// Number of Barrels
+		ObjPos: [0,0],			// Position of Each Barrel			
 		SndSrc: 0,				// File (my guns)
 		SndPtr: [0,0],
 		SndVol: 0.5,			// Volume
