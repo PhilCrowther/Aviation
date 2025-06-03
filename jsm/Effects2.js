@@ -158,7 +158,7 @@ function initBullet(myg_,scene) {
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new makMsh();
-		for (let j = 0; j < myg_.ObjNum; i ++) { // For Each Barrel
+		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
 			line = new Line(BltGeo,BulMtL); // Lite Color
 			line.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(line);
