@@ -79,6 +79,30 @@ import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap.js"; // r171
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 
+/*= GENERAL ====================//==============================================
+
+This flight simulation demo uses the most advanced version of three.js
+
+=FEATURES
+-Flight Smulation
+	* Realistic Flight Simulation and AutoPilot (Flight Module)
+	* Taildragger takeoff and landing
+	* Static Landing Surfaces
+-Scenery:
+	* Textured Farmland
+	* Mountains
+	* SunFlare
+-My Airplane:
+	* Detailed Airplane Model
+	* Animated Controls
+	* 3D Sounds
+
+TO DO:
+-	Program:
+	* After landing, not always stay stopped.
+	* Sometimes, need to wiggle plane to take off.
+*/
+
 //= INPUTS =====================//==============================================
 //- AIRPLANE: Start -----------------------------------------------------------
 let BegLoc = 0;					// Starting Location (0 = Base; 1 = Air)
@@ -178,12 +202,16 @@ let txtrLoader = new THREE.TextureLoader(loadingManager);
 let imagLoader = new THREE.ImageLoader(loadingManager);
 let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 let gltfLoader = new GLTFLoader(loadingManager);
+let audoLoader = new THREE.AudioLoader();
+// Create Audio Listener
+let	listener = new THREE.AudioListener();
+	camera.add(listener);
 //- Wait Screen
 let loadingScreen = {
-	scene: new THREE.Scene(),
-	camera: new THREE.PerspectiveCamera(90, window.innerWidth, window.innerHeight, 0.1, 100),
-	box: 0
-};
+		scene: new THREE.Scene(),
+		camera: new THREE.PerspectiveCamera(90, window.innerWidth, window.innerHeight, 0.1, 100),
+		box: 0
+	};
 let boxrot = 0;
 
 //= SKY ========================//==============================================
@@ -515,20 +543,20 @@ let spnprp = 180;				// Taildrag 	degrees = 0 to 360
 	myg_.ObjPos = [new THREE.Vector3(0,0,1)]; // Position of Each Barrel
 	myg_.SndMsh = [new THREE.Object3D,new THREE.Object3D];
 
-//=	SOUNDS =====================//==============================================
-//- Engine Idle
-let IdlSrc = "xrpm1.wav";		// File (my engine at Idle)
-let IdlVol = 0.2;				// Volume
-let IdlSnd = 0;
-let IdlMsh = new THREE.Object3D;
-//- My Engine
-//let EngSrc = "xrpm3.wav";		// File (my engine at Speed)
-let EngSrc = "pup.mp3";		// File (my engine at Speed)
-let EngVol = 0.1;				// Volume
-let EngSnd = 0;
-let EngMsh = new THREE.Object3D;
-//- My Guns
-let GunVol = 0.5;				// Volume
+//=	MY SOUNDS ==================//==============================================
+let mys_ = {
+		AirMsh:	0,				// For Engine and Prop
+		// Engine Sound - Idle
+		IdlSrc: AirSrc + "sounds/xrpm1.wav",
+		IdlSnd: 0,				// Address
+		IdlVol: 0.5,			// Volume
+		// Engine Sound	
+		EngSrc: AirSrc + "sounds/pup.mp3",
+		EngSnd: 0,				// Address
+		EngVol: 0.2,			// Volume
+	}
+//- Adjustments
+	mys_.AirMsh = new THREE.Object3D;
 
 //= POINTER LOCK CONTROL =======================================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -1735,41 +1763,25 @@ function moveAirObj() {
 
 //- Load and Initialize Sounds -------------------------------------------------
 function loadSounds() {
-	// Load Sounds .............................................................
-	let audioLoader = new THREE.AudioLoader();
+	// Engine Sounds ...........................................................
+	air_.AirObj.add(mys_.AirMsh);
+	mys_.AirMsh.position.z = -5;
 	let RefDst = 25;			// Reference distance for Positional Audio
-	// My Engine at Idle
-	let fname = AirSrc + "sounds/" + IdlSrc;
-	audioLoader.load(fname, function(buffer) {
-		IdlSnd.setBuffer(buffer);
-		IdlSnd.setRefDistance(RefDst);
-		IdlSnd.setLoop(true);
-		IdlSnd.setVolume(0);
+	// Engine - Idle
+	mys_.IdlSnd = new THREE.PositionalAudio(listener);
+	audoLoader.load(mys_.IdlSrc,function(buffer) {
+		mys_.IdlSnd.setBuffer(buffer);
+		init1Sound(mys_.IdlSnd,RefDst,0,1,1,mys_.AirMsh);		
 	});
-	// My Engine
-	fname = AirSrc + "sounds/" + EngSrc;
-	audioLoader.load(fname, function(buffer) {
-		EngSnd.setBuffer(buffer);
-		EngSnd.setRefDistance(RefDst);
-		EngSnd.setLoop(true);
-		EngSnd.setVolume(0);
+	// Engine
+	mys_.EngSnd = new THREE.PositionalAudio(listener);
+	audoLoader.load(mys_.EngSrc,function(buffer) {
+		mys_.EngSnd.setBuffer(buffer);
+		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
 	});
-	// Init Sounds .............................................................
-	let	listener = new THREE.AudioListener();
-	camera.add(listener);
-	// Engine at Idle
-	IdlSnd = new THREE.PositionalAudio(listener);
-	IdlMsh.add(IdlSnd);			// Engine
-	IdlMsh.position.z = -5;
-	air_.AirObj.add(IdlMsh);
-	//- My Engine
-	EngSnd = new THREE.PositionalAudio(listener);
-	EngMsh.add(EngSnd);			// Engine
-	EngMsh.position.z = -5;
-	air_.AirObj.add(EngMsh);
 	// My Guns (Center) ........................................................
 	myg_.SndPtr[0] = new THREE.PositionalAudio(listener);
-	audioLoader.load(myg_.SndSrc,function(buffer) {
+	audoLoader.load(myg_.SndSrc,function(buffer) {
 		myg_.SndPtr[0].setBuffer(buffer);
 		init1Sound(myg_.SndPtr[0],RefDst,0,1,1,myg_.SndMsh[0]);
 		air_.AirObj.add(myg_.SndMsh[0]);
@@ -1781,37 +1793,39 @@ function loadSounds() {
 //- Change Sounds --------------------------------------------------------------
 function moveSounds() {
 	// Switch Between Idle and Engine Sounds
-	if (Throtl < .25 && EngSnd.isPlaying) {
-		IdlSnd.play();
-		EngSnd.stop();
+	if (Throtl < .25 && mys_.EngSnd.isPlaying) {
+		mys_.IdlSnd.play();
+		mys_.EngSnd.stop();
 	}
-	if (Throtl >= .25 && IdlSnd.isPlaying) {
-		IdlSnd.stop();
-		EngSnd.play();
+	if (Throtl >= .25 && mys_.IdlSnd.isPlaying) {
+		mys_.IdlSnd.stop();
+		mys_.EngSnd.play();
 	}
 	// Idle Sound
-	IdlSnd.setVolume(IdlVol);
+	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.setVolume(mys_.IdlVol);
+	else {mys_.IdlSnd.setVolume(0);}
 	// My Engine
-	EngSnd.setVolume(EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
-	EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.setVolume(mys_.EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
+	else {mys_.EngSnd.setVolume(0);};
+	mys_.EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
 	// My Guns
 	if (gen_.MYGFlg && !myg_.SndPtr[0].isPlaying) myg_.SndPtr[0].play(); // Gun - Center
-	myg_.SndPtr[0].setVolume(GunVol);	
+	myg_.SndPtr[0].setVolume(myg_.SndVol);	
 }
 
 //- Play Sounds ----------------------------------------------------------------
 function playSounds() {
 	// This leaves gen_.SndFlg and gen_.MYGFlg unchanged.
-	if (!IdlSnd.isPlaying) IdlSnd.play();
-	if (!EngSnd.isPlaying) EngSnd.play();
+	if (!mys_.IdlSnd.isPlaying) mys_.IdlSnd.play();
+	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play();
 	if (gen_.MYGFlg && !myg_.SndPtr[0].isPlaying) myg_.SndPtr[0].play(); // Guns - Center
 }
 
 //- Stop Sounds ----------------------------------------------------------------
 function stopSounds() {
 	// This leaves gen_.SndFlg and gen_.MYGFlg unchanged.
-	if (IdlSnd.isPlaying) IdlSnd.stop();
-	if (EngSnd.isPlaying) EngSnd.stop();
+	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.stop();
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop();
 	if (myg_.SndPtr[0].isPlaying) myg_.SndPtr[0].stop(); // Gun - Center
 }
 
@@ -1920,7 +1934,6 @@ function moveCamera(camera,cam_) {
 
 //-	Print HUD Values -----------------------------------------------------------
 function prntHUDval() {
-//	Air_Pwr = air_.PwrPct;		// Throttle
 	Air_Pwr = Throtl;			// Throttle Setting
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
 	Air_Spd = air_.SpdKPH*Km2Mil; // Speed
@@ -2031,7 +2044,6 @@ function onDocumentMouseWheel(event) {
 		Throtl = 0;
 		gen_.PwrDif = 0;
 	}
-9
 }
 
 //- KEYBOARD -------------------------------------------------------------------
