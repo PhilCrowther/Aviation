@@ -242,17 +242,24 @@ let key_ = {
 		Guns:  32,				// Guns (spacebar)
 		//	Views
 		Look:  16,				// Pan (shift)
-		VU45:  36,				// View Up (alone or modifier)
-		VD45:  35,				// View Down (alone or modifier)
-		VL45:  33,				// Left 45 degrees
-		VR45:  45,				// Right 45 degrees
-		VL90:  34,				// Left 90 degrees
-		VR90:  46,				// Right 90 degrees
+		VU45: 104,				// View Up (alone or modifier)
+		VD45: 101,				// View Down (alone or modifier)
+		VL45: 103,				// Left 45 degrees
+		VR45: 195,				// Right 45 degrees
+		VL90: 100,				// Left 90 degrees
+		VR90: 102,				// Right 90 degrees
 		//	Toggle
 		Soun:  83,				// Toggle sound (s)
 		Paws:  80,				// Pause (p)
 		Auto:  65,				// Autopilot (a)
 		Info:  73,				// Info (i)
+		// Flags
+		U45flg: 0,				// Up 45 degrees
+		D45flg: 0,				// Down 45 degrees
+		L45flg: 0,				// Left 45 degrees
+		R45flg: 0,				// Right 45 degrees
+		L90flg: 0,				// Left 90 degrees
+		R90flg: 0,				// Right 90 degrees
 };
 
 //- POINTER LOCK CONTROL -------//----------------------------------------------
