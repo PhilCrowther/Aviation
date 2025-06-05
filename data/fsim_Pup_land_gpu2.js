@@ -226,33 +226,33 @@ let On_Paws, On_Inf0, On_Inf1, On_Inf2, On_Inf3, On_Inf4, On_Inf5, On_Inf6, On_I
 
 //- DEFAULT KEY BINDINGS -------//----------------------------------------------
 let key_ = {
-		PwLU =  87,				// Power Up (w) - keyboard left
-		PwLD =  81,				// Power Down (q) - keyboard left
-		PwRU = 187,				// Power Up (=) - keyboard right
-		PwRD = 189,				// Power Down (-) - keyboard right
-		BnkL = 37,				// Bank Left (left arrow) - autopilot only
-		BnkR = 39,				// Bank Right (right arrow) - autopilot only
-		PitU = 40,				// Pitch up (down arrow) - autopilot only
-		PitD = 38,				// Pitch down (up arrow) - autopilot only
-		YwLL =  90,				// Yaw Left (z) - keyboard left
-		YwLR =  88,				// Yaw Left (x) - keyboard left
-		YwRL = 188,				// Yaw Left (,) - keyboard right
-		YwRR = 190,				// Yaw Left (.) - keyboard right
-		Brak = 66,				// Brakes (b)
-		Guns = 32,				// Guns (spacebar)
-//	Views
-		Look = 16,				// Pan (shift)
-		VU45 = 36,				// View Up (alone or modifier)
-		VD45 = 35,				// View Down (alone or modifier)
-		VL45 = 33,				// Left 45 degrees
-		VR45 = 45,				// Right 45 degrees
-		VL90 = 34,				// Left 90 degrees
-		VR90 = 46,				// Right 90 degrees
-//	Toggle
-		Soun = 83,				// Toggle sound (s)
-		Paws = 80,				// Pause (p)
-		Auto = 65,				// Autopilot (a)
-		Info = 73,				// Info (i)
+		PwLU:  87,				// Power Up (w) - keyboard left
+		PwLD:  81,				// Power Down (q) - keyboard left
+		PwRU: 187,				// Power Up (=) - keyboard right
+		PwRD: 189,				// Power Down (-) - keyboard right
+		BnkL:  37,				// Bank Left (left arrow) - autopilot only
+		BnkR:  39,				// Bank Right (right arrow) - autopilot only
+		PitU:  40,				// Pitch up (down arrow) - autopilot only
+		PitD:  38,				// Pitch down (up arrow) - autopilot only
+		YwLL:  90,				// Yaw Left (z) - keyboard left
+		YwLR:  88,				// Yaw Left (x) - keyboard left
+		YwRL: 188,				// Yaw Left (,) - keyboard right
+		YwRR: 190,				// Yaw Left (.) - keyboard right
+		Brak:  66,				// Brakes (b)
+		Guns:  32,				// Guns (spacebar)
+		//	Views
+		Look:  16,				// Pan (shift)
+		VU45:  36,				// View Up (alone or modifier)
+		VD45:  35,				// View Down (alone or modifier)
+		VL45:  33,				// Left 45 degrees
+		VR45:  45,				// Right 45 degrees
+		VL90:  34,				// Left 90 degrees
+		VR90:  46,				// Right 90 degrees
+		//	Toggle
+		Soun:  83,				// Toggle sound (s)
+		Paws:  80,				// Pause (p)
+		Auto:  65,				// Autopilot (a)
+		Info:  73,				// Info (i)
 };
 
 //- POINTER LOCK CONTROL -------//----------------------------------------------
