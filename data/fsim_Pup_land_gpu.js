@@ -245,7 +245,7 @@ let key_ = {
 		VU45: 104,				// View Up (alone or modifier)
 		VD45: 101,				// View Down (alone or modifier)
 		VL45: 103,				// Left 45 degrees
-		VR45: 195,				// Right 45 degrees
+		VR45: 105,				// Right 45 degrees
 		VL90: 100,				// Left 90 degrees
 		VR90: 102,				// Right 90 degrees
 		//	Toggle
