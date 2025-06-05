@@ -1025,44 +1025,44 @@ let InfoData = [
 //- DEFAULT KEY BINDINGS -------//----------------------------------------------
 let key_ = {
 		//	Basic
-		K_PwLU:	87,				// Power Up (w) - keyboard left
-		K_PwLD:	 81,			// Power Down (q) - keyboard left
-		K_PwRU:	187,			// Power Up (=) - keyboard right
-		K_PwRD:	189,			// Power Down (-) - keyboard right
-		K_BnkL:	 37,			// Bank Left (left arrow) - autopilot only
-		K_BnkR:	 39,			// Bank Right (right arrow) - autopilot only
-		K_PitU:	 40,			// Pitch Up (down arrow) - autopilot only
-		K_PitD:	 38,			// Pitch Down (up arrow) - autopilot only
-		K_YwLL:	 90,			// Yaw Left (z) - keyboard left
-		K_YwLR:	 88,			// Yaw Left (x) - keyboard left
-		K_YwRL:	188,			// Yaw Left (,) - keyboard right
-		K_YwRR:	190,			// Yaw Left (.) - keyboard right
-		K_Brak:	 66,			// Brakes (b)
-		K_Guns:	 32,			// Guns (spacebar)
+		PwLU:	87,				// Power Up (w) - keyboard left
+		PwLD:	 81,			// Power Down (q) - keyboard left
+		PwRU:	187,			// Power Up (=) - keyboard right
+		PwRD:	189,			// Power Down (-) - keyboard right
+		BnkL:	 37,			// Bank Left (left arrow) - autopilot only
+		BnkR:	 39,			// Bank Right (right arrow) - autopilot only
+		PitU:	 40,			// Pitch Up (down arrow) - autopilot only
+		PitD:	 38,			// Pitch Down (up arrow) - autopilot only
+		YwLL:	 90,			// Yaw Left (z) - keyboard left
+		YwLR:	 88,			// Yaw Left (x) - keyboard left
+		YwRL:	188,			// Yaw Left (,) - keyboard right
+		YwRR:	190,			// Yaw Left (.) - keyboard right
+		Brak:	 66,			// Brakes (b)
+		Guns:	 32,			// Guns (spacebar)
 		//	Additional
-		K_Flap:	 70,			// Flaps (f)
-		K_Gear:	 71,			// Landing Gear (g)
-		K_Hook:	 72,			// Tailhook (h)
-		K_Canp:	 67,			// Canopy (c)
+		Flap:	 70,			// Flaps (f)
+		Gear:	 71,			// Landing Gear (g)
+		Hook:	 72,			// Tailhook (h)
+		Canp:	 67,			// Canopy (c)
 		//	View
-		K_Look:	 16,			// Orbit (shift)
+		Look:	 16,			// Orbit (shift)
 		//	View Keys (Num Lock)
-		K_VR45:	105,			// [9] Right 45 deg
-		K_VU45:	104,			// [8] View Up 45 deg
-		K_VL45:	103,			// [7] Left 45 deg (315 deg)
-		K_VR90:	102,			// [6] Right 90 deg
-		K_VD45:	101,			// [5] View Down or Back 45 deg
-		K_VL90:	100,			// [4] Left 90 deg (270 deg)
-		K_VRBk:	99,				// [3] Right Back (135 deg)
-		K_VCBk:	98,				// [2] Center Back (180 deg)
-		K_VLBk:	97,				// [1] Left Back (225 deg)
+		VR45:	105,			// [9] Right 45 deg
+		VU45:	104,			// [8] View Up 45 deg
+		VL45:	103,			// [7] Left 45 deg (315 deg)
+		VR90:	102,			// [6] Right 90 deg
+		VD45:	101,			// [5] View Down or Back 45 deg
+		VL90:	100,			// [4] Left 90 deg (270 deg)
+		VRBk:	99,				// [3] Right Back (135 deg)
+		VCBk:	98,				// [2] Center Back (180 deg)
+		VLBk:	97,				// [1] Left Back (225 deg)
 		//	Toggle
-		K_View:	86,				// Toggle Visibility (v)
-		K_Soun:	83,				// Toggle sound (s)
-		K_Paws:	80,				// Pause (p)
-		K_Auto:	65,				// Autopilot (a)
-		K_Info:	73,				// Info (i)
-		K_RSet:	82,				// Reset (r)
+		View:	86,				// Toggle Visibility (v)
+		Soun:	83,				// Toggle sound (s)
+		Paws:	80,				// Pause (p)
+		Auto:	65,				// Autopilot (a)
+		Info:	73,				// Info (i)
+		RSet:	82,				// Reset (r)
 		//-	Camera View Keys -----------//----------------------------------------------
 		U45flg:	0,					// Up 45 deg
 		D45flg:	0,					// Down 45 deg
