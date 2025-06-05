@@ -117,6 +117,13 @@ let f2b_ = {
 		Msh: 0,
 	}
 
+//= MY AIRPLANE ================//==============================================
+//- Load Models and Animations -------------------------------------------------
+//-	File Path
+let AirSrc = "https://PhilCrowther.github.io/Aviation/models/pup/";	// Used to load models and sounds
+//-	Animation Mixers - External Model
+let ACFile = "pup_flyt_npa.glb"; // Name of aircraft model file (rotated blender file)
+
 //= GUNASG MODULE ==============//==============================================
 //	Lewis .303 caliber
 //	BulSpd = 744;				// Muzzle velocity [mps]
@@ -147,3 +154,15 @@ let myg_ = {
 		HitDst: 10,				// Hit Radius
 	}
 
+//=	MY SOUNDS ==================//==============================================
+let mys_ = {
+		AirMsh:	0,				// For Engine and Prop
+		// Engine Sound - Idle
+		IdlSrc: AirSrc + "sounds/xrpm1.wav",
+		IdlSnd: 0,				// Address
+		IdlVol: 0.5,			// Volume
+		// Engine Sound	
+		EngSrc: AirSrc + "sounds/pup.mp3",
+		EngSnd: 0,				// Address
+		EngVol: 0.2,			// Volume
+	}
