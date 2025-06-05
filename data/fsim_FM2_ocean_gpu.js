@@ -856,9 +856,15 @@ let aaf_ = {
 //- My Sounds ------------------//----------------------------------------------
 let mys_ = {
 		AirMsh:	0,				// For Engine and Prop
+		// Engine Sound - Idle
+		IdlSrc: AirSrc + "sounds/fm2a.wav",
+		IdlSnd: 0,				// Address
+		IdlVol: 0.1,			// Volume
+		// Engine Sound	
 		EngSrc: AirSrc + "sounds/fm2.wav",
 		EngSnd: 0,				// Address
 		EngVol: 0.1,			// Volume
+		// 
 		PrpSrc: AirSrc + "sounds/fm2_prop.wav",
 		PrpSnd: 0,				// Address
 		PrpVol: 0.5,			// Volume
@@ -922,7 +928,7 @@ let cam_ = {
 		VewRot: 0,
 	}
 
-//= 8. OUTPUTS VARIABLES =======//==============================================
+//= 8. OUTPUT VARIABLES ========//==============================================
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
 let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
@@ -1014,7 +1020,7 @@ let InfoData = [
 		]
 	];
 
-//= 9. INPUTS VARIABLES ========//==============================================
+//= 9. INPUT VARIABLES =========//==============================================
 		
 //- DEFAULT KEY BINDINGS -------//----------------------------------------------
 let key_ = {
