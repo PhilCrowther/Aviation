@@ -512,11 +512,6 @@ let air_ = {
 let AirGrp = new THREE.Group();	// To hold ACMine and VCMine
 	air_.AirPBY.add(AirGrp);
 let ACMine = 0;					// My Aircraft (loaded)
-//- Load Models and Animations -------------------------------------------------
-//-	File Path
-let AirSrc = "https://PhilCrowther.github.io/Aviation/models/pup/";	// Used to load models and sounds
-//-	Animation Mixers - External Model
-let ACFile = "pup_flyt_npa.glb"; // Name of aircraft model file (rotated blender file)
 //- Aircraft Animations
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
@@ -544,17 +539,6 @@ let spnprp = 180;				// Taildrag 	degrees = 0 to 360
 	myg_.SndMsh = [new THREE.Object3D,new THREE.Object3D];
 
 //=	MY SOUNDS ==================//==============================================
-let mys_ = {
-		AirMsh:	0,				// For Engine and Prop
-		// Engine Sound - Idle
-		IdlSrc: AirSrc + "sounds/xrpm1.wav",
-		IdlSnd: 0,				// Address
-		IdlVol: 0.5,			// Volume
-		// Engine Sound	
-		EngSrc: AirSrc + "sounds/pup.mp3",
-		EngSnd: 0,				// Address
-		EngVol: 0.2,			// Volume
-	}
 //- Adjustments
 	mys_.AirMsh = new THREE.Object3D;
 
