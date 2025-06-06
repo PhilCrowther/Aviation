@@ -420,29 +420,27 @@ let ObjIdx = 0;
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
-	air_.AirRot = new THREE.Vector3(0,0,0);
+	air_.AirDat = data_;
+	air_.AirRot = new THREE.Euler();
 	air_.AirObj = new THREE.Object3D;
 	air_.AirObj.rotation.order = "YXZ";
 	air_.AirPBY = new THREE.Object3D;
 	air_.AirPBY.rotation.order = "YXZ";
-	air_.RotDif = new THREE.Vector3(0,0,0);
+	air_.AirObj.add(air_.AirPBY); // PBY includes air_.ACPadj
+	scene.add(air_.AirObj);		// Airplane
+	air_.RotDif = new THREE.Vector3();
 	air_.MapSpd = new THREE.Vector3();
 	air_.MapPos = new THREE.Vector3();
 	air_.MapSPS = new THREE.Vector3();
 	air_.PYBmul = new THREE.Vector3().copy(PYBmul);
 	air_.InpKey = new THREE.Vector3();
-	air_.OldRot = new THREE.Vector3();
-	air_.AirObj.add(air_.AirPBY); // PBY includes air_.
-	scene.add(air_.AirObj);
-//-
+	air_.OldRot = new THREE.Euler();
+//- Air Group
 let AirGrp = new THREE.Group();	// To hold ACMine and VCMine
 	air_.AirPBY.add(AirGrp);
 let ACMine = 0;					// My Aircraft (loaded)
 
 //- Pup Animations -------------------------------------------------------------
-//- Aircraft Animations
-let anmfps = 24;				// Blender FPS
-let aoarng = 20;				// AoA range (model)
 //	Animation Mixers - External Model
 let mxProp = 0;					// Propeller
 let mxRudr = 0;					// Rudder
@@ -451,13 +449,6 @@ let mxAlTL = 0;					// AileronTL
 let mxAlTR = 0;					// AileronTR
 let mxAlBL = 0;					// AileronTL
 let mxAlBR = 0;					// AileronTR
-//- All range from 0 to 360 with center at 180
-let elvatr = 180;				// Elevator 	degrees = +/- 360
-let rudder = 180;				// Rudder 		degrees = +/- 360
-let aillft = 180;				// AileronL 	degrees = +/- 360
-let ailrgt = 180;				// AileronR 	degrees = +/- 360
-let rotaoa = 180;				// AoA 			degrees = +/- 15
-let spnprp = 180;				// Taildrag 	degrees = 0 to 360
 
 //= GUNASG MODULE ==============//==============================================
 //	Adjustments
@@ -1304,43 +1295,43 @@ function loadAirObj() {
 		mxProp = new THREE.AnimationMixer(ACMine);
 		let actun = mxProp.clipAction(clip);
 		actun.play();
-		if (mxProp) mxProp.setTime(spnprp/anmfps);
+		if (mxProp) mxProp.setTime(anm_.spnprp/anm_.anmfps);
 		// Rudder
 		mxRudr = new THREE.AnimationMixer(ACMine);
 		clip = THREE.AnimationClip.findByName(gltf.animations, "rudderAction");
 		actun = mxRudr.clipAction(clip);
 		actun.play();
-		if (mxRudr) mxRudr.setTime(rudder/anmfps);
+		if (mxRudr) mxRudr.setTime(anm_.rudder/anm_.anmfps);
 		// Elevator
 		clip = THREE.AnimationClip.findByName(gltf.animations, "elevatorAction");
 		mxElev = new THREE.AnimationMixer(ACMine);
 		actun = mxElev.clipAction(clip);
 		actun.play();
-		if (mxElev) mxElev.setTime(elvatr/anmfps);
+		if (mxElev) mxElev.setTime(anm_.elvatr/anm_.anmfps);
 		// AileronTL
 		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronTLAction");
 		mxAlTL = new THREE.AnimationMixer(ACMine);
 		actun = mxAlTL .clipAction(clip);
 		actun.play();
-		if (mxAlTL) mxAlTL.setTime(aillft/anmfps);
+		if (mxAlTL) mxAlTL.setTime(anm_.aillft/anm_.anmfps);
 		// AileronTR
 		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronTRAction");
 		mxAlTR = new THREE.AnimationMixer(ACMine);
 		actun = mxAlTR.clipAction(clip);
 		actun.play();
-		if (mxAlTR) mxAlTR.setTime(ailrgt/anmfps);
+		if (mxAlTR) mxAlTR.setTime(anm_.ailrgt/anm_.anmfps);
 		// AileronBL
 		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronBLAction");
 		mxAlBL = new THREE.AnimationMixer(ACMine);
 		actun = mxAlBL .clipAction(clip);
 		actun.play();
-		if (mxAlBL) mxAlBL.setTime(aillft/anmfps);
+		if (mxAlBL) mxAlBL.setTime(anm_.aillft/anm_.anmfps);
 		// AileronBR
 		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronBRAction");
 		mxAlBR = new THREE.AnimationMixer(ACMine);
 		actun = mxAlBR.clipAction(clip);
 		actun.play();
-		if (mxAlBR) mxAlBR.setTime(ailrgt/anmfps);
+		if (mxAlBR) mxAlBR.setTime(anm_.ailrgt/anm_.anmfps);
 		//
 		AirGrp.add(ACMine);
 		// Initialize
@@ -1500,39 +1491,39 @@ function moveAirObj() {
 	// Animate -----------------------------------------------------------------	
 	// Propeller
 	let prpspd =  4 * (air_.PwrPct - 0.6);					// Range = -2.4 to + 1.6
-	spnprp = spnprp - prpspd;
-	if (spnprp < 0) spnprp = 359;							// A complete circle
+	anm_.spnprp = anm_.spnprp - prpspd;
+	if (anm_.spnprp < 0) anm_.spnprp = 359;					// A complete circle
 	// Rudder
-	rudder = 180 + air_.RotDif.y * 100;
+	anm_.rudder = 180 + air_.RotDif.y * 100;
 	// Elevator
-	elvatr = 180 - 10*air_.ACPAdj-25;						// estimated adjustment
-	if (elvatr < 150) elvatr = 150;							// Range = 00 to 60
-	else if (elvatr > 209) elvatr = 209;
+	anm_.elvatr = 180 - 10*air_.ACPAdj-25;					// estimated adjustment
+	if (anm_.elvatr < 150) anm_.elvatr = 150;				// Range = 00 to 60
+	else if (anm_.elvatr > 209) anm_.elvatr = 209;
 	// Ailerons
 	let ailbnk = air_.RotDif.z;
 	if (air_.GrFlag) ailbnk = AGBank;
 	// Left
-	aillft = 180 + ailbnk * 30;
-	if (aillft < 151) aillft = 151;							// Range = 00 to 60
-	else if (aillft > 209) aillft = 209;
+	anm_.aillft = 180 + ailbnk * 30;
+	if (anm_.aillft < 151) anm_.aillft = 151;				// Range = 00 to 60
+	else if (anm_.aillft > 209) anm_.aillft = 209;
 	// Right
-	ailrgt = 180 - ailbnk * 30;
-	if (ailrgt < 151) ailrgt = 151;							// Range = 00 to 60
-	else if (ailrgt > 209) ailrgt = 209;
+	anm_.ailrgt = 180 - ailbnk * 30;
+	if (anm_.ailrgt < 151) anm_.ailrgt = 151;				// Range = 00 to 60
+	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 	/* Animations (Display) ------------------------------------------------- */
 	// Propeller
-	if (mxProp) mxProp.setTime(spnprp/anmfps);
+	if (mxProp) mxProp.setTime(anm_.spnprp/anm_.anmfps);
 	// Rudder
-	if (mxRudr) mxRudr.setTime(rudder/anmfps);
+	if (mxRudr) mxRudr.setTime(anm_.rudder/anm_.anmfps);
 	// Elevator
-	if (mxElev) mxElev.setTime(elvatr/anmfps);
+	if (mxElev) mxElev.setTime(anm_.elvatr/anm_.anmfps);
 	// Ailerons
 	// Left
-	if (mxAlTL) mxAlTL.setTime(aillft/anmfps);
-	if (mxAlBL) mxAlBL.setTime(aillft/anmfps);
+	if (mxAlTL) mxAlTL.setTime(anm_.aillft/anm_.anmfps);
+	if (mxAlBL) mxAlBL.setTime(anm_.aillft/anm_.anmfps);
 	// Rite
-	if (mxAlTR) mxAlTR.setTime(ailrgt/anmfps);
-	if (mxAlBR) mxAlBR.setTime(ailrgt/anmfps);
+	if (mxAlTR) mxAlTR.setTime(anm_.ailrgt/anm_.anmfps);
+	if (mxAlBR) mxAlBR.setTime(anm_.ailrgt/anm_.anmfps);
 	// Bullets
 	moveBullet(myg_,air_,gen_,tim_,0);
 }
