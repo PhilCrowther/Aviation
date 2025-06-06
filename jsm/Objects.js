@@ -214,7 +214,7 @@ function moveAnmFlg(flg_,tim_) {
 
 //=	LOAD AIRPLANES =============//==============================================
 
-function loadXACVeh(gltfLoader,xac_) {
+function loadXACVeh(gltfLoader,xac_,anm_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		gltfLoader.load(xac_.ObjSrc[n], function (gltf) {
 			xac_.ObjAdr[n] = gltf.scene;
@@ -271,7 +271,7 @@ function initXACVeh(xac_,air_,scene) {
 
 //=	LOAD SHIPS =================//==============================================
 
-function loadXSHVeh(gltfLoader,xsh_) {
+function loadXSHVeh(gltfLoader,xsh_,anm_) {
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		gltfLoader.load(xsh_.ObjSrc[n], function (gltf) {
 			gltf.scene.traverse(function (child) {
@@ -316,7 +316,7 @@ function initXSHVeh(xsh_,air_,scene) {
 
 //=	MOVE SHIPS =================//==============================================
 
-function moveXSHVeh(xsh_,air_) {
+function moveXSHVeh(xsh_,air_,anm_) {
 	let X,Y,Z;
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		// Change in Heading
@@ -364,7 +364,7 @@ function moveXSHVeh(xsh_,air_) {
 *******************************************************************************/
 
 //= LOAD MY PEOPLE =============//==============================================
-function loadMyPeep(gltfLoader,myp_) {
+function loadMyPeep(gltfLoader,myp_,anm_) {
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
 			// Cast Shadow (but not in shadow zone)
@@ -393,7 +393,7 @@ function loadMyPeep(gltfLoader,myp_) {
 }
 
 //= MOVE MY PEOPLE =============//==============================================
-function moveMyPeep(myp_,tim_) {
+function moveMyPeep(myp_,tim_,anm_) {
 	// To compute position, use AnmTim * anm_.anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
@@ -488,7 +488,7 @@ function loadMyCrew(gltfLoader,myc_) {
 }
 
 //= MOVE MY CREW ===============//==============================================
-function moveMyCrew(myc_) {
+function moveMyCrew(myc_,anm_) {
 	// To compute position, use AnmTim * anm_.anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
