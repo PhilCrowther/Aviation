@@ -531,7 +531,7 @@ let alt_ = {
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: tim_.DLTime,			// Seconds per frame (can vary)
+		DLTime: tim_.DLTime,	// Seconds per frame (can vary)
 		GrvMPS: GrvMPS,			// Gravity (ups)
 		AirDSL: 0,				// Air Density (varies with altitude)
 		// Designators
@@ -579,7 +579,7 @@ let air_ = {
 		MaxBnk: 0,				// Max Bank (display only)
 		HdgDif: 0,				// Horizontal Turn Rate (display only)
 		// Air Density and IAS Comps
-		BegTmp: 0,				// Beginning Sea Level Temperature (K)
+		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0,				// Indicated Airspeed
 		// Ship Pitch and Bank
@@ -597,10 +597,9 @@ const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated b
 const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
 
 //- FM2 Animations -------------------------------------------------------------
-let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
-//	Animation Positions (all range from 0 to 360 with center at 180)
 let anm_ = {
-		anmfps: anmfps,			// Blender FPS
+		anmfps: 24,				// Blender FPS (used by Main Program and all modules
+		//	Animation Positions (all range from 0 to 360 with center at 180)
 		spnprp: 180,			// SpinProp 	degrees = 0 to 360
 		rudder: 180,			// Rudder 		degrees = +/- 360
 		elvatr: 180,			// Elevator 	degrees = +/- 360
