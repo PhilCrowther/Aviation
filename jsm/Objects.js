@@ -379,7 +379,7 @@ function loadMyPeep(gltfLoader,myp_) {
 			myp_.AnmTim[n] = 0;
 			myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]]; // Reps Remaining
 			myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Load Beg Delay (if any)
-			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // Set Mid Delay Flag = Time
+			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anm_.anmfps; // Set Mid Delay Flag = Time
 			//- Position
 			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
 			myp_.ObjAdr[n].rotation.x = myp_.ObjRot[n].x * DegRad;
@@ -394,7 +394,7 @@ function loadMyPeep(gltfLoader,myp_) {
 
 //= MOVE MY PEOPLE =============//==============================================
 function moveMyPeep(myp_,tim_) {
-	// To compute position, use AnmTim * anmfps
+	// To compute position, use AnmTim * anm_.anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
 	for (let n = 0; n < myp_.ObjNum; n++) {
@@ -411,7 +411,7 @@ function moveMyPeep(myp_,tim_) {
 				if (myp_.DlyRem[n] < 0) myp_.DlyRem[n] = 0;
 			}
 			//. If Exceed Max, Repeat or Move to Next Animation
-			if (myp_.AnmTim[n] * anmfps > (myp_.SegEnd[n][myp_.SegRef[n]])) {
+			if (myp_.AnmTim[n] * anm_.anmfps > (myp_.SegEnd[n][myp_.SegRef[n]])) {
 				// Repeat Animation?
 				if (myp_.RepRem[n]) myp_.RepRem[n] = myp_.RepRem[n] - 1;
 				// Or Move On to Next Animation?
@@ -421,8 +421,8 @@ function moveMyPeep(myp_,tim_) {
 					myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]];
 					myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Start Delay
 				}
-				myp_.AnmTim[n] = myp_.SegBeg[n][myp_.SegRef[n]]/anmfps; // old or new start time
-				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // load delay flag = delay time	
+				myp_.AnmTim[n] = myp_.SegBeg[n][myp_.SegRef[n]]/anm_.anmfps; // old or new start time
+				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anm_.anmfps; // load delay flag = delay time	
 			}
 			//	When Reach Mid Delay Time, Set Delay Counter
 			if (myp_.DlyFlg[n] && myp_.AnmTim[n] > myp_.DlyFlg[n]) {
@@ -489,7 +489,7 @@ function loadMyCrew(gltfLoader,myc_) {
 
 //= MOVE MY CREW ===============//==============================================
 function moveMyCrew(myc_) {
-	// To compute position, use AnmTim * anmfps
+	// To compute position, use AnmTim * anm_.anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
 	for (let n = 0; n < myc_.ObjNum; n++) {
