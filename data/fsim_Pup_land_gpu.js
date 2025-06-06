@@ -151,7 +151,7 @@ let air_ = {
 		GrvMPS: GrvMPS,			// Gravity (ups)
 		AirDSL: 0,				// Air Density (varies with altitude)
 		// Designators
-		AirDat: data_,			// Aircraft Type: 1 = Pup
+		AirDat: 0,				// Aircraft Type: 1 = Pup
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: 0,				// Rotation (in degrees)
 		AirObj: 0,				// Airplane Object 
