@@ -117,6 +117,32 @@ let f2b_ = {
 		Msh: 0,
 	}
 
+//= 2. SKY VARIABLES ===========//==============================================
+let sky_ = {
+		// Sun
+		SunCol: "white",		// Sun
+		SunInt: 3,
+		// Fog
+		FogCol: 0xbab4a6,		// Sky (for Fog only)
+		// SkyBox
+		SBxSrc: "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
+		envMap: 0,				// For this SkyBox
+		// Sun (position in SkyBox)
+		SunLat: 23,				// Direction - Vert (+/- 90) deg
+		SunLon: 312,			// Direction - Horz (0->360) deg
+		//	LensFlare		
+		LF0Src: "https://threejs.org/examples/textures/lensflare/lensflare1.png",
+		LF1Src: "https://threejs.org/examples/textures/lensflare/lensflare3.png",
+		LF0Txt: 0,
+		LF1Txt: 0,
+		// Shadow Beg Info
+		SunDst: 50,				// Distance
+		ShdBox: 6,				// Size of shadow box
+		ShdBLR: 6.5,
+		ShdBTB: 4,
+		ShdDst: 1500,			// Shadow Distance (meters)
+	}
+
 //= MY AIRPLANE ================//==============================================
 //- Load Models and Animations -------------------------------------------------
 //-	File Path
