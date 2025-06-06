@@ -214,7 +214,7 @@ function moveAnmFlg(flg_,tim_) {
 
 //=	LOAD AIRPLANES =============//==============================================
 
-function loadXACVeh(gltfLoader,xac_,anm_) {
+function loadXACVeh(gltfLoader,xac_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		gltfLoader.load(xac_.ObjSrc[n], function (gltf) {
 			xac_.ObjAdr[n] = gltf.scene;
@@ -271,7 +271,7 @@ function initXACVeh(xac_,air_,scene) {
 
 //=	LOAD SHIPS =================//==============================================
 
-function loadXSHVeh(gltfLoader,xsh_,anm_) {
+function loadXSHVeh(gltfLoader,xsh_) {
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		gltfLoader.load(xsh_.ObjSrc[n], function (gltf) {
 			gltf.scene.traverse(function (child) {
@@ -316,7 +316,7 @@ function initXSHVeh(xsh_,air_,scene) {
 
 //=	MOVE SHIPS =================//==============================================
 
-function moveXSHVeh(xsh_,air_,anm_) {
+function moveXSHVeh(xsh_,air_) {
 	let X,Y,Z;
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		// Change in Heading
@@ -364,7 +364,7 @@ function moveXSHVeh(xsh_,air_,anm_) {
 *******************************************************************************/
 
 //= LOAD MY PEOPLE =============//==============================================
-function loadMyPeep(gltfLoader,myp_,anm_) {
+function loadMyPeep(gltfLoader,myp_) {
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
 			// Cast Shadow (but not in shadow zone)
@@ -379,7 +379,7 @@ function loadMyPeep(gltfLoader,myp_,anm_) {
 			myp_.AnmTim[n] = 0;
 			myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]]; // Reps Remaining
 			myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Load Beg Delay (if any)
-			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anm_.anmfps; // Set Mid Delay Flag = Time
+			myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // Set Mid Delay Flag = Time
 			//- Position
 			myp_.ObjAdr[n].scale.setScalar(myp_.ObjSiz[n]);
 			myp_.ObjAdr[n].rotation.x = myp_.ObjRot[n].x * DegRad;
@@ -393,8 +393,8 @@ function loadMyPeep(gltfLoader,myp_,anm_) {
 }
 
 //= MOVE MY PEOPLE =============//==============================================
-function moveMyPeep(myp_,tim_,anm_) {
-	// To compute position, use AnmTim * anm_.anmfps
+function moveMyPeep(myp_,tim_) {
+	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
 	for (let n = 0; n < myp_.ObjNum; n++) {
@@ -411,7 +411,7 @@ function moveMyPeep(myp_,tim_,anm_) {
 				if (myp_.DlyRem[n] < 0) myp_.DlyRem[n] = 0;
 			}
 			//. If Exceed Max, Repeat or Move to Next Animation
-			if (myp_.AnmTim[n] * anm_.anmfps > (myp_.SegEnd[n][myp_.SegRef[n]])) {
+			if (myp_.AnmTim[n] * anmfps > (myp_.SegEnd[n][myp_.SegRef[n]])) {
 				// Repeat Animation?
 				if (myp_.RepRem[n]) myp_.RepRem[n] = myp_.RepRem[n] - 1;
 				// Or Move On to Next Animation?
@@ -421,8 +421,8 @@ function moveMyPeep(myp_,tim_,anm_) {
 					myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]];
 					myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Start Delay
 				}
-				myp_.AnmTim[n] = myp_.SegBeg[n][myp_.SegRef[n]]/anm_.anmfps; // old or new start time
-				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anm_.anmfps; // load delay flag = delay time	
+				myp_.AnmTim[n] = myp_.SegBeg[n][myp_.SegRef[n]]/anmfps; // old or new start time
+				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // load delay flag = delay time	
 			}
 			//	When Reach Mid Delay Time, Set Delay Counter
 			if (myp_.DlyFlg[n] && myp_.AnmTim[n] > myp_.DlyFlg[n]) {
@@ -488,8 +488,8 @@ function loadMyCrew(gltfLoader,myc_) {
 }
 
 //= MOVE MY CREW ===============//==============================================
-function moveMyCrew(myc_,anm_) {
-	// To compute position, use AnmTim * anm_.anmfps
+function moveMyCrew(myc_) {
+	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
 	for (let n = 0; n < myc_.ObjNum; n++) {
