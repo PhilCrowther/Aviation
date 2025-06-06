@@ -123,40 +123,29 @@ let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 let KeyVal = new THREE.Vector3(1,.05,0.25);	// Key Values (Yaw = turn rate in 15 deg bank)
 
 //= SUN VALUES =================//==============================================
-let SunCol = 0xffffff;			// Sun
-let SunInt = 3;					// Default intensity of light/sun
-//- Rotation and Position (fixed)
-let SunDst = 50;				// Distance (for shadows)
-let SunLat = 23;				// Direction - Vert (+/- 90)
-let SunLon = 312;				// Direction - Horz (0->360)
 //- New
-let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
-//	Shadows
-let ShdBox = 6;					// Size of shadow box
-let ShdBLR = 6.5;
-let ShdBTB = 4;
-let ShdDst = 1500;				// Shadow Distance (meters)
 
 //= STANDARD SETUP =============//==============================================
 //- Scene
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
 //- Light
-let ambLight = new THREE.AmbientLight(SunCol,0.2);
+let ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 	scene.add(ambLight);
 //- SunLight
-let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = SunDst*0.75;
-	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
+	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.camera.left = -ShdBLR;
-	sunLight.shadow.camera.right = ShdBLR;
-	sunLight.shadow.camera.top = ShdBTB;
-	sunLight.shadow.camera.bottom = -ShdBTB;
+	sunLight.shadow.camera.left = -sky_.ShdBLR;
+	sunLight.shadow.camera.right = sky_.ShdBLR;
+	sunLight.shadow.camera.top = sky_.ShdBTB;
+	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
 	sunLight.shadow.bias = -0.00001; // WebGPU (0 flashing; -0.0001 no wheels)
 	scene.add(sunLight);
 // 	Camera
@@ -209,15 +198,6 @@ let loadingScreen = {
 		box: 0
 	};
 let boxrot = 0;
-
-//= SKY ========================//==============================================
-let FogCol = 0xbab4a6;			// Sky (for Fog only)
-//- SkyBox
-let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
-//-	LensFlare
-let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
-let LF0Txt, LF1Txt = 0;
 
 //= GEOMAT =====================//==============================================
 //= Textures Data ==============//==============================================
@@ -438,76 +418,28 @@ let ObjIdx = 0;
 	ObjMPY[ObjIdx] = 2*Ft2Mtr;	// [m] 2 ft
 	ObjMPZ[ObjIdx] = 8046.72;	// [m] 5 miles
 
-//= MY AIRPLANE ================//==============================================
-//	Airplane Data
-let	flight = 0;
-let air_ = {
-		// General Variables
-		DLTime: tim_.DLTime,			// Seconds per frame (can vary)
-		GrvMPS: GrvMPS,			// Gravity (ups)
-		AirDSL: 0,				// Air Density (varies with altitude)
-		// Designators
-		AirDat: data_,			// Aircraft Type: 1 = Pup
-		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
-		AirRot: new THREE.Vector3(0,0,0),	// Rotation (in degrees)
-		AirObj: new THREE.Object3D,		// Airplane Object 
-		AirPBY: new THREE.Object3D,		// Changes in radians
-		// Changes to Airplane Pitch Bank and Yaw
-		RotDif: new THREE.Vector3(0,0,0),	// Change
-		// Airplane Speed
-		SpdKPH: 0,				// Speed in KPH
-		SpdMPS: 0,				// Speed - meters per second
-		SpdMPF: 0,				// Speed - meters per frame	
-		// Airplane Map Speed and Position
-		MapSpd: new THREE.Vector3(), // Map Speed (meters)
-		MapPos: new THREE.Vector3(), // Map Position (meters)
-		MapSPS: new THREE.Vector3(), // MSX, MPY, MSZ (meters)
-		// Variables Obtained from Flight
-		PwrPct: 0,				// % of Primary Power (0 to 1) (Main and Flight)
-		SupPct: 0,				// Percent of Supplemental Power (War Enmergency or Afterburner)
-		CfLift: 0,				// Coefficient of Lift (user input) - determines lift
-		CfFlap: 0,				// Coefficient of Lift due to flaps (user input)
-		FlpPct: 0,				// Percent of Flaps
-		LngPct: 0,				// Percent of Landing Gear
-		BrkPct: 0,				// Percent of Air Brakes
-		SplPct: 0,				// Percent of Spoiler
-		AGBank: 0,				// Aileron Bank on Ground
-		BrkVal: 0,				// Brakes
-		GrdZed: 0,				// Ground level (default)
-		GrdFlg: 0,				// Ground Flag (1 = on ground)
-		ACPAdj: 0,				// Airplane pitch adjustment
-		// Values for the Selected Airplane Type (obtained from Flight)
-		CfLMax: 0,				// Maximum Coefficient of Lift
-		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
-		ACMass: 0,				// Airplane Mass
-		Weight: 0,				// Used by autopilots
-		PYBmul: new THREE.Vector3().copy(PYBmul), // Airplane Pitch/Yaw/Bank Multiplier
-		BnkMax: 0,				// Maximum bank rate
-		// AutoPilot - Additional Variables
-		AutoOn: 0,				// Autopilot Flag
-		InpKey: new THREE.Vector3(), // Inputs - Keys (replace InpKey)
-		OldRot: new THREE.Vector3(), // Old Rotation (z = radians)
-		CfLDif: 0,				// Change in CfL
-		MaxBnk: 0,				// Max Bank (display only)
-		HdgDif: 0,				// Horizontal Turn Rate (display only)
-		// Air Density and IAS Comps
-		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
-		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
-		SpdIAS: 0,				// Indicated Airspeed
-		// Ship Pitch and Bank
-		MovFlg: 0,				// If Sitting on Moving Ship
-		ShpPit: 0,
-		ShpBnk: 0,
-	}
-// 
+//= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
+	air_.AirRot = new THREE.Vector3(0,0,0);
+	air_.AirObj = new THREE.Object3D;
 	air_.AirObj.rotation.order = "YXZ";
+	air_.AirPBY = new THREE.Object3D;
 	air_.AirPBY.rotation.order = "YXZ";
+	air_.RotDif = new THREE.Vector3(0,0,0);
+	air_.MapSpd = new THREE.Vector3();
+	air_.MapPos = new THREE.Vector3();
+	air_.MapSPS = new THREE.Vector3();
+	air_.PYBmul = new THREE.Vector3().copy(PYBmul);
+	air_.InpKey = new THREE.Vector3();
+	air_.OldRot = new THREE.Vector3();
 	air_.AirObj.add(air_.AirPBY); // PBY includes air_.
 	scene.add(air_.AirObj);
+//-
 let AirGrp = new THREE.Group();	// To hold ACMine and VCMine
 	air_.AirPBY.add(AirGrp);
 let ACMine = 0;					// My Aircraft (loaded)
+
+//- Pup Animations -------------------------------------------------------------
 //- Aircraft Animations
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
@@ -537,14 +469,6 @@ let spnprp = 180;				// Taildrag 	degrees = 0 to 360
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
 	mys_.AirMsh = new THREE.Object3D;
-
-//=	VIEW KEYS ==================//==============================================
-let U45flg = 0;					// Up 45 degrees
-let D45flg = 0;					// Down 45 degrees
-let	L45flg = 0;					// Left 45 degrees
-let R45flg = 0;					// Right 45 degrees
-let L90flg = 0;					// Left 90 degrees
-let R90flg = 0;					// Right 90 degrees
 
 //= CAMERA =====================//==============================================
 //- Create Cockpit Attach Point
@@ -719,16 +643,16 @@ function rendAll() {
 //= SKYBOX =====================//==============================================
 
 function loadSkyBox() {
-	let envMap = cubeLoader
-		.setPath(SBxSrc)
+	sky_.envMap = cubeLoader
+		.setPath(sky_.SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
-	envMap.format = THREE.RGBAFormat;
-	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
-	scene.background = envMap;
+	sky_.envMap.format = THREE.RGBAFormat;
+	sky_.envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
+	scene.background = sky_.envMap;
 	// LensFlare
 	if (gen_.LnFFlg) {			// SunFlare	
-		LF0Txt = txtrLoader.load(LF0Src);
-		LF1Txt = txtrLoader.load(LF1Src);
+		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
+		sky_.LF1Txt = txtrLoader.load(sky_.LF1Src);
 	}
 }
 
@@ -736,7 +660,7 @@ function initSkyBox() {
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
 	// Fog (doesn't work with Normal Material)
-	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
+	scene.fog = new THREE.Fog(sky_.FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
 	// Lensflare
 	if (gen_.LnFFlg) {			// SunFlare		
 		let	spotLight = new THREE.PointLight(0xffffff);
@@ -744,9 +668,9 @@ function initSkyBox() {
 		spotLight.position.copy(SunPos).normalize;
 		spotLight.position.multiplyScalar(1000);	
 		let LF = new LensflareMesh();
-			LF.addElement(new LensflareElement(LF0Txt,256,0));
-			LF.addElement(new LensflareElement(LF1Txt,32,0.2));
-			LF.addElement(new LensflareElement(LF1Txt,256,0.9));
+			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
 		spotLight.add(LF);
 	}
 }
@@ -1525,20 +1449,20 @@ function moveAirObj() {
 	// View Keys ---------------------------------------------------------------
 	if (!cam_.OrbFlg) {			// Only If Not Panning		
 		// If No Keys Pressed, Set Default View
-		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
+		if (key_.U45flg+key_.D45flg+key_.L45flg+key_.R45flg+key_.L90flg+key_.R90flg < 1)	{
 			if (cam_.IntFlg) cam_.CamLLD.x = 0; // Internal view
 			else cam_.CamLLD.x = -12.5; // External view
 			cam_.CamLLD.y = 0;
 		}
 		// Down 45
-		else if (D45flg) {
+		else if (key_.D45flg) {
 			cam_.CamLLD.x = 0;
 			// Look Back
-			if ((L90flg) && (L90flg) && (R90flg)) cam_.CamLLD.y = 180;
+			if ((key_.L90flg) && (key_.L90flg) && (key_.R90flg)) cam_.CamLLD.y = 180;
 			// Look Back Left 90 + 45
-			else if (L90flg) cam_.CamLLD.y = 135;
+			else if (key_.L90flg) cam_.CamLLD.y = 135;
 			// Look Back Right 270 - 45
-			else if (R90flg) cam_.CamLLD.y = 225;
+			else if (key_.R90flg) cam_.CamLLD.y = 225;
 			// Look Down
 			else {
 				cam_.CamLLD.y = 0;
@@ -1546,17 +1470,17 @@ function moveAirObj() {
 			}
 		}
 		// Up 45
-		else if (U45flg) {
+		else if (key_.U45flg) {
 			cam_.CamLLD.x = 315;
 			if (!cam_.IntFlg && (air_.GrdFlg)) cam_.CamLLD.x = 0;
 			// Look Up Left 45
-			if (L45flg) cam_.CamLLD.y = 45;
+			if (key_.L45flg) cam_.CamLLD.y = 45;
 			// Look Up Right 45
-			else if (R45flg) cam_.CamLLD.y = 315;
+			else if (key_.R45flg) cam_.CamLLD.y = 315;
 			// Look Up Left 90
-			else if (L90flg) cam_.CamLLD.y = 90;
+			else if (key_.L90flg) cam_.CamLLD.y = 90;
 			// Look Up Right 90
-			else if (R90flg) cam_.CamLLD.y = 270;
+			else if (key_.R90flg) cam_.CamLLD.y = 270;
 			// Look Up
 			else cam_.CamLLD.y = 0;
 		}
@@ -1564,13 +1488,13 @@ function moveAirObj() {
 		else {
 			cam_.CamLLD.x = 0;
 			// Look Left 45
-			if (L45flg) cam_.CamLLD.y = 45;
+			if (key_.L45flg) cam_.CamLLD.y = 45;
 			// Look Right 45
-			else if (R45flg) cam_.CamLLD.y = 315;
+			else if (key_.R45flg) cam_.CamLLD.y = 315;
 			// Look Left 90
-			else if (L90flg) cam_.CamLLD.y = 90;
+			else if (key_.L90flg) cam_.CamLLD.y = 90;
 			// Look Right 90
-			else if (R90flg) cam_.CamLLD.y = 270;
+			else if (key_.R90flg) cam_.CamLLD.y = 270;
 		}
 	}
 	// Animate -----------------------------------------------------------------	
@@ -1920,12 +1844,12 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = KeyVal.z;	// YawR - keyboard right
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0.01;	// Brakes
 	// Views
-	if (event.keyCode == key_.VU45) D45flg = 1;			// View - 45 deg up
-	if (event.keyCode == key_.VD45) U45flg = 1;			// View - 45 deg down
-	if (event.keyCode == key_.VL45) L45flg = 1;			// View - 45 deg left
-	if (event.keyCode == key_.VR45) R45flg = 1;			// View - 45 deg right
-	if (event.keyCode == key_.VL90) L90flg = 1;			// View - 90 deg left
-	if (event.keyCode == key_.VR90) R90flg = 1;			// View - 90 deg right
+	if (event.keyCode == key_.VU45) key_.D45flg = 1;	// View - 45 deg up
+	if (event.keyCode == key_.VD45) key_.U45flg = 1;	// View - 45 deg down
+	if (event.keyCode == key_.VL45) key_.L45flg = 1;	// View - 45 deg left
+	if (event.keyCode == key_.VR45) key_.R45flg = 1;	// View - 45 deg right
+	if (event.keyCode == key_.VL90) key_.L90flg = 1;	// View - 90 deg left
+	if (event.keyCode == key_.VR90) key_.R90flg = 1;	// View - 90 deg right
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 1;	// Orbit
 	// Guns
 	if (event.keyCode == key_.Guns) {					// Guns
@@ -1957,12 +1881,12 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = 0;	// YawR - keyboard right
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0;	// Brakes
 	// Views
-	if (event.keyCode == key_.VU45) D45flg = 0;			// View - 45 deg up
-	if (event.keyCode == key_.VD45) U45flg = 0;			// View - 45 deg down
-	if (event.keyCode == key_.VL45) L45flg = 0;			// View - 45 deg left
-	if (event.keyCode == key_.VR45) R45flg = 0;			// View - 45 deg right
-	if (event.keyCode == key_.VL90) L90flg = 0;			// View - 90 deg left
-	if (event.keyCode == key_.VR90) R90flg = 0;			// View - 90 deg right
+	if (event.keyCode == key_.VU45) key_.D45flg = 0;	// View - 45 deg up
+	if (event.keyCode == key_.VD45) key_.U45flg = 0;	// View - 45 deg down
+	if (event.keyCode == key_.VL45) key_.L45flg = 0;	// View - 45 deg left
+	if (event.keyCode == key_.VR45) key_.R45flg = 0;	// View - 45 deg right
+	if (event.keyCode == key_.VL90) key_.L90flg = 0;	// View - 90 deg left
+	if (event.keyCode == key_.VR90) key_.R90flg = 0;	// View - 90 deg right
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 0;	// Orbit
 	// Guns
 	if (event.keyCode == key_.Guns) {					// Guns
