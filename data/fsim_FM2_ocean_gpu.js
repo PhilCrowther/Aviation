@@ -531,7 +531,7 @@ let alt_ = {
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: tim_.DLTime,			// Seconds per frame (can vary)
+		DLTime: tim_.DLTime,	// Seconds per frame (can vary)
 		GrvMPS: GrvMPS,			// Gravity (ups)
 		AirDSL: 0,				// Air Density (varies with altitude)
 		// Designators
