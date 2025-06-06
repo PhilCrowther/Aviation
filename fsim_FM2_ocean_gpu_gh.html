@@ -450,7 +450,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	air_.AirPBY = new THREE.Object3D;
 	air_.AirPBY.rotation.order = "YXZ";
 	air_.AirObj.add(air_.AirPBY); // PBY includes air_.ACPAdj
-	scene.add(air_.AirObj);	// Airplane
+	scene.add(air_.AirObj);		// Airplane
 	air_.RotDif = new THREE.Vector3();
 	air_.MapSpd = new THREE.Vector3();
 	air_.MapPos = new THREE.Vector3();
@@ -458,7 +458,6 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	air_.PYBmul = new THREE.Vector3().copy(PYBmul);
 	air_.InpKey = new THREE.Vector3();
 	air_.OldRot = new THREE.Euler();
-	air_.BegTmp = BegTmp;
 //- FM2 ANIMATIONS -------------//----------------------------------------------
 	mxr_.Adr = new THREE.Object3D;
 	vxr_.Adr = new THREE.Object3D;
