@@ -597,10 +597,9 @@ const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated b
 const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
 
 //- FM2 Animations -------------------------------------------------------------
-let	anmfps = 24;				// Blender FPS (used by Main Program and all modules
-//	Animation Positions (all range from 0 to 360 with center at 180)
 let anm_ = {
-		anmfps: anmfps,			// Blender FPS
+		anmfps: 24,				// Blender FPS (used by Main Program and all modules
+		//	Animation Positions (all range from 0 to 360 with center at 180)
 		spnprp: 180,			// SpinProp 	degrees = 0 to 360
 		rudder: 180,			// Rudder 		degrees = +/- 360
 		elvatr: 180,			// Elevator 	degrees = +/- 360

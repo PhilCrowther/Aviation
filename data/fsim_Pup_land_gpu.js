@@ -211,6 +211,19 @@ let AirSrc = "https://PhilCrowther.github.io/Aviation/models/pup/";	// Used to l
 //-	Animation Mixers - External Model
 let ACFile = "pup_flyt_npa.glb"; // Name of aircraft model file (rotated blender file)
 
+//- Pup Animations -------------------------------------------------------------
+let anm_ = {
+		// Blender FPS (used by Main Program and all modules
+		anmfps: 24,
+		// Animation Positions (all range from 0 to 360 with center at 180)
+		spnprp: 180,			// SpinProp 	degrees = 0 to 360
+		rudder: 180,			// Rudder 		degrees = +/- 360
+		elvatr: 180,			// Elevator 	degrees = +/- 360
+		aillft: 180,			// AileronL 	degrees = +/- 360
+		ailrgt: 180,			// AileronR 	degrees = +/- 360
+
+	}
+
 //= GUNASG MODULE ==============//==============================================
 //	Lewis .303 caliber
 //	BulSpd = 744;				// Muzzle velocity [mps]
