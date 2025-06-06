@@ -143,6 +143,67 @@ let sky_ = {
 		ShdDst: 1500,			// Shadow Distance (meters)
 	}
 
+//= 5. MY AIRPLANE VARIABLES ===//==============================================
+let	flight = 0;
+let air_ = {
+		// General Variables
+		DLTime: tim_.DLTime,	// Seconds per frame (can vary)
+		GrvMPS: GrvMPS,			// Gravity (ups)
+		AirDSL: 0,				// Air Density (varies with altitude)
+		// Designators
+		AirDat: data_,			// Aircraft Type: 1 = Pup
+		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
+		AirRot: 0,				// Rotation (in degrees)
+		AirObj: 0,				// Airplane Object 
+		AirPBY: 0,				// Changes in radians
+		// Changes to Airplane Pitch Bank and Yaw
+		RotDif: 0,				// Change
+		// Airplane Speed
+		SpdKPH: 0,				// Speed in KPH
+		SpdMPS: 0,				// Speed - meters per second
+		SpdMPF: 0,				// Speed - meters per frame	
+		// Airplane Map Speed and Position
+		MapSpd: 0, 				// Map Speed (meters)
+		MapPos: 0, 				// Map Position (meters)
+		MapSPS: 0, 				// MSX, MPY, MSZ (meters)
+		// Variables Obtained from Flight
+		PwrPct: 0,				// % of Primary Power (0 to 1) (Main and Flight)
+		SupPct: 0,				// Percent of Supplemental Power (War Enmergency or Afterburner)
+		CfLift: 0,				// Coefficient of Lift (user input) - determines lift
+		CfFlap: 0,				// Coefficient of Lift due to flaps (user input)
+		FlpPct: 0,				// Percent of Flaps
+		LngPct: 0,				// Percent of Landing Gear
+		BrkPct: 0,				// Percent of Air Brakes
+		SplPct: 0,				// Percent of Spoiler
+		AGBank: 0,				// Aileron Bank on Ground
+		BrkVal: 0,				// Brakes
+		GrdZed: 0,				// Ground level (default)
+		GrdFlg: 0,				// Ground Flag (1 = on ground)
+		ACPAdj: 0,				// Airplane pitch adjustment
+		// Values for the Selected Airplane Type (obtained from Flight)
+		CfLMax: 0,				// Maximum Coefficient of Lift
+		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
+		ACMass: 0,				// Airplane Mass
+		Weight: 0,				// Used by autopilots
+		PYBmul: 0, 				// Airplane Pitch/Yaw/Bank Multiplier
+		BnkMax: 0,				// Maximum bank rate
+		// AutoPilot - Additional Variables
+		AutoOn: 0,				// Autopilot Flag
+		InpKey: 0, 				// Inputs - Keys (replace InpKey)
+		OldRot: 0, 				// Old Rotation (z = radians)
+		CfLDif: 0,				// Change in CfL
+		MaxBnk: 0,				// Max Bank (display only)
+		HdgDif: 0,				// Horizontal Turn Rate (display only)
+		// Air Density and IAS Comps
+		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
+		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
+		SpdIAS: 0,				// Indicated Airspeed
+		// Ship Pitch and Bank
+		MovFlg: 0,				// If Sitting on Moving Ship
+		ShpPit: 0,
+		ShpBnk: 0,
+	}
+
 //= MY AIRPLANE ================//==============================================
 //- Load Models and Animations -------------------------------------------------
 //-	File Path
