@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Jun 2025
+Version dated 5 Jun 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -759,7 +759,7 @@ function loadObject() {
 	loadStatic();
 	loadMoving();
 	loadAnmFlg(txtrLoader,flg_);
-	loadMyPeep(gltfLoader,myp_,anm_);
+	loadMyPeep(gltfLoader,myp_);
 	loadMyCrew(gltfLoader,myc_);
 }
 
@@ -774,8 +774,8 @@ function moveObject() {
 	moveMoving();
 	moveAnmObj();
 	moveFxdGun();				// Perform Targeting
-	moveMyPeep(myp_,tim_,anm_);
-	moveMyCrew(myc_,anm_);
+	moveMyPeep(myp_,tim_);
+	moveMyCrew(myc_);
 }
 
 //- Shared Textures ------------//----------------------------------------------
@@ -1069,7 +1069,7 @@ function initMovShp() {
 
 //-	Move Ship ------------------//----------------------------------------------
 function moveMovShp() {
-	moveXSHVeh(xsh_,air_,anm_);	// Both Ships
+	moveXSHVeh(xsh_,air_);		// Both Ships
 	moveXSHWak(wak_);			// Both Ships
 	moveXSHGun(1);				// Only Ship 1
 }
