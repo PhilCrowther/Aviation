@@ -531,7 +531,7 @@ let alt_ = {
 let	flight = 0;
 let air_ = {
 		// General Variables
-		DLTime: tim_.DLTime,			// Seconds per frame (can vary)
+		DLTime: tim_.DLTime,	// Seconds per frame (can vary)
 		GrvMPS: GrvMPS,			// Gravity (ups)
 		AirDSL: 0,				// Air Density (varies with altitude)
 		// Designators
@@ -579,7 +579,7 @@ let air_ = {
 		MaxBnk: 0,				// Max Bank (display only)
 		HdgDif: 0,				// Horizontal Turn Rate (display only)
 		// Air Density and IAS Comps
-		BegTmp: 0,				// Beginning Sea Level Temperature (K)
+		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
 		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
 		SpdIAS: 0,				// Indicated Airspeed
 		// Ship Pitch and Bank
