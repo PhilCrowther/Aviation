@@ -56,7 +56,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu2.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/fm2/data/data.js"></script>
 
 <script type="importmap">
@@ -759,7 +759,7 @@ function loadObject() {
 	loadStatic();
 	loadMoving();
 	loadAnmFlg(txtrLoader,flg_);
-	loadMyPeep(gltfLoader,myp_);
+	loadMyPeep(gltfLoader,myp_,anm_);
 	loadMyCrew(gltfLoader,myc_);
 }
 
@@ -774,8 +774,8 @@ function moveObject() {
 	moveMoving();
 	moveAnmObj();
 	moveFxdGun();				// Perform Targeting
-	moveMyPeep(myp_,tim_);
-	moveMyCrew(myc_);
+	moveMyPeep(myp_,tim_,anm_);
+	moveMyCrew(myc_,anm_);
 }
 
 //- Shared Textures ------------//----------------------------------------------
@@ -809,8 +809,8 @@ function moveStatic() {
 //- Moving Objects -------------//----------------------------------------------
 
 function loadMoving() {
-	loadXACVeh(gltfLoader,xac_); // Airplanes
-	loadXSHVeh(gltfLoader,xsh_); // Ships
+	loadXACVeh(gltfLoader,xac_,anm_); // Airplanes
+	loadXSHVeh(gltfLoader,xsh_,anm_); // Ships
 }
 
 function initMoving() {
@@ -1069,7 +1069,7 @@ function initMovShp() {
 
 //-	Move Ship ------------------//----------------------------------------------
 function moveMovShp() {
-	moveXSHVeh(xsh_,air_);		// Both Ships
+	moveXSHVeh(xsh_,air_,anm_);	// Both Ships
 	moveXSHWak(wak_);			// Both Ships
 	moveXSHGun(1);				// Only Ship 1
 }
