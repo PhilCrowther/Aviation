@@ -209,18 +209,26 @@ let air_ = {
 //-	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/pup/";	// Used to load models and sounds
 //-	Animation Mixers - External Model
-let ACFile = "pup_flyt_npa.glb"; // Name of aircraft model file (rotated blender file)
+let mxrFNm = "pup_flyt_npa.glb"; // Name of aircraft model file (rotated blender file)
 
 //- Pup Animations -------------------------------------------------------------
+let anmfps = 24;				// Blender FPS (used by Main Program and all modules (used by Objects.js)
 let anm_ = {
-		// Blender FPS (used by Main Program and all modules
-		anmfps: 24,
-		// Animation Positions (all range from 0 to 360 with center at 180)
+		anmfps: anmfps,
 		spnprp: 180,			// SpinProp 	degrees = 0 to 360
 		rudder: 180,			// Rudder 		degrees = +/- 360
 		elvatr: 180,			// Elevator 	degrees = +/- 360
 		aillft: 180,			// AileronL 	degrees = +/- 360
 		ailrgt: 180,			// AileronR 	degrees = +/- 360
+	}
+//	Animation Mixers - External Model
+let mxr_ = {
+		// Source
+		Src: AirSrc + mxrFNm,
+		// Address
+		Adr: 0,
+		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
+		Prp:0, Rdr:0, Elv:0, ATL:0, ATR:0, ABL:0, ABR:0,
 	}
 
 //= GUNASG MODULE ==============//==============================================
