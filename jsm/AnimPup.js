@@ -64,7 +64,7 @@ function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 		mxr_.Adr.scale.setScalar(Ft2Mtr);
 		loadAirAnmX(gltf,air_,mxr_,anm_);
 		//
-		AirGrp.add(mxr_.Adr);
+		air_.AirPBY.add(mxr_.Adr);
 		// Initialize
 		mxr_.Adr.visible = true;
 	});	
