@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Jun 2025
+Version dated 7 Jun 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -100,7 +100,6 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
-	* Gun sound even wehn sound not activated
 	* After landing with brakes, not always stay stopped.
 	* Sometimes, need to wiggle plane to take off.
 */
@@ -1579,8 +1578,7 @@ function moveSounds() {
 	else {mys_.EngSnd.setVolume(0);};
 	mys_.EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
 	// My Guns
-	if (gen_.MYGFlg && !myg_.SndPtr[0].isPlaying) myg_.SndPtr[0].play(); // Gun - Center
-	myg_.SndPtr[0].setVolume(myg_.SndVol);	
+	for (let n = 0; n < myg_.ObjNum; n ++) {myg_.SndPtr[n].setVolume(myg_.SndVol);}
 }
 
 //- Play Sounds ----------------------------------------------------------------
@@ -1588,7 +1586,7 @@ function playSounds() {
 	// This leaves gen_.SndFlg and gen_.MYGFlg unchanged.
 	if (!mys_.IdlSnd.isPlaying) mys_.IdlSnd.play();
 	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play();
-	if (gen_.MYGFlg && !myg_.SndPtr[0].isPlaying) myg_.SndPtr[0].play(); // Guns - Center
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();}
 }
 
 //- Stop Sounds ----------------------------------------------------------------
@@ -1596,7 +1594,7 @@ function stopSounds() {
 	// This leaves gen_.SndFlg and gen_.MYGFlg unchanged.
 	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.stop();
 	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop();
-	if (myg_.SndPtr[0].isPlaying) myg_.SndPtr[0].stop(); // Gun - Center
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();}
 }
 
 //- INIT 1 SOUND ---------------//----------------------------------------------
@@ -1845,7 +1843,11 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 1;	// Orbit
 	// Guns
 	if (event.keyCode == key_.Guns) {					// Guns
-		if (!gen_.PawsOn && gen_.SndFlg && !myg_.SndPtr[0].isPlaying) myg_.SndPtr[0].play();
+		if (!gen_.PawsOn) {
+			for (let n = 0; n < myg_.ObjNum; n ++) {
+				if (gen_.SndFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();
+			}
+		};
 		gen_.MYGFlg = 1;
 	}
 	// Toggle
@@ -1882,8 +1884,14 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 0;	// Orbit
 	// Guns
 	if (event.keyCode == key_.Guns) {					// Guns
-		myg_.SndPtr[0].stop();
-		if (!gen_.PawsOn && myg_.SndPtr[0].isPlaying) myg_.SndPtr[0].stop();
+		for (let n = 0; n < myg_.ObjNum; n ++) {
+			myg_.SndPtr[n].stop();
+		}
+		if (!gen_.PawsOn) {
+			for (let n = 0; n < myg_.ObjNum; n ++) {
+				if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();
+			}
+		};
 		gen_.MYGFlg = 0;
 	}
 }
@@ -1893,12 +1901,8 @@ function onDocumentKeyUp(event) {
 //. Toggle Pause ...............................................................
 function toglPaws() {
 	gen_.PawsOn = 1 - gen_.PawsOn;
-	if (gen_.PawsOn && gen_.SndFlg) {	//On to Off
-		stopSounds();
-	}
-	if (!gen_.PawsOn && gen_.SndFlg) {	// Off to On
-		playSounds();
-	}
+	if ( gen_.PawsOn && gen_.SndFlg) stopSounds();	// Sounds On to Off
+	if (!gen_.PawsOn && gen_.SndFlg) playSounds();	// Sounds Off to On
 	PawsText();
 }
 
@@ -1917,14 +1921,10 @@ function toglInfo() {
 
 //. Toggle Sound ...............................................................
 function toglSoun() {
-	if (!gen_.PawsOn) {
-		gen_.SndFlg = 1 - gen_.SndFlg;
-		if (gen_.SndFlg) {			// Off to On
-			playSounds();
-		}
-		else {					// On to Off
-			stopSounds();
-		}
+	if (!gen_.PawsOn) {			// If not paused
+		gen_.SndFlg = 1 - gen_.SndFlg;	// Switch flag
+		if (gen_.SndFlg)  playSounds();	// Off to On
+		if (!gen_.SndFlg) stopSounds();	// On to Off
 	}
 }
 
