@@ -75,6 +75,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Custom Modules
+import {loadAirExt,moveAirExt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimPup.js";
 import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdMap.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
@@ -435,9 +436,6 @@ let ObjIdx = 0;
 	air_.PYBmul = new THREE.Vector3().copy(PYBmul);
 	air_.InpKey = new THREE.Vector3();
 	air_.OldRot = new THREE.Euler();
-//- Air Group
-let AirGrp = new THREE.Group();	// To hold mxr_.Adr and VCMine
-	air_.AirPBY.add(AirGrp);
 
 //= GUNASG MODULE ==============//==============================================
 //	Adjustments
@@ -1256,75 +1254,11 @@ function moveObject() {
 	}
 }
 
-//= AIRPLANE ===================================================================
+//= 5. MY AIRPLANE =============//==============================================
 
-// Load Airplane
+//= Load Airplane ==============//==============================================
 function loadAirObj() {
-	gltfLoader.load(mxr_.Src, function (gltf) {				// The OnLoad function
-		gltf.scene.traverse(function (child) {	
-			if (child.isMesh) {
-				child.castShadow = true;
-				child.receiveShadow = true;
-//				child.geometry.computeVertexNormals();		// Better result?  Or remove smoothing?
-			}
-			if (child.name == "propeller") {
-				child.castShadow = false;
-				child.receiveShadow = false;
-				child.renderOrder = 1;
-			}		
-		});
-		mxr_.Adr = gltf.scene;
-		mxr_.Adr.rotation.order = "YXZ";
-		// Convert from feet to meters
-		mxr_.Adr.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);
-		/* Animations --------------------------------------------------------------- */
-		// Propeller
-		let clip = THREE.AnimationClip.findByName(gltf.animations, "propellerAction");
-		mxr_.Prp = new THREE.AnimationMixer(mxr_.Adr);
-		let actun = mxr_.Prp.clipAction(clip);
-		actun.play();
-		if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
-		// Rudder
-		mxr_.Rdr = new THREE.AnimationMixer(mxr_.Adr);
-		clip = THREE.AnimationClip.findByName(gltf.animations, "rudderAction");
-		actun = mxr_.Rdr.clipAction(clip);
-		actun.play();
-		if (mxr_.Rdr) mxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
-		// Elevator
-		clip = THREE.AnimationClip.findByName(gltf.animations, "elevatorAction");
-		mxr_.Elv = new THREE.AnimationMixer(mxr_.Adr);
-		actun = mxr_.Elv.clipAction(clip);
-		actun.play();
-		if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
-		// AileronTL
-		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronTLAction");
-		mxr_.ATL = new THREE.AnimationMixer(mxr_.Adr);
-		actun = mxr_.ATL .clipAction(clip);
-		actun.play();
-		if (mxr_.ATL) mxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
-		// AileronTR
-		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronTRAction");
-		mxr_.ATR = new THREE.AnimationMixer(mxr_.Adr);
-		actun = mxr_.ATR.clipAction(clip);
-		actun.play();
-		if (mxr_.ATR) mxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
-		// AileronBL
-		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronBLAction");
-		mxr_.ABL = new THREE.AnimationMixer(mxr_.Adr);
-		actun = mxr_.ABL .clipAction(clip);
-		actun.play();
-		if (mxr_.ABL) mxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
-		// AileronBR
-		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronBRAction");
-		mxr_.ABR = new THREE.AnimationMixer(mxr_.Adr);
-		actun = mxr_.ABR.clipAction(clip);
-		actun.play();
-		if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
-		//
-		AirGrp.add(mxr_.Adr);
-		// Initialize
-		mxr_.Adr.visible = true;
-	});
+	loadAirExt(scene,gltfLoader,air_,mxr_,anm_);
 }
 
 //= Init Airplane ==============//==============================================
@@ -1355,10 +1289,10 @@ function initAirObj() {
 	// If on Ground, Reaadjust
 	grd_.SPS.y = air_.MapSPS.y; // Use to initialize objects (if on ground)
 	// Init Bullets
-	initBullet(myg_,scene);
+	initBullet(myg_,scene);		// Bullets
 }
 
-//= Move Airplane Model ========//==============================================
+//= Move Airplane ==============//==============================================
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
 function moveAirObj() {
@@ -1373,7 +1307,7 @@ function moveAirObj() {
 	air_.PwrPct = air_.PwrPct + gen_.PwrDif;
 	if (air_.PwrPct > 1) air_.PwrPct = 1;
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
-	gen_.PwrDif = 0;					// Reset
+	gen_.PwrDif = 0;			// Reset
 	// Coefficient of Lift .....................................................
 	if (air_.AutoOn) {			// Autopilot
 		air_.CfLDif = air_.InpKey.x;
@@ -1406,9 +1340,9 @@ function moveAirObj() {
 	else {
 		// Add Delay to Change in Bank Rate due to Mouse
 		let BnkDif = InpMos.x * air_.PYBmul.z;
-		gal = BnkDif * LagBnk.x;			// Current input delayed
-		lag = LagBnk.z * LagBnk.y;			// Released from Cumulator
-		LagBnk.z = LagBnk.z + gal - lag;	// Change in Cumulator
+		gal = BnkDif * LagBnk.x; // Current input delayed
+		lag = LagBnk.z * LagBnk.y; // Released from Cumulator
+		LagBnk.z = LagBnk.z + gal - lag; // Change in Cumulator
 		BnkDif = BnkDif - gal + lag;
 		air_.RotDif.z = air_.RotDif.z + BnkDif;	
 		air_.RotDif.z = MaxVal(air_.RotDif.z,air_.BnkMax); // Max values
@@ -1422,98 +1356,13 @@ function moveAirObj() {
 	// Input Yaw ...............................................................
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
 	// Input Brakes ............................................................
-	air_.BrkVal = gen_.InpBrk;		// Brakes
+	air_.BrkVal = gen_.InpBrk;	// Brakes
 	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
-	// View Keys ---------------------------------------------------------------
-	if (!cam_.OrbFlg) {			// Only If Not Panning		
-		// If No Keys Pressed, Set Default View
-		if (key_.U45flg+key_.D45flg+key_.L45flg+key_.R45flg+key_.L90flg+key_.R90flg < 1)	{
-			if (cam_.IntFlg) cam_.CamLLD.x = 0; // Internal view
-			else cam_.CamLLD.x = -12.5; // External view
-			cam_.CamLLD.y = 0;
-		}
-		// Down 45
-		else if (key_.D45flg) {
-			cam_.CamLLD.x = 0;
-			// Look Back
-			if ((key_.L90flg) && (key_.L90flg) && (key_.R90flg)) cam_.CamLLD.y = 180;
-			// Look Back Left 90 + 45
-			else if (key_.L90flg) cam_.CamLLD.y = 135;
-			// Look Back Right 270 - 45
-			else if (key_.R90flg) cam_.CamLLD.y = 225;
-			// Look Down
-			else {
-				cam_.CamLLD.y = 0;
-				cam_.CamLLD.x = 45;
-			}
-		}
-		// Up 45
-		else if (key_.U45flg) {
-			cam_.CamLLD.x = 315;
-			if (!cam_.IntFlg && (air_.GrdFlg)) cam_.CamLLD.x = 0;
-			// Look Up Left 45
-			if (key_.L45flg) cam_.CamLLD.y = 45;
-			// Look Up Right 45
-			else if (key_.R45flg) cam_.CamLLD.y = 315;
-			// Look Up Left 90
-			else if (key_.L90flg) cam_.CamLLD.y = 90;
-			// Look Up Right 90
-			else if (key_.R90flg) cam_.CamLLD.y = 270;
-			// Look Up
-			else cam_.CamLLD.y = 0;
-		}
-		// Level
-		else {
-			cam_.CamLLD.x = 0;
-			// Look Left 45
-			if (key_.L45flg) cam_.CamLLD.y = 45;
-			// Look Right 45
-			else if (key_.R45flg) cam_.CamLLD.y = 315;
-			// Look Left 90
-			else if (key_.L90flg) cam_.CamLLD.y = 90;
-			// Look Right 90
-			else if (key_.R90flg) cam_.CamLLD.y = 270;
-		}
-	}
 	// Animate -----------------------------------------------------------------	
-	// Propeller
-	let prpspd =  4 * (air_.PwrPct - 0.6);					// Range = -2.4 to + 1.6
-	anm_.spnprp = anm_.spnprp - prpspd;
-	if (anm_.spnprp < 0) anm_.spnprp = 359;					// A complete circle
-	// Rudder
-	anm_.rudder = 180 + air_.RotDif.y * 100;
-	// Elevator
-	anm_.elvatr = 180 - 10*air_.ACPAdj-25;					// estimated adjustment
-	if (anm_.elvatr < 150) anm_.elvatr = 150;				// Range = 00 to 60
-	else if (anm_.elvatr > 209) anm_.elvatr = 209;
-	// Ailerons
-	let ailbnk = air_.RotDif.z;
-	if (air_.GrFlag) ailbnk = AGBank;
-	// Left
-	anm_.aillft = 180 + ailbnk * 30;
-	if (anm_.aillft < 151) anm_.aillft = 151;				// Range = 00 to 60
-	else if (anm_.aillft > 209) anm_.aillft = 209;
-	// Right
-	anm_.ailrgt = 180 - ailbnk * 30;
-	if (anm_.ailrgt < 151) anm_.ailrgt = 151;				// Range = 00 to 60
-	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
-	/* Animations (Display) ------------------------------------------------- */
-	// Propeller
-	if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
-	// Rudder
-	if (mxr_.Rdr) mxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
-	// Elevator
-	if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
-	// Ailerons
-	// Left
-	if (mxr_.ATL) mxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
-	if (mxr_.ABL) mxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
-	// Rite
-	if (mxr_.ATR) mxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
-	if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
+	moveAirExt(air_,mxr_,anm_);	// External Only
 	// Bullets
-	moveBullet(myg_,air_,gen_,tim_,0);
+	moveBullet(myg_,air_,gen_,tim_,0); // Bullets
 }
 
 //= SOUNDS =====================//==============================================
@@ -1653,6 +1502,57 @@ function moveCamera(camera,cam_) {
 		InpMos.x = 0;
 		InpMos.y = 0;
 	}
+	// View Keys ---------------------------------------------------------------
+	if (!cam_.OrbFlg) {			// Only If Not Panning		
+		// If No Keys Pressed, Set Default View
+		if (key_.U45flg+key_.D45flg+key_.L45flg+key_.R45flg+key_.L90flg+key_.R90flg < 1)	{
+			if (cam_.IntFlg) cam_.CamLLD.x = 0; // Internal view
+			else cam_.CamLLD.x = -12.5; // External view
+			cam_.CamLLD.y = 0;
+		}
+		// Down 45
+		else if (key_.D45flg) {
+			cam_.CamLLD.x = 0;
+			// Look Back
+			if ((key_.L90flg) && (key_.L90flg) && (key_.R90flg)) cam_.CamLLD.y = 180;
+			// Look Back Left 90 + 45
+			else if (key_.L90flg) cam_.CamLLD.y = 135;
+			// Look Back Right 270 - 45
+			else if (key_.R90flg) cam_.CamLLD.y = 225;
+			// Look Down
+			else {
+				cam_.CamLLD.y = 0;
+				cam_.CamLLD.x = 45;
+			}
+		}
+		// Up 45
+		else if (key_.U45flg) {
+			cam_.CamLLD.x = 315;
+			if (!cam_.IntFlg && (air_.GrdFlg)) cam_.CamLLD.x = 0;
+			// Look Up Left 45
+			if (key_.L45flg) cam_.CamLLD.y = 45;
+			// Look Up Right 45
+			else if (key_.R45flg) cam_.CamLLD.y = 315;
+			// Look Up Left 90
+			else if (key_.L90flg) cam_.CamLLD.y = 90;
+			// Look Up Right 90
+			else if (key_.R90flg) cam_.CamLLD.y = 270;
+			// Look Up
+			else cam_.CamLLD.y = 0;
+		}
+		// Level
+		else {
+			cam_.CamLLD.x = 0;
+			// Look Left 45
+			if (key_.L45flg) cam_.CamLLD.y = 45;
+			// Look Right 45
+			else if (key_.R45flg) cam_.CamLLD.y = 315;
+			// Look Left 90
+			else if (key_.L90flg) cam_.CamLLD.y = 90;
+			// Look Right 90
+			else if (key_.R90flg) cam_.CamLLD.y = 270;
+		}
+	}	
 	// Adjust Camera Rotators
 	// In internal view, the camera is facing out - view matches rotation
 	if (cam_.IntFlg) {
