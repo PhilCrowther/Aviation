@@ -1,6 +1,6 @@
 /*
- * AnimFM2.js (vers 25.05.28)
- * Copyright 2022-2024, Phil Crowther
+ * AnimFM2.js (25.06.27)
+ * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
 
