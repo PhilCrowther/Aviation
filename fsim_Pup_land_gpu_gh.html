@@ -436,19 +436,8 @@ let ObjIdx = 0;
 	air_.InpKey = new THREE.Vector3();
 	air_.OldRot = new THREE.Euler();
 //- Air Group
-let AirGrp = new THREE.Group();	// To hold ACMine and VCMine
+let AirGrp = new THREE.Group();	// To hold mxr_.Adr and VCMine
 	air_.AirPBY.add(AirGrp);
-let ACMine = 0;					// My Aircraft (loaded)
-
-//- Pup Animations -------------------------------------------------------------
-//	Animation Mixers - External Model
-let mxProp = 0;					// Propeller
-let mxRudr = 0;					// Rudder
-let mxElev = 0;					// Elevator
-let mxAlTL = 0;					// AileronTL
-let mxAlTR = 0;					// AileronTR
-let mxAlBL = 0;					// AileronTL
-let mxAlBR = 0;					// AileronTR
 
 //= GUNASG MODULE ==============//==============================================
 //	Adjustments
@@ -1271,8 +1260,7 @@ function moveObject() {
 
 // Load Airplane
 function loadAirObj() {
-	let fname = AirSrc + ACFile;
-	gltfLoader.load(fname, function (gltf) {				// The OnLoad function
+	gltfLoader.load(mxr_.Src, function (gltf) {				// The OnLoad function
 		gltf.scene.traverse(function (child) {	
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -1285,57 +1273,57 @@ function loadAirObj() {
 				child.renderOrder = 1;
 			}		
 		});
-		ACMine = gltf.scene;
-		ACMine.rotation.order = "YXZ";
+		mxr_.Adr = gltf.scene;
+		mxr_.Adr.rotation.order = "YXZ";
 		// Convert from feet to meters
-		ACMine.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);
+		mxr_.Adr.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);
 		/* Animations --------------------------------------------------------------- */
 		// Propeller
 		let clip = THREE.AnimationClip.findByName(gltf.animations, "propellerAction");
-		mxProp = new THREE.AnimationMixer(ACMine);
-		let actun = mxProp.clipAction(clip);
+		mxr_.Prp = new THREE.AnimationMixer(mxr_.Adr);
+		let actun = mxr_.Prp.clipAction(clip);
 		actun.play();
-		if (mxProp) mxProp.setTime(anm_.spnprp/anm_.anmfps);
+		if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
 		// Rudder
-		mxRudr = new THREE.AnimationMixer(ACMine);
+		mxr_.Rdr = new THREE.AnimationMixer(mxr_.Adr);
 		clip = THREE.AnimationClip.findByName(gltf.animations, "rudderAction");
-		actun = mxRudr.clipAction(clip);
+		actun = mxr_.Rdr.clipAction(clip);
 		actun.play();
-		if (mxRudr) mxRudr.setTime(anm_.rudder/anm_.anmfps);
+		if (mxr_.Rdr) mxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
 		// Elevator
 		clip = THREE.AnimationClip.findByName(gltf.animations, "elevatorAction");
-		mxElev = new THREE.AnimationMixer(ACMine);
-		actun = mxElev.clipAction(clip);
+		mxr_.Elv = new THREE.AnimationMixer(mxr_.Adr);
+		actun = mxr_.Elv.clipAction(clip);
 		actun.play();
-		if (mxElev) mxElev.setTime(anm_.elvatr/anm_.anmfps);
+		if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
 		// AileronTL
 		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronTLAction");
-		mxAlTL = new THREE.AnimationMixer(ACMine);
-		actun = mxAlTL .clipAction(clip);
+		mxr_.ATL = new THREE.AnimationMixer(mxr_.Adr);
+		actun = mxr_.ATL .clipAction(clip);
 		actun.play();
-		if (mxAlTL) mxAlTL.setTime(anm_.aillft/anm_.anmfps);
+		if (mxr_.ATL) mxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
 		// AileronTR
 		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronTRAction");
-		mxAlTR = new THREE.AnimationMixer(ACMine);
-		actun = mxAlTR.clipAction(clip);
+		mxr_.ATR = new THREE.AnimationMixer(mxr_.Adr);
+		actun = mxr_.ATR.clipAction(clip);
 		actun.play();
-		if (mxAlTR) mxAlTR.setTime(anm_.ailrgt/anm_.anmfps);
+		if (mxr_.ATR) mxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
 		// AileronBL
 		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronBLAction");
-		mxAlBL = new THREE.AnimationMixer(ACMine);
-		actun = mxAlBL .clipAction(clip);
+		mxr_.ABL = new THREE.AnimationMixer(mxr_.Adr);
+		actun = mxr_.ABL .clipAction(clip);
 		actun.play();
-		if (mxAlBL) mxAlBL.setTime(anm_.aillft/anm_.anmfps);
+		if (mxr_.ABL) mxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
 		// AileronBR
 		clip = THREE.AnimationClip.findByName(gltf.animations, "aileronBRAction");
-		mxAlBR = new THREE.AnimationMixer(ACMine);
-		actun = mxAlBR.clipAction(clip);
+		mxr_.ABR = new THREE.AnimationMixer(mxr_.Adr);
+		actun = mxr_.ABR.clipAction(clip);
 		actun.play();
-		if (mxAlBR) mxAlBR.setTime(anm_.ailrgt/anm_.anmfps);
+		if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 		//
-		AirGrp.add(ACMine);
+		AirGrp.add(mxr_.Adr);
 		// Initialize
-		ACMine.visible = true;
+		mxr_.Adr.visible = true;
 	});
 }
 
@@ -1512,18 +1500,18 @@ function moveAirObj() {
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 	/* Animations (Display) ------------------------------------------------- */
 	// Propeller
-	if (mxProp) mxProp.setTime(anm_.spnprp/anm_.anmfps);
+	if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
 	// Rudder
-	if (mxRudr) mxRudr.setTime(anm_.rudder/anm_.anmfps);
+	if (mxr_.Rdr) mxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
 	// Elevator
-	if (mxElev) mxElev.setTime(anm_.elvatr/anm_.anmfps);
+	if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
 	// Ailerons
 	// Left
-	if (mxAlTL) mxAlTL.setTime(anm_.aillft/anm_.anmfps);
-	if (mxAlBL) mxAlBL.setTime(anm_.aillft/anm_.anmfps);
+	if (mxr_.ATL) mxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
+	if (mxr_.ABL) mxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
 	// Rite
-	if (mxAlTR) mxAlTR.setTime(anm_.ailrgt/anm_.anmfps);
-	if (mxAlBR) mxAlBR.setTime(anm_.ailrgt/anm_.anmfps);
+	if (mxr_.ATR) mxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
+	if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 	// Bullets
 	moveBullet(myg_,air_,gen_,tim_,0);
 }
