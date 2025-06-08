@@ -625,35 +625,35 @@ function move1Road(grd_,Rod) {
 
 function initTrees(tre_,grd_,scene) {
 	let points = [
-		new THREE.Vector2(4.0,-6.7),	// Bot
-		new THREE.Vector2(4.9,-3.0),
-		new THREE.Vector2(4.2, 3.0),
-		new THREE.Vector2(3,5, 2.0),
-		new THREE.Vector2(1.8, 5.8),
-		new THREE.Vector2(0.1, 6.0)		// Top
+		new Vector2(4.0,-6.7),	// Bot
+		new Vector2(4.9,-3.0),
+		new Vector2(4.2, 3.0),
+		new Vector2(3,5, 2.0),
+		new Vector2(1.8, 5.8),
+		new Vector2(0.1, 6.0)		// Top
 	];
-	let geotre = new THREE.LatheGeometry(points,6);
-	let geotrn = new THREE.BoxGeometry(0.9,3.0,0.9);
-	let geoshd = new THREE.CircleGeometry(6.0,16);
+	let geotre = new LatheGeometry(points,6);
+	let geotrn = new BoxGeometry(0.9,3.0,0.9);
+	let geoshd = new CircleGeometry(6.0,16);
 	// Make Texture
 	tre_.t0Data = new Uint8Array(4*tre_.t0Size*tre_.t0Size);
 	initTClr(tre_.treclr,tre_.t0Data,1.9);
-	tre_.txttre = new THREE.DataTexture(tre_.t0Data,tre_.t0Size,tre_.t0Size);
-	tre_.txttre.format = THREE.RGBAFormat;
-	tre_.txttre.magFilter = THREE.LinearFilter;
-	tre_.txttre.minFilter = THREE.LinearMipMapLinearFilter;
+	tre_.txttre = new DataTexture(tre_.t0Data,tre_.t0Size,tre_.t0Size);
+	tre_.txttre.format = RGBAFormat;
+	tre_.txttre.magFilter = LinearFilter;
+	tre_.txttre.minFilter = LinearMipMapLinearFilter;
 	tre_.txttre.generateMipmaps = true;
 	tre_.txttre.anisotropy = gen_.maxAns;	// ###
 	tre_.txttre.needsUpdate = true;
-	let mtltre = new THREE.MeshLambertNodeMaterial({colorNode: texture(tre_.txttre)});
-	let mtltrn = new THREE.MeshLambertNodeMaterial({colorNode: color(0x161005)});
-	let mtlshd = new THREE.MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
+	let mtltre = new MeshLambertNodeMaterial({colorNode: texture(tre_.txttre)});
+	let mtltrn = new MeshLambertNodeMaterial({colorNode: color(0x161005)});
+	let mtlshd = new MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
 	// Make Prototype Tree
-	let tre0 = new THREE.Mesh(geotre,mtltre);
-	let trnk = new THREE.Mesh(geotrn,mtltrn);
+	let tre0 = new Mesh(geotre,mtltre);
+	let trnk = new Mesh(geotrn,mtltrn);
 	trnk.position.y = -7.9;
 	tre0.add(trnk);
-	let shad = new THREE.Mesh(geoshd,mtlshd);
+	let shad = new Mesh(geoshd,mtlshd);
 	shad.position.y = -9.4;
 	shad.rotation.x = -90*DegRad;
 	tre0.add(shad);
@@ -691,7 +691,7 @@ function initTrees(tre_,grd_,scene) {
 function initTClr(dtColr,dtData,Weight) {
 	// Load 2 colors
 	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
+		let clr = new Color(dtColr[i]);
 		red[i] = Math.floor(clr.r * 255);
 		grn[i] = Math.floor(clr.g * 255);
 		blu[i] = Math.floor(clr.b * 255);
@@ -725,37 +725,6 @@ function moveTrees(tre_,grd_,air_,gen_) {
 		if (z < -a) z = z + 2*a;
 		let y = -grd_.SPS.y*gen_.AltAdj+9.8;	// Objects elevate above ground as we climb to prevent flicker
 		tre_.t0Tree[n].position.set(x,y,z);
-	}
-}
-
-/* Load and Move Fixed Objects ===============================================*/
-/* These objects include the airfield, islands and hangar */
-
-function loadObject() {
-	for (let i = 0; i < ObjNum; i++) {		// For Each Object
-		if (ObjTyp[i] == 0) {
-			gltfLoader.load(ObjMdl[i], function (gltf) {
-				ObjPtr[i] = gltf.scene;
-				ObjPtr[i].scale.setScalar(Ft2Mtr);
-				ObjPtr[i].rotation.order = "ZXY";
-			});
-		}
-		if (ObjTyp[i] == 1) {
-			let texture = txtrLoader.load(ObjTxt[i]);
-			let material = new THREE.MeshLambertMaterial({map: texture, transparent: true});
-			gltfLoader.load(ObjMdl[i], function (gltf) {
-				gltf.scene.traverse(function (child) {
-				// Note: Blender object must include a UV map
-					if (child.isMesh) {				
-						child.material = material;
-						child.receiveShadow = true;
-					}
-				});
-				ObjPtr[i] = gltf.scene;
-				ObjPtr[i].scale.setScalar(32000*Ft2Mtr);
-				ObjPtr[i].rotation.order = "ZXY";
-			});
-		}
 	}
 }
 
