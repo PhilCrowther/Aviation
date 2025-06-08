@@ -32,7 +32,8 @@ import {
 	RGBAFormat,
 	Vector2,
 } from 'three';
-import {color} from 'three/tsl';
+
+import {color,texture} from 'three/tsl';
 
 /*******************************************************************************
 *
