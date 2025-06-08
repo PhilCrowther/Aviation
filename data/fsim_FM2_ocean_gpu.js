@@ -228,6 +228,7 @@ let txt_ = {
 				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
 		ObjTxt: [],
 	};
+
 //= STATIC OBJECTS =============//==============================================
 //- Islands --------------------//----------------------------------------------
 let isl_ = {
@@ -256,6 +257,8 @@ let fxd_ = {
 		MapPos: [0],			// Relative Position
 		ObjRef: [0],			// Parent
 	};
+
+//= MOVING OBJECTS =============//==============================================
 //- Moving Airplanes -----------//----------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)

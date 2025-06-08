@@ -222,6 +222,33 @@ let tre_ = {
 		t0PosX: [],
 }
 
+//= STATIC OBJECTS =============//==============================================
+//- Islands --------------------//----------------------------------------------
+let isl_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
+		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png"],
+		ObjAdr: [],
+		ObjSiz: [3.75*MtrMil], // Scale
+		RndOrd: [0],			// renderOrder (not used)
+		ObjRot: [0],			// Rotation
+		MapPos: [0],			// Absolute Position
+		ObjGrp: [0],			// Group
+	};
+//- Static Objects -------------//----------------------------------------------
+//- 0 = Hangar;
+let fxd_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],			// Loaded Object
+		ObjSiz: [Ft2Mtr],		// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [0],			// Rotation
+		MapPos: [0],			// Relative Position
+		ObjRef: [0],			// Parent
+	};
+
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	flight = 0;
 let air_ = {
