@@ -217,8 +217,8 @@ let tre_ = {
 		t0Data: 0,
 		txttre: 0,
 		TreTot: 64,
-		t0Tree: [];
-		t0PosZ: [];
+		t0Tree: [],
+		t0PosZ: [],
 		t0PosX: [],
 }
 
