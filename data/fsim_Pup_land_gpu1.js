@@ -214,7 +214,7 @@ let gt0_ = {
 //= Grid 1 Data ================//==============================================
 let Gr1Mul = 3;
 let Gr1Siz = Math.floor(dtSize/Gr1Mul);
-let gt1 = {
+let gt1_ = {
 		// Image Data (Source Data - Resized)
 		G1SPtr: [],
 		// Image Data
