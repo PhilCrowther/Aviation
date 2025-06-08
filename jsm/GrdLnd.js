@@ -1,6 +1,6 @@
 //= GRIDMAP3b MODULE ===========================================================
 
-// GrdMap Module (7 Jun 2025)
+// GrdMap Module (8 Jun 2025)
 // Copyright 2022-2025, Phil Crowther
 // icensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
@@ -76,78 +76,84 @@ let bnsclr = [0xacd193,0x5d8e3d]; // Beans
 //	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
 //	[https://icolorpalette.com/color/dirt-brown
 let count0;
+
 //= MATERIALS ==================//==============================================
 //= Grid 0 Data ================//==============================================
-//- Image Data
-let G0DPtr = [];
-	G0DPtr[txtTot-1] = 0;
-//- Materials
-let G0MPtr = [];
-	G0MPtr[txtTot-1] = 0;
-// Patterns for Grid 5 3X3 Textures
-// Also used to draw Grid 4 textures
-// 0 = Dirt
-// 1 = Pasture
-// 2 = Plowed Dirt
-// 3 = Green Vertical
-// 4 = Wheat
-// 5 = Green Horizontal
-// Per Pattern: 1X 0-2 2X 3-5
-let G0Id00 = [4,3,5,4,3,0,5,2,1];
-let G0Id01 = [3,0,4,1,2,4,5,3,5];
-let G0Id02 = [5,1,3,4,5,0,2,4,3];
-let G0Id03 = [2,4,1,3,5,3,5,0,4];
-let G0Id04 = [5,1,5,0,3,4,2,4,3];
-let G0Id05 = [3,0,5,3,4,5,1,2,4];
-let G0Id06 = [2,0,3,5,3,1,4,4,5];
-let G0Id07 = [1,5,4,3,5,0,2,4,3];
-let G0Id08 = [2,3,0,5,3,1,4,5,4];
-let G0Id09 = [0,2,5,3,4,3,5,1,4];
-let G0Id10 = [4,3,5,4,5,2,1,3,0];
-let G0Id11 = [4,5,3,0,1,4,3,5,2];
-let G0Id12 = [3,1,2,4,5,3,5,0,4];
-let G0Id13 = [0,5,3,1,4,2,4,3,5];
-let G0Id14 = [1,4,2,5,3,0,4,5,3];
-let G0Id15 = [4,1,5,0,3,4,3,5,2];
-let G0Indx = [
-		G0Id00,G0Id01,G0Id02,G0Id03,G0Id04,G0Id05,G0Id06,G0Id07,G0Id08,G0Id09,
-		G0Id10,G0Id11,G0Id12,G0Id13,G0Id14,G0Id15
-	];
+let gt0_ = {
+		//- Image Data
+		G0DPtr: [],
+		//- Materials
+		G0MPtr: [],
+		// Patterns for Grid 5 3X3 Textures
+		// Also used to draw Grid 4 textures
+		// 0 = Dirt
+		// 1 = Pasture
+		// 2 = Plowed Dirt
+		// 3 = Green Vertical
+		// 4 = Wheat
+		// 5 = Green Horizontal
+		// Per Pattern: 1X 0-2 2X 3-5
+		G0Id00: [4,3,5,4,3,0,5,2,1],
+		G0Id01: [3,0,4,1,2,4,5,3,5],
+		G0Id02: [5,1,3,4,5,0,2,4,3],
+		G0Id03: [2,4,1,3,5,3,5,0,4],
+		G0Id04: [5,1,5,0,3,4,2,4,3],
+		G0Id05: [3,0,5,3,4,5,1,2,4],
+		G0Id06: [2,0,3,5,3,1,4,4,5],
+		G0Id07: [1,5,4,3,5,0,2,4,3],
+		G0Id08: [2,3,0,5,3,1,4,5,4],
+		G0Id09: [0,2,5,3,4,3,5,1,4],
+		G0Id10: [4,3,5,4,5,2,1,3,0],
+		G0Id11: [4,5,3,0,1,4,3,5,2],
+		G0Id12: [3,1,2,4,5,3,5,0,4],
+		G0Id13: [0,5,3,1,4,2,4,3,5],
+		G0Id14: [1,4,2,5,3,0,4,5,3],
+		G0Id15: [4,1,5,0,3,4,3,5,2],
+		G0Indx: [
+			gt0_.G0Id00,gt0_.G0Id01,gt0_.G0Id02,gt0_.G0Id03,
+			gt0_.G0Id04,gt0_.G0Id05,gt0_.G0Id06,gt0_.G0Id07,
+			gt0_.G0Id08,gt0_.G0Id09,gt0_.G0Id10,gt0_.G0Id11,
+			gt0_.G0Id12,gt0_.G0Id13,gt0_.G0Id14,gt0_.G0Id15,
+		],
+	}
 //= Grid 1 Data ================//==============================================
 let Gr1Mul = 3;
 let Gr1Siz = Math.floor(dtSize/Gr1Mul);
 // Image Data (Source Data - Resized)
-let G1SPtr = [];
-	G1SPtr[G0Indx.length-1] = 0;
-// Image Data
-let G1DPtr = [];
-	G1DPtr[G0Indx.length-1] = 0;
-// Materials
-let G1MPtr = [];
-	G1MPtr[G1DPtr.length-1] = 0;
-// Index to Display of G1 Textures by Type
-// Used by G0 to position squares
-// And by G1 to create textures
-let G1Indx = [
-		 0, 1, 2, 3, 4, 5, 6, 7, 8,	//value of 9-15 in first row causes white space 
-		10, 2, 4,15,10,12,10, 9, 5,
-		 3,12,11, 8,13, 3, 1, 0,14,
-		 0, 7,10,14,12,10,11, 2, 4,
-		 9,14, 5, 4,11,13, 8,12, 7,	// 11 = Over Airport
-		 4, 7,15,12, 3,11, 9,13, 4,
-		11,12, 8, 5,13, 2,10,15,13,
-		 6,10, 7, 9,15,14,12, 5,11,
-		 0,13, 6,10, 3, 2,14, 4, 8
-	];
+let gt1_ = {
+		// Image Data (Source Data - Resized)
+		G1SPtr: [],
+		// Image Data
+		G1DPtr: [],
+		// Materials
+		G1MPtr: [],
+		// Index to Display of G1 Textures by Type
+		// Used by G0 to position squares
+		// And by G1 to create textures
+		G1Indx: [
+			 0, 1, 2, 3, 4, 5, 6, 7, 8,	//value of 9-15 in first row causes white space 
+			10, 2, 4,15,10,12,10, 9, 5,
+			 3,12,11, 8,13, 3, 1, 0,14,
+			 0, 7,10,14,12,10,11, 2, 4,
+			 9,14, 5, 4,11,13, 8,12, 7,	// 11 = Over Airport
+			 4, 7,15,12, 3,11, 9,13, 4,
+			11,12, 8, 5,13, 2,10,15,13,
+			 6,10, 7, 9,15,14,12, 5,11,
+			 0,13, 6,10, 3, 2,14, 4, 8
+		],
+	}
 //= Grid 2 Data ================//==============================================
 let Gr2Mul = 3;
 let Gr2Siz = Math.floor(dtSize/Gr2Mul);
 // Image Data (Source Data - Resized)
-let G2SPtr = [0,0,0,0,0,0,0,0,0];
-// Image Data
-let G2DPtr = [0,0,0,0,0,0,0,0,0];
-// Materials
-let G2MPtr = [0,0,0,0,0,0,0,0,0];
+let gt2_ = {
+		// Image Data (Source Data - Resized)
+		G2SPtr: [],
+		// Image Data
+		G2DPtr: [],
+		// Materials
+		G2MPtr: [],
+	}
 
 /*******************************************************************************
 *
@@ -158,20 +164,26 @@ let G2MPtr = [0,0,0,0,0,0,0,0,0];
 //= Make Grid Map Textures =====================================================
 
 function initGrdMat(grd_,context) {
-	initGr0Mat(context);
-	initGr1Mat(context);
-	initGr6Mat(context);
+	initGr0Mat(grd_,context);
+	initGr1Mat(grd_,context);
+	initGr2Mat(grd_,context);
 	initRoads();
 	makeTrees();
 }
 
-function initGr0Mat() {
+function initGrdTxt(grd_,context) {
+	initGr0Txt(grd_,context);
+	initGr1Txt(grd_,context);
+	initGr2Txt(grd_,context);
+}
+
+function initGr0Txt(grd_,context) {
 	for (let n = 0; n < txtTot; n++) {
 		// Make Large Image and Get ImageData
 		context.fillStyle = GrdDrt;
 		context.fillRect(0,0,dqSize,dqSize);
-		G0DPtr[n] = context.getImageData(0,0,dqSize,dqSize);
-		let dtData = G0DPtr[n].data;
+		gt0_.G0DPtr[n] = context.getImageData(0,0,dqSize,dqSize);
+		let dtData = gt0_.G0DPtr[n].data;
 		makeClr1(drtclr,dtData,1.6);	// Dirt
 		if (n == 1) makeClr2(pstclr,dtData,4);	// Pasture
 		if (n == 2) makeVrtL(drtclr,dtData,1.9,1.5);	// Plowed Line
@@ -179,27 +191,27 @@ function initGr0Mat() {
 		if (n == 4) makeVrtL(whtclr,dtData,1.9,1.5);	// Wheat Line
 		if (n == 5) makeVrtD(bnsclr,dtData,8);	// Bean Dots
 		// Make Materials
-		let DatTxt = new DataTexture(dtData, dqSize, dqSize);
-		DatTxt.format = RGBAFormat;
-		DatTxt.magFilter = LinearFilter;
-		DatTxt.minFilter = LinearMipMapLinearFilter;
+		let DatTxt = new THREE.DataTexture(dtData, dqSize, dqSize);
+		DatTxt.format = THREE.RGBAFormat;
+		DatTxt.magFilter = THREE.LinearFilter;
+		DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
 		DatTxt.generateMipmaps = true;
-		DatTxt.wrapS = DatTxt.wrapT = RepeatWrapping;
+		DatTxt.wrapS = DatTxt.wrapT = THREE.RepeatWrapping;
 		DatTxt.offset.set(0,0);
 		DatTxt.repeat.set(GrdMul,GrdMul);
 		DatTxt.anisotropy = maxAnisotropy;
 		DatTxt.needsUpdate = true;		
-		G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		gt0_.G0MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
 		// e.g. If Repeat X10 and then divide by 10, result = Data
-		context.putImageData(G0DPtr[n],0,0);
+		context.putImageData(gt0_.G0DPtr[n],0,0);
 		context.drawImage(canvas,0,0,dqSize,dqSize,0,0,Gr1Siz,Gr1Siz);		// Draw 1024 image into 1/3 of 512 canvas
-		G1SPtr[n] = context.getImageData(0,0,Gr1Siz,Gr1Siz);				//
+		gt1_.G1SPtr[n] = context.getImageData(0,0,Gr1Siz,Gr1Siz);				//
 	}
 }
 
-function initGr1Mat() {
+function initGr1Txt(grd_,context) {
 // This creates up to 81 unique 3X3 Textures (similar to FSX textures)
 // Created using ImageData from Gr4IPtr and patterns from Gr4TPtr
 // Stored by ID number
@@ -207,34 +219,34 @@ function initGr1Mat() {
 	let dd, sd, idx;
 	let fx = dtSize/Gr1Mul;
 	// For Destination (9 locations arranged linearly)
-	for (let n = 0; n < G0Indx.length; n++) {	// Destination
+	for (let n = 0; n < gt0_.G0Indx.length; n++) {	// Destination
 		// For 3X3 Source
-		let stIndx = G0Indx[n];			// Index to this pattern
+		let stIndx = gt0_.G0Indx[n];			// Index to this pattern
 		idx = 0;
 		for (let ys1 = 0; ys1 < 3; ys1++) {	// Find source within 9x9 Square
 			for (let xs1 = 0; xs1 < 3; xs1++) {
-				let ImgDat = G1SPtr[stIndx[idx]];	// Correct, but causes dirt lines
+				let ImgDat = gt1_.G1SPtr[stIndx[idx]];	// Correct, but causes dirt lines
 				context.putImageData(ImgDat,Math.floor(xs1*fx),Math.floor(ys1*fx));
 				idx++;
 			}
 		}
-		G1DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// This should be the 3X3 image saved
-		let DatTxt = new DataTexture(G1DPtr[n].data,dtSize,dtSize);
-		DatTxt.format = RGBAFormat;
-		DatTxt.magFilter = LinearFilter;
-		DatTxt.minFilter = LinearMipMapLinearFilter;
+		gt1_.G1DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// This should be the 3X3 image saved
+		let DatTxt = new THREE.DataTexture(gt1_.G1DPtr[n].data,dtSize,dtSize);
+		DatTxt.format = THREE.RGBAFormat;
+		DatTxt.magFilter = THREE.LinearFilter;
+		DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
 		DatTxt.generateMipmaps = true;
 		DatTxt.anisotropy = maxAnisotropy;
 		DatTxt.needsUpdate = true;
-		G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+		gt1_.G1MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 		// Gr6Source = Resized Gr5Data		
-		context.putImageData(G1DPtr[n],0,0);
+		context.putImageData(gt1_.G1DPtr[n],0,0);
 		context.drawImage(canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
-		G2SPtr[n] = context.getImageData(0,0,Gr2Siz,Gr2Siz);
+		gt2_.G2SPtr[n] = context.getImageData(0,0,Gr2Siz,Gr2Siz);
 	}
 }
 
-function initGr6Mat() {
+function initGr2Txt(grd_,context) {
 	// Need 27 3X3 textures which will be repeated 27 times
 	// Create Grid 6 Texture Data and Materials (9 squares repeated)
 	let yd0, xd0;
@@ -246,20 +258,20 @@ function initGr6Mat() {
 			// Loads 3x3 Grid of Textures
 			for (let ys1 = 0; ys1 < 3; ys1++) {	// Find source within 9x9 Square
 				for (let xs1 = 0; xs1 < 3; xs1++) {
-					let ImgDat = G2SPtr[G1Indx[ys0*27+xs0*3+ys1*9+xs1]];
+					let ImgDat = gt2_.G2SPtr[gt1_.G1Indx[ys0*27+xs0*3+ys1*9+xs1]];
 					context.putImageData(ImgDat,Math.floor(xs1*fx),Math.floor(ys1*fx));
 				}
 			}
 			//	
-			G2DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// Saved, not used yet
-			let DatTxt = new DataTexture(G2DPtr[n].data, dtSize, dtSize);
-			DatTxt.format = RGBAFormat;
-			DatTxt.magFilter = LinearFilter;
-			DatTxt.minFilter = LinearMipMapLinearFilter;
+			gt2_.G2DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// Saved, not used yet
+			let DatTxt = new THREE.DataTexture(gt2_.G2DPtr[n].data, dtSize, dtSize);
+			DatTxt.format = THREE.RGBAFormat;
+			DatTxt.magFilter = THREE.LinearFilter;
+			DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
 			DatTxt.generateMipmaps = true;
 			DatTxt.anisotropy = maxAnisotropy;
 			DatTxt.needsUpdate = true;
-			G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+			gt2_.G2MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 			n++;
 		}
 	}	
