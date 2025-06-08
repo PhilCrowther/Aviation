@@ -161,12 +161,17 @@ let gt2_ = {
 *
 *******************************************************************************/
 
-//= Make Grid Map Textures =====================================================
+//= Make Grid Map Textures =====//==============================================
 
 function initGrdMat(grd_,context) {
+	// Create Links
+	grd_.Idx = [gt0_.G0Indx,gt1_.G1Indx]; // Index to Patterns
+	grd_.Mat = [gt0_.G0MPtr,gt1_.G1MPtr,gt2_.G2MPtr], // Materials
+	// Initialze Textures
 	initGr0Mat(grd_,context);
 	initGr1Mat(grd_,context);
 	initGr2Mat(grd_,context);
+	// Roads and Trees
 	initRoads();
 	makeTrees();
 }
