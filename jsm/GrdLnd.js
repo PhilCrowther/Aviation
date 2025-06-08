@@ -421,7 +421,202 @@ function makeVrtD(dtColr,dtData,Weight) {
 
 /*******************************************************************************
 *
-*	CONSTRUCTOR									*
+*	ROADS
+*
+*******************************************************************************/
+
+//= INIT ROADS =================//==============================================
+
+function initRoads(rd0_,rd1_,rd2_,scene) {
+	rd0_.r0Data = new Uint8Array(4*rd0_.r0Size*rd0_.r0Size);
+	initRClr(rd0_.rodclr,rd0_.r0Data,1);
+	rd0_.txtrod = new THREE.DataTexture(rd0_.r0Data,rd0_.r0Size,rd0_.r0Size);
+	rd0_.txtrod.format = THREE.RGBAFormat;
+	rd0_.txtrod.magFilter = THREE.LinearFilter;
+	rd0_.txtrod.minFilter = THREE.LinearMipMapLinearFilter;
+	rd0_.txtrod.generateMipmaps = true;
+	rd0_.txtrod.wrapS = rd0_.txtrod.wrapT = THREE.RepeatWrapping;
+	rd0_.txtrod.offset.set(0,0);
+	rd1_.Txt = rd0_.txtrod;
+	rd2_.Txt = rd0_.txtrod;
+	init1Road(rd1_,scene);
+	init1Road(rd2_,scene);
+}
+
+function initRClr(dtColr,dtData,Weight) {
+	// Load 2 colors
+	for (let i = 0; i < 2; i++) {
+		let clr = new THREE.Color(dtColr[i]);
+		red[i] = Math.floor(clr.r * 255);
+		grn[i] = Math.floor(clr.g * 255);
+		blu[i] = Math.floor(clr.b * 255);
+	}
+	// Assign colors
+	let idx, i;
+	for (let n = 0; n < t0Area*4; n+=4) {
+		i = Math.floor(Weight*Math.random());
+		dtData[n  ] = red[i];
+		dtData[n+1] = grn[i];
+		dtData[n+2] = blu[i];
+		dtData[n+3] = 255;
+	}
+}
+
+function init1Road(Rod,scene) {
+	// Load Variables
+	Rod.RCi = Rod.RCs-1;				// Max Index Value
+	Rod.MZV[Rod.RCi] = 0;				// Z-Values
+	Rod.MXV[Rod.RCi] = 0;				// X-Values
+	Rod.Nor = Rod.RCi;					// Max North Square (updated)
+	Rod.Est = Rod.RCi;					// Max East Square (updated)
+	Rod.Num = Rod.RCs * Rod.RCs;		// Size of array
+	Rod.Ptr[Rod.Num-1] = 0;				// Mesh Pointers
+
+	if (Rod.Typ == 1) {
+		// Compute Starting Z and X Values
+		let zx = -0.5*(Rod.RCs)*Rod.Siz-0.5*GrdSiz;
+		for (let i = 0; i < Rod.RCs; i++) {
+			Rod.MZV[i] = zx;
+			Rod.MXV[i] = zx;
+			zx = zx + Rod.Siz;
+		}
+		let geometry = new THREE.PlaneGeometry(25*Ft2Mtr,Rod.Siz);	// N/S Road;
+		let DatTxt = Rod.Txt;
+		DatTxt.repeat.set(10,10);
+		DatTxt.anisotropy = gen_.maxAns;		// ###
+		DatTxt.needsUpdate = true;
+		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		for (let n = 0; n < Rod.Num; n++) {	// Source
+			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
+			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
+		}
+	}
+	
+	if (Rod.Typ == 2) {
+		// Compute Starting Z and X Values
+		let zx = -0.5*(Rod.RCs)*Rod.Siz+0.5*GrdSiz;
+		for (let i = 0; i < Rod.RCs; i++) {
+			Rod.MZV[i] = zx;
+			Rod.MXV[i] = zx;
+			zx = zx + Rod.Siz;
+		}
+		let geometry = new THREE.PlaneGeometry(Rod.Siz,25*Ft2Mtr);	// E/W Road;
+		let DatTxt = Rod.Txt;
+		DatTxt.repeat.set(10,10);
+		DatTxt.anisotropy = gen_.maxAns;		// ###
+		DatTxt.needsUpdate = true;
+		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		for (let n = 0; n < Rod.Num; n++) {	// Source
+			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
+			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
+		}
+	}
+			
+	let n = 0;
+	// Set Starting Position of Squares
+	for (let z = 0; z < Rod.RCs; z++) {		// Row
+		for (let x = 0; x < Rod.RCs; x++) {	// Column
+			Rod.Ptr[n].rotation.x = -90*DegRad;
+			scene.add(Rod.Ptr[n]);
+			Rod.Ptr[n].renderOrder = 1;
+			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-Rod.MZV[z]);
+			n++;
+		}
+	}
+}
+
+//= MOVE ROADS =================//==============================================
+
+function moveRoads(grd_,rd1_,rd2_) {
+// Convert Distances into Meters to match landscape program
+	move1Road(grd_,rd1_);
+	move1Road(grd_,rd2_);
+}
+
+// Move Roads
+function move1Road(grd_,Rod) {
+	let j = 0;
+	let v = 0; 
+	let max = 0.5*Rod.RCs*Rod.Siz;
+	let min = -max;
+	// Update Z and X-Values
+	for (let i = 0; i < Rod.RCs; i++) {
+		Rod.MZV[i] = Rod.MZV[i] - grd_.SPS.z;	// Rows
+		Rod.MXV[i] = Rod.MXV[i] - grd_.SPS.x;	// Columns
+	}
+	// Test North/South
+	if (grd_.SPS.z < 0) {		// If Moving South
+		j = Rod.Nor;
+		if (Rod.MZV[j] >= max) {
+			v = min+(Rod.MZV[j]-max);
+			for (let i = 0; i < Rod.Stp; i++) {
+				Rod.MZV[j] = v;
+				j = j - 1;
+				if (j < 0) j = Rod.RCi;
+				v = v - Rod.Siz;
+			}
+			Rod.Nor = Rod.Nor - Rod.Stp;
+			if (Rod.Nor < 0) Rod.Nor = Rod.Nor + Rod.RCs;
+		}
+	}
+	if (grd_.SPS.z > 0) {		// If Moving North
+		j = Rod.Nor + 1;
+		if (j > Rod.RCi) j = 0;
+		if (Rod.MZV[j] <= min) {
+			v = max-(min-Rod.MZV[j]);
+			for (let i = 0; i < Rod.Stp; i++) {
+				Rod.MZV[j] = v;
+				j++;
+				if (j > Rod.RCi) j = 0;
+				v = v + Rod.Siz;
+			}
+			Rod.Nor = Rod.Nor + Rod.Stp;
+			if (Rod.Nor > Rod.RCi) Rod.Nor = Rod.Nor - Rod.RCs;
+		}
+	}
+	// Test East/West
+	if (grd_.SPS.x < 0) {		// If Moving West
+		j = Rod.Est;
+		if (Rod.MXV[j] >= max) {
+			v = min+(Rod.MXV[j]-max);
+			for (let i = 0; i < Rod.Stp; i++) {
+				Rod.MXV[j] = v;
+				j = j - 1;
+				if (j < 0) j = Rod.RCi;
+				v = v - Rod.Siz;
+			}
+			Rod.Est = Rod.Est - Rod.Stp;
+			if (Rod.Est < 0) Rod.Est = Rod.Est + Rod.RCs;
+		}
+	}
+	if (grd_.SPS.x > 0) {		// If Moving East
+		j = Rod.Est + 1;
+		if (j > Rod.RCi) j = 0;	
+		if (Rod.MXV[j] <= min) {
+			v = max-(min-Rod.MXV[j]);
+			for (let i = 0; i < Rod.Stp; i++) {			
+				Rod.MXV[j] = v;
+				j++;
+				if (j > Rod.RCi) j = 0;
+				v = v + Rod.Siz;
+			}
+			Rod.Est = Rod.Est + Rod.Stp;
+			if (Rod.Est > Rod.RCi) Rod.Est = Rod.Est - Rod.RCs;
+		}
+	}
+	// Set Position
+	let n = 0;
+	for (let z = 0; z < Rod.RCs; z++) {	// Row
+		for (let x = 0; x < Rod.RCs; x++) {	// Col
+			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-Rod.MZV[z]);
+			n++;
+		}
+	}
+}
+
+/*******************************************************************************
+*
+*	CONSTRUCTOR
 *
 *******************************************************************************/
 
@@ -759,7 +954,7 @@ function move1GrMap(grx_, grd_) {
 *
 *******************************************************************************/
 
-export {initGrdMat, GrdMap};
+export {initGrdMat, GrdMap, initRoads, moveRoads};
 
 /*******************************************************************************
 *
