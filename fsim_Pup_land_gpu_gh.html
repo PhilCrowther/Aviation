@@ -76,10 +76,13 @@ import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh
 import Stats from "stats-gl";
 // Custom Modules
 import {loadAirExt,moveAirExt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimPup.js";
-import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
-import {initGrdMat,GrdMap,initRoads,moveRoads,initTrees,moveTrees} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
-import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {PointerLockControls} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
+import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
+import {initGrdMat,GrdMap,initRoads,moveRoads,initTrees,moveTrees} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
+import {loadIsland,initIsland,moveIsland, // Islands
+		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
 
 /*= GENERAL ====================//==============================================
 
@@ -208,49 +211,19 @@ let ImgSiz = 1024;
 	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
 //- Adjustments
 	grd_.SPS = new THREE.Vector3(); // MSX, MPY, MSZ (meters) (from Flight)
-//- For Trees and Roads
-let red = [0,0];
-let grn = [0,0];
-let blu = [0,0];
 
-//= OBJECTS ====================//==============================================
-//- Distances in Meters
-let ObjNum = 2;					// number of objects
-let ObjTyp = [0];				// Object Type
-	ObjTyp[ObjNum - 1] = 0;
-let ObjNam = [0];				// Object Name
-	ObjNam[ObjNum - 1] = 0;
-let ObjMdl = [0];				// Model source
-	ObjMdl[ObjNum - 1] = 0;
-let ObjTxt = [0];				// Model texture
-	ObjTxt[ObjNum - 1] = 0;
-let ObjMPX = [0];				// Ground X Value
-	ObjMPX[ObjNum - 1] = 0;
-let ObjMPY = [0];				// Ground Y Value
-	ObjMPY[ObjNum - 1] = 0;
-let ObjMPZ = [0];				// Ground Y Value
-	ObjMPZ[ObjNum - 1] = 0;
-let ObjPtr = [0];				// Object Address
-	ObjPtr[ObjNum - 1] = 0;
-// Index (allow for expanding list of objects)
-let ObjIdx = 0;
-//- Hangars
-	ObjTyp[ObjIdx] = 0;			// 0 = No separate texture
-	ObjNam[ObjIdx] = "hangar";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb";
-	ObjTxt[ObjIdx] = 0; 	
-	ObjMPX[ObjIdx] = 200;		// [m]
-	ObjMPY[ObjIdx] = 0.3048;	// [m] 1 ft
-	ObjMPZ[ObjIdx] = 250;		// [m]
-	ObjIdx = ObjIdx + 1;
-//- Giaros Island
-	ObjTyp[ObjIdx] = 1;			// 1 = Large feature
-	ObjNam[ObjIdx] = "giaros";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb";
-	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png";
-	ObjMPX[ObjIdx] = -1609.344;	// [m] 1 mile
-	ObjMPY[ObjIdx] = 2*Ft2Mtr;	// [m] 2 ft
-	ObjMPZ[ObjIdx] = 8046.72;	// [m] 5 miles
+//= 4. OBJECT VARIABLES ========//==============================================
+//= STATIC OBJECTS =============//==============================================
+//- Islands --------------------//----------------------------------------------
+//	Adjustments
+	isl_.ObjRot = [new THREE.Euler()]; // Rotation
+	isl_.MapPos = [new THREE.Vector3(-1000.3048,1,5000)];
+	isl_.ObjGrp = [new THREE.Object3D]; // Group
+//- Static Objects -------------//----------------------------------------------
+//	Adjustments
+	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
+	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,4750)]; // Relative Position
+	fxd_.ObjRef = [isl_.ObjGrp[0]];
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
@@ -360,9 +333,9 @@ function loadAll() {
 	// Initialize Loading Screen
 	WaitScreen();				// init loading screen
 	loadSkyBox();
-	loadObject();
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
+	loadObject();
 }
 
 //= WAIT SCREEN ================//==============================================
@@ -491,57 +464,36 @@ function initSkyBox() {
 //- LOAD OBJECTS ---------------//----------------------------------------------
 
 function loadObject() {
-	for (let i = 0; i < ObjNum; i++) {		// For Each Object
-		if (ObjTyp[i] == 0) {
-			gltfLoader.load(ObjMdl[i], function (gltf) {
-				ObjPtr[i] = gltf.scene;
-				ObjPtr[i].scale.setScalar(Ft2Mtr);
-				ObjPtr[i].rotation.order = "ZXY";
-			});
-		}
-		if (ObjTyp[i] == 1) {
-			let texture = txtrLoader.load(ObjTxt[i]);
-			let material = new THREE.MeshLambertMaterial({map: texture, transparent: true});
-			gltfLoader.load(ObjMdl[i], function (gltf) {
-				gltf.scene.traverse(function (child) {
-				// Note: Blender object must include a UV map
-					if (child.isMesh) {				
-						child.material = material;
-						child.receiveShadow = true;
-					}
-				});
-				ObjPtr[i] = gltf.scene;
-				ObjPtr[i].scale.setScalar(32000*Ft2Mtr);
-				ObjPtr[i].rotation.order = "ZXY";
-			});
-		}
-	}
+	loadStatic();
 }
 
 //- INIT OBJECTS ---------------//----------------------------------------------
 
 function initObject() {
-	for (let i = 0; i < ObjNum; i++) {
-		// Set Position (cause Objects to elevate above ground as we climb to prevent flicker)
-		let X = ObjMPX[i]-air_.MapPos.x;
-		let Y = ObjMPY[i]-gen_.AltDif;
-		let Z = air_.MapPos.z-ObjMPZ[i];
-		ObjPtr[i].position.set(X,Y,Z);
-		scene.add(ObjPtr[i]);
-	}
+	initStatic();
 }
 
 //- MOVE OBJECTS ---------------//----------------------------------------------
 
 function moveObject() {
-	// Convert Distances into Meters to match landscape program
-	for (let i = 0; i < ObjNum; i ++) {
-		// Set Position (cause Objects to elevate above ground as we climb to prevent flicker)
-		let X = ObjMPX[i]-air_.MapPos.x;
-		let Y = ObjMPY[i]-gen_.AltDif;
-		let Z = air_.MapPos.z-ObjMPZ[i];
-		ObjPtr[i].position.set(X,Y,Z);
-	}
+	moveStatic();
+}
+
+//- Static Objects -------------//----------------------------------------------
+
+function loadStatic() {
+	loadIsland(scene,isl_,air_,gen_,txtrLoader,gltfLoader);
+	loadFxdObj(scene,fxd_,gltfLoader);	
+}
+
+function initStatic() {
+	initIsland(isl_,air_,gen_);
+	initFxdObj(fxd_,air_,gen_);	
+}
+
+function moveStatic() {
+	moveIsland(isl_,air_,gen_);
+	moveFxdObj(fxd_,air_,gen_);
 }
 
 //= 5. MY AIRPLANE =============//==============================================
