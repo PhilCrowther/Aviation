@@ -202,7 +202,7 @@ function initGr0Mat(grd_,gen_) {
 		DatTxt.wrapS = DatTxt.wrapT = RepeatWrapping;
 		DatTxt.offset.set(0,0);
 		DatTxt.repeat.set(GrdMul,GrdMul);
-		DatTxt.anisotropy = maxAnisotropy;
+		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;		
 		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		// Gr5Source = Resized Gr4Data
@@ -239,7 +239,7 @@ function initGr1Mat(grd_,gen_) {
 		DatTxt.magFilter = LinearFilter;
 		DatTxt.minFilter = LinearMipMapLinearFilter;
 		DatTxt.generateMipmaps = true;
-		DatTxt.anisotropy = maxAnisotropy;
+		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;
 		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 		// Gr6Source = Resized Gr5Data		
@@ -272,7 +272,7 @@ function initGr2Mat(grd_,gen_) {
 			DatTxt.magFilter = LinearFilter;
 			DatTxt.minFilter = LinearMipMapLinearFilter;
 			DatTxt.generateMipmaps = true;
-			DatTxt.anisotropy = maxAnisotropy;
+			DatTxt.anisotropy = gen_.maxAns;
 			DatTxt.needsUpdate = true;
 			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 			n++;
