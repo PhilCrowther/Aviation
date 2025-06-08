@@ -77,7 +77,7 @@ import Stats from "stats-gl";
 // Custom Modules
 import {loadAirExt,moveAirExt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimPup.js";
 import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
-import {initGrdMat,GrdMap,initRoads,moveRoads} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
+import {initGrdMat,GrdMap,initRoads,moveRoads,initTrees,moveTrees} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {PointerLockControls} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 
@@ -395,8 +395,8 @@ function initAll() {
 	grd_.SPS.y = air_.MapSPS.y;
 	grids = new GrdMap(grd_,scene);	// Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
-	initRoads(rd0_,rd1_,rd2_,scene);
-	initTrees();
+	initRoads(rd0_,rd1_,rd2_,grd_,scene);
+	initTrees(tre_,grd_,scene);
 	initObject();				// Stationary Objects
 	// Other
 	initCamera(camera,cam_);	// position camera
@@ -436,7 +436,7 @@ function rendAll() {
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
 		moveRoads(grd_,rd1_,rd2_);
-		moveTrees();		
+		moveTrees(tre_,grd_,air_,gen_);		
 		moveObject();			// Move objects
 		// Other
 		moveSounds();
@@ -486,113 +486,9 @@ function initSkyBox() {
 	}
 }
 
-//= TREES ======================//==============================================
+//= OBJECTS ====================//==============================================
 
-//- INIT TREES -----------------//----------------------------------------------
-
-function initTrees() {
-	let points = [
-		new THREE.Vector2(4.0,-6.7),	// Bot
-		new THREE.Vector2(4.9,-3.0),
-		new THREE.Vector2(4.2, 3.0),
-		new THREE.Vector2(3,5, 2.0),
-		new THREE.Vector2(1.8, 5.8),
-		new THREE.Vector2(0.1, 6.0)		// Top
-	];
-	let gomtre = new THREE.LatheGeometry(points,6);
-	let gomtrn = new THREE.BoxGeometry(0.9,3.0,0.9);
-	let gomshd = new THREE.CircleGeometry(6.0,16);
-	// Make Texture	
-	makeTClr(treclr,t0Data,1.9);
-	let txttre = new THREE.DataTexture(t0Data, t0Size, t0Size);
-	txttre.format = THREE.RGBAFormat;
-	txttre.magFilter = THREE.LinearFilter;
-	txttre.minFilter = THREE.LinearMipMapLinearFilter;
-	txttre.generateMipmaps = true;
-	txttre.anisotropy = gen_.maxAns;	// ###
-	txttre.needsUpdate = true;
-	let mtltre = new THREE.MeshLambertNodeMaterial({colorNode: texture(txttre)});
-	let mtltrn = new THREE.MeshLambertNodeMaterial({colorNode: color(0x161005)});
-	let mtlshd = new THREE.MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
-	// Make Prototype Tree
-	let tree0 = new THREE.Mesh(gomtre,mtltre);
-	let trnk = new THREE.Mesh(gomtrn,mtltrn);
-	trnk.position.y = -7.9;
-	tree0.add(trnk);
-	let shad = new THREE.Mesh(gomshd,mtlshd);
-	shad.position.y = -9.4;
-	shad.rotation.x = -90*DegRad;
-	tree0.add(shad);
-	Trees[0] = tree0.clone();
-	// Make Row of Trees
-	let sx = 15.0;
-	let ry = 13.7;
-	let dy = 13.7;
-	let px = sx;
-	for (let x = 0; x < 10; x++) {
-		let tree = tree0.clone();
-		tree.position.x = px;
-		ry = Mod360(360*Math.random());
-		tree.rotation.y = ry*DegRad;
-		tree.rotation.z = Mod360(2*Math.random()*DegRad);
-		tree.rotation.x = Mod360(2*Math.random()*DegRad);
-		ry = ry+dy;
-		px = px+sx;
-		Trees[0].add(tree);
-	}
-	Trees[0].position.x = 0;
-	Trees[0].position.y = 9.8;
-	let pz = 90;
-	for (let n = 1; n < TreTot; n++) {
-		Trees[n] = Trees[0].clone();
-		scene.add(Trees[n]);
-		Trees[n].rotation.y = (Math.floor(Math.random()+0.5))*90*DegRad;
-		Trees[n].position.y = 9.8;
-		TreePX[n] = GrdSiz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
-		TreePZ[n] = GrdSiz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
-	}
-	moveTrees();
-}
-
-//- MOVE TREES -----------------//----------------------------------------------
-
-function moveTrees() {
-	// Convert Distances into Meters to match landscape program
-	let a = 13.5*GrdSiz;
-	for (let n = 0; n < TreTot; n ++) {
-		// Set Position 
-		let x = TreePX[n]-air_.MapPos.x-GrdSiz/2;
-		if (x > a) x = x - 2*a;
-		if (x < -a) x = x + 2*a;
-		let z = air_.MapPos.z-TreePZ[n]-GrdSiz/2;
-		if (z > a) z = z - 2*a;
-		if (z < -a) z = z + 2*a;
-		let y = -grd_.SPS.y*gen_.AltAdj+9.8;	// Objects elevate above ground as we climb to prevent flicker
-		Trees[n].position.set(x,y,z);
-	}
-}
-
-function makeTClr(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	// Assign colors
-	let idx, i;
-	for (let n = 0; n < t0Area*4; n+=4) {
-		i = Math.floor(Weight*Math.random());
-		dtData[n  ] = red[i];
-		dtData[n+1] = grn[i];
-		dtData[n+2] = blu[i];
-		dtData[n+3] = 255;
-	}
-}
-
-/* Load and Move Fixed Objects ===============================================*/
-/* These objects include the airfield, islands and hangar */
+//- LOAD OBJECTS ---------------//----------------------------------------------
 
 function loadObject() {
 	for (let i = 0; i < ObjNum; i++) {		// For Each Object
@@ -622,7 +518,8 @@ function loadObject() {
 	}
 }
 
-// Init Objects
+//- INIT OBJECTS ---------------//----------------------------------------------
+
 function initObject() {
 	for (let i = 0; i < ObjNum; i++) {
 		// Set Position (cause Objects to elevate above ground as we climb to prevent flicker)
@@ -634,7 +531,8 @@ function initObject() {
 	}
 }
 
-// Move Objects
+//- MOVE OBJECTS ---------------//----------------------------------------------
+
 function moveObject() {
 	// Convert Distances into Meters to match landscape program
 	for (let i = 0; i < ObjNum; i ++) {
