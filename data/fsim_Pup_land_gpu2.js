@@ -156,8 +156,8 @@ let grd_ = {
 		Siz: GrdSiz,			// Size of smallest square
 		Stp: 3,					// Squares in each of first 2 grids
 		Grx: [],				// Index of Grids (0-2)
-		Idx: [G0Indx,G1Indx],	// Index to Patterns
-		Mat: [G0MPtr,G1MPtr,G2MPtr], // Materials
+		Idx: [0],				// Index to Patterns
+		Mat: [0],				// Index to Materials
 	}
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
