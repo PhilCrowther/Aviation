@@ -430,12 +430,12 @@ function makeVrtD(dtColr,dtData,Weight) {
 function initRoads(rd0_,rd1_,rd2_,scene) {
 	rd0_.r0Data = new Uint8Array(4*rd0_.r0Size*rd0_.r0Size);
 	initRClr(rd0_.rodclr,rd0_.r0Data,1);
-	rd0_.txtrod = new THREE.DataTexture(rd0_.r0Data,rd0_.r0Size,rd0_.r0Size);
-	rd0_.txtrod.format = THREE.RGBAFormat;
-	rd0_.txtrod.magFilter = THREE.LinearFilter;
-	rd0_.txtrod.minFilter = THREE.LinearMipMapLinearFilter;
+	rd0_.txtrod = new DataTexture(rd0_.r0Data,rd0_.r0Size,rd0_.r0Size);
+	rd0_.txtrod.format = RGBAFormat;
+	rd0_.txtrod.magFilter = LinearFilter;
+	rd0_.txtrod.minFilter = LinearMipMapLinearFilter;
 	rd0_.txtrod.generateMipmaps = true;
-	rd0_.txtrod.wrapS = rd0_.txtrod.wrapT = THREE.RepeatWrapping;
+	rd0_.txtrod.wrapS = rd0_.txtrod.wrapT = RepeatWrapping;
 	rd0_.txtrod.offset.set(0,0);
 	rd1_.Txt = rd0_.txtrod;
 	rd2_.Txt = rd0_.txtrod;
@@ -446,7 +446,7 @@ function initRoads(rd0_,rd1_,rd2_,scene) {
 function initRClr(dtColr,dtData,Weight) {
 	// Load 2 colors
 	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
+		let clr = new Color(dtColr[i]);
 		red[i] = Math.floor(clr.r * 255);
 		grn[i] = Math.floor(clr.g * 255);
 		blu[i] = Math.floor(clr.b * 255);
@@ -480,14 +480,14 @@ function init1Road(Rod,scene) {
 			Rod.MXV[i] = zx;
 			zx = zx + Rod.Siz;
 		}
-		let geometry = new THREE.PlaneGeometry(25*Ft2Mtr,Rod.Siz);	// N/S Road;
+		let geometry = new PlaneGeometry(25*Ft2Mtr,Rod.Siz);	// N/S Road;
 		let DatTxt = Rod.Txt;
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = gen_.maxAns;		// ###
 		DatTxt.needsUpdate = true;
-		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
+			Rod.Ptr[n] = new Mesh(geometry,material);
 			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
 		}
 	}
@@ -500,14 +500,14 @@ function init1Road(Rod,scene) {
 			Rod.MXV[i] = zx;
 			zx = zx + Rod.Siz;
 		}
-		let geometry = new THREE.PlaneGeometry(Rod.Siz,25*Ft2Mtr);	// E/W Road;
+		let geometry = new PlaneGeometry(Rod.Siz,25*Ft2Mtr);	// E/W Road;
 		let DatTxt = Rod.Txt;
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = gen_.maxAns;		// ###
 		DatTxt.needsUpdate = true;
-		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
+			Rod.Ptr[n] = new Mesh(geometry,material);
 			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
 		}
 	}
