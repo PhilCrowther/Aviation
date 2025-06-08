@@ -77,7 +77,7 @@ const BegTmp = 288.15;			// K = 59F (loaded into _air)
 //- GENERAL VARIABLES ----------//----------------------------------------------
 
 let gen_ = {
-		//- Flght Controls
+		// Flght Controls
 		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
 		PwrDif:	0,				// Power % Input - Value
 		InpBrk:	0,				// Brakes
@@ -87,13 +87,17 @@ let gen_ = {
 		SndFlg:	0,				// Sound (0 = off; 1 = on)
 		StatOn:	1,				// Stats (0 = off, 1 = on)
 		LnFFlg:	1,				// Lensflare
-		//	Program Flags
+		// Program Flags
 		LodFlg:	0,				// Set at end of initialization
 		LodSnd:	0,				// Set when sound initialized
 		MYGFlg:	0,				// My Guns (1 = firing)
-		//	Altitude Adjustment
+		// Altitude Adjustment
 		AltAdj:	0.99,			// Raises objects above map as altitude increases
 		AltDif:	0,
+		// Misc
+		contxt: 0,
+		canvas: 0,
+		maxAns: 0,
 	}
 
 let tim_ = {
