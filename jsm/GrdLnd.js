@@ -179,13 +179,7 @@ function initGrdMat(grd_,context) {
 	makeTrees();
 }
 
-function initGrdTxt(grd_,context) {
-	initGr0Txt(grd_,context);
-	initGr1Txt(grd_,context);
-	initGr2Txt(grd_,context);
-}
-
-function initGr0Txt(grd_,context) {
+function initGr0Mat(grd_,context) {
 	for (let n = 0; n < txtTot; n++) {
 		// Make Large Image and Get ImageData
 		context.fillStyle = GrdDrt;
@@ -219,7 +213,7 @@ function initGr0Txt(grd_,context) {
 	}
 }
 
-function initGr1Txt(grd_,context) {
+function initGr1Mat(grd_,context) {
 // This creates up to 81 unique 3X3 Textures (similar to FSX textures)
 // Created using ImageData from Gr4IPtr and patterns from Gr4TPtr
 // Stored by ID number
@@ -254,7 +248,7 @@ function initGr1Txt(grd_,context) {
 	}
 }
 
-function initGr2Txt(grd_,context) {
+function initGr2Mat(grd_,context) {
 	// Need 27 3X3 textures which will be repeated 27 times
 	// Create Grid 6 Texture Data and Materials (9 squares repeated)
 	let yd0, xd0;
