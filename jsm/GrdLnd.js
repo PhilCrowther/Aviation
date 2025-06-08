@@ -193,17 +193,17 @@ function initGr0Mat(grd_,context) {
 		if (n == 4) makeVrtL(whtclr,dtData,1.9,1.5);	// Wheat Line
 		if (n == 5) makeVrtD(bnsclr,dtData,8);	// Bean Dots
 		// Make Materials
-		let DatTxt = new THREE.DataTexture(dtData, dqSize, dqSize);
-		DatTxt.format = THREE.RGBAFormat;
-		DatTxt.magFilter = THREE.LinearFilter;
-		DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
+		let DatTxt = new DataTexture(dtData, dqSize, dqSize);
+		DatTxt.format = RGBAFormat;
+		DatTxt.magFilter = LinearFilter;
+		DatTxt.minFilter = LinearMipMapLinearFilter;
 		DatTxt.generateMipmaps = true;
-		DatTxt.wrapS = DatTxt.wrapT = THREE.RepeatWrapping;
+		DatTxt.wrapS = DatTxt.wrapT = RepeatWrapping;
 		DatTxt.offset.set(0,0);
 		DatTxt.repeat.set(GrdMul,GrdMul);
 		DatTxt.anisotropy = maxAnisotropy;
 		DatTxt.needsUpdate = true;		
-		gt0_.G0MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
 		// e.g. If Repeat X10 and then divide by 10, result = Data
@@ -233,14 +233,14 @@ function initGr1Mat(grd_,context) {
 			}
 		}
 		gt1_.G1DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// This should be the 3X3 image saved
-		let DatTxt = new THREE.DataTexture(gt1_.G1DPtr[n].data,dtSize,dtSize);
-		DatTxt.format = THREE.RGBAFormat;
-		DatTxt.magFilter = THREE.LinearFilter;
-		DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
+		let DatTxt = new DataTexture(gt1_.G1DPtr[n].data,dtSize,dtSize);
+		DatTxt.format = RGBAFormat;
+		DatTxt.magFilter = LinearFilter;
+		DatTxt.minFilter = LinearMipMapLinearFilter;
 		DatTxt.generateMipmaps = true;
 		DatTxt.anisotropy = maxAnisotropy;
 		DatTxt.needsUpdate = true;
-		gt1_.G1MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 		// Gr6Source = Resized Gr5Data		
 		context.putImageData(gt1_.G1DPtr[n],0,0);
 		context.drawImage(canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
@@ -266,14 +266,14 @@ function initGr2Mat(grd_,context) {
 			}
 			//	
 			gt2_.G2DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// Saved, not used yet
-			let DatTxt = new THREE.DataTexture(gt2_.G2DPtr[n].data, dtSize, dtSize);
-			DatTxt.format = THREE.RGBAFormat;
-			DatTxt.magFilter = THREE.LinearFilter;
-			DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
+			let DatTxt = new DataTexture(gt2_.G2DPtr[n].data, dtSize, dtSize);
+			DatTxt.format = RGBAFormat;
+			DatTxt.magFilter = LinearFilter;
+			DatTxt.minFilter = LinearMipMapLinearFilter;
 			DatTxt.generateMipmaps = true;
 			DatTxt.anisotropy = maxAnisotropy;
 			DatTxt.needsUpdate = true;
-			gt2_.G2MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 			n++;
 		}
 	}	
