@@ -164,9 +164,18 @@ let grd_ = {
 		Mat: [0],				// Index to Materials
 	}
 
-/* = Roads =====================//============================================*/
+//= Roads =====================//===============================================
+//- Materials
+let rd0_ = {
+		rodclr: [0xd0b894,0x8e6d3d], // Colors
+		//-	Tones of Dirt Brown Color | #836539 Monochromatic Color
+		//-	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
+		r0Size: 32,
+		r0Data: 0,
+		txtrod: 0,
+	}
 //- North/South
-let Rod1 = {
+let rd1_ = {
 		Typ:	1,
 		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
 		Siz:	2*GrdSiz,		// Size of square
@@ -182,7 +191,7 @@ let Rod1 = {
 		Shd:	1				// Shadow enabled
 	}
 //- East West
-let Rod2 = {
+let rd2_ = {
 		Typ:	2,
 		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
 		Siz:	2*GrdSiz,		// Size of square
@@ -197,13 +206,6 @@ let Rod2 = {
 		Txt:	0,				// Texture Address
 		Shd:	1				// Shadow enabled
 	}
-//- Materials
-let rodclr = [0xd0b894,0x8e6d3d];		// Colors
-//-	Tones of Dirt Brown Color | #836539 Monochromatic Color
-//-	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
-let r0Size = 32;
-let r0Area = r0Size*r0Size;
-let r0Data = new Uint8Array(4*r0Area);
 
 //= Trees ======================================================================
 let TreTot = 64;
