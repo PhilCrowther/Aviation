@@ -427,7 +427,7 @@ function makeVrtD(dtColr,dtData,Weight) {
 
 //= INIT ROADS =================//==============================================
 
-function initRoads(rd0_,rd1_,rd2_,scene) {
+function initRoads(rd0_,rd1_,rd2_,grd_,scene) {
 	rd0_.r0Data = new Uint8Array(4*rd0_.r0Size*rd0_.r0Size);
 	initRClr(rd0_.rodclr,rd0_.r0Data,1);
 	rd0_.txtrod = new DataTexture(rd0_.r0Data,rd0_.r0Size,rd0_.r0Size);
@@ -439,8 +439,8 @@ function initRoads(rd0_,rd1_,rd2_,scene) {
 	rd0_.txtrod.offset.set(0,0);
 	rd1_.Txt = rd0_.txtrod;
 	rd2_.Txt = rd0_.txtrod;
-	init1Road(rd1_,scene);
-	init1Road(rd2_,scene);
+	init1Road(rd1_,grd_,scene);
+	init1Road(rd2_,grd_,scene);
 }
 
 function initRClr(dtColr,dtData,Weight) {
@@ -453,7 +453,8 @@ function initRClr(dtColr,dtData,Weight) {
 	}
 	// Assign colors
 	let idx, i;
-	for (let n = 0; n < t0Area*4; n+=4) {
+	let end =  4*rd0_.r0Size*rd0_.r0Size;
+	for (let n = 0; n <end; n+=4) {
 		i = Math.floor(Weight*Math.random());
 		dtData[n  ] = red[i];
 		dtData[n+1] = grn[i];
@@ -462,7 +463,7 @@ function initRClr(dtColr,dtData,Weight) {
 	}
 }
 
-function init1Road(Rod,scene) {
+function init1Road(Rod,grd_,scene) {
 	// Load Variables
 	Rod.RCi = Rod.RCs-1;				// Max Index Value
 	Rod.MZV[Rod.RCi] = 0;				// Z-Values
@@ -474,7 +475,7 @@ function init1Road(Rod,scene) {
 
 	if (Rod.Typ == 1) {
 		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz-0.5*GrdSiz;
+		let zx = -0.5*(Rod.RCs)*Rod.Siz-0.5*grd_.Siz;
 		for (let i = 0; i < Rod.RCs; i++) {
 			Rod.MZV[i] = zx;
 			Rod.MXV[i] = zx;
@@ -494,7 +495,7 @@ function init1Road(Rod,scene) {
 	
 	if (Rod.Typ == 2) {
 		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz+0.5*GrdSiz;
+		let zx = -0.5*(Rod.RCs)*Rod.Siz+0.5*grd_.Siz;
 		for (let i = 0; i < Rod.RCs; i++) {
 			Rod.MZV[i] = zx;
 			Rod.MXV[i] = zx;
@@ -611,6 +612,119 @@ function move1Road(grd_,Rod) {
 			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-Rod.MZV[z]);
 			n++;
 		}
+	}
+}
+
+/*******************************************************************************
+*
+*	TREES
+*
+*******************************************************************************/
+
+//= INIT TREES =================//==============================================
+
+function initTrees(tre_,grd_,scene) {
+	let points = [
+		new Vector2(4.0,-6.7),	// Bot
+		new Vector2(4.9,-3.0),
+		new Vector2(4.2, 3.0),
+		new Vector2(3,5, 2.0),
+		new Vector2(1.8, 5.8),
+		new Vector2(0.1, 6.0)		// Top
+	];
+	let geotre = new LatheGeometry(points,6);
+	let geotrn = new BoxGeometry(0.9,3.0,0.9);
+	let geoshd = new CircleGeometry(6.0,16);
+	// Make Texture
+	tre_.t0Data = new Uint8Array(4*tre_.t0Size*tre_.t0Size);
+	initTClr(tre_.treclr,tre_.t0Data,1.9);
+	tre_.txttre = new DataTexture(tre_.t0Data,tre_.t0Size,tre_.t0Size);
+	tre_.txttre.format = RGBAFormat;
+	tre_.txttre.magFilter = LinearFilter;
+	tre_.txttre.minFilter = LinearMipMapLinearFilter;
+	tre_.txttre.generateMipmaps = true;
+	tre_.txttre.anisotropy = gen_.maxAns;	// ###
+	tre_.txttre.needsUpdate = true;
+	let mtltre = new MeshLambertNodeMaterial({colorNode: texture(tre_.txttre)});
+	let mtltrn = new MeshLambertNodeMaterial({colorNode: color(0x161005)});
+	let mtlshd = new MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
+	// Make Prototype Tree
+	let tre0 = new Mesh(geotre,mtltre);
+	let trnk = new Mesh(geotrn,mtltrn);
+	trnk.position.y = -7.9;
+	tre0.add(trnk);
+	let shad = new Mesh(geoshd,mtlshd);
+	shad.position.y = -9.4;
+	shad.rotation.x = -90*DegRad;
+	tre0.add(shad);
+	tre_.t0Tree[0] = tre0.clone();
+	// Make Row of Trees
+	let sx = 15.0;
+	let ry = 13.7;
+	let dy = 13.7;
+	let px = sx;
+	for (let x = 0; x < 10; x++) {
+		let tree = tre0.clone();
+		tree.position.x = px;
+		ry = Mod360(360*Math.random());
+		tree.rotation.y = ry*DegRad;
+		tree.rotation.z = Mod360(2*Math.random()*DegRad);
+		tree.rotation.x = Mod360(2*Math.random()*DegRad);
+		ry = ry+dy;
+		px = px+sx;
+		tre_.t0Tree[0].add(tree);
+	}
+	tre_.t0Tree[0].position.x = 0;
+	tre_.t0Tree[0].position.y = 9.8;
+	let pz = 90;
+	for (let n = 1; n < tre_.TreTot; n++) {
+		tre_.t0Tree[n] = tre_.t0Tree[0].clone();
+		scene.add(tre_.t0Tree[n]);
+		tre_.t0Tree[n].rotation.y = (Math.floor(Math.random()+0.5))*90*DegRad;
+		tre_.t0Tree[n].position.y = 9.8;
+		tre_.t0PosX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
+		tre_.t0PosZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
+	}
+	moveTrees(tre_,grd_,air_,gen_);
+}
+
+function initTClr(dtColr,dtData,Weight) {
+	// Load 2 colors
+	for (let i = 0; i < 2; i++) {
+		let clr = new Color(dtColr[i]);
+		red[i] = Math.floor(clr.r * 255);
+		grn[i] = Math.floor(clr.g * 255);
+		blu[i] = Math.floor(clr.b * 255);
+	}
+	// Assign colors
+	let idx, i;
+	let end = 4*tre_.t0Size*tre_.t0Size;
+	for (let n = 0; n < end; n+=4) {
+		i = Math.floor(Weight*Math.random());
+		dtData[n  ] = red[i];
+		dtData[n+1] = grn[i];
+		dtData[n+2] = blu[i];
+		dtData[n+3] = 255;
+	}
+}
+
+//= MOVE TREES =================//==============================================
+
+//- MOVE TREES -----------------//----------------------------------------------
+
+function moveTrees(tre_,grd_,air_,gen_) {
+	// Convert Distances into Meters to match landscape program
+	let a = 13.5*grd_.Siz;
+	for (let n = 0; n < tre_.TreTot; n ++) {
+		// Set Position 
+		let x = tre_.t0PosX[n]-air_.MapPos.x-grd_.Siz/2;
+		if (x > a) x = x - 2*a;
+		if (x < -a) x = x + 2*a;
+		let z = air_.MapPos.z-tre_.t0PosZ[n]-grd_.Siz/2;
+		if (z > a) z = z - 2*a;
+		if (z < -a) z = z + 2*a;
+		let y = -grd_.SPS.y*gen_.AltAdj+9.8;	// Objects elevate above ground as we climb to prevent flicker
+		tre_.t0Tree[n].position.set(x,y,z);
 	}
 }
 
@@ -950,11 +1064,23 @@ function move1GrMap(grx_, grd_) {
 
 /*******************************************************************************
 *
+*	SUBROUTINES
+*
+*******************************************************************************/
+
+//  Converts degrees to 360
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360; // Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
+return deg;}
+
+/*******************************************************************************
+*
 *	EXPORTS
 *
 *******************************************************************************/
 
-export {initGrdMat, GrdMap, initRoads, moveRoads};
+export {initGrdMat,GrdMap,initRoads,moveRoads,initTrees,moveTrees};
 
 /*******************************************************************************
 *
