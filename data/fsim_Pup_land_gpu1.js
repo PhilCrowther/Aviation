@@ -207,20 +207,20 @@ let rd2_ = {
 		Shd:	1				// Shadow enabled
 	}
 
-//= Trees ======================================================================
-let TreTot = 64;
-let t0Size = 128;
-let t0Area = t0Size*t0Size;
-let t0Data = new Uint8Array(4*t0Area);
-let Trees = [];
-	Trees[TreTot-1] = 0;
-let TreePZ = [0];
-	TreePZ[TreTot-1] = 0;
-let	TreePX = [0];
-	TreePX[TreTot-1] = 0;
-let treclr = [0x75b24c,0x2e471e];		// Colors
-//	Hot Pepper Green ( similar ) Color | 568338 Monochromatic Color
-//	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
+//= Trees ======================//==============================================
+
+let tre_ = {
+		treclr: [0x75b24c,0x2e471e], // Colors
+		//	Hot Pepper Green ( similar ) Color | 568338 Monochromatic Color
+		//	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
+		t0Size: 128,
+		t0Data: 0,
+		txttre: 0,
+		TreTot: 64,
+		t0Tree: [];
+		t0PosZ: [];
+		t0PosX: [],
+}
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	flight = 0;
