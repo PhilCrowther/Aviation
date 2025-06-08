@@ -453,7 +453,7 @@ function initRClr(dtColr,dtData,Weight) {
 	}
 	// Assign colors
 	let idx, i;
-	for (let n = 0; n < t0Area*4; n+=4) {
+	for (let n = 0; n < 4*rd0_.r0Size*rd0_.r0Size; n+=4) {
 		i = Math.floor(Weight*Math.random());
 		dtData[n  ] = red[i];
 		dtData[n+1] = grn[i];
