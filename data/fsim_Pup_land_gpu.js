@@ -77,7 +77,7 @@ const BegTmp = 288.15;			// K = 59F (loaded into _air)
 //- GENERAL VARIABLES ----------//----------------------------------------------
 
 let gen_ = {
-		//- Flght Controls
+		// Flght Controls
 		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
 		PwrDif:	0,				// Power % Input - Value
 		InpBrk:	0,				// Brakes
@@ -87,13 +87,17 @@ let gen_ = {
 		SndFlg:	0,				// Sound (0 = off; 1 = on)
 		StatOn:	1,				// Stats (0 = off, 1 = on)
 		LnFFlg:	1,				// Lensflare
-		//	Program Flags
+		// Program Flags
 		LodFlg:	0,				// Set at end of initialization
 		LodSnd:	0,				// Set when sound initialized
 		MYGFlg:	0,				// My Guns (1 = firing)
-		//	Altitude Adjustment
+		// Altitude Adjustment
 		AltAdj:	0.99,			// Raises objects above map as altitude increases
 		AltDif:	0,
+		// Misc
+		contxt: 0,
+		canvas: 0,
+		maxAns: 0,
 	}
 
 let tim_ = {
@@ -143,114 +147,8 @@ let sky_ = {
 		ShdDst: 1500,			// Shadow Distance (meters)
 	}
 
-//= GRIDS =======================//=============================================
-//= Textures Data ==============//==============================================
-//- All textures are 512X512
-let dqSize = 1024;
-let dqArea = dqSize*dqSize;
-let dtSize = 512;
-let dtArea = dtSize*dtSize;
-let dtData = 0;
-let txtTot = 6;					// Total Textures
-//- Canvas
-let ImgSiz = 1024;				// !!! Change this for each image
-//= Grid 4 Data ================//==============================================
-//- 1/4 section squares (1/2 mile X 1/2 mile)
-//- Variables
-let GrdMul = 10;
-let red = [0,0];
-let grn = [0,0];
-let blu = [0,0];
-//- Colors
-let GrdDrt = "#1c160e";			// Color of underlying dirt (affects brightness)
-let drtclr = [0x8e6d3d,0x47361e]; // Dirt
-let pstclr = [0x00b000,0x005000]; // Pasture
-let cvrclr = [0x75b24c,0x466b2d]; // Green
-let whtclr = [0xfbf4e5,0xeabb63]; // Wheat
-let bnsclr = [0xacd193,0x5d8e3d]; // Beans
-//	Tones of Dirt Brown Color | #836539 Monochromatic Color
-//	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
-//	Neutral Scheme (Brown to Green)
-//	0x836539, 0x837738, 0x7b8338, 0x698338, 0x568338, 0x448338
-//	Hot Pepper Green ( similar ) Color | 568338 Monochromatic Color
-//	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
-//	[https://icolorpalette.com/color/dirt-brown
-let count0;
-//= MATERIALS ==================//==============================================
-//= Grid 0 Data ================//==============================================
-//- Image Data
-let G0DPtr = [];
-	G0DPtr[txtTot-1] = 0;
-//- Materials
-let G0MPtr = [];
-	G0MPtr[txtTot-1] = 0;
-// Patterns for Grid 5 3X3 Textures
-// Also used to draw Grid 4 textures
-// 0 = Dirt
-// 1 = Pasture
-// 2 = Plowed Dirt
-// 3 = Green Vertical
-// 4 = Wheat
-// 5 = Green Horizontal
-// Per Pattern: 1X 0-2 2X 3-5
-let G0Id00 = [4,3,5,4,3,0,5,2,1];
-let G0Id01 = [3,0,4,1,2,4,5,3,5];
-let G0Id02 = [5,1,3,4,5,0,2,4,3];
-let G0Id03 = [2,4,1,3,5,3,5,0,4];
-let G0Id04 = [5,1,5,0,3,4,2,4,3];
-let G0Id05 = [3,0,5,3,4,5,1,2,4];
-let G0Id06 = [2,0,3,5,3,1,4,4,5];
-let G0Id07 = [1,5,4,3,5,0,2,4,3];
-let G0Id08 = [2,3,0,5,3,1,4,5,4];
-let G0Id09 = [0,2,5,3,4,3,5,1,4];
-let G0Id10 = [4,3,5,4,5,2,1,3,0];
-let G0Id11 = [4,5,3,0,1,4,3,5,2];
-let G0Id12 = [3,1,2,4,5,3,5,0,4];
-let G0Id13 = [0,5,3,1,4,2,4,3,5];
-let G0Id14 = [1,4,2,5,3,0,4,5,3];
-let G0Id15 = [4,1,5,0,3,4,3,5,2];
-let G0Indx = [
-		G0Id00,G0Id01,G0Id02,G0Id03,G0Id04,G0Id05,G0Id06,G0Id07,G0Id08,G0Id09,
-		G0Id10,G0Id11,G0Id12,G0Id13,G0Id14,G0Id15
-	];
-//= Grid 1 Data ================//==============================================
-let Gr1Mul = 3;
-let Gr1Siz = Math.floor(dtSize/Gr1Mul);
-// Image Data (Source Data - Resized)
-let G1SPtr = [];
-	G1SPtr[G0Indx.length-1] = 0;
-// Image Data
-let G1DPtr = [];
-	G1DPtr[G0Indx.length-1] = 0;
-// Materials
-let G1MPtr = [];
-	G1MPtr[G1DPtr.length-1] = 0;
-// Index to Display of G1 Textures by Type
-// Used by G0 to position squares
-// And by G1 to create textures
-let G1Indx = [
-		 0, 1, 2, 3, 4, 5, 6, 7, 8,	//value of 9-15 in first row causes white space 
-		10, 2, 4,15,10,12,10, 9, 5,
-		 3,12,11, 8,13, 3, 1, 0,14,
-		 0, 7,10,14,12,10,11, 2, 4,
-		 9,14, 5, 4,11,13, 8,12, 7,	// 11 = Over Airport
-		 4, 7,15,12, 3,11, 9,13, 4,
-		11,12, 8, 5,13, 2,10,15,13,
-		 6,10, 7, 9,15,14,12, 5,11,
-		 0,13, 6,10, 3, 2,14, 4, 8
-	];
-//= Grid 2 Data ================//==============================================
-let Gr2Mul = 3;
-let Gr2Siz = Math.floor(dtSize/Gr2Mul);
-// Image Data (Source Data - Resized)
-let G2SPtr = [0,0,0,0,0,0,0,0,0];
-// Image Data
-let G2DPtr = [0,0,0,0,0,0,0,0,0];
-// Materials
-let G2MPtr = [0,0,0,0,0,0,0,0,0];
-
 //= GRID MODULE ================//==============================================
-//	This ocean map has 3 nested grids of squares.
+//	This Map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
@@ -262,9 +160,10 @@ let grd_ = {
 		Siz: GrdSiz,			// Size of smallest square
 		Stp: 3,					// Squares in each of first 2 grids
 		Grx: [],				// Index of Grids (0-2)
-		Idx: [G0Indx,G1Indx],	// Index to Patterns
-		Mat: [G0MPtr,G1MPtr,G2MPtr], // Materials
+		Idx: [0],				// Index to Patterns
+		Mat: [0],				// Index to Materials
 	}
+
 /* = Roads =====================//============================================*/
 //- North/South
 let Rod1 = {
@@ -305,6 +204,7 @@ let rodclr = [0xd0b894,0x8e6d3d];		// Colors
 let r0Size = 32;
 let r0Area = r0Size*r0Size;
 let r0Data = new Uint8Array(4*r0Area);
+
 //= Trees ======================================================================
 let TreTot = 64;
 let t0Size = 128;
