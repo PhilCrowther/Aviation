@@ -164,6 +164,62 @@ let grd_ = {
 		Mat: [0],				// Index to Materials
 	}
 
+/* = Roads =====================//============================================*/
+//- North/South
+let Rod1 = {
+		Typ:	1,
+		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	2*GrdSiz,		// Size of square
+		Stp:	1,				// Squares to flip
+		RCi:	0,				// Rows and Columns Index (computed)
+		MZV:	[0],			// Ground Z Value
+		MXV:	[0],			// Ground X Value
+		Nor:	0,				// Max North Square (updated)
+		Est:	0,				// Max East Square (updated)
+		Num:	0,				// Size of array (computed)
+		Ptr:	[0],			// Ground Address
+		Txt:	0,				// Texture Address
+		Shd:	1				// Shadow enabled
+	}
+//- East West
+let Rod2 = {
+		Typ:	2,
+		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	2*GrdSiz,		// Size of square
+		Stp:	1,				// Squares to flip
+		RCi:	0,				// Rows and Columns Index (computed)
+		MZV:	[0],			// Ground Z Value
+		MXV:	[0],			// Ground X Value
+		Nor:	0,				// Max North Square (updated)
+		Est:	0,				// Max East Square (updated)
+		Num:	0,				// Size of array (computed)
+		Ptr:	[0],			// Ground Address
+		Txt:	0,				// Texture Address
+		Shd:	1				// Shadow enabled
+	}
+//- Materials
+let rodclr = [0xd0b894,0x8e6d3d];		// Colors
+//-	Tones of Dirt Brown Color | #836539 Monochromatic Color
+//-	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
+let r0Size = 32;
+let r0Area = r0Size*r0Size;
+let r0Data = new Uint8Array(4*r0Area);
+
+//= Trees ======================================================================
+let TreTot = 64;
+let t0Size = 128;
+let t0Area = t0Size*t0Size;
+let t0Data = new Uint8Array(4*t0Area);
+let Trees = [];
+	Trees[TreTot-1] = 0;
+let TreePZ = [0];
+	TreePZ[TreTot-1] = 0;
+let	TreePX = [0];
+	TreePX[TreTot-1] = 0;
+let treclr = [0x75b24c,0x2e471e];		// Colors
+//	Hot Pepper Green ( similar ) Color | 568338 Monochromatic Color
+//	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
+
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	flight = 0;
 let air_ = {
