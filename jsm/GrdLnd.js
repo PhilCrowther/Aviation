@@ -109,13 +109,16 @@ let gt0_ = {
 		G0Id13: [0,5,3,1,4,2,4,3,5],
 		G0Id14: [1,4,2,5,3,0,4,5,3],
 		G0Id15: [4,1,5,0,3,4,3,5,2],
-		G0Indx: [
-			gt0_.G0Id00,gt0_.G0Id01,gt0_.G0Id02,gt0_.G0Id03,
-			gt0_.G0Id04,gt0_.G0Id05,gt0_.G0Id06,gt0_.G0Id07,
-			gt0_.G0Id08,gt0_.G0Id09,gt0_.G0Id10,gt0_.G0Id11,
-			gt0_.G0Id12,gt0_.G0Id13,gt0_.G0Id14,gt0_.G0Id15,
-		],
+		G0Indx: [],
 	}
+//- Adjustment
+gt0_.G0Indx = [
+		gt0_.G0Id00,gt0_.G0Id01,gt0_.G0Id02,gt0_.G0Id03,
+		gt0_.G0Id04,gt0_.G0Id05,gt0_.G0Id06,gt0_.G0Id07,
+		gt0_.G0Id08,gt0_.G0Id09,gt0_.G0Id10,gt0_.G0Id11,
+		gt0_.G0Id12,gt0_.G0Id13,gt0_.G0Id14,gt0_.G0Id15,
+	];
+
 //= Grid 1 Data ================//==============================================
 let Gr1Mul = 3;
 let Gr1Siz = Math.floor(dtSize/Gr1Mul);
