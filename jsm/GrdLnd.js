@@ -43,7 +43,6 @@ import {color,texture} from 'three/tsl';
 
 //=	CONVERSIONS ================//==============================================
 let DegRad = Math.PI/180;		// Convert Degrees to Radians
-let maxAnisotropy = 8;
 
 //= GRIDS =======================//=============================================
 //= Textures Data ==============//==============================================
@@ -168,25 +167,25 @@ let gt2_ = {
 
 //= Make Grid Map Textures =====//==============================================
 
-function initGrdMat(grd_,context) {
+function initGrdMat(grd_,gen_) {
 	// Create Links
 	grd_.Idx = [gt0_.G0Indx,gt1_.G1Indx]; // Index to Patterns
 	grd_.Mat = [gt0_.G0MPtr,gt1_.G1MPtr,gt2_.G2MPtr], // Materials
 	// Initialze Textures
-	initGr0Mat(grd_,context);
-	initGr1Mat(grd_,context);
-	initGr2Mat(grd_,context);
+	initGr0Mat(grd_,gen_);
+	initGr1Mat(grd_,gen_);
+	initGr2Mat(grd_,gen_);
 	// Roads and Trees
 	initRoads();
 	makeTrees();
 }
 
-function initGr0Mat(grd_,context) {
+function initGr0Mat(grd_,gen_) {
 	for (let n = 0; n < txtTot; n++) {
 		// Make Large Image and Get ImageData
-		context.fillStyle = GrdDrt;
-		context.fillRect(0,0,dqSize,dqSize);
-		gt0_.G0DPtr[n] = context.getImageData(0,0,dqSize,dqSize);
+		gen_.contxt.fillStyle = GrdDrt;
+		gen_.contxt.fillRect(0,0,dqSize,dqSize);
+		gt0_.G0DPtr[n] = gen_.contxt.getImageData(0,0,dqSize,dqSize);
 		let dtData = gt0_.G0DPtr[n].data;
 		makeClr1(drtclr,dtData,1.6);	// Dirt
 		if (n == 1) makeClr2(pstclr,dtData,4);	// Pasture
@@ -209,13 +208,13 @@ function initGr0Mat(grd_,context) {
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
 		// e.g. If Repeat X10 and then divide by 10, result = Data
-		context.putImageData(gt0_.G0DPtr[n],0,0);
-		context.drawImage(canvas,0,0,dqSize,dqSize,0,0,Gr1Siz,Gr1Siz);		// Draw 1024 image into 1/3 of 512 canvas
-		gt1_.G1SPtr[n] = context.getImageData(0,0,Gr1Siz,Gr1Siz);				//
+		gen_.contxt.putImageData(gt0_.G0DPtr[n],0,0);
+		gen_.contxt.drawImage(gen_.canvas,0,0,dqSize,dqSize,0,0,Gr1Siz,Gr1Siz);		// Draw 1024 image into 1/3 of 512 canvas
+		gt1_.G1SPtr[n] = gen_.contxt.getImageData(0,0,Gr1Siz,Gr1Siz);				//
 	}
 }
 
-function initGr1Mat(grd_,context) {
+function initGr1Mat(grd_,gen_) {
 // This creates up to 81 unique 3X3 Textures (similar to FSX textures)
 // Created using ImageData from Gr4IPtr and patterns from Gr4TPtr
 // Stored by ID number
@@ -230,11 +229,11 @@ function initGr1Mat(grd_,context) {
 		for (let ys1 = 0; ys1 < 3; ys1++) {	// Find source within 9x9 Square
 			for (let xs1 = 0; xs1 < 3; xs1++) {
 				let ImgDat = gt1_.G1SPtr[stIndx[idx]];	// Correct, but causes dirt lines
-				context.putImageData(ImgDat,Math.floor(xs1*fx),Math.floor(ys1*fx));
+				gen_.contxt.putImageData(ImgDat,Math.floor(xs1*fx),Math.floor(ys1*fx));
 				idx++;
 			}
 		}
-		gt1_.G1DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// This should be the 3X3 image saved
+		gt1_.G1DPtr[n] = gen_.contxt.getImageData(0,0,dtSize,dtSize);	// This should be the 3X3 image saved
 		let DatTxt = new DataTexture(gt1_.G1DPtr[n].data,dtSize,dtSize);
 		DatTxt.format = RGBAFormat;
 		DatTxt.magFilter = LinearFilter;
@@ -244,13 +243,13 @@ function initGr1Mat(grd_,context) {
 		DatTxt.needsUpdate = true;
 		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
 		// Gr6Source = Resized Gr5Data		
-		context.putImageData(gt1_.G1DPtr[n],0,0);
-		context.drawImage(canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
-		gt2_.G2SPtr[n] = context.getImageData(0,0,Gr2Siz,Gr2Siz);
+		gen_.contxt.putImageData(gt1_.G1DPtr[n],0,0);
+		gen_.contxt.drawImage(gen_.canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
+		gt2_.G2SPtr[n] = gen_.contxt.getImageData(0,0,Gr2Siz,Gr2Siz);
 	}
 }
 
-function initGr2Mat(grd_,context) {
+function initGr2Mat(grd_,gen_) {
 	// Need 27 3X3 textures which will be repeated 27 times
 	// Create Grid 6 Texture Data and Materials (9 squares repeated)
 	let yd0, xd0;
@@ -263,11 +262,11 @@ function initGr2Mat(grd_,context) {
 			for (let ys1 = 0; ys1 < 3; ys1++) {	// Find source within 9x9 Square
 				for (let xs1 = 0; xs1 < 3; xs1++) {
 					let ImgDat = gt2_.G2SPtr[gt1_.G1Indx[ys0*27+xs0*3+ys1*9+xs1]];
-					context.putImageData(ImgDat,Math.floor(xs1*fx),Math.floor(ys1*fx));
+					gen_.contxt.putImageData(ImgDat,Math.floor(xs1*fx),Math.floor(ys1*fx));
 				}
 			}
 			//	
-			gt2_.G2DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// Saved, not used yet
+			gt2_.G2DPtr[n] = gen_.contxt.getImageData(0,0,dtSize,dtSize);	// Saved, not used yet
 			let DatTxt = new DataTexture(gt2_.G2DPtr[n].data, dtSize, dtSize);
 			DatTxt.format = RGBAFormat;
 			DatTxt.magFilter = LinearFilter;
@@ -489,7 +488,7 @@ function initRoad2(Rod) {
 		let geometry = new PlaneGeometry(25*Ft2Mtr,Rod.Siz);	// N/S Road;
 		let DatTxt = Rod.Txt;
 		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = maxAnisotropy;		// ###
+		DatTxt.anisotropy = gen_.maxAns;		// ###
 		DatTxt.needsUpdate = true;
 		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		for (let n = 0; n < Rod.Num; n++) {	// Source
@@ -509,7 +508,7 @@ function initRoad2(Rod) {
 		let geometry = new PlaneGeometry(Rod.Siz,25*Ft2Mtr);	// E/W Road;
 		let DatTxt = Rod.Txt;
 		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = maxAnisotropy;		// ###
+		DatTxt.anisotropy = gen_.maxAns;		// ###
 		DatTxt.needsUpdate = true;
 		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		for (let n = 0; n < Rod.Num; n++) {	// Source
@@ -635,7 +634,7 @@ function makeTrees() {
 	txttre.magFilter = LinearFilter;
 	txttre.minFilter = LinearMipMapLinearFilter;
 	txttre.generateMipmaps = true;
-	txttre.anisotropy = maxAnisotropy;	// ###
+	txttre.anisotropy = gen_.maxAns;	// ###
 	txttre.needsUpdate = true;
 	let mtltre = new MeshLambertNodeMaterial({colorNode: texture(txttre)});
 	let mtltrn = new MeshLambertNodeMaterial({colorNode: color(0x161005)});
