@@ -53,8 +53,6 @@ let dtSize = 512;
 let dtArea = dtSize*dtSize;
 let dtData = 0;
 let txtTot = 6;					// Total Textures
-//- Canvas
-let ImgSiz = 1024;				// !!! Change this for each image
 //= Grid 4 Data ================//==============================================
 //- 1/4 section squares (1/2 mile X 1/2 mile)
 //- Variables
