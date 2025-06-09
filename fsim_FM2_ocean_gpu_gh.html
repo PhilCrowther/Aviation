@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Jun 2025
+Version dated 9 Jun 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -390,6 +390,11 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	xsh_.ObjGrp = [new THREE.Object3D,new THREE.Object3D];
 	xsh_.MapSpd = [new THREE.Vector3(),new THREE.Vector3()];
 	xsh_.ShpLok = [new THREE.Object3D,0];
+	// #### TEST
+//	xsh_.ObjSrc = ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb",
+//				   "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"];
+	xsh_.ObjSrc[0] = "https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb";
+
 //= ANIMATED FLAGS =============//==============================================
 //	Adjustments
 	flg_.ObjRot = [new THREE.Euler(0,97.5*DegRad,0)]; // Adjust to make the flag visible at start
@@ -1731,8 +1736,8 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.VLBk) key_.LBkflg = 1;	// View - 135 deg left
 	if (event.keyCode == key_.VRBk) key_.RBkflg = 1;	// View - 135 deg right
 	if (event.keyCode == key_.VCBk) key_.CBkflg = 1;	// View - 180 deg back
-	// Guns
-	if (event.keyCode == key_.Guns) { // Guns
+	// Guns (Multiple Barrels)
+	if (event.keyCode == key_.Guns) {					// Guns
 		if (!gen_.PawsOn) {
 			for (let n = 0; n < myg_.ObjNum; n ++) {
 				if (gen_.SndFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();
@@ -1783,7 +1788,7 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == key_.VLBk) key_.LBkflg = 0;	// View - 135 deg left
 	if (event.keyCode == key_.VRBk) key_.RBkflg = 0;	// View - 135 deg right
 	if (event.keyCode == key_.VCBk) key_.CBkflg = 0;	// View - 180 deg back
-	// Guns
+	// Guns (Multiple Barrels)
 	if (event.keyCode == key_.Guns) {					// Guns
 		for (let n = 0; n < myg_.ObjNum; n ++) {
 			myg_.SndPtr[n].stop();
@@ -1813,12 +1818,8 @@ function posnRSet() {
 //. Toggle Pause ...............//..............................................
 function toglPaws() {
 	gen_.PawsOn = 1 - gen_.PawsOn;
-	if (gen_.PawsOn && gen_.SndFlg) {		//On to Off
-		stopSounds();
-	}
-	if (!gen_.PawsOn && gen_.SndFlg) {	// Off to On
-		playSounds();
-	}
+	if ( gen_.PawsOn && gen_.SndFlg) stopSounds();	// Sounds On to Off
+	if (!gen_.PawsOn && gen_.SndFlg) playSounds();	// Sounds Off to On
 	PawsText();
 }
 
@@ -1848,14 +1849,10 @@ function toglView() {
 
 //. Toggle Sound ...............//..............................................
 function toglSoun() {
-	if (!gen_.PawsOn) {
-		gen_.SndFlg = 1 - gen_.SndFlg;
-		if (gen_.SndFlg) {			// Off to On
-			playSounds();
-		}
-		else {					// On to Off
-			stopSounds();
-		}
+	if (!gen_.PawsOn) {			// If not paused
+		gen_.SndFlg = 1 - gen_.SndFlg;	// Switch flag
+		if (gen_.SndFlg)  playSounds();	// Off to On
+		if (!gen_.SndFlg) stopSounds();	// On to Off
 	}
 }
 
