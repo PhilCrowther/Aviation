@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Jun 2025
+Version dated 11 Jun 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -1825,8 +1825,10 @@ function toglPaws() {
 
 //. Toggle AutoPilot ...........//..............................................
 function toglAuto() {
-	air_.AutoOn = 1 - air_.AutoOn;
-	AutoText();
+	if (!air_.GrdFlg) {			// Not if on ground
+		air_.AutoOn = 1 - air_.AutoOn;
+		AutoText();
+	}
 }
 
 //. Toggle Info ................//..............................................
