@@ -337,7 +337,7 @@ let xsh_ = {
 				 "https://PhilCrowther.github.io/Aviation/models/vehicles/liberty.glb"], // Source File
 		ObjTxt: [0,0,0],		// Texture Source File (not used)
 		ObjAdr: [0,0,0],		// Object Address
-		ObjSiz: [Ft2Mtr,Ft2Mtr,Ft2Mtr], // Scale		 
+		ObjSiz: [Ft2Mtr,Ft2Mtr,1], // Scale		 
 		RndOrd: [0,0,0],		// renderOrder (not used)
 		ObjRot: [0,0,0],		// Object Rotation
 		MapPos: [0,0,0],		// Object Map Position (meters) [used by Mesh]
