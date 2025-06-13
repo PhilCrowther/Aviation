@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Jun 2025
+Version dated 13 Jun 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -385,11 +385,11 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	xac_.SndMsh = [new THREE.Object3D,new THREE.Object3D];
 //. Moving Ships ...............//..............................................
 //	Adjustments
-	xsh_.ObjRot = [new THREE.Euler(0,0,0),new THREE.Euler(0,0,0)];  // Rotation
-	xsh_.MapPos = [new THREE.Vector3(-4100,0.1,150),new THREE.Vector3(-4200,0.2,350)]; // meters
-	xsh_.ObjGrp = [new THREE.Object3D,new THREE.Object3D];
-	xsh_.MapSpd = [new THREE.Vector3(),new THREE.Vector3()];
-	xsh_.ShpLok = [new THREE.Object3D,0];
+	xsh_.ObjRot = [new THREE.Euler(0,0,0),new THREE.Euler(0,0,0),new THREE.Euler(0,0,0)];  // Rotation
+	xsh_.MapPos = [new THREE.Vector3(-4100,0.1,150),new THREE.Vector3(-4200,0.2,350),new THREE.Vector3(-4200,0.1,-150)]; // meters
+	xsh_.ObjGrp = [new THREE.Object3D,new THREE.Object3D,new THREE.Object3D];
+	xsh_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
+	xsh_.ShpLok = [new THREE.Object3D,0,0];
 	// #### TEST
 //	xsh_.ObjSrc = ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb",
 //				   "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"];
@@ -415,10 +415,11 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	grf_.ObjRef = [isl_.ObjGrp[0]],					// Parent Object
 //- Ship Wake ------------------//----------------------------------------------
 //	Adjustments
-	wak_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation (not used)
+	wak_.ObjRot = [new THREE.Euler(),new THREE.Euler(),new THREE.Euler()]; // Rotation (not used)
 	wak_.MapPos = [new THREE.Vector3(50,75,25),		// Map Position
+				   new THREE.Vector3(50,75,25),
 				   new THREE.Vector3(50,75,25)],
-	wak_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[1]];	// Parent Object
+	wak_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[1],xsh_.ObjGrp[2]];	// Parent Object
 //- Ship Smoke (destroyer only) ------------------------------------------------
 //	Adjustments
 	xss_.ObjRot = [new THREE.Euler(), 				// Rotation (not used)
@@ -507,10 +508,10 @@ for (let n = 0; n < xsg_.ObjNum; n ++) {
 	xsg_.SndMsh[n] = new THREE.Object3D;
 }
 //	Specific Adjustments
-	xsg_.XSHRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
-	xsg_.XSHPos = [xsh_.MapPos[1],xsh_.MapPos[1]],
-	xsg_.GunRot = [new THREE.Euler(0,0,0),new THREE.Euler(60,315,0)]; // Gun Rotation (degrees)
-	xsg_.GunPos = [new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0)]; // Map Position
+	xsg_.XSHRot = [xsh_.ObjRot[1],xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
+	xsg_.XSHPos = [xsh_.MapPos[1],xsh_.MapPos[1],xsh_.MapPos[1]],
+	xsg_.GunRot = [new THREE.Euler(0,0,0),new THREE.Euler(60,315,0),new THREE.Euler(0,0,0)]; // Gun Rotation (degrees)
+	xsg_.GunPos = [new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0)]; // Map Position
 	xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red	
 //- Fixed Guns -----------------//----------------------------------------------
 //	General Format Adjustments
@@ -1432,7 +1433,7 @@ function playSounds() {
 	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();} // Guns (L/R)
 	//- XAC ....................................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {if (!xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].play();} // Engine
-//	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();} // ### FIX THIS - only when firing}
+	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();} // ### FIX THIS - only when firing}
 	//- Ending Explosions Activated Elsewhere (XAC,XAG,AAF)
 }
 
