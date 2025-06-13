@@ -331,25 +331,26 @@ let xaf_ = {
 
 //. Moving Ships ---------------//----------------------------------------------
 let xsh_ = {
-		ObjNum: 2,				// Number of ships
+		ObjNum: 3,				// Number of ships
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
-				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"], // Source File
-		ObjTxt: [0,0],			// Texture Source File (not used)
-		ObjAdr: [0,0],			// Object Address
-		ObjSiz: [Ft2Mtr,Ft2Mtr], // Scale		 
-		RndOrd: [0,0],			// renderOrder (not used)
-		ObjRot: [0,0],			// Object Rotation
-		MapPos: [0,0],			// Object Map Position (meters) [used by Mesh]
-		ObjGrp: [0,0],			// Group
+				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb",
+				 "https://PhilCrowther.github.io/Aviation/models/vehicles/liberty.glb"], // Source File
+		ObjTxt: [0,0,0],		// Texture Source File (not used)
+		ObjAdr: [0,0,0],		// Object Address
+		ObjSiz: [Ft2Mtr,Ft2Mtr,1], // Scale		 
+		RndOrd: [0,0,0],		// renderOrder (not used)
+		ObjRot: [0,0,0],		// Object Rotation
+		MapPos: [0,0,0],		// Object Map Position (meters) [used by Mesh]
+		ObjGrp: [0,0,0],		// Group
 		// Speed
-		SpdMPS: [9,11],			// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
-		MapSpd: [0,0],			// Object Map Speed (mtr/sec) used by airplane if landed
+		SpdMPS: [9,11,9],		// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
+		MapSpd: [0,0,0],		// Object Map Speed (mtr/sec) used by airplane if landed
 		// Animations
-		ObjDst: [0,0],			// Object distance (meters) used to activate effects
-		MixRdr: [0,0],			// Animation Mixer - Radar
-		AnmRdr: [0,0],			// Animation
-		ShpPit: [0,0],			// Ship Pitch
-		ShpLok: [0,0],			// Deck Lock
+		ObjDst: [0,0,0],		// Object distance (meters) used to activate effects
+		MixRdr: [0,0,0],		// Animation Mixer - Radar
+		AnmRdr: [0,0,0],		// Animation
+		ShpPit: [0,0,0],		// Ship Pitch
+		ShpLok: [0,0,0],		// Deck Lock
 	};
 
 //= ANIMATED FLAGS =============//==============================================
@@ -427,15 +428,15 @@ let grf_ = {
 //- Ship Wake ------------------//----------------------------------------------
 let wak_ = {
 		ObjNum: xsh_.ObjNum,	// Number of Wakes
-		ObjSrc: [0,0],			// Not Used
-		ObjTxt: [0,0],			// Shared Texture Reference Number
-		ObjMat: [0,0],			// Material
-		ObjAdr: [0,0],			// Emitter Address
-		ObjSiz: [4000,4000],	// Scale
-		RndOrd: [1,1],			// renderOrder
-		ObjRot: [0,0],			// Rotation (not used)
-		MapPos: [0,0],			// Map Position
-		ObjRef: [0,0],			// Parent Object
+		ObjSrc: [0,0,0],		// Not Used
+		ObjTxt: [0,0,0],		// Shared Texture Reference Number
+		ObjMat: [0,0,0],		// Material
+		ObjAdr: [0,0,0],		// Emitter Address
+		ObjSiz: [4000,4000,4000], // Scale
+		RndOrd: [1,1,1],		// renderOrder
+		ObjRot: [0,0,0],		// Rotation (not used)
+		MapPos: [0,0,0],		// Map Position
+		ObjRef: [0,0,0],		// Parent Object
 	};
 
 //- Ship Smoke (destroyer only) ------------------------------------------------
@@ -751,54 +752,54 @@ let xag_ = {
 //- Moving Ships ---------------//----------------------------------------------
 //	Same variable used for Fixed Guns
 let xsg_ = {
-		ObjNum: 2,				// Number of guns
+		ObjNum: 3,				// Number of guns
 		// Parent (use this instead of link because bullets not attached)
-		XSHRot: [0,0],			// Fletcher
-		XSHPos: [0,0],
+		XSHRot: [0,0,0],		// Fletcher
+		XSHPos: [0,0,0],
 		// Gun Object
-		GunPtr: [0,0],			// Gun Object (makMsh)
-		GunRot: [0,0],			// Gun Rotation (Euler - degrees)
-		GunPos: [0,0],			// Relative Map Position (Vector3) [used by Mesh]
+		GunPtr: [0,0,0],		// Gun Object (makMsh)
+		GunRot: [0,0,0],		// Gun Rotation (Euler - degrees)
+		GunPos: [0,0,0],		// Relative Map Position (Vector3) [used by Mesh]
 		// Bullet Data
-		AAAFlg: [0,0],			// 1 = Guns Firing
+		AAAFlg: [0,0,0],		// 1 = Guns Firing
 		AAASpd: 850,			// Muzzle Velocity (mps)
 		AAADLT: 4.0,			// Max Bullet Time in Flight
 		AAANum: 16,				// Number of Tracers
 		AAASpc: 1,				// Bullet Spacing (4*BulDLT/BulNum)
-		AAASp2: [1,1],			// Bullet Spacing - time remaining	 
+		AAASp2: [1,1,1],		// Bullet Spacing - time remaining	 
 		// Bullet Colors and Opacity
 		AAACol: 0,				// Red (Vector2)
 		AAAOpa: 0.4,			// Opacity
 		// Bullets for each gun		
-		AAAPtr: [[],[]],		// Bullet Objects
-		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
-		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)
-		AAATim: [[],[]],		// Bullet Time in Flight
+		AAAPtr: [[],[],[]],		// Bullet Objects
+		AAAMpS: [[0],[0],[0]],	// Bullet Map Speed (V3)
+		AAAMpP: [[0],[0],[0]],	// Bullet Map Position (V3)
+		AAATim: [[],[],[]],		// Bullet Time in Flight
 		// Smoke
-		SmkFlg: [0,0],			// 1 = Start Smoke
+		SmkFlg: [0,0,0],		// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
-		SmkMat: [0,0],			// Smoke Material
-		SmkPtr: [0,0],			// Smoke Sprite
-		SmkRot: [0,165],		// Z-rotation of smoke
-		SmkMpP: [0,0],			// Map Position (Vector3)
-		SmkDMx: [12,14],		// Delay between Smoke events (secs)
-		SmkDTm: [0,7],			// Delay Counter
+		SmkMat: [0,0,0],		// Smoke Material
+		SmkPtr: [0,0,0],		// Smoke Sprite
+		SmkRot: [0,165,0],		// Z-rotation of smoke
+		SmkMpP: [0,0,0],		// Map Position (Vector3)
+		SmkDMx: [12,14,12],		// Delay between Smoke events (secs)
+		SmkDTm: [0,7,0],		// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
-		SndFlg: [0,1],			// 1 = Explosion
+		SndFlg: [0,1,0],		// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [0,0],
+		SndPtr: [0,0,0],
 		SndVol: 15,				// Volume
-		SndMsh: [0,0],			// Sound Mesh (makMsh())
-		SndDTm: [0,0],
+		SndMsh: [0,0,0],		// Sound Mesh (makMsh())
+		SndDTm: [0,0,0],
 		// Exploding Center
-		ExpPtr: [0,0],			// Pointer to Exploding Center
-		ExpSiz: [0,0],			// Expanding Size
-		ExpLif: [0,0],			// Life of Explosion (seconds)
+		ExpPtr: [0,0,0],		// Pointer to Exploding Center
+		ExpSiz: [0,0,0],		// Expanding Size
+		ExpLif: [0,0,0],		// Life of Explosion (seconds)
 		// Timer
-		TimMax: [0,1200],		// Time On (frames)
-		TimMin: [0,-1200],		// Time Off (frames)
-		TimFlg: [0,1200],		// Timer (pos = On, neg = Off)
+		TimMax: [0,1200,0],		// Time On (frames)
+		TimMin: [0,-1200,0],		// Time Off (frames)
+		TimFlg: [0,1200,0],		// Timer (pos = On, neg = Off)
 	};
 
 
