@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Jun 2025
+Version dated 14 Jun 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -390,10 +390,6 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	xsh_.ObjGrp = [new THREE.Object3D,new THREE.Object3D,new THREE.Object3D];
 	xsh_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
 	xsh_.ShpLok = [new THREE.Object3D,0,0];
-	// #### TEST
-//	xsh_.ObjSrc = ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb",
-//				   "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb"];
-	xsh_.ObjSrc[0] = "https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb";
 
 //= ANIMATED FLAGS =============//==============================================
 //	Adjustments
