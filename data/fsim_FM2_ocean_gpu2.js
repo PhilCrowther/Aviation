@@ -332,15 +332,15 @@ let xaf_ = {
 //. Moving Ships ---------------//----------------------------------------------
 //- Number and Types
 let xshObjNum = 3;				// Select Number of Ships
-let xshObjTyp = {[0,1,2]};		// Select Type of Ship
+let xshObjTyp = [0,1,2];		// Select Type of Ship
 //-	Ship Data
-let xshObjSrc = {
-		["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb",
-		 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb",
-		 "https://PhilCrowther.github.io/Aviation/models/vehicles/liberty.glb"]; // Source File
-	}
-let xshObjSiz = {[Ft2Mtr,Ft2Mtr,1]};
-let xshSpdMPS = {[9,11,9]};		// Ship Speed
+let xshObjSrc = [				// Source Files
+		"https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb",
+		"https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb",
+		"https://PhilCrowther.github.io/Aviation/models/vehicles/liberty.glb"
+	];
+let xshObjSiz = [Ft2Mtr,Ft2Mtr,1];
+let xshSpdMPS = [9,11,9];		// Ship Speed
 //- Primary Variable
 let xsh_ = {
 		ObjNum: xshObjNum,		// Number of ships
