@@ -332,7 +332,7 @@ let xaf_ = {
 //. Moving Ships ---------------//----------------------------------------------
 let xsh_ = {
 		ObjNum: 3,				// Number of ships
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag.glb",
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb",
 				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb",
 				 "https://PhilCrowther.github.io/Aviation/models/vehicles/liberty.glb"], // Source File
 		ObjTxt: [0,0,0],		// Texture Source File (not used)
