@@ -1,0 +1,1199 @@
+﻿<!doctype html>
+<html>
+
+<!--
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 17 Jun 2025
+
+This program demonstrates a couple of Moving Map Grid subroutines, including:
+* loadGrdMap
+* moveGrdMap
+
+The subroutines can be used to draw single Grids or nested Grids.
+
+-->
+
+<head>
+<title>ACM Demo - NPC Trailing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
+</head>
+
+<body oncontextmenu="return false;">
+
+<div id="container">
+	<div class="overlay1">
+		<div>Heading....(deg): <span id="AC_Head"></span></div>
+		<div>Altitude....(ft): <span id="AC_Hite"></span></div>
+		<div>Speed......(mph): <span id="AC_Sped"></span></div>
+		<div>Bank.......(deg): <span id="AC_Bank"></span></div>
+		<div>Turn Rate..(deg): <span id="AC_Turn"></span></div>
+		<div>Turn Radius.(ft): <span id="AC_Rads"></span></div>
+		<div>Angle of Attack : <span id="AC_AofA"></span></div>
+	</div>
+</div>
+
+<button id="PAW" class="pauseButton">Paws</button>
+
+<button id="CAM" class="cameraButton">View</button>
+
+<button id="SLO" class="spddButton">-</button>
+<button id="PTD" class="pitdButton">&uarr;</button>
+<button id="FST" class="spduButton">+</button>
+<button id="BKL" class="bnklButton">&larr;</button>
+<button id="CTR" class="cntrButton">X</button>
+<button id="BKR" class="bnkrButton">&rarr;</button>
+<button id="YWL" class="yawlButton">[</button>
+<button id="PTU" class="pituButton">&darr;</button>
+<button id="YWR" class="yawrButton">]</button>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://unpkg.com/three@0.177/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.177/examples/jsm/"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+import Stats from "three/addons/libs/stats.module.js";
+
+//= Start ======================================================================
+// Note: Since three.js uses meters, compute Speed and Altitude in Meters
+// But can display speed in MPH and altitude in feet 
+// Altitude: 10,000 meters = 32,800 feet
+// Grid 4 Square Size: 1.0 miles = 1609.33 meters (basic building block)
+// Grid 5 Square Size: 3.0 miles.  Viz = 3.0 X 13.5 = 40.5 miles = 65km
+
+//= Lag Type ===================//==============================================
+let LagTyp = 1;					// 0 = No Lag, 1 = Lag
+
+//= Starting Values ============//==============================================
+let BegAlt = 3048;				// Aircraft Altitude (m) = 10000 ft
+let BegSpd = 482.8;				// Aircraft Speed = 300 mph
+let BegPwr = 1.0;
+let BegRot = new THREE.Vector3(0,0,0); // Beg Pitch, Heading, Bank Angles
+let BegCfL = 0.265;				// Level Flight
+let GrdSiz = 1609.33;			// 1 Mile (1609.33m)
+let CamDst = 500;
+
+//= Variables ==================//==============================================
+// Inputs
+let InpSpd = 0;					// Aircraft Speed Change (mph)
+// Stats
+let StsFlg = 1;					// Stats ((0 = off, 1 = on)
+let stats = 0;
+
+//= Constants ==================//==============================================
+let DLTime = 1/60;				// Frames per Second
+//- Math Predefined
+let	PieVal = Math.PI;			// PI
+let	DegRad = PieVal/180;		// Convert Degrees to Radians
+let	RadDeg = 180/PieVal;		// Convert Radians to Degrees
+let Mtr2Ft = 3.28084;			// Meters to Feet
+let Ft2Mtr = .3048;				// Feet to Meters
+let MPHMPS = .44704;			// MPH to meters per second
+let Km2Mil = 0.621371;			// Kilometers to Miles
+//- Sky
+let SkyLim = 50000;				// Max viewing distance (meters)
+let SkyCol = 0xa9e5ff;			// Color of Sky
+//- Flight
+let GrvUPS = 9.80665;			// Gravity (m/s2)
+let	AirDen = 1.225;				// Density (Sea Level Value) (kg/m3)
+
+//= Basic Values ===============================================================
+// Display
+let	scene = new THREE.Scene();
+	scene.background = new THREE.Color(0x000000);
+let	renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.outputColorSpace = THREE.SRGBColorSpace;	// ### r152
+	document.body.appendChild(renderer.domElement);
+// Lights
+const AmbLight = new THREE.AmbientLight(0xffffff, 1.0);
+	scene.add(AmbLight);
+// Camera
+let	camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, SkyLim);
+	camera.rotation.order = "YXZ";
+	camera.position.z = -CamDst;
+	camera.rotation.y = 180*DegRad;		// Default = looking in
+let	CamObj = new THREE.Object3D();			// Armature base - use to rotate camera
+	CamObj.rotation.order = "YXZ";
+	CamObj.add(camera);
+// Inputs
+	document.addEventListener("keydown", onDocumentKeyDown, false);
+	document.addEventListener("keyup", onDocumentKeyUp, false);
+	renderer.domElement.addEventListener("mousedown", onMouseDown, false);
+	renderer.domElement.addEventListener("mouseup", onMouseUp, false);
+	renderer.domElement.addEventListener("mousemove", onMouseMove, false);
+	renderer.domElement.addEventListener('mousewheel', onMouseWheel, {capture: false, passive: false});
+	renderer.domElement.addEventListener("touchstart", onTouchStart, false);
+	renderer.domElement.addEventListener("touchmove", onTouchMove, false);
+	document.getElementById("PAW").addEventListener("click", togglePause, false);
+	document.getElementById("CAM").addEventListener("click", toggleCamera, false);
+	document.getElementById("FST").addEventListener("click", toggleSpdU, false);
+	document.getElementById("PTD").addEventListener("click", togglePitD, false);
+	document.getElementById("SLO").addEventListener("click", toggleSpdD, false);
+	document.getElementById("BKL").addEventListener("click", toggleBnkL, false);
+	document.getElementById("CTR").addEventListener("click", toggleCntr, false);
+	document.getElementById("BKR").addEventListener("click", toggleBnkR, false);
+	document.getElementById("PTU").addEventListener("click", togglePitU, false);
+	document.getElementById("YWL").addEventListener("click", toggleYawL, false);
+	document.getElementById("YWR").addEventListener("click", toggleYawR, false);
+	window.addEventListener("resize", onWindowResize, false);
+
+//= Ground Squares =============================================================
+// Layer 1 constains smaller higher definition squares
+// Layer 2 contains larger lower definition squares (3X size of Layer 1 squares)
+//= Both Grids -----------------------------------------------------------------
+// Used to Position Map
+let Grd0 = {
+		MSZ:	0,					// Map NSSpd (updated by program)
+		MSX:	0,					// Map EWSpd (updated by program)
+		MPY:	0					// Map UpPos = Aircraft Altitude (updated by program)
+	}
+//= Grid 4 ---------------------------------------------------------------------
+let Grd4 = {
+		Typ:	4,					// Type of Grid - Inner or Outer
+		RCs:	27,					// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	GrdSiz,				// Size of square
+		Stp:	3,					// Steps
+		RCi:	0,					// Rows and Columns Index (computed)
+		MZV:	[0],				// Ground Z Value
+		MXV:	[0],				// Ground X Value
+		Nor:	0,					// Max North Square (updated)
+		Est:	0,					// Max East Square (updated)
+		Num:	0,					// Size of array (computed)
+		Ptr:	[0],				// Ground Address
+		RCF:	0,					// N/A
+		NSA:	0,					// Shared North/South Adjustment (updated)
+		EWA:	0,					// Shared East/West Adjustment (updated)
+		Mat:	0					// Match Material of Outer and Inner Blocks
+	}
+//= Grid 5 ---------------------------------------------------------------------
+let Grd5 = {
+		Typ:	5,					// Type of Grid - Inner or Outer
+		RCs:	27,					// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	Grd4.Siz*Grd4.Stp,	// Size of square
+		Stp:	3,					// Steps
+		RCi:	0,					// Rows and Columns Index (computed)
+		MZV:	[0],				// Ground Z Value
+		MXV:	[0],				// Ground X Value
+		Nor:	0,					// Max North Square (updated)
+		Est:	0,					// Max East Square (updated)
+		Num:	0,					// Size of array (computed)
+		Ptr:	[0],				// Ground Address
+		RCF:	Grd4.RCs/Grd4.Stp,	// Cut-Out Area (27/3 = 9)
+		NSA:	0,					// Shared North/South Adjustment (updated)
+		EWA:	0,					// Shared East/West Adjustment (updated)
+		Mat:	0					// Match Material of Outer and Inner Blocks
+	}
+
+//= Aircraft ===================//==============================================
+let Air1 = {
+		// Inputs
+		InpRot: new THREE.Vector3(0,0,0), // Input
+		CfLift: BegCfL,			// Coefficient of Lift
+		PwrPct: BegPwr,			// % of Max Power (0 to 1)
+		// Changes to Airplane Pitch Bank and Yaw
+		AirRSp: new THREE.Vector3(0,0,0),
+		// Airplane Rotation
+		AirRot: new THREE.Vector3().copy(BegRot), // Rotation
+		AirPBY: new THREE.Object3D(),
+		AirObj: new THREE.Object3D(),
+		// Airplane Speed
+		SpdKPH: BegSpd,			// Speed in KPH
+		SpdMPS: BegSpd/3.6,
+		SpdMPF: (BegSpd/3.6)*DLTime,
+		// Airplane Map Speed and Position
+		MapSpd: new THREE.Vector3(0,0,0),	// Map Speed
+		MapPos: new THREE.Vector3(0,BegAlt,0),	// Map Position
+		// Turn Performance
+		HRS: 0,					// Heading Change in Turn
+		Rds: 0,					// Turn Radius		
+		// Model
+		Color1: 0x00007f,		// Primary Color
+		Color2: 0x7f7fff,		// Secondary Color
+		// Smoke
+		SmkObj: 0,				// Smoke Object
+		SmkPts: [],				// Position Array
+		SmkTim: [],				// Smoke
+	}
+let Air2 = {
+		// Inputs
+		InpRot: new THREE.Vector3(0,0,0), // Input
+		CfLift: BegCfL,			// Coefficient of Lift
+		PwrPct: BegPwr,			// % of Max Power (0 to 1)
+		// Changes to Airplane Pitch Bank and Yaw
+		AirRSp: new THREE.Vector3(0,0,0),
+		// Airplane Rotation
+		AirRot: new THREE.Vector3().copy(BegRot), // Rotation (same as mine)
+		AirPBY: new THREE.Object3D(),
+		AirObj: new THREE.Object3D(),
+		// Airplane Speed
+		SpdKPH: BegSpd,			// Spped in KPH
+		SpdMPS: BegSpd/3.6,
+		SpdMPF: (BegSpd/3.6)*DLTime,
+		// Airplane Map Speed and Position
+		MapSpd: new THREE.Vector3(0,0,0), // Map Speed
+		MapPos: new THREE.Vector3(0,BegAlt,100), // Map Position (same as mine)
+		// Turn Performance
+		HRS: 0,					// Heading Change in Turn
+		Rds: 0,					// Turn Radius	
+		// Model
+		Color1: 0x7f0000,		// Primary Color
+		Color2: 0xff7f7f,		// Secondary Color
+		// Smoke
+		SmkObj: 0,				// Smoke Object
+		SmkPts: [],				// Position Array
+		SmkTim: [],				// Smoke
+	}	
+let AirSel = Air1;
+//- Aircraft Data --------------------------------------------------------------
+//	Constrol Sensitivity
+let	MxBnkR = 1;						// Maximum bank rate
+let	BnkMul = MxBnkR/1000;			// Standard bank multiplier
+let	MxPitR = 1;						// Maximum pitch rate
+let	PitMul = MxPitR/250;			// Standard pitch multiplier
+//	Basic Aircraft Data
+let JetMax = 0;						// Jet Only - Maximum Power
+let	PwrMax = 1007;					// Prop Only - Maximum Power (Kw)
+let	PropEf = 0.8;					// Prop Only - Prop Efficiency 
+let	Weight = 7500;					// Aircraft Weight (lbs)
+let	CfLMax = 1.4;					// Maximum Coefficient of Lift
+let	WingSp = 11.58;					// Wing Span (m)
+let	WingAr = 24.15;					// Wing Area (m2)
+let	WingEf = 0.75;					// Wing Efficiency
+let	DrgCd0 = 0.0211;				// Coefficient of Drag
+let	GrvMax = 8;						// Maximum G-Force
+let	AngInc = 5;						// Angle of Incidence
+let	TrmAdj = 2.5;					// Elevator Trim Adjustment
+//	Computed Values
+let ThrstK = 1000 * PropEf;			// Prop ONly - Constant (prop only)
+let ACMass = Weight/GrvUPS;		// Mass (slugs or kg)
+let WingAs = WingSp*WingSp/WingAr;	// Wing Aspect Ratio
+let	ACPMax = CfLMax * 10;			// Max aircraft pitch adjustment (+/- 15)
+let	ACPInc = ACPMax - AngInc;		// Net max aircraft pitch adjustment (10)
+
+//- Smoke Trail ----------------------------------------------------------------
+let SmkTot = 100;
+let SmkInt = 10;
+let SmkSiz = 6;
+
+//= Computations ===============================================================
+// Bank adjust to keep target along vertical plane
+// Pitch adjust to keep target at certain position
+// Throttle adjust to maintain same distance
+
+let dif_ = {
+		Rot: new THREE.Vector3(0,0,0),
+		Pos: new THREE.Vector3(0,0,0),
+		Spd: 0,
+	}
+
+//
+let LagId1 = 0;						// Index to next Air1 Entry
+let LagId2 = 0;						// Index to current Air2
+let	LagMax = 360;					// Max Number of Values (360 = 6 seconds of bank changes)
+let LagDst = 76.2					// Starting Distance Between Air2 and Air1 (250 feet)
+let LagSpd = BegSpd*(1000/3600);	// Air1 Speed (meters/sec)
+let LagTim = LagDst/LagSpd;			// Time = Difference in Distance/Air1 Speed [250/440 = 0.561818 etc]
+//	LagTim = 0.5					// Override - This works better
+let LagInp = [0];					// Air1 Rotation Change
+//	Cheats? (Fixes Rounding Errors)
+let LagRot = [0];					// Air1 Rotation
+let LagPos = [0];					// Air1 Position
+
+
+//= Inputs =====================================================================
+// Camera - Lat/Lon = direction the camera is pointing
+let Cam1 = {
+		Rot: new THREE.Vector3(-30,10,0),	// Lat Lon Bnk
+		Dst: CamDst,
+		Dif: 1,
+		Max: 750,
+		Min: 125,
+	}
+let Cam2 = {
+		Rot: new THREE.Vector3(-30,10,0),	// Lat Lon Bnk
+		Dst: 100,
+		Dif: 0.25,
+		Max: 300,
+		Min: 50,
+	}
+let CamSel = Cam1;
+let CamLtX = 90;					// Max lat
+let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
+// Key Values
+let K_SpdU = 45;					// Speed Up (insert)
+let K_PitD = 38;					// Pitch down (up arrow)
+let K_SpdD = 33;					// Speed Up (page up)
+let	K_BnkL = 37;					// Bank Left (left arrow)
+let K_Cntr = 35;					// Center (end)
+let	K_BnkR = 39;					// Bank Right (right arrow)
+let K_YawL = 46;					// Yaw Left (delete)
+let K_PitU = 40;					// Pitch up (down arrow)
+let K_YawR = 34;					// Yaw Right (page down)
+// -
+let BnkSpd = 1;						// Bank Speed
+let CfLSpd = 1;						// Pitch Speed
+// Flags
+let	PanFlg = 0;						// Camera Panning
+let PawsOn = 0;						// Pause
+
+//= Objects ====================================================================
+// Camera
+let CtrObj = new THREE.Object3D();
+	CtrObj.rotation.order = "YXZ";
+	CtrObj.add(CamObj);
+	scene.add(CtrObj);
+//
+let quaternion = new THREE.Quaternion();
+//= HTML OVERLAY TEXT ==========================================================
+let AC_HiteElement = document.getElementById("AC_Hite");
+let AC_HiteNode = document.createTextNode("");
+	AC_HiteElement.appendChild(AC_HiteNode);
+let AC_HeadElement = document.getElementById("AC_Head");
+let AC_HeadNode = document.createTextNode("");
+	AC_HeadElement.appendChild(AC_HeadNode);
+let AC_SpedElement = document.getElementById("AC_Sped");
+let AC_SpedNode = document.createTextNode("");
+	AC_SpedElement.appendChild(AC_SpedNode);
+let AC_BankElement = document.getElementById("AC_Bank");
+let AC_BankNode = document.createTextNode("");
+	AC_BankElement.appendChild(AC_BankNode);
+let AC_TurnElement = document.getElementById("AC_Turn");
+let AC_TurnNode = document.createTextNode("");
+	AC_TurnElement.appendChild(AC_TurnNode);
+let AC_RadsElement = document.getElementById("AC_Rads");
+let AC_RadsNode = document.createTextNode("");
+	AC_RadsElement.appendChild(AC_RadsNode);
+let AC_AofAElement = document.getElementById("AC_AofA");
+let AC_AofANode = document.createTextNode("");
+	AC_AofAElement.appendChild(AC_AofANode);
+let AC_Hite,AC_Head,AC_Sped,AC_Bank,AC_Turn,AC_Rads,AC_AofA;;
+
+//= Main Program ===============================================================
+	initAll();
+	rendAll();
+
+//= 1 Initialize ===============================================================
+
+function initAll() {
+	scene.background = new THREE.Color(SkyCol);
+	Grd0.MPY = Air1.MapPos.y*Ft2Mtr;
+	initGrdMap();
+	initAirPln();
+	// Show stats
+	if (StsFlg > 0) {					// show stats
+		stats = new Stats();
+		stats.setMode(0);				// FPS only
+		stats.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+		container.appendChild(stats.dom);
+	}
+}
+
+// 2 Render ====================================================================
+
+function rendAll() {
+	requestAnimationFrame(rendAll);
+	if (PawsOn == 0) {
+		moveAirPln();
+		Grd0.MSZ = Air1.MapSpd.z;			// update Grid Data
+		Grd0.MSX = Air1.MapSpd.x;
+		Grd0.MPY = Air1.MapPos.y;
+		moveGrdMap();					// Move Grid Map
+		if (StsFlg > 0) stats.update();	// update stats
+	}
+	chngHUDV(Air1)
+	moveCamera();
+	renderer.render(scene, camera);		// Render
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//*
+//*		GRID MAP
+//*
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//- Init -----------------------------------------------------------------------
+function initGrdMap() {
+	init1GrMap(Grd4);
+	init1GrMap(Grd5);
+}
+
+//- Move -----------------------------------------------------------------------
+function moveGrdMap() {
+	move1GrMap(Grd4);
+	move1GrMap(Grd5);
+}
+
+//= INIT MOVING MAP ============//==============================================
+
+function init1GrMap(Grd) {
+	// Load Variables
+	Grd.RCi = Grd.RCs-1;		// Max Index Value
+	Grd.MZV[Grd.RCi] = 0;		// Z-Values
+	Grd.MXV[Grd.RCi] = 0;		// X-Values
+	Grd.Nor = Grd.RCi;			// Max North Square (updated)
+	Grd.Est = Grd.RCi;			// Max East Square (updated)
+	Grd.Num = Grd.RCs * Grd.RCs; // Size of array
+	Grd.Ptr[Grd.Num-1] = 0;		// Mesh Pointers
+	if (Grd.Typ > 4) {
+		Grd.NSA = (Grd.RCs-Grd.RCF)/2;	// (27-3=6)
+		Grd.EWA = Grd.NSA;
+	}
+	// Compute Starting Z and X Values
+	let zx = -0.5*(Grd.RCs)*Grd.Siz+0.5*Grd.Siz;
+	for (let i = 0; i < Grd.RCs; i++) {
+		Grd.MZV[i] = zx;
+		Grd.MXV[i] = zx;
+		zx = zx + Grd.Siz;
+	}
+	let geometry;
+	if (Grd.Typ == 4) geometry = new THREE.PlaneGeometry(Grd.Siz, Grd.Siz,2,2);
+	if (Grd.Typ == 5) geometry = new THREE.PlaneGeometry(Grd.Siz, Grd.Siz, 2*Grd4.Stp, 2*Grd4.Stp);
+	ToQuads(geometry);
+	let material = new THREE.LineBasicMaterial({color: "green"});
+	// Set Starting Position of Squares
+	let n = 0;
+	for (let y = 0; y < Grd.RCs; y++) { // Row
+		for (let x = 0; x < Grd.RCs; x++) {	// Column
+			Grd.Ptr[n] = new THREE.LineSegments(geometry,material);
+			Grd.Ptr[n].material.depthTest = false;
+			Grd.Ptr[n].rotation.x = -90*DegRad;
+			scene.add(Grd.Ptr[n]);
+			Grd.Ptr[n].position.set(Grd.MXV[x],-Grd0.MPY,-Grd.MZV[y]);
+			n++;
+		}
+	}
+}
+
+function ToQuads(g) {
+  let p = g.parameters;
+  let segmentsX = (g.type == "TorusBufferGeometry" ? p.tubularSegments : p.radialSegments) || p.widthSegments || p.thetaSegments || (p.points.length - 1) || 1;
+  let segmentsY = (g.type == "TorusBufferGeometry" ? p.radialSegments : p.tubularSegments) || p.heightSegments || p.phiSegments || p.segments || 1;
+  let indices = [];
+  for (let i = 0; i < segmentsY + 1; i++) {
+    let index11 = 0;
+    let index12 = 0;
+    for (let j = 0; j < segmentsX; j++) {
+      index11 = (segmentsX + 1) * i + j;
+      index12 = index11 + 1;
+      let index21 = index11;
+      let index22 = index11 + (segmentsX + 1);
+      indices.push(index11, index12);
+      if (index22 < ((segmentsX + 1) * (segmentsY + 1) - 1)) {
+        indices.push(index21, index22);
+      }
+    }
+    if ((index12 + segmentsX + 1) <= ((segmentsX + 1) * (segmentsY + 1) - 1)) {
+      indices.push(index12, index12 + segmentsX + 1);
+    }
+  }
+  g.setIndex(indices);
+}
+
+//= MOVE MOVING MAP ============//==============================================
+
+function move1GrMap(Grd) {
+	let j = 0;
+	let v = 0; 
+	let max = 0.5*Grd.RCs*Grd.Siz;
+	let min = -max;
+	// Update Z, X and Y-Values
+	for (let i = 0; i < Grd.RCs; i++) {
+		Grd.MZV[i] = Grd.MZV[i] - Grd0.MSZ;	// Rows
+		Grd.MXV[i] = Grd.MXV[i] - Grd0.MSX;	// Columns
+	}
+	Grd.MYV = Grd0.MPY;					// Altitude
+	// Test North/South
+	if (Grd0.MSZ < 0) {					// If Moving South
+		j = Grd.Nor;
+		if (Grd.MZV[j] >= max) {
+			v = min+(Grd.MZV[j]-max);
+			for (let i = 0; i < Grd.Stp; i++) {
+				Grd.MZV[j] = v;
+				j = j - 1;
+				if (j < 0) j = Grd.RCi;
+				v = v - Grd.Siz;
+			}
+			Grd.Nor = Grd.Nor - Grd.Stp;
+			if (Grd.Nor < 0) Grd.Nor = Grd.Nor + Grd.RCs;
+			if (Grd.Typ == 2) Grd.NSA = Grd.NSA + 1;
+			else Grd5.NSA = Grd5.NSA - 1;
+		}
+	}
+	if (Grd0.MSZ > 0) {					// If Moving North
+		j = Grd.Nor + 1;
+		if (j > Grd.RCi) j = 0;
+		if (Grd.MZV[j] <= min) {
+			v = max-(min-Grd.MZV[j]);
+			for (let i = 0; i < Grd.Stp; i++) {
+				Grd.MZV[j] = v;
+				j = j + 1;
+				if (j > Grd.RCi) j = 0;
+				v = v + Grd.Siz;
+			}
+			Grd.Nor = Grd.Nor + Grd.Stp;
+			if (Grd.Nor > Grd.RCi) Grd.Nor = Grd.Nor - Grd.RCs;
+			if (Grd.Typ == 2) Grd.NSA = Grd.NSA - 1;
+			else Grd5.NSA = Grd5.NSA + 1;
+		}
+	}
+	// Test East/West
+	if (Grd0.MSX < 0) {					// If Moving West
+		j = Grd.Est;
+		if (Grd.MXV[j] >= max) {
+			v = min+(Grd.MXV[j]-max);
+			for (let i = 0; i < Grd.Stp; i++) {
+				Grd.MXV[j] = v;
+				j = j - 1;
+				if (j < 0) j = Grd.RCi;
+				v = v - Grd.Siz;
+			}
+			Grd.Est = Grd.Est - Grd.Stp;
+			if (Grd.Est < 0) Grd.Est = Grd.Est + Grd.RCs;
+			if (Grd.Typ == 2) Grd.EWA = Grd.EWA + 1;
+			else Grd5.EWA = Grd5.EWA - 1;
+		}
+	}
+	if (Grd0.MSX > 0) {						// If Moving East
+		j = Grd.Est + 1;
+		if (j > Grd.RCi) j = 0;	
+		if (Grd.MXV[j] <= min) {
+			v = max-(min-Grd.MXV[j]);
+			for (let i = 0; i < Grd.Stp; i++) {			
+				Grd.MXV[j] = v;
+				j = j + 1;
+				if (j > Grd.RCi) j = 0;
+				v = v + Grd.Siz;
+			}
+			Grd.Est = Grd.Est + Grd.Stp;
+			if (Grd.Est > Grd.RCi) Grd.Est = Grd.Est - Grd.RCs;
+			if (Grd.Typ == 2) Grd.EWA = Grd.EWA - 1;
+			else Grd5.EWA = Grd5.EWA + 1;
+		}
+	}
+	// Set Position
+	let n = 0;
+	for (let r = 0; r < Grd.RCs; r++) {	// Row
+		for (let c = 0; c < Grd.RCs; c++) {	// Col
+			Grd.Ptr[n].position.set(Grd.MXV[c],-Grd.MYV,-Grd.MZV[r]);
+			Grd.Ptr[n].visible = true;	// Default for Outer Grid
+			n = n + 1;
+		}
+	}
+	// Outer Grid Only - Make Cut-Out Area Invisible
+	if (Grd.Typ == 2) {
+		let r = Grd.Nor + 1 + Grd.NSA;			// Get Lower index
+		if (r > Grd.RCi) r = r - Grd.RCs;
+		let c = Grd.Est + 1 + Grd.EWA;			// Get Left Index
+		if (c > Grd.RCi) c = c - Grd.RCs;
+		for (let i = 0; i < Grd.RCF; i++) {
+			n = r * Grd.RCs + c;
+			if (n < 0) n = n + Grd.Num;
+			if (n > Grd.Num) n = n - Grd.Num;
+			let n2 = (r+1) * Grd.RCs - 1;
+			if (n2 > Grd.Num) n2 = n2 - Grd.Num;
+			if (n2 < 0) n2 = n2 + Grd.Num;
+			for (let j = 0; j < Grd.RCF; j++) {
+				Grd.Ptr[n].visible = false;
+				n = n + 1;
+				if (n > n2) n = n - Grd.RCs; 
+				if (n < 0) n = n + Grd.Num;
+				if (n > Grd.Num) n = n - Grd.Num;
+			}
+			r = r + 1;
+			if (r > Grd.RCi) r = r - Grd.RCs;
+		}
+	}
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//*
+//*		AIRPLANE
+//*
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//	Initialize
+function initAirPln() {
+	init1ACraft(Air1);
+	init1ACraft(Air2);
+}
+
+//	Move
+function moveAirPln() {
+	move1ACraft(Air1);
+	move1ACraft(Air2);
+}
+
+//= INITIALIZE AIRPLANE ==========//============================================
+
+function init1ACraft(Air) {
+	// - Aircraft Mount --------------------------------------------------------
+	Air.AirObj.rotation.order = "YXZ";
+	scene.add(Air.AirObj);
+	Air.AirObj.rotation.z = Mod360(360-Air.AirRot.z) * DegRad;	// Bank
+	Air.AirObj.rotation.x = Mod360(Air.AirRot.x) * DegRad;		// Pitch
+	Air.AirObj.rotation.y = Mod360(-Air.AirRot.y) * DegRad;		// Heading
+	// Aircraft Pitch Bank Yaw
+	Air.AirPBY.rotation.order = "YXZ";
+	Air.AirObj.add(Air.AirPBY);
+	// - Aircraft Object -------------------------------------------------------
+	let mshAir, geoAir, matAir;
+	// Front
+	mshAir = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new THREE.MeshBasicMaterial({color: Air.Color1}));
+	mshAir.rotation.x = -PieVal/2;
+	mshAir.position.z = -5;
+	Air.AirPBY.add(mshAir);
+	// Back
+	mshAir = new THREE.Mesh(new THREE.CylinderGeometry(.25, 2.5, 25, 3, 1, "false"), new THREE.MeshBasicMaterial({color: Air.Color1}));
+	mshAir.rotation.x = PieVal/2;
+	mshAir.rotation.y = PieVal;
+	mshAir.position.z = 15;
+	Air.AirPBY.add(mshAir);
+	// Wing
+	geoAir = new THREE.BoxGeometry(50,0.25,5).toNonIndexed();
+	matAir = new THREE.MeshBasicMaterial({vertexColors: true});
+	let colors = [];
+	let color = new THREE.Color();
+	color.set(Air.Color1);
+	for (let i = 0; i < 24; i += 3) {
+		if (i >= 18) color.set(Air.Color2);
+		colors.push(color.r, color.g, color.b);
+		colors.push(color.r, color.g, color.b);
+		colors.push(color.r, color.g, color.b);
+	}
+	geoAir.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+	mshAir = new THREE.Mesh(geoAir,matAir);
+	mshAir.position.y = -.5;
+	mshAir.position.z = 2.5;
+	Air.AirPBY.add(mshAir);
+	// HTail
+	geoAir = new THREE.BoxGeometry(12.5,.25,3.25).toNonIndexed();
+	matAir = new THREE.MeshBasicMaterial({vertexColors: true});
+	geoAir.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+	mshAir = new THREE.Mesh(geoAir,matAir);
+	mshAir.position.y = -.5;
+	mshAir.position.z = 25;
+	Air.AirPBY.add(mshAir);
+	// VTail
+	mshAir = new THREE.Mesh(new THREE.BoxGeometry(.25,6.25,3.25), new THREE.MeshBasicMaterial({color: Air.Color1}));
+	mshAir.position.y = 2.5;
+	mshAir.position.z = 25;
+	Air.AirPBY.add(mshAir);
+	Air.AirPBY.scale.set(Ft2Mtr, Ft2Mtr, Ft2Mtr);
+	// Location
+	if (Air != Air1) {
+		Air.AirObj.position.x = (Air.MapPos.x - Air1.MapPos.x);
+		Air.AirObj.position.y = (Air.MapPos.y - Air1.MapPos.y);
+		Air.AirObj.position.z = (Air.MapPos.z - Air1.MapPos.z);
+	}
+	initJetSmk(Air);
+}
+
+//= Move Airplane ================//============================================
+
+function move1ACraft(Air) {
+	// LAG TYPE
+	// 0 = No Lag ...............................................................
+	if (LagTyp == 0 && Air == Air2) {
+		Air.InpRot.copy(Air1.InpRot);
+	}
+	// 1 = Lag ..................................................................
+	// If Air1 - Save time for any bank changes
+	if (LagTyp == 1) {
+		if (Air == Air1) {
+			LagInp[LagId1] = new THREE.Vector3().copy(Air.InpRot);
+			LagRot[LagId1] = new THREE.Vector3().copy(Air.AirRot);
+			LagPos[LagId1] = new THREE.Vector3().copy(Air.MapPos);
+			LagId1++
+			if (LagId1 > LagMax) LagId1 = 0;
+		}
+		// If Air2
+		if (Air == Air2) {
+			// Wait
+			if (LagTim) {
+				LagTim = LagTim - DLTime;
+				if (LagTim <= 0) LagTim = 0;
+			}
+			else {
+				Air.InpRot.copy(LagInp[LagId2]);	//  98% Accuracy
+				Air.AirRot.copy(LagRot[LagId2]);	//  99% Accuracy
+				Air.MapPos.copy(LagPos[LagId2]);	// 100% Accuracy
+				LagId2++		// Go to next
+				if (LagId2 > LagMax) LagId2 = 0;
+			}
+		}
+	}
+	// 1. COMPUTE VECTORS -------------------------------------------------------
+	// Compute Force Vectors in UPS and multiply by FrcAcc to convert to UPT
+	// a. Compute New Speeds for New DLTime
+	let DLTim2 = DLTime*DLTime;		// Time ^ 2
+	let GrvDLT = GrvUPS*DLTim2;		// Gravity (upt)
+	let FrcAcc = DLTim2/ACMass;		// Convert Force to Acceleration
+	Air.SpdMPS = Air.SpdKPH*1000/3600;
+	Air.SpdMPF = Air.SpdMPS*DLTime;
+	// b. Compute Dynamic Pressure
+	let DynPrs = 0.5*(Air.SpdMPS**2)*AirDen;	// Dynamic Pressure
+	let QSTval = DynPrs * WingAr;
+	// Compute Max Lift
+	let LftMax = GrvMax*GrvDLT;		// Maximum G-accel
+	LftMax = (LftMax+GrvMax)*GrvDLT;
+	// Set CfLift
+	// Normally, set power to cause change in flight parth.  CfL adjusted to speed
+	// However, in air combat, power always at max.  Must change pitch with CfL
+	let ACP = Air.AirRot.x * DegRad
+	let ACB = Air.AirRot.z * DegRad;
+	if (Air.InpRot.x == 0) {	// Setting for current flight path (level, climb or descent)
+		Air.CfLift = (Weight * Math.cos(ACP))/(DynPrs * WingAr * Math.abs(Math.cos(ACB)));
+	}
+	else {					// Allows change of flight path					
+		Air.CfLift =   Air.CfLift + .01*Air.InpRot.x;
+	}
+	// Add adjustment to level flight parth when press specified key combo?
+	if (Air.CfLift > CfLMax) Air.CfLift = CfLMax;
+	if (Air.CfLift < -CfLMax) Air.CfLift = -CfLMax;
+	// c. Compute Lift Rotation
+	// Lift = DynPres * WingArea * Cl
+	let CfLftT = Air.CfLift;
+	let ACLftF =  CfLftT * QSTval;		// Lift[ft-lbs] - can be positive or negative
+	let ACLift = ACLftF * FrcAcc;		// Acceleration (DLT)	
+	if (ACLift > 0 && ACLift > LftMax) ACLift = LftMax;	// Limit to Max Gs (pos)
+	if (ACLift < 0 && ACLift < -LftMax) ACLift = -LftMax;	// Limit to Max Gs (neg)
+	let ACLftD = (ACLift/Air.SpdMPF) * RadDeg;	// Degrees = ACLift*180 / (PI()*V) = ACLift/V * RadDeg
+	// d. Compute Net Thrust Acceleration
+	let EnThrF = JetMax * Air.PwrPct;		// Jet
+	if (JetMax == 0) EnThrF = ThrstK * (PwrMax * Air.PwrPct) / Air.SpdMPS;	// Propeller Force
+	// Drag
+	let DrgCdi = (CfLftT*CfLftT)/(WingAs*WingEf*PieVal);	// Cfi = CLift^2 / (Wing Aspect Ratio * Wing Efficiency * pi)
+	let ACDrIF = DrgCdi * QSTval;		// Induced Drag = ACLftF^2 / (DynPrs * WingSp^2 * WingEf * PI)
+	let DrgCdp = DrgCd0;				// Total Coefficient of Parasitic Drag
+	let ACDrPF = DrgCdp * QSTval;		// Parasitic Drag =  Cd0 * DynPres * WingA
+	let ACThrF = EnThrF - ACDrPF;		// Net Thrust Force
+	let ACTrst = ACThrF * FrcAcc;		// Net Thrust Accel
+	let GrvThr = GrvDLT * Math.sin(ACP);	// Gravity opposing Thrust = Grav * sin(ACP)
+	let ACThrG = ACTrst - GrvThr;		// Net Thrust after Gravity +/-
+	// e. Gravity Reducing ACPitch
+	let GrvACP = GrvDLT * Math.cos(ACP);	// Gravity opposing Lift and Yaw
+	let GrACPD = (GrvACP / Air.SpdMPF) * RadDeg;	// Degrees +/-
+	// Save Values
+	let PPPDif = ACLftD;				// Pitch Degrees (before Gravity)
+	// Compute Aircraft Pitch Adjustment
+	// ACPAdj is an adjustment to Air.AirRot.x that allows the aircraft to pitch relative to the direction of flight
+	// to match pitch required to produce specified lift; or, if on ground, to pitch around main wheel axis
+	let ACPAdj = (Air.CfLift * 10) - AngInc;	// Default (1.3 = 13)
+	// 2. COMPUTE DIRECTION OF FLIGHT -------------------------------------------
+	// Inputs: Change in Bank, PPPDif, and Yaw
+	// This routine uses 2 linked objects to correctly rotate aircraft
+	// Temp Save
+	// Changes to Air.AirPBY
+	Air.AirPBY.rotation.z = -Air.InpRot.z*DegRad;
+	Air.AirPBY.rotation.x = PPPDif*DegRad;
+	Air.AirPBY.rotation.y = -Air.InpRot.y*DegRad;
+	// Transfer Combined Rotation to Air.AirObj
+	Air.AirPBY.getWorldQuaternion(quaternion);
+	Air.AirObj.setRotationFromQuaternion(quaternion);
+	// Zero Out Air.AirPBY Rotations (so values not doubled)
+	Air.AirPBY.rotation.z = 0;
+	Air.AirPBY.rotation.x = 0;
+	Air.AirPBY.rotation.y = 0;
+	// Load Resulting Values into Variables (for display)
+	Air.AirRot.z = Mod360(-Air.AirObj.rotation.z*RadDeg);
+	Air.AirRot.x = Air.AirObj.rotation.x*RadDeg;
+	// Update Air.AirObj Heading for Bank
+	let ACH = Air.AirRot.y;					// ### Save old heading
+	Air.AirRot.y = Mod360(-Air.AirObj.rotation.y*RadDeg);
+	if (Air.InpRot.z != 0) Air.AirRot.y = ACH;
+	Air.HRS = Mod360(Air.AirRot.y - ACH);
+	if (Air.HRS > 180) Air.HRS = 360-Air.HRS;
+	Air.Rds = (360/Air.HRS)*Air.SpdMPS*0.5/PieVal;	// Circumference = (360/Rate)*Air.SpdMPS = 2*PieVal*R; Radius = 0.5*Circumference/PieVal
+	if (Air.HRS < .08) Air.Rds = 0;					// NA if TurnRate too low
+	Air.AirObj.rotation.y = -Air.AirRot.y*DegRad;
+	// 3. COMPUTE MAP SPEED -----------------------------------------------------
+	// Inputs:	Air.SpdMPF, ACThrG, Air.AirRot.x, Air.AirRot.y, MPosZV, MPosYV, MPosXV
+	// Results:	Air.SpdKPH, Air.AirRSp.z, Air.AirRSp.y, Air.AirRot.x
+	// a. Compute Speed
+	Air.SpdMPF = Air.SpdMPF + ACThrG;
+	if (Air.SpdMPF <= 0) Air.SpdMPF = 0.0001;	// Set Minimum Speed to avoid division by zero  211031
+	Air.SpdMPS = Air.SpdMPF/DLTime;	// (MPS)
+	Air.SpdKPH = Air.SpdMPS*3.6;			// (KPH)	
+	// b1. Compute PSpd (before gravity)
+	ACP = Air.AirRot.x * DegRad;
+	Air.MapSpd.z = Air.SpdMPF * Math.abs(Math.cos(ACP));	// Horizontal speed
+	// b2. Adjust ACP for Gravity
+	Air.AirRot.x = Air.AirRot.x-GrACPD;
+	if (Air.AirRot.x < -90) Air.AirRot.x = -90;		// Prevents you from pitching back up
+	ACP = Air.AirRot.x*DegRad;
+	Air.AirObj.rotation.x = ACP;
+	Air.MapSpd.y = Air.SpdMPF * Math.sin(ACP);			// Vertical speed
+	ACH = Air.AirRot.y*DegRad;
+	// Map Speed
+	Air.MapSpd.y = Air.SpdMPF * Math.sin(ACP);
+	let GS = Air.SpdMPF * Math.cos(ACP);
+	Air.MapSpd.z = GS * Math.cos(ACH);
+	Air.MapSpd.x = GS * Math.sin(ACH);
+	// Map Position
+	Air.MapPos.y = Air.MapPos.y + Air.MapSpd.y;
+	if (Air.MapPos.y < 5) {						// if hit ground, zero out
+		Air.MapPos.y = 5;
+		Air.AirRot.z = 0;
+		Air.AirRot.x = 0;
+		Air.InpRot.z = 0;
+		Air.InpRot.x = 0;
+		Air.AirObj.rotation.z = 0;					// No Bank
+		Air.AirObj.rotation.x = 0;					// No Pitch
+	}
+	Air.MapPos.z = Air.MapPos.z - Air.MapSpd.z;
+	Air.MapPos.x = Air.MapPos.x + Air.MapSpd.x;
+	// Convert Speed and Position to Maters
+	if (Air != Air1) {
+		Air.AirObj.position.x = (Air.MapPos.x - Air1.MapPos.x);
+		Air.AirObj.position.y = (Air.MapPos.y - Air1.MapPos.y);
+		Air.AirObj.position.z = (Air.MapPos.z - Air1.MapPos.z);
+	}
+	moveJetSmk(Air);
+}
+
+//= Jet Exhaust ================================================================
+
+// Init Smoke Trail
+function initJetSmk(Air) {
+	// particle positin and time
+	for (let i = 0; i < SmkTot; i++) {
+		Air.SmkPts.push(0,0,0);				// position		
+		Air.SmkTim[i] = i*SmkInt;
+	}
+	// create the particle system
+	let geoExh = new THREE.BufferGeometry();
+	geoExh.setAttribute('position', new THREE.Float32BufferAttribute(Air.SmkPts, 3));
+	let matExh = new THREE.PointsMaterial({size: SmkSiz, color: Air.Color1});
+	Air.SmkObj = new THREE.Points(geoExh, matExh);
+	// add it to the scene
+	scene.add(Air.SmkObj);
+	Air.SmkObj.position.copy(Air.AirObj.position);
+}
+
+// Move Smoke Trail
+function moveJetSmk(Air) {
+	let pos = Air.SmkObj.geometry.attributes.position.array;
+	let p;
+	for (let i = 0; i < SmkTot; i++) {
+		p = 3*i;
+		pos[p] = pos[p] - Air.MapSpd.x;
+		pos[p+1] = pos[p+1] - Air.MapSpd.y;
+		pos[p+2] = pos[p+2] + Air.MapSpd.z;
+		Air.SmkTim[i] ++;
+		if (Air.SmkTim[i] > SmkTot*SmkInt) {
+			pos[p] = 0;
+			pos[p+1] = 0;
+			pos[p+2] = 0;
+			Air.SmkTim[i] = 0;
+		}	
+	}
+	Air.SmkObj.geometry.attributes.position.needsUpdate = true;
+	Air.SmkObj.position.copy(Air.AirObj.position);	
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//*
+//*		CAMERA
+//*
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// MOVE CAMERA =================================================================
+
+function moveCamera() {
+	// In external view, the camera is facing in and the armature is pointing out:
+	// * x.rotation = -Cam.Rot.x
+	// * y.rotation = Cam.Rot.y + 180
+	let Cam = CamSel;
+	camera.position.z = -Cam.Dst;
+	CamObj.rotation.x = Mod360(-Cam.Rot.x)*DegRad;
+	CamObj.rotation.y = Mod360(180-Cam.Rot.y)*DegRad;
+}
+
+function lockCamera() {
+	// In external view, the camera is facing in and the armature is pointing out:
+	// * x.rotation = -Cam.Rot.x
+	// * y.rotation = Cam.Rot.y + 180
+	let Cam = CamSel;
+	camera.position.z = -Cam.Dst;
+	// Lock
+	if (Cam = "Cam1") {
+		let y = Air2.AirObj.position.y;
+		let x = Math.sqrt(Math.pow(Air2.AirObj.position.z,2),Math.pow(Air2.AirObj.position.x,2));
+		CamObj.rotation.x = Math.atan(y/x);
+		y = Air2.AirObj.position.z;
+		x = Air2.AirObj.position.x;
+		let r = Math.atan(x/y)*RadDeg;
+		if (y < 0) r = Mod360(r+180);
+		else {r = Mod360(r+360)};
+		CamObj.rotation.y = r*DegRad;
+		CamObj.position.y = 50;
+	}
+}
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//*
+//*		MISCELLANEOUS SUBROUTINES
+//*
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//- Convert degrees to 360 -----------------------------------------------------
+function Mod360(deg) {
+	while (deg < 0) deg = deg + 360;	// Make deg a positive number
+	deg = deg % 360;					// Compute remainder of any number divided by 360
+return deg;}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//*
+//*		OUTPUTS AND INPUTS
+//*
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//= OUTPUTS ====================//==============================================
+
+// Change HUD Values
+function chngHUDV(Air) {
+	AC_Head = Air.AirRot.y;		// Aircraft Heading
+	AC_HeadNode.nodeValue = AC_Head.toFixed(0);
+	AC_Hite = Air.MapPos.y*Mtr2Ft;	// Aircraft Altitude (feet)
+	AC_HiteNode.nodeValue = AC_Hite.toFixed(0);
+	AC_Sped = Air.SpdKPH*Km2Mil;	// Aircraft Speed (MPH)
+	AC_SpedNode.nodeValue = AC_Sped.toFixed(0);
+	AC_Bank = Air.AirRot.z;		// Aircraft Bank (deg)
+	if (AC_Bank > 180) AC_Bank = 360 - AC_Bank;
+	AC_BankNode.nodeValue = AC_Bank.toFixed(0);
+	AC_Turn = Air.HRS/DLTime;	// Aircraft Turn Rate (deg)
+	AC_TurnNode.nodeValue = AC_Turn.toFixed(2);
+	AC_Rads = Air.Rds/Ft2Mtr;	// Aircraft Turn Radius (feet)
+	AC_RadsNode.nodeValue = AC_Rads.toFixed(0);
+	AC_AofA = Air.CfLift*10;	// Aircraft AoA
+	AC_AofANode.nodeValue = AC_AofA.toFixed(2);
+}
+
+//= INPUTS =====================//==============================================
+
+//= Keyboard Input =============================================================
+
+// Key Down
+function onDocumentKeyDown(event) {
+	let Air = AirSel;
+	let keyCode = event.which;
+	// Speed Up
+	if (event.keyCode == K_SpdU) InpSpd = 1;
+	// Speed Dn
+	if (event.keyCode == K_SpdD) InpSpd = -1;
+	// Bank Left
+	if (event.keyCode == K_BnkL) Air.InpRot.z = -BnkSpd;
+	// Bank Right
+	if (event.keyCode == K_BnkR) Air.InpRot.z = BnkSpd;
+	// Pitch Up
+	if (event.keyCode == K_PitU) Air.InpRot.x = CfLSpd;
+	// Pitch Down
+	if (event.keyCode == K_PitD) Air.InpRot.x = -CfLSpd;
+	// Center
+	if (event.keyCode == K_Cntr) {
+		Air.InpRot.z = 0;
+		Air.InpRot.x = 0;
+		Air.InpRot.y = 0;
+		Air.AirRot.z = 0;
+		Air.AirRot.x = 0;
+		InpSpd = 0;
+		Air.AirObj.rotation.z = 0;			// No Bank
+		Air.AirObj.rotation.x = 0;			// No Pitch
+	}
+	// Yaw Left
+	if (event.keyCode == K_YawL) Air.InpRot.y = -0.1;
+	// Yaw Right
+	if (event.keyCode == K_YawR) Air.InpRot.y = 0.1;
+}
+
+// Key Up
+function onDocumentKeyUp(event) {
+	let Air = AirSel;
+	let keyCode = event.which;
+	// Speed Up
+	if (event.keyCode == K_SpdU) InpSpd = 0;
+	// Speed Dn
+	if (event.keyCode == K_SpdD) InpSpd = 0;
+	// Bank Left
+	if (event.keyCode == K_BnkL) Air.InpRot.z = 0;
+	// Bank Right
+	if (event.keyCode == K_BnkR) Air.InpRot.z = 0;
+	// Pitch Up
+	if (event.keyCode == K_PitU) Air.InpRot.x = 0;
+	// Pitch Down
+	if (event.keyCode == K_PitD) Air.InpRot.x = 0;
+	// Yaw Left
+	if (event.keyCode == K_YawL) Air.InpRot.y = 0;
+	// Yaw Right
+	if (event.keyCode == K_YawR) Air.InpRot.y = 0;
+}
+
+//= Mouse Input ================================================================
+
+function onMouseDown(event) {
+	event.preventDefault();
+	PanFlg = 1;
+	let Cam = CamSel;
+	onPointerDownX = event.clientX;
+	onPointerDownY = event.clientY;
+	onPointerDownLon = Cam.Rot.y;
+	onPointerDownLat = Cam.Rot.x;
+}
+
+function onMouseUp(event) {
+	PanFlg = 0;
+}
+
+function onMouseMove(event) {
+// Panning View
+	let Cam = CamSel;
+	if (PanFlg > 0) {
+		Cam.Rot.x = (onPointerDownY - event.clientY) * 0.2 + onPointerDownLat;
+		Cam.Rot.x = Math.max(-CamLtX, Math.min(CamLtX, Cam.Rot.x));
+		Cam.Rot.y = (event.clientX - onPointerDownX) * 0.2 + onPointerDownLon;
+		Cam.Rot.y = Mod360(Cam.Rot.y);
+	}
+}
+
+function onMouseWheel(event) {
+	let Cam = CamSel;
+	Cam.Dst = Cam.Dst + event.deltaY * Cam.Dif;
+	if (Cam.Dst > Cam.Max) Cam.Dst = Cam.Max;
+	if (Cam.Dst < Cam.Min) Cam.Dst = Cam.Min;
+//	Cam.Dst = Math.max(Cam.Min, Math.min(Cam.Max, Cam.Dst));
+}
+
+//= Touch Screen Input =========================================================
+
+function onTouchStart(event) {
+	// Single Touch
+	let Cam = CamSel;
+	if (event.touches.length == 1) {
+		event.preventDefault();
+		onPointerDownX = event.touches[0].clientX;
+		onPointerDownY = event.touches[0].clientY;
+		onPointerDownLon = Cam.Rot.y;
+		onPointerDownLat = Cam.Rot.x;
+	}
+}
+
+function onTouchMove(event) {
+	// Single Touch
+	let Cam = CamSel;
+	if (event.touches.length == 1) {
+		event.preventDefault();
+		Cam.Rot.y = (onPointerDownX - event.touches[0].clientX) * 0.2 + onPointerDownLon;
+		Cam.Rot.y = Mod360(Cam.Rot.y);
+		Cam.Rot.x = (event.touches[0].clientY - onPointerDownY) * 0.2 + onPointerDownLat;
+		Cam.Rot.x = Math.max(-85, Math.min(85, Cam.Rot.x));
+	}
+}
+
+//= Button Input ===============================================================
+
+// Toggle Pause
+function togglePause() {
+	if (PawsOn == 0) PawsOn = 1;
+	else PawsOn = 0;
+}
+
+// Change Camera View
+function toggleCamera() {
+	let Air = AirSel;
+	// From External to Linked
+	if (CamSel == Cam1) {
+		CtrObj.remove(CamObj);
+		Air.AirPBY.add(CamObj);			// Link camera to aircraft
+		CamSel = Cam2;
+	}
+	// From Linked to External
+	else if (CamSel == Cam2) {
+		Air.AirPBY.remove(CamObj);
+		CtrObj.add(CamObj);				// Link camera to map
+		CamSel = Cam1;
+	}
+}
+
+// Flight Controls
+
+function toggleSpdU() {
+	let Air = AirSel;
+	if (InpSpd == 0) InpSpd = 10;
+	else InpSpd = 0;
+}
+
+function togglePitD() {
+	let Air = AirSel;
+	if (Air.InpRot.x == 0) Air.InpRot.x = -CfLSpd;
+	else Air.InpRot.x = 0;
+}
+
+function toggleSpdD() {
+	let Air = AirSel;
+	if (InpSpd == 0) InpSpd = -10;
+	else InpSpd = 0;
+}
+
+function toggleBnkL() {
+	let Air = AirSel;
+	if (Air.InpRot.z == 0) Air.InpRot.z = -BnkSpd;
+	else Air.InpRot.z = 0;
+}
+
+function toggleCntr() {
+	let Air = AirSel;
+	Air.InpRot.z = 0;
+	Air.InpRot.x = 0;
+	Air.InpRot.y = 0;
+	Air.AirRot.z = 0;
+	Air.AirRot.x = 0;
+	Air.AirObj.rotation.z = 0;			// No Bank
+	Air.AirObj.rotation.x = 0;			// No Pitch
+}
+
+function toggleBnkR() {
+	let Air = AirSel;
+	if (Air.InpRot.z == 0) Air.InpRot.z = BnkSpd;
+	else Air.InpRot.z = 0;
+}
+
+function togglePitU() {
+	let Air = AirSel;
+	if (Air.InpRot.x == 0) Air.InpRot.x = CfLSpd;
+	else Air.InpRot.x = 0;
+}
+
+function toggleYawL() {
+	let Air = AirSel;
+	if (Air.InpRot.y == 0) Air.InpRot.y = -0.1;
+	else Air.InpRot.y = 0;
+}
+
+function toggleYawR() {
+	let Air = AirSel;
+	if (Air.InpRot.y == 0) Air.InpRot.y = 0.1;
+	else Air.InpRot.y = 0;
+}
+
+//= Window Resize Input ========================================================
+
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+</script>
+</body>
+</html>
