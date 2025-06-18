@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Jun 2025
+Version dated 18 Jun 2025
 
 This program demonstrates a couple of Moving Map Grid subroutines, including:
 * loadGrdMap
@@ -15,9 +15,9 @@ The subroutines can be used to draw single Grids or nested Grids.
 -->
 
 <head>
-<title>ACM Demo - Mimic</title>
+<title>ACM Demo - Trail</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/main2pxB.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -33,20 +33,6 @@ The subroutines can be used to draw single Grids or nested Grids.
 		<div>Angle of Attack : <span id="AC_AofA"></span></div>
 	</div>
 </div>
-
-<button id="PAW" class="pauseButton">Paws</button>
-
-<button id="CAM" class="cameraButton">View</button>
-
-<button id="SLO" class="spddButton">-</button>
-<button id="PTD" class="pitdButton">&uarr;</button>
-<button id="FST" class="spduButton">+</button>
-<button id="BKL" class="bnklButton">&larr;</button>
-<button id="CTR" class="cntrButton">X</button>
-<button id="BKR" class="bnkrButton">&rarr;</button>
-<button id="YWL" class="yawlButton">[</button>
-<button id="PTU" class="pituButton">&darr;</button>
-<button id="YWR" class="yawrButton">]</button>
 
 <script type="importmap">
 	{
@@ -122,7 +108,7 @@ let	camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeigh
 	camera.rotation.order = "YXZ";
 	camera.position.z = -CamDst;
 	camera.rotation.y = 180*DegRad;		// Default = looking in
-let	CamObj = new THREE.Object3D();			// Armature base - use to rotate camera
+let	CamObj = new THREE.Object3D();		// Armature base - use to rotate camera
 	CamObj.rotation.order = "YXZ";
 	CamObj.add(camera);
 // Inputs
@@ -132,66 +118,53 @@ let	CamObj = new THREE.Object3D();			// Armature base - use to rotate camera
 	renderer.domElement.addEventListener("mouseup", onMouseUp, false);
 	renderer.domElement.addEventListener("mousemove", onMouseMove, false);
 	renderer.domElement.addEventListener('mousewheel', onMouseWheel, {capture: false, passive: false});
-	renderer.domElement.addEventListener("touchstart", onTouchStart, false);
-	renderer.domElement.addEventListener("touchmove", onTouchMove, false);
-	document.getElementById("PAW").addEventListener("click", togglePause, false);
-	document.getElementById("CAM").addEventListener("click", toggleCamera, false);
-	document.getElementById("FST").addEventListener("click", toggleSpdU, false);
-	document.getElementById("PTD").addEventListener("click", togglePitD, false);
-	document.getElementById("SLO").addEventListener("click", toggleSpdD, false);
-	document.getElementById("BKL").addEventListener("click", toggleBnkL, false);
-	document.getElementById("CTR").addEventListener("click", toggleCntr, false);
-	document.getElementById("BKR").addEventListener("click", toggleBnkR, false);
-	document.getElementById("PTU").addEventListener("click", togglePitU, false);
-	document.getElementById("YWL").addEventListener("click", toggleYawL, false);
-	document.getElementById("YWR").addEventListener("click", toggleYawR, false);
 	window.addEventListener("resize", onWindowResize, false);
 
-//= Ground Squares =============================================================
+//= Ground Squares =============//==============================================
 // Layer 1 constains smaller higher definition squares
 // Layer 2 contains larger lower definition squares (3X size of Layer 1 squares)
 //= Both Grids -----------------------------------------------------------------
 // Used to Position Map
 let Grd0 = {
-		MSZ:	0,					// Map NSSpd (updated by program)
-		MSX:	0,					// Map EWSpd (updated by program)
-		MPY:	0					// Map UpPos = Aircraft Altitude (updated by program)
+		MSZ:	0,				// Map NSSpd (updated by program)
+		MSX:	0,				// Map EWSpd (updated by program)
+		MPY:	0				// Map UpPos = Aircraft Altitude (updated by program)
 	}
 //= Grid 4 ---------------------------------------------------------------------
 let Grd4 = {
-		Typ:	4,					// Type of Grid - Inner or Outer
-		RCs:	27,					// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	GrdSiz,				// Size of square
-		Stp:	3,					// Steps
-		RCi:	0,					// Rows and Columns Index (computed)
-		MZV:	[0],				// Ground Z Value
-		MXV:	[0],				// Ground X Value
-		Nor:	0,					// Max North Square (updated)
-		Est:	0,					// Max East Square (updated)
-		Num:	0,					// Size of array (computed)
-		Ptr:	[0],				// Ground Address
-		RCF:	0,					// N/A
-		NSA:	0,					// Shared North/South Adjustment (updated)
-		EWA:	0,					// Shared East/West Adjustment (updated)
-		Mat:	0					// Match Material of Outer and Inner Blocks
+		Typ:	4,				// Type of Grid - Inner or Outer
+		RCs:	27,				// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	GrdSiz,			// Size of square
+		Stp:	3,				// Steps
+		RCi:	0,				// Rows and Columns Index (computed)
+		MZV:	[0],			// Ground Z Value
+		MXV:	[0],			// Ground X Value
+		Nor:	0,				// Max North Square (updated)
+		Est:	0,				// Max East Square (updated)
+		Num:	0,				// Size of array (computed)
+		Ptr:	[0],			// Ground Address
+		RCF:	0,				// N/A
+		NSA:	0,				// Shared North/South Adjustment (updated)
+		EWA:	0,				// Shared East/West Adjustment (updated)
+		Mat:	0				// Match Material of Outer and Inner Blocks
 	}
 //= Grid 5 ---------------------------------------------------------------------
 let Grd5 = {
-		Typ:	5,					// Type of Grid - Inner or Outer
-		RCs:	27,					// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	Grd4.Siz*Grd4.Stp,	// Size of square
-		Stp:	3,					// Steps
-		RCi:	0,					// Rows and Columns Index (computed)
-		MZV:	[0],				// Ground Z Value
-		MXV:	[0],				// Ground X Value
-		Nor:	0,					// Max North Square (updated)
-		Est:	0,					// Max East Square (updated)
-		Num:	0,					// Size of array (computed)
-		Ptr:	[0],				// Ground Address
-		RCF:	Grd4.RCs/Grd4.Stp,	// Cut-Out Area (27/3 = 9)
-		NSA:	0,					// Shared North/South Adjustment (updated)
-		EWA:	0,					// Shared East/West Adjustment (updated)
-		Mat:	0					// Match Material of Outer and Inner Blocks
+		Typ:	5,				// Type of Grid - Inner or Outer
+		RCs:	27,				// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	Grd4.Siz*Grd4.Stp, // Size of square
+		Stp:	3,				// Steps
+		RCi:	0,				// Rows and Columns Index (computed)
+		MZV:	[0],			// Ground Z Value
+		MXV:	[0],			// Ground X Value
+		Nor:	0,				// Max North Square (updated)
+		Est:	0,				// Max East Square (updated)
+		Num:	0,				// Size of array (computed)
+		Ptr:	[0],			// Ground Address
+		RCF:	Grd4.RCs/Grd4.Stp, // Cut-Out Area (27/3 = 9)
+		NSA:	0,				// Shared North/South Adjustment (updated)
+		EWA:	0,				// Shared East/West Adjustment (updated)
+		Mat:	0				// Match Material of Outer and Inner Blocks
 	}
 
 //= Aircraft ===================//==============================================
@@ -309,9 +282,8 @@ let LagInp = [0];					// Air1 Rotation Change
 let LagRot = [0];					// Air1 Rotation
 let LagPos = [0];					// Air1 Position
 
-
-//= Inputs =====================================================================
-// Camera - Lat/Lon = direction the camera is pointing
+//= INPUTS =====================================================================
+//- Camera - Lat/Lon = direction the camera is pointing
 let Cam1 = {
 		Rot: new THREE.Vector3(-30,10,0),	// Lat Lon Bnk
 		Dst: CamDst,
@@ -329,7 +301,7 @@ let Cam2 = {
 let CamSel = Cam1;
 let CamLtX = 90;					// Max lat
 let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
-// Key Values
+//- Key Values
 let K_SpdU = 45;					// Speed Up (insert)
 let K_PitD = 38;					// Pitch down (up arrow)
 let K_SpdD = 33;					// Speed Up (page up)
@@ -339,10 +311,12 @@ let	K_BnkR = 39;					// Bank Right (right arrow)
 let K_YawL = 46;					// Yaw Left (delete)
 let K_PitU = 40;					// Pitch up (down arrow)
 let K_YawR = 34;					// Yaw Right (page down)
+let K_Paws = 80;					// Pause (p)
+let K_View = 86						// View (v)
 // -
 let BnkSpd = 1;						// Bank Speed
 let CfLSpd = 1;						// Pitch Speed
-// Flags
+//- Flags
 let	PanFlg = 0;						// Camera Panning
 let PawsOn = 0;						// Pause
 
@@ -940,7 +914,6 @@ function lockCamera() {
 	}
 }
 
-
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //*
 //*		MISCELLANEOUS SUBROUTINES
@@ -988,20 +961,13 @@ function chngHUDV(Air) {
 function onDocumentKeyDown(event) {
 	let Air = AirSel;
 	let keyCode = event.which;
-	// Speed Up
-	if (event.keyCode == K_SpdU) InpSpd = 1;
-	// Speed Dn
-	if (event.keyCode == K_SpdD) InpSpd = -1;
-	// Bank Left
-	if (event.keyCode == K_BnkL) Air.InpRot.z = -BnkSpd;
-	// Bank Right
-	if (event.keyCode == K_BnkR) Air.InpRot.z = BnkSpd;
-	// Pitch Up
-	if (event.keyCode == K_PitU) Air.InpRot.x = CfLSpd;
-	// Pitch Down
-	if (event.keyCode == K_PitD) Air.InpRot.x = -CfLSpd;
-	// Center
-	if (event.keyCode == K_Cntr) {
+	if (event.keyCode == K_SpdU) InpSpd = 1;				// Speed Up
+	if (event.keyCode == K_SpdD) InpSpd = -1;				// Speed Dn
+	if (event.keyCode == K_BnkL) Air.InpRot.z = -BnkSpd;	// Bank Left
+	if (event.keyCode == K_BnkR) Air.InpRot.z = BnkSpd;		// Bank Right
+	if (event.keyCode == K_PitU) Air.InpRot.x = CfLSpd;		// Pitch Up
+	if (event.keyCode == K_PitD) Air.InpRot.x = -CfLSpd;	// Pitch Down
+	if (event.keyCode == K_Cntr) {							// Center
 		Air.InpRot.z = 0;
 		Air.InpRot.x = 0;
 		Air.InpRot.y = 0;
@@ -1011,32 +977,24 @@ function onDocumentKeyDown(event) {
 		Air.AirObj.rotation.z = 0;			// No Bank
 		Air.AirObj.rotation.x = 0;			// No Pitch
 	}
-	// Yaw Left
-	if (event.keyCode == K_YawL) Air.InpRot.y = -0.1;
-	// Yaw Right
-	if (event.keyCode == K_YawR) Air.InpRot.y = 0.1;
+	if (event.keyCode == K_YawL) Air.InpRot.y = -0.1;		// Yaw Left
+	if (event.keyCode == K_YawR) Air.InpRot.y = 0.1;		// Yaw Right
+	if (event.keyCode == K_Paws) toglPaws();				// Pause
+	if (event.keyCode == K_View) toglView();				// View
 }
 
 // Key Up
 function onDocumentKeyUp(event) {
 	let Air = AirSel;
 	let keyCode = event.which;
-	// Speed Up
-	if (event.keyCode == K_SpdU) InpSpd = 0;
-	// Speed Dn
-	if (event.keyCode == K_SpdD) InpSpd = 0;
-	// Bank Left
-	if (event.keyCode == K_BnkL) Air.InpRot.z = 0;
-	// Bank Right
-	if (event.keyCode == K_BnkR) Air.InpRot.z = 0;
-	// Pitch Up
-	if (event.keyCode == K_PitU) Air.InpRot.x = 0;
-	// Pitch Down
-	if (event.keyCode == K_PitD) Air.InpRot.x = 0;
-	// Yaw Left
-	if (event.keyCode == K_YawL) Air.InpRot.y = 0;
-	// Yaw Right
-	if (event.keyCode == K_YawR) Air.InpRot.y = 0;
+	if (event.keyCode == K_SpdU) InpSpd = 0;				// Speed Up
+	if (event.keyCode == K_SpdD) InpSpd = 0;				// Speed Dn
+	if (event.keyCode == K_BnkL) Air.InpRot.z = 0;			// Bank Left
+	if (event.keyCode == K_BnkR) Air.InpRot.z = 0;			// Bank Right
+	if (event.keyCode == K_PitU) Air.InpRot.x = 0;			// Pitch Up
+	if (event.keyCode == K_PitD) Air.InpRot.x = 0;			// Pitch Down
+	if (event.keyCode == K_YawL) Air.InpRot.y = 0;			// Yaw Left
+	if (event.keyCode == K_YawR) Air.InpRot.y = 0;			// Yaw Right
 }
 
 //= Mouse Input ================================================================
@@ -1074,116 +1032,29 @@ function onMouseWheel(event) {
 //	Cam.Dst = Math.max(Cam.Min, Math.min(Cam.Max, Cam.Dst));
 }
 
-//= Touch Screen Input =========================================================
-
-function onTouchStart(event) {
-	// Single Touch
-	let Cam = CamSel;
-	if (event.touches.length == 1) {
-		event.preventDefault();
-		onPointerDownX = event.touches[0].clientX;
-		onPointerDownY = event.touches[0].clientY;
-		onPointerDownLon = Cam.Rot.y;
-		onPointerDownLat = Cam.Rot.x;
-	}
-}
-
-function onTouchMove(event) {
-	// Single Touch
-	let Cam = CamSel;
-	if (event.touches.length == 1) {
-		event.preventDefault();
-		Cam.Rot.y = (onPointerDownX - event.touches[0].clientX) * 0.2 + onPointerDownLon;
-		Cam.Rot.y = Mod360(Cam.Rot.y);
-		Cam.Rot.x = (event.touches[0].clientY - onPointerDownY) * 0.2 + onPointerDownLat;
-		Cam.Rot.x = Math.max(-85, Math.min(85, Cam.Rot.x));
-	}
-}
-
 //= Button Input ===============================================================
 
 // Toggle Pause
-function togglePause() {
+function toglPaws() {
 	if (PawsOn == 0) PawsOn = 1;
 	else PawsOn = 0;
 }
 
-// Change Camera View
-function toggleCamera() {
+//- Change Camera View
+function toglView() {
 	let Air = AirSel;
 	// From External to Linked
 	if (CamSel == Cam1) {
 		CtrObj.remove(CamObj);
-		Air.AirPBY.add(CamObj);			// Link camera to aircraft
+		Air2.AirPBY.add(CamObj);		// Link camera to aircraft
 		CamSel = Cam2;
 	}
 	// From Linked to External
 	else if (CamSel == Cam2) {
-		Air.AirPBY.remove(CamObj);
+		Air2.AirPBY.remove(CamObj);
 		CtrObj.add(CamObj);				// Link camera to map
 		CamSel = Cam1;
 	}
-}
-
-// Flight Controls
-
-function toggleSpdU() {
-	let Air = AirSel;
-	if (InpSpd == 0) InpSpd = 10;
-	else InpSpd = 0;
-}
-
-function togglePitD() {
-	let Air = AirSel;
-	if (Air.InpRot.x == 0) Air.InpRot.x = -CfLSpd;
-	else Air.InpRot.x = 0;
-}
-
-function toggleSpdD() {
-	let Air = AirSel;
-	if (InpSpd == 0) InpSpd = -10;
-	else InpSpd = 0;
-}
-
-function toggleBnkL() {
-	let Air = AirSel;
-	if (Air.InpRot.z == 0) Air.InpRot.z = -BnkSpd;
-	else Air.InpRot.z = 0;
-}
-
-function toggleCntr() {
-	let Air = AirSel;
-	Air.InpRot.z = 0;
-	Air.InpRot.x = 0;
-	Air.InpRot.y = 0;
-	Air.AirRot.z = 0;
-	Air.AirRot.x = 0;
-	Air.AirObj.rotation.z = 0;			// No Bank
-	Air.AirObj.rotation.x = 0;			// No Pitch
-}
-
-function toggleBnkR() {
-	let Air = AirSel;
-	if (Air.InpRot.z == 0) Air.InpRot.z = BnkSpd;
-	else Air.InpRot.z = 0;
-}
-
-function togglePitU() {
-	let Air = AirSel;
-	if (Air.InpRot.x == 0) Air.InpRot.x = CfLSpd;
-	else Air.InpRot.x = 0;
-}
-
-function toggleYawL() {
-	let Air = AirSel;
-	if (Air.InpRot.y == 0) Air.InpRot.y = -0.1;
-	else Air.InpRot.y = 0;
-}
-
-function toggleYawR() {
-	let Air = AirSel;
-	if (Air.InpRot.y == 0) Air.InpRot.y = 0.1;
-	else Air.InpRot.y = 0;
 }
 
 //= Window Resize Input ========================================================
