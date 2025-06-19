@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Jun 2025
+Version dated 19 Jun 2025
 
 This program demonstrates a couple of Moving Map Grid subroutines, including:
 * loadGrdMap
@@ -32,6 +32,10 @@ The subroutines can be used to draw single Grids or nested Grids.
 		<div>Turn Radius.(ft): <span id="AC_Rads"></span></div>
 		<div>Angle of Attack : <span id="AC_AofA"></span></div>
 	</div>
+	<div class="overlay3">
+		<div>Use Arrow Keys to Pitch and Bank Airplane</div>
+		<div>Use Z or X to Yaw Left or Right</div>
+	</div>
 </div>
 
 <script type="importmap">
@@ -56,23 +60,23 @@ import Stats from "three/addons/libs/stats.module.js";
 // Grid 5 Square Size: 3.0 miles.  Viz = 3.0 X 13.5 = 40.5 miles = 65km
 
 //= Lag Type ===================//==============================================
-let LagTyp = 1;					// 0 = No Lag, 1 = Lag
+let LagTyp = 1;					// 0 = Mimic, 1 = Lag Pursuit
+let BegLag = new THREE.Vector3(0,0,100); // z = Distance Behind
 
 //= Starting Values ============//==============================================
 let BegAlt = 3048;				// Aircraft Altitude (m) = 10000 ft
 let BegSpd = 482.8;				// Aircraft Speed = 300 mph
-let BegPwr = 1.0;
+let BegPwr = 1.0;				//
 let BegRot = new THREE.Vector3(0,0,0); // Beg Pitch, Heading, Bank Angles
 let BegCfL = 0.265;				// Level Flight
-let GrdSiz = 1609.33;			// 1 Mile (1609.33m)
-let CamDst = 500;
 
 //= Variables ==================//==============================================
-// Inputs
+//	Inputs
 let InpSpd = 0;					// Aircraft Speed Change (mph)
-// Stats
+//- Flags
+let	PanFlg = 0;					// Camera Panning
+let PawsOn = 0;					// Pause
 let StsFlg = 1;					// Stats ((0 = off, 1 = on)
-let stats = 0;
 
 //= Constants ==================//==============================================
 let DLTime = 1/60;				// Frames per Second
@@ -90,6 +94,7 @@ let SkyCol = 0xa9e5ff;			// Color of Sky
 //- Flight
 let GrvUPS = 9.80665;			// Gravity (m/s2)
 let	AirDen = 1.225;				// Density (Sea Level Value) (kg/m3)
+let quaternion = new THREE.Quaternion();
 
 //= Basic Values ===============================================================
 // Display
@@ -105,12 +110,6 @@ const AmbLight = new THREE.AmbientLight(0xffffff, 1.0);
 	scene.add(AmbLight);
 // Camera
 let	camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, SkyLim);
-	camera.rotation.order = "YXZ";
-	camera.position.z = -CamDst;
-	camera.rotation.y = 180*DegRad;		// Default = looking in
-let	CamObj = new THREE.Object3D();		// Armature base - use to rotate camera
-	CamObj.rotation.order = "YXZ";
-	CamObj.add(camera);
 // Inputs
 	document.addEventListener("keydown", onDocumentKeyDown, false);
 	document.addEventListener("keyup", onDocumentKeyUp, false);
@@ -123,6 +122,7 @@ let	CamObj = new THREE.Object3D();		// Armature base - use to rotate camera
 //= Ground Squares =============//==============================================
 // Layer 1 constains smaller higher definition squares
 // Layer 2 contains larger lower definition squares (3X size of Layer 1 squares)
+let GrdSiz = 1609.33;			// 1 Mile (1609.33m)
 //= Both Grids -----------------------------------------------------------------
 // Used to Position Map
 let Grd0 = {
@@ -214,7 +214,7 @@ let Air2 = {
 		SpdMPF: (BegSpd/3.6)*DLTime,
 		// Airplane Map Speed and Position
 		MapSpd: new THREE.Vector3(0,0,0), // Map Speed
-		MapPos: new THREE.Vector3(0,BegAlt,100), // Map Position (same as mine)
+		MapPos: new THREE.Vector3(0,BegAlt,BegLag.z), // Map Position (same as mine)
 		// Turn Performance
 		HRS: 0,					// Heading Change in Turn
 		Rds: 0,					// Turn Radius	
@@ -225,40 +225,39 @@ let Air2 = {
 		SmkObj: 0,				// Smoke Object
 		SmkPts: [],				// Position Array
 		SmkTim: [],				// Smoke
-	}	
-let AirSel = Air1;
+	}
 //- Aircraft Data --------------------------------------------------------------
 //	Constrol Sensitivity
-let	MxBnkR = 1;						// Maximum bank rate
-let	BnkMul = MxBnkR/1000;			// Standard bank multiplier
-let	MxPitR = 1;						// Maximum pitch rate
-let	PitMul = MxPitR/250;			// Standard pitch multiplier
+let	MxBnkR = 1;					// Maximum bank rate
+let	BnkMul = MxBnkR/1000;		// Standard bank multiplier
+let	MxPitR = 1;					// Maximum pitch rate
+let	PitMul = MxPitR/250;		// Standard pitch multiplier
 //	Basic Aircraft Data
-let JetMax = 0;						// Jet Only - Maximum Power
-let	PwrMax = 1007;					// Prop Only - Maximum Power (Kw)
-let	PropEf = 0.8;					// Prop Only - Prop Efficiency 
-let	Weight = 7500;					// Aircraft Weight (lbs)
-let	CfLMax = 1.4;					// Maximum Coefficient of Lift
-let	WingSp = 11.58;					// Wing Span (m)
-let	WingAr = 24.15;					// Wing Area (m2)
-let	WingEf = 0.75;					// Wing Efficiency
-let	DrgCd0 = 0.0211;				// Coefficient of Drag
-let	GrvMax = 8;						// Maximum G-Force
-let	AngInc = 5;						// Angle of Incidence
-let	TrmAdj = 2.5;					// Elevator Trim Adjustment
+let JetMax = 0;					// Jet Only - Maximum Power
+let	PwrMax = 1007;				// Prop Only - Maximum Power (Kw)
+let	PropEf = 0.8;				// Prop Only - Prop Efficiency 
+let	Weight = 7500;				// Aircraft Weight (lbs)
+let	CfLMax = 1.4;				// Maximum Coefficient of Lift
+let	WingSp = 11.58;				// Wing Span (m)
+let	WingAr = 24.15;				// Wing Area (m2)
+let	WingEf = 0.75;				// Wing Efficiency
+let	DrgCd0 = 0.0211;			// Coefficient of Drag
+let	GrvMax = 8;					// Maximum G-Force
+let	AngInc = 5;					// Angle of Incidence
+let	TrmAdj = 2.5;				// Elevator Trim Adjustment
 //	Computed Values
-let ThrstK = 1000 * PropEf;			// Prop ONly - Constant (prop only)
+let ThrstK = 1000 * PropEf;		// Prop ONly - Constant (prop only)
 let ACMass = Weight/GrvUPS;		// Mass (slugs or kg)
-let WingAs = WingSp*WingSp/WingAr;	// Wing Aspect Ratio
-let	ACPMax = CfLMax * 10;			// Max aircraft pitch adjustment (+/- 15)
-let	ACPInc = ACPMax - AngInc;		// Net max aircraft pitch adjustment (10)
+let WingAs = WingSp*WingSp/WingAr; // Wing Aspect Ratio
+let	ACPMax = CfLMax * 10;		// Max aircraft pitch adjustment (+/- 15)
+let	ACPInc = ACPMax - AngInc;	// Net max aircraft pitch adjustment (10)
 
 //- Smoke Trail ----------------------------------------------------------------
 let SmkTot = 100;
 let SmkInt = 10;
 let SmkSiz = 6;
 
-//= Computations ===============================================================
+//= Computations ===============//==============================================
 // Bank adjust to keep target along vertical plane
 // Pitch adjust to keep target at certain position
 // Throttle adjust to maintain same distance
@@ -270,64 +269,63 @@ let dif_ = {
 	}
 
 //
-let LagId1 = 0;						// Index to next Air1 Entry
-let LagId2 = 0;						// Index to current Air2
-let	LagMax = 360;					// Max Number of Values (360 = 6 seconds of bank changes)
-let LagDst = 76.2					// Starting Distance Between Air2 and Air1 (250 feet)
-let LagSpd = BegSpd*(1000/3600);	// Air1 Speed (meters/sec)
-let LagTim = LagDst/LagSpd;			// Time = Difference in Distance/Air1 Speed [250/440 = 0.561818 etc]
-//	LagTim = 0.5					// Override - This works better
-let LagInp = [0];					// Air1 Rotation Change
+let LagId1 = 0;					// Index to next Air1 Entry
+let LagId2 = 0;					// Index to current Air2
+let	LagMax = 360;				// Max Number of Values (360 = 6 seconds of bank changes)
+let LagDst = BegLag.z;			// Starting Distance Between Air2 and Air1 (250 feet)
+let LagSpd = BegSpd*(1000/3600); // Air1 Speed (meters/sec)
+let LagTim = LagDst/LagSpd;		// Time = Difference in Distance/Air1 Speed [250/440 = 0.561818 etc]
+//	LagTim = 0.5				// Override - This works better
+let LagInp = [0];				// Air1 Rotation Change
 //	Cheats? (Fixes Rounding Errors)
-let LagRot = [0];					// Air1 Rotation
-let LagPos = [0];					// Air1 Position
+let LagRot = [0];				// Air1 Rotation
+let LagPos = [0];				// Air1 Position
 
-//= INPUTS =====================================================================
-//- Camera - Lat/Lon = direction the camera is pointing
-let Cam1 = {
-		Rot: new THREE.Vector3(-30,10,0),	// Lat Lon Bnk
-		Dst: CamDst,
-		Dif: 1,
-		Max: 750,
-		Min: 125,
-	}
-let Cam2 = {
-		Rot: new THREE.Vector3(-30,10,0),	// Lat Lon Bnk
-		Dst: 100,
-		Dif: 0.25,
-		Max: 300,
-		Min: 50,
-	}
-let CamSel = Cam1;
-let CamLtX = 90;					// Max lat
-let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
-//- Key Values
-let K_SpdU = 45;					// Speed Up (insert)
-let K_PitD = 38;					// Pitch down (up arrow)
-let K_SpdD = 33;					// Speed Up (page up)
-let	K_BnkL = 37;					// Bank Left (left arrow)
-let K_Cntr = 35;					// Center (end)
-let	K_BnkR = 39;					// Bank Right (right arrow)
-let K_YawL = 46;					// Yaw Left (delete)
-let K_PitU = 40;					// Pitch up (down arrow)
-let K_YawR = 34;					// Yaw Right (page down)
-let K_Paws = 80;					// Pause (p)
-let K_View = 86						// View (v)
-// -
-let BnkSpd = 1;						// Bank Speed
-let CfLSpd = 1;						// Pitch Speed
-//- Flags
-let	PanFlg = 0;						// Camera Panning
-let PawsOn = 0;						// Pause
-
-//= Objects ====================================================================
-// Camera
+//= CAMERA =====================//==============================================
+	camera.rotation.order = "YXZ";
+	camera.position.z = -500;	// Starting Disctance for Camera 1
+	camera.rotation.y = 180*DegRad;		// Default = looking in
+let	CamObj = new THREE.Object3D();		// Armature base - use to rotate camera
+	CamObj.rotation.order = "YXZ";
+	CamObj.add(camera);
 let CtrObj = new THREE.Object3D();
 	CtrObj.rotation.order = "YXZ";
 	CtrObj.add(CamObj);
 	scene.add(CtrObj);
-//
-let quaternion = new THREE.Quaternion();
+//- Camera - Lat/Lon = direction the camera is pointing
+let Cam1 = {
+		Rot: new THREE.Vector3(-30,10,0), // Lat Lon Bnk
+		Pos: new THREE.Vector3(500,750,125),
+		Dif: 1,
+		Ref: CtrObj,
+	}
+let Cam2 = {
+		Rot: new THREE.Vector3(-30,10,0), // Lat Lon Bnk
+		Pos: new THREE.Vector3(100,300,50),
+		Dif: 0.25,
+		Ref: Air2.AirPBY,
+	}
+let CamSel = Cam1;
+let CamLtX = 90;				// Max lat
+
+//= INPUTS =====================//==============================================
+let onPointerDownX, onPointerDownY, onPointerDownLon, onPointerDownLat;
+//- Key Values
+let K_SpdU = 45;				// Speed Up (insert)
+let K_PitD = 38;				// Pitch down (up arrow)
+let K_SpdD = 33;				// Speed Up (page up)
+let	K_BnkL = 37;				// Bank Left (left arrow)
+let K_Cntr = 35;				// Center (end)
+let	K_BnkR = 39;				// Bank Right (right arrow)
+let K_YawL = 46;				// Yaw Left (delete)
+let K_PitU = 40;				// Pitch up (down arrow)
+let K_YawR = 34;				// Yaw Right (page down)
+let K_Paws = 80;				// Pause (p)
+let K_View = 86					// View (v)
+// -
+let BnkSpd = 1;					// Bank Speed
+let CfLSpd = 1;					// Pitch Speed
+
 //= HTML OVERLAY TEXT ==========================================================
 let AC_HiteElement = document.getElementById("AC_Hite");
 let AC_HiteNode = document.createTextNode("");
@@ -356,7 +354,7 @@ let AC_Hite,AC_Head,AC_Sped,AC_Bank,AC_Turn,AC_Rads,AC_AofA;;
 	initAll();
 	rendAll();
 
-//= 1 Initialize ===============================================================
+//= 1 Initialize ===============//==============================================
 
 function initAll() {
 	scene.background = new THREE.Color(SkyCol);
@@ -364,29 +362,29 @@ function initAll() {
 	initGrdMap();
 	initAirPln();
 	// Show stats
-	if (StsFlg > 0) {					// show stats
-		stats = new Stats();
-		stats.setMode(0);				// FPS only
-		stats.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
-		container.appendChild(stats.dom);
+	if (StsFlg) {				// show stats
+		StsFlg = new Stats();
+		StsFlg.setMode(0);		// FPS only
+		StsFlg.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+		container.appendChild(StsFlg.dom);
 	}
 }
 
-// 2 Render ====================================================================
+// 2 Render ====================//==============================================
 
 function rendAll() {
 	requestAnimationFrame(rendAll);
 	if (PawsOn == 0) {
 		moveAirPln();
-		Grd0.MSZ = Air1.MapSpd.z;			// update Grid Data
+		Grd0.MSZ = Air1.MapSpd.z; // update Grid Data
 		Grd0.MSX = Air1.MapSpd.x;
 		Grd0.MPY = Air1.MapPos.y;
-		moveGrdMap();					// Move Grid Map
-		if (StsFlg > 0) stats.update();	// update stats
+		moveGrdMap();			// Move Grid Map
+		if (StsFlg) StsFlg.update(); // update stats
 	}
 	chngHUDV(Air1)
 	moveCamera();
-	renderer.render(scene, camera);		// Render
+	renderer.render(scene, camera); // Render
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -485,9 +483,9 @@ function move1GrMap(Grd) {
 		Grd.MZV[i] = Grd.MZV[i] - Grd0.MSZ;	// Rows
 		Grd.MXV[i] = Grd.MXV[i] - Grd0.MSX;	// Columns
 	}
-	Grd.MYV = Grd0.MPY;					// Altitude
+	Grd.MYV = Grd0.MPY;			// Altitude
 	// Test North/South
-	if (Grd0.MSZ < 0) {					// If Moving South
+	if (Grd0.MSZ < 0) {			// If Moving South
 		j = Grd.Nor;
 		if (Grd.MZV[j] >= max) {
 			v = min+(Grd.MZV[j]-max);
@@ -503,7 +501,7 @@ function move1GrMap(Grd) {
 			else Grd5.NSA = Grd5.NSA - 1;
 		}
 	}
-	if (Grd0.MSZ > 0) {					// If Moving North
+	if (Grd0.MSZ > 0) {			// If Moving North
 		j = Grd.Nor + 1;
 		if (j > Grd.RCi) j = 0;
 		if (Grd.MZV[j] <= min) {
@@ -521,7 +519,7 @@ function move1GrMap(Grd) {
 		}
 	}
 	// Test East/West
-	if (Grd0.MSX < 0) {					// If Moving West
+	if (Grd0.MSX < 0) {			// If Moving West
 		j = Grd.Est;
 		if (Grd.MXV[j] >= max) {
 			v = min+(Grd.MXV[j]-max);
@@ -537,7 +535,7 @@ function move1GrMap(Grd) {
 			else Grd5.EWA = Grd5.EWA - 1;
 		}
 	}
-	if (Grd0.MSX > 0) {						// If Moving East
+	if (Grd0.MSX > 0) {			// If Moving East
 		j = Grd.Est + 1;
 		if (j > Grd.RCi) j = 0;	
 		if (Grd.MXV[j] <= min) {
@@ -565,9 +563,9 @@ function move1GrMap(Grd) {
 	}
 	// Outer Grid Only - Make Cut-Out Area Invisible
 	if (Grd.Typ == 2) {
-		let r = Grd.Nor + 1 + Grd.NSA;			// Get Lower index
+		let r = Grd.Nor + 1 + Grd.NSA; // Get Lower index
 		if (r > Grd.RCi) r = r - Grd.RCs;
-		let c = Grd.Est + 1 + Grd.EWA;			// Get Left Index
+		let c = Grd.Est + 1 + Grd.EWA; // Get Left Index
 		if (c > Grd.RCi) c = c - Grd.RCs;
 		for (let i = 0; i < Grd.RCF; i++) {
 			n = r * Grd.RCs + c;
@@ -709,16 +707,16 @@ function move1ACraft(Air) {
 	// 1. COMPUTE VECTORS -------------------------------------------------------
 	// Compute Force Vectors in UPS and multiply by FrcAcc to convert to UPT
 	// a. Compute New Speeds for New DLTime
-	let DLTim2 = DLTime*DLTime;		// Time ^ 2
-	let GrvDLT = GrvUPS*DLTim2;		// Gravity (upt)
-	let FrcAcc = DLTim2/ACMass;		// Convert Force to Acceleration
+	let DLTim2 = DLTime*DLTime;	// Time ^ 2
+	let GrvDLT = GrvUPS*DLTim2;	// Gravity (upt)
+	let FrcAcc = DLTim2/ACMass;	// Convert Force to Acceleration
 	Air.SpdMPS = Air.SpdKPH*1000/3600;
 	Air.SpdMPF = Air.SpdMPS*DLTime;
 	// b. Compute Dynamic Pressure
-	let DynPrs = 0.5*(Air.SpdMPS**2)*AirDen;	// Dynamic Pressure
+	let DynPrs = 0.5*(Air.SpdMPS**2)*AirDen; // Dynamic Pressure
 	let QSTval = DynPrs * WingAr;
 	// Compute Max Lift
-	let LftMax = GrvMax*GrvDLT;		// Maximum G-accel
+	let LftMax = GrvMax*GrvDLT;	// Maximum G-accel
 	LftMax = (LftMax+GrvMax)*GrvDLT;
 	// Set CfLift
 	// Normally, set power to cause change in flight parth.  CfL adjusted to speed
@@ -728,7 +726,7 @@ function move1ACraft(Air) {
 	if (Air.InpRot.x == 0) {	// Setting for current flight path (level, climb or descent)
 		Air.CfLift = (Weight * Math.cos(ACP))/(DynPrs * WingAr * Math.abs(Math.cos(ACB)));
 	}
-	else {					// Allows change of flight path					
+	else {						// Allows change of flight path					
 		Air.CfLift =   Air.CfLift + .01*Air.InpRot.x;
 	}
 	// Add adjustment to level flight parth when press specified key combo?
@@ -737,28 +735,28 @@ function move1ACraft(Air) {
 	// c. Compute Lift Rotation
 	// Lift = DynPres * WingArea * Cl
 	let CfLftT = Air.CfLift;
-	let ACLftF =  CfLftT * QSTval;		// Lift[ft-lbs] - can be positive or negative
-	let ACLift = ACLftF * FrcAcc;		// Acceleration (DLT)	
+	let ACLftF =  CfLftT * QSTval; // Lift[ft-lbs] - can be positive or negative
+	let ACLift = ACLftF * FrcAcc; // Acceleration (DLT)	
 	if (ACLift > 0 && ACLift > LftMax) ACLift = LftMax;	// Limit to Max Gs (pos)
 	if (ACLift < 0 && ACLift < -LftMax) ACLift = -LftMax;	// Limit to Max Gs (neg)
 	let ACLftD = (ACLift/Air.SpdMPF) * RadDeg;	// Degrees = ACLift*180 / (PI()*V) = ACLift/V * RadDeg
 	// d. Compute Net Thrust Acceleration
-	let EnThrF = JetMax * Air.PwrPct;		// Jet
+	let EnThrF = JetMax * Air.PwrPct; // Jet
 	if (JetMax == 0) EnThrF = ThrstK * (PwrMax * Air.PwrPct) / Air.SpdMPS;	// Propeller Force
 	// Drag
 	let DrgCdi = (CfLftT*CfLftT)/(WingAs*WingEf*PieVal);	// Cfi = CLift^2 / (Wing Aspect Ratio * Wing Efficiency * pi)
-	let ACDrIF = DrgCdi * QSTval;		// Induced Drag = ACLftF^2 / (DynPrs * WingSp^2 * WingEf * PI)
-	let DrgCdp = DrgCd0;				// Total Coefficient of Parasitic Drag
-	let ACDrPF = DrgCdp * QSTval;		// Parasitic Drag =  Cd0 * DynPres * WingA
-	let ACThrF = EnThrF - ACDrPF;		// Net Thrust Force
-	let ACTrst = ACThrF * FrcAcc;		// Net Thrust Accel
-	let GrvThr = GrvDLT * Math.sin(ACP);	// Gravity opposing Thrust = Grav * sin(ACP)
-	let ACThrG = ACTrst - GrvThr;		// Net Thrust after Gravity +/-
+	let ACDrIF = DrgCdi * QSTval; // Induced Drag = ACLftF^2 / (DynPrs * WingSp^2 * WingEf * PI)
+	let DrgCdp = DrgCd0;		// Total Coefficient of Parasitic Drag
+	let ACDrPF = DrgCdp * QSTval; // Parasitic Drag =  Cd0 * DynPres * WingA
+	let ACThrF = EnThrF - ACDrPF; // Net Thrust Force
+	let ACTrst = ACThrF * FrcAcc; // Net Thrust Accel
+	let GrvThr = GrvDLT * Math.sin(ACP); // Gravity opposing Thrust = Grav * sin(ACP)
+	let ACThrG = ACTrst - GrvThr; // Net Thrust after Gravity +/-
 	// e. Gravity Reducing ACPitch
-	let GrvACP = GrvDLT * Math.cos(ACP);	// Gravity opposing Lift and Yaw
+	let GrvACP = GrvDLT * Math.cos(ACP); // Gravity opposing Lift and Yaw
 	let GrACPD = (GrvACP / Air.SpdMPF) * RadDeg;	// Degrees +/-
 	// Save Values
-	let PPPDif = ACLftD;				// Pitch Degrees (before Gravity)
+	let PPPDif = ACLftD;		// Pitch Degrees (before Gravity)
 	// Compute Aircraft Pitch Adjustment
 	// ACPAdj is an adjustment to Air.AirRot.x that allows the aircraft to pitch relative to the direction of flight
 	// to match pitch required to produce specified lift; or, if on ground, to pitch around main wheel axis
@@ -787,26 +785,26 @@ function move1ACraft(Air) {
 	if (Air.InpRot.z != 0) Air.AirRot.y = ACH;
 	Air.HRS = Mod360(Air.AirRot.y - ACH);
 	if (Air.HRS > 180) Air.HRS = 360-Air.HRS;
-	Air.Rds = (360/Air.HRS)*Air.SpdMPS*0.5/PieVal;	// Circumference = (360/Rate)*Air.SpdMPS = 2*PieVal*R; Radius = 0.5*Circumference/PieVal
-	if (Air.HRS < .08) Air.Rds = 0;					// NA if TurnRate too low
+	Air.Rds = (360/Air.HRS)*Air.SpdMPS*0.5/PieVal; // Circumference = (360/Rate)*Air.SpdMPS = 2*PieVal*R; Radius = 0.5*Circumference/PieVal
+	if (Air.HRS < .08) Air.Rds = 0;	// NA if TurnRate too low
 	Air.AirObj.rotation.y = -Air.AirRot.y*DegRad;
 	// 3. COMPUTE MAP SPEED -----------------------------------------------------
 	// Inputs:	Air.SpdMPF, ACThrG, Air.AirRot.x, Air.AirRot.y, MPosZV, MPosYV, MPosXV
 	// Results:	Air.SpdKPH, Air.AirRSp.z, Air.AirRSp.y, Air.AirRot.x
 	// a. Compute Speed
 	Air.SpdMPF = Air.SpdMPF + ACThrG;
-	if (Air.SpdMPF <= 0) Air.SpdMPF = 0.0001;	// Set Minimum Speed to avoid division by zero  211031
+	if (Air.SpdMPF <= 0) Air.SpdMPF = 0.0001; // Set Minimum Speed to avoid division by zero  211031
 	Air.SpdMPS = Air.SpdMPF/DLTime;	// (MPS)
-	Air.SpdKPH = Air.SpdMPS*3.6;			// (KPH)	
+	Air.SpdKPH = Air.SpdMPS*3.6; // (KPH)	
 	// b1. Compute PSpd (before gravity)
 	ACP = Air.AirRot.x * DegRad;
-	Air.MapSpd.z = Air.SpdMPF * Math.abs(Math.cos(ACP));	// Horizontal speed
+	Air.MapSpd.z = Air.SpdMPF * Math.abs(Math.cos(ACP)); // Horizontal speed
 	// b2. Adjust ACP for Gravity
 	Air.AirRot.x = Air.AirRot.x-GrACPD;
-	if (Air.AirRot.x < -90) Air.AirRot.x = -90;		// Prevents you from pitching back up
+	if (Air.AirRot.x < -90) Air.AirRot.x = -90; // Prevents you from pitching back up
 	ACP = Air.AirRot.x*DegRad;
 	Air.AirObj.rotation.x = ACP;
-	Air.MapSpd.y = Air.SpdMPF * Math.sin(ACP);			// Vertical speed
+	Air.MapSpd.y = Air.SpdMPF * Math.sin(ACP); // Vertical speed
 	ACH = Air.AirRot.y*DegRad;
 	// Map Speed
 	Air.MapSpd.y = Air.SpdMPF * Math.sin(ACP);
@@ -815,14 +813,14 @@ function move1ACraft(Air) {
 	Air.MapSpd.x = GS * Math.sin(ACH);
 	// Map Position
 	Air.MapPos.y = Air.MapPos.y + Air.MapSpd.y;
-	if (Air.MapPos.y < 5) {						// if hit ground, zero out
+	if (Air.MapPos.y < 5) {		// if hit ground, zero out
 		Air.MapPos.y = 5;
 		Air.AirRot.z = 0;
 		Air.AirRot.x = 0;
 		Air.InpRot.z = 0;
 		Air.InpRot.x = 0;
-		Air.AirObj.rotation.z = 0;					// No Bank
-		Air.AirObj.rotation.x = 0;					// No Pitch
+		Air.AirObj.rotation.z = 0; // No Bank
+		Air.AirObj.rotation.x = 0; // No Pitch
 	}
 	Air.MapPos.z = Air.MapPos.z - Air.MapSpd.z;
 	Air.MapPos.x = Air.MapPos.x + Air.MapSpd.x;
@@ -835,13 +833,13 @@ function move1ACraft(Air) {
 	moveJetSmk(Air);
 }
 
-//= Jet Exhaust ================================================================
+//= Jet Exhaust ================//==============================================
 
 // Init Smoke Trail
 function initJetSmk(Air) {
 	// particle positin and time
 	for (let i = 0; i < SmkTot; i++) {
-		Air.SmkPts.push(0,0,0);				// position		
+		Air.SmkPts.push(0,0,0);	// position		
 		Air.SmkTim[i] = i*SmkInt;
 	}
 	// create the particle system
@@ -885,33 +883,11 @@ function moveJetSmk(Air) {
 
 function moveCamera() {
 	// In external view, the camera is facing in and the armature is pointing out:
-	// * x.rotation = -Cam.Rot.x
-	// * y.rotation = Cam.Rot.y + 180
-	let Cam = CamSel;
-	camera.position.z = -Cam.Dst;
-	CamObj.rotation.x = Mod360(-Cam.Rot.x)*DegRad;
-	CamObj.rotation.y = Mod360(180-Cam.Rot.y)*DegRad;
-}
-
-function lockCamera() {
-	// In external view, the camera is facing in and the armature is pointing out:
-	// * x.rotation = -Cam.Rot.x
-	// * y.rotation = Cam.Rot.y + 180
-	let Cam = CamSel;
-	camera.position.z = -Cam.Dst;
-	// Lock
-	if (Cam = "Cam1") {
-		let y = Air2.AirObj.position.y;
-		let x = Math.sqrt(Math.pow(Air2.AirObj.position.z,2),Math.pow(Air2.AirObj.position.x,2));
-		CamObj.rotation.x = Math.atan(y/x);
-		y = Air2.AirObj.position.z;
-		x = Air2.AirObj.position.x;
-		let r = Math.atan(x/y)*RadDeg;
-		if (y < 0) r = Mod360(r+180);
-		else {r = Mod360(r+360)};
-		CamObj.rotation.y = r*DegRad;
-		CamObj.position.y = 50;
-	}
+	// * x.rotation = -CamSel.Rot.x
+	// * y.rotation = CamSel.Rot.y + 180
+	camera.position.z = -CamSel.Pos.x;
+	CamObj.rotation.x = Mod360(-CamSel.Rot.x)*DegRad;
+	CamObj.rotation.y = Mod360(180-CamSel.Rot.y)*DegRad;
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -922,8 +898,8 @@ function lockCamera() {
 
 //- Convert degrees to 360 -----------------------------------------------------
 function Mod360(deg) {
-	while (deg < 0) deg = deg + 360;	// Make deg a positive number
-	deg = deg % 360;					// Compute remainder of any number divided by 360
+	while (deg < 0) deg = deg + 360; // Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
 return deg;}
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -938,9 +914,9 @@ return deg;}
 function chngHUDV(Air) {
 	AC_Head = Air.AirRot.y;		// Aircraft Heading
 	AC_HeadNode.nodeValue = AC_Head.toFixed(0);
-	AC_Hite = Air.MapPos.y*Mtr2Ft;	// Aircraft Altitude (feet)
+	AC_Hite = Air.MapPos.y*Mtr2Ft; // Aircraft Altitude (feet)
 	AC_HiteNode.nodeValue = AC_Hite.toFixed(0);
-	AC_Sped = Air.SpdKPH*Km2Mil;	// Aircraft Speed (MPH)
+	AC_Sped = Air.SpdKPH*Km2Mil; // Aircraft Speed (MPH)
 	AC_SpedNode.nodeValue = AC_Sped.toFixed(0);
 	AC_Bank = Air.AirRot.z;		// Aircraft Bank (deg)
 	if (AC_Bank > 180) AC_Bank = 360 - AC_Bank;
@@ -959,42 +935,40 @@ function chngHUDV(Air) {
 
 // Key Down
 function onDocumentKeyDown(event) {
-	let Air = AirSel;
 	let keyCode = event.which;
 	if (event.keyCode == K_SpdU) InpSpd = 1;				// Speed Up
 	if (event.keyCode == K_SpdD) InpSpd = -1;				// Speed Dn
-	if (event.keyCode == K_BnkL) Air.InpRot.z = -BnkSpd;	// Bank Left
-	if (event.keyCode == K_BnkR) Air.InpRot.z = BnkSpd;		// Bank Right
-	if (event.keyCode == K_PitU) Air.InpRot.x = CfLSpd;		// Pitch Up
-	if (event.keyCode == K_PitD) Air.InpRot.x = -CfLSpd;	// Pitch Down
+	if (event.keyCode == K_BnkL) Air1.InpRot.z = -BnkSpd;	// Bank Left
+	if (event.keyCode == K_BnkR) Air1.InpRot.z = BnkSpd;	// Bank Right
+	if (event.keyCode == K_PitU) Air1.InpRot.x = CfLSpd;	// Pitch Up
+	if (event.keyCode == K_PitD) Air1.InpRot.x = -CfLSpd;	// Pitch Down
+	if (event.keyCode == K_YawL) Air1.InpRot.y = -0.1;		// Yaw Left
+	if (event.keyCode == K_YawR) Air1.InpRot.y = 0.1;		// Yaw Right
 	if (event.keyCode == K_Cntr) {							// Center
-		Air.InpRot.z = 0;
-		Air.InpRot.x = 0;
-		Air.InpRot.y = 0;
-		Air.AirRot.z = 0;
-		Air.AirRot.x = 0;
+		Air1.InpRot.z = 0;
+		Air1.InpRot.x = 0;
+		Air1.InpRot.y = 0;
+		Air1.AirRot.z = 0;
+		Air1.AirRot.x = 0;
 		InpSpd = 0;
-		Air.AirObj.rotation.z = 0;			// No Bank
-		Air.AirObj.rotation.x = 0;			// No Pitch
+		Air1.AirObj.rotation.z = 0;			// No Bank
+		Air1.AirObj.rotation.x = 0;			// No Pitch
 	}
-	if (event.keyCode == K_YawL) Air.InpRot.y = -0.1;		// Yaw Left
-	if (event.keyCode == K_YawR) Air.InpRot.y = 0.1;		// Yaw Right
 	if (event.keyCode == K_Paws) toglPaws();				// Pause
 	if (event.keyCode == K_View) toglView();				// View
 }
 
 // Key Up
 function onDocumentKeyUp(event) {
-	let Air = AirSel;
 	let keyCode = event.which;
 	if (event.keyCode == K_SpdU) InpSpd = 0;				// Speed Up
 	if (event.keyCode == K_SpdD) InpSpd = 0;				// Speed Dn
-	if (event.keyCode == K_BnkL) Air.InpRot.z = 0;			// Bank Left
-	if (event.keyCode == K_BnkR) Air.InpRot.z = 0;			// Bank Right
-	if (event.keyCode == K_PitU) Air.InpRot.x = 0;			// Pitch Up
-	if (event.keyCode == K_PitD) Air.InpRot.x = 0;			// Pitch Down
-	if (event.keyCode == K_YawL) Air.InpRot.y = 0;			// Yaw Left
-	if (event.keyCode == K_YawR) Air.InpRot.y = 0;			// Yaw Right
+	if (event.keyCode == K_BnkL) Air1.InpRot.z = 0;			// Bank Left
+	if (event.keyCode == K_BnkR) Air1.InpRot.z = 0;			// Bank Right
+	if (event.keyCode == K_PitU) Air1.InpRot.x = 0;			// Pitch Up
+	if (event.keyCode == K_PitD) Air1.InpRot.x = 0;			// Pitch Down
+	if (event.keyCode == K_YawL) Air1.InpRot.y = 0;			// Yaw Left
+	if (event.keyCode == K_YawR) Air1.InpRot.y = 0;			// Yaw Right
 }
 
 //= Mouse Input ================================================================
@@ -1002,11 +976,10 @@ function onDocumentKeyUp(event) {
 function onMouseDown(event) {
 	event.preventDefault();
 	PanFlg = 1;
-	let Cam = CamSel;
 	onPointerDownX = event.clientX;
 	onPointerDownY = event.clientY;
-	onPointerDownLon = Cam.Rot.y;
-	onPointerDownLat = Cam.Rot.x;
+	onPointerDownLon = CamSel.Rot.y;
+	onPointerDownLat = CamSel.Rot.x;
 }
 
 function onMouseUp(event) {
@@ -1015,24 +988,22 @@ function onMouseUp(event) {
 
 function onMouseMove(event) {
 // Panning View
-	let Cam = CamSel;
-	if (PanFlg > 0) {
-		Cam.Rot.x = (onPointerDownY - event.clientY) * 0.2 + onPointerDownLat;
-		Cam.Rot.x = Math.max(-CamLtX, Math.min(CamLtX, Cam.Rot.x));
-		Cam.Rot.y = (event.clientX - onPointerDownX) * 0.2 + onPointerDownLon;
-		Cam.Rot.y = Mod360(Cam.Rot.y);
+	if (PanFlg) {
+		CamSel.Rot.x = (onPointerDownY - event.clientY) * 0.2 + onPointerDownLat;
+		CamSel.Rot.x = Math.max(-CamLtX, Math.min(CamLtX, CamSel.Rot.x));
+		CamSel.Rot.y = (event.clientX - onPointerDownX) * 0.2 + onPointerDownLon;
+		CamSel.Rot.y = Mod360(CamSel.Rot.y);
 	}
 }
 
 function onMouseWheel(event) {
-	let Cam = CamSel;
-	Cam.Dst = Cam.Dst + event.deltaY * Cam.Dif;
-	if (Cam.Dst > Cam.Max) Cam.Dst = Cam.Max;
-	if (Cam.Dst < Cam.Min) Cam.Dst = Cam.Min;
-//	Cam.Dst = Math.max(Cam.Min, Math.min(Cam.Max, Cam.Dst));
+	CamSel.Pos.x = CamSel.Pos.x + event.deltaY * CamSel.Dif;
+	if (CamSel.Pos.x > CamSel.Pos.y) CamSel.Pos.x = CamSel.Pos.y;
+	if (CamSel.Pos.x < CamSel.Pos.z) CamSel.Pos.x = CamSel.Pos.z;
+//	CamSel.Pos.x = Math.max(CamSel.Pos.z, Math.min(CamSel.Pos.y, CamSel.Pos.x));
 }
 
-//= Button Input ===============================================================
+//= Button Input ===============//==============================================
 
 // Toggle Pause
 function toglPaws() {
@@ -1042,18 +1013,15 @@ function toglPaws() {
 
 //- Change Camera View
 function toglView() {
-	let Air = AirSel;
 	// From External to Linked
 	if (CamSel == Cam1) {
-		CtrObj.remove(CamObj);
-		Air2.AirPBY.add(CamObj);		// Link camera to aircraft
 		CamSel = Cam2;
+		CamSel.Ref.add(CamObj);	// Link camera to aircraft
 	}
 	// From Linked to External
 	else if (CamSel == Cam2) {
-		Air2.AirPBY.remove(CamObj);
-		CtrObj.add(CamObj);				// Link camera to map
 		CamSel = Cam1;
+		CamSel.Ref.add(CamObj);	// Link camera to map
 	}
 }
 
