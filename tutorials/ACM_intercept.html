@@ -77,8 +77,8 @@ import Stats from "three/addons/libs/stats.module.js";
 
 //= Lag Type ===================//==============================================
 let LagTyp = 2;					// 0 = No Lag, 1 = Lag, 2 = Intercept
-let BegLag = new THREE.Vector3(-100,0,150); // Offset: x = horizontal, y = vertical, z = distance behind
-let BegOff = new THREE.Vector3(0,0,0); // Off Angle: x = vertical, y = horizontal
+let BegLag = new THREE.Vector3(-150,0,150); // Offset: x = horizontal, y = vertical, z = distance behind
+let BegOff = new THREE.Vector3(0,10,0); // Off Angle: x = vertical, y = horizontal
 
 //= Starting Values ============//==============================================
 let BegAlt = 3048;				// Aircraft Altitude (m) = 10000 ft
@@ -765,23 +765,23 @@ function move1ACraft(Air) {
 		OffAng.y = PoM360(Mod360(Air1.AirRot.y - Air2.AirRot.y)); // Horizontal Off-Angle
 		// Bank
 		let PoMBnk = PoM360(Air.AirRot.z);
-		// Offset
-		let InpBk1 = .25 * IntAng.x; // 33 => bank of 8, but not rotate
-		if (IntAng.x > 0) {
-			if (PoMBnk > IntAng.x) InpBk1 = 0;
-		}
-		else if (IntAng.x < 0) {
-			if (PoMBnk < IntAng.x) InpBk1 = 0;
-		}
 		// Off-Angle
-		let InpBk2 = .25 * OffAng.y; // 10 Off = .79; 20 = 2.4; 30 = 2.266
+		let InpBk2 = .75 * OffAng.y; // 10 Off = .79; 20 = 2.4; 30 = 2.266
 		if (OffAng.y > 0) {
-			if (PoMBnk > 2*OffAng.y) InpBk2 = 0;
+			if (PoMBnk > 1) InpBk2 = 0;
 		}
 		else if (OffAng.y < 0) {
-			if (PoMBnk < 2*OffAng.y) InpBk2 = 0;
+			if (PoMBnk < -1) InpBk2 = 0;
 		}
+		// Offset Angle
+		let InpBk1 = .1 * IntAng.x; // Offset Angle
 		Air.InpRot.z =  InpBk1 + InpBk2;
+		if (Air.InpRot.z > 0) {
+			if (PoMBnk > 60) Air.InpRot.z = 0;
+		}
+		else if (Air.InpRot.z < 0) {
+			if (PoMBnk < -60) Air.InpRot.z = 0;
+		}	
 	}	
 	// 1. COMPUTE VECTORS ------------------------------------------------------
 	// Compute Force Vectors in UPS and multiply by FrcAcc to convert to UPT
