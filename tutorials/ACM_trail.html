@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Jun 2025
+Version dated 20 Jun 2025
 
 This program demonstrates a couple of Moving Map Grid subroutines, including:
 * loadGrdMap
@@ -17,24 +17,40 @@ The subroutines can be used to draw single Grids or nested Grids.
 <head>
 <title>ACM Demo - Trail</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/main2pxB.css">
+<link rel="stylesheet" href="styles/main_ACM.css">
 </head>
 
 <body oncontextmenu="return false;">
 
 <div id="container">
 	<div class="overlay1">
-		<div>Heading....(deg): <span id="AC_Head"></span></div>
-		<div>Altitude....(ft): <span id="AC_Hite"></span></div>
-		<div>Speed......(mph): <span id="AC_Sped"></span></div>
-		<div>Bank.......(deg): <span id="AC_Bank"></span></div>
-		<div>Turn Rate..(deg): <span id="AC_Turn"></span></div>
-		<div>Turn Radius.(ft): <span id="AC_Rads"></span></div>
-		<div>Angle of Attack : <span id="AC_AofA"></span></div>
+		<div>AIR COMBAT MANEUVERING (ACM)</div>
+	</div>
+	<div class="overlay2">
+		<div>..................Air1</div>
+		<div>Altitude....(ft): <span id="AC1_Alt"></span></div>
+		<div>Speed......(mph): <span id="AC1_Spd"></span></div>
+		<div>Heading....(deg): <span id="AC1_Hdg"></span></div>
+		<div>Pitch......(deg): <span id="AC1_Pit"></span></div>
+		<div>Bank.......(deg): <span id="AC1_Bnk"></span></div>
+		<div>Turn Rate..(deg): <span id="AC1_Trn"></span></div>
+		<div>Angle of Attack : <span id="AC1_AoA"></span></div>
 	</div>
 	<div class="overlay3">
-		<div>Use Arrow Keys to Pitch and Bank Airplane</div>
-		<div>Use Z or X to Yaw Left or Right</div>
+		<div>Air2</div>
+		<div><span id="AC2_Alt"></span></div>
+		<div><span id="AC2_Spd"></span></div>
+		<div><span id="AC2_Hdg"></span></div>
+		<div><span id="AC2_Pit"></span></div>
+		<div><span id="AC2_Bnk"></span></div>
+		<div><span id="AC2_Trn"></span></div>
+		<div><span id="AC2_AoA"></span></div>
+	</div>	
+	<div class="overlay4">
+		<div>Press Arrow Keys to Pitch and Bank Airplane</div>
+		<div>Press Z or X to Yaw Left or Right</div>
+		<div>Press P to Pause</div>
+		<div>Press V to Change Camera View</div>		
 	</div>
 </div>
 
@@ -60,8 +76,9 @@ import Stats from "three/addons/libs/stats.module.js";
 // Grid 5 Square Size: 3.0 miles.  Viz = 3.0 X 13.5 = 40.5 miles = 65km
 
 //= Lag Type ===================//==============================================
-let LagTyp = 1;					// 0 = Mimic, 1 = Lag Pursuit
-let BegLag = new THREE.Vector3(0,0,100); // z = Distance Behind
+let LagTyp = 1;					// 0 = No Lag, 1 = Lag, 2 = Intercept
+let BegLag = new THREE.Vector3(0,0,150); // Offset: x = horizontal, y = vertical, z = distance behind
+let BegOff = new THREE.Vector3(0,0,0); // Off Angle: x = vertical, y = horizontal
 
 //= Starting Values ============//==============================================
 let BegAlt = 3048;				// Aircraft Altitude (m) = 10000 ft
@@ -187,8 +204,8 @@ let Air1 = {
 		MapSpd: new THREE.Vector3(0,0,0),	// Map Speed
 		MapPos: new THREE.Vector3(0,BegAlt,0),	// Map Position
 		// Turn Performance
-		HRS: 0,					// Heading Change in Turn
-		Rds: 0,					// Turn Radius		
+		HdgDif: 0,					// Heading Change in Turn
+		Radius: 0,				// Turn Radius		
 		// Model
 		Color1: 0x00007f,		// Primary Color
 		Color2: 0x7f7fff,		// Secondary Color
@@ -205,7 +222,7 @@ let Air2 = {
 		// Changes to Airplane Pitch Bank and Yaw
 		AirRSp: new THREE.Vector3(0,0,0),
 		// Airplane Rotation
-		AirRot: new THREE.Vector3().copy(BegRot), // Rotation (same as mine)
+		AirRot: new THREE.Vector3(BegRot.x+BegOff.x,BegRot.y+BegOff.y,BegRot.z+BegOff.z),
 		AirPBY: new THREE.Object3D(),
 		AirObj: new THREE.Object3D(),
 		// Airplane Speed
@@ -214,10 +231,10 @@ let Air2 = {
 		SpdMPF: (BegSpd/3.6)*DLTime,
 		// Airplane Map Speed and Position
 		MapSpd: new THREE.Vector3(0,0,0), // Map Speed
-		MapPos: new THREE.Vector3(0,BegAlt,BegLag.z), // Map Position (same as mine)
+		MapPos: new THREE.Vector3(BegLag.x,BegAlt+BegLag.y,BegLag.z), // Map Position (same as mine)
 		// Turn Performance
-		HRS: 0,					// Heading Change in Turn
-		Rds: 0,					// Turn Radius	
+		HdgDif: 0,					// Heading Change in Turn
+		Radius: 0,				// Turn Radius	
 		// Model
 		Color1: 0x7f0000,		// Primary Color
 		Color2: 0xff7f7f,		// Secondary Color
@@ -258,17 +275,7 @@ let SmkInt = 10;
 let SmkSiz = 6;
 
 //= Computations ===============//==============================================
-// Bank adjust to keep target along vertical plane
-// Pitch adjust to keep target at certain position
-// Throttle adjust to maintain same distance
-
-let dif_ = {
-		Rot: new THREE.Vector3(0,0,0),
-		Pos: new THREE.Vector3(0,0,0),
-		Spd: 0,
-	}
-
-//
+//- Lag Pursuit ----------------------------------------------------------------
 let LagId1 = 0;					// Index to next Air1 Entry
 let LagId2 = 0;					// Index to current Air2
 let	LagMax = 360;				// Max Number of Values (360 = 6 seconds of bank changes)
@@ -280,12 +287,16 @@ let LagInp = [0];				// Air1 Rotation Change
 //	Cheats? (Fixes Rounding Errors)
 let LagRot = [0];				// Air1 Rotation
 let LagPos = [0];				// Air1 Position
+//- Intercept ------------------------------------------------------------------
+let IntAng = new THREE.Vector3(); // Intercept Angle (Pitch,Yaw,Bank)
+let IntInp = new THREE.Vector3(); // Intercept Input (Pitch,Yaw,Bank)
+let OffAng = new THREE.Vector3(); // Off-Angle
 
 //= CAMERA =====================//==============================================
 	camera.rotation.order = "YXZ";
 	camera.position.z = -500;	// Starting Disctance for Camera 1
-	camera.rotation.y = 180*DegRad;		// Default = looking in
-let	CamObj = new THREE.Object3D();		// Armature base - use to rotate camera
+	camera.rotation.y = 180*DegRad; // Default = looking in
+let	CamObj = new THREE.Object3D(); // Armature base - use to rotate camera
 	CamObj.rotation.order = "YXZ";
 	CamObj.add(camera);
 let CtrObj = new THREE.Object3D();
@@ -315,7 +326,6 @@ let K_SpdU = 45;				// Speed Up (insert)
 let K_PitD = 38;				// Pitch down (up arrow)
 let K_SpdD = 33;				// Speed Up (page up)
 let	K_BnkL = 37;				// Bank Left (left arrow)
-let K_Cntr = 35;				// Center (end)
 let	K_BnkR = 39;				// Bank Right (right arrow)
 let K_YawL = 46;				// Yaw Left (delete)
 let K_PitU = 40;				// Pitch up (down arrow)
@@ -327,28 +337,52 @@ let BnkSpd = 1;					// Bank Speed
 let CfLSpd = 1;					// Pitch Speed
 
 //= HTML OVERLAY TEXT ==========================================================
-let AC_HiteElement = document.getElementById("AC_Hite");
-let AC_HiteNode = document.createTextNode("");
-	AC_HiteElement.appendChild(AC_HiteNode);
-let AC_HeadElement = document.getElementById("AC_Head");
-let AC_HeadNode = document.createTextNode("");
-	AC_HeadElement.appendChild(AC_HeadNode);
-let AC_SpedElement = document.getElementById("AC_Sped");
-let AC_SpedNode = document.createTextNode("");
-	AC_SpedElement.appendChild(AC_SpedNode);
-let AC_BankElement = document.getElementById("AC_Bank");
-let AC_BankNode = document.createTextNode("");
-	AC_BankElement.appendChild(AC_BankNode);
-let AC_TurnElement = document.getElementById("AC_Turn");
-let AC_TurnNode = document.createTextNode("");
-	AC_TurnElement.appendChild(AC_TurnNode);
-let AC_RadsElement = document.getElementById("AC_Rads");
-let AC_RadsNode = document.createTextNode("");
-	AC_RadsElement.appendChild(AC_RadsNode);
-let AC_AofAElement = document.getElementById("AC_AofA");
-let AC_AofANode = document.createTextNode("");
-	AC_AofAElement.appendChild(AC_AofANode);
-let AC_Hite,AC_Head,AC_Sped,AC_Bank,AC_Turn,AC_Rads,AC_AofA;;
+//- Air1
+let AC1_HdgElement = document.getElementById("AC1_Hdg");
+let AC1_HdgNode = document.createTextNode("");
+	AC1_HdgElement.appendChild(AC1_HdgNode);
+let AC1_AltElement = document.getElementById("AC1_Alt");
+let AC1_AltNode = document.createTextNode("");
+	AC1_AltElement.appendChild(AC1_AltNode);
+let AC1_SpdElement = document.getElementById("AC1_Spd");
+let AC1_SpdNode = document.createTextNode("");
+	AC1_SpdElement.appendChild(AC1_SpdNode);
+let AC1_BnkElement = document.getElementById("AC1_Bnk");
+let AC1_BnkNode = document.createTextNode("");
+	AC1_BnkElement.appendChild(AC1_BnkNode);
+let AC1_TrnElement = document.getElementById("AC1_Trn");
+let AC1_TrnNode = document.createTextNode("");
+	AC1_TrnElement.appendChild(AC1_TrnNode);
+let AC1_PitElement = document.getElementById("AC1_Pit");
+let AC1_PitNode = document.createTextNode("");
+	AC1_PitElement.appendChild(AC1_PitNode);
+let AC1_AoAElement = document.getElementById("AC1_AoA");
+let AC1_AoANode = document.createTextNode("");
+	AC1_AoAElement.appendChild(AC1_AoANode);
+let AC1_Alt,AC1_Hdg,AC1_Spd,AC1_Bnk,AC1_Trn,AC1_Pit,AC1_AoA;
+//- Air2
+let AC2_HdgElement = document.getElementById("AC2_Hdg");
+let AC2_HdgNode = document.createTextNode("");
+	AC2_HdgElement.appendChild(AC2_HdgNode);
+let AC2_AltElement = document.getElementById("AC2_Alt");
+let AC2_AltNode = document.createTextNode("");
+	AC2_AltElement.appendChild(AC2_AltNode);
+let AC2_SpdElement = document.getElementById("AC2_Spd");
+let AC2_SpdNode = document.createTextNode("");
+	AC2_SpdElement.appendChild(AC2_SpdNode);
+let AC2_BnkElement = document.getElementById("AC2_Bnk");
+let AC2_BnkNode = document.createTextNode("");
+	AC2_BnkElement.appendChild(AC2_BnkNode);
+let AC2_TrnElement = document.getElementById("AC2_Trn");
+let AC2_TrnNode = document.createTextNode("");
+	AC2_TrnElement.appendChild(AC2_TrnNode);
+let AC2_PitElement = document.getElementById("AC2_Pit");
+let AC2_PitNode = document.createTextNode("");
+	AC2_PitElement.appendChild(AC2_PitNode);
+let AC2_AoAElement = document.getElementById("AC2_AoA");
+let AC2_AoANode = document.createTextNode("");
+	AC2_AoAElement.appendChild(AC2_AoANode);
+let AC2_Alt,AC2_Hdg,AC2_Spd,AC2_Bnk,AC2_Trn,AC2_Pit,AC2_AoA;
 
 //= Main Program ===============================================================
 	initAll();
@@ -368,6 +402,7 @@ function initAll() {
 		StsFlg.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
 		container.appendChild(StsFlg.dom);
 	}
+	initCamera();
 }
 
 // 2 Render ====================//==============================================
@@ -670,15 +705,15 @@ function init1ACraft(Air) {
 	initJetSmk(Air);
 }
 
-//= Move Airplane ================//============================================
+//= MOVE AIRPLANE ==============//==============================================
 
 function move1ACraft(Air) {
-	// LAG TYPE
-	// 0 = No Lag ...............................................................
+	//- LAG COMPUTATIONS -------------------------------------------------------
+	// 0 = Mimic ...............................................................
 	if (LagTyp == 0 && Air == Air2) {
 		Air.InpRot.copy(Air1.InpRot);
 	}
-	// 1 = Lag ..................................................................
+	// 1 = Lag Pursuit .........................................................
 	// If Air1 - Save time for any bank changes
 	if (LagTyp == 1) {
 		if (Air == Air1) {
@@ -704,7 +739,38 @@ function move1ACraft(Air) {
 			}
 		}
 	}
-	// 1. COMPUTE VECTORS -------------------------------------------------------
+	// 2 = Intercept (WIP) .....................................................
+	if (LagTyp == 2 && Air == Air2) {
+		// Compute Relative Position
+		let x = Air1.MapPos.x - Air.MapPos.x; // X-Distance
+		let y = Air1.MapPos.y - Air.MapPos.y; // Y-Distance
+		let z = -(Air1.MapPos.z - Air.MapPos.z); // Z-Distance
+//		let v = Math.sqrt(y**2+z**2); // Vertical Distance (Hypoteneuse)
+//		let h = Math.sqrt(x**2+z**2); // Horizontal Distance (Hypoteneuse)
+		IntAng.x = PoM360(Mod360(Math.atan2(x,z)*RadDeg-Air.AirRot.y));	// Horizontal Angle (0-360)		
+		IntAng.y = Math.atan2(z,x)*RadDeg;	// Vertical Angle
+		OffAng.y = PoM360(Mod360(Air1.AirRot.y - Air2.AirRot.y)); // Horizontal Off-Angle
+		// Bank
+		let PoMBnk = PoM360(Air.AirRot.z);
+		// Offset
+		let InpBk1 = .25 * IntAng.x; // 33 => bank of 8, but not rotate
+		if (IntAng.x > 0) {
+			if (PoMBnk > IntAng.x) InpBk1 = 0;
+		}
+		else if (IntAng.x < 0) {
+			if (PoMBnk < IntAng.x) InpBk1 = 0;
+		}
+		// Off-Angle
+		let InpBk2 = .25 * OffAng.y; // 10 Off = .79; 20 = 2.4; 30 = 2.266
+		if (OffAng.y > 0) {
+			if (PoMBnk > 2*OffAng.y) InpBk2 = 0;
+		}
+		else if (OffAng.y < 0) {
+			if (PoMBnk < 2*OffAng.y) InpBk2 = 0;
+		}
+		Air.InpRot.z =  InpBk1 + InpBk2;
+	}	
+	// 1. COMPUTE VECTORS ------------------------------------------------------
 	// Compute Force Vectors in UPS and multiply by FrcAcc to convert to UPT
 	// a. Compute New Speeds for New DLTime
 	let DLTim2 = DLTime*DLTime;	// Time ^ 2
@@ -729,7 +795,7 @@ function move1ACraft(Air) {
 	else {						// Allows change of flight path					
 		Air.CfLift =   Air.CfLift + .01*Air.InpRot.x;
 	}
-	// Add adjustment to level flight parth when press specified key combo?
+	// Add adjustment to level flight path when press specified key combo?
 	if (Air.CfLift > CfLMax) Air.CfLift = CfLMax;
 	if (Air.CfLift < -CfLMax) Air.CfLift = -CfLMax;
 	// c. Compute Lift Rotation
@@ -783,10 +849,10 @@ function move1ACraft(Air) {
 	let ACH = Air.AirRot.y;					// ### Save old heading
 	Air.AirRot.y = Mod360(-Air.AirObj.rotation.y*RadDeg);
 	if (Air.InpRot.z != 0) Air.AirRot.y = ACH;
-	Air.HRS = Mod360(Air.AirRot.y - ACH);
-	if (Air.HRS > 180) Air.HRS = 360-Air.HRS;
-	Air.Rds = (360/Air.HRS)*Air.SpdMPS*0.5/PieVal; // Circumference = (360/Rate)*Air.SpdMPS = 2*PieVal*R; Radius = 0.5*Circumference/PieVal
-	if (Air.HRS < .08) Air.Rds = 0;	// NA if TurnRate too low
+	Air.HdgDif = Mod360(Air.AirRot.y - ACH);
+	if (Air.HdgDif > 180) Air.HdgDif = 360-Air.HdgDif;
+	Air.Radius = (360/Air.HdgDif)*Air.SpdMPS*0.5/PieVal; // Circumference = (360/Rate)*Air.SpdMPS = 2*PieVal*R; Radius = 0.5*Circumference/PieVal
+	if (Air.HdgDif < .08) Air.Radius = 0;	// NA if TurnRate too low
 	Air.AirObj.rotation.y = -Air.AirRot.y*DegRad;
 	// 3. COMPUTE MAP SPEED -----------------------------------------------------
 	// Inputs:	Air.SpdMPF, ACThrG, Air.AirRot.x, Air.AirRot.y, MPosZV, MPosYV, MPosXV
@@ -879,6 +945,12 @@ function moveJetSmk(Air) {
 //*
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+// INIT CAMERA =================================================================
+
+function initCamera() {
+	CamSel.Ref.add(CamObj);	// Link camera
+}
+
 // MOVE CAMERA =================================================================
 
 function moveCamera() {
@@ -902,6 +974,12 @@ function Mod360(deg) {
 	deg = deg % 360;			// Compute remainder of any number divided by 360
 return deg;}
 
+//-  Converts 360 degrees to +/- 180 -------------------------------------------
+function PoM360(deg) {
+	if (deg > 180) deg = deg-360;
+return deg;}
+
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //*
 //*		OUTPUTS AND INPUTS
@@ -912,21 +990,38 @@ return deg;}
 
 // Change HUD Values
 function chngHUDV(Air) {
-	AC_Head = Air.AirRot.y;		// Aircraft Heading
-	AC_HeadNode.nodeValue = AC_Head.toFixed(0);
-	AC_Hite = Air.MapPos.y*Mtr2Ft; // Aircraft Altitude (feet)
-	AC_HiteNode.nodeValue = AC_Hite.toFixed(0);
-	AC_Sped = Air.SpdKPH*Km2Mil; // Aircraft Speed (MPH)
-	AC_SpedNode.nodeValue = AC_Sped.toFixed(0);
-	AC_Bank = Air.AirRot.z;		// Aircraft Bank (deg)
-	if (AC_Bank > 180) AC_Bank = 360 - AC_Bank;
-	AC_BankNode.nodeValue = AC_Bank.toFixed(0);
-	AC_Turn = Air.HRS/DLTime;	// Aircraft Turn Rate (deg)
-	AC_TurnNode.nodeValue = AC_Turn.toFixed(2);
-	AC_Rads = Air.Rds/Ft2Mtr;	// Aircraft Turn Radius (feet)
-	AC_RadsNode.nodeValue = AC_Rads.toFixed(0);
-	AC_AofA = Air.CfLift*10;	// Aircraft AoA
-	AC_AofANode.nodeValue = AC_AofA.toFixed(2);
+	//- Air1
+	AC1_Hdg = Air1.AirRot.y;					// Aircraft Heading
+	AC1_HdgNode.nodeValue = AC1_Hdg.toFixed(0);
+	AC1_Alt = Air1.MapPos.y*Mtr2Ft; 			// Aircraft Altitude (feet)
+	AC1_AltNode.nodeValue = AC1_Alt.toFixed(0);
+	AC1_Spd = Air1.SpdKPH*Km2Mil;				// Aircraft Speed (MPH)
+	AC1_SpdNode.nodeValue = AC1_Spd.toFixed(0);
+	AC1_Bnk = Air1.AirRot.z;					// Aircraft Bank (deg)
+	if (AC1_Bnk > 180) AC1_Bnk = 360 - AC1_Bnk;
+	AC1_BnkNode.nodeValue = AC1_Bnk.toFixed(0);
+	AC1_Trn = Air1.HdgDif/DLTime;				// Aircraft Turn Rate (deg)
+	AC1_TrnNode.nodeValue = AC1_Trn.toFixed(2);
+	AC1_Pit = Air1.AirRot.x;					// Aircraft Pitch (deg)
+	AC1_PitNode.nodeValue = AC1_Pit.toFixed(0);
+	AC1_AoA = Air1.CfLift*10;					// Aircraft AoA
+	AC1_AoANode.nodeValue = AC1_AoA.toFixed(2);
+	//- Air2
+	AC2_Hdg = Air2.AirRot.y;					// Aircraft Heading
+	AC2_HdgNode.nodeValue = AC2_Hdg.toFixed(0);
+	AC2_Alt = Air2.MapPos.y*Mtr2Ft;				// Aircraft Altitude (feet)
+	AC2_AltNode.nodeValue = AC2_Alt.toFixed(0);
+	AC2_Spd = Air2.SpdKPH*Km2Mil;				// Aircraft Speed (MPH)
+	AC2_SpdNode.nodeValue = AC2_Spd.toFixed(0);
+	AC2_Bnk = Air2.AirRot.z;					// Aircraft Bank (deg)
+	if (AC2_Bnk > 180) AC2_Bnk = 360 - AC2_Bnk;
+	AC2_BnkNode.nodeValue = AC2_Bnk.toFixed(0);
+	AC2_Trn = Air2.HdgDif/DLTime;				// Aircraft Turn Rate (deg)
+	AC2_TrnNode.nodeValue = AC2_Trn.toFixed(2);
+	AC2_Pit = Air2.AirRot.x;					// Aircraft Pitch (deg)
+	AC2_PitNode.nodeValue = AC2_Pit.toFixed(0);
+	AC2_AoA = Air2.CfLift*10;					// Aircraft AoA
+	AC2_AoANode.nodeValue = AC2_AoA.toFixed(2);
 }
 
 //= INPUTS =====================//==============================================
@@ -944,16 +1039,6 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_PitD) Air1.InpRot.x = -CfLSpd;	// Pitch Down
 	if (event.keyCode == K_YawL) Air1.InpRot.y = -0.1;		// Yaw Left
 	if (event.keyCode == K_YawR) Air1.InpRot.y = 0.1;		// Yaw Right
-	if (event.keyCode == K_Cntr) {							// Center
-		Air1.InpRot.z = 0;
-		Air1.InpRot.x = 0;
-		Air1.InpRot.y = 0;
-		Air1.AirRot.z = 0;
-		Air1.AirRot.x = 0;
-		InpSpd = 0;
-		Air1.AirObj.rotation.z = 0;			// No Bank
-		Air1.AirObj.rotation.x = 0;			// No Pitch
-	}
 	if (event.keyCode == K_Paws) toglPaws();				// Pause
 	if (event.keyCode == K_View) toglView();				// View
 }
@@ -1013,16 +1098,9 @@ function toglPaws() {
 
 //- Change Camera View
 function toglView() {
-	// From External to Linked
-	if (CamSel == Cam1) {
-		CamSel = Cam2;
-		CamSel.Ref.add(CamObj);	// Link camera to aircraft
-	}
-	// From Linked to External
-	else if (CamSel == Cam2) {
-		CamSel = Cam1;
-		CamSel.Ref.add(CamObj);	// Link camera to map
-	}
+	if (CamSel == Cam1) CamSel = Cam2;
+	else if (CamSel == Cam2) CamSel = Cam1;
+	initCamera();
 }
 
 //= Window Resize Input ========================================================
