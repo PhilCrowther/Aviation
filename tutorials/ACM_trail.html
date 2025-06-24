@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 Jun 2025
+Version dated 24 Jun 2025
 
 This program demonstrates a couple of Moving Map Grid subroutines, including:
 * loadGrdMap
@@ -17,7 +17,7 @@ The subroutines can be used to draw single Grids or nested Grids.
 <head>
 <title>ACM Demo - Trail</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<link rel="stylesheet" href="styles/main_ACM.css">
+<link rel="stylesheet" href="xtra/styles/main_ACM.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -276,17 +276,15 @@ let SmkSiz = 6;
 
 //= Computations ===============//==============================================
 //- Lag Pursuit ----------------------------------------------------------------
-let LagId1 = 0;					// Index to next Air1 Entry
-let LagId2 = 0;					// Index to current Air2
-let	LagMax = 360;				// Max Number of Values (360 = 6 seconds of bank changes)
-let LagDst = BegLag.z;			// Starting Distance Between Air2 and Air1 (250 feet)
-let LagSpd = BegSpd*(1000/3600); // Air1 Speed (meters/sec)
-let LagTim = LagDst/LagSpd;		// Time = Difference in Distance/Air1 Speed [250/440 = 0.561818 etc]
-//	LagTim = 0.5				// Override - This works better
-let LagInp = [0];				// Air1 Rotation Change
-//	Cheats? (Fixes Rounding Errors)
-let LagRot = [0];				// Air1 Rotation
-let LagPos = [0];				// Air1 Position
+let	LagMax = 360;				// Max Number of Values (360 = 6 seconds of inputs)
+let LagTim = Math.round((BegLag.z/Air1.SpdMPF)+0.5); // Time = Difference in Distance/Air1 Speed
+let LagInp = [];				// Air1 Rotation Change
+	for (let i = 0; i < LagMax; i++) {
+		LagInp[i] = new THREE.Vector3(0,0,0);	
+	}
+let LagId1 = LagTim;			// Index to next Air1 Entry
+//let LagId2 = LagTim;			// Index to current Air2
+
 //- Intercept ------------------------------------------------------------------
 let IntAng = new THREE.Vector3(); // Intercept Angle (Pitch,Yaw,Bank)
 let IntInp = new THREE.Vector3(); // Intercept Input (Pitch,Yaw,Bank)
@@ -717,26 +715,28 @@ function move1ACraft(Air) {
 	// If Air1 - Save time for any bank changes
 	if (LagTyp == 1) {
 		if (Air == Air1) {
-			LagInp[LagId1] = new THREE.Vector3().copy(Air.InpRot);
-			LagRot[LagId1] = new THREE.Vector3().copy(Air.AirRot);
-			LagPos[LagId1] = new THREE.Vector3().copy(Air.MapPos);
-			LagId1++
-			if (LagId1 > LagMax) LagId1 = 0;
+			LagInp[LagId1].copy(Air.InpRot);
+			LagId1++;
+//			if (LagId1 => LagMax) LagId1 = 0;	// Err, LagId1 not advance
+//			if (LagId1 = LagMax) LagId1 = 0;	// Same
+			if (LagId1 >= LagMax) LagId1 = 0;	// LagId1 advances, but Air2 disappears
 		}
 		// If Air2
 		if (Air == Air2) {
-			// Wait
-			if (LagTim) {
-				LagTim = LagTim - DLTime;
-				if (LagTim <= 0) LagTim = 0;
-			}
-			else {
+			// Wait	- Air2 visible during 
+//			if (LagTim) {
+//				LagTim = LagTim - 1;
+//				if (LagTim <= 0) LagTim = 0;
+//			}
+//			else {
+				let LagId2 = LagId1 - LagTim;
+				if (LagId2 < 0) LagId2 = LagMax + LagId2;
+//				if (LagId2 => LagMax) LagId2 = 0;	// Err, LagId2 not advance
+				if (LagId2 >= LagMax) LagId2 = 0;	// LagId2 advances, but Air2 disappears
 				Air.InpRot.copy(LagInp[LagId2]);	//  98% Accuracy
-				Air.AirRot.copy(LagRot[LagId2]);	//  99% Accuracy
-				Air.MapPos.copy(LagPos[LagId2]);	// 100% Accuracy
-				LagId2++		// Go to next
-				if (LagId2 > LagMax) LagId2 = 0;
-			}
+				console.log(Air.InpRot.x,Air.InpRot.y,Air.InpRot.z);
+//				console.log(LagTim,LagId1,LagId2);
+//			}
 		}
 	}
 	// 2 = Intercept (WIP) .....................................................

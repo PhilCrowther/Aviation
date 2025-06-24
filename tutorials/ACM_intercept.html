@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 Jun 2025
+Version dated 24 Jun 2025
 
 This program demonstrates a couple of Moving Map Grid subroutines, including:
 * loadGrdMap
@@ -31,20 +31,30 @@ The subroutines can be used to draw single Grids or nested Grids.
 		<div>Altitude....(ft): <span id="AC1_Alt"></span></div>
 		<div>Speed......(mph): <span id="AC1_Spd"></span></div>
 		<div>Heading....(deg): <span id="AC1_Hdg"></span></div>
-		<div>Pitch......(deg): <span id="AC1_Pit"></span></div>
-		<div>Bank.......(deg): <span id="AC1_Bnk"></span></div>
 		<div>Turn Rate..(deg): <span id="AC1_Trn"></span></div>
-		<div>Angle of Attack : <span id="AC1_AoA"></span></div>
+		<div>Pitch......(deg): <span id="AC1_Pit"></span></div>
+		<div>AoA........(deg): <span id="AC1_AoA"></span></div>
+		<div>Bank.......(deg): <span id="AC1_Bnk"></span></div>
+		<div>INTERCEPT INFORMATION</div>
+		<div>Off Pos.Y..(deg): </div>
+		<div>Off Rot.Y..(deg): </div>
+		<div>Off Pos.X..(deg): </div>
+		<div>Off Rot.X..(deg): </div>
 	</div>
 	<div class="overlay3">
 		<div>Air2</div>
 		<div><span id="AC2_Alt"></span></div>
 		<div><span id="AC2_Spd"></span></div>
 		<div><span id="AC2_Hdg"></span></div>
-		<div><span id="AC2_Pit"></span></div>
-		<div><span id="AC2_Bnk"></span></div>
 		<div><span id="AC2_Trn"></span></div>
+		<div><span id="AC2_Pit"></span></div>
 		<div><span id="AC2_AoA"></span></div>
+		<div><span id="AC2_Bnk"></span></div>
+		<div>----</div>
+		<div><span id="AC2_InY"></span></div>
+		<div><span id="AC2_OfY"></span></div>
+		<div><span id="AC2_InX"></span></div>
+		<div><span id="AC2_OfX"></span></div>
 	</div>	
 	<div class="overlay4">
 		<div>Press Arrow Keys to Pitch and Bank Airplane</div>
@@ -77,8 +87,8 @@ import Stats from "three/addons/libs/stats.module.js";
 
 //= Lag Type ===================//==============================================
 let LagTyp = 2;					// 0 = No Lag, 1 = Lag, 2 = Intercept
-let BegLag = new THREE.Vector3(-150,0,150); // Offset: x = horizontal, y = vertical, z = distance behind
-let BegOff = new THREE.Vector3(0,10,0); // Off Angle: x = vertical, y = horizontal
+let BegLag = new THREE.Vector3(-100,-100,150); // Offset: x = horizontal, y = vertical, z = distance behind
+let BegOff = new THREE.Vector3(0,0,0); // Off Angle: x = vertical, y = horizontal
 
 //= Starting Values ============//==============================================
 let BegAlt = 3048;				// Aircraft Altitude (m) = 10000 ft
@@ -272,21 +282,16 @@ let SmkSiz = 6;
 
 //= Computations ===============//==============================================
 //- Lag Pursuit ----------------------------------------------------------------
-let LagId1 = 0;					// Index to next Air1 Entry
-let LagId2 = 0;					// Index to current Air2
-let	LagMax = 360;				// Max Number of Values (360 = 6 seconds of bank changes)
-let LagDst = BegLag.z;			// Starting Distance Between Air2 and Air1 (250 feet)
-let LagSpd = BegSpd*(1000/3600); // Air1 Speed (meters/sec)
-let LagTim = LagDst/LagSpd;		// Time = Difference in Distance/Air1 Speed [250/440 = 0.561818 etc]
-//	LagTim = 0.5				// Override - This works better
-let LagInp = [0];				// Air1 Rotation Change
-//	Cheats? (Fixes Rounding Errors)
-let LagRot = [0];				// Air1 Rotation
-let LagPos = [0];				// Air1 Position
+let	LagMax = 360;				// Max Number of Values (360 = 6 seconds of inputs)
+let LagTim = Math.round((BegLag.z/Air1.SpdMPF)+0.5); // Time = Difference in Distance/Air1 Speed
+let LagInp = [];				// Air1 Rotation Change
+	for (let i = 0; i < LagMax; i++) {
+		LagInp[i] = new THREE.Vector3(0,0,0);	
+	}
+let LagId1 = LagTim;			// Index to next Air1 Entry
 //- Intercept ------------------------------------------------------------------
-let IntAng = new THREE.Vector3(); // Intercept Angle (Pitch,Yaw,Bank)
-let IntInp = new THREE.Vector3(); // Intercept Input (Pitch,Yaw,Bank)
-let OffAng = new THREE.Vector3(); // Off-Angle
+let OffPos = new THREE.Vector3(); // Intercept Angle (Pitch,Yaw,Bank)
+let OffRot = new THREE.Vector3(); // Off-Angle (Pitch,Yaw,Bank)
 
 //= CAMERA =====================//==============================================
 	camera.rotation.order = "YXZ";
@@ -334,41 +339,38 @@ let CfLSpd = 1;					// Pitch Speed
 
 //= HTML OVERLAY TEXT ==========================================================
 //- Air1
-let AC1_HdgElement = document.getElementById("AC1_Hdg");
-let AC1_HdgNode = document.createTextNode("");
-	AC1_HdgElement.appendChild(AC1_HdgNode);
 let AC1_AltElement = document.getElementById("AC1_Alt");
 let AC1_AltNode = document.createTextNode("");
 	AC1_AltElement.appendChild(AC1_AltNode);
 let AC1_SpdElement = document.getElementById("AC1_Spd");
 let AC1_SpdNode = document.createTextNode("");
 	AC1_SpdElement.appendChild(AC1_SpdNode);
-let AC1_BnkElement = document.getElementById("AC1_Bnk");
-let AC1_BnkNode = document.createTextNode("");
-	AC1_BnkElement.appendChild(AC1_BnkNode);
+let AC1_HdgElement = document.getElementById("AC1_Hdg");
+let AC1_HdgNode = document.createTextNode("");
+	AC1_HdgElement.appendChild(AC1_HdgNode);
 let AC1_TrnElement = document.getElementById("AC1_Trn");
 let AC1_TrnNode = document.createTextNode("");
 	AC1_TrnElement.appendChild(AC1_TrnNode);
 let AC1_PitElement = document.getElementById("AC1_Pit");
 let AC1_PitNode = document.createTextNode("");
 	AC1_PitElement.appendChild(AC1_PitNode);
+let AC1_BnkElement = document.getElementById("AC1_Bnk");
+let AC1_BnkNode = document.createTextNode("");
+	AC1_BnkElement.appendChild(AC1_BnkNode);
 let AC1_AoAElement = document.getElementById("AC1_AoA");
 let AC1_AoANode = document.createTextNode("");
 	AC1_AoAElement.appendChild(AC1_AoANode);
-let AC1_Alt,AC1_Hdg,AC1_Spd,AC1_Bnk,AC1_Trn,AC1_Pit,AC1_AoA;
+let AC1_Alt,AC1_Spd,AC1_Hdg,AC1_Trn,AC1_Pit,AC1_AoA,AC1_Bnk;
 //- Air2
-let AC2_HdgElement = document.getElementById("AC2_Hdg");
-let AC2_HdgNode = document.createTextNode("");
-	AC2_HdgElement.appendChild(AC2_HdgNode);
 let AC2_AltElement = document.getElementById("AC2_Alt");
 let AC2_AltNode = document.createTextNode("");
 	AC2_AltElement.appendChild(AC2_AltNode);
 let AC2_SpdElement = document.getElementById("AC2_Spd");
 let AC2_SpdNode = document.createTextNode("");
 	AC2_SpdElement.appendChild(AC2_SpdNode);
-let AC2_BnkElement = document.getElementById("AC2_Bnk");
-let AC2_BnkNode = document.createTextNode("");
-	AC2_BnkElement.appendChild(AC2_BnkNode);
+let AC2_HdgElement = document.getElementById("AC2_Hdg");
+let AC2_HdgNode = document.createTextNode("");
+	AC2_HdgElement.appendChild(AC2_HdgNode);
 let AC2_TrnElement = document.getElementById("AC2_Trn");
 let AC2_TrnNode = document.createTextNode("");
 	AC2_TrnElement.appendChild(AC2_TrnNode);
@@ -378,7 +380,22 @@ let AC2_PitNode = document.createTextNode("");
 let AC2_AoAElement = document.getElementById("AC2_AoA");
 let AC2_AoANode = document.createTextNode("");
 	AC2_AoAElement.appendChild(AC2_AoANode);
-let AC2_Alt,AC2_Hdg,AC2_Spd,AC2_Bnk,AC2_Trn,AC2_Pit,AC2_AoA;
+let AC2_BnkElement = document.getElementById("AC2_Bnk");
+let AC2_BnkNode = document.createTextNode("");
+	AC2_BnkElement.appendChild(AC2_BnkNode);
+let AC2_InYElement = document.getElementById("AC2_InY");
+let AC2_InYNode = document.createTextNode("");
+	AC2_InYElement.appendChild(AC2_InYNode);
+let AC2_OfYElement = document.getElementById("AC2_OfY");
+let AC2_OfYNode = document.createTextNode("");
+	AC2_OfYElement.appendChild(AC2_OfYNode);
+let AC2_InXElement = document.getElementById("AC2_InX");
+let AC2_InXNode = document.createTextNode("");
+	AC2_InXElement.appendChild(AC2_InXNode);
+let AC2_OfXElement = document.getElementById("AC2_OfX");
+let AC2_OfXNode = document.createTextNode("");
+	AC2_OfXElement.appendChild(AC2_OfXNode);
+let AC2_Alt,AC2_Spd,AC2_Hdg,AC2_Trn,AC2_Pit,AC2_AoA,AC2_Bnk,AC2_InY,AC2_OfY,AC2_InX,AC2_OfX;
 
 //= Main Program ===============================================================
 	initAll();
@@ -705,7 +722,7 @@ function init1ACraft(Air) {
 
 function move1ACraft(Air) {
 	//- LAG COMPUTATIONS -------------------------------------------------------
-	// 0 = Mimic ...............................................................
+	// 0 = Mimic ...............//..............................................
 	/*
 		Air2 copies Air1 immediately.
 		Not useful since allows Air1 to take initiative.
@@ -713,75 +730,80 @@ function move1ACraft(Air) {
 	if (LagTyp == 0 && Air == Air2) {
 		Air.InpRot.copy(Air1.InpRot);
 	}
-	// 1 = Lag Pursuit .........................................................
+	// 1 = Lag Pursuit .........//..............................................
 	/*
 		Air2 stays on tail of Air1
-		Save Air1 data
-		After time lag, Air2 retrieves data.
-		Time lag = Distance/Speed
+		Air1 saves input change data
+		Air2 retrieves input change data from past
+		Past = (Distance/Speed) * Frames
 		Current data max is 360 values = max 6 second lag
+		For unknown reasons, improvements to Intercept have made Lag Pursuit much worse.
+		Only using input changes.
 	*/
-	// If Air1 - Save time for any bank changes
+	// If Air1
 	if (LagTyp == 1) {
 		if (Air == Air1) {
-			LagInp[LagId1] = new THREE.Vector3().copy(Air.InpRot);
-			LagRot[LagId1] = new THREE.Vector3().copy(Air.AirRot);
-			LagPos[LagId1] = new THREE.Vector3().copy(Air.MapPos);
-			LagId1++
-			if (LagId1 > LagMax) LagId1 = 0;
+			LagInp[LagId1].copy(Air.InpRot);
+			LagId1++;
+			if (LagId1 >= LagMax) LagId1 = 0;
 		}
 		// If Air2
 		if (Air == Air2) {
-			// Wait
-			if (LagTim) {
-				LagTim = LagTim - DLTime;
-				if (LagTim <= 0) LagTim = 0;
-			}
-			else {
-				Air.InpRot.copy(LagInp[LagId2]);	//  98% Accuracy
-				Air.AirRot.copy(LagRot[LagId2]);	//  99% Accuracy
-				Air.MapPos.copy(LagPos[LagId2]);	// 100% Accuracy
-				LagId2++		// Go to next
-				if (LagId2 > LagMax) LagId2 = 0;
-			}
+			let LagId2 = LagId1 - LagTim; // Go Back in Time
+			if (LagId2 < 0) LagId2 = LagMax + LagId2;
+			if (LagId2 >= LagMax) LagId2 = 0;
+			Air.InpRot.copy(LagInp[LagId2]);	//  98% Accuracy
+//			console.log(Air.InpRot.x,Air.InpRot.y,Air.InpRot.z);
+//			console.log(LagTim,LagId1,LagId2);
 		}
 	}
-	// 2 = Intercept (WIP) .....................................................
+	// 2 = Intercept (WIP) .....//..............................................
 	/*
 		There are two opposing factors at play here:
 		* The Intercept Angle - the relative position of the Target. 
 		* The Off Angle - the difference in heading of the Target.
-		Reducing the Intercept Angle causes the Enemy to Bank towards the target.
-		Reducing the Off Angle causes a reduction in the Bank.
-		We have not yet worked out the best values to reduce the number of oscillations.
+		In parallel flight
+		* Increasing the OffRot Angle causes Air2 to bank towards Air1.
+		* Increasing the OffPos Angle causes Air2 to bank away from Air1.
 	*/
 	if (LagTyp == 2 && Air == Air2) {
 		// Compute Relative Position
-		let x = Air1.MapPos.x - Air.MapPos.x; // X-Distance
-		let y = Air1.MapPos.y - Air.MapPos.y; // Y-Distance
-		let z = -(Air1.MapPos.z - Air.MapPos.z); // Z-Distance
-		IntAng.x = PoM360(Mod360(Math.atan2(x,z)*RadDeg-Air.AirRot.y));	// Horizontal Angle (0-360)		
-		IntAng.y = Math.atan2(z,x)*RadDeg;	// Vertical Angle
-		OffAng.y = PoM360(Mod360(Air1.AirRot.y - Air2.AirRot.y)); // Horizontal Off-Angle
-		// Bank
+		let x = -Air.AirObj.position.x;	// Relative X Position
+		let y = -Air.AirObj.position.y;	// Relative Y Position
+		let z = Air.AirObj.position.z;	// Relative Z Position
+		let xz = Math.sqrt(x*x+z*z); // Distance
+		OffPos.x = PoM360(Mod360(Math.atan2(y,xz)*RadDeg-Air.AirRot.x));	// Vertical Angle
+		OffPos.y = PoM360(Mod360(Math.atan2(x,z)*RadDeg-Air.AirRot.y));	// Horizontal Angle (0-360)
+		OffRot.x = PoM360(Mod360(Air1.AirRot.x - Air.AirRot.x)); // Vertical Off-Angle
+		OffRot.y = PoM360(Mod360(Air1.AirRot.y - Air.AirRot.y)); // Horizontal Off-Angle
+		//- BANK CHANGES
 		let PoMBnk = PoM360(Air.AirRot.z);
-		// Off-Angle
-		let InpBk2 = .75 * OffAng.y; // 10 Off = .79; 20 = 2.4; 30 = 2.266
-		if (OffAng.y > 0) {
+		// Off Angle
+		let InpBk2 = 0.75 * OffRot.y; // 0.75 okay for merge
+		if (OffRot.y > 0) {
 			if (PoMBnk > 1) InpBk2 = 0;
 		}
-		else if (OffAng.y < 0) {
+		else if (OffRot.y < 0) {
 			if (PoMBnk < -1) InpBk2 = 0;
 		}
-		// Offset Angle
-		let InpBk1 = .1 * IntAng.x; // Offset Angle
+		// Off Position
+		let InpBk1 = .1 * OffPos.y; // 0.1 - 0.25 okay for merge, 0.5 too much
 		Air.InpRot.z =  InpBk1 + InpBk2;
 		if (Air.InpRot.z > 0) {
-			if (PoMBnk > 60) Air.InpRot.z = 0;
+			if (PoMBnk > 70) Air.InpRot.z = 0;
 		}
 		else if (Air.InpRot.z < 0) {
-			if (PoMBnk < -60) Air.InpRot.z = 0;
-		}	
+			if (PoMBnk < -70) Air.InpRot.z = 0;
+		}
+		//- CfLIFT CHANGES (range -1.6 to 1.6)
+		let PoMPit = Air.AirRot.x;
+		// Off Angle
+		let InpPt2 = .01*OffRot.x; // Adjustment to CfLift
+		// Off Position
+		let InpPt1 = OffPos.x; // Adjustment to CfLift
+		// Total Adjustment to CfLift
+		Air.InpRot.x =  InpPt1 + InpPt2;
+		// Program sets limits to +/- CfLift
 	}	
 	// 1. COMPUTE VECTORS ------------------------------------------------------
 	// Compute Force Vectors in UPS and multiply by FrcAcc to convert to UPT
@@ -904,7 +926,7 @@ function move1ACraft(Air) {
 	Air.MapPos.z = Air.MapPos.z - Air.MapSpd.z;
 	Air.MapPos.x = Air.MapPos.x + Air.MapSpd.x;
 	// Convert Speed and Position to Maters
-	if (Air != Air1) {
+	if (Air == Air2) {
 		Air.AirObj.position.x = (Air.MapPos.x - Air1.MapPos.x);
 		Air.AirObj.position.y = (Air.MapPos.y - Air1.MapPos.y);
 		Air.AirObj.position.z = (Air.MapPos.z - Air1.MapPos.z);
@@ -1004,37 +1026,45 @@ return deg;}
 // Change HUD Values
 function chngHUDV(Air) {
 	//- Air1
-	AC1_Hdg = Air1.AirRot.y;					// Aircraft Heading
-	AC1_HdgNode.nodeValue = AC1_Hdg.toFixed(0);
 	AC1_Alt = Air1.MapPos.y*Mtr2Ft; 			// Aircraft Altitude (feet)
 	AC1_AltNode.nodeValue = AC1_Alt.toFixed(0);
 	AC1_Spd = Air1.SpdKPH*Km2Mil;				// Aircraft Speed (MPH)
 	AC1_SpdNode.nodeValue = AC1_Spd.toFixed(0);
-	AC1_Bnk = Air1.AirRot.z;					// Aircraft Bank (deg)
-	if (AC1_Bnk > 180) AC1_Bnk = 360 - AC1_Bnk;
-	AC1_BnkNode.nodeValue = AC1_Bnk.toFixed(0);
+	AC1_Hdg = Air1.AirRot.y;					// Aircraft Heading
+	AC1_HdgNode.nodeValue = AC1_Hdg.toFixed(0);
 	AC1_Trn = Air1.HdgDif/DLTime;				// Aircraft Turn Rate (deg)
 	AC1_TrnNode.nodeValue = AC1_Trn.toFixed(2);
 	AC1_Pit = Air1.AirRot.x;					// Aircraft Pitch (deg)
-	AC1_PitNode.nodeValue = AC1_Pit.toFixed(0);
+	AC1_PitNode.nodeValue = AC1_Pit.toFixed(2);
 	AC1_AoA = Air1.CfLift*10;					// Aircraft AoA
 	AC1_AoANode.nodeValue = AC1_AoA.toFixed(2);
+	AC1_Bnk = Air1.AirRot.z;					// Aircraft Bank (deg)
+	if (AC1_Bnk > 180) AC1_Bnk = 360 - AC1_Bnk;
+	AC1_BnkNode.nodeValue = AC1_Bnk.toFixed(0);
 	//- Air2
-	AC2_Hdg = Air2.AirRot.y;					// Aircraft Heading
-	AC2_HdgNode.nodeValue = AC2_Hdg.toFixed(0);
 	AC2_Alt = Air2.MapPos.y*Mtr2Ft;				// Aircraft Altitude (feet)
 	AC2_AltNode.nodeValue = AC2_Alt.toFixed(0);
 	AC2_Spd = Air2.SpdKPH*Km2Mil;				// Aircraft Speed (MPH)
 	AC2_SpdNode.nodeValue = AC2_Spd.toFixed(0);
-	AC2_Bnk = Air2.AirRot.z;					// Aircraft Bank (deg)
-	if (AC2_Bnk > 180) AC2_Bnk = 360 - AC2_Bnk;
-	AC2_BnkNode.nodeValue = AC2_Bnk.toFixed(0);
+	AC2_Hdg = Air2.AirRot.y;					// Aircraft Heading
+	AC2_HdgNode.nodeValue = AC2_Hdg.toFixed(0);
 	AC2_Trn = Air2.HdgDif/DLTime;				// Aircraft Turn Rate (deg)
 	AC2_TrnNode.nodeValue = AC2_Trn.toFixed(2);
 	AC2_Pit = Air2.AirRot.x;					// Aircraft Pitch (deg)
-	AC2_PitNode.nodeValue = AC2_Pit.toFixed(0);
+	AC2_PitNode.nodeValue = AC2_Pit.toFixed(2);
 	AC2_AoA = Air2.CfLift*10;					// Aircraft AoA
 	AC2_AoANode.nodeValue = AC2_AoA.toFixed(2);
+	AC2_Bnk = Air2.AirRot.z;					// Aircraft Bank (deg)
+	if (AC2_Bnk > 180) AC2_Bnk = 360 - AC2_Bnk;
+	AC2_BnkNode.nodeValue = AC2_Bnk.toFixed(0);
+	AC2_InY = OffPos.y;							// Aircraft Intercept Angle
+	AC2_InYNode.nodeValue = AC2_InY.toFixed(2);
+	AC2_OfY = OffRot.y;							// Aircraft OffsetAngle
+	AC2_OfYNode.nodeValue = AC2_OfY.toFixed(2);
+	AC2_InX = OffPos.x;							// Aircraft Intercept Angle
+	AC2_InXNode.nodeValue = AC2_InX.toFixed(2);
+	AC2_OfX = OffRot.x;							// Aircraft OffsetAngle
+	AC2_OfXNode.nodeValue = AC2_OfX.toFixed(2);
 }
 
 //= INPUTS =====================//==============================================
