@@ -24,10 +24,11 @@ Version dated 26 Jul 2025
 		<div>Altitude....(ft): <span id="AC1_Alt"></span></div>
 		<div>Speed......(mph): <span id="AC1_Spd"></span></div>
 		<div>Heading....(deg): <span id="AC1_Hdg"></span></div>
+		<div>Bank.......(deg): <span id="AC1_Bnk"></span></div>
 		<div>Turn Rate..(deg): <span id="AC1_Trn"></span></div>
+		<div>Turn Radius.(ft): <span id="AC1_Rad"></span></div>
 		<div>Pitch......(deg): <span id="AC1_Pit"></span></div>
 		<div>AoA........(deg): <span id="AC1_AoA"></span></div>
-		<div>Bank.......(deg): <span id="AC1_Bnk"></span></div>
 		<div>&nbsp</div>
 		<div>AIR2 INTERCEPT....Horz</div>
 		<div>Off Pos....(deg): <span id="AC2_InY"></span></div>
@@ -38,10 +39,11 @@ Version dated 26 Jul 2025
 		<div><span id="AC2_Alt"></span></div>
 		<div><span id="AC2_Spd"></span></div>
 		<div><span id="AC2_Hdg"></span></div>
+		<div><span id="AC2_Bnk"></span></div>
 		<div><span id="AC2_Trn"></span></div>
+		<div><span id="AC2_Rad"></span></div>
 		<div><span id="AC2_Pit"></span></div>
 		<div><span id="AC2_AoA"></span></div>
-		<div><span id="AC2_Bnk"></span></div>
 		<div>&nbsp</div>
 		<div>Vert</div>
 		<div><span id="AC2_InX"></span></div>
@@ -77,23 +79,17 @@ import Stats from "three/addons/libs/stats.module.js";
 // Grid 4 Square Size: 1.0 miles = 1609.33 meters (basic building block)
 // Grid 5 Square Size: 3.0 miles.  Viz = 3.0 X 13.5 = 40.5 miles = 65km
 
-//= Lag Type ===================//==============================================
-let LagTyp = 2;					// 0 = Mimic, 1 = Lag, 2 = Intercept
-//	* Use Mimic when starting abreast and Air1 turns away (Fox to Guns exercise)
-//	* Use Trail when directly Air2 is directly behind Air1
-//- Air2 Only
-let BegPos = new THREE.Vector3(0,0,150); // Offset: x = horizontal, y = vertical, z = distance behind
-let BegRot = new THREE.Vector3(0,0,0); // Beg Air2 OffRot Angles: x = vertical, y = horizontal
-//	* Mimic:		BegPos =  150,   0,   0
-//	* Trail:		BegPos =    0,   0, 150
-//	* Intercept:	BegPos = -100,-100, 150
-
 //= Starting Values ============//==============================================
 //- Both Airplanes
 let BegAlt = 3048;				// Aircraft Altitude (m) = 10000 ft
 let BegSpd = 482.8;				// Aircraft Speed = 300 mph
 let BegPwr = 1.0;				//
 let BegCfL = 0.265;				// Level Flight
+//- Air2 Only
+let BegPos = new THREE.Vector3(0,0,150); // Offset: x = horizontal, y = vertical, z = distance behind
+let BegRot = new THREE.Vector3(0,0,0); // Beg Air2 OffRot Angles: x = vertical, y = horizontal
+//	* Trail:		BegPos =    0,   0, 150
+//	* Intercept:	BegPos = -100,-100, 150
 
 //= Variables ==================//==============================================
 //	Inputs
@@ -221,6 +217,9 @@ let Air1 = {
 		SmkObj: 0,				// Smoke Object
 		SmkPts: [],				// Position Array
 		SmkTim: [],				// Smoke
+		// ACM
+		CirRad: 0,				// Radius of Turn
+		CirCtr: new THREE.Vector3(0,0,0), // Center of Circle
 	}
 let Air2 = {
 		// Inputs
@@ -247,6 +246,9 @@ let Air2 = {
 		SmkObj: 0,				// Smoke Object
 		SmkPts: [],				// Position Array
 		SmkTim: [],				// Smoke
+		// ACM
+		CirRad: 0,				// Radius of Turn
+		CirCtr: new THREE.Vector3(0,0,0), // Center of Circle
 	}
 //- Aircraft Data --------------------------------------------------------------
 //	Constrol Sensitivity
@@ -347,19 +349,22 @@ let AC1_SpdNode = document.createTextNode("");
 let AC1_HdgElement = document.getElementById("AC1_Hdg");
 let AC1_HdgNode = document.createTextNode("");
 	AC1_HdgElement.appendChild(AC1_HdgNode);
-let AC1_TrnElement = document.getElementById("AC1_Trn");
-let AC1_TrnNode = document.createTextNode("");
-	AC1_TrnElement.appendChild(AC1_TrnNode);
-let AC1_PitElement = document.getElementById("AC1_Pit");
-let AC1_PitNode = document.createTextNode("");
-	AC1_PitElement.appendChild(AC1_PitNode);
 let AC1_BnkElement = document.getElementById("AC1_Bnk");
 let AC1_BnkNode = document.createTextNode("");
 	AC1_BnkElement.appendChild(AC1_BnkNode);
+let AC1_TrnElement = document.getElementById("AC1_Trn");
+let AC1_TrnNode = document.createTextNode("");
+	AC1_TrnElement.appendChild(AC1_TrnNode);
+let AC1_RadElement = document.getElementById("AC1_Rad");
+let AC1_RadNode = document.createTextNode("");
+	AC1_RadElement.appendChild(AC1_RadNode);
+let AC1_PitElement = document.getElementById("AC1_Pit");
+let AC1_PitNode = document.createTextNode("");
+	AC1_PitElement.appendChild(AC1_PitNode);
 let AC1_AoAElement = document.getElementById("AC1_AoA");
 let AC1_AoANode = document.createTextNode("");
 	AC1_AoAElement.appendChild(AC1_AoANode);
-let AC1_Alt,AC1_Spd,AC1_Hdg,AC1_Trn,AC1_Pit,AC1_AoA,AC1_Bnk;
+let AC1_Alt,AC1_Spd,AC1_Hdg,AC1_Trn,AC1_Rad,AC1_Pit,AC1_AoA,AC1_Bnk;
 //- Air2
 let AC2_AltElement = document.getElementById("AC2_Alt");
 let AC2_AltNode = document.createTextNode("");
@@ -370,18 +375,21 @@ let AC2_SpdNode = document.createTextNode("");
 let AC2_HdgElement = document.getElementById("AC2_Hdg");
 let AC2_HdgNode = document.createTextNode("");
 	AC2_HdgElement.appendChild(AC2_HdgNode);
+let AC2_BnkElement = document.getElementById("AC2_Bnk");
+let AC2_BnkNode = document.createTextNode("");
+	AC2_BnkElement.appendChild(AC2_BnkNode);
 let AC2_TrnElement = document.getElementById("AC2_Trn");
 let AC2_TrnNode = document.createTextNode("");
 	AC2_TrnElement.appendChild(AC2_TrnNode);
+let AC2_RadElement = document.getElementById("AC2_Rad");
+let AC2_RadNode = document.createTextNode("");
+	AC2_RadElement.appendChild(AC2_RadNode);
 let AC2_PitElement = document.getElementById("AC2_Pit");
 let AC2_PitNode = document.createTextNode("");
 	AC2_PitElement.appendChild(AC2_PitNode);
 let AC2_AoAElement = document.getElementById("AC2_AoA");
 let AC2_AoANode = document.createTextNode("");
 	AC2_AoAElement.appendChild(AC2_AoANode);
-let AC2_BnkElement = document.getElementById("AC2_Bnk");
-let AC2_BnkNode = document.createTextNode("");
-	AC2_BnkElement.appendChild(AC2_BnkNode);
 let AC2_InYElement = document.getElementById("AC2_InY");
 let AC2_InYNode = document.createTextNode("");
 	AC2_InYElement.appendChild(AC2_InYNode);
@@ -394,7 +402,8 @@ let AC2_InXNode = document.createTextNode("");
 let AC2_OfXElement = document.getElementById("AC2_OfX");
 let AC2_OfXNode = document.createTextNode("");
 	AC2_OfXElement.appendChild(AC2_OfXNode);
-let AC2_Alt,AC2_Spd,AC2_Hdg,AC2_Trn,AC2_Pit,AC2_AoA,AC2_Bnk,AC2_InY,AC2_OfY,AC2_InX,AC2_OfX;
+let AC2_Alt,AC2_Spd,AC2_Hdg,AC2_Trn,AC2_Rad,AC2_Pit,AC2_AoA,AC2_Bnk;
+let AC2_InY,AC2_OfY,AC2_InX,AC2_OfX;
 
 //= Main Program ===============================================================
 	initAll();
@@ -720,43 +729,7 @@ function init1ACraft(Air) {
 //= MOVE AIRPLANE ==============//==============================================
 
 function move1ACraft(Air) {
-	//- LAG COMPUTATIONS -------------------------------------------------------
-	// 0 = Mimic ...............//..............................................
-	/*
-		Air2 copies Air1 immediately.
-		Not useful since allows Air1 to take initiative.
-	*/
-	if (LagTyp == 0 && Air == Air2) {
-		Air.InpRot.copy(Air1.InpRot);
-	}
-	// 1 = Lag Pursuit .........//..............................................
-	/*
-		Air2 stays on tail of Air1
-		Air1 saves input change data
-		Air2 retrieves input change data from past
-		Past = (Distance/Speed) * Frames
-		Current data max is 360 values = max 6 second lag
-		For unknown reasons, improvements to Intercept have made Lag Pursuit much worse.
-		Only using input changes.
-	*/
-	// If Air1
-	if (LagTyp == 1) {
-		if (Air == Air1) {
-			LagInp[LagId1].copy(Air.InpRot);
-			LagId1++;
-			if (LagId1 >= LagMax) LagId1 = 0;
-		}
-		// If Air2
-		if (Air == Air2) {
-			let LagId2 = LagId1 - LagTim; // Go Back in Time
-			if (LagId2 < 0) LagId2 = LagMax + LagId2;
-			if (LagId2 >= LagMax) LagId2 = 0;
-			Air.InpRot.copy(LagInp[LagId2]);	//  98% Accuracy
-//			console.log(Air.InpRot.x,Air.InpRot.y,Air.InpRot.z);
-//			console.log(LagTim,LagId1,LagId2);
-		}
-	}
-	// 2 = Intercept (WIP) .....//..............................................
+	//- LAG COMPUTATIONS -------//----------------------------------------------
 	/*
 		There are two opposing factors at play here:
 		* The Intercept Angle - the relative position of the Target. 
@@ -765,7 +738,7 @@ function move1ACraft(Air) {
 		* Increasing the OffRot Angle causes Air2 to bank towards Air1.
 		* Increasing the OffPos Angle causes Air2 to bank away from Air1.
 	*/
-	if (LagTyp == 2 && Air == Air2) {
+	if (Air == Air2) {
 		// Compute OffPos 
 		let x = -Air.AirObj.position.x;	// Map X Position (in loop = 0)
 		let y = -Air.AirObj.position.y;	// Map Y Position
@@ -809,16 +782,12 @@ function move1ACraft(Air) {
 		Air.InpRot.x =  InpPt1 + InpPt2;
 		// Program sets limits to +/- CfLift
 		//- LAG CIRCLE OVERRIDE ===============================================
-//		if (Math.abs(PoMBk1) > 0.5 && rzdif > 0) { // If Air1 Banked and Air2 following Air1
-//		if (Math.abs(Air1.AirRSp.y) > 0.001 && rzdif > 0) { // If Air1 Banked and Air2 following Air1
-//		if (Math.abs(PoMBk1) > 0.05 && rzdif > 0) { // If Air1 Banked and Air2 following Air1
-		if (Math.abs(OffRot.y) > 2.5 && rzdif > 0) { // If Air1 Banked and Air2 following Air1
+		if (Math.abs(OffRot.y) > 0.5 && rzdif > 0 && Air1.CirRad) { // If Air1 Banked and Air2 following Air1
 			// Air1 Center of Rotation
-			let radius1 = Math.abs(RadDeg*Air1.SpdMPF/Air1.AirRSp.y); // Air1 radius
-			if (radius1 > 1000000) radius1 = 1000000;
-			let ctrZ = radius1*Math.cos((OffRot.y-90)*DegRad); // Z-pos of Air1 radius ctr
+			let ctrZ = Air1.CirRad*Math.cos((OffRot.y-90)*DegRad); // Z-pos of Air1 radius ctr
 			if (PoMBk1 > 0) ctrZ = -ctrZ; // Make Z-pos negative
 			let ctrZdif = rzdif + ctrZ; // Air2 distance to Z-pos
+			// Start Turning and Compute Turn Rate
 			if (ctrZdif < 0) { // If Air2 Reaches CtrZ, Can Start Turning
 				// Compute Rate of Turn
 				let B = 90-Math.abs((OffRot.y/2));			
@@ -913,10 +882,13 @@ function move1ACraft(Air) {
 	if (Air == Air1 && Air.InpRot.z != 0) Air.AirRot.y = ACH;
 	Air.AirRSp.y = PoM360(Mod360(Air.AirRot.y - ACH));
 	Air.AirObj.rotation.y = -Air.AirRot.y*DegRad;
+	// Compute Horizontal Radius (Only if Turn Rate > 0.1 deg/sec = 360 deg/hr
+	Air.CirRad = 0;				// Default
+	if (Math.abs(Air1.AirRSp.y/DLTime) > 0.1) Air.CirRad = Math.abs(RadDeg*Air1.SpdMPF/Air1.AirRSp.y);
 	// USD Flag
-	Air.USDFlg = 0;			// Default
+	Air.USDFlg = 0;				// Default
 	if (Air.AirRot.z > 90 && Air.AirRot.z < 270) Air.USDFlg = 1;
-	// 3. COMPUTE MAP SPEED -----------------------------------------------------
+	// 3. COMPUTE MAP SPEED ----//----------------------------------------------
 	// Inputs:	Air.SpdMPF, ACThrG, Air.AirRot.x, Air.AirRot.y, MPosZV, MPosYV, MPosXV
 	// Results:	Air.SpdKPH, Air.AirRot.x
 	// a. Compute Speed
@@ -1055,7 +1027,7 @@ return deg;}
 // Change HUD Values
 function chngHUDV(Air) {
 	//- Air1
-	AC1_Alt = Air1.MapPos.y*Mtr2Ft; 			// Aircraft Altitude (mtr)
+	AC1_Alt = Air1.MapPos.y*Mtr2Ft; 			// Aircraft Altitude (feet)
 	AC1_AltNode.nodeValue = AC1_Alt.toFixed(0);
 	AC1_Spd = Air1.SpdKPH*Km2Mil;				// Aircraft Speed (KPH)
 	AC1_SpdNode.nodeValue = AC1_Spd.toFixed(0);
@@ -1063,6 +1035,8 @@ function chngHUDV(Air) {
 	AC1_HdgNode.nodeValue = AC1_Hdg.toFixed(0);
 	AC1_Trn = Air1.AirRSp.y/DLTime;				// Aircraft Turn Rate (deg)
 	AC1_TrnNode.nodeValue = AC1_Trn.toFixed(2);
+	AC1_Rad = Air1.CirRad*Mtr2Ft;				// Aircraft Turn Radius (feet)
+	AC1_RadNode.nodeValue = AC1_Rad.toFixed(0);
 	AC1_Pit = Air1.AirRot.x;					// Aircraft Pitch (deg)
 	AC1_PitNode.nodeValue = AC1_Pit.toFixed(2);
 	AC1_AoA = Air1.CfLift*10;					// Aircraft AoA
@@ -1071,7 +1045,7 @@ function chngHUDV(Air) {
 //	if (AC1_Bnk > 180) AC1_Bnk = 360 - AC1_Bnk;
 	AC1_BnkNode.nodeValue = AC1_Bnk.toFixed(0);
 	//- Air2
-	AC2_Alt = Air2.MapPos.y*Mtr2Ft;				// Aircraft Altitude (mtr)
+	AC2_Alt = Air2.MapPos.y*Mtr2Ft;				// Aircraft Altitude (feet)
 	AC2_AltNode.nodeValue = AC2_Alt.toFixed(0);
 	AC2_Spd = Air2.SpdKPH*Km2Mil;				// Aircraft Speed (KPH)
 	AC2_SpdNode.nodeValue = AC2_Spd.toFixed(0);
@@ -1079,6 +1053,8 @@ function chngHUDV(Air) {
 	AC2_HdgNode.nodeValue = AC2_Hdg.toFixed(0);
 	AC2_Trn = Air2.AirRSp.y/DLTime;				// Aircraft Turn Rate (deg)
 	AC2_TrnNode.nodeValue = AC2_Trn.toFixed(2);
+	AC2_Rad = Air2.CirRad*Mtr2Ft;				// Aircraft Turn Radius (feet)
+	AC2_RadNode.nodeValue = AC2_Rad.toFixed(0);
 	AC2_Pit = Air2.AirRot.x;					// Aircraft Pitch (deg)
 	AC2_PitNode.nodeValue = AC2_Pit.toFixed(2);
 	AC2_AoA = Air2.CfLift*10;					// Aircraft AoA
