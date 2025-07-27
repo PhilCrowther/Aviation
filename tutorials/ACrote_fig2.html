@@ -2,9 +2,9 @@
 <html lang="en">
 
 <!--
-Copyright 2017-24, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Apr 2025
+Version dated 27 Jul 2025
 -->
 
 	
@@ -42,8 +42,8 @@ Version dated 19 Apr 2025
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.module.js", 
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js", 
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/"
 		}
 	}
 </script>
@@ -61,7 +61,7 @@ import {TextGeometry} from "three/addons/geometries/TextGeometry.js";
 //- Airplane
 let BegSpd = 200;						// Speed: 100% throttle/30 deg bank
 let BegAlt = 5000;						// Starting Position
-let BegRot = new THREE.Vector3(0,0,30); // Beg Vrt, Hrz, Bnk Angles
+let BegRot = new THREE.Vector3(0,0,30);	// Beg Vrt, Hrz, Bnk Angles
 
 //= Constants ==================================================================
 let DLTime = 1/60;					// Frames per Second
@@ -82,7 +82,7 @@ let air_ = {
 		Obj: makeMesh(),				// Airplane Object
 		PBY: makeMesh(),				// Object Rotation Change (converted/radians)
 		// Airplane PBY Changes
-		Key: new THREE.Vector3(0.01,0.5,0.1), // Key Values
+		Key: new THREE.Vector3(0.1,0.5,1), // Key Values
 		Inp: new THREE.Vector3(),		// Inputs
 		Dif: new THREE.Vector3(0,0,0),	// Change
 		PPR: new THREE.Vector3(),		// Pitch Plane Angle
@@ -516,7 +516,7 @@ function moveAirObj() {
 	let ACDrIF = DrgCdi*QSTval;			// Induced Drag Force = ACLftF^2 / (DynPrs * WingSp^2 * WingEf * PI)
 	let DrgCdp = DrgCd0;				// Total Coefficient of Parasitic Drag
 	let ACDrPF = DrgCdp*QSTval;			// Parasitic Drag Force =  Cd0 * DynPres * WingA
-	let ACDrgF = ACDrIF + ACDrPF; 		// Total Drag Force
+	let ACDrgF = ACDrIF + ACDrPF;		// Total Drag Force
 	let ACNetF = EnThrF - ACDrgF;		// Net Thrust Force
 	let ACNetA = ACNetF * FrcAcc;		// Net Thrust Accel
 	ACNetA = ACNetA - GrvThr;
@@ -665,7 +665,7 @@ function makePlanes() {
 	makePitPln(new THREE.Color("dimgray"));		// Pitch Plane
 	makeSpdVct(new THREE.Color("red"),-50);		// Speed Vector
 	// Intersection of Pitch and Horizontal Planes
-	let geometry = new THREE.BoxGeometry(1,1,200); 
+	let geometry = new THREE.BoxGeometry(1,1,200);
 	let color = new THREE.Color("white")
 	let material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
 	let mesh = new THREE.Mesh(geometry, material);
@@ -683,7 +683,7 @@ function makeHrzRot(color) {
 function makeHrzPln(color) {
 	// Flat Semi-Transparent Circle
 	let radius = 100
-	let geometry = new THREE.CircleGeometry(100, 64);  
+	let geometry = new THREE.CircleGeometry(100, 64);
 	let material = new THREE.MeshPhongMaterial({side: THREE.DoubleSide, color: color, transparent: true, opacity: 0.4});
 	let mesh = new THREE.Mesh(geometry, material);
 	ref_.HzP.add(mesh);
@@ -719,7 +719,7 @@ function makeVrtPln(color) {
 function makePitPln(color) {
 	// Wireframe Vertical Cylinder
 	let radius = 100
-	let geometry = new THREE.CylinderGeometry(100,100,2,32);  
+	let geometry = new THREE.CylinderGeometry(100,100,2,32);
 	let material = new THREE.MeshBasicMaterial({color: color, wireframe: true});
 	let mesh = new THREE.Mesh(geometry, material);	
 	mesh.rotation.z = 90*DegRad;
@@ -741,8 +741,8 @@ function makeSpdVct(color,ZOff) {
 //- Vector Maker
 
 function makeVector(color,siz) {
-	let geometry = new THREE.BoxGeometry(siz.x,siz.y,siz.z); 
-	let material = new THREE.MeshBasicMaterial({color: color}); 
+	let geometry = new THREE.BoxGeometry(siz.x,siz.y,siz.z);
+	let material = new THREE.MeshBasicMaterial({color: color});
 	let mesh = new THREE.Mesh(geometry, material);
 	mesh.position.z = -siz.z/2;	// Offset vector
 	return mesh;
@@ -751,7 +751,7 @@ function makeVector(color,siz) {
 //- Make Arrows ----------------------------------------------------------------
 
 function makeArrow(color,pos,xr) {
-	let geometry = new THREE.ConeGeometry(2,3,4); 
+	let geometry = new THREE.ConeGeometry(2,3,4);
 	let material = new THREE.MeshBasicMaterial({color: color});
 	let mesh = new THREE.Mesh(geometry, material);
 	mesh.position.copy(pos);
@@ -836,8 +836,8 @@ return deg;}
 
 //= Make Mesh
 function makeMesh() {
-	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
-	let material = new THREE.MeshBasicMaterial({color: 0xffffff}); 
+	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01);
+	let material = new THREE.MeshBasicMaterial({color: 0xffffff});
 	let mesh = new THREE.Mesh(geometry, material);
 return mesh;}
 
