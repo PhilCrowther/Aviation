@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 26 Jul 2025
+Version dated 27 Jul 2025
 -->
 
 <head>
@@ -739,14 +739,14 @@ function move1ACraft(Air) {
 		* Increasing the OffPos Angle causes Air2 to bank away from Air1.
 	*/
 	if (Air == Air2) {
-		// Compute OffPos 
+		// INTERCEPT: OffPos 
 		let x = -Air.AirObj.position.x;	// Map X Position (in loop = 0)
 		let y = -Air.AirObj.position.y;	// Map Y Position
-		let z = Air.AirObj.position.z;	// Map Z Position (approaches 0 at 90 degrees)
-		let xz = Math.sqrt(x*x+z*z); // Horizontal Distance (at 90 degrees, both x and z = 0)
+		let z =  Air.AirObj.position.z;	// Map Z Position (approaches 0 at 90 degrees)
+		let xz = Math.sqrt(x**2+z**2);  // Horizontal Distance (at 90 degrees, both x and z = 0)
 		OffPos.x = PoM360(Mod360(Math.atan2(y,xz)*RadDeg-Air.AirRot.x)); // Vertical Angle
 		OffPos.y = PoM360(Mod360(Math.atan2(x,z)*RadDeg-Air.AirRot.y));	// Horizontal Angle (0-360)
-		// Compute OffRot
+		// INTERCEPT: OffRot
 		OffRot.x = PoM360(Mod360(Air1.AirRot.x - Air.AirRot.x)); // Vertical Off-Angle
 		OffRot.y = PoM360(Mod360(Air1.AirRot.y - Air.AirRot.y)); // Horizontal Off-Angle
 		if (Air1.AirRot.x > 0 && Air1.USDFlg) OffRot.y = PoM360(Mod360(OffRot.y+180));
@@ -755,8 +755,8 @@ function move1ACraft(Air) {
 		let rxdif = x*Math.cos(hrot)-z*Math.sin(hrot);
 		let rzdif = x*Math.sin(hrot)+z*Math.cos(hrot);
 		//- AIR2 TRACKING: BANK CHANGES
-		let PoMBk2 = PoM360(Air.AirRot.z);
 		let PoMBk1 = PoM360(Air1.AirRot.z); // Used by Lag
+		let PoMBk2 = PoM360(Air.AirRot.z);
 		// Off Angle
 		let InpBk2 = 0.75 * OffRot.y; // 0.75 okay for merge
 		if (OffRot.y > 0 && PoMBk2 > 1) InpBk2 = 0;
@@ -783,21 +783,22 @@ function move1ACraft(Air) {
 		// Program sets limits to +/- CfLift
 		//- LAG CIRCLE OVERRIDE ===============================================
 		if (Math.abs(OffRot.y) > 0.5 && rzdif > 0 && Air1.CirRad) { // If Air1 Banked and Air2 following Air1
+//		if (Air1.CirRad && rzdif > 0) { // If Air1 Turning and Air2 following Air1
 			// Air1 Center of Rotation
 			let ctrZ = Air1.CirRad*Math.cos((OffRot.y-90)*DegRad); // Z-pos of Air1 radius ctr
 			if (PoMBk1 > 0) ctrZ = -ctrZ; // Make Z-pos negative
 			let ctrZdif = rzdif + ctrZ; // Air2 distance to Z-pos
-			// Start Turning and Compute Turn Rate
-			if (ctrZdif < 0) { // If Air2 Reaches CtrZ, Can Start Turning
+			// If Air2 Reaches CtrZ, Can Start Turning
+			if (ctrZdif < 0) { 
 				// Compute Rate of Turn
-				let B = 90-Math.abs((OffRot.y/2));			
+				let B = 90-Math.abs((OffRot.y/2));		
 				let BD = Math.sqrt(rxdif**2+rzdif**2)/2;
-				let AD = Math.abs(BD*Math.tan(B * DegRad));
-				let radius2 = Math.sqrt(BD**2+AD**2);
-				let trnrat = RadDeg*Air.SpdMPF/radius2;
-				TrgBnk = (Math.atan(trnrat*Air.SpdMPF/(GrvMPS*DLTime)))*RadDeg;
-				if (PoMBk2 < 0) TrgBnk = -TrgBnk;
-				Air.InpRot.z = TrgBnk - PoMBk2;
+				let AD = Math.abs(BD*Math.tan(B*DegRad));
+				let radius = Math.sqrt(BD**2+AD**2);
+				let trnrat = RadDeg*Air.SpdMPF/radius;
+				let trgbnk = (Math.atan(trnrat*Air.SpdMPF/(GrvMPS*DLTime)))*RadDeg;
+				if (PoMBk1 < 0) trgbnk = -trgbnk;
+				Air.InpRot.z = trgbnk - PoMBk2;
 			}
 		}
 	}
@@ -877,14 +878,13 @@ function move1ACraft(Air) {
 	Air.AirRot.z = Mod360(-Air.AirObj.rotation.z*RadDeg);
 	Air.AirRot.x = Air.AirObj.rotation.x*RadDeg;
 	// Update Air.AirObj Heading for Bank
-	let ACH = Air.AirRot.y;					// ### Save old heading
+	let ACH = Air.AirRot.y;		// Save old heading
 	Air.AirRot.y = Mod360(-Air.AirObj.rotation.y*RadDeg);
-	if (Air == Air1 && Air.InpRot.z != 0) Air.AirRot.y = ACH;
 	Air.AirRSp.y = PoM360(Mod360(Air.AirRot.y - ACH));
 	Air.AirObj.rotation.y = -Air.AirRot.y*DegRad;
 	// Compute Horizontal Radius (Only if Turn Rate > 0.1 deg/sec = 360 deg/hr
 	Air.CirRad = 0;				// Default
-	if (Math.abs(Air1.AirRSp.y/DLTime) > 0.1) Air.CirRad = Math.abs(RadDeg*Air1.SpdMPF/Air1.AirRSp.y);
+	if (Math.abs(Air.AirRSp.y/DLTime) > 0.1) Air.CirRad = Math.abs(RadDeg*Air.SpdMPF/Air.AirRSp.y);
 	// USD Flag
 	Air.USDFlg = 0;				// Default
 	if (Air.AirRot.z > 90 && Air.AirRot.z < 270) Air.USDFlg = 1;
@@ -1033,6 +1033,8 @@ function chngHUDV(Air) {
 	AC1_SpdNode.nodeValue = AC1_Spd.toFixed(0);
 	AC1_Hdg = Air1.AirRot.y;					// Aircraft Heading (deg)
 	AC1_HdgNode.nodeValue = AC1_Hdg.toFixed(0);
+	AC1_Bnk = PoM360(Air1.AirRot.z);			// Aircraft Bank (deg)
+	AC1_BnkNode.nodeValue = AC1_Bnk.toFixed(0);
 	AC1_Trn = Air1.AirRSp.y/DLTime;				// Aircraft Turn Rate (deg)
 	AC1_TrnNode.nodeValue = AC1_Trn.toFixed(2);
 	AC1_Rad = Air1.CirRad*Mtr2Ft;				// Aircraft Turn Radius (feet)
@@ -1041,9 +1043,6 @@ function chngHUDV(Air) {
 	AC1_PitNode.nodeValue = AC1_Pit.toFixed(2);
 	AC1_AoA = Air1.CfLift*10;					// Aircraft AoA
 	AC1_AoANode.nodeValue = AC1_AoA.toFixed(2);
-	AC1_Bnk = PoM360(Air1.AirRot.z);			// Aircraft Bank (deg)
-//	if (AC1_Bnk > 180) AC1_Bnk = 360 - AC1_Bnk;
-	AC1_BnkNode.nodeValue = AC1_Bnk.toFixed(0);
 	//- Air2
 	AC2_Alt = Air2.MapPos.y*Mtr2Ft;				// Aircraft Altitude (feet)
 	AC2_AltNode.nodeValue = AC2_Alt.toFixed(0);
@@ -1051,6 +1050,8 @@ function chngHUDV(Air) {
 	AC2_SpdNode.nodeValue = AC2_Spd.toFixed(0);
 	AC2_Hdg = Air2.AirRot.y;					// Aircraft Heading (deg)
 	AC2_HdgNode.nodeValue = AC2_Hdg.toFixed(0);
+	AC2_Bnk = PoM360(Air2.AirRot.z);			// Aircraft Bank (deg)
+	AC2_BnkNode.nodeValue = AC2_Bnk.toFixed(0);	
 	AC2_Trn = Air2.AirRSp.y/DLTime;				// Aircraft Turn Rate (deg)
 	AC2_TrnNode.nodeValue = AC2_Trn.toFixed(2);
 	AC2_Rad = Air2.CirRad*Mtr2Ft;				// Aircraft Turn Radius (feet)
@@ -1059,9 +1060,7 @@ function chngHUDV(Air) {
 	AC2_PitNode.nodeValue = AC2_Pit.toFixed(2);
 	AC2_AoA = Air2.CfLift*10;					// Aircraft AoA
 	AC2_AoANode.nodeValue = AC2_AoA.toFixed(2);
-	AC2_Bnk = PoM360(Air2.AirRot.z);			// Aircraft Bank (deg)
-//	if (AC2_Bnk > 180) AC2_Bnk = 360 - AC2_Bnk;
-	AC2_BnkNode.nodeValue = AC2_Bnk.toFixed(0);
+	//
 	AC2_InY = OffPos.y;							// Aircraft Intercept Angle
 	AC2_InYNode.nodeValue = AC2_InY.toFixed(2);
 	AC2_OfY = OffRot.y;							// Aircraft OffsetAngle
