@@ -4,11 +4,11 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Jul 2025
+Version dated 28 Jul 2025
 -->
 
 <head>
-<title>ACM Demo - Lag</title>
+<title>ACM Demo</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="styles/main_ACM.css">
 </head>
@@ -203,6 +203,7 @@ let Air1 = {
 		AirObj: new THREE.Object3D(),
 		AirRSp: new THREE.Vector3(0,0,0), // Rotation Speed
 		USDFlg: 0,				// Upside Down Flag
+		AirPPR: new THREE.Vector3(0,0,0),
 		// Airplane Speed
 		SpdKPH: BegSpd,			// Speed in KPH
 		SpdMPS: BegSpd/3.6,
@@ -232,6 +233,7 @@ let Air2 = {
 		AirObj: new THREE.Object3D(),
 		AirRSp: new THREE.Vector3(0,0,0), // Rotation Speed
 		USDFlg: 0,				// Upside Down Flag
+		AirPPR: new THREE.Vector3(0,0,0),
 		// Airplane Speed
 		SpdKPH: BegSpd,			// Spped in KPH
 		SpdMPS: BegSpd/3.6,
@@ -531,7 +533,7 @@ function ToQuads(g) {
 
 function move1GrMap(Grd) {
 	let j = 0;
-	let v = 0; 
+	let v = 0;
 	let max = 0.5*Grd.RCs*Grd.Siz;
 	let min = -max;
 	// Update Z, X and Y-Values
@@ -633,7 +635,7 @@ function move1GrMap(Grd) {
 			for (let j = 0; j < Grd.RCF; j++) {
 				Grd.Ptr[n].visible = false;
 				n = n + 1;
-				if (n > n2) n = n - Grd.RCs; 
+				if (n > n2) n = n - Grd.RCs;
 				if (n < 0) n = n + Grd.Num;
 				if (n > Grd.Num) n = n - Grd.Num;
 			}
@@ -659,6 +661,7 @@ function initAirPln() {
 function moveAirPln() {
 	move1ACraft(Air1);
 	move1ACraft(Air2);
+	console.log(Math.round(Air1.AirPPR.x),Math.round(Air1.AirPPR.y),Math.round(Air1.AirPPR.z));
 }
 
 //= INITIALIZE AIRPLANE ==========//============================================
@@ -743,7 +746,7 @@ function move1ACraft(Air) {
 		let x = -Air.AirObj.position.x;	// Map X Position (in loop = 0)
 		let y = -Air.AirObj.position.y;	// Map Y Position
 		let z =  Air.AirObj.position.z;	// Map Z Position (approaches 0 at 90 degrees)
-		let xz = Math.sqrt(x**2+z**2);  // Horizontal Distance (at 90 degrees, both x and z = 0)
+		let xz = Math.sqrt(x**2+z**2);	// Horizontal Distance (at 90 degrees, both x and z = 0)
 		OffPos.x = PoM360(Mod360(Math.atan2(y,xz)*RadDeg-Air.AirRot.x)); // Vertical Angle
 		OffPos.y = PoM360(Mod360(Math.atan2(x,z)*RadDeg-Air.AirRot.y));	// Horizontal Angle (0-360)
 		// INTERCEPT: OffRot
@@ -782,19 +785,18 @@ function move1ACraft(Air) {
 		Air.InpRot.x =  InpPt1 + InpPt2;
 		// Program sets limits to +/- CfLift
 		//- LAG CIRCLE OVERRIDE ===============================================
-		if (Math.abs(OffRot.y) > 0.5 && rzdif > 0 && Air1.CirRad) { // If Air1 Banked and Air2 following Air1
-//		if (Air1.CirRad && rzdif > 0) { // If Air1 Turning and Air2 following Air1
+		// If OffRot.y > 0.5, Air2 is behind Air1 and Air1 is turning
+		if (Math.abs(OffRot.y) > 0.5 && rzdif > 0 && Air1.CirRad) {
 			// Air1 Center of Rotation
 			let ctrZ = Air1.CirRad*Math.cos((OffRot.y-90)*DegRad); // Z-pos of Air1 radius ctr
 			if (PoMBk1 > 0) ctrZ = -ctrZ; // Make Z-pos negative
 			let ctrZdif = rzdif + ctrZ; // Air2 distance to Z-pos
 			// If Air2 Reaches CtrZ, Can Start Turning
-			if (ctrZdif < 0) { 
+			if (ctrZdif < 0) {
 				// Compute Rate of Turn
 				let B = 90-Math.abs((OffRot.y/2));		
 				let BD = Math.sqrt(rxdif**2+rzdif**2)/2;
-				let AD = Math.abs(BD*Math.tan(B*DegRad));
-				let radius = Math.sqrt(BD**2+AD**2);
+				let radius = BD/Math.cos(B*DegRad);
 				let trnrat = RadDeg*Air.SpdMPF/radius;
 				let trgbnk = (Math.atan(trnrat*Air.SpdMPF/(GrvMPS*DLTime)))*RadDeg;
 				if (PoMBk1 < 0) trgbnk = -trgbnk;
@@ -821,7 +823,7 @@ function move1ACraft(Air) {
 	// However, in air combat, power always at max.  Must change pitch with CfL
 	let ACP = Air.AirRot.x * DegRad
 	let ACB = Air.AirRot.z * DegRad;
-	if (Math.round(Air.InpRot.x) == 0) {	// Setting for current flight path (level, climb or descent)
+	if (Math.round(Air.InpRot.x) == 0) { // Setting for current flight path (level, climb or descent)
 		Air.CfLift = (Weight * Math.cos(ACP))/(DynPrs * WingAr * Math.abs(Math.cos(ACB)));
 		if (Air.USDFlg) Air.CfLift = -Air.CfLift;
 	}
@@ -845,7 +847,7 @@ function move1ACraft(Air) {
 	// Drag
 	let DrgCdi = (CfLftT*CfLftT)/(WingAs*WingEf*Math.PI);	// Cfi = CLift^2 / (Wing Aspect Ratio * Wing Efficiency * pi)
 	let ACDrIF = DrgCdi * QSTval; // Induced Drag = ACLftF^2 / (DynPrs * WingSp^2 * WingEf * PI)
-	let DrgCdp = DrgCd0;		// Total Coefficient of Parasitic Drag
+	let DrgCdp = DrgCd0;		  // Total Coefficient of Parasitic Drag
 	let ACDrPF = DrgCdp * QSTval; // Parasitic Drag =  Cd0 * DynPres * WingA
 	let ACThrF = EnThrF - ACDrPF; // Net Thrust Force
 	let ACTrst = ACThrF * FrcAcc; // Net Thrust Accel
@@ -853,7 +855,7 @@ function move1ACraft(Air) {
 	let ACThrG = ACTrst - GrvThr; // Net Thrust after Gravity +/-
 	// e. Gravity Reducing ACPitch
 	let GrvACP = GrvMPF * Math.cos(ACP); // Gravity opposing Lift and Yaw
-	let GrACPD = (GrvACP / Air.SpdMPF) * RadDeg;	// Degrees +/-
+	let GrACPD = (GrvACP/Air.SpdMPF)*RadDeg; // Degrees +/-
 	// Save Values
 	let PPPDif = ACLftD;		// Pitch Degrees (before Gravity)
 	// Compute Aircraft Pitch Adjustment
@@ -874,6 +876,11 @@ function move1ACraft(Air) {
 	Air.AirPBY.rotation.z = 0;
 	Air.AirPBY.rotation.x = 0;
 	Air.AirPBY.rotation.y = 0;
+	// Pitch Plane Computations
+	Air.AirPPR = euler.setFromQuaternion(quaternion,"YZX");
+	Air.AirPPR.x = Air.AirPPR.x * RadDeg;
+	Air.AirPPR.y = Air.AirPPR.y * RadDeg;
+	Air.AirPPR.z = Air.AirPPR.z * RadDeg;
 	// Load Resulting Values into Variables (for display)
 	Air.AirRot.z = Mod360(-Air.AirObj.rotation.z*RadDeg);
 	Air.AirRot.x = Air.AirObj.rotation.x*RadDeg;
@@ -1027,7 +1034,7 @@ return deg;}
 // Change HUD Values
 function chngHUDV(Air) {
 	//- Air1
-	AC1_Alt = Air1.MapPos.y*Mtr2Ft; 			// Aircraft Altitude (feet)
+	AC1_Alt = Air1.MapPos.y*Mtr2Ft;				// Aircraft Altitude (feet)
 	AC1_AltNode.nodeValue = AC1_Alt.toFixed(0);
 	AC1_Spd = Air1.SpdKPH*Km2Mil;				// Aircraft Speed (KPH)
 	AC1_SpdNode.nodeValue = AC1_Spd.toFixed(0);
