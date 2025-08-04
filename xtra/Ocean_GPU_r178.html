@@ -190,6 +190,7 @@ function rendAll() {
 		if (StatOn) StatOn.update();		// Stats
 	}
 	renderer.renderAsync(scene, camera);	// ### WebGPU requires Async
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
 /*= SKY BOX ==================================================================*/
