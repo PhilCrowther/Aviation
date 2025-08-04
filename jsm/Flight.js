@@ -1,6 +1,6 @@
 //= FLIGHT MODULE ===============================================================
 /*
- * Flight.js (25.05.31)
+ * Flight.js (25.08.04)
  * Copyright 2017-25, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -316,20 +316,18 @@ update() {
 	if (this.air_.SpdMPF <= 0) this.air_.SpdMPF = 0.0001; // Set Minimum Speed to avoid division by zero  211031
 	this.air_.SpdKPH = this.air_.SpdMPF*3.6/this.air_.DLTime;	// (KPH)
 	this.air_.SpdMPS = this.air_.SpdKPH/3.6;	// (MPS)
-	// b1. Compute PSpd (before gravity)
-	ACPrad = this.air_.AirRot.x*this.DegRad;
-	let PSpdZV = this.air_.SpdMPF*Math.abs(Math.cos(ACPrad));
-	// b2. Adjust ACP for Gravity
+	// b. Adjust ACP for Gravity
 	this.air_.AirRot.x = this.air_.AirRot.x-GrvACD; // ### GrdFlg: GrvACD = 0
 	if (this.air_.AirRot.x < -90) this.air_.AirRot.x = -90;	// Prevents you from pitching back up
+	this.air_.AirObj.rotation.x = this.air_.AirRot.x*this.DegRad;
+	// c1. Compute Map Speed - Vertical
 	ACPrad = this.air_.AirRot.x*this.DegRad;
-	this.air_.AirObj.rotation.x = ACPrad;
-	let PSpdYV = this.air_.SpdMPF*Math.sin(ACPrad);	// Vertical speed	
-	// c. Compute Map Speed
-	let ACH = this.air_.AirRot.y*this.DegRad;
-	this.air_.MapSpd.z = PSpdZV*Math.cos(ACH);
-	this.air_.MapSpd.y = PSpdYV;
-	this.air_.MapSpd.x = PSpdZV*Math.sin(ACH);
+	this.air_.MapSpd.y = this.air_.SpdMPF * Math.sin(ACPrad);
+	// c2. Compute Map Speed - Horizontal
+	let GS = air_.SpdMPF * Math.cos(ACPrad);
+	let ACHrad = this.air_.AirRot.y*this.DegRad;
+	this.air_.MapSpd.z = GS * Math.cos(ACHrad);
+	this.air_.MapSpd.x = GS * Math.sin(ACHrad);
 	// d. Compute Map Position
 	this.air_.MapPos.z = this.air_.MapPos.z+this.air_.MapSpd.z;
 	this.air_.MapPos.y = this.air_.MapPos.y+this.air_.MapSpd.y;
@@ -423,7 +421,8 @@ export {Flight, Mod360, PoM360, MaxVal};
 240304:	Save GFmult
 250331: Use **2 to square
 250531: Rename Flight4a as Flight
-250603:	Eliminate makmsh (replaced with Object#D)
+250603:	Eliminate makmsh (replaced with Object3D)
+250804: Simplify Map Speed Comps
 */
 
 /*= FUTURE PLANNED REVISIONS (make as part of version change) ===================
