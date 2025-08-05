@@ -607,6 +607,7 @@ constructor(renderer,wav_) {
 	// Static Targets
 	wav_.Dsp = this.dispMapTexture;
 	wav_.Nrm = this.normMapTexture;
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 };	// End of Initialize
 
 //**************************************|****************************************
@@ -640,16 +641,16 @@ update() {
 			this.renderer.computeAsync(pingPong ? this.pingDspHrzComp : this.pongDspHrzComp);
 		}
 	}
-	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 	for (let i = 0; i < iterations; i++) {	// Vertical Ping/Pong
 		pingPong = !pingPong;
 		this.stepBF.value = i;
 		this.renderer.computeAsync(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
 	}
-	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
+
 	// 5. Displacement
 	this.renderer.computeAsync(this.permutationComp);
-	this.renderer.computeAsync(this.compNormalComp);	
+	this.renderer.computeAsync(this.compNormalComp);
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 };	// End of Update
 
 };	// End of Module
