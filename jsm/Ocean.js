@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================================
 
-// Ocean.js (31 May 2025)
+// Ocean.js (5 Aug 2025)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -602,8 +602,9 @@ constructor(renderer,wav_) {
 		u_gsiz: this.Siz
 	}).compute(this.Res**2)	
 	//= Render ==================================================================
-	this.renderer.computeAsync(this.initSpectrumComp);
-	this.renderer.computeAsync(this.butterflyComp,[1,8,1]);
+	this.renderer.compute(this.initSpectrumComp);
+	this.renderer.compute(this.butterflyComp,[1,8,1]);
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 	// Static Targets
 	wav_.Dsp = this.dispMapTexture;
 	wav_.Nrm = this.normMapTexture;
@@ -640,16 +641,15 @@ update() {
 			this.renderer.computeAsync(pingPong ? this.pingDspHrzComp : this.pongDspHrzComp);
 		}
 	}
-	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 	for (let i = 0; i < iterations; i++) {	// Vertical Ping/Pong
 		pingPong = !pingPong;
 		this.stepBF.value = i;
 		this.renderer.computeAsync(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
 	}
-	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 	// 5. Displacement
 	this.renderer.computeAsync(this.permutationComp);
-	this.renderer.computeAsync(this.compNormalComp);	
+	this.renderer.computeAsync(this.compNormalComp);
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173	
 };	// End of Update
 
 };	// End of Module
@@ -681,4 +681,5 @@ export {Ocean};
 // 241220:				: Added computeAsync (also works with r170)
 // 250131:				: Added TimestampQuery after loops (r173)
 // 250531: Rename as Ocean
+// 250805: Eliminate Async in init, add TimestampQuery after renders; only one TimestampQuery at end of update.
 */
