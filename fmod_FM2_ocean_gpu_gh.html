@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 Jun 2025
+Version dated 5 Aug 2025
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
 
 <head>
-<title>fmod FM2 ocean gpu r178</title>
+<title>fmod FM2 ocean gpu r179.1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_fm2.css">
 </head>
@@ -47,10 +47,10 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/",
+			"three": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -69,7 +69,7 @@ import Stats from 'stats-gl';
 import {Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadAirExt,loadAirInt,moveAirExt,moveAirInt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // r171
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean_r179.js"; // r173 (uses TimestampQuery)
 
 //= NOTES ======================================================================
 //	* Improve Shadows (bias is key)
@@ -584,6 +584,7 @@ function loadAll() {
 	WaitScreen();				// load loading screen
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,context);
+	waves = new Ocean(renderer,wav_); // Init Ocean
 	loadAirObj();
 }
 
@@ -604,10 +605,9 @@ function WaitScreen() {
 
 //= 1 Initialize ===============//==============================================
 
-function initAll() {
+async function initAll() {
 	air_.MapSPS.y = air_.MapPos.y; // Altitude (meters)
 	initSkyBox();
-	waves = new Ocean(renderer,wav_); // Init Ocean
 	grd_.Dsp = wav_.Dsp;
 	grd_.Nrm = wav_.Nrm;
 	grd_.NMS = wav_.NMS;
