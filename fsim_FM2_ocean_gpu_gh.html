@@ -598,10 +598,10 @@ function loadAll() {
 	WaitScreen();				// load loading screen
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,context);
+	waves = new Ocean(renderer,wav_); // Init Ocean
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadObject();				// load objects
-	waves = new Ocean(renderer,wav_); // Init Ocean
 }
 
 //- WAIT SCREEN ----------------//----------------------------------------------
