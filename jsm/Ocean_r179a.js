@@ -602,9 +602,9 @@ constructor(renderer,wav_) {
 		u_gsiz: this.Siz
 	}).compute(this.Res**2)	
 	//= Render ==================================================================
-	this.renderer.compute(this.initSpectrumComp);
-	this.renderer.compute(this.butterflyComp,[1,8,1]);
-//	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
+	this.renderer.computeAsync(this.initSpectrumComp);
+	this.renderer.computeAsync(this.butterflyComp,uniform[1,8,1]);
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 	// Static Targets
 	wav_.Dsp = this.dispMapTexture;
 	wav_.Nrm = this.normMapTexture;
