@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================================
 
-// Ocean.js (31 May 2025)
+// Ocean.js (6 Aug 2025)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -603,11 +603,10 @@ constructor(renderer,wav_) {
 	}).compute(this.Res**2)	
 	//= Render ==================================================================
 	this.renderer.computeAsync(this.initSpectrumComp);
-	this.renderer.computeAsync(this.butterflyComp,[1,8,1]);
+	this.renderer.computeAsync(this.butterflyComp,uniform[1,8,1]); // r179
 	// Static Targets
 	wav_.Dsp = this.dispMapTexture;
 	wav_.Nrm = this.normMapTexture;
-	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
 };	// End of Initialize
 
 //**************************************|****************************************
@@ -646,11 +645,10 @@ update() {
 		this.stepBF.value = i;
 		this.renderer.computeAsync(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
 	}
-
 	// 5. Displacement
 	this.renderer.computeAsync(this.permutationComp);
 	this.renderer.computeAsync(this.compNormalComp);
-	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173	
 };	// End of Update
 
 };	// End of Module
@@ -682,4 +680,5 @@ export {Ocean};
 // 241220:				: Added computeAsync (also works with r170)
 // 250131:				: Added TimestampQuery after loops (r173)
 // 250531: Rename as Ocean
+// 250806:				: Insert "uniform" before square brackets in butterfly compute.
 */
