@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Aug 2025
+Version dated 6 Aug 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -107,7 +107,7 @@ import {loadIsland,initIsland,moveIsland, // Islands
 		loadMyPeep,moveMyPeep,	// Rigged Animated People
 		loadMyCrew,moveMyCrew,	// Ship Crew
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean_r179.js"; // r173 (uses TimestampQuery)
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
 
 /*= GENERAL ====================//==============================================
 
@@ -598,7 +598,6 @@ function loadAll() {
 	WaitScreen();				// load loading screen
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,context);
-	waves = new Ocean(renderer,wav_); // Init Ocean
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadObject();				// load objects
@@ -632,7 +631,7 @@ async function initAll() {
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	initObject();				// Determine relative XZ location of all objects
 	// Grid
-//	waves = new Ocean(renderer,wav_); // Init Ocean
+	waves = new Ocean(renderer,wav_); // Init Ocean
 	grd_.MSP.y = air_.MapSPS.y;
 	grd_.Dsp = wav_.Dsp;
 	grd_.NMS = wav_.NMS;

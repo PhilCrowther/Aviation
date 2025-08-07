@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Aug 2025
+Version dated 6 Aug 2025
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -62,7 +62,7 @@ import Stats from 'stats-gl';
 // Special Modules
 import {Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // r171
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean_r179.js"; // r173 (uses TimestampQuery)
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
 
 //= NOTES ======================================================================
 //	* Improve Shadows (bias is key)
@@ -502,7 +502,6 @@ function loadAll() {
 	WaitScreen();			// load loading screen
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,context);
-	waves = new Ocean(renderer,wav_); // Init Ocean
 	loadAirObj();
 }
 
@@ -526,6 +525,7 @@ function WaitScreen() {
 async function initAll() {
 	air_.MapSPS.y = air_.MapPos.y; // Altitude (meters)
 	initSkyBox();
+	waves = new Ocean(renderer,wav_); // Init Ocean
 	grd_.Dsp = wav_.Dsp;
 	grd_.Nrm = wav_.Nrm;
 	grd_.NMS = wav_.NMS;

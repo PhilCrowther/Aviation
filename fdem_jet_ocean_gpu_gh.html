@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Aug 2025
+Version dated 6 Aug 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -58,7 +58,7 @@ import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMes
 import Stats from "stats-gl";
 // Custom Modules
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // Allows fine-tune of EMI
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean_r179.js"; // r173 (uses TimestampQuery)
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
 
 //= NOTES
 //- Sections relating to my Camera Rotator are designated MY CAMERA
@@ -412,13 +412,13 @@ function loadAll() {
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,context);
 	loadJetExh();
-	waves = new Ocean(renderer,wav_); // Initialize Ocean
 }
 
 //= 1 INITIALIZE (called by loading manager) ===================================
 function initAll() {
 	initCamera(camera,cam_);
 	initSkyBox();				// Sky, Fog and Sun
+	waves = new Ocean(renderer,wav_); // Initialize Ocean
 	grd_.Dsp = wav_.Dsp;
 	grd_.Nrm = wav_.Nrm;
 	grd_.NMS = wav_.NMS;
