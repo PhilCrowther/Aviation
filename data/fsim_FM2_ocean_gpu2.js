@@ -483,8 +483,8 @@ let myp_ = {
 		DlyBeg: [[0,3,0,99,0]],	// Delay Time Between Animation Segments (Secs)
 		DlyPos: [[0,60,0,0,0]],	// Absolute Position in Range where Delay Starts
 		DlyMid: [[0,3,0,0,0]],	// Delay Time Within Animation Segments (Secs)
-		DlyFlg: [0],			// Flag for Middle Delay - So Only Delay Once
-		DlyRem: [0],			// Delay Time Remaining (Shared)
+		DlyFlg: [[0,0,0,0,0]],	// Flag for Middle Delay - So Only Delay Once
+		DlyRem: [[0,0,0,0,0]],	// Delay Time Remaining (Shared)
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
 		ObjViz: [1],			// Visibility Flag On
