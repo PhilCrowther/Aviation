@@ -1,5 +1,5 @@
 /*
- * Objects.js (vers 25.06.02)
+ * Objects.js (vers 25.08.10)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -417,7 +417,7 @@ function moveMyPeep(myp_,tim_) {
 				// Or Move On to Next Animation?
 				else {
 					myp_.SegRef[n] = myp_.SegRef[n] + 1;
-					if (myp_.SegRef[n] == myp_.SegNum[n]) myp_.SegRef[n] = 0;		
+//					if (myp_.SegRef[n] == myp_.SegNum[n]) myp_.SegRef[n] = 0;		
 					myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]];
 					myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Start Delay
 				}
@@ -558,4 +558,5 @@ export {loadIsland,initIsland,moveIsland,
 250523: Added loadMyCrew/moveMyCrew
 250528: Added animations to loadMyCrew/moveMyCrew
 250529: Marged this Objects Module with Vehicles Module
+250810: No Rep of Plane Handler sequence
 */
