@@ -455,41 +455,41 @@ let xss_ = {
 
 //= MY PEOPLE ==================//==============================================
 //- Animated Rigged Characters: Linked -----------------------------------------
-let myp_ = {
+let myp_ = {		
 		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/Brian_Wave2.glb"],
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/Brian_Wave3.glb"],
 		ObjTxt: [0],
 		ObjAdr: [0],			// Loaded Object
 		ObjSiz: [1],			// Scale
 		RndOrd: [0],			// renderOrder
 		ObjRot: [0],			// Rotation (degrees)
 		MapPos: [0],			// Relative Position (if parent)
-		ObjRef: [0],			// Parent, if any
+		ObjRef: [0],			// Parent, if any	
 		// Animation Action
 		AnmAct: [0],			// Animation Action
 		AnmMxr: [0],			// Animation Mixer
 		AnmTim: [0],			// Animation
 		AnmRep: [0],			// Number of Times to Repeat
-		AnmRng: [80],
+		AnmRng: [125],
 		// Animation Segments (within single Animation)
-		SegNum: [2],			// Number of Segments
+		SegNum: [5],			// Number of Segments
 		SegRef: [0],			// Currently Playing
-		SegBeg: [[0,40]],		// Animation Segment Beg (Absolute Position)
-		SegEnd: [[40,80]], 		// Animation Segment End (Absolute Position)
+		SegBeg: [[0,40,80,96,108]],	// Animation Segment Beg (Absolute Position)
+		SegEnd: [[40,80,96,108,125]], // Animation Segment End (Absolute Position)
 		// Repetitions
-		RepNum: [[10,0]],		// Number of Times to Repeat Before Moving On
-		RepRem: [0],			// Animation Reps Remaining		
+		RepNum: [[4,0,0,10,0]],	// Number of Times to Repeat Before Moving On
+		RepRem: [0],			// Animation Reps Remaining	
 		// Delay
-		DlyBeg: [[0,3]],		// Delay Time Between Animation Segments (Secs)
-		DlyPos: [[0,60]],		// Absolute Position in Range where Delay Starts
-		DlyMid: [[0,3]],		// Delay Time Within Animation Segments (Secs)
+		DlyBeg: [[0,3,0,0,0]],	// Delay Time Between Animation Segments (Secs)
+		DlyPos: [[0,60,0,0,0]],	// Absolute Position in Range where Delay Starts
+		DlyMid: [[0,3,0,0,0]],	// Delay Time Within Animation Segments (Secs)
 		DlyFlg: [0],			// Flag for Middle Delay - So Only Delay Once
 		DlyRem: [0],			// Delay Time Remaining (Shared)
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
 		ObjViz: [1],			// Visibility Flag On
 		// Segment Names (Optional)
-		SegNam: [["Chocks Removed","Set Brakes"]],
+		SegNam: [["Chocks Removed","Set Brakes","","Engine Runup","Go!!!"]],
 	};
 
 //- Ship Crew (Not Rigged) -----------------------------------------------------
@@ -910,7 +910,7 @@ let cam_ = {
 		CamNum: CamNum,
 		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
 		// Camera
-		CamLLD: 0, // cam_.MshRot Lat, Lon, Dst
+		CamLLD: 0, 				// cam_.MshRot Lat, Lon, Dst
 		CamAdj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		CamMMD: 0,				// In/Out - min,max,spd
 		// Rotator
