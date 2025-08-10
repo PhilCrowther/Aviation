@@ -462,8 +462,8 @@ let myp_ = {
 		ObjAdr: [0],			// Loaded Object
 		ObjSiz: [1],			// Scale
 		RndOrd: [0],			// renderOrder
-		ObjRot: [new THREE.Euler(0,0,0)], // Rotation (degrees)
-		MapPos: [new THREE.Vector3(0,-1.2,0)], // Relative Position (if parent)
+		ObjRot: [0],			// Rotation (degrees)
+		MapPos: [0],			// Relative Position (if parent)
 		ObjRef: [0],			// Parent, if any	
 		// Animation Action
 		AnmAct: [0],			// Animation Action
