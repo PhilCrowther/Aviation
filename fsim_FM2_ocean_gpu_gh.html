@@ -1146,15 +1146,11 @@ function moveShpAlt() {
 		}
 		//= ANIMATION SEQUENCE =================================================
 		// Run-Up
-		if (myp_.SegRef[0] == 2) { // Enable Throttle
-			myp_.DlyRem[0] = 0;	// End Delay for Animation
-			ThrFlg = 0;			// Enable Throttle
-//			air_.PwrPct = 0;
-		}
+		if (myp_.SegRef[0] == 2) ThrFlg = 0; // Enable Throttle
+		if (myp_.SegRef[0] == 2 && air_.PwrPct) myp_.DlyRem[0] = 0; // If Throttle Moved, Begin Sequenc
 		// Final Animation
 		if (AnmFlg && myp_.SegRef[0] == myp_.SegNum[0]) AnmFlg = 0;		
-		//= TAKE-OFF ===========================================================
-		
+		//= TAKE-OFF ===========================================================		
 		if (air_.MovFlg && air_.SpdKPH > ShpKPH) air_.MovFlg = 0; // Unlock from deck if moving faster than Ship
 		//- If Locked to Deck --------------------------------------------------
 		if (air_.MovFlg) {	// Otherwise remain locked to deck
@@ -1182,9 +1178,6 @@ function moveShpAlt() {
 			// Point Same Direction as Carrier
 			// [WIP]
 		}
-		//- Animation Sequence -------------------------------------------------
-		//	
-		console.log(myp_.SegRef[0], AnmFlg, air_.MovFlg);
 	}
 }
 
