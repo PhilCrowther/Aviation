@@ -472,24 +472,24 @@ let myp_ = {
 		AnmRep: [0],			// Number of Times to Repeat
 		AnmRng: [125],
 		// Animation Segments (within single Animation)
-		SegNum: [5],			// Number of Segments (One for each character)
+		SegNum: [4],			// Number of Segments (One for each character)
 		SegRef: [0],			// Currently Playing (One for each character)
-		SegBeg: [[0,40,80,96,108]],	// Animation Segment Beg (Absolute Position)
-		SegEnd: [[40,80,96,108,125]], // Animation Segment End (Absolute Position)
+		SegBeg: [[ 0,40, 96,108]], // Animation Segment Beg (Absolute Position)
+		SegEnd: [[40,96,108,125]], // Animation Segment End (Absolute Position)
 		// Repetitions
-		RepNum: [[4,0,0,10,0]],	// Number of Times to Repeat Before Moving On
+		RepNum: [[1,0,10,0]],	// Number of Times to Repeat Before Moving On
 		RepRem: [0],			// Animation Reps Remaining (One for each character)
 		// Delay
-		DlyBeg: [[0,3,0,99,0]],	// Delay Time Between Animation Segments (Secs)
-		DlyPos: [[0,60,0,0,0]],	// Absolute Position in Range where Delay Starts
-		DlyMid: [[0,3,0,0,0]],	// Delay Time Within Animation Segments (Secs)
+		DlyBeg: [[0, 1,99,0]], // Delay Time Between Animation Segments (Secs)
+		DlyPos: [[0,60, 0,0]], // Absolute Position in Range where Delay Starts
+		DlyMid: [[0, 3, 0,0]], // Delay Time Within Animation Segments (Secs)
 		DlyFlg: [0],			// Flag for Middle Delay - So Only Delay Once (One for each character)
 		DlyRem: [0],			// Delay Time Remaining (Secs) (One for each character)
 		// Visibility
 		MaxDst: 1000,			// Max Distance where visible (meters)
 		ObjViz: [1],			// Visibility Flag On (One for each character)
 		// Segment Names (Optional)
-		SegNam: [["Chocks Removed","Set Brakes","","Engine Runup","Go!!!"]],
+		SegNam: [["Chocks Removed","Set Brakes","Transition","Engine Runup","Take-Off"]],
 	};
 
 //- Ship Crew (Not Rigged) -----------------------------------------------------
