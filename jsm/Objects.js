@@ -397,37 +397,45 @@ function moveMyPeep(myp_,tim_) {
 	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
+	// For Each Character (n)
 	for (let n = 0; n < myp_.ObjNum; n++) {
-		//= Play Animations ----//----------------------------------------------
-		if (myp_.ObjViz[n]) {	// If in Visual Range
-			// Set Position - AnmTim = time on timeline - setTime converts to position
-			myp_.AnmMxr[n].setTime(myp_.AnmTim[n]);
-			//. Update or Delay Counter .........................................
-			// If No Delay, Update Positon Time
-			if (!myp_.DlyRem[n]) myp_.AnmTim[n] = myp_.AnmTim[n] + tim_.DifTim;
-			// If Delay, Don't Change Position Time
-			else {
-				myp_.DlyRem[n] = myp_.DlyRem[n] - tim_.DifTim;
-				if (myp_.DlyRem[n] < 0) myp_.DlyRem[n] = 0;
-			}
-			//. If Exceed Max, Repeat or Move to Next Animation
-			if (myp_.AnmTim[n] * anmfps > (myp_.SegEnd[n][myp_.SegRef[n]])) {
-				// Repeat Animation?
-				if (myp_.RepRem[n]) myp_.RepRem[n] = myp_.RepRem[n] - 1;
-				// Or Move On to Next Animation?
+		if (myp_.SegRef[n] != myp_.SegNum[n]) { // If Have Not Reached Max Segments
+			//= Play Animations ----//----------------------------------------------
+			if (myp_.ObjViz[n]) {	// If in Visual Range
+				// Set Position - AnmTim = time on timeline - setTime converts to position
+				myp_.AnmMxr[n].setTime(myp_.AnmTim[n]);
+				//. Update or Delay Counter .........................................
+				// If No Delay, Update Position Time
+				if (!myp_.DlyRem[n]) myp_.AnmTim[n] = myp_.AnmTim[n] + tim_.DifTim;
+				// If Delay, Don't Change Position Time
 				else {
-					myp_.SegRef[n] = myp_.SegRef[n] + 1;
-//					if (myp_.SegRef[n] == myp_.SegNum[n]) myp_.SegRef[n] = 0;		
-					myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]];
-					myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Start Delay
+					myp_.DlyRem[n] = myp_.DlyRem[n] - tim_.DifTim;
+					if (myp_.DlyRem[n] < 0) myp_.DlyRem[n] = 0;
 				}
-				myp_.AnmTim[n] = myp_.SegBeg[n][myp_.SegRef[n]]/anmfps; // old or new start time
-				myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // load delay flag = delay time	
-			}
-			//	When Reach Mid Delay Time, Set Delay Counter
-			if (myp_.DlyFlg[n] && myp_.AnmTim[n] > myp_.DlyFlg[n]) {
-				myp_.DlyRem[n] = myp_.DlyMid[n][myp_.SegRef[n]];
-				myp_.DlyFlg[n] = 0; // so don't keep repeating delay
+				//. If Exceed End, Repeat or Move to Next Animation
+				if (myp_.AnmTim[n] * anmfps > (myp_.SegEnd[n][myp_.SegRef[n]])) {
+					// Repeat Animation?
+					if (myp_.RepRem[n]) myp_.RepRem[n] = myp_.RepRem[n] - 1;
+					// Or Move On to Next Animation?
+					else {
+						myp_.SegRef[n] = myp_.SegRef[n] + 1;
+						if (myp_.SegRef[n] != myp_.SegNum[n]) {		
+							myp_.RepRem[n] = myp_.RepNum[n][myp_.SegRef[n]];
+							myp_.DlyRem[n] = myp_.DlyBeg[n][myp_.SegRef[n]]; // Start Delay
+						}
+					}
+					if (myp_.SegRef[n] != myp_.SegNum[n]) {
+						myp_.AnmTim[n] = myp_.SegBeg[n][myp_.SegRef[n]]/anmfps; // old or new start time
+						myp_.DlyFlg[n] = myp_.DlyPos[n][myp_.SegRef[n]]/anmfps; // load delay flag = delay time
+					}
+				}
+				if (myp_.SegRef[n] != myp_.SegNum[n]) {
+					//	When Reach Mid Delay Time, Set Delay Counter
+					if (myp_.DlyFlg[n] && myp_.AnmTim[n] > myp_.DlyFlg[n]) {
+						myp_.DlyRem[n] = myp_.DlyMid[n][myp_.SegRef[n]];
+						myp_.DlyFlg[n] = 0; // so don't keep repeating delay
+					}
+				}
 			}
 		}
 		//- Turn On or Off Based on Distance -----------------------------------
