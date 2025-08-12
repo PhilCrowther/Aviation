@@ -477,10 +477,10 @@ let myp_ = {
 		SegBeg: [[ 0,40, 96,108]], // Animation Segment Beg (Absolute Position)
 		SegEnd: [[40,96,108,125]], // Animation Segment End (Absolute Position)
 		// Repetitions
-		RepNum: [[0,0,10,0]],	// Number of Times to Repeat Before Moving On
+		RepNum: [[1,0,10,0]],	// Number of Times to Repeat Before Moving On
 		RepRem: [0],			// Animation Reps Remaining (One for each character)
 		// Delay
-		DlyBeg: [[0, 0,99,0]], // Delay Time Between Animation Segments (Secs)
+		DlyBeg: [[0, 1,99,0]], // Delay Time Between Animation Segments (Secs)
 		DlyPos: [[0,60, 0,0]], // Absolute Position in Range where Delay Starts
 		DlyMid: [[0, 3, 0,0]], // Delay Time Within Animation Segments (Secs)
 		DlyFlg: [0],			// Flag for Middle Delay - So Only Delay Once (One for each character)
