@@ -1066,17 +1066,17 @@ let key_ = {
 		Paws:	80,				// Pause (p)
 		Auto:	65,				// Autopilot (a)
 		Info:	73,				// Info (i)
-		RSet:	82,				// Reset (r)
+//		RSet:	82,				// Reset (r)
 		//-	Camera View Keys -----------//----------------------------------------------
-		U45flg:	0,					// Up 45 deg
-		D45flg:	0,					// Down 45 deg
-		L45flg:	0,					// Left 45 deg (315 deg)
-		R45flg:	0,					// Right 45 deg
-		L90flg:	0,					// Left 90 deg (270 deg)
-		R90flg:	0,					// Right 90 deg
-		LBkflg:	0,					// Left Back 45 deg (225 deg)
-		RBkflg:	0,					// Right Back 45 deg (135 deg)
-		CBkflg:	0,					// Center Back (180 degrees)
+		U45flg:	0,				// Up 45 deg
+		D45flg:	0,				// Down 45 deg
+		L45flg:	0,				// Left 45 deg (315 deg)
+		R45flg:	0,				// Right 45 deg
+		L90flg:	0,				// Left 90 deg (270 deg)
+		R90flg:	0,				// Right 90 deg
+		LBkflg:	0,				// Left Back 45 deg (225 deg)
+		RBkflg:	0,				// Right Back 45 deg (135 deg)
+		CBkflg:	0,				// Center Back (180 degrees)
 	}
 
 //- POINTER LOCK CONTROL -------//----------------------------------------------
