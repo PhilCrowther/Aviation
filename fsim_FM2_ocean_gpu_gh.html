@@ -1764,7 +1764,7 @@ function onDocumentKeyDown(event) {
 		gen_.MYGFlg = 1;
 	}
 	// Reset
-	if (event.keyCode == key_.RSet) posnRSet();		// Do Reset	
+//	if (event.keyCode == key_.RSet) posnRSet();		// Do Reset	
 	// Toggle
 	if (event.keyCode == key_.Paws) toglPaws();		// Toggle Pause
 	if (event.keyCode == key_.Auto) toglAuto();		// Toggle AutoPilot
@@ -1821,7 +1821,7 @@ function onDocumentKeyUp(event) {
 }
 
 //- Reset Position -------------//----------------------------------------------
-function posnRSet() {
+function posnRSet() { // INOP for now (needs to work only on deck)
 	// CVE
 	air_.MovFlg = 1; // Flag
 	air_.PwrPct = 0;
