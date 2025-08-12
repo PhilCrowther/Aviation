@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Aug 2025
+Version dated 12 Aug 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -583,6 +583,9 @@ let instructions = document.getElementById("instructions");
 		blocker.style.display = "block";
 		instructions.style.display = "";
 	});
+//- Other
+let ThrFlg = 1;					// On CVE, Throttle Disabled Until Animation Done
+let AnmFlg = 1;					// Set to Zero When Animation Complete
 
 /*******************************************************************************
 *
@@ -1118,29 +1121,42 @@ function moveMinAlt() {
 
 //- Subroutine: Min Alt for Moving Carrier -------------------------------------
 function moveShpAlt() {
-	gen_.InpBrk = 0;					// Default = no brake
+	gen_.InpBrk = 0;			// Default = no brake
 	air_.ShpPit = 0;			// Default
 	// Recompute GrdZed
 	let ZDst = xsh_.MapPos[0].z - air_.MapPos.z; // Z-distance from ship center
 	let YDif = ZDst * Math.sin(xsh_.ObjRot[0].x); // Y-change caused by ship pitch
 	air_.GrdZed = alt_.Alt[1] - YDif;
-	//
-	if (air_.GrdFlg) {		// If Landed
-		if (air_.PwrPct < 0.5 && anm_.thkpos < 180) gen_.InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
+	// If On Deck
+	if (air_.GrdFlg) {
 		let ShpKPH = xsh_.SpdMPS[0]*3.6; // Ship speed
-		if (!air_.MovFlg) {
-			if (air_.SpdKPH <= ShpKPH) { // If airplane speed <= Ship speed, lock to deck	
-				air_.MovFlg = 1; // Flag
-				gen_.InpBrk = 0;	// Brake off
-				let XOff = air_.MapPos.x - xsh_.MapPos[0].x;
-				let ZOff = air_.MapPos.z - xsh_.MapPos[0].z; // Z-distance from ship center
-				xsh_.ShpLok[0].position.x = XOff;
-				xsh_.ShpLok[0].position.z = ZOff;
-				xsh_.ShpLok[0].add(air_.AirObj);
-				if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
-			}
+		//= LANDING ============================================================
+		if (air_.PwrPct < 0.5 && anm_.thkpos < 180) gen_.InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
+		//- Lock to Deck -------------------------------------------------------
+		// 	Note: This Will Keep Re-Locking to Deck if AirSpd < ShpSpd
+		if (!air_.MovFlg && air_.SpdKPH < ShpKPH) { // If airplane speed <= Ship speed, lock to deck	
+			air_.MovFlg = 1; // Flag 
+			gen_.InpBrk = 0; // Brake off
+			let XOff = air_.MapPos.x - xsh_.MapPos[0].x;
+			let ZOff = air_.MapPos.z - xsh_.MapPos[0].z; // Z-distance from ship center
+			xsh_.ShpLok[0].position.x = XOff;
+			xsh_.ShpLok[0].position.z = ZOff;
+			xsh_.ShpLok[0].add(air_.AirObj); // Lock to Deck
+			if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
 		}
+		//= ANIMATION SEQUENCE =================================================
+		// Run-Up
+		if (myp_.SegRef[0] == 3) { // Enable Throttle
+			myp_.DlyRem[0] = 0;	// End Delay for Animation
+			ThrFlg = 0;			// Enable Throttle
+//			air_.PwrPct = 0;
+		}
+		// Final Animation
+		if (AnmFlg && myp_.SegRef[0] == 5) AnmFlg = 0;		
+		//= TAKE-OFF ===========================================================
+		
 		if (air_.MovFlg && air_.SpdKPH > ShpKPH) air_.MovFlg = 0; // Unlock from deck if moving faster than Ship
+		//- If Locked to Deck --------------------------------------------------
 		if (air_.MovFlg) {	// Otherwise remain locked to deck
 			sunLight.shadow.camera.far = sky_.SunDst+2*sky_.ShdBox; // Default on deck
 			// Recompute Speed and Position
@@ -1151,7 +1167,7 @@ function moveShpAlt() {
 			air_.MapSPS.x = air_.MapSpd.x;
 			air_.MapSPS.z = air_.MapSpd.z;			
 			// Recompute air_.Spd
-			if (air_.PwrPct < 0.5) {
+			if (AnmFlg) {
 				air_.SpdKPH = air_.SpdMPS = 0;
 				air_.ShpPit = -xsh_.ObjRot[0].x;
 			}
@@ -1166,6 +1182,9 @@ function moveShpAlt() {
 			// Point Same Direction as Carrier
 			// [WIP]
 		}
+		//- Animation Sequence -------------------------------------------------
+		//	
+		console.log(myp_.SegRef[0], AnmFlg, air_.MovFlg);
 	}
 }
 
@@ -1686,15 +1705,17 @@ function onDocumentMouseUp(event) {
 //- Mousewheel -----------------//----------------------------------------------
 function onDocumentMouseWheel(event) {
 	event.preventDefault();
-	gen_.PwrDif = - event.deltaY * gen_.PwrMul; // Increment = 1%
-	Throtl = Throtl + gen_.PwrDif;
-	if (Throtl > 1) {
-		Throtl = 1;
-		gen_.PwrDif = 0;
-	}
-	if (Throtl < 0) {
-		Throtl = 0;
-		gen_.PwrDif = 0;
+	if (!ThrFlg) { // On CVE, Engine Enabled
+		gen_.PwrDif = - event.deltaY * gen_.PwrMul; // Increment = 1%
+		Throtl = Throtl + gen_.PwrDif;
+		if (Throtl > 1) {
+			Throtl = 1;
+			gen_.PwrDif = 0;
+		}
+		if (Throtl < 0) {
+			Throtl = 0;
+			gen_.PwrDif = 0;
+		}
 	}
 }
 
