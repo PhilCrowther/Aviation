@@ -1,0 +1,192 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ocean WebGPU Panels</title>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<style>
+body {
+	overflow: hidden;
+	margin:0;
+	color: black;
+	font-family: Courier;
+	font-size: 20pt;
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+		}
+	}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import {texture, textureStore, wgslFn, instanceIndex, positionLocal, code, uniform, timerLocal, vec2, time, vec3, storage, vec4} from 'three/tsl';
+import Stats from 'stats-gl';
+
+//= VARIABLES ==================//==============================================
+let butterflyComp;
+let GrdSiz = 512;				// Size of Smallest Grid Square (meters)
+let GrdRes = 512;
+let GrdSeg = 512;				// Segments per Plane (256 = OK, 512 = too much)
+let Choppy = 1;
+let wav_ = {
+		// Sources
+		Res: GrdRes,			// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
+		// Results
+		Dsp: 0,					// The Displacement Map
+		Nrm: 0,					// The Normal Map
+	};
+let StatOn = 1;					// Stats ((0 = off, 1 = on)
+
+//= BASIC SETUP ================================================================
+let	container = document.createElement('div');
+	document.body.appendChild(container);
+let	scene = new THREE.Scene();
+	scene.background = new THREE.Color(0x1f1f1f);
+//- Renderer
+let	renderer = new THREE.WebGPURenderer({antialias: true});
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	document.body.appendChild(renderer.domElement);
+//- Camera
+let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,5000);
+	camera.position.set(0,0,150);
+//- Controls
+	window.addEventListener('resize',onWindowResize);
+
+//= PROGRAM ====================================================================
+	initAll();
+
+//= INITIALIZE =================//==============================================
+
+function initAll() {
+	initOcean(renderer,wav_);
+	// Show stats
+	if (StatOn) {				// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(StatOn.dom);
+	}
+}
+
+//= RENDER =====================//==============================================
+
+function rendAll() {
+	if (StatOn) StatOn.update(); // Stats
+	renderer.renderAsync(scene,camera);
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+}
+
+//= OCEAN ======================================================================
+
+//- INIT -----------------------------------------------------------------------
+
+function initOcean(renderer,wav_) {
+	//- Create Buffers ---------------------------------------------------------
+	let butterflyBuffer = new THREE.StorageBufferAttribute(new Float32Array(Math.log2(wav_.Res)*wav_.Res*4),4);
+
+
+	//= Butterfly Shader =======================================================
+	let butterflyWGSL = wgslFn(`
+		fn computeWGSL( 
+			w_bfly: ptr<storage, array<vec4<f32>>,read_write>,
+			indx: u32, 
+			N: f32,
+		) -> void {
+			var logN = log2(N);
+			var posX = f32(indx) % logN;
+			var posY = floor(f32(indx)/logN);
+			const PI: f32 = 3.1415926;
+			var k: f32 = (posY * N/pow(2, posX+1)) % N;
+			var twiddle: vec2<f32> = vec2<f32>(cos(2*PI*k/N), sin(2*PI*k/N));
+			var butterflyspan = pow(2, f32(posX));
+			let idx = u32(posY) * u32(logN) + u32(posX);
+			var butterflywing: i32 = select(0, 1, posY % pow(2, posX+1) < pow(2, posX));
+			var uY = u32(posY);
+			if(u32(posX) == 0){
+				if(butterflywing == 1){
+					w_bfly[idx] = vec4f(twiddle,reverseBits(uY, N),reverseBits(uY+1, N));
+				}
+				else{
+					w_bfly[idx] = vec4f(twiddle,reverseBits(uY-1, N),reverseBits(uY, N));
+				}
+			}
+			else{
+				if(butterflywing == 1){
+					w_bfly[idx] = vec4f(twiddle,posY,posY+butterflyspan);
+				}
+				else{
+					w_bfly[idx] = vec4f(twiddle,posY-butterflyspan,posY);
+				}
+			}
+		}
+		fn reverseBits(indx: u32, N: f32) -> f32 {
+			var bitReversedIndex: u32 = 0;
+			var numBits: u32 = u32(log2(N));
+			for (var i: u32 = 0; i < numBits; i = i + 1) {
+				bitReversedIndex = bitReversedIndex | (((indx >> i) & 1) << (numBits - i - 1));
+			}
+			return f32(bitReversedIndex);
+		}
+	`);
+
+	//= Instructions ===========================================================
+	//- Butterfly	
+	let butterfly = butterflyWGSL({ 
+		w_bfly: storage(butterflyBuffer,'vec4',butterflyBuffer.count),
+		indx: instanceIndex,
+		N: wav_.Res,
+	}).compute(Math.log2(wav_.Res)*wav_.Res);	
+	//= Render =================================================================
+	renderer.computeAsync(butterfly);
+
+	//= Display ================================================================
+	let siz = 50;
+	//- Butterfly --------------------------------------------------------------
+	let butterflyTexture = new THREE.DataTexture(butterflyBuffer,Math.log2(wav_.Res),wav_.Res);
+		butterflyTexture.format = THREE.RGBAFormat;
+//		butterflyTexture.magFilter = butterflyTexture.minFilter = THREE.NearestFilter;
+		butterflyTexture.magFilter = THREE.LinearFilter;
+		butterflyTexture.minFilter = THREE.LinearMipMapLinearFilter;
+		butterflyTexture.type = THREE.FloatType;
+//		butterflyTexture.needsUpdate = true;	// ### ERR
+	let matB = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(butterflyTexture),
+	});
+	let meshB = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matB);
+	meshB.position.set(-0.505*siz,0,0);
+	scene.add(meshB);
+}
+
+//= WINDOW RESIZE ==============================================================
+
+function onWindowResize() {
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	const aspect = window.innerWidth / window.innerHeight;
+	const frustumHeight = camera.top - camera.bottom;
+	camera.left = - frustumHeight * aspect / 2;
+	camera.right = frustumHeight * aspect / 2;
+	camera.updateProjectionMatrix();
+	rendAll();
+}
+
+</script>
+</body>
+</html>
