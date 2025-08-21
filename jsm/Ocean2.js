@@ -124,7 +124,7 @@ constructor(renderer,wav_) {
 	this.pongTransformTexture.magFilter = this.pongTransformTexture.minFilter = NearestFilter;
 	this.dispMapTexture.magFilter = LinearFilter;
 	this.dispMapTexture.minFilter = LinearMipMapLinearFilter;
-	this.dispMapTexture.generateMipmaps = true;
+//	this.dispMapTexture.generateMipmaps = true;
 	this.bigrMapTexture.magFilter = LinearFilter;
 	this.bigrMapTexture.minFilter = LinearMipMapLinearFilter;
 	this.bigrMapTexture.generateMipmaps = true;
@@ -447,7 +447,7 @@ constructor(renderer,wav_) {
 			input.x = input.z;	// Imaginary va
 			// Increase amplitude
 			input.x = input.x*1.5;
-			input.y = input.y*2.25;
+			input.y = input.y*1.5;
 			input.z = input.z*1.5;
 			textureStore(w_disp,idx,input);
 		}     
