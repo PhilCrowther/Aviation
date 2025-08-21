@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================================
 
-// Ocean.js (8 Aug 2025)
+// Ocean.js (21 Aug 2025)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -109,9 +109,9 @@ constructor(renderer,wav_) {
 	this.pongTransformTexture.type = FloatType;
 	this.dispMapTexture = new StorageTexture(this.Res,this.Res);
 	this.dispMapTexture.type = FloatType;
-//	this.bigrMapTexture = new THREE.StorageTexture(4*wav_.Res,4*wav_.Res);	// 1024x1024
-	this.bigrMapTexture = new THREE.StorageTexture(wav_.Res,wav_.Res);
-	this.bigrMapTexture.type = THREE.FloatType;
+	this.bigrMapTexture = new StorageTexture(4*this.Res,4*this.Res);	// 1024x1024
+//	this.bigrMapTexture = new StorageTexture(this.Res,this.Res);
+	this.bigrMapTexture.type = FloatType;
 	this.normMapTexture = new StorageTexture(this.Res,this.Res);
 	this.normMapTexture.type = FloatType;
 	//- Adjustments - Filter
@@ -125,8 +125,8 @@ constructor(renderer,wav_) {
 	this.dispMapTexture.magFilter = LinearFilter;
 	this.dispMapTexture.minFilter = LinearMipMapLinearFilter;
 	this.dispMapTexture.generateMipmaps = true;
-	this.bigrMapTexture.magFilter = THREE.LinearFilter;
-	this.bigrMapTexture.minFilter = THREE.LinearMipMapLinearFilter;
+	this.bigrMapTexture.magFilter = LinearFilter;
+	this.bigrMapTexture.minFilter = LinearMipMapLinearFilter;
 	this.bigrMapTexture.generateMipmaps = true;
 	this.normMapTexture.magFilter = LinearFilter;
 	this.normMapTexture.minFilter = LinearMipMapLinearFilter;
@@ -139,7 +139,7 @@ constructor(renderer,wav_) {
 	this.pingTransformTexture.wrapS = this.pingTransformTexture.wrapT = ClampToEdgeWrapping;
 	this.pongTransformTexture.wrapS = this.pongTransformTexture.wrapT = ClampToEdgeWrapping;
 	this.dispMapTexture.wrapS = this.dispMapTexture.wrapT = RepeatWrapping;
-	this.bigrMapTexture.wrapS = this.dispMapTexture.wrapT = THREE.RepeatWrapping;
+	this.bigrMapTexture.wrapS = this.dispMapTexture.wrapT = RepeatWrapping;
 	this.normMapTexture.wrapS = this.normMapTexture.wrapT = RepeatWrapping;
 	//- Create Initial Phase Array ---------------------------------------------
 	this.phaseArray = new window.Float32Array(4*(this.Res**2));
@@ -461,16 +461,11 @@ constructor(renderer,wav_) {
 			storTex: texture_storage_2d<rgba32float,write>,
 			indxTex: u32,
 		) -> void {
-			// Compute Desination vUv (special)
+			// Compute vUv (special)
 			var posX = f32(indxTex)%sizeTex;
 			var posY = floor(f32(indxTex)/sizeTex);
 			var idx  = vec2i(i32(posX),i32(posY));
-			// Compute Source vUv
-//			var posX0 = f32(indxTex/4)%(sizeTex/4);
-//			var posY0 = floor(f32(indxTex/4)/(sizeTex/4);
-//			var idx0  = vec2i(i32(posX0),i32(posY0));
 			// 
-//			var input = textureLoad(readTex,idx0,0);
 			var input = textureLoad(readTex,idx,0);
 			textureStore(storTex,idx,input);
 		}     
@@ -632,14 +627,11 @@ constructor(renderer,wav_) {
 	}).compute((4*this.Res)**2)
 	//- Shader 6B
 	this.compNormalComp = this.compNormal({
-//		u_tsiz: this.Res,
 		u_tsiz: 4*this.Res,
-//		r_disp: texture(this.dispMapTexture),
 		r_disp: texture(this.bigrMapTexture),
 		w_norm: textureStore(this.normMapTexture),
 		u_indx: instanceIndex,
 		u_gsiz: this.Siz
-//	}).compute(this.Res**2)
 	}).compute((4*this.Res)**2)
 	//= Render ==================================================================
 	this.renderer.computeAsync(this.initSpectrumComp);
@@ -722,4 +714,5 @@ export {Ocean};
 // 250131:				: Added TimestampQuery after loops (r173)
 // 250531: Rename as Ocean
 // 250808:				: Fix coding error identified by r179.
+// 250821:				: Added BiggerMap Shader (uses magic to increase resolution)
 */
