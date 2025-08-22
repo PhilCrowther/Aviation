@@ -446,9 +446,9 @@ constructor(renderer,wav_) {
 			input.y = input.x;	// Real value
 			input.x = input.z;	// Imaginary va
 			// Increase amplitude
-			input.x = input.x*1.5;
-			input.y = input.y*1.5;
-			input.z = input.z*1.5;
+//			input.x = input.x*1.5;
+//			input.y = input.y*1.5;
+//			input.z = input.z*1.5;
 			textureStore(w_disp,idx,input);
 		}     
 	`, [subroutines]);
