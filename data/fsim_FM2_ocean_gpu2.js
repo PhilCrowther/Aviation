@@ -170,10 +170,10 @@ let grd_ = {
 		// Indices
 		Col: 0,
 		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png",
-		Mtl: [0.6,0.6,0.6],		// Metalness (1 for max reflection)
+		Mtl: [0.4,0.4,0.4],		// Metalness (1 for max reflection - was 0.5)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
-		Ruf: [0.2,0.2,0.2],		// Roughness (0 for max reflection)
-		EMI: [0.5,0.42,0.42],	// EnvMap Intensity
+		Ruf: [0.2,0.2,0.2],		// Roughness (0 for max reflection - was 0.1)
+		EMI: [0.4,0.32,0.32],	// EnvMap Intensity (was 0.5, 0.42, 0.42)
 		// Maps
 		MSz: 512,				// Image Size
 		DfM: [[0],[0],0],		// Diffuse
