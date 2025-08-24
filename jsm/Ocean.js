@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================================
 
-// Ocean.js (8 Aug 2025)
+// Ocean.js (24 Aug 2025)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -163,7 +163,7 @@ constructor(renderer,wav_) {
 	`);
 	//- Shader 1 ----------------------------------------------------------------
 	//	Set intitial wave frequency at a texel coordinate (AS V2)
-	this.initSpectrum = wgslFn(`
+	this.initSpecWGSL = wgslFn(`
 		fn computeWGSL(
 			u_tsiz: f32,
 			w_ispc: texture_storage_2d<rgba32float, write>,
@@ -231,7 +231,7 @@ constructor(renderer,wav_) {
 	`, [subroutines]);
 	//- Shader 2 ----------------------------------------------------------------
 	//	Current Phase (AS V2)
-	this.compPhase = wgslFn(`	
+	this.compPhasWGSL = wgslFn(`	
 		fn computeWGSL(
 			u_tsiz: f32,
 			r_iphs: texture_2d<f32>,
@@ -268,7 +268,7 @@ constructor(renderer,wav_) {
 	`, [subroutines]);
 	//- Shader 3 ----------------------------------------------------------------
 	//	Current Spectrum (AS V2)
-	this.compSpectrum = wgslFn(`
+	this.compSpecWGSL = wgslFn(`
 		fn computeWGSL(
 			u_tsiz: f32,
 			r_tphs: texture_2d<f32>,
@@ -318,7 +318,7 @@ constructor(renderer,wav_) {
 	`, [subroutines]);
 	//- Butterfly ---------------------------------------------------------------
 	//  This assists with Ping/Pong computations
-	this.butterfly = wgslFn(`
+	this.initBFlyWGSL = wgslFn(`
 		fn computeWGSL(
 			w_bfly: texture_storage_2d<rgba32float, write>,
 			u_indx: u32, 
@@ -369,7 +369,7 @@ constructor(renderer,wav_) {
 	`, [subroutines]);
 	//- Shader 4A ---------------------------------------------------------------
 	//	Displacement Map (AS WebGPU)
-	this.compDspHrz = wgslFn(`
+	this.compHorzWGSL = wgslFn(`
 		fn computeWGSL(
 			u_tsiz: f32,
 			r_tspc: texture_2d<f32>,
@@ -392,7 +392,7 @@ constructor(renderer,wav_) {
 	`, [subroutines]);
 	//- Shader 4B ---------------------------------------------------------------
 	//	Displacement Map (AS WebGPU)
-	this.compDspVrt = wgslFn(`
+	this.compVertWGSL = wgslFn(`
 		fn computeWGSL(
 			u_tsiz: f32,
 			r_tspc: texture_2d<f32>,
@@ -420,7 +420,7 @@ constructor(renderer,wav_) {
 	// Creating a real 3D Ocean would require 3 vec2 computations, which a shader can't handle.
 	// Thus, as others have done, we are using the imaginary number to create horizontal displacement.
 	// This may not be technically correct, but results in a more interesting ocean.
-	this.permutation = wgslFn(`
+	this.compDispWGSL = wgslFn(`
 		fn computeWGSL(
 			u_tsiz: f32,
 			r_ping: texture_2d<f32>,
@@ -447,7 +447,7 @@ constructor(renderer,wav_) {
 	`, [subroutines]);
 	//- Shader 6 ----------------------------------------------------------------
 	//  Normal Map
-	this.compNormal = wgslFn(`
+	this.compNormWGSL = wgslFn(`
 		fn computeWGSL(
 			u_tsiz: f32,
 			r_disp: texture_2d<f32>,
@@ -469,7 +469,7 @@ constructor(renderer,wav_) {
 			let idxR = vec2<u32>(idxf+vec2<f32>(texel,0));
 			let rgt = vec3<f32>(vec3<f32>(texelSize,0,0)+textureLoad(r_disp,idxR,0).xyz) - ctr;
 			let idxL = vec2<u32>(idxf+vec2<f32>(-texel,0));
-			let lft = vec3<f32>(vec3<f32>(-texelSize,0,0)+textureLoad(r_disp,idxL,0).xyz) - ctr;	
+			let lft = vec3<f32>(vec3<f32>(-texelSize,0,0)+textureLoad(r_disp,idxL,0).xyz) - ctr;
 			let idxT = vec2<u32>(idxf+vec2<f32>(0,-texel));
 			let top = vec3<f32>(vec3<f32>(0,0,-texelSize)+textureLoad(r_disp,idxT,0).xyz) - ctr;
 			let idxB = vec2<u32>(idxf+vec2<f32>(0,texel));
@@ -494,7 +494,7 @@ constructor(renderer,wav_) {
 
 	//= Instructions ===========//===============================================
 	//- Shader 1. Initial Frequency
-	this.initSpectrumComp = this.initSpectrum({
+	this.initSpec = this.initSpecWGSL({
 		u_tsiz: this.Res,
 		w_ispc: textureStore(this.initSpectrumTexture),
 		u_indx: instanceIndex,
@@ -502,7 +502,7 @@ constructor(renderer,wav_) {
 		u_wind: this.Wnd
 	}).compute(this.Res**2);
 	//- Shader 2. Initial Phase
-	this.pingPhaseComp = this.compPhase({
+	this.pingPhas = this.compPhasWGSL({
 		u_tsiz: this.Res,
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pingPhaseTexture),
@@ -510,7 +510,7 @@ constructor(renderer,wav_) {
 		u_time: time.mul(this.Spd), // r170
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
-	this.pongPhaseComp = this.compPhase({
+	this.pongPhas = this.compPhasWGSL({
 		u_tsiz: this.Res,
 		r_iphs: texture(this.phaseArrayTexture),
 		w_tphs: textureStore(this.pongPhaseTexture),
@@ -519,7 +519,7 @@ constructor(renderer,wav_) {
 		u_gsiz: this.Siz
 	}).compute(this.Res**2);
 	//- Shader 3. New Phase
-	this.pingSpectrumComp = this.compSpectrum({
+	this.pingSpec = this.compSpecWGSL({
 		u_tsiz: this.Res,
 		r_tphs: texture(this.pingPhaseTexture),
 		r_ispc: texture(this.initSpectrumTexture),
@@ -528,7 +528,7 @@ constructor(renderer,wav_) {
 		u_gsiz: this.Siz,
 		u_chop: this.Chp
 	}).compute(this.Res**2);
-	this.pongSpectrumComp = this.compSpectrum({
+	this.pongSpec = this.compSpecWGSL({
 		u_tsiz: this.Res,
 		r_tphs: texture(this.pongPhaseTexture),
 		r_ispc: texture(this.initSpectrumTexture),
@@ -538,14 +538,14 @@ constructor(renderer,wav_) {
 		u_chop: this.Chp
 	}).compute(this.Res**2);
 	//- Butterfly
-	this.butterflyComp = this.butterfly({ 
+	this.initBFly = this.initBFlyWGSL({ 
 		w_bfly: textureStore(this.butterflyTexture), 
 		u_indx: instanceIndex,
 		N: this.Res,
 	}).compute(Math.log2(this.Res)*this.Res);
 	//- Shader 4. Displacement
 	//- Shader 4A
-	this.initDspHrzComp = this.compDspHrz({
+	this.initHorz = this.compHorzWGSL({
 		u_tsiz: this.Res,
 		r_tspc: texture(this.compSpectrumTexture),
 		r_bfly: texture(this.butterflyTexture),
@@ -553,7 +553,7 @@ constructor(renderer,wav_) {
 		u_indx: instanceIndex,	
 		u_step: this.stepBF
 	}).compute(this.Res**2);
-	this.pingDspHrzComp = this.compDspHrz({
+	this.pingHorz = this.compHorzWGSL({
 		u_tsiz: this.Res,
 		r_tspc: texture(this.pingTransformTexture),
 		r_bfly: texture(this.butterflyTexture),
@@ -561,7 +561,7 @@ constructor(renderer,wav_) {
 		u_indx: instanceIndex,
 		u_step: this.stepBF
 	}).compute(this.Res**2);
-	this.pongDspHrzComp = this.compDspHrz({
+	this.pongHorz = this.compHorzWGSL({
 		u_tsiz: this.Res,
 		r_tspc: texture(this.pongTransformTexture),
 		r_bfly: texture(this.butterflyTexture),
@@ -570,7 +570,7 @@ constructor(renderer,wav_) {
 		u_step: this.stepBF
 	}).compute(this.Res**2);	
 	//- Shader 4B
-	this.pingDspVrtComp = this.compDspVrt({
+	this.pingVert = this.compVertWGSL({
 		u_tsiz: this.Res,
 		r_tspc: texture(this.pingTransformTexture),
 		r_bfly: texture(this.butterflyTexture),
@@ -578,7 +578,7 @@ constructor(renderer,wav_) {
 		u_indx: instanceIndex,
 		u_step: this.stepBF
 	}).compute(this.Res**2);
-	this.pongDspVrtComp = this.compDspVrt({
+	this.pongVert = this.compVertWGSL({
 		u_tsiz: this.Res,
 		r_tspc: texture(this.pongTransformTexture),
 		r_bfly: texture(this.butterflyTexture),
@@ -587,27 +587,28 @@ constructor(renderer,wav_) {
 		u_step: this.stepBF
 	}).compute(this.Res**2)
 	//- Shader 5
-	this.permutationComp = this.permutation({
+	this.compDisp = this.compDispWGSL({
 		u_tsiz: this.Res,
 		r_ping: texture(this.pingTransformTexture),
 		w_disp: textureStore(this.dispMapTexture),
 		u_indx: instanceIndex,
 	}).compute(this.Res**2)
 	//- Shader 6
-	this.compNormalComp = this.compNormal({
+	this.compNorm = this.compNormWGSL({
 		u_tsiz: this.Res,
 		r_disp: texture(this.dispMapTexture),
 		w_norm: textureStore(this.normMapTexture),
 		u_indx: instanceIndex,
 		u_gsiz: this.Siz
-	}).compute(this.Res**2)	
+	}).compute(this.Res**2)
 	//= Render ==================================================================
-	this.renderer.computeAsync(this.initSpectrumComp);
-	this.renderer.computeAsync(this.butterflyComp); // r179
+	this.renderer.computeAsync(this.initSpec);
+	this.renderer.computeAsync(this.initBFly); // r179
 	// Static Targets
 	wav_.Dsp = this.dispMapTexture;
 	wav_.Nrm = this.normMapTexture;
-};	// End of Initialize
+	// End of Initialize
+};
 
 //**************************************|****************************************
 //																				*
@@ -619,36 +620,36 @@ constructor(renderer,wav_) {
 update() {
 	// 2. Initial
 	if (this.initPhase) {
-		this.renderer.computeAsync(this.pingPhaseComp);
+		this.renderer.computeAsync(this.pingPhas);
 		this.initPhase = false;
 	}
 	else {
-		this.renderer.computeAsync(this.pingPhase ? this.pingPhaseComp : this.pongPhaseComp);
+		this.renderer.computeAsync(this.pingPhase ? this.pingPhas : this.pongPhas);
 	}
-	this.renderer.computeAsync(this.pingPhase ? this.pongPhaseComp : this.pingPhaseComp);	
+	this.renderer.computeAsync(this.pingPhase ? this.pongPhas : this.pingPhas);	
 	this.pingPhase = !this.pingPhase;
 	// 3. New Spectrum from PingPhase or PongPhase
-	this.renderer.computeAsync(this.pingPhase ? this.pingSpectrumComp : this.pongSpectrumComp);
+	this.renderer.computeAsync(this.pingPhase ? this.pingSpec : this.pongSpec);
 	// 4. Displacement Map (iterations = 9*2
 	let iterations = Math.log2(this.Res); // log2(512) = 9
 	let pingPong = false;
 	for (let i = 0; i < iterations; i++) {	// Horizontal Ping/Pong
 		pingPong = !pingPong;
 		this.stepBF.value = i;
-		if (i == 0) this.renderer.computeAsync(this.initDspHrzComp);	// if first rep, then New Spectrum to PingHrz
+		if (i == 0) this.renderer.computeAsync(this.initHorz);	// if first rep, then New Spectrum to PingHrz
 		else {	// Otherwise, Ping/Pong
-			this.renderer.computeAsync(pingPong ? this.pingDspHrzComp : this.pongDspHrzComp);
+			this.renderer.computeAsync(pingPong ? this.pingHorz : this.pongHorz);
 		}
 	}
 	for (let i = 0; i < iterations; i++) {	// Vertical Ping/Pong
 		pingPong = !pingPong;
 		this.stepBF.value = i;
-		this.renderer.computeAsync(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
+		this.renderer.computeAsync(pingPong ? this.pingVert : this.pongVert);	// Ping/Pong
 	}
 	// 5. Displacement
-	this.renderer.computeAsync(this.permutationComp);
-	this.renderer.computeAsync(this.compNormalComp);
-	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173	
+	this.renderer.computeAsync(this.compDisp);
+	this.renderer.computeAsync(this.compNorm);
+	this.renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // r173	
 };	// End of Update
 
 };	// End of Module
@@ -681,4 +682,5 @@ export {Ocean};
 // 250131:				: Added TimestampQuery after loops (r173)
 // 250531: Rename as Ocean
 // 250808:				: Fix coding error identified by r179.
+// 250824:				: New Labels
 */
