@@ -649,7 +649,7 @@ update() {
 	// 5. Displacement
 	this.renderer.computeAsync(this.compDisp);
 	this.renderer.computeAsync(this.compNorm);
-	this.renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // r173	
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173	
 };	// End of Update
 
 };	// End of Module
