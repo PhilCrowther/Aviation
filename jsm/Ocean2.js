@@ -620,19 +620,19 @@ constructor(renderer,wav_) {
 	}).compute(this.Res**2)
 	//- Shader 6A
 	this.biggerComp = this.compBigr({
-		sizeTex: 4*this.Res,
+		sizeTex: 2*this.Res,
 		readTex: texture(this.dispMapTexture),
 		storTex: textureStore(this.bigrMapTexture),
 		indxTex: instanceIndex,		
-	}).compute((4*this.Res)**2)
+	}).compute((2*this.Res)**2)
 	//- Shader 6B
 	this.compNormalComp = this.compNormal({
-		u_tsiz: 4*this.Res,
+		u_tsiz: 2*this.Res,
 		r_disp: texture(this.bigrMapTexture),
 		w_norm: textureStore(this.normMapTexture),
 		u_indx: instanceIndex,
 		u_gsiz: this.Siz
-	}).compute((4*this.Res)**2)
+	}).compute((2*this.Res)**2)
 	//= Render ==================================================================
 	this.renderer.computeAsync(this.initSpectrumComp);
 	this.renderer.computeAsync(this.butterflyComp); // r179
