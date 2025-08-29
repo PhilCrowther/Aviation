@@ -878,7 +878,7 @@ let RadTim = 0;					// Start this timer for Linear Segment
 let	rad_ = {
 		// Sound Files (voice plus static)
 		SndSrc: ["https://PhilCrowther.github.io/Aviation/sounds/radio/static.mp3",
-				 "https://PhilCrowther.github.io/Aviation/sounds/radio/pilot1.wav"
+				 "https://PhilCrowther.github.io/Aviation/sounds/radio/pilot1.wav",
 				 "https://PhilCrowther.github.io/Aviation/sounds/radio/cvedir.m4a"],
 		SndAdr: [0,0,0],			// Pointer to Radio and Static Sounds
 		// All Segments
