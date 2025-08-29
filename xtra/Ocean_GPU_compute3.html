@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Ocean GPU r179</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<style>
+body {
+	overflow: hidden;
+	margin:0;
+	color: black;
+	font-family: Courier;
+	font-size: 20pt;
+	font-weight: bold;
+}
+</style>
+</head>
+
+<body oncontextmenu="return false;">
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+//import Stats from "three/addons/libs/stats.module.js";
+import {color,texture,normalMap,float,vec2,attribute,positionLocal,
+		wgslFn,code,timerLocal,time,vec4,
+		uniform,instanceIndex,storage, // wave-generator, initial-spectrum and wave-cascade
+		textureStore,uint,workgroupId,localId, // wave-cascade
+} from 'three/tsl';
+import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import Stats from 'stats-gl';
+// Custom Modules
+//import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r170 with compute.aSync
+
+/*= VARIABLES ================================================================*/
+//-	Math Predefined
+var DegRad = Math.PI/180;		// Convert Degrees to Radians
+var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+//- Flags				
+let LodFlg = 0;
+let PawsOn = 0;
+let WireOn = 0;
+let StatOn = 1;					// Stats ((0 = off, 1 = on)
+//= SKYBOX =====================================================================
+let SkyCol = 0x1732c1;			// Sky
+let SkyLim = 100000;			// Max viewing distance 
+//- Texture
+let SBPath = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+//= SUN ========================================================================
+let SunCol = 0xffffff;			// Sun
+let SunInt = 3;					// Intensity
+//- Rotation and Position (fixed)
+let SunLat = 23;				// Direction - Vert (+/- 90)
+let SunLon = 312;				// Direction - Horz (0->360)
+let SunDst = 10000;				// Distance (for shadows and lensflare)
+//- New
+let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+
+//= BASIC SETUP ================================================================
+let	container = document.createElement('div');
+	document.body.appendChild(container);
+//- Camera
+let	camera = new THREE.PerspectiveCamera(55.0, window.innerWidth/window.innerHeight, 0.5, SkyLim);
+	camera.position.set(0, 350, 800);
+//- Scene
+let	scene = new THREE.Scene();
+//- Renderer
+let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.autoUpdate = true;
+	renderer.receiveShadow = true;
+	renderer.shadowMap.type = THREE.BasicShadowMap;
+	container.appendChild(renderer.domElement);
+//- Lights
+let sunLight = new THREE.DirectionalLight(SunCol, 3.0);
+	sunLight.position.copy(SunPos).normalize();
+	scene.add(sunLight);
+//- Controls
+let	controls = new OrbitControls(camera, renderer.domElement);
+//- Inputs
+	document.addEventListener("keydown", onDocumentKeyDown, false);
+//	document.addEventListener("keyup", onDocumentKeyUp, false);
+	window.addEventListener("resize", onWindowResize, false);
+//- Clock
+let clock = new THREE.Clock();
+let dt = 0;
+//- Loading Manager
+	// Create a loading manager to set RESOURCES_LOADED when appropriate.
+	// Pass loadingManager to all resource loaders.
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+//
+    await renderer.init();		// ### NEW
+
+//= GRID DATA ==================================================================
+let GrdRes = 512;
+let GrdSiz = 512;				// Size of Smallest Grid Square (meters)
+let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
+//= OCEAN ======================================================================
+//- Constants
+let WtrCol = 0x001080;			// Water (Navy)
+//- Variables
+let waves = 0;
+// Uniforms
+let wav_ = {
+		Dsp: 0,					// The Displacement Map
+		Nrm: 0,					// The Normal Map
+		NMS: new THREE.Vector2(1.0,1.0), // Normal Map Scale (flip Y for left-handed maps)
+		Spd: 1					// Animation Speed
+	};
+let params = {
+		// General
+		size: GrdRes,
+		gsiz: GrdSiz, // size of grid square (used to compute Normal Map)
+		lambda: uniform(0.9),
+		renderer: renderer,
+		// InitSpec Variables
+		waveLength: 250,
+		boundaryLow: 0.0001,
+		boundaryHigh: 512,		// ### okay??
+		// Wave Spectrum 1
+		depth: uniform(20),
+		scaleHeight: uniform(1),
+		windSpeed: uniform(1),
+		windDirection: uniform(0/360.0*2*Math.PI),
+		fetch: uniform(100000),
+		spreadBlend: uniform(1),
+		swell: uniform(0.198),
+		peakEnhancement: uniform(3.3),
+		shortWaveFade: uniform(0),
+		fadeLimit: uniform(0),
+		// Wave Spectrum 2
+		d_depth: uniform(20),
+		d_scaleHeight: uniform(1),
+		d_windSpeed: uniform(1),
+		d_windDirection: uniform(240/360.0*2*Math.PI),
+		d_fetch: uniform(300000),
+		d_spreadBlend: uniform(1),
+		d_swell: uniform(0.5),
+		d_peakEnhancement: uniform(3.3),
+		d_shortWaveFade: uniform(0),
+		d_fadeLimit: uniform(0),
+	};
+//- External Values
+let WtrGeo, WtrMat, WtrMsh = 0;
+// Texture
+let ColSrc = "https://threejs.org/examples/textures/uv_grid_opengl.jpg";	// 1024
+let uvTexture = 0;
+// Planes
+let GrdRCs = 2;
+let GrdPtr = [0];
+let WavMZV = [0];
+let WavMXV = [0];
+
+//= Key Bindings ===============//==============================================
+let K_Paws = 80;				// Pause (p)
+let K_Wire = 87;				// Pause (p)
+
+//= OCEAN MODULE ================================================================
+
+// Ocean.js (8 Aug 2025)
+//
+// History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
+// based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
+//
+// In 2023, Phil Crowther <phil@philcrowther.com> updated and modified the wave generator to work as a module.  
+// Attila_Schroeder <> further upgraded and improved this module to work with WebGL2 GLSL3 Shaders and WebGPU WGSL Texture Shaders.
+// In 2025, Attila Schrodre further upgraded the module to work with WGSL Compute Shaders <See https://github.com/Spiri0/Threejs-WebGPU-IFFT-Ocean>.
+// This is a smaller version of that module, created with the assistance of Attila Schroder.
+//
+// As with the original wave generators, this module is licensed under a
+// Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+
+//**************************************|****************************************
+//																				*
+//									IMPORTS										*
+//																				*
+//*******************************************************************************
+
+//import {
+//	ClampToEdgeWrapping,
+//	FloatType,
+//	LinearFilter,
+//	LinearMipMapLinearFilter,
+//	NearestFilter,
+//	RepeatWrapping,
+//	RGBAFormat,
+//	StorageTexture,
+//	TimestampQuery,				// r173 requires this
+//} from 'three';
+//import {
+//	vec2,
+//	texture,
+//	textureStore,
+//	wgslFn,
+//	instanceIndex,
+//	code,
+//	uniform,
+//	time,						// r170 changed timerLocal to time
+//	vec4,
+//	storage,
+//	workgroupId,
+//	localId,
+//	uint,
+//} from 'three/tsl';
+
+//**************************************|****************************************
+//																				*
+//								  OCEAN MODULE									*
+//																				*
+//*******************************************************************************
+
+//= NOTES =======================================================================
+// Original 2013: David Li (david.li/waves/) - created shaders and js program
+// Original 2014: Aleksandr Albert (routter.co.tt) - converted to WebGL three.js program
+// Modified 2015: Jeremy Bouny (github.com/fft-ocean) - updated three.js program
+// Modified 2023: Phil Crowther (philcrowther.com) - updated and converted to three.js class module
+// Modified 2023: Attila Schroeder - many improvements
+// Modified 2024: Attila Schroeder - converted to GPU WGSL Texture Shaders and added butterfly texture
+// Modified 2025: Attila Schroeder - converted to GPU WGSL Compute Shaders.
+
+//**************************************|****************************************
+//																				*
+//								INITIALIZE CLASS								*
+//																				*
+//*******************************************************************************
+
+// A mashup of wave-cascade.js, wave-generator.js [Butterfly] and initial-spectrum.js.
+
+class Ocean {
+
+constructor(params,wav_) {
+//		super();
+//		this.Init(params,wav_);
+//	}
+
+//= INITIALIZE ===========//=====================================================
+//this.Init(params,wav_) {
+
+	//= Variables ===============================================================
+	this.size = params.size;
+	//- [Source: src/waves/wave-cascade.js]	-------------------------------------
+	this.params_ = params;
+//	this.defaultWorkgroup = wave_constants.DEFAULT_WORKGROUP;
+	this.logN = Math.log2(params.size);
+	this.sqSize = params.size**2;
+	this.bufferSize = this.sqSize*2;
+	//
+	this.DDindex = uniform(0);
+	this.ifftStep = uniform(0);
+	this.pingpong = uniform(0);
+	this.deltaTime = uniform(0);
+	// WebGPU
+	this.workgroupSize = [16,16,1];
+	this.dispatchSize = [this.size/this.workgroupSize[0],this.size/this.workgroupSize[1]];
+	
+	//= Storage Buffers =========================================================
+	//- [Source: src/waves/wave-generator.js] -----------------------------------
+	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
+	//- [Source: src/waves/initial-spectrum.js] ---------------------------------
+//	this.InitialSpectrum(params);
+//	this.InitialSpectrumWithInverse(params);
+	//- [Source: src/waves/wave-cascade.js] -------------------------------------
+//	this.initialSpectrum = new InitialSpectrum(params); // ### not sure how to do this
+//	this.spectrumBuffer = this.initialSpectrum.spectrumBuffer; // ### ditto
+//	this.waveDataBuffer = this.initialSpectrum.waveDataBuffer; // ### ditto
+	this.spectrumBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),4);
+	this.waveDataBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),4);
+	this.DxDzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
+	this.DyDxzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
+	this.DyxDyzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
+	this.DxxDzzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
+	this.pingpongBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
+	this.turbulenceBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize/2),1);
+	
+	//= Storage Textures ========================================================
+	//- [Source: src/waves/wave-cascade.js] -------------------------------------
+	//- Displacement Texture
+	this.displacement = new StorageTexture(this.size,this.size);
+	this.displacement.type = THREE.HalfFloatType;
+	this.displacement.generateMipmaps = true;
+	this.displacement.magFilter = THREE.LinearFilter;
+	this.displacement.minFilter = THREE.LinearMipMapLinearFilter;
+	this.displacement.wrapS = this.displacement.wrapT = THREE.RepeatWrapping;
+	this.displacement.anisotropy = this.params_.renderer.getMaxAnisotropy();
+	//- Derivative
+	this.derivative = new StorageTexture(this.size,this.size);
+	this.derivative.type = THREE.HalfFloatType;
+	this.derivative.generateMipmaps = true;
+	this.derivative.magFilter = THREE.LinearFilter;
+	this.derivative.minFilter = THREE.LinearMipMapLinearFilter;
+	this.derivative.wrapS = this.derivative.wrapT = THREE.RepeatWrapping;
+	this.derivative.anisotropy = this.params_.renderer.getMaxAnisotropy();
+	//- Jacobian
+	this.jacobian = new StorageTexture(this.size,this.size);
+	this.jacobian.type = THREE.FloatType;
+	this.jacobian.generateMipmaps = true;
+	this.jacobian.magFilter = THREE.LinearFilter;
+	this.jacobian.minFilter = THREE.LinearMipMapLinearFilter;
+	this.jacobian.wrapS = this.jacobian.wrapT = THREE.RepeatWrapping;
+	this.jacobian.anisotropy = this.params_.renderer.getMaxAnisotropy();
+	//- Normal Map Texture (from old program)
+	this.normMapTexture = new StorageTexture(this.size,this.size);
+	this.normMapTexture.type = THREE.FloatType;
+	this.normMapTexture.generateMipmaps = true;
+	this.normMapTexture.magFilter = THREE.LinearFilter;
+	this.normMapTexture.minFilter = THREE.LinearMipMapLinearFilter;
+	this.normMapTexture.wrapS = this.normMapTexture.wrapT = THREE.RepeatWrapping;
+
+	//**********************************|****************************************
+	//																			*
+	//								 SHADERS									*
+	//																			*
+	//***************************************************************************
+
+	//- Initial Spectrum --------------------------------------------------------
+	this.InitialSpectrumWGSL = wgslFn(`
+		fn computeWGSL( 
+			spectrumBuffer: ptr<storage, array<vec4<f32>>, read_write>,
+			waveDataBuffer: ptr<storage, array<vec4<f32>>, read_write>,
+			index: u32,
+			size: u32,
+			waveLength: f32,
+			boundaryLow: f32,
+			boundaryHigh: f32,
+			//
+			depth: f32,
+			scaleHeight: f32,
+			windSpeed: f32,
+			windDirection: f32,
+			fetch: f32,
+			spreadBlend: f32,
+			swell: f32,
+			peakEnhancement: f32,
+			shortWaveFade: f32,
+			fadeLimit: f32,
+			//
+			d_depth: f32,
+			d_scaleHeight: f32,
+			d_windSpeed: f32,
+			d_windDirection: f32,
+			d_fetch: f32,
+			d_spreadBlend: f32,
+			d_swell: f32,
+			d_peakEnhancement: f32,
+			d_shortWaveFade: f32,
+			d_fadeLimit: f32,
+		) -> void {
+			var posX = index % size;
+			var posY = index / size;
+			var idx = vec2u(posX, posY);
+			var xy = vec2<f32>(f32(posX), f32(posY));
+			let deltaK = 2.0 * PI / waveLength;
+			let nx = f32(posX) - f32(size) / 2.0;
+			let nz = f32(posY) - f32(size) / 2.0;
+			let k = vec2<f32>(nx, nz) * deltaK;
+			let kLength = length(k);
+			if(kLength >= boundaryLow && kLength <= boundaryHigh) {
+				var kAngle: f32 = atan2(k.y, k.x);
+				var alpha = JonswapAlpha(G, fetch, windSpeed);
+				var w = frequency(kLength, G, depth);
+				var wp = JonswapPeakFrequency(G, fetch, windSpeed);
+				var dOmegadk = frequencyDerivative(kLength, G, depth);
+				var spectrum: f32 = JONSWAP(w, G, depth, wp, scaleHeight, alpha, peakEnhancement)*directionSpectrum(kAngle,w,wp,swell,windDirection,spreadBlend)*shortWavesFade(kLength,shortWaveFade,fadeLimit);
+				if(d_scaleHeight > 0) {
+					var d_alpha = JonswapAlpha(G, d_fetch, d_windSpeed);
+					var d_wp = JonswapPeakFrequency(G, d_fetch, d_windSpeed);
+					spectrum = spectrum + JONSWAP(w,G,depth,d_wp,d_scaleHeight,d_alpha,d_peakEnhancement)*directionSpectrum(kAngle,w,d_wp,d_swell,d_windDirection,d_spreadBlend)*shortWavesFade(kLength,d_shortWaveFade,d_fadeLimit);
+				}
+				var er: f32 = gaussianRandom1(xy);
+				var ei: f32 = gaussianRandom2(xy);
+				spectrumBuffer[index] = vec4<f32>(vec2<f32>(er,ei) * sqrt(2 * spectrum * abs(dOmegadk)/kLength*deltaK*deltaK),0,0);
+				waveDataBuffer[index] = vec4<f32>( k.x, 1.0 / kLength, k.y, w );
+			} else {
+				spectrumBuffer[index] = vec4<f32>(0.0);
+				waveDataBuffer[index] = vec4<f32>(k.x,1.0,k.y,0.0);
+			}
+		}
+		const PI: f32 = 3.141592653589793;
+		const G: f32 = 9.81;
+		fn JonswapAlpha(g: f32, fetch: f32, windSpeed: f32) -> f32 {
+			return 0.076 * pow(g * fetch / pow(windSpeed, 2), -0.22);
+		}
+		fn JonswapPeakFrequency(g: f32, fetch: f32, windSpeed: f32) -> f32 {
+			return 22 * pow(windSpeed * fetch / pow(g, 2), -0.33);
+		}
+		fn gaussianRandom1(seed: vec2<f32>) -> f32 {
+			var nrnd0: f32 = random(seed);
+			var nrnd1: f32 = random(seed + 0.1);
+			return sqrt(-2 * log(max(0.001, nrnd0))) * cos(2 * PI * nrnd1);
+		}
+		fn gaussianRandom2(seed: vec2<f32>) -> f32 {
+			var nrnd0: f32 = random(seed);
+			var nrnd1: f32 = random(seed + 0.1);
+			return sqrt(-2 * log(max(0.001, nrnd0))) * sin(2 * PI * nrnd1);
+		}
+		fn random(par: vec2<f32>) -> f32 {
+			return fract(sin(dot(par, vec2<f32>(12.9898, 78.233))) * 43758.5453);
+		}
+		fn frequency(k: f32, g: f32, depth: f32) -> f32 {
+			return sqrt(g * k * tanh(min(k * depth, 20.0)));
+		}
+		fn frequencyDerivative(k: f32, g: f32, depth: f32) -> f32 {
+			let th = tanh(min(k * depth, 20.0));
+			let ch = cosh(k * depth);
+			return g * (depth * k / ch / ch + th) / frequency(k, g, depth) / 2.0;
+		}
+		fn normalisationFactor(s: f32) -> f32 {
+			let s2 = s * s;
+			let s3 = s2 * s;
+			let s4 = s3 * s;
+			if (s < 5.0) {
+				return -0.000564 * s4 + 0.00776 * s3 - 0.044 * s2 + 0.192 * s + 0.163;
+			}
+			return -4.80e-08 * s4 + 1.07e-05 * s3 - 9.53e-04 * s2 + 5.90e-02 * s + 3.93e-01;
+		}
+		fn cosine2s(theta: f32, s: f32) -> f32 {
+			return normalisationFactor(s) * pow(abs(cos(0.5 * theta)), 2.0 * s);
+		}
+		fn spreadPower(omega: f32, peakOmega: f32) -> f32 {
+			if (omega > peakOmega) {
+				return 9.77 * pow(abs(omega / peakOmega), -2.5);
+			}
+			return 6.97 * pow(abs(omega / peakOmega), 5.0);
+		}
+		fn TMACorrection(omega: f32, g: f32, depth: f32) -> f32 {
+			let omegaH = omega * sqrt(depth / g);
+			if (omegaH <= 1.0) {
+				return 0.5 * omegaH * omegaH;
+			}
+			if (omegaH < 2.0) {
+				return 1.0 - 0.5 * (2.0 - omegaH) * (2.0 - omegaH);
+			}
+			return 1.0;
+		}
+		fn directionSpectrum(theta: f32, w: f32, wp: f32, swell: f32, angle: f32, spreadBlend: f32) -> f32 {
+			let s = spreadPower(w, wp) + 16.0 * tanh(min(w / wp, 20.0)) * swell * swell;
+			return mix(2.0 / PI * cos(theta) * cos(theta), cosine2s(theta - angle, s), spreadBlend);
+		}
+		fn JONSWAP(w: f32, g: f32, depth: f32, wp: f32, scale: f32, alpha: f32, gamma: f32) -> f32 {
+			var sigma: f32 = select(0.07, 0.09, w <= wp);
+			var a = exp(-pow(w - wp, 2) / (2 * pow(sigma * wp, 2)));
+			return scale * TMACorrection(w, g, depth) * alpha * pow(g, 2) 
+				* pow(1/w, 5)
+				* exp(-1.25 * pow(wp / w, 4)) 
+				* pow(abs(gamma), a);
+		}
+		fn shortWavesFade(kLength: f32, shortWavesFade: f32, fadeLimit: f32) -> f32
+		{
+			return (1 - fadeLimit) * exp(-pow(shortWavesFade * kLength, 2)) + fadeLimit;
+		}
+	`);
+
+	//- Initial Spectrum with Inverse -------------------------------------------
+	this.InitialSpectrumWithInverseWGSL = wgslFn(`
+		fn computeWGSL( 
+			spectrumBuffer: ptr<storage, array<vec4<f32>>, read_write>,
+			index: u32,
+			size: u32,
+		) -> void {
+			var idx = ( (size - index / size) % size ) * size + (size - index % size) % size;
+			var spectrumData = spectrumBuffer[ index ];
+			var h0MinusK = spectrumBuffer[ idx ];
+			spectrumBuffer[ index ] = vec4<f32>( spectrumData.xy, h0MinusK.x, -h0MinusK.y );
+		}
+	`);
+	
+	//- Butterfly ---------------------------------------------------------------
+	this.butterflyWGSL = wgslFn(`
+		fn computeWGSL( 
+			butterflyBuffer: ptr<storage, array<vec4<f32>>, read_write>,
+			index: u32, 
+			N: f32,
+		) -> void {
+			var logN = log2(N);
+			var posX = f32(index) % logN;
+			var posY = floor(f32(index) / logN);
+			const PI: f32 = 3.1415926;
+			var k: f32 = (posY * N/pow(2, posX + 1)) % N;
+			var twiddle: vec2<f32> = vec2<f32>(cos(2 * PI * k / N), sin(2 * PI * k / N));
+			var butterflyspan = pow(2, f32(posX));
+			let idx = u32(posY) * u32(logN) + u32(posX);
+			var butterflywing: i32 = select(0, 1, posY % pow(2, posX + 1) < pow(2, posX));
+			var uY = u32(posY);
+			if(u32(posX) == 0){
+				if(butterflywing == 1){
+					butterflyBuffer[idx] = vec4f( twiddle, reverseBits(uY, N), reverseBits(uY + 1, N) );
+				}
+				else{
+					butterflyBuffer[idx] = vec4f( twiddle, reverseBits(uY - 1, N), reverseBits(uY, N) );
+				}
+			}
+			else{
+				if(butterflywing == 1){
+					butterflyBuffer[idx] = vec4f( twiddle, posY, posY + butterflyspan);
+				}
+				else{
+					butterflyBuffer[idx] = vec4f( twiddle, posY - butterflyspan, posY);
+				}
+			}
+		}
+		fn reverseBits(index: u32, N: f32) -> f32 {
+			var bitReversedIndex: u32 = 0;
+			var numBits: u32 = u32(log2(N));
+			for (var i: u32 = 0; i < numBits; i = i + 1) {
+				bitReversedIndex = bitReversedIndex | (((index >> i) & 1) << (numBits - i - 1));
+			} 
+			return f32(bitReversedIndex);
+		}
+	`);
+	
+	//- Time Spectrum -----------------------------------------------------------
+	this.TimeSpectrumWGSL = wgslFn(`
+		fn computeWGSL(
+			spectrumBuffer: ptr<storage, array<vec4<f32>>, read_write>,
+			waveDataBuffer: ptr<storage, array<vec4<f32>>, read_write>,
+			writeDxDzBuffer: ptr<storage, array<vec2<f32>>, read_write>,
+			writeDyDxzBuffer: ptr<storage, array<vec2<f32>>, read_write>,
+			writeDyxDyzBuffer: ptr<storage, array<vec2<f32>>, read_write>,
+			writeDxxDzzBuffer: ptr<storage, array<vec2<f32>>, read_write>,
+			index: u32,
+			size: u32,
+			time: f32,
+		) -> void {
+			var wave = waveDataBuffer[ index ];
+			var h0 = spectrumBuffer[ index ];
+			var phase = wave.w * time;
+			var exponent = vec2<f32>(cos(phase), sin(phase));
+			var h = complexMult(h0.xy, exponent) + complexMult(h0.zw, vec2<f32>(exponent.x, -exponent.y));
+			var ih = vec2<f32>(-h.y, h.x);
+			var displacementX = ih * wave.x * wave.y;
+			var displacementY = h;
+			var displacementZ = ih * wave.z * wave.y;
+			//Jacobi-Matrix-Elements
+			var displacementX_dx = -h * wave.x * wave.x * wave.y;
+			var displacementY_dx = ih * wave.x;
+			var displacementZ_dx = -h * wave.x * wave.z * wave.y;
+			var displacementY_dz = ih * wave.z;
+			var displacementZ_dz = -h * wave.z * wave.z * wave.y;
+			//displacementX_dz ist the same like displacementZ_dx
+			//Sum up all amplitudes (real and complex)
+			writeDxDzBuffer[ index ]   = vec2<f32>(displacementX.x - displacementZ.y, displacementX.y + displacementZ.x);
+			writeDyDxzBuffer[ index ]  = vec2<f32>(displacementY.x - displacementZ_dx.y, displacementY.y + displacementZ_dx.x);
+			writeDyxDyzBuffer[ index ] = vec2<f32>(displacementY_dx.x - displacementY_dz.y, displacementY_dx.y + displacementY_dz.x);
+			writeDxxDzzBuffer[ index ] = vec2<f32>(displacementX_dx.x - displacementZ_dz.y, displacementX_dx.y + displacementZ_dz.x);
+		}
+		fn complexMult(a: vec2<f32>, b: vec2<f32>) -> vec2<f32> {
+			return vec2<f32>(a.r * b.r - a.g * b.g, a.r * b.g + a.g * b.r);
+		}
+	`);
+
+	//- IFFT_Init ---------------------------------------------------------------
+	this.IFFT_InitWGSL = wgslFn(`
+		fn computeWGSL(
+			butterflyBuffer: ptr<storage, array<vec4<f32>>, read>,
+			pingpongBuffer: ptr<storage, array<vec4<f32>>, read_write>,
+			DxDzBuffer: ptr<storage, array<vec2<f32>>, read>,
+			DyDxzBuffer: ptr<storage, array<vec2<f32>>, read>,
+			DyxDyzBuffer: ptr<storage, array<vec2<f32>>, read>,
+			DxxDzzBuffer: ptr<storage, array<vec2<f32>>, read>,
+			index: u32,
+			size: u32,
+			initBufferIndex: u32,
+			step: u32,
+			logN: u32,
+			workgroupSize: vec2<u32>,
+			workgroupId: vec3<u32>,
+			localId: vec3<u32>
+		) -> void {
+			let pos = workgroupSize.xy * workgroupId.xy + localId.xy;
+			let butterflyIndex = pos.x * logN + step;
+			let data = butterflyBuffer[ butterflyIndex ];
+			let bufferIndex = pos.y * size + u32( data.z );
+			let bufferIndexOdd = pos.y * size + u32( data.w );
+			var even = select(DxDzBuffer[ bufferIndex ], DyDxzBuffer[ bufferIndex ], initBufferIndex == 1u );
+			even = select(even, DyxDyzBuffer[ bufferIndex ], initBufferIndex == 2u );
+			even = select(even, DxxDzzBuffer[ bufferIndex ], initBufferIndex == 3u );
+			var odd = select( DxDzBuffer[ bufferIndexOdd ], DyDxzBuffer[ bufferIndexOdd ], initBufferIndex == 1u );
+			odd = select(odd, DyxDyzBuffer[ bufferIndexOdd ], initBufferIndex == 2u );
+			odd = select(odd, DxxDzzBuffer[ bufferIndexOdd ], initBufferIndex == 3u );
+			var H: vec2<f32> = even + multiplyComplex( vec2<f32>( data.r, -data.g ), odd );
+			pingpongBuffer[ index ] = vec4<f32>( 0.0, 0.0, H );
+		}
+		fn multiplyComplex(a: vec2<f32>, b: vec2<f32>) -> vec2<f32> {
+			return vec2<f32>(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+		}
+	`);	
+	
+	//- IFFT_Horizontal ---------------------------------------------------------
+	this.IFFT_HorizontalWGSL = wgslFn(`
+		fn computeWGSL(
+			butterflyBuffer: ptr<storage, array<vec4<f32>>, read>,
+			pingpongBuffer: ptr<storage, array<vec4<f32>>, read_write>,
+			index: u32,
+			size: u32,
+			initBufferIndex: u32,
+			step: u32,
+			logN: u32,
+			pingpong: u32,
+			workgroupSize: vec2<u32>,
+			workgroupId: vec3<u32>,
+			localId: vec3<u32>
+		) -> void {
+			let pos = workgroupSize.xy * workgroupId.xy + localId.xy;
+			let butterflyIndex = pos.x * logN + step;
+			let data = butterflyBuffer[ butterflyIndex ];
+			let bufferIndexEven = pos.y * size + u32( data.z );
+			let bufferIndexOdd = pos.y * size + u32( data.w );
+			let even = select(pingpongBuffer[ bufferIndexEven ].xy, pingpongBuffer[ bufferIndexEven ].zw, pingpong == 0 );
+			let odd  = select(pingpongBuffer[ bufferIndexOdd ].xy, pingpongBuffer[ bufferIndexOdd ].zw, pingpong == 0 );
+			let H: vec2<f32> = even + multiplyComplex( data.rg, odd );
+			pingpongBuffer[ index ] = vec4<f32>(
+				select( pingpongBuffer[ index ].xy, H, pingpong == 0 ),
+				select( H, pingpongBuffer[ index ].zw, pingpong == 0 )
+			);
+		}
+		fn multiplyComplex(a: vec2<f32>, b: vec2<f32>) -> vec2<f32> {
+			return vec2<f32>(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+		}
+	`);	
+	
+	//- IFFT_Vertical -----------------------------------------------------------
+	this.IFFT_VerticalWGSL = wgslFn(`
+		fn computeWGSL(
+			butterflyBuffer: ptr<storage, array<vec4<f32>>, read>,
+			pingpongBuffer: ptr<storage, array<vec4<f32>>, read_write>,
+			index: u32,
+			size: u32,
+			initBufferIndex: u32,
+			step: u32,
+			logN: u32,
+			pingpong: u32,
+			workgroupSize: vec2<u32>,
+			workgroupId: vec3<u32>,
+			localId: vec3<u32>,
+		) -> void {
+			let pos = workgroupSize.xy * workgroupId.xy + localId.xy;
+			let butterflyIndex = pos.y * logN + step;
+			let data = butterflyBuffer[ butterflyIndex ];
+			let bufferIndexEven = u32( data.z ) * size + pos.x;
+			let bufferIndexOdd = u32( data.w ) * size + pos.x;
+			let even = select(pingpongBuffer[ bufferIndexEven ].xy, pingpongBuffer[ bufferIndexEven ].zw, pingpong == 0 );
+			let odd  = select(pingpongBuffer[ bufferIndexOdd ].xy, pingpongBuffer[ bufferIndexOdd ].zw, pingpong == 0 );
+			let H: vec2<f32> = even + multiplyComplex( data.rg, odd );
+			pingpongBuffer[ index ] = vec4<f32>(
+				select( pingpongBuffer[ index ].xy, H, pingpong == 0 ),
+				select( H, pingpongBuffer[ index ].zw, pingpong == 0 )
+			);
+		}
+		fn multiplyComplex(a: vec2<f32>, b: vec2<f32>) -> vec2<f32> {
+			return vec2<f32>(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+		}
+	`);
+	
+	//- IFFT Permute ------------------------------------------------------------
+	this.IFFT_PermuteWGSL = wgslFn(`
+		fn computeWGSL( 
+			pingpongBuffer: ptr<storage, array<vec4<f32>>, read>,
+			DxDzBuffer: ptr<storage, array<vec2<f32>>, read_write>,
+			DyDxzBuffer: ptr<storage, array<vec2<f32>>, read_write>,
+			DyxDyzBuffer: ptr<storage, array<vec2<f32>>, read_write>,
+			DxxDzzBuffer: ptr<storage, array<vec2<f32>>, read_write>,
+			initBufferIndex: u32,
+			index: u32,
+			size: u32,
+			workgroupSize: vec2<u32>,
+			workgroupId: vec3<u32>,
+			localId: vec3<u32>,
+		) -> void {
+			let pos = workgroupSize.xy * workgroupId.xy + localId.xy;
+			let input = pingpongBuffer[ index ].xy;
+			let output = input * ( 1.0 - 2.0 * f32( ( pos.x + pos.y ) % 2 ) );
+			DxDzBuffer[ index ] = select( DxDzBuffer[index], output, initBufferIndex == 0u );
+			DyDxzBuffer[ index ] = select( DyDxzBuffer[index], output, initBufferIndex == 1u );
+			DyxDyzBuffer[ index ] = select( DyxDyzBuffer[index], output, initBufferIndex == 2u );
+			DxxDzzBuffer[ index ] = select( DxxDzzBuffer[index], output, initBufferIndex == 3u );
+		} 
+	`);
+
+	//- TexturesMerger
+	this.TexturesMergerWGSL = wgslFn(`
+		fn computeWGSL( 
+			DxDzBuffer: ptr<storage, array<vec2<f32>>, read>,
+			DyDxzBuffer: ptr<storage, array<vec2<f32>>, read>,
+			DyxDyzBuffer: ptr<storage, array<vec2<f32>>, read>,
+			DxxDzzBuffer: ptr<storage, array<vec2<f32>>, read>,
+			turbulenceBuffer: ptr<storage, array<f32>, read_write>,
+			writeDisplacement: texture_storage_2d<rgba16float, write>,
+			writeDerivative: texture_storage_2d<rgba16float, write>,
+			writeJacobian: texture_storage_2d<rgba32float, write>,
+			index: u32,
+			size: u32,
+			lambda: f32,
+			deltaTime: f32,
+			workgroupSize: vec2<u32>,
+			workgroupId: vec3<u32>,
+			localId: vec3<u32>,
+		) -> void {
+			let pos = workgroupSize.xy * workgroupId.xy + localId.xy;
+			let bufferIndex = pos.y * size + pos.x;
+			var x = DxDzBuffer[bufferIndex];
+			var y = DyDxzBuffer[bufferIndex];
+			var z = DyxDyzBuffer[bufferIndex];
+			var w = DxxDzzBuffer[bufferIndex];
+			//The determinant of the Jacobi matrix is a measure of the curvature of the differential surface. 
+			//The curvature is particularly high at the crests of the waves. At these points, 
+			//the higher energy density leads to foam formation.
+			var jacobian = (1 + lambda * w.x) * (1 + lambda * w.y) - y.y * y.y * lambda * lambda;
+			var turbulence = turbulenceBuffer[bufferIndex] + deltaTime * 0.5 / max(jacobian, 0.5);
+			turbulence = min(jacobian, turbulence);
+			textureStore(writeDisplacement, pos, vec4f(lambda * x.x, y.x, lambda * x.y, 0));
+			textureStore(writeDerivative, pos, vec4f(z.x, z.y, w.x * lambda, w.y * lambda));
+			textureStore(writeJacobian, pos, vec4f(turbulence, 0, 0, 0));
+			turbulenceBuffer[bufferIndex] = turbulence;
+		}
+	`);
+
+	//-  Normal Map (Old) -------------------------------------------------------
+	this.compNormalMapWGSL = wgslFn(`
+		fn computeWGSL(
+			r_disp: texture_2d<f32>,
+			w_norm: texture_storage_2d<rgba32float, write>,
+			indx: u32,
+			size: f32,
+			gsiz: f32
+		) -> void {
+			// Variables
+			//- Compute vUv(u)
+			var posX = u32(indx) % u32(size);	// width
+			var posY = u32(indx) / u32(size);	// height
+			var idx  = vec2u(u32(posX), u32(posY));
+			var idxf = vec2f(idx);
+			//
+			let texel: f32 = 1/size;
+			let texelSize: f32 = gsiz/size;
+			//
+			let ctr = vec3<f32>(textureLoad(r_disp,idx,0).xyz);
+			let idxR = vec2<u32>(idxf+vec2<f32>(texel,0));
+			let rgt = vec3<f32>(vec3<f32>(texelSize,0,0)+textureLoad(r_disp,idxR,0).xyz) - ctr;
+			let idxL = vec2<u32>(idxf+vec2<f32>(-texel,0));
+			let lft = vec3<f32>(vec3<f32>(-texelSize,0,0)+textureLoad(r_disp,idxL,0).xyz) - ctr;
+			let idxT = vec2<u32>(idxf+vec2<f32>(0,-texel));
+			let top = vec3<f32>(vec3<f32>(0,0,-texelSize)+textureLoad(r_disp,idxT,0).xyz) - ctr;
+			let idxB = vec2<u32>(idxf+vec2<f32>(0,texel));
+			let bot = vec3<f32>(vec3<f32>(0,0,texelSize)+textureLoad(r_disp,idxB,0).xyz) - ctr;
+			//
+			let topRgt = vec3<f32>(cross(rgt,top));
+			let topLft = vec3<f32>(cross(top,lft));
+			let botLft = vec3<f32>(cross(lft,bot));
+			let botRgt = vec3<f32>(cross(bot,rgt));
+			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
+			//
+			nrm3 = vec3<f32>(nrm3) * 0.5 + 0.5;
+			textureStore(w_norm,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
+		}
+	`);
+
+	//**************************************|************************************
+	//																			*
+	//							INITIALIZE CLASS (continue)						*
+	//																			*
+	//***************************************************************************
+
+	//= Instructions ============================================================
+	//- [Source: src/waves/wave-generator.js] -----------------------------------
+	//- Butterfly
+	this.butterfly = this.butterflyWGSL({ 
+		butterflyBuffer: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count),
+		index: instanceIndex,
+		N: this.size,
+	}).compute(Math.log2(this.size) * this.size);
+	//-	[Source: src/waves/initial-spectrum.js] ---------------------------------
+	//- Initial Spectrum
+	this.initialSpectrum = this.InitialSpectrumWGSL({ 
+		spectrumBuffer: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
+		waveDataBuffer: storage(this.waveDataBuffer,'vec4',this.waveDataBuffer.count),
+		index: instanceIndex,
+		size: this.size,
+		waveLength: params.waveLength,
+		boundaryLow: params.boundaryLow,
+		boundaryHigh: params.boundaryHigh,
+//		...params.waveSettings // ### not sure how to do this, so I entered the values separately
+		// Wave Spectrum 1
+		depth: params.depth,
+		scaleHeight: params.scaleHeight,
+		windSpeed: params.windSpeed,
+		windDirection: params.windDirection,
+		fetch: params.fetch,
+		spreadBlend: params.spreadBlend,
+		swell: params.swell,
+		peakEnhancement: params.peakEnhancement,
+		shortWaveFade: params.shortWaveFade,
+		fadeLimit: params.fadeLimit,
+		// Wave Spectrum 2
+		d_depth: params.d_depth,
+		d_scaleHeight: params.d_scaleHeight,
+		d_windSpeed: params.d_windSpeed,
+		d_windDirection: params.d_windDirection,
+		d_fetch: params.d_fetch,
+		d_spreadBlend: params.d_spreadBlend,
+		d_swell: params.d_swell,
+		d_peakEnhancement: params.d_peakEnhancement,
+		d_shortWaveFade: params.d_shortWaveFade,
+		d_fadeLimit: params.d_fadeLimit,	
+	}).compute(this.sqSize);
+	//- Initial Spectrum with Inverse
+	this.initialSpectrumWithInverse = this.InitialSpectrumWithInverseWGSL({ 
+		spectrumBuffer: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
+		index: instanceIndex,
+		size: this.size,
+	}).compute(this.sqSize);
+	//- [Source: src/waves/wave-cascade.js] -------------------------------------
+	// TimeSpectrum
+	this.computeTimeSpectrum = this.TimeSpectrumWGSL({ 
+		writeDxDzBuffer: storage( this.DxDzBuffer, 'vec2', this.DxDzBuffer.count ),
+		writeDyDxzBuffer: storage( this.DyDxzBuffer, 'vec2', this.DyDxzBuffer.count ),
+		writeDyxDyzBuffer: storage( this.DyxDyzBuffer, 'vec2', this.DyxDyzBuffer.count ),
+		writeDxxDzzBuffer: storage( this.DxxDzzBuffer, 'vec2', this.DxxDzzBuffer.count ),
+		spectrumBuffer: storage( this.spectrumBuffer, 'vec4', this.spectrumBuffer.count ),
+		waveDataBuffer: storage( this.waveDataBuffer, 'vec4', this.waveDataBuffer.count ),
+		index: instanceIndex,
+		size: uint(params.size), /// ### uint caused error message
+		time: uniform(0)
+	}).computeKernel( this.workgroupSize );
+	// IFFT_Initialize
+	this.computeInitialize = this.IFFT_InitWGSL({ 
+		butterflyBuffer: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
+		DxDzBuffer: storage( this.DxDzBuffer, 'vec2', this.DxDzBuffer.count ).toReadOnly(),
+		DyDxzBuffer: storage( this.DyDxzBuffer, 'vec2', this.DyDxzBuffer.count ).toReadOnly(),
+		DyxDyzBuffer: storage( this.DyxDyzBuffer, 'vec2', this.DyxDyzBuffer.count ).toReadOnly(),
+		DxxDzzBuffer: storage( this.DxxDzzBuffer, 'vec2', this.DxxDzzBuffer.count ).toReadOnly(),
+		pingpongBuffer: storage( this.pingpongBuffer, 'vec4', this.pingpongBuffer.count ),
+		index: instanceIndex,
+		size: uint( params.size ),
+		initBufferIndex: uint( this.DDindex ),
+		step: uint( this.ifftStep ),
+		logN: uint( this.logN ),
+		workgroupSize: uniform( new THREE.Vector2().fromArray( this.workgroupSize ) ),
+		workgroupId: workgroupId, 
+		localId: localId			
+	}).computeKernel( this.workgroupSize );
+	// IFFT_Horizontal
+	this.computeHorizontalPingPong = this.IFFT_HorizontalWGSL({ 
+		butterflyBuffer: storage(this.butterflyBuffer, 'vec4', this.butterflyBuffer.count ).toReadOnly(),
+		pingpongBuffer: storage( this.pingpongBuffer, 'vec4', this.pingpongBuffer.count ),
+		index: instanceIndex,
+		size: uint( params.size ),
+		initBufferIndex: uint( this.DDindex ),
+		pingpong: uint( this.pingpong ),
+		step: uint( this.ifftStep ),
+		logN: uint( this.logN ),
+		workgroupSize: uniform( new THREE.Vector2().fromArray( this.workgroupSize ) ),
+		workgroupId: workgroupId, 
+		localId: localId
+	}).computeKernel( this.workgroupSize );
+	// IFFT_Vertical
+	this.computeVerticalPingPong = this.IFFT_VerticalWGSL({
+		butterflyBuffer: storage( this.butterflyBuffer, 'vec4', this.butterflyBuffer.count ).toReadOnly(),
+		pingpongBuffer: storage( this.pingpongBuffer, 'vec4', this.pingpongBuffer.count ),
+		index: instanceIndex,
+		size: uint( params.size ),
+		initBufferIndex: uint( this.DDindex ),
+		pingpong: uint( this.pingpong ),
+		step: uint( this.ifftStep ),
+		logN: uint( this.logN ),
+		workgroupSize: uniform( new THREE.Vector2().fromArray( this.workgroupSize ) ),
+		workgroupId: workgroupId, 
+		localId: localId
+	}).computeKernel( this.workgroupSize );
+	// IFFT_Permute
+	this.computePermute = this.IFFT_PermuteWGSL({ 
+		pingpongBuffer: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count).toReadOnly(),
+		DxDzBuffer: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count),
+		DyDxzBuffer: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count),
+		DyxDyzBuffer: storage(this.DyxDyzBuffer,'vec2',this.DyxDyzBuffer.count),
+		DxxDzzBuffer: storage(this.DxxDzzBuffer,'vec2',this.DxxDzzBuffer.count),
+		index: instanceIndex,
+		size: uint(params.size),
+		initBufferIndex: uint(this.DDindex),
+		workgroupSize: uniform(new THREE.Vector2().fromArray(this.workgroupSize)),
+		workgroupId: workgroupId, 
+		localId: localId
+	}).computeKernel( this.workgroupSize );
+	// TexturesMerge
+	this.computeMergeTextures = this.TexturesMergerWGSL({ 
+		DxDzBuffer: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count).toReadOnly(),
+		DyDxzBuffer: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count).toReadOnly(),
+		DyxDyzBuffer: storage(this.DyxDyzBuffer,'vec2',this.DyxDyzBuffer.count).toReadOnly(),
+		DxxDzzBuffer: storage(this.DxxDzzBuffer,'vec2',this.DxxDzzBuffer.count).toReadOnly(),
+		turbulenceBuffer: storage(this.turbulenceBuffer,'float',this.turbulenceBuffer.count),
+		writeDisplacement: textureStore(this.displacement),
+		writeDerivative: textureStore(this.derivative),
+		writeJacobian: textureStore(this.jacobian),
+		index: instanceIndex,
+		size: uint(params.size),
+		lambda: uniform(params.lambda),
+		deltaTime: this.deltaTime,
+		workgroupSize: uniform(new THREE.Vector2().fromArray(this.workgroupSize)),
+		workgroupId: workgroupId, 
+		localId: localId
+	}).computeKernel( this.workgroupSize );
+	//- [Source: Previous Program] ----------------------------------------------
+	//- Normal Map
+	this.compNormalMap = this.compNormalMapWGSL({
+		r_disp: texture(this.displacement),
+		w_norm: textureStore(this.normMapTexture),
+		indx: instanceIndex,
+		size: this.size,
+		gsiz: params.gsiz,
+	}).compute(this.size**2)
+
+	//= Render ==================================================================
+	params.renderer.computeAsync(this.butterfly);
+	params.renderer.computeAsync(this.initialSpectrum);
+	params.renderer.computeAsync(this.initialSpectrumWithInverse);
+	// Static Targets
+	wav_.Dsp = this.displacement;
+	wav_.Nrm = this.normMapTexture;
+	// End of Initialize
+};
+
+//**************************************|****************************************
+//																				*
+//								  UPDATE CLASS									*
+//																				*
+//*******************************************************************************
+
+// ### What method do you use to compute Delta Time???
+
+//= (called by Main Program) ===//===============================================
+	//- [src/waves/wave-cascade.js] ---------------------------------------------
+update(dt) {
+	this.computeTimeSpectrum.computeNode.parameters.time.value = performance.now()/1000;
+	this.params_.renderer.compute(this.computeTimeSpectrum,this.dispatchSize);
+	this.IFFT(0);				//DxDz
+	this.IFFT(1);				//DyDxz
+	this.IFFT(2);				//DyxDyz
+	this.IFFT(3);				//DxxDzz
+	this.deltaTime.value = dt;
+	this.params_.renderer.compute(this.computeMergeTextures,this.dispatchSize);
+//	this.params_.renderer.compute(this.computeNormalMap,this.dispatchSize);
+	this.params_.renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+};
+
+IFFT(index) {
+	this.DDindex.value = index;
+	let pingpong = true;
+	this.ifftStep.value = 0;
+	this.params_.renderer.compute(this.computeInitialize,this.dispatchSize);
+	for(let i = 1; i < this.logN; i++){
+		pingpong = !pingpong;
+		this.ifftStep.value = i;
+		this.pingpong.value = pingpong ? 1 : 0;
+		this.params_.renderer.compute(this.computeHorizontalPingPong,this.dispatchSize);
+	}
+	for(let i = 0; i < this.logN; i++){
+		pingpong = !pingpong;
+		this.ifftStep.value = i;
+		this.pingpong.value = pingpong ? 1 : 0;
+		this.params_.renderer.compute(this.computeVerticalPingPong,this.dispatchSize);
+	}
+	this.params_.renderer.compute(this.computePermute,this.dispatchSize);
+};
+
+};	// End of Module
+
+/*= MAIN PROGRAM =============================================================*/
+	loadAll();
+
+/*= 0 LOAD ALL ===============================================================*/
+function loadAll() {
+	loadSkyBox();
+	loadOceans();
+}
+
+/*= 1 INITIALIZE ===============//============================================*/
+function initAll() {
+	initOceans(renderer,wav_,params); // Initialize Ocean
+	// Show stats
+	if (StatOn) {				// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(StatOn.dom);
+	}
+	LodFlg = 1;
+}
+
+/*= 2 RENDER ===================//============================================*/
+function rendAll() {
+//	requestAnimationFrame(rendAll);	
+	if (PawsOn == 0 && LodFlg > 0) {
+		// Update camera position
+		if(camera.position.y < 0.0) {
+			camera.position.y = 2.0;
+		}
+		dt = clock.getDelta();
+		waves.update(dt); 		// Move Ocean
+		controls.update();		// Controls
+		if (StatOn) StatOn.update(); // Stats
+	}
+	renderer.renderAsync(scene, camera); // WebGPU requires Async
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+}
+
+/*= SKY BOX ==================================================================*/
+
+function loadSkyBox() {
+	let envMap = cubeLoader
+		.setPath(SBPath)
+		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
+	envMap.format = THREE.RGBAFormat;
+	envMap.colorSpace = THREE.SRGBColorSpace; // r152
+	scene.background = envMap;
+	LodFlg = 1;
+}
+
+//= OCEANS =====================//==============================================
+
+function loadOceans() {
+//	uvTexture = new THREE.TextureLoader(loadingManager).load('https://threejs.org/examples/textures/uv_grid_opengl.jpg');
+	uvTexture = txtrLoader.load('https://threejs.org/examples/textures/uv_grid_opengl.jpg');
+}
+
+function initOceans(renderer,wav_) {
+	waves = new Ocean(params,wav_);
+	WtrGeo = new THREE.PlaneGeometry(GrdSiz, GrdSiz, GrdSeg, GrdSeg);	
+	WtrGeo.rotateX(-Math.PI * 0.5);
+	let color2 = new THREE.Color(WtrCol);
+	WtrMat = new THREE.MeshStandardNodeMaterial( {
+		colorNode: color(color2),
+		metalness: 0.5,			// Mine = 1.0, theirs = 0
+		roughness: 0.1,			// Mine = 0.7, theirs = 0.1
+		positionNode: positionLocal.add(texture(wav_.Dsp).xyz),
+		normalNode: normalMap(texture(wav_.Nrm),wav_.NMS),	// Animated texture
+		envMap: scene.background,
+		envMapIntensity: 1,
+	} );
+
+	// Compute Starting Z and X Values
+	let zx = -0.5*(GrdRCs)*GrdSiz+0.5*GrdSiz;
+	for (let i = 0; i < GrdRCs; i++) {
+		WavMZV[i] = zx;
+		WavMXV[i] = zx;
+		zx = zx + GrdSiz;
+	}
+	// 4 Adjacent Planes
+	let n = 0;
+	for (let z = 0; z < GrdRCs; z++) {		// Row X2
+		for (let x = 0; x < GrdRCs; x++) {	// Column X2
+			GrdPtr[n] = new THREE.Mesh(WtrGeo,WtrMat);
+			scene.add(GrdPtr[n]);
+			GrdPtr[n].position.set(WavMXV[x],0,-WavMZV[z]);
+			n++;
+		}
+	}
+}
+
+/*= 4 MISC SUBROUTINES =========//============================================*/
+
+//- Converts degrees to 360
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;	// Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
+return deg;}
+
+//- Keyboard -------------------------------------------------------------------
+
+//- Key Down
+function onDocumentKeyDown(event) {
+	let keyCode = event.which;
+	if (event.keyCode == K_Paws) togglePaws(); // Pause
+	if (event.keyCode == K_Wire) toggleWire(); // Wire	
+}
+
+//- Key Up
+function onDocumentKeyUp(event) {
+	let keyCode = event.which;
+	//
+}
+
+//- Toggle Pause
+function togglePaws() {
+	PawsOn = 1 - PawsOn;
+}
+
+//- Toggle Wire
+function toggleWire() {
+	WireOn = 1 - WireOn;
+	if (WireOn) {
+		for (let x = 0; x < 16; x++) {
+			WtrMat.wireframe = true;
+			WtrMat.needsUpdate = true;		
+		}
+	}
+	else {
+		for (let x = 0; x < 16; x++) {
+			WtrMat.wireframe = false;
+			WtrMat.needsUpdate = true;
+		}
+	}
+}
+
+//= Window Resize Input ========================================================
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+</script>
+</body>
+</html>
