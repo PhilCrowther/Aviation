@@ -169,7 +169,7 @@ let grd_ = {
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
 		Col: 0,
-		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png",
+		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color3.png",
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
 		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
