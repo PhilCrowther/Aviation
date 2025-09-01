@@ -4,7 +4,7 @@
 *
 *******************************************************************************/
 
-// GrdWtr.js (31 Aug 2025)
+// GrdWtr.js (1 Sep 2025)
 // Copyright 2022-2025, Phil Crowther
 // Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 //
@@ -227,8 +227,7 @@ _initGeoMat(grd_,scene) {
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
 			grd_.Mat[n][idx] = new MeshStandardNodeMaterial({ // Grid0 textures
-//				colorNode: color(grd_.Col),
-				map: grd_.DfM[n][idx], // not texture
+				colorNode: texture(grd_.DfM[n][idx]),
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
 				roughnessMap: grd_.RfM[n][idx], // not texture
@@ -254,8 +253,7 @@ _initGeoMat(grd_,scene) {
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
 			grd_.Mat[n][idx] = new MeshStandardNodeMaterial({ // Grid1 textures
-//				colorNode: color(grd_.Col),
-				map: grd_.DfM[n][idx], // not texture
+				colorNode: texture(grd_.DfM[n][idx]),
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
 				roughnessMap: grd_.RfM[n][idx], // not texture
@@ -273,8 +271,7 @@ _initGeoMat(grd_,scene) {
 	// Grid2 has generic normal map
 	n = 2;
 	grd_.Mat[n] = new MeshStandardNodeMaterial({
-//		colorNode: color(grd_.Col),
-		map: grd_.DfM[n],			// Full-Sized Texture
+		colorNode: texture(grd_.DfM[n]),
 		metalness: grd_.Mtl[n], // 1 for max reflection
 		roughness: grd_.Ruf[n],	// 0 for max reflection
 		roughnessMap: grd_.RfM[n],	// not texture
@@ -509,5 +506,5 @@ export {loadGeoMat,GrdMap};
 250403	Add grd_.EMI, Mtl and Ruf to allow fine-tuning of EMI, metalness and roughness
 250531: Rename as GrdWtr
 250601:	Add loadGeoMat to Module
-250831: Color and map no longer mix; using colored map instead.
+250901: Color and map no longer mix; using colored map instead.
 */
