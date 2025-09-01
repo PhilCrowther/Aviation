@@ -262,8 +262,8 @@ _initGeoMat(grd_,scene) {
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
 			grd_.Mat[n][idx] = new MeshStandardNodeMaterial({ // Grid1 textures
-				colorNode: texture(grd_.DfM[n][idx]),
-//				colorNode: texture(grd_.DfM[n][idx]).mul(texture(grd_.DfD)), // add detail
+//				colorNode: texture(grd_.DfM[n][idx]),
+				colorNode: texture(grd_.DfM[n][idx]).mul(texture(grd_.DfD)), // add detail
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
 				roughnessMap: grd_.RfM[n][idx], // not texture
