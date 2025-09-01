@@ -107,6 +107,8 @@ function loadGeoMat(imagLoader,txtrLoader,grd_,context) {
 		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.offset.set(0,0);
+		texture.repeat.set(32,32);
 		texture.needsUpdate = true;
 		grd_.DfD = texture;
 	});
