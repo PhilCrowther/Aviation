@@ -85,8 +85,6 @@ import {color,texture,normalMap,positionLocal} from 'three/tsl';
 *
 *******************************************************************************/
 
-
-// Not exported because GrdWtr is a module
 function loadGeoMat(imagLoader,txtrLoader,grd_,context) {
 	loadGe1Mat(imagLoader,grd_,context,grd_.DfS,grd_.DfM); // Diffuse Textures
 	loadGe1Mat(imagLoader,grd_,context,grd_.RfS,grd_.RfM); // Roughness Textures
@@ -101,6 +99,16 @@ function loadGeoMat(imagLoader,txtrLoader,grd_,context) {
 		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
 		texture.needsUpdate = true;
 		grd_.NM2 = texture;
+	});
+	// Detail Map
+	txtrLoader.load(grd_.DfD,function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.needsUpdate = true;
+		grd_.DfD = texture;
 	});
 }
 
