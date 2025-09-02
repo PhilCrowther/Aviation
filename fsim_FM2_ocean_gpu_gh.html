@@ -289,6 +289,7 @@ const renderer = new THREE.WebGPURenderer({antialias: true});
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
+    await renderer.init();		// r179
 let maxAnisotropy = renderer.getMaxAnisotropy();
 //	Depth Buffer
 	renderer.logarithmicDepthBuffer = true;				// Seems to help with CVE deck flickering
