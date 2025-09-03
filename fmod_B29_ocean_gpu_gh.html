@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Aug 2025
+Version dated 3 Sep 2025
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
 
 <head>
-<title>fmod B29 ocean gpu r179.1</title>
+<title>fmod B29 ocean gpu r180</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_b29.css">
 </head>
@@ -41,10 +41,10 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/",
+			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -174,6 +174,7 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 //	renderer.toneMapping = THREE.AgXToneMapping;		// normal
 //	renderer.toneMapping = THREE.NeutralToneMapping;	// contrast - dark
 	renderer.toneMappingExposure = 0.75;				// Higher = brighter (default = 1)
+	await renderer.init();		// r179
 //- Inputs
 	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -262,7 +263,8 @@ let grd_ = {
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
 		Col: new THREE.Color(WtrCol), // Color
-		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png",
+		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png",
+		DfD: "https://PhilCrowther.github.io/Aviation/textures/ocean/ocean_detail_bw.png",
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
 		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
