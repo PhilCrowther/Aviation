@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Aug 2025
+Version dated 3 Sep 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
 
 <head>
-<title>fdem jet ocean gpu r179.1</title>
+<title>fdem jet ocean gpu r180</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
@@ -39,10 +39,10 @@ A WebGPU demo of the GrdWtr and Ocean modules.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.179.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.179.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.179.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.0/examples/jsm/",
+			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -155,6 +155,7 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
+	await renderer.init();		// r179
 //- Inputs
 	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -207,11 +208,6 @@ let LF0Txt, LF1Txt = 0;
 //const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
 //const WtrCol = 0x0066cc;		// Water (Nodes)
 const WtrCol = 0x004080;		// Water (Nodes)
-//- Textures
-//const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg"; // TEST
-const DifSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png";
-const RufSrc = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
-const NrmSrc = "https://threejs.org/examples/textures/waternormals.jpg";	// Size = 1024x1024
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;				// !!! Change this for each image
 
@@ -244,10 +240,11 @@ let grd_ = {
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
 		Col: new THREE.Color(WtrCol), // Color
-		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F.png",
+		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png",
+		DfD: "https://PhilCrowther.github.io/Aviation/textures/ocean/ocean_detail_bw.png",
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
-		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
+		Ruf: [0.1,0.1,0.1],		// Roughness (0 for max reflection)
 		EMI: [0.5,0.48,0.48],	// EnvMap Intensity
 		// Maps
 		MSz: 512,				// Image Size
