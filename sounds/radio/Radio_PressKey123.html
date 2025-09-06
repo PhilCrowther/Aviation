@@ -26,9 +26,9 @@ Press 1, 2, or 3 to hear different segments
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
-			"three/tsl": "https://unpkg.com/three@0.174.0/build/three.webgpu.js",
-			"three/addons/": "https://unpkg.com/three@0.174.0/examples/jsm/"
+			"three": "https://unpkg.com/three@0.180.0/build/three.webgpu.js",
+			"three/tsl": "https://unpkg.com/three@0.180.0/build/three.webgpu.js",
+			"three/addons/": "https://unpkg.com/three@0.180.0/examples/jsm/"
 		}
 	}
 </script>
@@ -78,13 +78,13 @@ let K_Num2 = 50;				// Play Segment 2
 let K_Num3 = 51;				// Play Segment 2
 let	rad_ = {
 		// Sound Files (voice plus static)
-		SndSrc: ["https://PhilCrowther.github.io/Aviation/sounds/radio/radio.wav",
-				 "https://PhilCrowther.github.io/Aviation/sounds/radio/noise.mp3"],
+		SndSrc: ["https://PhilCrowther.github.io/Aviation/sounds/radio/static.mp3",
+				 "https://PhilCrowther.github.io/Aviation/sounds/radio/pilot1.wav"],		 
 		SndPtr: [0,0],
 		// Sound File Segments (3)
 		SegIdx: 0,				// Index to Segment
 		SegOff: [0.0,1.0,3.5],
-		SegEnd: [1.0,2.5,2.0],
+		SegEnd: [1.0,2.5,2.1],
 	}	
 
 //= MAIN =======================//==============================================
@@ -118,12 +118,14 @@ function loadSounds() {
 	let	listener = new THREE.AudioListener();
 	camera.add(listener);	
 	// Create Global Audio Source
+	// Static
 	rad_.SndPtr[0] = new THREE.Audio(listener);	
 	audioLoader.load(rad_.SndSrc[0],function(buffer) {
 		rad_.SndPtr[0].setBuffer(buffer);
 		rad_.SndPtr[0].setVolume(0.3);
 		rad_.SndPtr[0].setPlaybackRate(1.05);
 	});
+	// Pilot
 	rad_.SndPtr[1] = new THREE.Audio(listener);	
 	audioLoader.load(rad_.SndSrc[1],function(buffer) {
 		rad_.SndPtr[1].setBuffer(buffer);
