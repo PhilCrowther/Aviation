@@ -23,7 +23,7 @@ import {FloatType,HalfFloatType,LinearFilter,LinearMipMapLinearFilter,RepeatWrap
 		Vector2,
 } from 'three';
 import {
-import {float,vec2,vec3,vec4,attribute,color,texture,wgslFn,code,
+import {float,vec2,vec3,vec4,attribute,texture,wgslFn,
 		uniform,instanceIndex,storage, // wave-generator, initial-spectrum and wave-cascade
 		textureStore,uint,workgroupId,localId, // wave-cascade
 } from 'three/tsl';
@@ -577,7 +577,6 @@ constructor(params) {
 			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
 			//
 			nrm3 = vec3<f32>(nrm3)*0.5 + 0.5;
-//			textureStore(w_norm,idx,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 			textureStore(w_norm,pos,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 		}
 	`);
