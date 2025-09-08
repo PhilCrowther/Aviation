@@ -279,14 +279,14 @@ let wav_ = {
 		lambda: uniform(0.9),
 		renderer: renderer,
 		// InitSpec Variables
-		waveLength: uniform(500),		// was 250
+		waveLength: uniform(400),		// was 250
 		boundaryLow: uniform(0.0001),	// ## ok?
 		boundaryHigh: uniform(9999),	// ### ok??
 		// Wave Spectrum 1
 		depth: uniform(20),
 		scaleHeight: uniform(1),
 		windSpeed: uniform(4),			// was 2
-		windDirection: uniform(340/360.0*2*Math.PI),
+		windDirection: uniform(300/360.0*2*Math.PI),
 		fetch: uniform(100000),
 		spreadBlend: uniform(1),
 		swell: uniform(0.198),
@@ -297,7 +297,7 @@ let wav_ = {
 		d_depth: uniform(20),
 		d_scaleHeight: uniform(1),
 		d_windSpeed: uniform(2),		// was 1
-		d_windDirection: uniform(315/360.0*2*Math.PI),
+		d_windDirection: uniform(180/360.0*2*Math.PI),
 		d_fetch: uniform(300000),
 		d_spreadBlend: uniform(1),
 		d_swell: uniform(0.5),
