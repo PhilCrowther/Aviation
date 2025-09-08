@@ -23,8 +23,7 @@ import {FloatType,HalfFloatType,LinearFilter,LinearMipMapLinearFilter,RepeatWrap
 		Vector2,
 } from 'three';
 import {
-import {float,vec2,vec3,vec4,attribute,positionLocal,color,texture,normalMap,
-		wgslFn,code,
+import {float,vec2,vec3,vec4,attribute,color,texture,wgslFn,code,
 		uniform,instanceIndex,storage, // wave-generator, initial-spectrum and wave-cascade
 		textureStore,uint,workgroupId,localId, // wave-cascade
 } from 'three/tsl';
