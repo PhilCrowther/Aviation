@@ -80,7 +80,7 @@ constructor(params) {
 	this.displacement.magFilter = LinearFilter;
 	this.displacement.minFilter = LinearMipMapLinearFilter;
 	this.displacement.wrapS = this.displacement.wrapT = RepeatWrapping;
-	this.displacement.anisotropy = this.params_.renderer.getMaxAnisotropy();
+	this.displacement.anisotropy = this.params_.anisotropy;
 	//- Derivative
 	this.derivative = new StorageTexture(this.size,this.size);
 	this.derivative.type = HalfFloatType;
@@ -88,7 +88,7 @@ constructor(params) {
 	this.derivative.magFilter = LinearFilter;
 	this.derivative.minFilter = LinearMipMapLinearFilter;
 	this.derivative.wrapS = this.derivative.wrapT = RepeatWrapping;
-	this.derivative.anisotropy = this.params_.renderer.getMaxAnisotropy();
+	this.derivative.anisotropy = this.params_.anisotropy;
 	//- Jacobian
 	this.jacobian = new StorageTexture(this.size,this.size);
 	this.jacobian.type = FloatType;
@@ -96,7 +96,7 @@ constructor(params) {
 	this.jacobian.magFilter = LinearFilter;
 	this.jacobian.minFilter = LinearMipMapLinearFilter;
 	this.jacobian.wrapS = this.jacobian.wrapT = RepeatWrapping;
-	this.jacobian.anisotropy = this.params_.renderer.getMaxAnisotropy();
+	this.jacobian.anisotropy = this.params_.anisotropy;
 	//- Normal Map Texture (from old program)
 	this.normMapTexture = new StorageTexture(this.size,this.size);
 	this.normMapTexture.type = FloatType;
