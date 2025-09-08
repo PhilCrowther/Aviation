@@ -14,7 +14,6 @@
 	2. SKY VARIABLES				(sky_)
 	3. OCEAN GRID VARIABLES
 		GRDWTR MODULE				(grd_)
-		OCEAN MODULE				(wav_)
 	4. OBJECT VARIABLES
 		SHARED TEXTURES				(txt_)
 		STATIC OBJECTS
@@ -184,19 +183,6 @@ let grd_ = {
 	};
 //- OCEAN MODULE ---------------//----------------------------------------------			
 let waves = 0;
-let wav_ = {
-		// Sources
-		Res: 512,				// Resolution - segments per square (default = 512)
-		Siz: grd_.Siz,			// Size of Smallest Square
-		WSp: 10.0,				// Wind Speed
-		WHd: 90,				// Wind Heading (0=0,Spd; 90=Spd,0; 180=0,-Spd; 270=-Spd,0)
-		Chp: 1.5,				// default = 1
-		// Animated Maps
-		Dsp: 0,					// The Displacement Map
-		Nrm: 0,					// The Normal Map
-		NMS: 0, 				// Normal Map Scale (flip Y for left-handed maps)
-		Spd: 0.5,				// Can vary with GrdSiz
-	};
 
 //= 4. OBJECT VARIABLES ========//==============================================
 
@@ -888,7 +874,7 @@ let	rad_ = {
 		Sg1Src: [1,1,1],		// Index to Radio Source
 		Sg1Sta: [1,1,1],		// Static Offset within Source (best)	
 		Sg1Off: [0.0,1.0,3.5],	// Radio Offset within Source
-		Sg1End: [1.0,2.5,2.0],	// Radio Offset within Source
+		Sg1End: [1.0,2.5,2.1],	// Radio Offset within Source
 		// Timed Segments
 		Sq1Tim: 0,				// Sequence Timer
 		Sg1Num: 2,				// Number of Events
@@ -901,7 +887,7 @@ let	rad_ = {
 		Sg2Src: [2],			// Index to Radio Source
 		Sg2Sta: [1],			// Static Offset within Source (best)	
 		Sg2Off: [0.0,1.0,3.5],	// Radio Offset within Source
-		Sg2End: [1.0,2.5,2.0],	// Radio Offset within Source
+		Sg2End: [1.0,2.5,2.1],	// Radio Offset within Source
 		Sq2Dun: 0,
 		// Timed Segments
 		Sq2Tim: 0,				// Sequence Timer
