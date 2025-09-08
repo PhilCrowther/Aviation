@@ -1,18 +1,13 @@
-﻿//= OCEAN MODULE ================================================================
+﻿/*= OCEAN MODULE ================================================================
 
-// Ocean.js (24 Aug 2025)
-//
-// History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
-// based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
-//
-// In 2023, Phil Crowther <phil@philcrowther.com> updated and modified the wave generator to work as a module.  
-// Attila_Schroeder <> further upgraded and improved this module to work with GLSL3, WebGL2 and now WebGPU.
-// This version 4t is version 4 upgraded to work with r168 and uses timerLocal rather than WavTim.
-//
-// As with the original wave generators, this module is licensed under a
-// Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Ocean2.js (9 Sep 2025)
 
-/**************************************|*****************************************
+This is single-pass version of the Ocean Wave Generator created by Attila Schroeder
+Created with his assistance and permission and licensed under a
+Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+*/
+
+/********************************************************************************
 *
 *	IMPORTS
 *
@@ -22,8 +17,7 @@ import {FloatType,HalfFloatType,LinearFilter,LinearMipMapLinearFilter,RepeatWrap
 		TimestampQuery,				// r173 requires this
 		Vector2,
 } from 'three';
-import {
-import {float,vec2,vec3,vec4,attribute,texture,wgslFn,
+import {float,vec2,vec3,vec4,texture,wgslFn,
 		uniform,instanceIndex,storage, // wave-generator, initial-spectrum and wave-cascade
 		textureStore,uint,workgroupId,localId, // wave-cascade
 } from 'three/tsl';
@@ -35,38 +29,22 @@ import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 *
 ********************************************************************************/
 
-//= NOTES =======================================================================
-// Original 2013: David Li (david.li/waves/) - created shaders and js program
-// Original 2014: Aleksandr Albert (routter.co.tt) - converted to WebGL three.js program
-// Modified 2015: Jeremy Bouny (github.com/fft-ocean) - updated three.js program
-// Modified 2023: Phil Crowther (philcrowther.com) - updated and converted to three.js class module
-// Modified 2023: Attila Schroeder - many improvements
-// Modified 2024: Attila Schroeder - converted to GPU WGSL Texture Shaders and added butterfly texture
-// Modified 2025: Attila Schroeder - converted to GPU WGSL Compute Shaders.
-
 /********************************************************************************
 *
 *	INITIALIZE CLASS
 *
 ********************************************************************************/
 
-// A mashup of wave-cascade.js, wave-generator.js [Butterfly] and initial-spectrum.js.
-
 class Ocean {
 
 constructor(params) {
-//		super();
-//		this.Init(params,wav_);
-//	}
 
-//= INITIALIZE ===========//=====================================================
-//this.Init(params,wav_) {
+//= INITIALIZE ==================================================================
 
 	//= Variables ===============================================================
 	this.size = params.size;
 	//- [Source: src/waves/wave-cascade.js]	-------------------------------------
 	this.params_ = params;
-//	this.defaultWorkgroup = wave_constants.DEFAULT_WORKGROUP;
 	this.logN = Math.log2(params.size);
 	this.sqSize = params.size**2;
 	this.bufferSize = this.sqSize*2;
@@ -560,7 +538,6 @@ constructor(params) {
 			let texelSize: f32 = gsiz/size;
 			//
 			let ctr = vec3<f32>(textureLoad(r_disp,idx,0).xyz);
-//			let ctr = vec3<f32>(textureLoad(r_disp,bufferIndex,0).xyz);
 			let idxR = vec2<u32>(idxf+vec2<f32>(texel,0));
 			let rgt = vec3<f32>(vec3<f32>(texelSize,0,0)+textureLoad(r_disp,idxR,0).xyz) - ctr;
 			let idxL = vec2<u32>(idxf+vec2<f32>(-texel,0));
@@ -740,7 +717,6 @@ constructor(params) {
 		workgroupSize: uniform(new Vector2().fromArray(this.workgroupSize)),
 		workgroupId: workgroupId,
 		localId: localId
-//	}).compute(this.size**2);
 	}).computeKernel(this.workgroupSize);
 
 // End of Initialize
@@ -801,19 +777,5 @@ export {Ocean};
 *
 //******************************************************************************/
 /*
-// 230519: Version 1	:
-// 230614: Vecsion 2	: Changed to Class; on initialization, only imput renderer and wav_; on render, only input wavTim; moved wavTim variables to main program
-// 230628: Version 2a	: Many improvements to original code and Oceean is now WebGL2 compatible (the three.js default)
-// 240210: Version 3	: Updated to include 2023 changes to shaders, including new names; Moved computation initial spectrum comp back to render
-// 240719: Version 4	: Converted to WebGPU module
-// 240811: Version 4a	: Updated to r167 and cleaned up imports
-// 240901: Version 4t	: Uses localTimer instead of wavTim.
-// 240904:				: Changed Module format
-// 240410:				: Removed visibility helpers (alpha = 1)
-// 241031: Version4t2	: Replace timerLocal with time (r170)
-// 241220:				: Added computeAsync (also works with r170)
-// 250131:				: Added TimestampQuery after loops (r173)
-// 250531: Rename as Ocean
-// 250808:				: Fix coding error identified by r179.
-// 250824:				: New Labels
+	250908: Initial Version - Uses Compute Shaders 
 */
