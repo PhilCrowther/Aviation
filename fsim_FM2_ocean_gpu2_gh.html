@@ -360,7 +360,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //	Tests
 	grd_.Col = new THREE.Color(0x14263e);
 //	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg";
-//	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color3.png";
+	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color6.png";
 //- Ocean Moduel ---------------//-----------------------------------------------
 let wav_ = {
 		// General
@@ -654,7 +654,7 @@ function WaitScreen() {
 }
 
 //-	INITIALIZE -----------------//----------------------------------------------
-async function initAll() {
+function initAll() {
 	// Time
 	tim_.DLTime = 1/60;			// Seconds per frame (default)
 	tim_.DLTim2 = tim_.DLTime**2;
