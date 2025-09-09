@@ -146,6 +146,7 @@ const camera = new THREE.PerspectiveCamera(55,CamAsp,1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
 const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+	await renderer.init();		// r179
     renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -155,7 +156,6 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
-	await renderer.init();		// r179
 //- Inputs
 	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -247,7 +247,7 @@ let grd_ = {
 		DfD: "https://PhilCrowther.github.io/Aviation/textures/ocean/ocean_detail_bw.png",
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
-		Ruf: [0.05,0.05,0.05],	// Roughness (0 for max reflection)
+		Ruf: [0.1,0.1,0.1],	// Roughness (0 for max reflection)
 		EMI: [0.5,0.48,0.48],	// EnvMap Intensity
 		// Maps
 		MSz: 512,				// Image Size

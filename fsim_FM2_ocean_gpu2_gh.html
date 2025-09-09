@@ -281,6 +281,7 @@ const camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //	Renderer
 const renderer = new THREE.WebGPURenderer({antialias: true});
+	await renderer.init();		// r179
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);	
@@ -289,7 +290,6 @@ const renderer = new THREE.WebGPURenderer({antialias: true});
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
-	await renderer.init();		// r179
 let maxAnisotropy = renderer.getMaxAnisotropy();
 //	Depth Buffer
 	renderer.logarithmicDepthBuffer = true;				// Seems to help with CVE deck flickering
