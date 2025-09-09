@@ -81,22 +81,6 @@ constructor(params) {
 	this.displacement.minFilter = LinearMipMapLinearFilter;
 	this.displacement.wrapS = this.displacement.wrapT = RepeatWrapping;
 	this.displacement.anisotropy = this.params_.anisotropy;
-	//- Derivative
-	this.derivative = new StorageTexture(this.size,this.size);
-	this.derivative.type = HalfFloatType;
-	this.derivative.generateMipmaps = true;
-	this.derivative.magFilter = LinearFilter;
-	this.derivative.minFilter = LinearMipMapLinearFilter;
-	this.derivative.wrapS = this.derivative.wrapT = RepeatWrapping;
-	this.derivative.anisotropy = this.params_.anisotropy;
-	//- Jacobian
-	this.jacobian = new StorageTexture(this.size,this.size);
-	this.jacobian.type = FloatType;
-	this.jacobian.generateMipmaps = true;
-	this.jacobian.magFilter = LinearFilter;
-	this.jacobian.minFilter = LinearMipMapLinearFilter;
-	this.jacobian.wrapS = this.jacobian.wrapT = RepeatWrapping;
-	this.jacobian.anisotropy = this.params_.anisotropy;
 	//- Normal Map Texture (from old program)
 	this.normMapTexture = new StorageTexture(this.size,this.size);
 	this.normMapTexture.type = FloatType;
@@ -248,7 +232,6 @@ constructor(params) {
 			return (1 - fadeLimit)*exp(-pow(shortWavesFade*kLength,2)) + fadeLimit;
 		}
 	`);
-
 	//- Initial Spectrum with Inverse -------------------------------------------
 	this.InitialSpectrumWithInverseWGSL = wgslFn(`
 		fn computeWGSL(
@@ -261,8 +244,7 @@ constructor(params) {
 			var h0MinusK = spectrumBuffer[idx];
 			spectrumBuffer[index] = vec4<f32>(spectrumData.xy,h0MinusK.x,-h0MinusK.y);
 		}
-	`);
-	
+	`);	
 	//- Butterfly ---------------------------------------------------------------
 	this.butterflyWGSL = wgslFn(`
 		fn computeWGSL(
@@ -305,8 +287,7 @@ constructor(params) {
 			} 
 			return f32(bitReversedIndex);
 		}
-	`);
-	
+	`);	
 	//- Time Spectrum -----------------------------------------------------------
 	this.TimeSpectrumWGSL = wgslFn(`
 		fn computeWGSL(
@@ -346,7 +327,6 @@ constructor(params) {
 			return vec2<f32>(a.r*b.r - a.g*b.g,a.r*b.g + a.g*b.r);
 		}
 	`);
-
 	//- IFFT_Init ---------------------------------------------------------------
 	this.IFFT_InitWGSL = wgslFn(`
 		fn computeWGSL(
@@ -382,8 +362,7 @@ constructor(params) {
 		fn multiplyComplex(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
 			return vec2<f32>(a.x*b.x - a.y*b.y,a.y*b.x + a.x*b.y);
 		}
-	`);	
-	
+	`);		
 	//- IFFT_Horizontal ---------------------------------------------------------
 	this.IFFT_HorizontalWGSL = wgslFn(`
 		fn computeWGSL(
@@ -415,8 +394,7 @@ constructor(params) {
 		fn multiplyComplex(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
 			return vec2<f32>(a.x*b.x - a.y*b.y,a.y*b.x + a.x*b.y);
 		}
-	`);	
-	
+	`);		
 	//- IFFT_Vertical -----------------------------------------------------------
 	this.IFFT_VerticalWGSL = wgslFn(`
 		fn computeWGSL(
@@ -448,8 +426,7 @@ constructor(params) {
 		fn multiplyComplex(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
 			return vec2<f32>(a.x*b.x - a.y*b.y,a.y*b.x + a.x*b.y);
 		}
-	`);
-	
+	`);	
 	//- IFFT Permute ------------------------------------------------------------
 	this.IFFT_PermuteWGSL = wgslFn(`
 		fn computeWGSL(
@@ -474,7 +451,6 @@ constructor(params) {
 			DxxDzzBuffer[index] = select(DxxDzzBuffer[index],output,initBufferIndex == 3u);
 		} 
 	`);
-
 	//- TexturesMerger
 	this.TexturesMergerWGSL = wgslFn(`
 		fn computeWGSL(
@@ -482,14 +458,9 @@ constructor(params) {
 			DyDxzBuffer: ptr<storage,array<vec2<f32>>,read>,
 			DyxDyzBuffer: ptr<storage,array<vec2<f32>>,read>,
 			DxxDzzBuffer: ptr<storage,array<vec2<f32>>,read>,
-			turbulenceBuffer: ptr<storage,array<f32>,read_write>,
 			writeDisplacement: texture_storage_2d<rgba16float,write>,
-			writeDerivative: texture_storage_2d<rgba16float,write>,
-			writeJacobian: texture_storage_2d<rgba32float,write>,
-			index: u32,
 			size: u32,
 			lambda: f32,
-			deltaTime: f32,
 			workgroupSize: vec2<u32>,
 			workgroupId: vec3<u32>,
 			localId: vec3<u32>,
@@ -498,21 +469,9 @@ constructor(params) {
 			let bufferIndex = pos.y*size+pos.x;
 			var x = DxDzBuffer[bufferIndex];
 			var y = DyDxzBuffer[bufferIndex];
-			var z = DyxDyzBuffer[bufferIndex];
-			var w = DxxDzzBuffer[bufferIndex];
-			//The determinant of the Jacobi matrix is a measure of the curvature of the differential surface. 
-			//The curvature is particularly high at the crests of the waves. At these points, 
-			//the higher energy density leads to foam formation.
-			var jacobian = (1 + lambda*w.x)*(1 + lambda*w.y) - y.y*y.y*lambda*lambda;
-			var turbulence = turbulenceBuffer[bufferIndex] + deltaTime*0.5 / max(jacobian,0.5);
-			turbulence = min(jacobian,turbulence);
 			textureStore(writeDisplacement,pos,vec4f(lambda*x.x,y.x,lambda*x.y,0));
-			textureStore(writeDerivative,pos,vec4f(z.x,z.y,w.x*lambda,w.y*lambda));
-			textureStore(writeJacobian,pos,vec4f(turbulence,0,0,0));
-			turbulenceBuffer[bufferIndex] = turbulence;
 		}
 	`);
-
 	//-  Normal Map (Old) -------------------------------------------------------
 	this.computeNormalMapWGSL = wgslFn(`
 		fn computeWGSL(
@@ -694,19 +653,13 @@ constructor(params) {
 		DyDxzBuffer: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count).toReadOnly(),
 		DyxDyzBuffer: storage(this.DyxDyzBuffer,'vec2',this.DyxDyzBuffer.count).toReadOnly(),
 		DxxDzzBuffer: storage(this.DxxDzzBuffer,'vec2',this.DxxDzzBuffer.count).toReadOnly(),
-		turbulenceBuffer: storage(this.turbulenceBuffer,'float',this.turbulenceBuffer.count),
 		writeDisplacement: textureStore(this.displacement),
-		writeDerivative: textureStore(this.derivative),
-		writeJacobian: textureStore(this.jacobian),
-		index: instanceIndex,
 		size: uint(params.size),
 		lambda: uniform(params.lambda),
-		deltaTime: this.deltaTime,
 		workgroupSize: uniform(new Vector2().fromArray(this.workgroupSize)),
 		workgroupId: workgroupId,
 		localId: localId
-	}).computeKernel(this.workgroupSize);
-	//- [Source: Previous Program] ----------------------------------------------
+	}).computeKernel(this.workgroupSize);	//- [Source: Previous Program] ----------------------------------------------
 	//- Normal Map
 	this.computeNormalMap = this.computeNormalMapWGSL({
 		r_disp: texture(this.displacement),
@@ -731,7 +684,8 @@ constructor(params) {
 //= (called by Main Program) ===//===============================================
 	//- [src/waves/wave-cascade.js] ---------------------------------------------
 update(dt) {
-	this.computeTimeSpectrum.computeNode.parameters.time.value = performance.now()/1000;
+	const timeOffset = 100;
+	this.computeTimeSpectrum.computeNode.parameters.time.value = timeOffset+performance.now()/1000;
 	this.params_.renderer.compute(this.computeTimeSpectrum, this.dispatchSize);
 	this.IFFT( 0 );	//DxDz
 	this.IFFT( 1 );	//DyDxz
