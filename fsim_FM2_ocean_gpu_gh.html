@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Sep 2025
+Version dated 9 Sep 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -359,7 +359,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	grd_.EMI = [0.5,0.48,0.48];	// envMap Intensity
 //	Tests
 	grd_.Col = new THREE.Color(0x14263e);
-//	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg";
+	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 //- Ocean Module ---------------//----------------------------------------------
 //	Adjustments
 	wav_.NMS = new THREE.Vector2(1,1);
@@ -704,8 +704,8 @@ function rendAll() {		// r173 added async
 		// Sounds
 		moveSounds();
 		// Timed Radio Sequence
-		if (!air_.GrdFlg && !rad_.SeqTim && !rad_.SeqDun) strtRadSeq();
-		if (rad_.SeqTim) contRadSeq();
+		if (!air_.GrdFlg && !rad_.Sq1Tim && !rad_.Sq1Dun) strtRadSq1();
+		if (rad_.Sq1Tim) contRadSq1();
 		prntHUDval();			// print HUD values
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 		// Shadow Tests (confirms that shadow values changed)
@@ -968,7 +968,7 @@ function moveXACEnd(n) {
 			stopXACExp(n);
 			xac_.ObjAdr[n].visible = false; // Airplane gone
 		}
-		if (xat_.SegIdx == 4) playRadSeg(2); // Play Radio Call
+		if (xat_.SegIdx == 4) playRadSg1(2); // Play Radio Call
 		if (xat_.SegIdx == 5) xac_.EndSeq[n] = 1;
 	}
 	else {						// Continuing Actions
@@ -1471,48 +1471,94 @@ function loadRadios() {
 	rad_.SndAdr[0] = new THREE.Audio(listener);	
 	audoLoader.load(rad_.SndSrc[0],function(buffer) {
 		rad_.SndAdr[0].setBuffer(buffer);
-		initASound(rad_.SndAdr[0],1.0,1);
+		initASound(rad_.SndAdr[0],1.0,1); // Source, Volume, Playback Rate
 	});
-	//-	Radio
+	//-	Pilot
 	rad_.SndAdr[1] = new THREE.Audio(listener);	
 	audoLoader.load(rad_.SndSrc[1],function(buffer) {
 		rad_.SndAdr[1].setBuffer(buffer);
-		initASound(rad_.SndAdr[1],0.7,1.05);
+		initASound(rad_.SndAdr[1],0.7,1.05); // Source, Volume, Playback Rate
+	});
+	//-	Director
+	rad_.SndAdr[2] = new THREE.Audio(listener);	
+	audoLoader.load(rad_.SndSrc[2],function(buffer) {
+		rad_.SndAdr[2].setBuffer(buffer);
+		initASound(rad_.SndAdr[2],0.7,1.05); // Source, Volume, Playback Rate
 	});
 }
 
-//- Start Radio Sequence -------//----------------------------------------------
-function strtRadSeq() {
-	rad_.SeqTim = 1;			// Start timer when leave ground
-	rad_.SegPtr = 0;			// Restart Event Pointer
+//- Pilot ----------------------//----------------------------------------------
+
+//- Start Radio Sequence
+function strtRadSq1() {
+	rad_.Sq1Tim = 1;			// Start timer when leave ground
+	rad_.Sg1Ptr = 0;			// Restart Event Pointer
 }
 
-//- Continue Radio Sequence ----//----------------------------------------------
-function contRadSeq() {
-	rad_.SeqTim = rad_.SeqTim + tim_.DifTim; // Once started, keep updating
-	if (rad_.SeqTim > rad_.SegBeg[rad_.SegPtr]) { // If Arrived at Target Time
-		playRadSeg(rad_.SegSel[rad_.SegPtr]); // Play This Segment
-		rad_.SegPtr++;			// Go to next segment in list
-		if (rad_.SegPtr == rad_.SegNum) rad_.SeqDun = 1; // If Done with Sequence
+//- Continue Radio Sequence
+function contRadSq1() {
+	rad_.Sq1Tim = rad_.Sq1Tim + tim_.DifTim; // Once started, keep updating
+	if (rad_.Sq1Tim > rad_.Sg1Beg[rad_.Sg1Ptr]) { // If Arrived at Target Time
+		playRadSg1(rad_.Sg1Sel[rad_.Sg1Ptr]); // Play This Segment
+		rad_.Sg1Ptr++;			// Go to next segment in list
+		if (rad_.Sg1Ptr == rad_.Sg1Num) rad_.Sq1Dun = 1; // If Done with Sequence
 	}
 }
 
-//-	Play Radio Segment ---------//----------------------------------------------
-function playRadSeg(n) {
-	// SegIdx 0 = "Over Island"; SegIdx 1 = "Help"; SegIdx 2 = "Thanks"
-	rad_.SegIdx = n;
+//-	Play Radio Segment
+function playRadSg1(n) {
+	// Sg1Idx 0 = "Over Island"; SegIdx 1 = "Help"; SegIdx 2 = "Thanks"
+	rad_.Sg1Idx = n;
 	if (gen_.SndFlg) {
 		// Static
 		if (!rad_.SndAdr[0].isPlaying) {
-			rad_.SndAdr[0].offset = rad_.SegSta[rad_.SegIdx];
+			rad_.SndAdr[0].offset = rad_.Sg1Sta[rad_.Sg1Idx];
 			rad_.SndAdr[0].play();
-			rad_.SndAdr[0].stop(rad_.SegEnd[rad_.SegIdx]);
+			rad_.SndAdr[0].stop(rad_.Sg1End[rad_.Sg1Idx]);
 		}
 		// Radio
 		if (!rad_.SndAdr[1].isPlaying) {
-			rad_.SndAdr[1].offset = rad_.SegOff[rad_.SegIdx];
+			rad_.SndAdr[1].offset = rad_.Sg1Off[rad_.Sg1Idx];
 			rad_.SndAdr[1].play();
-			rad_.SndAdr[1].stop(rad_.SegEnd[rad_.SegIdx]);
+			rad_.SndAdr[1].stop(rad_.Sg1End[rad_.Sg1Idx]);
+		}
+	}
+}
+
+//- Director -------------------//----------------------------------------------
+
+//- Start Radio Sequence
+function strtRadSq2() {
+	rad_.Sq2Tim = 1;			// Start timer when leave ground
+	rad_.Sg2Ptr = 0;			// Restart Event Pointer
+}
+
+//- Continue Radio Sequence
+function contRadSq2() {
+	rad_.Sq2Tim = rad_.Sq2Tim + tim_.DifTim; // Once started, keep updating
+	if (rad_.Sq2Tim > rad_.Sg2Beg[rad_.Sg2Ptr]) { // If Arrived at Target Time
+		playRadSg1(rad_.Sg2Sel[rad_.Sg2Ptr]); // Play This Segment
+		rad_.Sg2Ptr++;			// Go to next segment in list
+		if (rad_.Sg2Ptr == rad_.Sg2Num) rad_.Sq2Dun = 1; // If Done with Sequence
+	}
+}
+
+//-	Play Radio Segment
+function playRadSg2(n) {
+	// Sg2Idx 0 = "bandit NNE 5 miles altitude 5 thousand"
+	rad_.Sg2Idx = n;
+	if (gen_.SndFlg) {
+		// Static
+		if (!rad_.SndAdr[0].isPlaying) {
+			rad_.SndAdr[0].offset = rad_.Sg2Sta[rad_.Sg2Idx];
+			rad_.SndAdr[0].play();
+			rad_.SndAdr[0].stop(rad_.Sg2End[rad_.Sg2Idx]);
+		}
+		// Radio
+		if (!rad_.SndAdr[2].isPlaying) {
+			rad_.SndAdr[2].offset = rad_.Sg2Off[rad_.Sg2Idx];
+			rad_.SndAdr[2].play();
+			rad_.SndAdr[2].stop(rad_.Sg2End[rad_.Sg2Idx]);
 		}
 	}
 }
