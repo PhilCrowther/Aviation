@@ -13,9 +13,8 @@ Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 *
 //******************************************************************************/
 
-import {FloatType,HalfFloatType,LinearFilter,LinearMipMapLinearFilter,RepeatWrapping,
+import {FloatType,HalfFloatType,LinearFilter,LinearMipMapLinearFilter,RepeatWrapping,Vector2,
 		TimestampQuery,				// r173 requires this
-		Vector2,
 } from 'three';
 import {float,vec2,vec3,vec4,texture,wgslFn,
 		uniform,instanceIndex,storage, // wave-generator, initial-spectrum and wave-cascade
@@ -656,7 +655,7 @@ constructor(params) {
 		writeDisplacement: textureStore(this.displacement),
 		size: uint(params.size),
 		lambda: uniform(params.lambda),
-		workgroupSize: uniform(new THREE.Vector2().fromArray(this.workgroupSize)),
+		workgroupSize: uniform(new Vector2().fromArray(this.workgroupSize)),
 		workgroupId: workgroupId,
 		localId: localId
 	}).computeKernel(this.workgroupSize);	//- [Source: Previous Program] ----------------------------------------------
