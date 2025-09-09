@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Sep 2025
+Version dated 9 Sep 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -219,7 +219,7 @@ let ImgSiz = 512;				// !!! Change this for each image
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-const GrdSiz = 3200;			// Smallest Grid Square (3200 meters = 2 miles)
+const GrdSiz = 2400;			// Smallest Grid Square (3200 meters = 2 miles)
 const GrdRes = 512;
 const GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
 let WavMax = 5;					// Maximum wave height (set height of outer waves)
@@ -275,19 +275,19 @@ let waves = 0;
 let wav_ = {
 		// General
 		size: 512,				// uniform causes error
-		gsiz: 512,				// size of grid square (used to compute Normal Map) uniform causes error
+		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform causes error
 		lambda: uniform(0.9),
 		renderer: renderer,
 		anisotropy: maxAnisotropy,
 		// InitSpec Variables
-		waveLength: uniform(500),		// was 250
+		waveLength: uniform(1171.875),	// was 250
 		boundaryLow: uniform(0.0001),	// ## ok?
 		boundaryHigh: uniform(9999),	// ### ok??
 		// Wave Spectrum 1
-		depth: uniform(20),
-		scaleHeight: uniform(1),
-		windSpeed: uniform(4),			// was 2
-		windDirection: uniform(140/360.0*2*Math.PI),
+		depth: uniform(100),			// was 20
+		scaleHeight: uniform(2),		// was 1
+		windSpeed: uniform(2),		// was 2
+		windDirection: uniform(135/360.0*2*Math.PI),
 		fetch: uniform(100000),
 		spreadBlend: uniform(1),
 		swell: uniform(0.198),
@@ -295,10 +295,10 @@ let wav_ = {
 		shortWaveFade: uniform(0.01),
 		fadeLimit: uniform(0.0),
 		// Wave Spectrum 2
-		d_depth: uniform(20),
-		d_scaleHeight: uniform(1),
-		d_windSpeed: uniform(2),		// was 1
-		d_windDirection: uniform(180/360.0*2*Math.PI),
+		d_depth: uniform(100),			// was 20
+		d_scaleHeight: uniform(2),		// was 1
+		d_windSpeed: uniform(1),		// was 1
+		d_windDirection: uniform(135/360.0*2*Math.PI),
 		d_fetch: uniform(300000),
 		d_spreadBlend: uniform(1),
 		d_swell: uniform(0.5),
@@ -306,7 +306,6 @@ let wav_ = {
 		d_shortWaveFade: uniform(0.01),
 		d_fadeLimit: uniform(0.0),
 	};
-
 
 //= AIROBJ =====================//============================================
 let air_ = {
@@ -434,6 +433,16 @@ function loadAll() {
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,context);
 	loadJetExh();
+	// Load stats
+	if (StatOn) {				// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(StatOn.dom);
+	}
 }
 
 //= 1 INITIALIZE (called by loading manager) ===================================
@@ -448,16 +457,6 @@ function initAll() {
 	initAirObj(air_);			// Load Aircraft
 	initJetExh();
 	prntHUDval(air_);
-	// Show stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
-	}
 	dt = clock.getElapsedTime(); // Clock
 	LodFlg = 1;
 }
@@ -471,6 +470,8 @@ function rendAll() {
 		dt = clock.getDelta();
 		if (waves) waves.update(dt); // Move Ocean
 		grids.update();			// Move Grids
+		grd_.DfD.offset.y += .0003;		// Affected by # of reps (4 => .0005
+		grd_.DfD.offset.x -= .0003;
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval(air_);
