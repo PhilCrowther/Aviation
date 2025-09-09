@@ -153,7 +153,7 @@ let grids = 0;
 let grd_ = {
 		MSP: 0,					// MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,				// Squares in each of first 2 grids
-		Siz: 2400,			// Size of smallest square
+		Siz: 2400,				// Size of smallest square
 		Stp: 4,					// Squares in each of first 2 grids
 		Seg: 256,				// Segments for smallest square (512 = too much)
 		Grx: [],				// Index of Grids (0-2)
@@ -881,20 +881,35 @@ let	rad_ = {
 		SndSrc: ["https://PhilCrowther.github.io/Aviation/sounds/radio/static.mp3",
 				 "https://PhilCrowther.github.io/Aviation/sounds/radio/pilot1.wav",
 				 "https://PhilCrowther.github.io/Aviation/sounds/radio/atccve.m4a"],
-		SndAdr: [0,0,0],			// Pointer to Radio and Static Sounds
+		SndAdr: [0,0,0],		// Pointer to Radio and Static Sounds
+		//. Pilot ..............................................................
 		// All Segments
-		SegIdx: 0,				// Index to Segment
-		SegSrc: [1,1,1],		// Index to Radio Source
-		SegSta: [1,1,1],		// Static Offset within Source (best)	
-		SegOff: [0.0,1.0,3.5],	// Radio Offset within Source
-		SegEnd: [1.0,2.5,2.0],	// Radio Offset within Source
+		Sg1Idx: 0,				// Index to Segment
+		Sg1Src: [1,1,1],		// Index to Radio Source
+		Sg1Sta: [1,1,1],		// Static Offset within Source (best)	
+		Sg1Off: [0.0,1.0,3.5],	// Radio Offset within Source
+		Sg1End: [1.0,2.5,2.0],	// Radio Offset within Source
 		// Timed Segments
-		SeqTim: 0,				// Sequence Timer
-		SegNum: 2,				// Number of Events
-		SegPtr: 0,				// Pointer to Next Segment 
-		SegBeg: [10,30],		// When Segment Starts (in Seconds)
-		SegSel: [0,1],			// Segment to Play
-		SeqFlg: 0,				// 1 = Sequence Already Played
+		Sq1Tim: 0,				// Sequence Timer
+		Sg1Num: 2,				// Number of Events
+		Sg1Ptr: 0,				// Pointer to Next Segment 
+		Sg1Beg: [10,30],		// When Segment Starts (in Seconds)
+		Sg1Sel: [0,1],			// Segment to Play
+		Sq1Flg: 0,				// 1 = Sequence Already Played
+		//. Director ...........................................................
+		Sg2Idx: 0,				// Index to Segment
+		Sg2Src: [2],			// Index to Radio Source
+		Sg2Sta: [1],			// Static Offset within Source (best)	
+		Sg2Off: [0.0,1.0,3.5],	// Radio Offset within Source
+		Sg2End: [1.0,2.5,2.0],	// Radio Offset within Source
+		Sq2Dun: 0,
+		// Timed Segments
+		Sq2Tim: 0,				// Sequence Timer
+		Sg2Num: 2,				// Number of Events
+		Sg2Ptr: 0,				// Pointer to Next Segment 
+		Sg2Beg: [45],			// When Segment Starts (in Seconds)
+		Sg2Sel: [0],			// Segment to Play
+		Sq2Flg: 0,				// 1 = Sequence Already Played		
 	}
 
 //= 7. CAMERA VARIABLES ========//==============================================
