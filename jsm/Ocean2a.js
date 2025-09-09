@@ -11,11 +11,11 @@ Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 *
 *	IMPORTS
 *
-//******************************************************************************/
+********************************************************************************/
 
 import {FloatType,HalfFloatType,LinearFilter,LinearMipMapLinearFilter,RepeatWrapping,Vector2,
 } from 'three';
-import {float,vec2,vec4,wgslFn,
+import {float,vec2,vec4,wgslFn,texture,
 		uniform,instanceIndex,storage, // wave-generator, initial-spectrum and wave-cascade
 		textureStore,uint,workgroupId,localId, // wave-cascade
 } from 'three/tsl';
@@ -56,12 +56,9 @@ constructor(params) {
 	this.dispatchSize = [this.size/this.workgroupSize[0],this.size/this.workgroupSize[1]];
 	
 	//= Storage Buffers =========================================================
-	//- [Source: src/waves/wave-generator.js] -----------------------------------
 	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
-	//- [Source: src/waves/initial-spectrum.js] ---------------------------------
 	this.spectrumBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
 	this.waveDataBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
-	//- [Source: src/waves/wave-cascade.js] -------------------------------------
 	this.DxDzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
 	this.DyDxzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
 	this.pingpongBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
@@ -650,15 +647,12 @@ constructor(params) {
 ********************************************************************************/
 
 //= (called by Main Program) ===//===============================================
-	//- [src/waves/wave-cascade.js] ---------------------------------------------
 update(dt) {
 	const timeOffset = 1000;
 	this.computeTimeSpectrum.computeNode.parameters.time.value = timeOffset+performance.now()/1000;
 	this.params_.renderer.compute(this.computeTimeSpectrum, this.dispatchSize);
 	this.IFFT( 0 );	//DxDz
 	this.IFFT( 1 );	//DyDxz
-	this.IFFT( 2 );	//DyxDyz
-	this.IFFT( 3 );	//DxxDzz
 	this.params_.renderer.compute(this.computeMergeTextures, this.dispatchSize);
 	this.params_.renderer.compute(this.computeNormalMap, this.dispatchSize);
 };
