@@ -98,7 +98,7 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadGeoMat,
 		GrdMap,
-	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // add grd_.EMI
+	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr2.js"; // add grd_.EMI
 import {loadIsland,initIsland,moveIsland, // Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects (only attached to Islands - for now)
 		loadAnmFlg,moveAnmFlg,	// Animated Flag
@@ -359,7 +359,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	grd_.EMI = [0.25,0.24,0.24];	// envMap Intensity
 //	Test
 	grd_.Seg = 384;
-//	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/uv_grid.jpg";
+	grd_.DfD = "https://PhilCrowther.github.io/Aviation/textures/ocean/ocean_detail_bw2.png";
 //- Ocean Moduel ---------------//-----------------------------------------------
 let wav_ = {
 		// General
