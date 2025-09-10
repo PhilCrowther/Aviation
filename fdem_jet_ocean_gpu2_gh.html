@@ -469,8 +469,6 @@ function rendAll() {
 		dt = clock.getDelta();
 		if (waves) waves.update(dt); // Move Ocean
 		grids.update();			// Move Grids
-		grd_.DfD.offset.y += .0003;		// Affected by # of reps (4 => .0005
-		grd_.DfD.offset.x -= .0003;
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval(air_);
