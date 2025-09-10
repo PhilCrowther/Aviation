@@ -357,9 +357,6 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	grd_.Mtl = [0.5,0.5,0.5];	// Metalness (1 for max reflection)
 	grd_.Ruf = [0.2,0.2,0.2]; // Roughness (0 for max reflection)
 	grd_.EMI = [0.25,0.24,0.24];	// envMap Intensity
-//	Test
-	grd_.Seg = 384;
-	grd_.DfD = "https://PhilCrowther.github.io/Aviation/textures/ocean/ocean_detail_bw2.png";
 //- Ocean Moduel ---------------//-----------------------------------------------
 let wav_ = {
 		// General
@@ -731,8 +728,6 @@ function rendAll() {		// r173 added async
 		waves.update(tim_.DifTim); // Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update();		// Move Grids	
-		grd_.DfD.offset.y += .0003;		// Affected by # of reps (4 => .0005
-		grd_.DfD.offset.x -= .0003;
 		// Sounds
 		moveSounds();
 		// Timed Radio Sequence
