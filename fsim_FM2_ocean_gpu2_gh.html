@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Sep 2025
+Version dated 10 Sep 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -372,7 +372,7 @@ let wav_ = {
 		// Wave Spectrum 1
 		depth: uniform(100),			// was 20
 		scaleHeight: uniform(2),		// was 1
-		windSpeed: uniform(2),		// was 2
+		windSpeed: uniform(3),		// was 2
 		windDirection: uniform(135/360.0*2*Math.PI),
 		fetch: uniform(100000),
 		spreadBlend: uniform(1),
@@ -383,7 +383,7 @@ let wav_ = {
 		// Wave Spectrum 2
 		d_depth: uniform(100),			// was 20
 		d_scaleHeight: uniform(2),		// was 1
-		d_windSpeed: uniform(1),		// was 1
+		d_windSpeed: uniform(2),		// was 0
 		d_windDirection: uniform(135/360.0*2*Math.PI),
 		d_fetch: uniform(300000),
 		d_spreadBlend: uniform(1),

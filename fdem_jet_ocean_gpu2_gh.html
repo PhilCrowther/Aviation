@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Sep 2025
+Version dated 10 Sep 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -199,7 +199,7 @@ const txtrLoader = new THREE.TextureLoader(loadingManager);
 const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
 //= SKYBOX =====================//==============================================
-const FogCol = 0xbab4a6;			// Sky (for Fog only)
+const FogCol = 0xbab4a6;		// Sky (for Fog only)
 //- Texture
 const SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 //-	LensFlare
@@ -243,11 +243,10 @@ let grd_ = {
 		// Indices
 		Col: new THREE.Color(WtrCol), // Color
 		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color6.png",
-		DfD: "https://PhilCrowther.github.io/Aviation/textures/ocean/ocean_detail_bw.png",
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
-		Ruf: [0.1,0.1,0.1],	// Roughness (0 for max reflection)
-		EMI: [0.5,0.48,0.48],	// EnvMap Intensity
+		Ruf: [0.05,0.05,0.05],	// Roughness (0 for max reflection)
+		EMI: [0.25,0.24,0.24],	// EnvMap Intensity
 		// Maps
 		MSz: 512,				// Image Size
 		DfM: [[0],[0],0],		// Diffuse
@@ -279,13 +278,13 @@ let wav_ = {
 		renderer: renderer,
 		anisotropy: maxAnisotropy,
 		// InitSpec Variables
-		waveLength: uniform(1171.875),	// was 250
-		boundaryLow: uniform(0.0001),	// ## ok?
-		boundaryHigh: uniform(9999),	// ### ok??
+		waveLength: uniform(1171.875), // was 250
+		boundaryLow: uniform(0.0001), // ## ok?
+		boundaryHigh: uniform(9999), // ### ok??
 		// Wave Spectrum 1
-		depth: uniform(100),			// was 20
-		scaleHeight: uniform(2),		// was 1
-		windSpeed: uniform(2),		// was 2
+		depth: uniform(100),	// was 20
+		scaleHeight: uniform(2), // was 1
+		windSpeed: uniform(3),	// was 2
 		windDirection: uniform(135/360.0*2*Math.PI),
 		fetch: uniform(100000),
 		spreadBlend: uniform(1),
@@ -294,9 +293,9 @@ let wav_ = {
 		shortWaveFade: uniform(0.01),
 		fadeLimit: uniform(0.0),
 		// Wave Spectrum 2
-		d_depth: uniform(100),			// was 20
-		d_scaleHeight: uniform(2),		// was 1
-		d_windSpeed: uniform(1),		// was 1
+		d_depth: uniform(100),	// was 20
+		d_scaleHeight: uniform(2), // was 1
+		d_windSpeed: uniform(2), // was 0
 		d_windDirection: uniform(135/360.0*2*Math.PI),
 		d_fetch: uniform(300000),
 		d_spreadBlend: uniform(1),
