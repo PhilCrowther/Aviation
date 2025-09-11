@@ -58,7 +58,7 @@ import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMes
 import Stats from "stats-gl";
 // Custom Modules
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr2.js"; // No detail texture required
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean2.js"; // Uses Compute Shaders
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean2a.js"; // Uses Compute Shaders
 
 //= NOTES
 //- Sections relating to my Camera Rotator are designated MY CAMERA
@@ -268,41 +268,41 @@ let WndSpd = 20.0;
 let WndHdg = 0.0;
 let Choppy = 1.6;
 let AnmSpd = 1;					// Animation Speed (can vary with GrdSiz)
-//- Variables
+//- Ocean Module ---------------//-----------------------------------------------
 let waves = 0;
 let wav_ = {
 		// General
-		size: 1024,				// uniform causes error
-		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform causes error
-		lambda: uniform(0.9),
+		size: 1024,				// 
+		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform)
+		lambda: 0.9,
 		renderer: renderer,
 		anisotropy: maxAnisotropy,
 		// InitSpec Variables
-		waveLength: uniform(1171.875), // was 250
-		boundaryLow: uniform(0.0001), // ## ok?
-		boundaryHigh: uniform(9999), // ### ok??
+		waveLength: 1000,		// was 250
+		boundaryLow: 0.0001,	// ## ok?
+		boundaryHigh: 9999,		// ### ok??
 		// Wave Spectrum 1
-		depth: uniform(100),	// was 20
-		scaleHeight: uniform(2), // was 1
-		windSpeed: uniform(3),	// was 2
-		windDirection: uniform(135/360.0*2*Math.PI),
-		fetch: uniform(100000),
-		spreadBlend: uniform(1),
-		swell: uniform(0.198),
-		peakEnhancement: uniform(3.3),
-		shortWaveFade: uniform(0.01),
-		fadeLimit: uniform(0.0),
+		depth: 100,				// was 20
+		scaleHeight: 2,			// was 1
+		windSpeed: 3,			// was 2
+		windDirection: 135,
+		fetch: 100000,
+		spreadBlend: 1,
+		swell: 0.198,
+		peakEnhancement: 3.3,
+		shortWaveFade: 0.01,
+		fadeLimit: 0.0,
 		// Wave Spectrum 2
-		d_depth: uniform(100),	// was 20
-		d_scaleHeight: uniform(2), // was 1
-		d_windSpeed: uniform(2), // was 0
-		d_windDirection: uniform(135/360.0*2*Math.PI),
-		d_fetch: uniform(300000),
-		d_spreadBlend: uniform(1),
-		d_swell: uniform(0.5),
-		d_peakEnhancement: uniform(3.3),
-		d_shortWaveFade: uniform(0.01),
-		d_fadeLimit: uniform(0.0),
+		d_depth: 100,			// was 20
+		d_scaleHeight: 2,		// was 1
+		d_windSpeed: 2,			// was 0
+		d_windDirection: 135,
+		d_fetch: 300000,
+		d_spreadBlend: 1,
+		d_swell: 0.5,
+		d_peakEnhancement: 3.3,
+		d_shortWaveFade: 0.01,
+		d_fadeLimit: 0.0,
 	};
 
 //= AIROBJ =====================//============================================

@@ -349,49 +349,21 @@ let canvas = document.createElement("canvas");
 let context = canvas.getContext("2d",{willReadFrequently: true});
 	context.translate(0, grd_.MSz); // Flips vertical for three.js
 	context.scale(1,-1);
-//	Adjustments
+//-	Adjustments
 	grd_.MSP = new THREE.Vector3();
 	grd_.Col = new THREE.Color(0x004080); // (was Navy Blue = 0x1060ff, but that appeared purple)
 	grd_.NMS = new THREE.Vector2(1.0,1.0);
-//	Fine-Tune Graphics
+//-	Fine-Tune Graphics
 	grd_.Mtl = [0.5,0.5,0.5];	// Metalness (1 for max reflection)
-	grd_.Ruf = [0.2,0.2,0.2]; // Roughness (0 for max reflection)
-	grd_.EMI = [0.25,0.24,0.24];	// envMap Intensity
-//- Ocean Moduel ---------------//-----------------------------------------------
-let wav_ = {
-		// General
-		size: 1024,				// uniform causes error
-		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform causes error
-		lambda: uniform(0.9),
-		renderer: renderer,
-		anisotropy: maxAnisotropy,
-		// InitSpec Variables
-		waveLength: uniform(1171.875),	// was 250
-		boundaryLow: uniform(0.0001),	// ## ok?
-		boundaryHigh: uniform(9999),	// ### ok??
-		// Wave Spectrum 1
-		depth: uniform(100),			// was 20
-		scaleHeight: uniform(2),		// was 1
-		windSpeed: uniform(3),		// was 2
-		windDirection: uniform(135/360.0*2*Math.PI),
-		fetch: uniform(100000),
-		spreadBlend: uniform(1),
-		swell: uniform(0.198),
-		peakEnhancement: uniform(3.3),
-		shortWaveFade: uniform(0.01),
-		fadeLimit: uniform(0.0),
-		// Wave Spectrum 2
-		d_depth: uniform(100),			// was 20
-		d_scaleHeight: uniform(2),		// was 1
-		d_windSpeed: uniform(2),		// was 0
-		d_windDirection: uniform(135/360.0*2*Math.PI),
-		d_fetch: uniform(300000),
-		d_spreadBlend: uniform(1),
-		d_swell: uniform(0.5),
-		d_peakEnhancement: uniform(3.3),
-		d_shortWaveFade: uniform(0.01),
-		d_fadeLimit: uniform(0.0),
-	};
+	grd_.Ruf = [0.2,0.2,0.2];	// Roughness (0 for max reflection)
+	grd_.EMI = [0.25,0.24,0.24]; // envMap Intensity
+//- Test
+//	grd_.DfS = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png"; // 512x512
+//	grd_.MSz = 512;				// Image Size (Size of Texture Maps, default = 512)
+//- Ocean Module ---------------//-----------------------------------------------
+//- Adjustments
+	wav_.renderer = renderer;
+	wav_.anisotropy = maxAnisotropy;
 
 //= 4. OBJECT VARIABLES ========//===============================================
 //= STATIC OBJECTS =============//===============================================
