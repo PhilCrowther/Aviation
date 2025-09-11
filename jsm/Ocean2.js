@@ -1,6 +1,6 @@
 ﻿/*= OCEAN MODULE ================================================================
 
-Ocean2.js (9 Sep 2025)
+Ocean2.js (10 Sep 2025)
 
 This is single-pass version of the Ocean Wave Generator created by Attila Schroeder
 Created with his assistance and permission and licensed under a
@@ -27,12 +27,6 @@ import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 *
 ********************************************************************************/
 
-/********************************************************************************
-*
-*	INITIALIZE CLASS
-*
-********************************************************************************/
-
 class Ocean {
 
 constructor(params) {
@@ -40,18 +34,45 @@ constructor(params) {
 //= INITIALIZE ==================================================================
 
 	//= Variables ===============================================================
-	this.size = params.size;
-	//- [Source: src/waves/wave-cascade.js]	-------------------------------------
+	this.size = params.size;	
 	this.params_ = params;
 	this.logN = Math.log2(params.size);
 	this.sqSize = params.size**2;
 	this.bufferSize = this.sqSize*2;
-	//
+	// Convert Numbers to Uniforms ----------------------------------------------
+	params.lambda = uniform(params.lambda);
+	// InitSpec Variables
+	params.waveLength = uniform(params.waveLength);
+	params.boundaryLow = uniform(params.boundaryLow);
+	params.boundaryHigh = uniform(params.boundaryHigh);
+	// Wave Spectrum 1
+	params.depth = uniform(params.depth);
+	params.scaleHeight = uniform(params.scaleHeight);
+	params.windSpeed = uniform(params.windSpeed);
+	params.windDirection = uniform(params.windDirection/360.0*2*Math.PI);
+	params.fetch = uniform(params.fetch);
+	params.spreadBlend = uniform(params.spreadBlend);
+	params.swell = uniform(params.swell);
+	params.peakEnhancement = uniform(params.peakEnhancement);
+	params.shortWaveFade = uniform(params.shortWaveFade);
+	params.fadeLimit = uniform(params.fadeLimit);
+	// Wave Spectrum 2
+	params.d_depth = uniform(params.d_depth);
+	params.d_scaleHeight = uniform(params.d_scaleHeight);
+	params.d_windSpeed = uniform(params.d_windSpeed);
+	params.d_windDirection = uniform(params.d_windDirection/360.0*2*Math.PI);
+	params.d_fetch = uniform(params.d_fetch);
+	params.d_spreadBlend = uniform(params.d_spreadBlend);
+	params.d_swell = uniform(params.d_swell);
+	params.d_peakEnhancement = uniform(params.d_peakEnhancement);
+	params.d_shortWaveFade = uniform(params.d_shortWaveFade);
+	params.d_fadeLimit = uniform(params.d_fadeLimit);
+	//- Add Variables -----------------------------------------------------------
 	this.DDindex = uniform(0);
 	this.ifftStep = uniform(0);
 	this.pingpong = uniform(0);
 	this.deltaTime = uniform(0);
-	// WebGPU
+	//- Workgroup Variables -----------------------------------------------------
 	this.workgroupSize = [16,16,1];
 	this.dispatchSize = [this.size/this.workgroupSize[0],this.size/this.workgroupSize[1]];
 	
@@ -80,11 +101,7 @@ constructor(params) {
 	this.normMapTexture.minFilter = LinearMipMapLinearFilter;
 	this.normMapTexture.wrapS = this.normMapTexture.wrapT = RepeatWrapping;
 
-	/****************************************************************************
-	*
-	*   SHADERS
-	*
-	****************************************************************************/
+//= SHADERS =====================================================================
 
 	//- Initial Spectrum --------------------------------------------------------
 	this.InitialSpectrumWGSL = wgslFn(`
@@ -495,11 +512,7 @@ constructor(params) {
 		}
 	`);
 
-	/****************************************************************************
-	*
-	*	INITIALIZE CLASS (continue)
-	*
-	****************************************************************************/
+//= INITIALIZE (continue) =======================================================
 
 	//- Butterfly ---------------------------------------------------------------
 	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
@@ -550,11 +563,11 @@ constructor(params) {
 	}).compute(this.sqSize);
 	params.renderer.compute(this.initialSpectrumWithInverse);
 	// TimeSpectrum -------------------------------------------------------------
-	this.computeTimeSpectrum = this.TimeSpectrumWGSL({ 
-		writeDxDzBuffer: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count),
-		writeDyDxzBuffer: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count),
+	this.computeTimeSpectrum = this.TimeSpectrumWGSL({
 		spectrumBuffer: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
 		waveDataBuffer: storage(this.waveDataBuffer,'vec4',this.waveDataBuffer.count),
+		writeDxDzBuffer: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count),
+		writeDyDxzBuffer: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count),
 		index: instanceIndex,
 		size: uint(params.size),
 		time: uniform(0)
@@ -637,16 +650,11 @@ constructor(params) {
 		localId: localId
 	}).computeKernel(this.workgroupSize);
 
-// End of Initialize
+// End of Initialization
 };
 
-/********************************************************************************
-*
-*   UPDATE CLASS
-*
-********************************************************************************/
+//= UPDATE CLASS (called by Main Program) =======================================
 
-//= (called by Main Program) ===//===============================================
 update(dt) {
 	const timeOffset = 1000;
 	this.computeTimeSpectrum.computeNode.parameters.time.value = timeOffset+performance.now()/1000;
