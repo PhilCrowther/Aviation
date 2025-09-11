@@ -208,8 +208,6 @@ const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 
 //= GRDWTR TEXTURES ============//===============================================
-//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
-//const WtrCol = 0x0066cc;		// Water (Nodes)
 const WtrCol = 0x004080;		// Water (Nodes)
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;				// !!! Change this for each image
@@ -219,7 +217,7 @@ let ImgSiz = 512;				// !!! Change this for each image
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-const GrdSiz = 2400;			// Smallest Grid Square (3200 meters = 2 miles)
+const GrdSiz = 3200;			// Smallest Grid Square (3200 meters = 2 miles)
 const GrdSeg = 384;				// Segments per Plane (256 = OK, 512 = too much)
 let WavMax = 5;					// Maximum wave height (set height of outer waves)
 let grids = 0;
@@ -242,10 +240,10 @@ let grd_ = {
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
 		Col: new THREE.Color(WtrCol), // Color
-		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color6.png",
+		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png",
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
-		Ruf: [0.05,0.05,0.05],	// Roughness (0 for max reflection)
+		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
 		EMI: [0.25,0.24,0.24],	// EnvMap Intensity
 		// Maps
 		MSz: 512,				// Image Size
@@ -267,18 +265,18 @@ let waves = 0;
 let wav_ = {
 		// General
 		size: 1024,				// 
-		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform)
+		gsiz: 2400,				// size of grid square (used to compute Normal Map)
 		lambda: 0.9,
 		renderer: renderer,
 		anisotropy: maxAnisotropy,
 		// InitSpec Variables
-		waveLength: 1000,		// was 250
-		boundaryLow: 0.0001,	// ## ok?
+		waveLength: 1500,		// was 250
+		boundaryLow: 0.0001,	// ### ok??
 		boundaryHigh: 9999,		// ### ok??
 		// Wave Spectrum 1
 		depth: 100,				// was 20
-		scaleHeight: 2,			// was 1
-		windSpeed: 3,			// was 2
+		scaleHeight: 1,
+		windSpeed: 16,			// was 2
 		windDirection: 135,
 		fetch: 100000,
 		spreadBlend: 1,
@@ -288,8 +286,8 @@ let wav_ = {
 		fadeLimit: 0.0,
 		// Wave Spectrum 2
 		d_depth: 100,			// was 20
-		d_scaleHeight: 2,		// was 1
-		d_windSpeed: 2,			// was 0
+		d_scaleHeight: 1,
+		d_windSpeed: 8,			// was 0
 		d_windDirection: 135,
 		d_fetch: 300000,
 		d_spreadBlend: 1,

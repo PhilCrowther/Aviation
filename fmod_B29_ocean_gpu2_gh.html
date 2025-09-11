@@ -10,7 +10,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 -->
 
 <head>
-<title>fmod B29 ocean gpu r180</title>
+<title>fmod B29 ocean gpu2 r180</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_b29.css">
 </head>
@@ -165,7 +165,7 @@ let renderer = new THREE.WebGPURenderer({antialias:true});
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
 //	Depth Buffer
-	renderer.logarithmicDepthBuffer = true;				//
+//	renderer.logarithmicDepthBuffer = true;				//
 //	Tone Mapping
 	renderer.toneMapping = THREE.NoToneMapping;			// clouded
 //	renderer.toneMapping = THREE.LinearToneMapping;		// brighter?
@@ -240,10 +240,9 @@ let envMap = 0;
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
-const WtrCol = 0x0066cc;		// Water (Nodes)
+const WtrCol = 0x001080;		// Water (Nodes)
 let WavMax = 5;					// Maximum wave height (set height of outer waves)
-const GrdSiz = 2400;			// Smallest Grid Square (3200 meters = 2 miles)
+const GrdSiz = 3200;			// Smallest Grid Square (3200 meters = 2 miles)
 const GrdSeg = 384;				// Segments per Plane (256 = OK, 512 = too much)
 let grids = 0;
 let grd_ = {
@@ -265,10 +264,10 @@ let grd_ = {
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
 		Col: new THREE.Color(WtrCol), // Color
-		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color6.png",
+		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png",
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
-		Ruf: [0.1,0.1,0.1],		// Roughness (0 for max reflection)
+		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
 		EMI: [0.25,0.24,0.24],	// EnvMap Intensity
 		// Maps
 		MSz: 512,				// Image Size
@@ -277,7 +276,6 @@ let grd_ = {
 		// Other
 		WMx: WavMax,			// Max wave height, used to lower outer squares
 	};
-//- GrdWtr Textures ------------//----------------------------------------------
 //- Canvas (for splitting up textures)
 let canvas = document.createElement("canvas");
 	canvas.width = grd_.MSz;
@@ -296,14 +294,14 @@ let wav_ = {
 		renderer: renderer,
 		anisotropy: maxAnisotropy,
 		// InitSpec Variables
-		waveLength: 1000,		// was 250
-		boundaryLow: 0.0001,	// ## ok?
+		waveLength: 1500,		// was 250
+		boundaryLow: 0.0001,	// ### ok?
 		boundaryHigh: 9999,		// ### ok??
 		// Wave Spectrum 1
 		depth: 100,				// was 20
-		scaleHeight: 2,			// was 1
-		windSpeed: 3,			// was 2
-		windDirection: 135,
+		scaleHeight: 1,
+		windSpeed: 16,			// was 2
+		windDirection: 180,
 		fetch: 100000,
 		spreadBlend: 1,
 		swell: 0.198,
@@ -312,8 +310,8 @@ let wav_ = {
 		fadeLimit: 0.0,
 		// Wave Spectrum 2
 		d_depth: 100,			// was 20
-		d_scaleHeight: 2,		// was 1
-		d_windSpeed: 2,			// was 0
+		d_scaleHeight: 1,		// was 1
+		d_windSpeed: 8,			// was 0
 		d_windDirection: 135,
 		d_fetch: 300000,
 		d_spreadBlend: 1,
@@ -336,7 +334,7 @@ let air_ = {
 		AirRot: new THREE.Vector3(), // Object Rotation (degrees)
 		AirObj: new THREE.Object3D,		// Airplane Object
 		AirPBY: new THREE.Object3D,		// 	
-		// Airplane PBY Changes
+		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
 		SpdKPH: BegSpd,			// Speed kMH
@@ -511,10 +509,10 @@ let Air_HdgNode = document.createTextNode("");
 	Air_HdgElement.appendChild(Air_HdgNode);
 let Air_Spd, Air_Alt,Air_Hdg;
 
-//= Main Programs ==============================================================
+//= Main Programs ===============================================================
 	loadAll();
 	
-//=	0 Load All =================================================================
+//=	0 Load All ==================================================================
 function loadAll() {
 	// Load Values Used to initialize my Aircraft and Objects		
 	WaitScreen();			// load loading screen
@@ -523,7 +521,7 @@ function loadAll() {
 	loadAirObj();
 }
 
-//= Wait Screen ================================================================
+//= Wait Screen =================================================================
 
 function WaitScreen() {
 	// Set up the loading screen scene.
@@ -538,7 +536,7 @@ function WaitScreen() {
 	loadingScreen.scene.add(loadingScreen.box);
 }
 
-//= 1 Initialize ===============================================================
+//= 1 Initialize ================//==============================================
 
 async function initAll() {
 	air_.MapSPS.y = air_.MapPos.y; // Altitude (meters)
@@ -548,10 +546,10 @@ async function initAll() {
 	grd_.Nrm = waves.normMapTexture;
 	grids = new GrdMap(grd_,scene);
 	// Other
-	initCamera(camera,cam_);		// position camera
-	prntHUDval();					// print HUD values
+	initCamera(camera,cam_);	// position camera
+	prntHUDval();				// print HUD values
 	// Show stats
-	if (StatOn) {					// show stats
+	if (StatOn) {				// show stats
 		StatOn = new Stats({
 			precision: 3,
 			horizontal: false
@@ -564,7 +562,7 @@ async function initAll() {
 	LodFlg = 1;
 }
 
-//= 2 Render ===================================================================
+//= 2 Render ===================//===============================================
 
 function rendAll() {
 	// This block runs while resources are loading.
@@ -576,15 +574,15 @@ function rendAll() {
 	}
 	if (PawsOn == 0 && LodFlg > 0) {
 		// Move Objects
-		moveAirObj();		// Move aircaft
+		moveAirObj();			// Move aircaft
 		// Move Grids
 		dt = clock.getDelta();
-		waves.update(dt); 	// Move Ocean
+		waves.update(dt); 		// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
-		grids.update();		// MoveGrids
+		grids.update();			// MoveGrids
 		// Other
 		moveSounds(air_);
-		prntHUDval();		// print HUD values
+		prntHUDval();			// print HUD values
 		if (StatOn) StatOn.update(); // update stats
 	}
 	moveCamera(camera,cam_);
@@ -592,7 +590,7 @@ function rendAll() {
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173	
 }
 
-//= SKYBOX =====================//==============================================
+//= SKYBOX =====================//===============================================
 
 function loadSkyBox() {
 	envMap = cubeLoader
