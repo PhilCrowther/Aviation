@@ -153,7 +153,7 @@ let grids = 0;
 let grd_ = {
 		MSP: 0,					// MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,				// Squares in each of first 2 grids
-		Siz: 2400,				// Size of smallest square
+		Siz: 2400,				// Size of grid square
 		Stp: 4,					// Squares in each of first 2 grids
 		Seg: 384,				// Segments for smallest square (512 = max)
 		Grx: [],				// Index of Grids (0-2)
@@ -185,20 +185,20 @@ let grd_ = {
 let waves = 0;
 let wav_ = {
 		// General
-		size: 1024,				// 
-		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform)
+		size: 1024,				// resolution of iFFT calculation
+		gsiz: 2400,				// Size of grid square (used to compute Normal Map)
 		lambda: 0.9,
 		renderer: 0,
 		anisotropy: 0,
 		// InitSpec Variables
-		waveLength: 1000,		// was 250
-		boundaryLow: 0.0001,	// ## ok?
-		boundaryHigh: 9999,		// ### ok??
+		waveLength: 1500,		// was 250
+		boundaryLow: 0.0001,	// ### ok???
+		boundaryHigh: 9999,		// ### ok???
 		// Wave Spectrum 1
 		depth: 100,				// was 20
-		scaleHeight: 2,			// was 1
+		scaleHeight: 1,
 		windSpeed: 3,			// was 2
-		windDirection: 135,
+		windDirection: 135,		// direction that wind is blowing towards
 		fetch: 100000,
 		spreadBlend: 1,
 		swell: 0.198,
@@ -207,9 +207,9 @@ let wav_ = {
 		fadeLimit: 0.0,
 		// Wave Spectrum 2
 		d_depth: 100,			// was 20
-		d_scaleHeight: 2,		// was 1
-		d_windSpeed: 2,			// was 0
-		d_windDirection: 135,
+		d_scaleHeight: 1,
+		d_windSpeed: 2,			// was 1
+		d_windDirection: 135,	// direction that wind is blowing towards
 		d_fetch: 300000,
 		d_spreadBlend: 1,
 		d_swell: 0.5,
