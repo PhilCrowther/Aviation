@@ -187,8 +187,8 @@ let wav_ = {
 		size: 1024,				// 
 		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform)
 		lambda: 0.9,
-		renderer: renderer,
-		anisotropy: maxAnisotropy,
+		renderer: 0,
+		anisotropy: 0,
 		// InitSpec Variables
 		waveLength: 1000,		// was 250
 		boundaryLow: 0.0001,	// ## ok?
