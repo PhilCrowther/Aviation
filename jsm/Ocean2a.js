@@ -53,7 +53,7 @@ constructor(params) {
 	params.fetch = uniform(params.fetch);
 	params.spreadBlend = uniform(params.spreadBlend);
 	params.swell = uniform(params.swell);
-	params.peakEnhancement = uniform(params.peakEnhancemen);
+	params.peakEnhancement = uniform(params.peakEnhancement);
 	params.shortWaveFade = uniform(params.shortWaveFade);
 	params.fadeLimit = uniform(params.fadeLimit);
 	// Wave Spectrum 2
@@ -64,7 +64,7 @@ constructor(params) {
 	params.d_fetch = uniform(params.d_fetch);
 	params.d_spreadBlend = uniform(params.d_spreadBlend);
 	params.d_swell = uniform(params.d_swell);
-	params.d_peakEnhancement = uniform(params.d_peakEnhancemen);
+	params.d_peakEnhancement = uniform(params.d_peakEnhancement);
 	params.d_shortWaveFade = uniform(params.d_shortWaveFade);
 	params.d_fadeLimit = uniform(params.d_fadeLimit);
 	//- Add Variables -----------------------------------------------------------
