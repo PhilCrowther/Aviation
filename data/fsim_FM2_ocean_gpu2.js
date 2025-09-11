@@ -14,6 +14,7 @@
 	2. SKY VARIABLES				(sky_)
 	3. OCEAN GRID VARIABLES
 		GRDWTR MODULE				(grd_)
+		OCEAN MODULE				(wav_)
 	4. OBJECT VARIABLES
 		SHARED TEXTURES				(txt_)
 		STATIC OBJECTS
@@ -182,6 +183,40 @@ let grd_ = {
 	};
 //- OCEAN MODULE ---------------//----------------------------------------------			
 let waves = 0;
+let wav_ = {
+		// General
+		size: 1024,				// 
+		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform)
+		lambda: 0.9,
+		renderer: 0,
+		anisotropy: 0,
+		// InitSpec Variables
+		waveLength: 1000,		// was 250
+		boundaryLow: 0.0001,	// ## ok?
+		boundaryHigh: 9999,		// ### ok??
+		// Wave Spectrum 1
+		depth: 100,				// was 20
+		scaleHeight: 2,			// was 1
+		windSpeed: 3,			// was 2
+		windDirection: 135,
+		fetch: 100000,
+		spreadBlend: 1,
+		swell: 0.198,
+		peakEnhancement: 3.3,
+		shortWaveFade: 0.01,
+		fadeLimit: 0.0,
+		// Wave Spectrum 2
+		d_depth: 100,			// was 20
+		d_scaleHeight: 2,		// was 1
+		d_windSpeed: 2,			// was 0
+		d_windDirection: 135,
+		d_fetch: 300000,
+		d_spreadBlend: 1,
+		d_swell: 0.5,
+		d_peakEnhancement: 3.3,
+		d_shortWaveFade: 0.01,
+		d_fadeLimit: 0.0,
+	};
 
 //= 4. OBJECT VARIABLES ========//==============================================
 
