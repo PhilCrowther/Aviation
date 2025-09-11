@@ -46,23 +46,23 @@ constructor(params) {
 	params.boundaryLow = uniform(params.boundaryLow);
 	params.boundaryHigh = uniform(params.boundaryHigh);
 	// Wave Spectrum 1
-	params.depth: = uniform(params.depth);
+	params.depth = uniform(params.depth);
 	params.scaleHeight = uniform(params.scaleHeight);
 	params.windSpeed = uniform(params.windSpeed);
 	params.windDirection = uniform(params.windDirection/360.0*2*Math.PI);
 	params.fetch = uniform(params.fetch);
-	params.spreadBlend - uniform(params.spreadBlend);
+	params.spreadBlend = uniform(params.spreadBlend);
 	params.swell = uniform(params.swell);
 	params.peakEnhancement = uniform(params.peakEnhancemen);
 	params.shortWaveFade = uniform(params.shortWaveFade);
 	params.fadeLimit = uniform(params.fadeLimit);
 	// Wave Spectrum 2
-	params.d_depth: = uniform(params.d_depth);
+	params.d_depth = uniform(params.d_depth);
 	params.d_scaleHeight = uniform(params.d_scaleHeight);
 	params.d_windSpeed = uniform(params.d_windSpeed);
 	params.d_windDirection = uniform(params.d_windDirection/360.0*2*Math.PI);
 	params.d_fetch = uniform(params.d_fetch);
-	params.d_spreadBlend - uniform(params.d_spreadBlend);
+	params.d_spreadBlend = uniform(params.d_spreadBlend);
 	params.d_swell = uniform(params.d_swell);
 	params.d_peakEnhancement = uniform(params.d_peakEnhancemen);
 	params.d_shortWaveFade = uniform(params.d_shortWaveFade);
