@@ -153,9 +153,9 @@ let grids = 0;
 let grd_ = {
 		MSP: 0,					// MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 16,				// Squares in each of first 2 grids
-		Siz: 2400,				// Size of smallest square
+		Siz: 2400,				// Size of grid square
 		Stp: 4,					// Squares in each of first 2 grids
-		Seg: 256,				// Segments for smallest square (512 = too much)
+		Seg: 384,				// Segments for smallest square (512 = max)
 		Grx: [],				// Index of Grids (0-2)
 		// Geometry and Materials
 		Geo: [],				// Master Index of Basic Geometries
@@ -170,7 +170,6 @@ let grd_ = {
 		// Indices
 		Col: 0,
 		DfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color6.png", // texture
-		DfD: "https://PhilCrowther.github.io/Aviation/textures/ocean/ocean_detail_bw.png", // detail
 		Mtl: [0.5,0.5,0.5],		// Metalness (1 for max reflection)
 		RfS: "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png",
 		Ruf: [0.5,0.5,0.5],		// Roughness (0 for max reflection)
@@ -185,17 +184,38 @@ let grd_ = {
 //- OCEAN MODULE ---------------//----------------------------------------------			
 let waves = 0;
 let wav_ = {
-		// Sources
-		Res: 512,				// Resolution - segments per square (default = 512)
-		Siz: grd_.Siz,			// Size of Smallest Square
-		WSp: 10.0,				// Wind Speed
-		WHd: 90,				// Wind Heading (0=0,Spd; 90=Spd,0; 180=0,-Spd; 270=-Spd,0)
-		Chp: 1.5,				// default = 1
-		// Animated Maps
-		Dsp: 0,					// The Displacement Map
-		Nrm: 0,					// The Normal Map
-		NMS: 0, 				// Normal Map Scale (flip Y for left-handed maps)
-		Spd: 0.5,				// Can vary with GrdSiz
+		// General
+		size: 1024,				// resolution of iFFT calculation
+		gsiz: 2400,				// Size of grid square (used to compute Normal Map)
+		lambda: 0.9,
+		renderer: 0,
+		anisotropy: 0,
+		// InitSpec Variables
+		waveLength: 1500,		// was 250
+		boundaryLow: 0.0001,	// ### ok???
+		boundaryHigh: 9999,		// ### ok???
+		// Wave Spectrum 1
+		depth: 100,				// was 20
+		scaleHeight: 1,
+		windSpeed: 3,			// was 2
+		windDirection: 135,		// direction that wind is blowing towards
+		fetch: 100000,
+		spreadBlend: 1,
+		swell: 0.198,
+		peakEnhancement: 3.3,
+		shortWaveFade: 0.01,
+		fadeLimit: 0.0,
+		// Wave Spectrum 2
+		d_depth: 100,			// was 20
+		d_scaleHeight: 1,
+		d_windSpeed: 2,			// was 1
+		d_windDirection: 135,	// direction that wind is blowing towards
+		d_fetch: 300000,
+		d_spreadBlend: 1,
+		d_swell: 0.5,
+		d_peakEnhancement: 3.3,
+		d_shortWaveFade: 0.01,
+		d_fadeLimit: 0.0,
 	};
 
 //= 4. OBJECT VARIABLES ========//==============================================
@@ -888,7 +908,7 @@ let	rad_ = {
 		Sg1Src: [1,1,1],		// Index to Radio Source
 		Sg1Sta: [1,1,1],		// Static Offset within Source (best)	
 		Sg1Off: [0.0,1.0,3.5],	// Radio Offset within Source
-		Sg1End: [1.0,2.5,2.0],	// Radio Offset within Source
+		Sg1End: [1.0,2.5,2.1],	// Radio Offset within Source
 		// Timed Segments
 		Sq1Tim: 0,				// Sequence Timer
 		Sg1Num: 2,				// Number of Events
@@ -901,7 +921,7 @@ let	rad_ = {
 		Sg2Src: [2],			// Index to Radio Source
 		Sg2Sta: [1],			// Static Offset within Source (best)	
 		Sg2Off: [0.0,1.0,3.5],	// Radio Offset within Source
-		Sg2End: [1.0,2.5,2.0],	// Radio Offset within Source
+		Sg2End: [1.0,2.5,2.1],	// Radio Offset within Source
 		Sq2Dun: 0,
 		// Timed Segments
 		Sq2Tim: 0,				// Sequence Timer
