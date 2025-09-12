@@ -1,10 +1,10 @@
 ﻿/*******************************************************************************
 *
-*	GRID MAP MODULE
+*	GRID MAP MODULE (for use with Ocean2)
 *
 *******************************************************************************/
 
-// GrdWtr.js (1 Sep 2025)
+// GrdWtr.js (9 Sep 2025)
 // Copyright 2022-2025, Phil Crowther
 // Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 //
@@ -99,18 +99,6 @@ function loadGeoMat(imagLoader,txtrLoader,grd_,context) {
 		texture.repeat.set(grd_.Stp**2/2,grd_.Stp**2/2);
 		texture.needsUpdate = true;
 		grd_.NM2 = texture;
-	});
-	// Detail Map
-	txtrLoader.load(grd_.DfD,function(texture) {
-		texture.format = RGBAFormat;
-		texture.magFilter = LinearFilter;
-		texture.minFilter = LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = RepeatWrapping;
-		texture.offset.set(0,0);
-		texture.repeat.set(32,32);
-		texture.needsUpdate = true;
-		grd_.DfD = texture;
 	});
 }
 
@@ -237,8 +225,7 @@ _initGeoMat(grd_,scene) {
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
 			grd_.Mat[n][idx] = new MeshStandardNodeMaterial({ // Grid0 textures
-//				colorNode: texture(grd_.DfM[n][idx]),
-				colorNode: texture(grd_.DfM[n][idx]).mul(texture(grd_.DfD)), // add detail
+				colorNode: texture(grd_.DfM[n][idx]),
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
 				roughnessMap: grd_.RfM[n][idx], // not texture
@@ -264,8 +251,7 @@ _initGeoMat(grd_,scene) {
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
 			grd_.Mat[n][idx] = new MeshStandardNodeMaterial({ // Grid1 textures
-//				colorNode: texture(grd_.DfM[n][idx]),
-				colorNode: texture(grd_.DfM[n][idx]).mul(texture(grd_.DfD)), // add detail
+				colorNode: texture(grd_.DfM[n][idx]),
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
 				roughnessMap: grd_.RfM[n][idx], // not texture
@@ -508,16 +494,16 @@ export {loadGeoMat,GrdMap};
 *
 *******************************************************************************/
 /*
-230530	Created this simplified version of GrdMap by moving Grid Definitions 
-		and routines for creating Geometries and Materials into this Module
-240108	This version 2 initalizes large-sized diffuse and roughness maps
-		grx_ changed to grd_ and, in subroutines, grx_.Grd[] to grd_.Grx[]
-240903	Converted to Class
-240908	Turned off shadows for outer grids (due to changes made by r168)
-250331	Use **2 to square numbers
-250403	Add grd_.EMI, Mtl and Ruf to allow fine-tuning of EMI, metalness and roughness
-250531: Rename as GrdWtr
-250601:	Add loadGeoMat to Module
-250901: Color and map no longer mix; using colored map instead
-		Added detail to diffuse texture
+230530		Created this simplified version of GrdMap by moving Grid Definitions 
+			and routines for creating Geometries and Materials into this Module
+240108		This version 2 initalizes large-sized diffuse and roughness maps
+			grx_ changed to grd_ and, in subroutines, grx_.Grd[] to grd_.Grx[]
+240903		Converted to Class
+240908		Turned off shadows for outer grids (due to changes made by r168)
+250331		Use **2 to square numbers
+250403		Add grd_.EMI, Mtl and Ruf to allow fine-tuning of EMI, metalness and roughness
+250531: 	Rename as GrdWtr
+250601:		Add loadGeoMat to Module
+250901: 	Color and map no longer mix; using colored map instead
+250909: v2	For use with Ocean2 (compute shaders) due to increases res, no detail required
 */
