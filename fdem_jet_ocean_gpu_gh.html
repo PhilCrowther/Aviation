@@ -156,6 +156,8 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
+//	Depth Buffer
+	renderer.logarithmicDepthBuffer = true;
 //- Inputs
 	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -447,7 +449,8 @@ function initAll() {
 	initAirObj(air_);			// Load Aircraft
 	initJetExh();
 	prntHUDval(air_);
-	dt = clock.getElapsedTime(); // Clock
+	dt = clock.getElapsedTime(); // Initialize Clock
+	dt = clock.getDelta();
 	LodFlg = 1;
 }
 

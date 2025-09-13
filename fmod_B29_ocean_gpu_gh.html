@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Sep 2025
+Version dated 13 Sep 2025
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -165,16 +165,16 @@ let renderer = new THREE.WebGPURenderer({antialias:true});
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
 //	Depth Buffer
-//	renderer.logarithmicDepthBuffer = true;				//
-//	Tone Mapping
-	renderer.toneMapping = THREE.NoToneMapping;			// clouded
-//	renderer.toneMapping = THREE.LinearToneMapping;		// brighter?
-//	renderer.toneMapping = THREE.ReinhardToneMapping;	// clouded
+	renderer.logarithmicDepthBuffer = true;				//
+//	Tone Mapping (these don't seem to eliminate "haloc" when viewed from front
+	renderer.toneMapping = THREE.NoToneMapping;			// 
+//	renderer.toneMapping = THREE.LinearToneMapping;		// darker
+//	renderer.toneMapping = THREE.ReinhardToneMapping;	// darker
 //	renderer.toneMapping = THREE.CineonToneMapping;		// contrast - dark
 //	renderer.toneMapping = THREE.ACESFilmicToneMapping;	// contrast - not as dark
 //	renderer.toneMapping = THREE.AgXToneMapping;		// normal
 //	renderer.toneMapping = THREE.NeutralToneMapping;	// contrast - dark
-	renderer.toneMappingExposure = 0.75;				// Higher = brighter (default = 1)
+//	renderer.toneMappingExposure = 0.75;				// Higher = brighter (default = 1)
 //- Inputs
 	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -332,8 +332,8 @@ let air_ = {
 		AirDat: 0,				// Aircraft Data
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(), // Object Rotation (degrees)
-		AirObj: new THREE.Object3D,		// Airplane Object
-		AirPBY: new THREE.Object3D,		// 	
+		AirObj: new THREE.Object3D, // Airplane Object
+		AirPBY: new THREE.Object3D,	
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Airplane Speed
@@ -423,7 +423,7 @@ let anm_ = {
 }
 
 //= SOUNDS =====================//==============================================
-const acsnd1 = "b29.wav";			// File
+const acsnd1 = "b29.wav";		// File
 let acvol1 = 0.1;				// Volume
 //
 let	listener = new THREE.AudioListener();
@@ -432,7 +432,7 @@ let	listener = new THREE.AudioListener();
 let RefDst = 25;				// Reference distance for Positional Sound
 //- Engine Sounds
 let EngSnd = new THREE.PositionalAudio(listener);
-let EngMsh = new THREE.Object3D;		// Aircraft Engine
+let EngMsh = new THREE.Object3D; // Aircraft Engine
 	EngMsh.add(EngSnd);			// Engine
 	EngMsh.position.z = -5;
 	air_.AirObj.add(EngMsh);
@@ -476,8 +476,8 @@ let cam_ = {
 		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
 		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
 		// Rotator
-		rot: new THREE.Object3D,			// Camera Rotator
-		mmr: new THREE.Vector3(90,0,0.2),	// Rotate - min/max Lat/Lon,rspd
+		rot: new THREE.Object3D, // Camera Rotator
+		mmr: new THREE.Vector3(90,0,0.2), // Rotate - min/max Lat/Lon,rspd
 		// Center of Rotation
 		par: CamPar[CamSel],	// Center of Rotation
 		flg: CamFlg[CamSel], 	// View Flag (0 = external)
@@ -558,7 +558,8 @@ async function initAll() {
 		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(StatOn.dom);
 	}
-	dt = clock.getElapsedTime(); // Clock
+	dt = clock.getElapsedTime(); // Initialize Clock
+	dt = clock.getDelta();
 	LodFlg = 1;
 }
 

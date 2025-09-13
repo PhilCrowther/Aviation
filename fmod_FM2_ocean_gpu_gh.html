@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Sep 2025
+Version dated 13 Sep 2025
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -173,7 +173,7 @@ let renderer = new THREE.WebGPURenderer({antialias:true});
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
 //	Depth Buffer
-//	renderer.logarithmicDepthBuffer = true;				// 
+	renderer.logarithmicDepthBuffer = true;
 //	Tone Mapping
 	renderer.toneMapping = THREE.NoToneMapping;			// clouded
 //	renderer.toneMapping = THREE.LinearToneMapping;		// brighter?
@@ -182,7 +182,7 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 //	renderer.toneMapping = THREE.ACESFilmicToneMapping;	// contrast - not as dark
 //	renderer.toneMapping = THREE.AgXToneMapping;		// normal
 //	renderer.toneMapping = THREE.NeutralToneMapping;	// contrast - dark
-	renderer.toneMappingExposure = 0.75;				// Higher = brighter (default = 1)
+//	renderer.toneMappingExposure = 0.75;				// Higher = brighter (default = 1)
 //- Inputs
 	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -332,7 +332,7 @@ let wav_ = {
 		d_fadeLimit: 0.0,
 	};
 
-//= AIROBJ ================//====================================================
+//= AIROBJ =====================//===============================================
 //  NOTE: Flight Module not used in this display; air_ variable is used for internal comps
 let air_ = {
 		// General Variables
@@ -641,7 +641,8 @@ async function initAll() {
 		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(StatOn.dom);
 	}
-	dt = clock.getElapsedTime(); // Clock
+	dt = clock.getElapsedTime(); // Initialize Clock
+	dt = clock.getDelta();
 	LodFlg = 1;
 }
 

@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Sep 2025
+Version dated 13 Sep 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -161,7 +161,7 @@ TO DO:
 	   STANDARD SETUP								X
 	3. OCEAN GRID VARIABLES
 		GRDWTR MODULE				grd_			adj
-		OCEAN MODULE								wav_
+		OCEAN MODULE				wav_			adj
 	4. OBJECT VARIABLES (MODULE)
 		SHARED TEXTURES				txt_
 		STATIC OBJECTS
@@ -656,7 +656,7 @@ function initAll() {
 		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(gen_.StatOn.dom);
 	}
-	tim_.NowTim = clock.getElapsedTime(); // Start Clock
+	tim_.NowTim = clock.getElapsedTime(); // Initialize Clock
 	gen_.LodFlg = 1;
 }
 
@@ -956,8 +956,8 @@ function moveXACEnd(n) {
 		// Select Actions
 		if (xat_.SegIdx == 0) begnXACExp(n); // Begin Explosion 1
 		if (xat_.SegIdx == 1) {
-			stopXACExp(n); // Stop Explosion 1
-			begnXACFyr(n); // Start Smoke and Fire
+			stopXACExp(n); 		// Stop Explosion 1
+			begnXACFyr(n); 		// Start Smoke and Fire
 		}
 		if (xat_.SegIdx == 2) {
 			begnXACExp(n);		// Begin Explosion 2
