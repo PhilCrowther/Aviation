@@ -23,7 +23,7 @@ import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 
 /********************************************************************************
 *
-*   OCEAN MODULE
+*	OCEAN MODULE
 *
 ********************************************************************************/
 
@@ -34,7 +34,7 @@ constructor(params) {
 //= INITIALIZE ==================================================================
 
 	//= Variables ===============================================================
-	this.size = params.size;	
+	this.size = params.size;
 	this.params_ = params;
 	this.logN = Math.log2(params.size);
 	this.sqSize = params.size**2;
@@ -77,8 +77,8 @@ constructor(params) {
 	this.dispatchSize = [this.size/this.workgroupSize[0],this.size/this.workgroupSize[1]];
 	
 	//= Storage Buffers =========================================================
-	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
 	this.spectrumBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
+	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
 	this.waveDataBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
 	this.DxDzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
 	this.DyDxzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
@@ -137,12 +137,12 @@ constructor(params) {
 			d_fadeLimit: f32,
 		) -> void {
 			var posX = index % size;
-			var posY = index / size;
+			var posY = index/size;
 			var idx = vec2u(posX,posY);
 			var xy = vec2<f32>(f32(posX),f32(posY));
-			let deltaK = 2.0*PI / waveLength;
-			let nx = f32(posX) - f32(size) / 2.0;
-			let nz = f32(posY) - f32(size) / 2.0;
+			let deltaK = 2.0*PI/waveLength;
+			let nx = f32(posX)-f32(size)/2.0;
+			let nz = f32(posY)-f32(size)/2.0;
 			let k = vec2<f32>(nx,nz)*deltaK;
 			let kLength = length(k);
 			if(kLength >= boundaryLow && kLength <= boundaryHigh) {
@@ -157,14 +157,14 @@ constructor(params) {
 				if(d_scaleHeight > 0) {
 					var d_alpha = JonswapAlpha(G,d_fetch,d_windSpeed);
 					var d_wp = JonswapPeakFrequency(G,d_fetch,d_windSpeed);
-					spectrum = spectrum + JONSWAP(w,G,depth,d_wp,d_scaleHeight,d_alpha,d_peakEnhancement)
+					spectrum = spectrum+JONSWAP(w,G,depth,d_wp,d_scaleHeight,d_alpha,d_peakEnhancement)
 						*directionSpectrum(kAngle,w,d_wp,d_swell,d_windDirection,d_spreadBlend)
 						*shortWavesFade(kLength,d_shortWaveFade,d_fadeLimit);
 				}
 				var er: f32 = gaussianRandom1(xy);
 				var ei: f32 = gaussianRandom2(xy);
 				spectrumBuffer[index] = vec4<f32>(vec2<f32>(er,ei)*sqrt(2*spectrum*abs(dOmegadk)/kLength*deltaK*deltaK),0,0);
-				waveDataBuffer[index] = vec4<f32>(k.x,1.0 / kLength,k.y,w);
+				waveDataBuffer[index] = vec4<f32>(k.x,1.0/kLength,k.y,w);
 			} else {
 				spectrumBuffer[index] = vec4<f32>(0.0);
 				waveDataBuffer[index] = vec4<f32>(k.x,1.0,k.y,0.0);
@@ -180,12 +180,12 @@ constructor(params) {
 		}
 		fn gaussianRandom1(seed: vec2<f32>) -> f32 {
 			var nrnd0: f32 = random(seed);
-			var nrnd1: f32 = random(seed + 0.1);
+			var nrnd1: f32 = random(seed+0.1);
 			return sqrt(-2*log(max(0.001,nrnd0)))*cos(2*PI*nrnd1);
 		}
 		fn gaussianRandom2(seed: vec2<f32>) -> f32 {
 			var nrnd0: f32 = random(seed);
-			var nrnd1: f32 = random(seed + 0.1);
+			var nrnd1: f32 = random(seed+0.1);
 			return sqrt(-2*log(max(0.001,nrnd0)))*sin(2*PI*nrnd1);
 		}
 		fn random(par: vec2<f32>) -> f32 {
@@ -213,35 +213,35 @@ constructor(params) {
 		}
 		fn spreadPower(omega: f32,peakOmega: f32) -> f32 {
 			if (omega > peakOmega) {
-				return 9.77*pow(abs(omega / peakOmega),-2.5);
+				return 9.77*pow(abs(omega/peakOmega),-2.5);
 			}
-			return 6.97*pow(abs(omega / peakOmega),5.0);
+			return 6.97*pow(abs(omega/peakOmega),5.0);
 		}
 		fn TMACorrection(omega: f32,g: f32,depth: f32) -> f32 {
-			let omegaH = omega*sqrt(depth / g);
+			let omegaH = omega*sqrt(depth/g);
 			if (omegaH <= 1.0) {
 				return 0.5*omegaH*omegaH;
 			}
 			if (omegaH < 2.0) {
-				return 1.0 - 0.5*(2.0 - omegaH)*(2.0 - omegaH);
+				return 1.0-0.5*(2.0-omegaH)*(2.0-omegaH);
 			}
 			return 1.0;
 		}
 		fn directionSpectrum(theta: f32,w: f32,wp: f32,swell: f32,angle: f32,spreadBlend: f32) -> f32 {
-			let s = spreadPower(w,wp) + 16.0*tanh(min(w / wp,20.0))*swell*swell;
-			return mix(2.0 / PI*cos(theta)*cos(theta),cosine2s(theta - angle,s),spreadBlend);
+			let s = spreadPower(w,wp)+16.0*tanh(min(w/wp,20.0))*swell*swell;
+			return mix(2.0/PI*cos(theta)*cos(theta),cosine2s(theta-angle,s),spreadBlend);
 		}
 		fn JONSWAP(w: f32,g: f32,depth: f32,wp: f32,scale: f32,alpha: f32,gamma: f32) -> f32 {
 			var sigma: f32 = select(0.07,0.09,w <= wp);
-			var a = exp(-pow(w - wp,2) / (2*pow(sigma*wp,2)));
+			var a = exp(-pow(w-wp,2)/(2*pow(sigma*wp,2)));
 			return scale*TMACorrection(w,g,depth)*alpha*pow(g,2) 
 				* pow(1/w,5)
-				* exp(-1.25*pow(wp / w,4)) 
+				* exp(-1.25*pow(wp/w,4)) 
 				* pow(abs(gamma),a);
 		}
 		fn shortWavesFade(kLength: f32,shortWavesFade: f32,fadeLimit: f32) -> f32
 		{
-			return (1 - fadeLimit)*exp(-pow(shortWavesFade*kLength,2)) + fadeLimit;
+			return (1-fadeLimit)*exp(-pow(shortWavesFade*kLength,2))+fadeLimit;
 		}
 	`);
 	//- Initial Spectrum with Inverse -------------------------------------------
@@ -251,12 +251,12 @@ constructor(params) {
 			index: u32,
 			size: u32,
 		) -> void {
-			var idx = ((size - index / size) % size)*size + (size - index % size) % size;
+			var idx = ((size-index/size) % size)*size+(size-index % size) % size;
 			var spectrumData = spectrumBuffer[index];
 			var h0MinusK = spectrumBuffer[idx];
 			spectrumBuffer[index] = vec4<f32>(spectrumData.xy,h0MinusK.x,-h0MinusK.y);
 		}
-	`);	
+	`);
 	//- Butterfly ---------------------------------------------------------------
 	this.butterflyWGSL = wgslFn(`
 		fn computeWGSL(
@@ -266,40 +266,41 @@ constructor(params) {
 		) -> void {
 			var logN = log2(N);
 			var posX = f32(index) % logN;
-			var posY = floor(f32(index) / logN);
+			var posY = floor(f32(index)/logN);
 			const PI: f32 = 3.1415926;
-			var k: f32 = (posY*N/pow(2,posX + 1)) % N;
-			var twiddle: vec2<f32> = vec2<f32>(cos(2*PI*k / N),sin(2*PI*k / N));
+			var k: f32 = (posY*N/pow(2,posX+1)) % N;
+			var twiddle: vec2<f32> = vec2<f32>(cos(2*PI*k/N),sin(2*PI*k/N));
 			var butterflyspan = pow(2,f32(posX));
-			let idx = u32(posY)*u32(logN) + u32(posX);
-			var butterflywing: i32 = select(0,1,posY % pow(2,posX + 1) < pow(2,posX));
+			let idx = u32(posY)*u32(logN)+u32(posX);
+			var butterflywing: i32 = select(0,1,posY % pow(2,posX+1) < pow(2,posX));
 			var uY = u32(posY);
 			if(u32(posX) == 0){
 				if(butterflywing == 1){
-					butterflyBuffer[idx] = vec4f(twiddle,reverseBits(uY,N),reverseBits(uY + 1,N));
+					butterflyBuffer[idx] = vec4f(twiddle,reverseBits(uY,N),reverseBits(uY+1,N));
 				}
 				else{
-					butterflyBuffer[idx] = vec4f(twiddle,reverseBits(uY - 1,N),reverseBits(uY,N));
+					butterflyBuffer[idx] = vec4f(twiddle,reverseBits(uY-1,N),reverseBits(uY,N));
 				}
 			}
 			else{
 				if(butterflywing == 1){
-					butterflyBuffer[idx] = vec4f(twiddle,posY,posY + butterflyspan);
+					butterflyBuffer[idx] = vec4f(twiddle,posY,posY+butterflyspan);
 				}
 				else{
-					butterflyBuffer[idx] = vec4f(twiddle,posY - butterflyspan,posY);
+					butterflyBuffer[idx] = vec4f(twiddle,posY-butterflyspan,posY);
 				}
 			}
 		}
 		fn reverseBits(index: u32,N: f32) -> f32 {
 			var bitReversedIndex: u32 = 0;
 			var numBits: u32 = u32(log2(N));
-			for (var i: u32 = 0; i < numBits; i = i + 1) {
-				bitReversedIndex = bitReversedIndex | (((index >> i) & 1) << (numBits - i - 1));
+			for (var i: u32 = 0; i < numBits;
+			i = i+1) {
+				bitReversedIndex = bitReversedIndex | (((index >> i) & 1) << (numBits-i-1));
 			} 
 			return f32(bitReversedIndex);
 		}
-	`);	
+	`);
 	//- Time Spectrum -----------------------------------------------------------
 	this.TimeSpectrumWGSL = wgslFn(`
 		fn computeWGSL(
@@ -315,7 +316,7 @@ constructor(params) {
 			var h0 = spectrumBuffer[index];
 			var phase = wave.w*time;
 			var exponent = vec2<f32>(cos(phase),sin(phase));
-			var h = complexMult(h0.xy,exponent) + complexMult(h0.zw,vec2<f32>(exponent.x,-exponent.y));
+			var h = complexMult(h0.xy,exponent)+complexMult(h0.zw,vec2<f32>(exponent.x,-exponent.y));
 			var ih = vec2<f32>(-h.y,h.x);
 			var displacementX = ih*wave.x*wave.y;
 			var displacementY = h;
@@ -328,11 +329,11 @@ constructor(params) {
 			var displacementZ_dz = -h*wave.z*wave.z*wave.y;
 			//displacementX_dz ist the same like displacementZ_dx
 			//Sum up all amplitudes (real and complex)
-			writeDxDzBuffer[index]   = vec2<f32>(displacementX.x - displacementZ.y,displacementX.y + displacementZ.x);
-			writeDyDxzBuffer[index]  = vec2<f32>(displacementY.x - displacementZ_dx.y,displacementY.y + displacementZ_dx.x);
+			writeDxDzBuffer[index]  = vec2<f32>(displacementX.x-displacementZ.y,displacementX.y+displacementZ.x);
+			writeDyDxzBuffer[index] = vec2<f32>(displacementY.x-displacementZ_dx.y,displacementY.y+displacementZ_dx.x);
 		}
 		fn complexMult(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
-			return vec2<f32>(a.r*b.r - a.g*b.g,a.r*b.g + a.g*b.r);
+			return vec2<f32>(a.r*b.r-a.g*b.g,a.r*b.g+a.g*b.r);
 		}
 	`);
 	//- IFFT_Init ---------------------------------------------------------------
@@ -351,20 +352,20 @@ constructor(params) {
 			workgroupId: vec3<u32>,
 			localId: vec3<u32>
 		) -> void {
-			let pos = workgroupSize.xy*workgroupId.xy + localId.xy;
-			let butterflyIndex = pos.x*logN + step;
+			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
+			let butterflyIndex = pos.x*logN+step;
 			let data = butterflyBuffer[butterflyIndex];
-			let bufferIndex = pos.y*size + u32(data.z);
-			let bufferIndexOdd = pos.y*size + u32(data.w);
+			let bufferIndex = pos.y*size+u32(data.z);
+			let bufferIndexOdd = pos.y*size+u32(data.w);
 			var even = select(DxDzBuffer[bufferIndex],DyDxzBuffer[bufferIndex],initBufferIndex == 1u);
 			var odd = select(DxDzBuffer[bufferIndexOdd],DyDxzBuffer[bufferIndexOdd],initBufferIndex == 1u);
-			var H: vec2<f32> = even + multiplyComplex(vec2<f32>(data.r,-data.g),odd);
+			var H: vec2<f32> = even+multiplyComplex(vec2<f32>(data.r,-data.g),odd);
 			pingpongBuffer[index] = vec4<f32>(0.0,0.0,H);
 		}
 		fn multiplyComplex(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
-			return vec2<f32>(a.x*b.x - a.y*b.y,a.y*b.x + a.x*b.y);
+			return vec2<f32>(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
-	`);		
+	`);	
 	//- IFFT_Horizontal ---------------------------------------------------------
 	this.IFFT_HorizontalWGSL = wgslFn(`
 		fn computeWGSL(
@@ -380,23 +381,23 @@ constructor(params) {
 			workgroupId: vec3<u32>,
 			localId: vec3<u32>
 		) -> void {
-			let pos = workgroupSize.xy*workgroupId.xy + localId.xy;
-			let butterflyIndex = pos.x*logN + step;
+			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
+			let butterflyIndex = pos.x*logN+step;
 			let data = butterflyBuffer[butterflyIndex];
-			let bufferIndexEven = pos.y*size + u32(data.z);
-			let bufferIndexOdd = pos.y*size + u32(data.w);
+			let bufferIndexEven = pos.y*size+u32(data.z);
+			let bufferIndexOdd = pos.y*size+u32(data.w);
 			let even = select(pingpongBuffer[bufferIndexEven].xy,pingpongBuffer[bufferIndexEven].zw,pingpong == 0);
 			let odd  = select(pingpongBuffer[bufferIndexOdd].xy,pingpongBuffer[bufferIndexOdd].zw,pingpong == 0);
-			let H: vec2<f32> = even + multiplyComplex(data.rg,odd);
+			let H: vec2<f32> = even+multiplyComplex(data.rg,odd);
 			pingpongBuffer[index] = vec4<f32>(
 				select(pingpongBuffer[index].xy,H,pingpong == 0),
 				select(H,pingpongBuffer[index].zw,pingpong == 0)
 			);
 		}
 		fn multiplyComplex(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
-			return vec2<f32>(a.x*b.x - a.y*b.y,a.y*b.x + a.x*b.y);
+			return vec2<f32>(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
-	`);		
+	`);	
 	//- IFFT_Vertical -----------------------------------------------------------
 	this.IFFT_VerticalWGSL = wgslFn(`
 		fn computeWGSL(
@@ -412,23 +413,23 @@ constructor(params) {
 			workgroupId: vec3<u32>,
 			localId: vec3<u32>,
 		) -> void {
-			let pos = workgroupSize.xy*workgroupId.xy + localId.xy;
-			let butterflyIndex = pos.y*logN + step;
+			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
+			let butterflyIndex = pos.y*logN+step;
 			let data = butterflyBuffer[butterflyIndex];
-			let bufferIndexEven = u32(data.z)*size + pos.x;
-			let bufferIndexOdd = u32(data.w)*size + pos.x;
+			let bufferIndexEven = u32(data.z)*size+pos.x;
+			let bufferIndexOdd = u32(data.w)*size+pos.x;
 			let even = select(pingpongBuffer[bufferIndexEven].xy,pingpongBuffer[bufferIndexEven].zw,pingpong == 0);
 			let odd  = select(pingpongBuffer[bufferIndexOdd].xy,pingpongBuffer[bufferIndexOdd].zw,pingpong == 0);
-			let H: vec2<f32> = even + multiplyComplex(data.rg,odd);
+			let H: vec2<f32> = even+multiplyComplex(data.rg,odd);
 			pingpongBuffer[index] = vec4<f32>(
 				select(pingpongBuffer[index].xy,H,pingpong == 0),
 				select(H,pingpongBuffer[index].zw,pingpong == 0)
 			);
 		}
 		fn multiplyComplex(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
-			return vec2<f32>(a.x*b.x - a.y*b.y,a.y*b.x + a.x*b.y);
+			return vec2<f32>(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
-	`);	
+	`);
 	//- IFFT Permute ------------------------------------------------------------
 	this.IFFT_PermuteWGSL = wgslFn(`
 		fn computeWGSL(
@@ -442,14 +443,14 @@ constructor(params) {
 			workgroupId: vec3<u32>,
 			localId: vec3<u32>,
 		) -> void {
-			let pos = workgroupSize.xy*workgroupId.xy + localId.xy;
+			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
 			let input = pingpongBuffer[index].xy;
-			let output = input*(1.0 - 2.0*f32((pos.x + pos.y) % 2));
+			let output = input*(1.0-2.0*f32((pos.x+pos.y) % 2));
 			DxDzBuffer[index] = select(DxDzBuffer[index],output,initBufferIndex == 0u);
 			DyDxzBuffer[index] = select(DyDxzBuffer[index],output,initBufferIndex == 1u);
 		} 
 	`);
-	//- TexturesMerger
+	//- TexturesMerger ----------------------------------------------------------
 	this.TexturesMergerWGSL = wgslFn(`
 		fn computeWGSL(
 			DxDzBuffer: ptr<storage,array<vec2<f32>>,read>,
@@ -468,7 +469,7 @@ constructor(params) {
 			textureStore(writeDisplacement,pos,vec4f(lambda*x.x,y.x,lambda*x.y,0));
 		}
 	`);
-	//-  Normal Map (Old) -------------------------------------------------------
+	//-	Normal Map (Old) -------------------------------------------------------
 	this.computeNormalMapWGSL = wgslFn(`
 		fn computeWGSL(
 			r_disp: texture_2d<f32>,
@@ -484,7 +485,7 @@ constructor(params) {
 			//- Compute vUv(u)
 			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
 			var posX = u32(indx) % u32(size);	// width
-			var posY = u32(indx) / u32(size);	// height
+			var posY = u32(indx)/u32(size);	// height
 			var idx  = vec2u(u32(posX),u32(posY));
 			var idxf = vec2f(idx);
 			//
@@ -493,13 +494,13 @@ constructor(params) {
 			//
 			let ctr = vec3<f32>(textureLoad(r_disp,idx,0).xyz);
 			let idxR = vec2<u32>(idxf+vec2<f32>(texel,0));
-			let rgt = vec3<f32>(vec3<f32>(texelSize,0,0)+textureLoad(r_disp,idxR,0).xyz) - ctr;
+			let rgt = vec3<f32>(vec3<f32>(texelSize,0,0)+textureLoad(r_disp,idxR,0).xyz)-ctr;
 			let idxL = vec2<u32>(idxf+vec2<f32>(-texel,0));
-			let lft = vec3<f32>(vec3<f32>(-texelSize,0,0)+textureLoad(r_disp,idxL,0).xyz) - ctr;
+			let lft = vec3<f32>(vec3<f32>(-texelSize,0,0)+textureLoad(r_disp,idxL,0).xyz)-ctr;
 			let idxT = vec2<u32>(idxf+vec2<f32>(0,-texel));
-			let top = vec3<f32>(vec3<f32>(0,0,-texelSize)+textureLoad(r_disp,idxT,0).xyz) - ctr;
+			let top = vec3<f32>(vec3<f32>(0,0,-texelSize)+textureLoad(r_disp,idxT,0).xyz)-ctr;
 			let idxB = vec2<u32>(idxf+vec2<f32>(0,texel));
-			let bot = vec3<f32>(vec3<f32>(0,0,texelSize)+textureLoad(r_disp,idxB,0).xyz) - ctr;
+			let bot = vec3<f32>(vec3<f32>(0,0,texelSize)+textureLoad(r_disp,idxB,0).xyz)-ctr;
 			//
 			let topRgt = vec3<f32>(cross(rgt,top));
 			let topLft = vec3<f32>(cross(top,lft));
@@ -507,21 +508,13 @@ constructor(params) {
 			let botRgt = vec3<f32>(cross(bot,rgt));
 			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
 			//
-			nrm3 = vec3<f32>(nrm3)*0.5 + 0.5;
+			nrm3 = vec3<f32>(nrm3)*0.5+0.5;
 			textureStore(w_norm,pos,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 		}
 	`);
 
 //= INITIALIZE (continue) =======================================================
 
-	//- Butterfly ---------------------------------------------------------------
-	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
-	this.butterfly = this.butterflyWGSL({ 
-		butterflyBuffer: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count),
-		index: instanceIndex,
-		N: this.size,
-	}).compute(Math.log2(this.size)*this.size);
-	params.renderer.compute(this.butterfly);
 	//- Initial Spectrum --------------------------------------------------------
 	this.initialSpectrum = this.InitialSpectrumWGSL({ 
 		spectrumBuffer: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
@@ -562,6 +555,14 @@ constructor(params) {
 		size: this.size,
 	}).compute(this.sqSize);
 	params.renderer.compute(this.initialSpectrumWithInverse);
+	//- Butterfly ---------------------------------------------------------------
+	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
+	this.butterfly = this.butterflyWGSL({ 
+		butterflyBuffer: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count),
+		index: instanceIndex,
+		N: this.size,
+	}).compute(Math.log2(this.size)*this.size);
+	params.renderer.compute(this.butterfly);
 	// TimeSpectrum -------------------------------------------------------------
 	this.computeTimeSpectrum = this.TimeSpectrumWGSL({
 		spectrumBuffer: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
@@ -659,8 +660,8 @@ update(dt) {
 	const timeOffset = 1000;
 	this.computeTimeSpectrum.computeNode.parameters.time.value = timeOffset+performance.now()/1000;
 	this.params_.renderer.compute(this.computeTimeSpectrum, this.dispatchSize);
-	this.IFFT( 0 );	//DxDz
-	this.IFFT( 1 );	//DyDxz
+	this.IFFT(0);				//DxDz
+	this.IFFT(1);				//DyDxz
 	this.params_.renderer.compute(this.computeMergeTextures, this.dispatchSize);
 	this.params_.renderer.compute(this.computeNormalMap, this.dispatchSize);
 };
@@ -669,20 +670,20 @@ IFFT(index) {
 	this.DDindex.value = index;
 	let pingpong = true;
 	this.ifftStep.value = 0;
-	this.params_.renderer.compute( this.computeInitialize, this.dispatchSize );
+	this.params_.renderer.compute(this.computeInitialize, this.dispatchSize);
 	for(let i = 1; i < this.logN; i++){
 		pingpong = !pingpong;
 		this.ifftStep.value = i;
 		this.pingpong.value = pingpong ? 1 : 0;
-		this.params_.renderer.compute( this.computeHorizontalPingPong, this.dispatchSize );
+		this.params_.renderer.compute(this.computeHorizontalPingPong, this.dispatchSize);
 	}
 	for(let i = 0; i < this.logN; i++){
 		pingpong = !pingpong;
 		this.ifftStep.value = i;
 		this.pingpong.value = pingpong ? 1 : 0;
-		this.params_.renderer.compute( this.computeVerticalPingPong, this.dispatchSize );
+		this.params_.renderer.compute(this.computeVerticalPingPong, this.dispatchSize);
 	}
-	this.params_.renderer.compute( this.computePermute, this.dispatchSize );
+	this.params_.renderer.compute(this.computePermute, this.dispatchSize);
 };
 
 };	// End of Module
