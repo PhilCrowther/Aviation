@@ -1,6 +1,6 @@
 ﻿/*= OCEAN MODULE ================================================================
 
-Ocean2.js (13 Sep 2025)
+Ocean2.js (14 Sep 2025)
 
 This is single-pass version of the Ocean Wave Generator created by Attila Schroeder
 Created with his assistance and permission and licensed under a
@@ -711,5 +711,6 @@ export {Ocean};
 *
 //******************************************************************************/
 /*
-	250908: Initial Version - Uses Compute Shaders 
+	250908: Initial Version - Uses Compute Shaders
+	250914:	Adjust Wind Direction
 */
