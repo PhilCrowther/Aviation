@@ -21,6 +21,14 @@ import {float,vec2,vec4,wgslFn,texture,
 } from 'three/tsl';
 import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 
+/********************************************************************************
+*
+*	OCEAN MODULE
+*
+********************************************************************************/
+let DegRad = Math.PI/180;		// Convert Degrees to Radians
+let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+
 //- Converts degrees to 360
 function Mod360(deg) {
 	while (deg < 0) deg = deg+360;	// Make deg a positive number
@@ -45,9 +53,9 @@ constructor(params) {
 	this.logN = Math.log2(params.size);
 	this.sqSize = params.size**2;
 	this.bufferSize = this.sqSize*2;
-	//- Compute Wind Direction
-	params.windDirection = Mod360(90-params.windDirection)/360.0*2*Math.PI;
-	params.d_windDirection = Mod360(90-params.d_windDirection)/360.0*2*Math.PI;
+	//- Compute Wind Direction (convert to 0 = right and counterclockwise rotation)
+	params.windDirection = Mod360(90-params.windDirection)*DegRad;
+	params.d_windDirection = Mod360(90-params.d_windDirection)*DegRad;
 	//-	Convert Numbers to Uniforms ----------------------------------------------
 	params.lambda = uniform(params.lambda);
 	// InitSpec Variables
