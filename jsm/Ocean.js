@@ -1,6 +1,6 @@
 ﻿/*= OCEAN MODULE ================================================================
 
-Ocean2.js (10 Sep 2025)
+Ocean2.js (13 Sep 2025)
 
 This is single-pass version of the Ocean Wave Generator created by Attila Schroeder
 Created with his assistance and permission and licensed under a
@@ -21,6 +21,12 @@ import {float,vec2,vec4,wgslFn,texture,
 } from 'three/tsl';
 import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 
+//- Converts degrees to 360
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;	// Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
+return deg;}
+
 /********************************************************************************
 *
 *	OCEAN MODULE
@@ -39,28 +45,31 @@ constructor(params) {
 	this.logN = Math.log2(params.size);
 	this.sqSize = params.size**2;
 	this.bufferSize = this.sqSize*2;
-	// Convert Numbers to Uniforms ----------------------------------------------
+	//- Compute Wind Direction
+	params.windDirection = Mod360(90-params.windDirection)/360.0*2*Math.PI;
+	params.d_windDirection = Mod360(90-params.d_windDirection)/360.0*2*Math.PI;
+	//-	Convert Numbers to Uniforms ----------------------------------------------
 	params.lambda = uniform(params.lambda);
 	// InitSpec Variables
 	params.waveLength = uniform(params.waveLength);
 	params.boundaryLow = uniform(params.boundaryLow);
 	params.boundaryHigh = uniform(params.boundaryHigh);
-	// Wave Spectrum 1
+	//-	Wave Spectrum 1
 	params.depth = uniform(params.depth);
 	params.scaleHeight = uniform(params.scaleHeight);
 	params.windSpeed = uniform(params.windSpeed);
-	params.windDirection = uniform(params.windDirection/360.0*2*Math.PI);
+	params.windDirection = uniform(params.windDirection);
 	params.fetch = uniform(params.fetch);
 	params.spreadBlend = uniform(params.spreadBlend);
 	params.swell = uniform(params.swell);
 	params.peakEnhancement = uniform(params.peakEnhancement);
 	params.shortWaveFade = uniform(params.shortWaveFade);
 	params.fadeLimit = uniform(params.fadeLimit);
-	// Wave Spectrum 2
+	//-	Wave Spectrum 2
 	params.d_depth = uniform(params.d_depth);
 	params.d_scaleHeight = uniform(params.d_scaleHeight);
 	params.d_windSpeed = uniform(params.d_windSpeed);
-	params.d_windDirection = uniform(params.d_windDirection/360.0*2*Math.PI);
+	params.d_windDirection = uniform(params.d_windDirection);
 	params.d_fetch = uniform(params.d_fetch);
 	params.d_spreadBlend = uniform(params.d_spreadBlend);
 	params.d_swell = uniform(params.d_swell);
