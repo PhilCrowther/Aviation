@@ -198,7 +198,7 @@ let wav_ = {
 		depth: 100,				// was 20
 		scaleHeight: 1,
 		windSpeed: 3,			// was 2
-		windDirection: 135,		// direction that wind is blowing towards
+		windDirection: 315,		// direction that wind is blowing towards
 		fetch: 100000,
 		spreadBlend: 1,
 		swell: 0.198,
@@ -209,7 +209,7 @@ let wav_ = {
 		d_depth: 100,			// was 20
 		d_scaleHeight: 1,
 		d_windSpeed: 2,			// was 1
-		d_windDirection: 135,	// direction that wind is blowing towards
+		d_windDirection: 315,	// direction that wind is blowing towards
 		d_fetch: 300000,
 		d_spreadBlend: 1,
 		d_swell: 0.5,
