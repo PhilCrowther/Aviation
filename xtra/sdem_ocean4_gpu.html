@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>Ocean GPU r180</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
+</head>
+
+<body oncontextmenu="return false;">
+
+<div id="container">
+	<div class="overlay1">
+		<div>Altitude.: <span id="Cam_Alt"></span> ft</div>
+		<div>Heading..: <span id="Cam_Hdg"></span> deg</div>
+	</div>
+</div>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+import {color,texture,normalMap,float,vec2,attribute,positionLocal,
+		textureStore,wgslFn,instanceIndex,code,uniform,time
+} from 'three/tsl';
+
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import Stats from 'stats-gl';
+// Custom Modules
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra/jsm/Ocean4.js";
+
+//= VARIABLES ===================================================================
+//-	Math Predefined
+var DegRad = Math.PI/180;		// Convert Degrees to Radians
+var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let	Mtr2Ft = 3.28084;
+//- Flags				
+let LodFlg = 0;
+let PawsOn = 0;
+let WireOn = 0;
+let StatOn = 1;					// Stats ((0 = off, 1 = on)
+
+//= SKYBOX ======================================================================
+let SkyCol = 0x1732c1;			// Sky
+let SkyLim = 100000;			// Max viewing distance 
+//- Texture
+let SBPath = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+
+//= SUN =========================================================================
+let SunCol = 0xffffff;			// Sun
+let SunInt = 3;					// Intensity
+//- Rotation and Position (fixed)
+let SunLat = 23;				// Direction - Vert (+/- 90)
+let SunLon = 312;				// Direction - Horz (0->360)
+let SunDst = 10000;				// Distance (for shadows and lensflare)
+//- New
+let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+
+//= BASIC SETUP =================================================================
+let	container = document.createElement('div');
+	document.body.appendChild(container);
+//- Camera
+let	camera = new THREE.PerspectiveCamera(55.0, window.innerWidth/window.innerHeight, 0.5, SkyLim);
+	camera.position.set(0, 350, 800);
+//- Scene
+let	scene = new THREE.Scene();
+//- Renderer
+let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
+    renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.autoUpdate = true;
+	renderer.receiveShadow = true;
+	renderer.shadowMap.type = THREE.BasicShadowMap;
+	container.appendChild(renderer.domElement);
+//- Lights
+let sunLight = new THREE.DirectionalLight(SunCol, 3.0);
+	sunLight.position.copy(SunPos).normalize();
+	scene.add(sunLight);
+//- Controls
+let	controls = new OrbitControls(camera, renderer.domElement);
+//- Inputs
+	document.addEventListener("keydown", onDocumentKeyDown, false);
+//	document.addEventListener("keyup", onDocumentKeyUp, false);
+	window.addEventListener("resize", onWindowResize, false);
+//- Loading Manager
+	// Create a loading manager to set RESOURCES_LOADED when appropriate.
+	// Pass loadingManager to all resource loaders.
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+
+//= CAMERA ======================================================================
+let	CamDst, CamLat, CamHdg, CamAlt = 0;	
+
+//= MATERIALS ===================================================================
+let WtrCol = 0x001080;			// Water (Navy)
+//- Textures --------------------------------------------------------------------
+let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png";
+//- Maps ------------------------------------------------------------------------
+let RufMap = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+
+//= GRID DATA ===================================================================
+let GrdSiz = 2400;				// Size of Smallest Grid Square (meters)
+let GrdRes = 512;
+let GrdSeg = 256;				// Segments per Plane (256 = OK, 512 = too much)
+// Planes
+let GrdRCs = 2;
+let GrdPtr = [0];
+let WavMZV = [0];
+let WavMXV = [0];
+
+//= OCEAN =======================================================================
+//- Inputs
+let WndSpd = 20;
+let WndHdg = 0;
+let Choppy = 2;
+//- Module
+let waves = 0;
+let wav_ = {
+		// Sources
+		Res: GrdRes,			// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
+		WSp: WndSpd,			// Wind Speed
+		WHd: WndHdg,			// Wind Heading
+		Chp: Choppy,			// default = 1
+		// Results
+		Dsp: 0,					// The Displacement Map
+		Nrm: 0,					// The Normal Map
+		NMS: new THREE.Vector2(1.0,1.0), // Normal Map Scale (flip Y for left-handed maps)
+		Spd: 1					// Animation Speed
+	};
+//- External Values
+let WtrGeo, WtrMat, WtrMsh = 0;
+
+//= Key Bindings ================================================================
+let K_Paws = 80;				// Pause (p)
+let K_Wire = 87;				// Pause (p)
+
+//= HTML OVERLAY TEXT ===========================================================
+let Cam_AltElement = document.getElementById("Cam_Alt"); // Altitude
+let Cam_AltNode = document.createTextNode("");
+	Cam_AltElement.appendChild(Cam_AltNode);
+let Cam_HdgElement = document.getElementById("Cam_Hdg"); // Heading
+let Cam_HdgNode = document.createTextNode("");
+	Cam_HdgElement.appendChild(Cam_HdgNode);
+let Cam_Alt,Cam_Hdg;
+
+//= MAIN PROGRAM ================================================================
+	loadAll();
+
+//= 0 LOAD ALL ==================================================================
+function loadAll() {
+	loadSkyBox();
+	loadOceans();
+	// Show stats
+	if (StatOn) {							// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(StatOn.dom);
+	}
+}
+
+//= 1 INITIALIZE ================================================================
+function initAll() {
+	initOceans(renderer,wav_);				// Initialize Ocean
+	LodFlg = 1;
+}
+
+//= 2 RENDER ====================================================================
+function rendAll() {
+//	requestAnimationFrame(rendAll);	
+	if (PawsOn == 0 && LodFlg > 0) {
+		// Update camera position
+		if(camera.position.y < 0.0) {
+			camera.position.y = 2.0;
+		}
+		waves.update(); 					// Move Ocean
+		controls.update();					// Controls
+		if (StatOn) StatOn.update();		// Stats
+	}
+	prntHUDval();
+	renderer.renderAsync(scene, camera);	// ### WebGPU requires Async
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+}
+
+//= SKY BOX =====================================================================
+
+function loadSkyBox() {
+	let envMap = cubeLoader
+		.setPath(SBPath)
+		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
+	envMap.format = THREE.RGBAFormat;
+	envMap.colorSpace = THREE.SRGBColorSpace;	// ### r152
+	scene.background = envMap;
+	LodFlg = 1;
+}
+
+//= OCEANS ======================================================================
+
+function loadOceans() {
+	//- Diffuse Texture
+	txtrLoader.load(DifTxt,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.needsUpdate = true;
+		DifTxt = texture;
+	});
+	//- Roughness Map
+	txtrLoader.load(RufMap,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.needsUpdate = true;
+		RufMap = texture;
+	});
+}
+
+function initOceans() {
+	waves = new Ocean(renderer,wav_);
+	WtrGeo = new THREE.PlaneGeometry(GrdSiz,GrdSiz,GrdSeg,GrdSeg);	
+	WtrGeo.rotateX(-Math.PI*0.5);
+	WtrMat = new THREE.MeshStandardNodeMaterial({
+//		colorNode: color(WtrCol), // Water Color Only
+		colorNode: texture(DifTxt), // Diffuse Color Only
+//		colorNode: color(WtrCol).add (texture(DifTxt)), // Water Color + Diffuse Color
+//		colorNode: color(WtrCol).add (texture(DifTxt)), // Water Color * Diffuse Color
+		metalness: 0.5,
+		roughness: 0.1,
+		roughnessMap: RufMap,	// Not a texture
+		positionNode: positionLocal.add(texture(waves.displacement)),
+		normalNode: normalMap(texture(waves.normMapTexture),new THREE.Vector2(1.0,1.0)),	// Animated texture
+		envMap: scene.background,
+		envMapIntensity: 1,
+	});
+
+	// Compute Starting Z and X Values
+	let zx = -0.5*(GrdRCs)*GrdSiz+0.5*GrdSiz;
+	for (let i = 0; i < GrdRCs; i++) {
+		WavMZV[i] = zx;
+		WavMXV[i] = zx;
+		zx = zx + GrdSiz;
+	}
+	// 4 Adjacent Planes
+	let n = 0;
+	for (let z = 0; z < GrdRCs; z++) {		// Row X2
+		for (let x = 0; x < GrdRCs; x++) {	// Column X2
+			GrdPtr[n] = new THREE.Mesh(WtrGeo,WtrMat);
+			scene.add(GrdPtr[n]);
+			GrdPtr[n].position.set(WavMXV[x],0,-WavMZV[z]);
+			n++;
+		}
+	}
+}
+
+//= MISC SUBROUTINES ============================================================
+
+//- Converts degrees to 360
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;	// Make deg a positive number
+	deg = deg % 360;				// Compute remainder of any number divided by 360
+return deg;}
+
+//- Keyboard --------------------------------------------------------------------
+
+//- Key Down
+function onDocumentKeyDown(event) {
+	let keyCode = event.which;
+	if (event.keyCode == K_Paws) togglePaws();			// Pause
+	if (event.keyCode == K_Wire) toggleWire();			// Wire	
+}
+
+//- Key Up
+function onDocumentKeyUp(event) {
+	let keyCode = event.which;
+	//
+}
+
+//= OUTPUTS ====================//===============================================
+
+// Print HUD Values
+function prntHUDval() {
+	CamLat = controls.getPolarAngle();
+	CamLat = 90-CamLat*RadDeg;
+	CamHdg = controls.getAzimuthalAngle();
+	CamHdg = Mod360(-CamHdg*RadDeg)
+	CamDst = controls.getDistance();
+	CamAlt = CamDst*Math.sin(CamLat*DegRad);		
+	//
+	Cam_Alt = Mtr2Ft*CamAlt;	// Altitude
+	Cam_AltNode.nodeValue = Cam_Alt.toFixed(0);
+	Cam_Hdg = CamHdg;			// Heading
+	Cam_HdgNode.nodeValue = Cam_Hdg.toFixed(0);
+}
+
+//= INPUTS =====================//===============================================
+
+//- Toggle Pause
+function togglePaws() {
+	PawsOn = 1 - PawsOn;
+}
+
+//- Toggle Wire
+function toggleWire() {
+	WireOn = 1 - WireOn;
+	if (WireOn) {
+		for (let x = 0; x < 16; x++) {
+			WtrMat.wireframe = true;
+			WtrMat.needsUpdate = true;		
+		}
+	}
+	else {
+		for (let x = 0; x < 16; x++) {
+			WtrMat.wireframe = false;
+			WtrMat.needsUpdate = true;
+		}
+	}
+}
+
+//= Window Resize Input ========================================================
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+
+</script>
+</body>
+</html>
