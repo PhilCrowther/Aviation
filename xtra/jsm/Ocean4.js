@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================================
 
-// Ocean.js (8 Aug 2025)
+// Ocean.js (15 Sep 2025)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -12,11 +12,11 @@
 // As with the original wave generators, this module is licensed under a
 // Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
-//**************************************|****************************************
-//																				*
-//									IMPORTS										*
-//																				*
-//*******************************************************************************
+/********************************************************************************
+*
+*	IMPORTS
+*
+********************************************************************************/
 
 import {
 	ClampToEdgeWrapping,
@@ -41,11 +41,11 @@ import {
 	time,						// r170 changed timerLocal to time
 } from 'three/tsl';
 
-//**************************************|****************************************
-//																				*
-//								  OCEAN MODULE									*
-//																				*
-//*******************************************************************************
+/********************************************************************************
+*
+*	OCEAN MODULE
+*
+********************************************************************************/
 
 
 //= NOTES =======================================================================
@@ -56,8 +56,6 @@ import {
  *	@param {float} WSp		Wind Speed (meters/sec)
  *	@param {float} WHd		Wind Heading (degrees)
  *	@param {float} Chp		Choppiness - default = 1
- *	@param {float} Dsp		The Displacement Map
- *	@param {float} Nrm		The Normal Map
 */
 
 // Original 2013: David Li (david.li/waves/) - created shaders and js program
@@ -67,11 +65,11 @@ import {
 // Modified 2023: Attila Schroeder - many improvements
 // Modified 2024: Attila Schroeder - converted to GPU and added butterfly texture
 
-//**************************************|****************************************
-//																				*
-//								INITIALIZE CLASS								*
-//																				*
-//*******************************************************************************
+/********************************************************************************
+*
+*	INITIALIZE CLASS
+*
+********************************************************************************/
 
 class Ocean {
 
@@ -149,11 +147,11 @@ constructor(renderer,wav_) {
 	this.phaseArrayTexture.minFilter = this.phaseArrayTexture.magFilter = NearestFilter;
 	this.phaseArrayTexture.needsUpdate = true;
 
-//**************************************|****************************************
-//																				*
-//									 SHADERS									*
-//																				*
-//*******************************************************************************
+	/****************************************************************************
+	*
+	*	SHADERS
+	*
+	****************************************************************************/
 
 	//- Common Subroutines ------------------------------------------------------
 	let subroutines = code(`
@@ -486,13 +484,14 @@ constructor(renderer,wav_) {
 		}
 	`, [subroutines]);
 
-//**************************************|****************************************
-//																				*
-//							INITIALIZE CLASS (continue)							*
-//																				*
-//*******************************************************************************
+	/****************************************************************************
+	*
+	*	INITIALIZE CLASS (continue)
+	*
+	****************************************************************************/
 
 	//= Instructions ===========//===============================================
+	
 	//- Shader 1. Initial Frequency
 	this.initSpectrumComp = this.initSpectrum({
 		u_tsiz: this.Res,
@@ -600,23 +599,25 @@ constructor(renderer,wav_) {
 		w_norm: textureStore(this.normMapTexture),
 		u_indx: instanceIndex,
 		u_gsiz: this.Siz
-	}).compute(this.Res**2)	
+	}).compute(this.Res**2)
+	
 	//= Render ==================================================================
+	
 	this.renderer.computeAsync(this.initSpectrumComp);
 	this.renderer.computeAsync(this.butterflyComp); // r179
-	// Static Targets
-	wav_.Dsp = this.dispMapTexture;
-	wav_.Nrm = this.normMapTexture;
+
 };	// End of Initialize
 
-//**************************************|****************************************
-//																				*
-//								  UPDATE CLASS									*
-//																				*
-//*******************************************************************************
+/**************************************|*****************************************
+*
+*	UPDATE CLASS
+*
+********************************************************************************/
 
 // = (called by Main Program) ===================================================
+
 update() {
+
 	// 2. Initial
 	if (this.initPhase) {
 		this.renderer.computeAsync(this.pingPhaseComp);
@@ -627,8 +628,10 @@ update() {
 	}
 	this.renderer.computeAsync(this.pingPhase ? this.pongPhaseComp : this.pingPhaseComp);	
 	this.pingPhase = !this.pingPhase;
+	
 	// 3. New Spectrum from PingPhase or PongPhase
 	this.renderer.computeAsync(this.pingPhase ? this.pingSpectrumComp : this.pongSpectrumComp);
+	
 	// 4. Displacement Map (iterations = 9*2
 	let iterations = Math.log2(this.Res); // log2(512) = 9
 	let pingPong = false;
@@ -645,27 +648,29 @@ update() {
 		this.stepBF.value = i;
 		this.renderer.computeAsync(pingPong ? this.pingDspVrtComp : this.pongDspVrtComp);	// Ping/Pong
 	}
+	
 	// 5. Displacement
 	this.renderer.computeAsync(this.permutationComp);
 	this.renderer.computeAsync(this.compNormalComp);
-	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173	
+	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
+	
 };	// End of Update
 
 };	// End of Module
 
-//**************************************|****************************************
-//																				*
-//									 EXPORTS									*
-//																				*
-//*******************************************************************************
+/********************************************************************************
+*
+*	EXPORTS
+*
+********************************************************************************/
 
 export {Ocean};
 
-//**************************************|****************************************
-//																				*
-//									REVISIONS									*
-//																				*
-//*******************************************************************************
+/********************************************************************************
+*
+*	REVISIONS
+*
+********************************************************************************/
 /*
 // 230519: Version 1	:
 // 230614: Vecsion 2	: Changed to Class; on initialization, only imput renderer and wav_; on render, only input wavTim; moved wavTim variables to main program
