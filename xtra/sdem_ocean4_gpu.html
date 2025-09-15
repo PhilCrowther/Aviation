@@ -127,7 +127,7 @@ let RufMap = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5
 let GrdSiz = 2400;				// Size of Smallest Grid Square (meters)
 let GrdRes = 512;				// Resolution of iFFT Calculation (default = 512)
 let GrdSeg = 384;				// Segments per Plane (256, 384 or 512)
-// Planes
+//-	Planes
 let GrdRCs = 2;
 let GrdPtr = [0];
 let WavMZV = [0];
@@ -148,8 +148,6 @@ let wav_ = {
 		WHd: WndHdg,			// Wind Heading
 		Chp: Choppy,			// default = 1
 		// Results
-		Dsp: 0,					// The Displacement Map
-		Nrm: 0,					// The Normal Map
 		NMS: new THREE.Vector2(1.0,1.0), // Normal Map Scale (flip Y for left-handed maps)
 		Spd: 1					// Animation Speed
 	};
@@ -229,7 +227,6 @@ function loadSkyBox() {
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace;	// ### r152
 	scene.background = envMap;
-	LodFlg = 1;
 }
 
 /********************************************************************************
@@ -280,8 +277,8 @@ function initOceans() {
 		metalness: 0.5,
 		roughness: 0.1,
 		roughnessMap: RufMap,	// Not a texture
-		positionNode: positionLocal.add(texture(wav_.Dsp)),
-		normalNode: normalMap(texture(wav_.Nrm),wav_.NMS), // Animated texture
+		positionNode: positionLocal.add(texture(waves.dispMapTexture)),
+		normalNode: normalMap(texture(waves.normMapTexture),new THREE.Vector2(1.0,1.0)),
 		envMap: scene.background,
 		envMapIntensity: 1,
 	});
