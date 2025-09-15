@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================
 
-// Version 3.0 (updated 10 Feb 2024)
+// Version 3.0 (updated 15 Sep 2025)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -37,9 +37,6 @@ import {
  *	@param {float} WSp		Wind Speed (meters/sec)
  *	@param {float} WHd		Wind Heading (degrees)
  *	@param {float} Chp		Choppiness - default = 1
- *	@param {float} Dsp		The Displacement Map
- *	@param {float} Nrm		The Normal Map
- *	@param {float} Spd		Wave Speed Adjustment
 */
 
 // Original 2013: David Li (david.li/waves/) - shaders and js program
