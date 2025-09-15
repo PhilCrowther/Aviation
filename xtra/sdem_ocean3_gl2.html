@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
-<title>Ocean GPU r180</title>
+<title>Ocean3 WebGL2 r180</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
@@ -16,35 +16,28 @@
 	</div>
 </div>
 
-<body oncontextmenu="return false;">
-
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three": "https://unpkg.com/three@0.180.0/build/three.module.js",
+			"three/addons/": "https://unpkg.com/three@0.180.0/examples/jsm/"
 		}
 	}
 </script>
 
 <script type="module">
-import * as THREE from "three";
-import {color,texture,uniform,positionLocal,normalMap} from 'three/tsl';
-import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
-import {OrbitControls} from "three/addons/controls/OrbitControls.js";
-import Stats from "stats-gl";
-//- Custom Modules
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
 
-/*= VARIABLES ================================================================*/
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import Stats from "three/addons/libs/stats.module.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra/jsm/Ocean3.js";
+
+//= VARIABLES ================================================================*/
 //-	Math Predefined
-let	DegRad = Math.PI/180;		// Convert Degrees to Radians
-let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+var DegRad = Math.PI/180;		// Convert Degrees to Radians
+var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 let	Mtr2Ft = 3.28084;
-//- Flags				
+//- Flags
 let LodFlg = 0;
 let PawsOn = 0;
 let WireOn = 0;
@@ -67,36 +60,34 @@ let SunDst = 10000;				// Distance (for shadows and lensflare)
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 
-//= BASIC SETUP ================================================================
+//= BASIC VALUES ================================================================
 //- Camera
-let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,SkyLim);
+let	camera = new THREE.PerspectiveCamera(55.0, window.innerWidth/window.innerHeight, 0.5, SkyLim);
 	camera.position.set(0,350,800);
-//- Scene
+//- Display
 let	scene = new THREE.Scene();
-//- Renderer
-let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
-    await renderer.init();		// ### NEW
-	renderer.setPixelRatio(window.devicePixelRatio);
+	scene.background = new THREE.Color(SkyCol);
+let	renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
-	renderer.setAnimationLoop(rendAll);
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.BasicShadowMap;
 	container.appendChild(renderer.domElement);
-let maxAnisotropy = renderer.getMaxAnisotropy();
+let	maxAnisotropy = renderer.capabilities.getMaxAnisotropy();	// ### [A]
 //- Lights
 let sunLight = new THREE.DirectionalLight(SunCol,3.0);
 	sunLight.position.copy(SunPos).normalize();
 	scene.add(sunLight);
 //- Controls
-let	controls = new OrbitControls(camera,renderer.domElement);
-//- Inputs
-	document.addEventListener("keydown",onDocumentKeyDown,false);
-	window.addEventListener("resize",onWindowResize,false);
+let	controls = new OrbitControls(camera, renderer.domElement);
 //- Clock
 let clock = new THREE.Clock();
-let dt = uniform(0);
+let oldTim, nowTim, difTim = 0;
+//- Inputs
+	document.addEventListener("keydown",onDocumentKeyDown,false);
+	window.addEventListener("resize", onWindowResize, false);
 //- Loading Manager
 	// Create a loading manager to set RESOURCES_LOADED when appropriate.
 	// Pass loadingManager to all resource loaders.
@@ -120,9 +111,10 @@ let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1
 //- Maps ------------------------------------------------------------------------
 let RufMap = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 
-//= GRID DATA ===================================================================
+//= GRID DATA ================================================================*/
 let GrdSiz = 2400;				// Size of Smallest Grid Square (meters)
-let GrdSeg = 384;				// Segments per Plane (256 = OK, 512 = too much)
+let GrdRes = 512;
+let GrdSeg = 512;				// Segments per Plane (256 = OK, 512 = too much)
 //- Planes
 let GrdRCs = 2;
 let GrdPtr = [0];
@@ -131,48 +123,31 @@ let WavMXV = [0];
 //- Common Values
 let WtrGeo,WtrMat,WtrMsh = 0;
 
-//= OCEAN MODULE ================================================================
+//= OCEAN ====================================================================*/
+let WndSpd = 20;
+let WndHdg = 315;
+let Choppy = 1.6;
+//
 let waves = 0;
 let wav_ = {
-		// General
-		size: 1024,				// resolution of iFFT computation
-		gsiz: GrdSiz,			// size of grid square (used to compute Normal Map)
-		lambda: 0.9,
-		renderer: renderer,
-		anisotropy: maxAnisotropy,
-		// InitSpec Variables (for Grdsiz = 2400 meters)
-		waveLength: 1500,		// was 250
-		boundaryLow: 0.0001,	// ### ok???
-		boundaryHigh: 9999,		// ### ok???
-		// Wave Spectrum 1
-		depth: 100,				// was 20
-		scaleHeight: 1,
-		windSpeed: 3,			// was 2
-		windDirection: 315,
-		fetch: 100000,
-		spreadBlend: 1,
-		swell: 0.198,
-		peakEnhancement: 3.3,
-		shortWaveFade: 0.01,
-		fadeLimit: 0.0,
-		// Wave Spectrum 2
-		d_depth: 100,			// was 20
-		d_scaleHeight: 1,
-		d_windSpeed: 2,			// was 1
-		d_windDirection: 315,
-		d_fetch: 300000,
-		d_spreadBlend: 1,
-		d_swell: 0.5,
-		d_peakEnhancement: 3.3,
-		d_shortWaveFade: 0.01,
-		d_fadeLimit: 0.0,
+		// Sources
+		Res: GrdRes,			// Resolution - segments per square (default = 512)
+		Siz: GrdSiz,			// Size of Smallest Square = default = 3200m = 2 miles
+		WSp: WndSpd,			// Wind Speed
+		WHd: WndHdg,			// Wind Heading
+		Chp: Choppy,			// default = 1
+		// Results
+		Dsp: 0,					// The Displacement Map
+		Nrm: 0,					// The Normal Map
 	};
+let wavSpd = 1;					// Animation speed - use in main program (lower is faster)
+let wavTim = 0;
 
 //= Key Bindings ===============//===============================================
 let K_Paws = 80;				        // Pause (p)
 let K_Wire = 87;				        // Wireframe (w)
 
-//= HTML OVERLAY TEXT ===========================================================
+//= HTML OVERLAY TEXT ==========//===============================================
 let Cam_AltElement = document.getElementById("Cam_Alt"); // Altitude
 let Cam_AltNode = document.createTextNode("");
 	Cam_AltElement.appendChild(Cam_AltNode);
@@ -181,48 +156,48 @@ let Cam_HdgNode = document.createTextNode("");
 	Cam_HdgElement.appendChild(Cam_HdgNode);
 let Cam_Alt,Cam_Hdg;
 
-//= MAIN PROGRAM ================================================================
+//= MAIN PROGRAM ===============//===============================================
 	loadAll();
+	rendAll();
 
-//= 0 LOAD ALL ==================================================================
+//= LOAD ALL ====================================================================
 function loadAll() {
 	loadSkyBox();
 	loadOceans();
-	// Load stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
-	}
 }
 
-//= 1 INITIALIZE ===============//===============================================
+//= INITIALIZE =================//===============================================
 function initAll() {
-	initOceans(); // Initialize Ocean
-	dt = clock.getElapsedTime(); // Init Clock
-	dt = clock.getDelta();
+	initOceans();
+	// Show stats
+	if (StatOn) {				// show stats
+		StatOn = new Stats();
+		StatOn.setMode(0);		// FPS only
+		StatOn.domElement.style.cssText = "position:absolute;top:95%;left:90%;";
+		container.appendChild(StatOn.dom);
+	}
 	LodFlg = 1;
 }
 
-//= 2 RENDER ===================//===============================================
+//= RENDER ======================================================================
 function rendAll() {
-//	requestAnimationFrame(rendAll);	
+	requestAnimationFrame(rendAll);
 	if (!PawsOn && LodFlg) {
 		// Update camera position
 		if(camera.position.y < 0.0) {
 			camera.position.y = 2.0;
 		}
-		dt = clock.getDelta();
-		if (waves) waves.update(dt); // Move Ocean
-		if (StatOn) StatOn.update(); // update stats
+		// Update time
+		nowTim = clock.getElapsedTime();
+		difTim = nowTim-oldTim;
+		wavTim = difTim*wavSpd || 0.0;
+		oldTim = nowTim;
+		//
+		waves.render(wavTim);			// Ocean
+		if (StatOn) StatOn.update();	// Stats
 	}
 	prntHUDval();
-	renderer.renderAsync(scene,camera); // WebGPU requires Async
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+	renderer.render(scene, camera);		// Render
 }
 
 //= SKY BOX =====================================================================
@@ -236,7 +211,7 @@ function loadSkyBox() {
 	scene.background = envMap;
 }
 
-//= OCEANS =====================//===============================================
+//= OCEAN =======================================================================
 
 function loadOceans() {
 	//- Diffuse Texture
@@ -262,23 +237,35 @@ function loadOceans() {
 }
 
 function initOceans() {
-	waves = new Ocean(wav_);
-	WtrGeo = new THREE.PlaneGeometry(GrdSiz,GrdSiz,GrdSeg,GrdSeg);	
-	WtrGeo.rotateX(-Math.PI*0.5);
-	WtrMat = new THREE.MeshStandardNodeMaterial({
-//		colorNode: color(WtrCol), // Water Color Only
-		colorNode: texture(DifTxt), // Diffuse Color Only
-//		colorNode: color(WtrCol).add (texture(DifTxt)), // Water Color + Diffuse Color
-//		colorNode: color(WtrCol).add (texture(DifTxt)), // Water Color * Diffuse Color
-		metalness: 0.5,
-		roughness: 0.1,
-		roughnessMap: RufMap,	// Not a texture
-		positionNode: positionLocal.add(texture(waves.displacement)),
-		normalNode: normalMap(texture(waves.normMapTexture),new THREE.Vector2(1.0,1.0)),	// Animated texture
+	waves = new Ocean(renderer, wav_);
+	WtrGeo = new THREE.PlaneGeometry(GrdSiz, GrdSiz, GrdSeg, GrdSeg);	
+	WtrGeo.rotateX(-Math.PI * 0.5);
+	WtrMat = new THREE.MeshPhysicalMaterial({
+//		color: WtrCol,
+		map: DifTxt,
+		metalness: 0.0,				// 1 for max reflection (1.0)
+		reflectivity: 0.5,			// 1 for max reflection (0.5)	
+		roughness: 0.2,				// 0 for max reflection (0.7)
+		normalMap: wav_.Nrm,
+		normalScale: new THREE.Vector2(2.5,2.5),
 		envMap: scene.background,
-		envMapIntensity: 1,
+		envMapIntensity: 0.5,
+		premultipliedAlpha: true,
+		// Displacement Map
+		onBeforeCompile: shader => {
+			shader.uniforms.dmap = {value: wav_.Dsp};	// Displacement Map
+			shader.vertexShader = `
+				uniform sampler2D dmap;
+				${shader.vertexShader}
+			`
+			.replace(
+				`#include <begin_vertex>`,
+				`#include <begin_vertex>
+					transformed += vec3(1.0,1.0,1.0)*(texture(dmap, uv).rgb * 1.0 + 0.0);
+				`
+			);
+		}					
 	});
-
 	// Compute Starting Z and X Values
 	let zx = -0.5*(GrdRCs)*GrdSiz+0.5*GrdSiz;
 	for (let i = 0; i < GrdRCs; i++) {
@@ -286,7 +273,6 @@ function initOceans() {
 		WavMXV[i] = zx;
 		zx = zx + GrdSiz;
 	}
-  
 	// 4 Adjacent Planes
 	let n = 0;
 	for (let z = 0; z < GrdRCs; z++) {		// Row X2
@@ -299,14 +285,13 @@ function initOceans() {
 	}
 }
 
-//= MISC SUBROUTINES ===========//===============================================
+//= SUBROUTINES =================================================================
 
-//- Converts degrees to 360
+//- Converts degrees to 360 -----------------------------------------------------
 function Mod360(deg) {
-	while (deg < 0) deg = deg+360;	// Make deg a positive number
-	deg = deg % 360;			// Compute remainder of any number divided by 360
+	if (deg < 0) deg = deg + 360;
+	else if (deg == 360 || deg > 360) deg = deg - 360;
 return deg;}
-
 
 //= OUTPUTS ====================//===============================================
 
@@ -368,7 +353,7 @@ function toggleWire() {
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 </script>
