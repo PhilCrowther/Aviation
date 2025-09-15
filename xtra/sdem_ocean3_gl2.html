@@ -32,7 +32,13 @@ import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra/jsm/Ocean3.js";
 
-//= VARIABLES ================================================================*/
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
+
+//= GENERAL =====================================================================
 //-	Math Predefined
 var DegRad = Math.PI/180;		// Convert Degrees to Radians
 var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
@@ -43,13 +49,13 @@ let PawsOn = 0;
 let WireOn = 0;
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 
-//= SKYBOX =====================================================================
+//= SKYBOX ======================================================================
 let SkyCol = 0x1732c1;		// Sky
 let SkyLim = 100000;			// Max viewing distance 
 //- Texture
 let SBPath = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 
-//= SUN ========================================================================
+//= SUN =========================================================================
 let SunCol = 0xffffff;			// Sun
 let SunInt = 3;					// Intensity
 //- Rotation and Position (fixed)
@@ -156,17 +162,24 @@ let Cam_HdgNode = document.createTextNode("");
 	Cam_HdgElement.appendChild(Cam_HdgNode);
 let Cam_Alt,Cam_Hdg;
 
-//= MAIN PROGRAM ===============//===============================================
+/********************************************************************************
+*
+*	MAIN PROGRAM
+*
+********************************************************************************/
+
 	loadAll();
 	rendAll();
 
 //= LOAD ALL ====================================================================
+
 function loadAll() {
 	loadSkyBox();
 	loadOceans();
 }
 
 //= INITIALIZE =================//===============================================
+
 function initAll() {
 	initOceans();
 	// Show stats
@@ -180,6 +193,7 @@ function initAll() {
 }
 
 //= RENDER ======================================================================
+
 function rendAll() {
 	requestAnimationFrame(rendAll);
 	if (!PawsOn && LodFlg) {
@@ -200,7 +214,11 @@ function rendAll() {
 	renderer.render(scene, camera);		// Render
 }
 
-//= SKY BOX =====================================================================
+/********************************************************************************
+*
+*	SKY BOX
+*
+********************************************************************************/
 
 function loadSkyBox() {
 	let envMap = cubeLoader
@@ -211,7 +229,13 @@ function loadSkyBox() {
 	scene.background = envMap;
 }
 
-//= OCEAN =======================================================================
+/********************************************************************************
+*
+*	OCEANS
+*
+********************************************************************************/
+
+//=	LOAD ========================================================================
 
 function loadOceans() {
 	//- Diffuse Texture
@@ -236,6 +260,8 @@ function loadOceans() {
 	});
 }
 
+//= INITIALIZE =================//===============================================
+
 function initOceans() {
 	waves = new Ocean(renderer, wav_);
 	WtrGeo = new THREE.PlaneGeometry(GrdSiz, GrdSiz, GrdSeg, GrdSeg);	
@@ -246,14 +272,14 @@ function initOceans() {
 		metalness: 0.0,				// 1 for max reflection (1.0)
 		reflectivity: 0.5,			// 1 for max reflection (0.5)	
 		roughness: 0.2,				// 0 for max reflection (0.7)
-		normalMap: wav_.Nrm,
+		normalMap: waves.normalMapFramebuffer.texture,
 		normalScale: new THREE.Vector2(2.5,2.5),
 		envMap: scene.background,
 		envMapIntensity: 0.5,
 		premultipliedAlpha: true,
-		// Displacement Map
+		// Special Instructions Required for Displacement Map
 		onBeforeCompile: shader => {
-			shader.uniforms.dmap = {value: wav_.Dsp};	// Displacement Map
+			shader.uniforms.dmap = {value: waves.displacementMapFramebuffer.texture};
 			shader.vertexShader = `
 				uniform sampler2D dmap;
 				${shader.vertexShader}
@@ -285,17 +311,27 @@ function initOceans() {
 	}
 }
 
-//= SUBROUTINES =================================================================
+/********************************************************************************
+*
+*	MISC SUBROUTINES
+*
+********************************************************************************/
 
-//- Converts degrees to 360 -----------------------------------------------------
+//= Converts degrees to 360 ====//===============================================
+
 function Mod360(deg) {
-	if (deg < 0) deg = deg + 360;
-	else if (deg == 360 || deg > 360) deg = deg - 360;
+	while (deg < 0) deg = deg+360; // Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
 return deg;}
 
-//= OUTPUTS ====================//===============================================
+/********************************************************************************
+*
+*	OUTPUTS
+*
+********************************************************************************/
 
-// Print HUD Values
+//= Print HUD Values ===========//===============================================
+
 function prntHUDval() {
 	CamLat = controls.getPolarAngle();
 	CamLat = 90-CamLat*RadDeg;
@@ -310,9 +346,13 @@ function prntHUDval() {
 	Cam_HdgNode.nodeValue = Cam_Hdg.toFixed(0);
 }
 
-//= INPUTS =====================//===============================================
+/********************************************************************************
+*
+*	INPUTS
+*
+********************************************************************************/
 
-//- Keyboard --------------------------------------------------------------------
+//= Keyboard ====================================================================
 
 //- Key Down
 function onDocumentKeyDown(event) {
@@ -349,7 +389,8 @@ function toggleWire() {
 	}
 }
 
-//- Window Resize Input ---------------------------------------------------------
+//= Window Resize Input ========//==============================================
+
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
