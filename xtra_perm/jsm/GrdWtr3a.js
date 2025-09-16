@@ -222,7 +222,7 @@ _initGeoMat(grd_,scene) {
 	// Create 4 Textures
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
-			grd_.Mat[n][idx] = new MeshStandardlMaterial({ // Grid0 textures
+			grd_.Mat[n][idx] = new MeshStandardMaterial({ // Grid0 textures
 				map: texture(grd_.DfM[n][idx]),
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
