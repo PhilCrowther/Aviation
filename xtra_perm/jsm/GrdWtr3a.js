@@ -223,7 +223,7 @@ _initGeoMat(grd_,scene) {
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
 			grd_.Mat[n][idx] = new MeshStandardMaterial({ // Grid0 textures
-				map: texture(grd_.DfM[n][idx]),
+				map: grd_.DfM[n][idx],
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
 				roughnessMap: grd_.RfM[n][idx], // not texture
@@ -264,7 +264,7 @@ _initGeoMat(grd_,scene) {
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
 			grd_.Mat[n][idx] = new MeshStandardMaterial({ // Grid1 textures
-				map: texture(grd_.DfM[n][idx]),
+				map: grd_.DfM[n][idx],
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
 				roughnessMap: grd_.RfM[n][idx], // not texture
@@ -282,7 +282,7 @@ _initGeoMat(grd_,scene) {
 	// Grid2 has generic normal map
 	n = 2;
 	grd_.Mat[n] = new MeshStandardMaterial({
-		map: texture(grd_.DfM[n]),
+		map: grd_.DfM[n],
 		metalness: grd_.Mtl[n], // 1 for max reflection
 		roughness: grd_.Ruf[n],	// 0 for max reflection
 		roughnessMap: grd_.RfM[n], // not texture
