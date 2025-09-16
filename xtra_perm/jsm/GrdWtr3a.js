@@ -76,8 +76,6 @@ import {DataTexture,
 		RepeatWrapping,
 		RGBAFormat,
 	} from 'three';
-import {color,texture,normalMap,positionLocal} from 'three/tsl';
-
 
 /*******************************************************************************
 *
