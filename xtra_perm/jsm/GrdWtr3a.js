@@ -75,6 +75,7 @@ import {DataTexture,
 		PlaneGeometry,
 		RepeatWrapping,
 		RGBAFormat,
+		Vector2,
 	} from 'three';
 
 /*******************************************************************************
