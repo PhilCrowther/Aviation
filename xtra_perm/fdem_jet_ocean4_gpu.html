@@ -59,7 +59,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Custom Modules
-import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/xtra/jsm/GrdWtr4.js"; // Allows fine-tune of EMI
+import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/xtra/jsm/GrdWtr4.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra/jsm/Ocean4.js"; // r173 (uses TimestampQuery)
 
 //= NOTES
@@ -246,7 +246,7 @@ let grd_ = {
 		Ruf: [0.1,0.1,0.1],		// Roughness (0 for max reflection)
 		EMI: [0.5,0.48,0.48],	// EnvMap Intensity
 		// Maps
-		MSz: 512,				// Image Size
+		MSz: ImgSiz,			// Image Size
 		DfM: [[0],[0],0],		// Diffuse
 		RfM: [[0],[0],0],		// Roughness
 		// Other
