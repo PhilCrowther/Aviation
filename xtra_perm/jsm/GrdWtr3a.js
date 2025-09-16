@@ -227,8 +227,8 @@ _initGeoMat(grd_,scene) {
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
 				roughnessMap: grd_.RfM[n][idx], // not texture
-				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
-				positionNode: positionLocal.add(texture(grd_.Dsp)), // must be texture
+				normalMap: grd_.Nrm,
+				normalScale: new Vector2(2.5,2.5),
 				envMap: scene.background,			
 				envMapIntensity: grd_.EMI[n],
 				premultipliedAlpha: true,
@@ -268,7 +268,8 @@ _initGeoMat(grd_,scene) {
 				metalness: grd_.Mtl[n], // 1 for max reflection
 				roughness: grd_.Ruf[n],	// 0 for max reflection
 				roughnessMap: grd_.RfM[n][idx], // not texture
-				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
+				normalMap: grd_.Nrm,
+				normalScale: new Vector2(2.5,2.5),
 				envMap: scene.background,			
 				envMapIntensity: grd_.EMI[n], // adjusted for absence of displacement
 			});
@@ -286,7 +287,8 @@ _initGeoMat(grd_,scene) {
 		metalness: grd_.Mtl[n], // 1 for max reflection
 		roughness: grd_.Ruf[n],	// 0 for max reflection
 		roughnessMap: grd_.RfM[n], // not texture
-		normalNode: normalMap(texture(grd_.NM2),grd_.NMS),
+		normalMap: grd_.NM2,
+		normalScale: new Vector2(2.5,2.5),
 		envMap: scene.background,
 		envMapIntensity: grd_.EMI[n], // adjusted for absence of displacement
 	});
