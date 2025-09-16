@@ -273,6 +273,7 @@ _initGeoMat(grd_,scene) {
 				normalNode: normalMap(texture(grd_.Nrm),grd_.NMS),
 				envMap: scene.background,			
 				envMapIntensity: grd_.EMI[n], // adjusted for absence of displacement
+			});
 			idx++
 		}
 	}
