@@ -4,7 +4,7 @@
 <head>
 <title>Ocean3 WebGL2 r180</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
+<link rel="stylesheet" href="styles/butn_map2b.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -38,7 +38,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra/jsm/Ocean3.js"
 *
 ********************************************************************************/
 
-//= GENERAL =====================================================================
+//= GENERAL ====================//===============================================
 //-	Math Predefined
 var DegRad = Math.PI/180;		// Convert Degrees to Radians
 var RadDeg = 180/Math.PI;		// Convert Radians to Degrees
@@ -49,11 +49,11 @@ let PawsOn = 0;
 let WireOn = 0;
 let StatOn = 1;					// Stats ((0 = off, 1 = on)
 
-//= SKYBOX ======================================================================
-let SkyCol = 0x1732c1;		// Sky
+//= SKYBOX =====================//===============================================
+let SkyCol = 0x1732c1;			// Sky
 let SkyLim = 100000;			// Max viewing distance 
 //- Texture
-let SBPath = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
 
 //= SUN =========================================================================
 let SunCol = 0xffffff;			// Sun
@@ -117,7 +117,7 @@ let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1
 //- Maps ------------------------------------------------------------------------
 let RufMap = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 
-//= GRID DATA ================================================================*/
+//= GRID DATA ===================================================================
 let GrdSiz = 2400;				// Size of Smallest Grid Square (meters)
 let GrdRes = 512;
 let GrdSeg = 512;				// Segments per Plane (256 = OK, 512 = too much)
@@ -129,11 +129,12 @@ let WavMXV = [0];
 //- Common Values
 let WtrGeo,WtrMat,WtrMsh = 0;
 
-//= OCEAN ====================================================================*/
+//= OCEAN MODULE ===============//===============================================
+//- Inputs
 let WndSpd = 20;
 let WndHdg = 315;
 let Choppy = 1.6;
-//
+//- Module
 let waves = 0;
 let wav_ = {
 		// Sources
@@ -142,14 +143,11 @@ let wav_ = {
 		WSp: WndSpd,			// Wind Speed
 		WHd: WndHdg,			// Wind Heading
 		Chp: Choppy,			// default = 1
-		// Results
-		Dsp: 0,					// The Displacement Map
-		Nrm: 0,					// The Normal Map
 	};
 let wavSpd = 1;					// Animation speed - use in main program (lower is faster)
 let wavTim = 0;
 
-//= Key Bindings ===============//===============================================
+//= KEY BINDINGS ===============//===============================================
 let K_Paws = 80;				        // Pause (p)
 let K_Wire = 87;				        // Wireframe (w)
 
@@ -222,7 +220,7 @@ function rendAll() {
 
 function loadSkyBox() {
 	let envMap = cubeLoader
-		.setPath(SBPath)
+		.setPath(SBxSrc)
 		.load(["px.jpg","nx.jpg","py.jpg","ny.jpg","pz.jpg","nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace; // r152

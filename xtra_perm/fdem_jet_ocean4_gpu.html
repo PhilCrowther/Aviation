@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Sep 2025
+Version dated 16 Sep 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -12,7 +12,7 @@ A WebGPU demo of the GrdWtr and Ocean modules.
 <head>
 <title>fdem jet ocean4 gpu r180</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
+<link rel="stylesheet" href="styles/butn_map2b.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -24,16 +24,18 @@ A WebGPU demo of the GrdWtr and Ocean modules.
 		<div>Heading..: <span id="Air_Hdg"></span> deg</div>
 	</div>
 </div>
+
 <button id="PAWS" class="pawsButton">Paws</button>
 <button id="VIEW" class="viewButton">View</button>
+
 <button id="SPD-" class="spddButton">-</button>
-<button id="PITD" class="pitdButton">&uarr;</button>
+<button id="PIT-" class="pitdButton">&uarr;</button>
 <button id="SPD+" class="spduButton">+</button>
 <button id="BNKL" class="bnklButton">&larr;</button>
 <button id="CNTR" class="cntrButton">X</button>
 <button id="BNKR" class="bnkrButton">&rarr;</button>
 <button id="YAWL" class="yawlButton">[</button>
-<button id="PITU" class="pituButton">&darr;</button>
+<button id="PIT+" class="pituButton">&darr;</button>
 <button id="YAWR" class="yawrButton">]</button>
 
 <script type="importmap">
@@ -68,8 +70,8 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra/jsm/Ocean4.js"
 //- 2. Rotate around a static or moving object (like an Airplane) looking inwards.
 //- 3. Attach to a static or moving object (like an Airplane) looking outwards
 
-//= STARTING VALUES ============//==============================================
-//- MY CAMERA ------------------------------------------------------------------
+//= STARTING VALUES ============//===============================================
+//- MY CAMERA -------------------------------------------------------------------
 let CamSel = 0;					// Camera Seletion (0 = linked to grid, 1 = linked to Airplane)
 let CamLat = -10;				// Camera Direction - Vert (+/- 90)
 let CamLon = 315;				// Camera Direction - Horz (0->360)
@@ -81,7 +83,7 @@ let InpVal = new THREE.Vector3(1,0.1,1); // Rotation Change
 let BnkSpd = 1;					// Bank Speed
 let PitSpd = 1;					// Pitch Speed
 
-//= CONSTANTS ==================//==============================================
+//= CONSTANTS ==================//===============================================
 //-	Conversions
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
@@ -171,12 +173,12 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 	document.getElementById("PAWS").addEventListener("click", toglPaws, false);
 	document.getElementById("VIEW").addEventListener("click", toglView, false);
 	document.getElementById("SPD+").addEventListener("click", toglSpdU, false);
-	document.getElementById("PITD").addEventListener("click", toglPitD, false);
+	document.getElementById("PIT-").addEventListener("click", toglPitD, false);
 	document.getElementById("SPD-").addEventListener("click", toglSpdD, false);
 	document.getElementById("BNKL").addEventListener("click", toglBnkL, false);
 	document.getElementById("CNTR").addEventListener("click", toglCntr, false);
 	document.getElementById("BNKR").addEventListener("click", toglBnkR, false);
-	document.getElementById("PITU").addEventListener("click", toglPitU, false);
+	document.getElementById("PIT+").addEventListener("click", toglPitU, false);
 	document.getElementById("YAWL").addEventListener("click", toglYawL, false);
 	document.getElementById("YAWR").addEventListener("click", toglYawR, false);
 	// Window Resize
@@ -205,9 +207,7 @@ const LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
 let LF0Txt, LF1Txt = 0;
 
 //= GRDWTR TEXTURES ============//==============================================
-//const WtrCol = 0x1060ff;		// Water (Nodes) - this color was showing up purple
-//const WtrCol = 0x0066cc;		// Water (Nodes)
-const WtrCol = 0x004080;		// Water (Nodes)
+const WtrCol = 0x001080;		// Water (Nodes)
 //- Canvas (for splitting up textures)
 let ImgSiz = 512;				// !!! Change this for each image
 
@@ -266,7 +266,7 @@ let WndSpd = 20.0;
 let WndHdg = 0.0;
 let Choppy = 1.6;
 let AnmSpd = 1;					// Animation Speed (can vary with GrdSiz)
-//- Variables
+//- Module
 let waves = 0;
 let wav_ = {
 		// Sources
@@ -393,10 +393,16 @@ let Air_Spd, Air_Alt,Air_Hdg;
 	scene.add(air_.AirObj);
 let quaternion = new THREE.Quaternion();
 	
-//= MAIN PROGRAM ===============================================================
+/********************************************************************************
+*
+*	MAIN PROGRAM
+*
+********************************************************************************/
+
 	loadAll();
 
-//= 0 LOAD ALL =================================================================
+//= LOAD ALL ====================================================================
+
 function loadAll() {
 	air_.AirObj.rotation.z = Mod360(360-air_.AirRot.z) * DegRad; // Bank
 	air_.AirObj.rotation.x = Mod360(air_.AirRot.x) * DegRad; // Pitch
@@ -407,7 +413,8 @@ function loadAll() {
 	loadJetExh();
 }
 
-//= 1 INITIALIZE (called by loading manager) ===================================
+//= INITIALIZE (called by loading manager) ======================================
+
 function initAll() {
 	initCamera(camera,cam_);
 	initSkyBox();				// Sky, Fog and Sun
@@ -432,9 +439,10 @@ function initAll() {
 	LodFlg = 1;
 }
 
-//= 2 RENDER (called by program) ===============================================
+//= RENDER (called by program) ==================================================
+
 function rendAll() {
-	if (PawsOn == 0 && LodFlg > 0) {
+	if (!PawsOn && LodFlg) {
 		// Move Things
 		moveAirObj(air_);
 		grd_.MSP.copy(air_.MapSPS);
@@ -448,7 +456,11 @@ function rendAll() {
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-//= SKYBOX =====================//==============================================
+/********************************************************************************
+*
+*	SKY BOX
+*
+********************************************************************************/
 
 function loadSkyBox() {
 	let envMap = cubeLoader
@@ -457,7 +469,6 @@ function loadSkyBox() {
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = envMap;
-//	scene.environment = envMap;
 	// LensFlare
 	if (LnFFlg) {				// SunFlare	
 		LF0Txt = txtrLoader.load(LF0Src);
@@ -484,7 +495,11 @@ function initSkyBox() {
 	}
 }
 
-//= AIROBJ =====================================================================
+/********************************************************************************
+*
+*	AIRPLANE
+*
+********************************************************************************/
 
 //- Load AirObj ----------------------------------------------------------------
 function initAirObj(air_) {
@@ -599,14 +614,18 @@ function moveAirObj(air_) {
 	air_.MapSPS.z = air_.MapSpd.z;
 }
 
-//= JET EXHAUST ===============================================================
+/********************************************************************************
+*
+*	JET EXHAUST
+*
+********************************************************************************/
 
-//- Load Jet Exhaust ----------------------------------------------------------
+//= Load Jet Exhaust ============================================================
 function loadJetExh() {
 	SmkMap = txtrLoader.load(SmkMat);
 }
 
-//- Init Jet Exhaust ----------------------------------------------------------
+//= Init Jet Exhaust ============================================================
 function initJetExh() {
 	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
 //	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange))); // ### r168
@@ -629,8 +648,13 @@ function initJetExh() {
 		air_.AirObj.add(smokeInstancedSprite);
 }
 
-//= MY CAMERA ==================================================================
+/********************************************************************************
+*
+*	CAMERA
+*
+********************************************************************************/
 
+//= Initialize Camera ===========================================================
 function initCamera(camera,cam_) {
 	camera.rotation.order = "YXZ";
 	camera.position.z = -cam_.lld.z;
@@ -638,6 +662,7 @@ function initCamera(camera,cam_) {
 	cam_.rot.add(camera);		// Attach to rotator
 }
 
+//= Move Camera =================================================================
 function moveCamera(camera,cam_) {
 	// In external view, the camera is facing in and the armature is pointing out:
 	// * x.rotation = -CamLat
@@ -651,7 +676,11 @@ function moveCamera(camera,cam_) {
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
 }
 
-//= 4 MISC SUBROUTINES =========================================================
+/********************************************************************************
+*
+*	MISC SUBROUTINES
+*
+********************************************************************************/
 
 //- Converts degrees to 360 ----------------------------------------------------
 function Mod360(deg) {
@@ -664,9 +693,13 @@ function PoM360(deg) {
 	if (deg > 180) deg = deg-360;
 return deg;}
 
-//= OUTPUTS ====================================================================
+/********************************************************************************
+*
+*	OUTPUTS
+*
+********************************************************************************/
 
-// Print HUD Values
+//= Print HUD Values ===========//===============================================
 function prntHUDval(air_) {
 	Air_Spd = air_.SpdKPH*Km2Mil;		// Aircraft Speed (MPH)
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
@@ -676,9 +709,13 @@ function prntHUDval(air_) {
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
 }
 
-//= 5 INPUTS ===================================================================
+/********************************************************************************
+*
+*	INPUTS
+*
+********************************************************************************/
 
-//= Keyboard Input =============================================================
+//= Keyboard ====================================================================
 
 //- Key Down
 function onDocumentKeyDown(event) {
