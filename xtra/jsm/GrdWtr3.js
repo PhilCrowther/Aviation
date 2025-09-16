@@ -139,16 +139,17 @@ function initGeoMat(grd_, scene) {
 	// Create 4 Textures
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
-			grd_.Mt0[idx] = new MeshStandardMaterial({
-				color: grd_.Col,
+			grd_.Mt0[idx] = new MeshPhysicalMaterial({
+//				color: grd_.Col,
 				map: grd_.Df0[idx],
 				metalness: 0.0,			// 1 for max reflection
-				roughness: 0.7,			// 0 for max reflection
+				reflectivity: 0.5,		// 1 for max reflection (0.5)
+				roughness: 0.2,			// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx],
 				normalMap: grd_.Nrm,	// Animated normalMap
 				normalScale: new Vector2(2.5,2.5),
 				envMap: scene.background,			
-				envMapIntensity: 0.5,		// max reflection suggested = 5
+				envMapIntensity: 0.5,
 				premultipliedAlpha: true,
 				onBeforeCompile: shader => {
 					shader.uniforms.dmap = {value: grd_.Dsp};	// Displacement Map
@@ -179,16 +180,17 @@ function initGeoMat(grd_, scene) {
 	idx = 0
 	for (let z = 0; z < 4; z++) {
 		for (let x = 0; x < 4; x++) {
-			grd_.Mt1[idx] = new MeshStandardMaterial({	// Normal Map Only, 
-				color: grd_.Col,
+			grd_.Mt1[idx] = new MeshPhysicalMaterial({	// Normal Map Only, 
+//				color: grd_.Col,
 				map: grd_.Df0[idx],
-				metalness: 1.0,		// 1 for max reflection
-				roughness: 0.7,		// 0 for max reflection
+				metalness: 0.0,		// 1 for max reflection
+				reflectivity: 0.5,	// 1 for max reflection (0.5)
+				roughness: 0.2,		// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx],
 				normalMap: grd_.Nrm,	// Animated normalMap
-				normalScale: new Vector2(4,4),
+				normalScale: new Vector2(2.5,2.5),
 				envMap: scene.background,
-				envMapIntensity: 4,	// max reflection suggested = 5	
+				envMapIntensity: 0.5,	
 				premultipliedAlpha: true,
 			});
 			idx++
@@ -197,18 +199,19 @@ function initGeoMat(grd_, scene) {
 	// Single Geometry works for all
 	grd_.Geo[n] = new PlaneGeometry(sz0,sz0);
 	grd_.Geo[n].rotateX(-Math.PI*0.5);
-	//- Grid2 ------------------------------------------------------------------
+	//- Grid2 ------------------//----------------------------------------------
 	n = 2;
-	grd_.Mat[n] = new MeshStandardMaterial({
-		color: grd_.Col,
+	grd_.Mat[n] = new MeshPhysicalMaterial({
+//		color: grd_.Col,
 		map: grd_.Dif,			// Full-Sized Texture
-		metalness: 1.0,			// 1 for max reflection
-		roughness: 0.7,			// 0 for max reflection
+		metalness: 0.0,			// 1 for max reflection
+		reflectivity: 0.5,		// 1 for max reflection (0.5)
+		roughness: 0.2,			// 0 for max reflection
 		roughnessMap: grd_.Ruf,
 		normalMap: grd_.Nrm,	// Static normalMap
-		normalScale: new Vector2(4,4),
+		normalScale: new Vector2(2.5,2.5),
 		envMap: scene.background,
-		envMapIntensity: 4,		// max reflection suggested = 5
+		envMapIntensity: 0.5,
 		premultipliedAlpha: true,
 	});
 	// Single Geometry works for all
@@ -217,19 +220,19 @@ function initGeoMat(grd_, scene) {
 	grd_.Geo[n].rotateX(-Math.PI*0.5);
 }
 
-//- Init Moving Map (Ocean) ----------------------------------------------------
+//- Init Moving Map (Ocean) -//-------------------------------------------------
 
 function init1GrMap(grx_, grd_, scene) {
 	// Load Variables
-	grx_.RCi = grx_.RCs-1;					// Max Index Value
-	grx_.MZV[grx_.RCi] = 0;					// Z-Values
-	grx_.MXV[grx_.RCi] = 0;					// X-Values
-	grx_.Nor = grx_.RCi;					// Max North Square (updated)
-	grx_.Est = grx_.RCi;					// Max East Square (updated)
-	grx_.Num = grx_.RCs * grx_.RCs;			// Size of array
-	grx_.Ptr[grx_.Num-1] = 0;				// Mesh Pointers
+	grx_.RCi = grx_.RCs-1;	// Max Index Value
+	grx_.MZV[grx_.RCi] = 0;	// Z-Values
+	grx_.MXV[grx_.RCi] = 0;	// X-Values
+	grx_.Nor = grx_.RCi;	// Max North Square (updated)
+	grx_.Est = grx_.RCi;	// Max East Square (updated)
+	grx_.Num = grx_.RCs * grx_.RCs;	// Size of array
+	grx_.Ptr[grx_.Num-1] = 0; // Mesh Pointers
 	if (grx_.Typ > 0) {
-		grx_.NSA = (grx_.RCs-grx_.RCF)/2;	// (27-3=6)
+		grx_.NSA = (grx_.RCs-grx_.RCF)/2; // (27-3=6)
 		grx_.EWA = grx_.NSA;
 	}
 	// Compute Starting Z and X Values
