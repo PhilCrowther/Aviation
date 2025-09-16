@@ -1,8 +1,8 @@
 //= GRID MAP MODULE ============================================================
 
 // GrdWtr variation
-// Version 3.0 (dated 10 Feb 2024)
-// Copyright 2022-2024, Phil Crowther
+// Version 3.0 (dated 15 Sep 2025)
+// Copyright 2022-2025, Phil Crowther
 // Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 //
 // @fileoverview
@@ -142,13 +142,13 @@ function initGeoMat(grd_, scene) {
 			grd_.Mt0[idx] = new MeshStandardMaterial({
 				color: grd_.Col,
 				map: grd_.Df0[idx],
-				metalness: 1.0,			// 1 for max reflection
+				metalness: 0.0,			// 1 for max reflection
 				roughness: 0.7,			// 0 for max reflection
 				roughnessMap: grd_.Rf0[idx],
 				normalMap: grd_.Nrm,	// Animated normalMap
-				normalScale: new Vector2(4,4),
+				normalScale: new Vector2(2.5,2.5),
 				envMap: scene.background,			
-				envMapIntensity: 4,		// max reflection suggested = 5
+				envMapIntensity: 0.5,		// max reflection suggested = 5
 				premultipliedAlpha: true,
 				onBeforeCompile: shader => {
 					shader.uniforms.dmap = {value: grd_.Dsp};	// Displacement Map
