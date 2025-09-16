@@ -53,6 +53,7 @@
 import {
 	Mesh,
 	MeshStandardMaterial,
+	MeshPhysicalMaterial,
 	PlaneGeometry,
 	Vector2
 } from 'three';
