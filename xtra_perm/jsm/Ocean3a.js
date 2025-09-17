@@ -1,4 +1,4 @@
-﻿//= OCEAN MODULE ================================================
+﻿//= OCEAN MODULE ================================================================
 
 // Version 3.0 (updated 17 Sep 2025)
 //
@@ -10,6 +10,12 @@
 //
 // As with the original wave generators, this module is licensed under a
 // Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+
+/********************************************************************************
+*
+*	IMPORTS
+*
+********************************************************************************/
 
 import {
 	Camera,
@@ -29,7 +35,11 @@ import {
 	WebGLRenderTarget
 } from 'three';
 
-//= OCEAN ========================================================
+/********************************************************************************
+*
+*	OCEAN MODULE
+*
+********************************************************************************/
 /*
  *	Don't Change After Initialization
  *	@param {float} Res		Resolution - segments per square (default = 512)
@@ -45,22 +55,16 @@ import {
 // Modified 2023: Phil Crowther (philcrowther.com) - updated three.js class module
 // Modified 2023: Attila Schroeder - improvements and update to WebGL2
 
+/********************************************************************************
+*
+*	INITIALIZE CLASS
+*
+********************************************************************************/
+
 class Ocean {
-	constructor(renderer,wav_) {
-		this._init(renderer,wav_);
-    }
-
-	// Initialize
-	_init(renderer, wav_) {
-		this.ocean = this.Ocean(renderer,wav_);
-	}
-
-	update(wavTim) {
-		this.update = this.Update(wavTim);
-	}
 
 //= Initialize Ocean ============================================
-Ocean(renderer, wav_) {
+constructor(renderer, wav_) {
 	// flag used to trigger parameter changes
 	this.initial = true;
 	this.changed = true;
@@ -222,8 +226,17 @@ Ocean(renderer, wav_) {
 	wav_.Nrm = this.normalMapFramebuffer.texture;
 };
 
-// = OCEAN.RENDER = (called by Main Program) ====================
-Update(wavTim) {
+};	// End of Initialize
+
+/**************************************|*****************************************
+*
+*	UPDATE CLASS
+*
+********************************************************************************/
+
+// = (called by Main Program) ===================================================
+
+update(wavTim) {
 
 	this.screenQuad.material = null;
 	
@@ -299,18 +312,25 @@ ComputeFrameBuffer(material, frameBuffer){
 	this.renderer.render(this.screenQuad, this.textureCamera);
 	this.renderer.setRenderTarget(null);
 };
-		
-};
 
-//= FFT OCEAN SHADERS ===========================================
-// Description: A deep water ocean shader set based on an implementation of a Tessendorf Waves
-// The (modified) set uses 1 common Vertex Shader and 6 Fragment Shaders:
-// [1] initial_spectrumFS		-> Fragment shader used to set intitial wave frequency at a texel coordinate
-// [2] phaseFS					-> Fragment shader used to set wave phase at a texel coordinate
-// [3] currentSpectrumFS		-> Fragment shader used to set current wave frequency at a texel coordinate
-// [4] ocean_subtransform		-> Fragment shader used to subtransform the mesh (generates the displacement map)
-// [5] ocean_normals			-> Fragment shader used to set face normals at a texel coordinate
-//
+// End of Update
+
+}; // End of Module
+
+/********************************************************************************
+*
+*	SHADERS
+*
+********************************************************************************/
+
+/*	Description: A deep water ocean shader set based on an implementation of a Tessendorf Waves
+	The (modified) set uses 1 common Vertex Shader and 6 Fragment Shaders:
+	[1] initial_spectrumFS		-> Fragment shader used to set intitial wave frequency at a texel coordinate
+	[2] phaseFS					-> Fragment shader used to set wave phase at a texel coordinate
+	[3] currentSpectrumFS		-> Fragment shader used to set current wave frequency at a texel coordinate
+	[4] ocean_subtransform		-> Fragment shader used to subtransform the mesh (generates the displacement map)
+	[5] ocean_normals			-> Fragment shader used to set face normals at a texel coordinate
+*/
 
 //= 0. Vertex shader used by all (AS V2)
 let commonVS = `
