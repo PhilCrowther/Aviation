@@ -224,7 +224,6 @@ constructor(renderer, wav_) {
 	// Static Targets
 	wav_.Dsp = this.displacementMapFramebuffer.texture;
 	wav_.Nrm = this.normalMapFramebuffer.texture;
-};
 
 };	// End of Initialize
 
