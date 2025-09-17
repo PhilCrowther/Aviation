@@ -205,7 +205,7 @@ function rendAll() {
 		wavTim = difTim*wavSpd || 0.0;
 		oldTim = nowTim;
 		//
-		waves.render(wavTim);			// Ocean
+		waves.update(wavTim);			// Ocean
 		if (StatOn) StatOn.update();	// Stats
 	}
 	prntHUDval();

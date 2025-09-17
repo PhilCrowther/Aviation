@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 16 Sep 2025
+Version dated 17 Sep 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -440,7 +440,7 @@ function rendAll() {
 		moveAirPln(air_);
 		moveJetExh();
 		grd_.MSP.copy(air_.MapSPS);
-		waves.render(wavTim);		// Render Ocean
+		waves.update(wavTim);		// Render Ocean
 		grids.update(grd_);			// Move Grids
 		if (StatOn) StatOn.update(); // update stats
 	}
