@@ -1,0 +1,374 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>disp ocean gpu r180</title>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<style>
+body {
+	overflow: hidden;
+	margin:0;
+	color: black;
+	font-family: Courier;
+	font-size: 20pt;
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+		}
+	}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import {
+	storage,textureStore,instanceIndex,uniform,uint,workgroupId,localId,vec2,vec4,	// used by instructions
+	code,wgslFn,// used by shaders
+	texture,// used by NodMaterials
+} from 'three/tsl';
+import Stats from 'stats-gl';
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
+
+//= VARIABLES ==================//==============================================
+//- Flags
+let StatOn = 0;					// Stats ((0 = off, 1 = on)
+//- Constants ------------------------------------------------------------------
+var DegRad = Math.PI/180;		// Convert Degrees to Radians
+
+//= BASIC SETUP ================================================================
+let	container = document.createElement('div');
+	document.body.appendChild(container);
+let	scene = new THREE.Scene();
+	scene.background = new THREE.Color(0x1f1f1f);
+//- Renderer
+let	renderer = new THREE.WebGPURenderer({antialias: true});
+    await renderer.init();		// ### NEW
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	document.body.appendChild(renderer.domElement);
+let maxAnisotropy = renderer.getMaxAnisotropy();
+//- Camera
+let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,5000);
+	camera.position.set(0,0,150);
+//- Controls
+	window.addEventListener('resize',onWindowResize);
+//- Clock
+let clock = new THREE.Clock();
+let dt = 0;
+
+//= OCEAN ======================================================================
+let waves = 0;
+let wav_ = {
+		// General
+		size: 512,				// resolution of iFFT computation
+		gsiz: 512,				// size of grid square (used to compute Normal Map) uniform causes error
+		lambda: 0.9,
+		renderer: renderer,
+		anisotropy: maxAnisotropy,
+		// InitSpec Variables
+		waveLength: 250,
+		boundaryLow: 0.0001,	// ## ok?
+		boundaryHigh: 9999,		// ### ok??
+		// Wave Spectrum 1
+		depth: 20,
+		scaleHeight: 1,
+		windSpeed: 2,
+		windDirection: 315,		// was 0
+		fetch: 100000,
+		spreadBlend: 1,
+		swell: 0.198,
+		peakEnhancement: 3.3,
+		shortWaveFade: 0.01,
+		fadeLimit: 0.0,
+		// Wave Spectrum 2
+		d_depth: 20,
+		d_scaleHeight: 1,
+		d_windSpeed: 1,
+		d_windDirection: 315,	// was 240
+		d_fetch: 300000,
+		d_spreadBlend: 1,
+		d_swell: 0.5,
+		d_peakEnhancement: 3.3,
+		d_shortWaveFade: 0.01,
+		d_fadeLimit: 0.0,
+	};
+
+//= DISPLAY =====================================================================
+
+/*	List of Compute Buffers
+	waves.spectrumBuffer - 1x
+	waves.waveDataBuffer - 1x
+	waves.butterfly		 - 1x
+	wave.DxDzBuffer
+	waves.DyDxzBuffer
+	waves.pingpongBuffer
+*/
+
+//- Workgroup Variables -----------------------------------------------------
+let	workgroupSize = [16,16,1];
+let	dispatchSize = [wav_.size/workgroupSize[0],wav_.size/workgroupSize[1]];
+//- Texture Buffers -------------------------------------------------------------
+//- Spectrum Texture
+let spectrumTexture = new THREE.StorageTexture(wav_.size,wav_.size);
+	spectrumTexture.format = THREE.RGBAFormat;
+	spectrumTexture.type = THREE.FloatType;
+	spectrumTexture.minFilter = spectrumTexture.magFilter = THREE.NearestFilter;
+	spectrumTexture.wrapS = spectrumTexture.wrapT = THREE.ClampToEdgeWrapping;
+//- WaveData Texture
+let waveDataTexture = new THREE.StorageTexture(wav_.size,wav_.size);
+	waveDataTexture.format = THREE.RGBAFormat;
+	waveDataTexture.type = THREE.FloatType;
+	waveDataTexture.minFilter = waveDataTexture.magFilter = THREE.NearestFilter;
+	waveDataTexture.wrapS = waveDataTexture.wrapT = THREE.ClampToEdgeWrapping;
+//- Bufferfly
+let butterflyTexture = new THREE.StorageTexture(Math.log2(wav_.size),wav_.size);
+	butterflyTexture.format = THREE.RGBAFormat;
+	butterflyTexture.magFilter = butterflyTexture.minFilter = THREE.NearestFilter;
+	butterflyTexture.type = THREE.FloatType;
+//- DxDz Texture
+let DxDzTexture = new THREE.StorageTexture(wav_.size,wav_.size);
+	DxDzTexture.format = THREE.RGBAFormat;
+	DxDzTexture.type = THREE.FloatType;
+	DxDzTexture.minFilter = DxDzTexture.magFilter = THREE.NearestFilter;
+	DxDzTexture.wrapS = DxDzTexture.wrapT = THREE.ClampToEdgeWrapping;
+//- DyDxz Texture
+let DyDxzTexture = new THREE.StorageTexture(wav_.size,wav_.size);
+	DyDxzTexture.format = THREE.RGBAFormat;
+	DyDxzTexture.type = THREE.FloatType;
+	DyDxzTexture.minFilter = DyDxzTexture.magFilter = THREE.NearestFilter;
+	DyDxzTexture.wrapS = DyDxzTexture.wrapT = THREE.ClampToEdgeWrapping;
+//- PingPong Texture
+let pingpongTexture = new THREE.StorageTexture(wav_.size,wav_.size);
+	pingpongTexture.format = THREE.RGBAFormat;
+	pingpongTexture.type = THREE.FloatType;
+	pingpongTexture.minFilter = pingpongTexture.magFilter = THREE.NearestFilter;
+	pingpongTexture.wrapS = pingpongTexture.wrapT = THREE.ClampToEdgeWrapping;
+
+//- Shaders ---------------------------------------------------------------------
+// Convert Butterfly to Texture
+let copyButterfly2TextureWGSL= wgslFn(`
+	fn computeWGSL( 
+		r_bfly: ptr<storage, array<vec4<f32>>,read>,
+		w_bfly: texture_storage_2d<rgba32float, write>,
+		indx: u32, 
+		N: f32,
+		workgroupSize: vec2<u32>,
+		workgroupId: vec3<u32>,
+		localId: vec3<u32>
+	) -> void {
+		var logN = log2(N);
+		var posX = u32( f32(indx) % logN );
+		var posY = indx / u32(logN);
+		let value = r_bfly[u32(logN)*posY+posX];
+		textureStore(w_bfly,vec2<u32>(posX,posY),vec4f(value.r,value.g,value.b,value.a));
+	}
+`);
+//- Copy Compute Buffer to Texture Buffer (
+let	copyCompute2TextureWGSL = wgslFn(`
+	fn computeWGSL(
+		r_comp: ptr<storage, array<f32>,read>,
+		w_text: texture_storage_2d<rgba32float, write>,
+		size: u32,
+		workgroupSize: vec2<u32>,
+		workgroupId: vec3<u32>,
+		localId: vec3<u32>
+	) -> void {
+		let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
+		let value = r_comp[size*pos.y+pos.x];
+		textureStore(w_text,vec2<u32>(pos.x,pos.y),vec4f(value,0.0,0.0,1.0)); // a = 1 to make visible
+	}
+`);
+
+//- Instructions ----------------------------------------------------------------
+let copyButterfly2Texture,copySpectrum2Texture,copyWaveData2Texture,copyDxDz2Texture,copyDyDxz2Texture,copyPingPhas2Texture;
+
+/********************************************************************************
+*
+*	PROGRAM
+*
+********************************************************************************/
+
+	initAll();
+
+//= INITIALIZE ==================================================================
+
+function initAll() {
+	initOcean();
+	// Show stats
+	if (StatOn) {							// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(StatOn.dom);
+	}
+}
+
+//= RENDER ======================================================================
+
+function rendAll() {
+	moveOcean();
+	if (StatOn) StatOn.update();		// Stats
+	renderer.renderAsync(scene, camera);
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+}
+
+//= DISPLAY ====================//===============================================
+
+//= INIT
+function initOcean() {
+	waves = new Ocean(wav_);	// Initialize Ocean
+	initConvert();				//- Convert Compute Buffers to Texture Buffers
+//- Display Textures ------------------------------------------------------------
+	let siz = 50;
+	//==
+	//- Spectrum Texture --------------------------------------------------------
+	let mat1 = new THREE.MeshBasicNodeMaterial({colorNode: texture(spectrumTexture)});
+	let mesh1 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat1);
+	mesh1.position.set(-1.01*siz,1.01*siz,0);
+	scene.add(mesh1);
+	//- WaveData Texture --------------------------------------------------------
+	let mat2 = new THREE.MeshBasicNodeMaterial({colorNode: texture(waveDataTexture)});
+	let mesh2 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat2);
+	mesh2.position.set(0*siz,1.01*siz,0);
+	scene.add(mesh2);
+	//- Butterfly ---------------------------------------------------------------
+	let matB = new THREE.MeshBasicNodeMaterial({colorNode: texture(butterflyTexture)});
+	let meshB = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matB);
+	meshB.position.set(1.01*siz,1.01*siz,0);
+	scene.add(meshB);
+	//==
+	//- DxDz Texture ------------------------------------------------------------
+	let mat3 = new THREE.MeshBasicNodeMaterial({colorNode: texture(DxDzTexture)});
+	//==
+	let mesh3 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat3);
+	mesh3.position.set(-1.01*siz,0.0,0);
+	scene.add(mesh3);
+	//- DyDxz Texture -----------------------------------------------------------
+	let mat4 = new THREE.MeshBasicNodeMaterial({colorNode: texture(DyDxzTexture)});
+	let mesh4 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat4);
+	mesh4.position.set(0.0,0.0,0);
+	scene.add(mesh4);
+	//- PingPong Texture -----------------------------------------------------------
+	let mat5 = new THREE.MeshBasicNodeMaterial({colorNode: texture(pingpongTexture)});
+	let mesh5 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat5);
+	mesh5.position.set(1.01*siz,0.0,0);
+	scene.add(mesh5);
+	//==
+	//- Displacment Texture -----------------------------------------------------
+	let matD = new THREE.MeshBasicNodeMaterial({colorNode: texture(waves.displacement)});
+	let meshD = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matD);
+	meshD.position.set(-1.01*siz,-1.01*siz,0);
+	scene.add(meshD);
+	//- NormalMap Texture -------------------------------------------------------
+	let matN = new THREE.MeshBasicNodeMaterial({colorNode: texture(waves.normMapTexture)});
+	let meshN = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matN);
+	meshN.position.set(0.0,-1.01*siz,0);
+	scene.add(meshN);
+}
+
+//= MOVE
+function moveOcean() {
+	dt = clock.getDelta();
+	if (waves) waves.update(dt);
+	renderer.compute(copyDxDz2Texture,dispatchSize);
+	renderer.compute(copyDyDxz2Texture,dispatchSize);
+	renderer.compute(copyPingPhas2Texture,dispatchSize);
+}
+
+//= CONVERT =====================================================================
+
+function initConvert() {
+	//- Instructions ------------------------------------------------------------
+	//-	Spectrum Buffer
+	copySpectrum2Texture = copyCompute2TextureWGSL({
+		r_comp: storage(waves.spectrumBuffer,'float',waves.spectrumBuffer.count).toReadOnly(),
+		w_text: textureStore(spectrumTexture),
+		size: uint(wav_.size),
+		workgroupSize: uniform(new THREE.Vector2().fromArray(waves.workgroupSize)),
+		workgroupId: workgroupId,
+		localId: localId
+	}).computeKernel(waves.workgroupSize);
+	//-	WaveDataTexture
+	copyWaveData2Texture = copyCompute2TextureWGSL({
+		r_comp: storage(waves.waveDataBuffer,'float',waves.waveDataBuffer.count).toReadOnly(),
+		w_text: textureStore(waveDataTexture),
+		size: uint(wav_.size),
+		workgroupSize: uniform(new THREE.Vector2().fromArray(waves.workgroupSize)),
+		workgroupId: workgroupId,
+		localId: localId
+	}).computeKernel(waves.workgroupSize);
+	//- Butterfly Buffer
+	copyButterfly2Texture = copyButterfly2TextureWGSL({ 
+		r_bfly: storage(waves.butterflyBuffer,'vec4',waves.butterflyBuffer.count).toReadOnly(),
+		w_bfly: textureStore(butterflyTexture),
+		indx: instanceIndex,
+		N: wav_.size,
+		workgroupSize: uniform(new THREE.Vector2().fromArray(waves.workgroupSize)),
+		workgroupId: workgroupId,
+		localId: localId
+	}).compute(Math.log2(wav_.size)*wav_.size);
+	//- DxDz Texture
+	copyDxDz2Texture = copyCompute2TextureWGSL({
+		r_comp: storage(waves.DxDzBuffer,'float',waves.DxDzBuffer.count).toReadOnly(),
+		w_text: textureStore(DxDzTexture),
+		size: uint(wav_.size),
+		workgroupSize: uniform(new THREE.Vector2().fromArray(waves.workgroupSize)),
+		workgroupId: workgroupId,
+		localId: localId
+	}).computeKernel(waves.workgroupSize);
+	//- DyDxz Texture
+	copyDyDxz2Texture = copyCompute2TextureWGSL({
+		r_comp: storage(waves.DyDxzBuffer,'float',waves.DyDxzBuffer.count).toReadOnly(),
+		w_text: textureStore(DyDxzTexture),
+		size: uint(wav_.size),
+		workgroupSize: uniform(new THREE.Vector2().fromArray(waves.workgroupSize)),
+		workgroupId: workgroupId,
+		localId: localId
+	}).computeKernel(waves.workgroupSize);	
+	// PingPong Buffer
+	copyPingPhas2Texture = copyCompute2TextureWGSL({
+		r_comp: storage(waves.pingpongBuffer,'float',waves.pingpongBuffer.count).toReadOnly(),
+		w_text: textureStore(pingpongTexture),
+		size: uint(wav_.size),
+		workgroupSize: uniform(new THREE.Vector2().fromArray(waves.workgroupSize)),
+		workgroupId: workgroupId,
+		localId: localId
+	}).computeKernel(waves.workgroupSize);	
+	//- Compute -----------------------------------------------------------------
+	renderer.compute(copySpectrum2Texture,dispatchSize);
+	renderer.compute(copyWaveData2Texture,dispatchSize);
+	renderer.compute(copyButterfly2Texture);
+	renderer.compute(copyDxDz2Texture,dispatchSize);
+	renderer.compute(copyDyDxz2Texture,dispatchSize);
+	renderer.compute(copyPingPhas2Texture,dispatchSize);
+}
+
+//= WINDOW RESIZE ===============================================================
+
+function onWindowResize() {
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	const aspect = window.innerWidth / window.innerHeight;
+	const frustumHeight = camera.top - camera.bottom;
+	camera.left = - frustumHeight * aspect / 2;
+	camera.right = frustumHeight * aspect / 2;
+	camera.updateProjectionMatrix();
+	rendAll();
+}
+
+</script>
+</body>
+</html>

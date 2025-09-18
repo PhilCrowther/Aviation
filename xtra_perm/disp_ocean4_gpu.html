@@ -1,0 +1,222 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>disp ocean4 gpu r180</title>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<style>
+body {
+	overflow: hidden;
+	margin:0;
+	color: black;
+	font-family: Courier;
+	font-size: 20pt;
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+		}
+	}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import {texture} from 'three/tsl';
+import Stats from 'stats-gl';
+// Custom Modules
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra_perm/jsm/Ocean4.js";
+
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
+
+//- Flags ----------------------//-----------------------------------------------
+let StatOn = 1;					// Stats ((0 = off, 1 = on)
+//- Constants -------------------------------------------------------------------
+var DegRad = Math.PI/180;		// Convert Degrees to Radians
+
+//= OCEAN ======================//===============================================
+//- Constants
+let WtrCol = 0x001080;			// Water (Navy)
+let WndSpd = 20;
+let WndHdg = 0;
+let Choppy = 2;
+//- Variables
+let waves = 0;
+//- Params
+let wav_ = {
+		// Sources
+		Res: 512,				// Resolution - segments per square (default = 512)
+		Siz: 512,				// Size of Smallest Square = default = 3200m = 2 miles
+		WSp: WndSpd,			// Wind Speed
+		WHd: WndHdg,			// Wind Heading
+		Chp: Choppy,			// default = 1
+		// Results
+		NMS: new THREE.Vector2(1.0,1.0), // Normal Map Scale (flip Y for left-handed maps)
+		Spd: 1,					// Animation Speed
+	};
+
+//= BASIC SETUP =================================================================
+let	container = document.createElement('div');
+	document.body.appendChild(container);
+let	scene = new THREE.Scene();
+	scene.background = new THREE.Color(0x1f1f1f);
+//- Renderer
+let	renderer = new THREE.WebGPURenderer({antialias: true});
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	document.body.appendChild(renderer.domElement);
+//- Camera
+let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,5000);
+	camera.position.set(0,0,150);
+//- Controls
+	window.addEventListener('resize',onWindowResize);
+
+/********************************************************************************
+*
+*	PROGRAM
+*
+********************************************************************************/
+
+	initAll();
+
+//= INITIALIZE =================//===============================================
+
+function initAll() {
+	waves = new Ocean(renderer,wav_);
+	Display();
+	// Show stats
+	if (StatOn) {				// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(StatOn.dom);
+	}
+}
+
+//= RENDER =====================//===============================================
+
+function rendAll() {
+	waves.update();
+	if (StatOn) StatOn.update(); // Stats
+	renderer.renderAsync(scene, camera);
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+}
+
+/********************************************************************************
+*
+*	DISPLAY
+*
+********************************************************************************/
+
+function Display() {
+	let siz = 50;
+	//- Plane 1 -----------------------------------------------------------------
+	let mat1 = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.initSpectrumTexture),
+	});
+	let mesh1 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat1);
+	mesh1.position.set(-1.51*siz,1.01*siz,0);
+	scene.add(mesh1);
+	//- Phase Array -------------------------------------------------------------
+	let matA = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.phaseArrayTexture),
+	});
+	let meshA = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matA);
+	meshA.position.set(-0.505*siz,1.01*siz,0);
+	scene.add(meshA);
+	//- Plane 2a ----------------------------------------------------------------
+	let mat2a = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.pingPhaseTexture),
+	});
+	let mesh2a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat2a);
+	mesh2a.position.set(0.505*siz,1.01*siz,0);
+	scene.add(mesh2a);
+	//- Plane 2b ----------------------------------------------------------------
+	let mat2b = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.pongPhaseTexture),
+	});
+	let mesh2b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat2b);
+	mesh2b.position.set(1.51*siz,1.01*siz,0);
+	scene.add(mesh2b);
+	//- Plane 3 -----------------------------------------------------------------
+	let mat3 = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.compSpectrumTexture),
+	});
+	let mesh3 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat3);
+	mesh3.position.set(-1.51*siz,0.0,0);
+	scene.add(mesh3);
+	//- Butterfly ---------------------------------------------------------------
+	let matB = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.butterflyTexture),
+	});
+	let meshB = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), matB);
+	meshB.position.set(-0.505*siz,0,0);
+	scene.add(meshB);
+	//- Plane 4a ----------------------------------------------------------------
+	let mat4a = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.pingTransformTexture),
+	});
+	let mesh4a = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat4a);
+	mesh4a.position.set(0.505*siz,0,0);
+	scene.add(mesh4a);
+	//- Plane 4b ----------------------------------------------------------------
+	let mat4b = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.pongTransformTexture),
+	});
+	let mesh4b = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat4b);
+	mesh4b.position.set(1.51*siz,0,0);
+	scene.add(mesh4b);
+	//- Plane 5 -----------------------------------------------------------------
+	let mat5 = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.dispMapTexture),
+	});
+	let mesh5 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat5);
+	mesh5.position.set(-1.51*siz,-1.01*siz,0);
+	scene.add(mesh5);
+	//- Plane 6 -----------------------------------------------------------------
+	let mat6 = new THREE.MeshBasicNodeMaterial({
+		colorNode: texture(waves.normMapTexture),
+	});
+	let mesh6 = new THREE.Mesh(new THREE.PlaneGeometry(siz,siz), mat6);
+	mesh6.position.set(-0.505*siz,-1.01*siz,0);
+	scene.add(mesh6);
+};
+
+/********************************************************************************
+*
+*	INPUTS
+*
+********************************************************************************/
+
+//= WINDOW RESIZE ===============================================================
+
+function onWindowResize() {
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	const aspect = window.innerWidth / window.innerHeight;
+	const frustumHeight = camera.top - camera.bottom;
+	camera.left = - frustumHeight * aspect / 2;
+	camera.right = frustumHeight * aspect / 2;
+	camera.updateProjectionMatrix();
+	rendAll();
+}
+
+</script>
+</body>
+</html>
