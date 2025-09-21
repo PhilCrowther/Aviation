@@ -1,10 +1,12 @@
 ﻿/*= OCEAN MODULE ================================================================
 
-Ocean2.js (14 Sep 2025)
+Ocean5.js (14 Sep 2025)
 
 This is single-pass version of the Ocean Wave Generator created by Attila Schroeder
-Created with his assistance and permission and licensed under a
-Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+The complete version is available on his GitHub Repository at:
+https://github.com/Spiri0/Threejs-WebGPU-IFFT-Ocean
+This was extracted and converted to a module by Phil Crowther with his assistance and permission
+and is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
 
 /********************************************************************************
@@ -23,7 +25,7 @@ import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 
 /********************************************************************************
 *
-*	OCEAN MODULE
+*	VARIABLES
 *
 ********************************************************************************/
 let DegRad = Math.PI/180;		// Convert Degrees to Radians
@@ -37,15 +39,19 @@ return deg;}
 
 /********************************************************************************
 *
-*	OCEAN MODULE
+*	CLASS
 *
 ********************************************************************************/
 
 class Ocean {
 
-constructor(params) {
+/********************************************************************************
+*
+*	INITIALIZE CLASS
+*
+********************************************************************************/
 
-//= INITIALIZE ==================================================================
+constructor(params) {
 
 	//= Variables ===============================================================
 	this.size = params.size;
@@ -84,7 +90,7 @@ constructor(params) {
 	params.d_peakEnhancement = uniform(params.d_peakEnhancement);
 	params.d_shortWaveFade = uniform(params.d_shortWaveFade);
 	params.d_fadeLimit = uniform(params.d_fadeLimit);
-	//- Add Variables -----------------------------------------------------------
+	//- Add Uniform Variables ---------------------------------------------------
 	this.DDindex = uniform(0);
 	this.ifftStep = uniform(0);
 	this.pingpong = uniform(0);
@@ -93,7 +99,7 @@ constructor(params) {
 	this.workgroupSize = [16,16,1];
 	this.dispatchSize = [this.size/this.workgroupSize[0],this.size/this.workgroupSize[1]];
 	
-	//= Storage Buffers =========================================================
+	//= Create Storage Buffers ==================================================
 	this.spectrumBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
 	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
 	this.waveDataBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
@@ -101,7 +107,7 @@ constructor(params) {
 	this.DyDxzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
 	this.pingpongBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
 	
-	//= Storage Textures ========================================================
+	//= Create Storage Textures =================================================
 	//- Displacement Texture ----------------------------------------------------
 	this.displacement = new StorageTexture(this.size,this.size);
 	this.displacement.type = HalfFloatType;
@@ -118,13 +124,51 @@ constructor(params) {
 	this.normMapTexture.minFilter = LinearMipMapLinearFilter;
 	this.normMapTexture.wrapS = this.normMapTexture.wrapT = RepeatWrapping;
 
-//= SHADERS =====================================================================
+	/****************************************************************************
+	*
+	*	SHADERS
+	*
+	****************************************************************************/
+	
+	/* LIST OF SHADERS ==========================================================
+	Fixed Compute Buffers
+	 1. Initial Spectrum
+	 	output: Spectrum and Wave Data Buffers)
+	 2. Initial Spectrum with Inverse
+	 	input:	Spectrum Buffer
+	 	output: Spectrum Buffer
+	 3. Butterfly
+	 	output: Butterfly Buffer)
+	Variable Compute Buffers
+	 4. Time Spectrum
+	 	input:	Spectrum and Wave Data Buffers
+	 	output:	DxDz and DyDxz Buffers
+	 5. IFFT Initialize
+	 	input:	Butterfly, DxDz and DyDxz Buffers
+	 	output:	PingPong Buffer
+	 6. IFFT Horizontal
+	 	input:	Bufferfly and PingPong Buffers
+	 	output:	PingPong Buffer
+	 7. IFFT Vertical
+	 	input:	Bufferfly and PingPong Buffers
+	 	output:	PingPong Buffer
+	 8. IFFT Permute
+	 	input:	PingPong Buffer
+	 	output:	DxDz and DyDxz Buffers
+	Variable Texture Buffers
+	 9. Textures Merger
+	 	input:	DxDz and DyDxz Buffers
+	 	output: Displacement Buffer
+	10. Normal Map
+		input:	Displacement Buffer
+		output:	NormalMap Buffer
+	*/
 
-	//- Initial Spectrum --------------------------------------------------------
+	//= 1. Initial Spectrum =====================================================
 	this.InitialSpectrumWGSL = wgslFn(`
 		fn computeWGSL(
-			spectrumBuffer: ptr<storage,array<vec4<f32>>,read_write>,
-			waveDataBuffer: ptr<storage,array<vec4<f32>>,read_write>,
+			w_Spectrum: ptr<storage,array<vec4<f32>>,read_write>,
+			w_WaveData: ptr<storage,array<vec4<f32>>,read_write>,
 			index: u32,
 			size: u32,
 			waveLength: f32,
@@ -180,11 +224,11 @@ constructor(params) {
 				}
 				var er: f32 = gaussianRandom1(xy);
 				var ei: f32 = gaussianRandom2(xy);
-				spectrumBuffer[index] = vec4<f32>(vec2<f32>(er,ei)*sqrt(2*spectrum*abs(dOmegadk)/kLength*deltaK*deltaK),0,0);
-				waveDataBuffer[index] = vec4<f32>(k.x,1.0/kLength,k.y,w);
+				w_Spectrum[index] = vec4<f32>(vec2<f32>(er,ei)*sqrt(2*spectrum*abs(dOmegadk)/kLength*deltaK*deltaK),0,0);
+				w_WaveData[index] = vec4<f32>(k.x,1.0/kLength,k.y,w);
 			} else {
-				spectrumBuffer[index] = vec4<f32>(0.0);
-				waveDataBuffer[index] = vec4<f32>(k.x,1.0,k.y,0.0);
+				w_Spectrum[index] = vec4<f32>(0.0);
+				w_WaveData[index] = vec4<f32>(k.x,1.0,k.y,0.0);
 			}
 		}
 		const PI: f32 = 3.141592653589793;
@@ -261,23 +305,25 @@ constructor(params) {
 			return (1-fadeLimit)*exp(-pow(shortWavesFade*kLength,2))+fadeLimit;
 		}
 	`);
-	//- Initial Spectrum with Inverse -------------------------------------------
+	
+	//= 2. Initial Spectrum with Inverse ========================================
 	this.InitialSpectrumWithInverseWGSL = wgslFn(`
 		fn computeWGSL(
-			spectrumBuffer: ptr<storage,array<vec4<f32>>,read_write>,
+			rw_Spectrum: ptr<storage,array<vec4<f32>>,read_write>,
 			index: u32,
 			size: u32,
 		) -> void {
 			var idx = ((size-index/size) % size)*size+(size-index % size) % size;
-			var spectrumData = spectrumBuffer[index];
-			var h0MinusK = spectrumBuffer[idx];
-			spectrumBuffer[index] = vec4<f32>(spectrumData.xy,h0MinusK.x,-h0MinusK.y);
+			var spectrumData = rw_Spectrum[index];
+			var h0MinusK = rw_Spectrum[idx];
+			rw_Spectrum[index] = vec4<f32>(spectrumData.xy,h0MinusK.x,-h0MinusK.y);
 		}
 	`);
-	//- Butterfly ---------------------------------------------------------------
+	
+	//= 3. Butterfly ============================================================
 	this.butterflyWGSL = wgslFn(`
 		fn computeWGSL(
-			butterflyBuffer: ptr<storage,array<vec4<f32>>,read_write>,
+			w_Btrfly: ptr<storage,array<vec4<f32>>,read_write>,
 			index: u32,
 			N: f32,
 		) -> void {
@@ -293,18 +339,18 @@ constructor(params) {
 			var uY = u32(posY);
 			if(u32(posX) == 0){
 				if(butterflywing == 1){
-					butterflyBuffer[idx] = vec4f(twiddle,reverseBits(uY,N),reverseBits(uY+1,N));
+					w_Btrfly[idx] = vec4f(twiddle,reverseBits(uY,N),reverseBits(uY+1,N));
 				}
 				else{
-					butterflyBuffer[idx] = vec4f(twiddle,reverseBits(uY-1,N),reverseBits(uY,N));
+					w_Btrfly[idx] = vec4f(twiddle,reverseBits(uY-1,N),reverseBits(uY,N));
 				}
 			}
 			else{
 				if(butterflywing == 1){
-					butterflyBuffer[idx] = vec4f(twiddle,posY,posY+butterflyspan);
+					w_Btrfly[idx] = vec4f(twiddle,posY,posY+butterflyspan);
 				}
 				else{
-					butterflyBuffer[idx] = vec4f(twiddle,posY-butterflyspan,posY);
+					w_Btrfly[idx] = vec4f(twiddle,posY-butterflyspan,posY);
 				}
 			}
 		}
@@ -318,19 +364,20 @@ constructor(params) {
 			return f32(bitReversedIndex);
 		}
 	`);
-	//- Time Spectrum -----------------------------------------------------------
+
+	//= 4. Time Spectrum ========================================================
 	this.TimeSpectrumWGSL = wgslFn(`
 		fn computeWGSL(
-			spectrumBuffer: ptr<storage,array<vec4<f32>>,read_write>,
-			waveDataBuffer: ptr<storage,array<vec4<f32>>,read_write>,
-			writeDxDzBuffer: ptr<storage,array<vec2<f32>>,read_write>,
-			writeDyDxzBuffer: ptr<storage,array<vec2<f32>>,read_write>,
+			r_Spectrum: ptr<storage,array<vec4<f32>>,read_write>,
+			r_WaveData: ptr<storage,array<vec4<f32>>,read_write>,
+			w_DxDz: ptr<storage,array<vec2<f32>>,read_write>,
+			w_DyDxz: ptr<storage,array<vec2<f32>>,read_write>,
 			index: u32,
 			size: u32,
 			time: f32,
 		) -> void {
-			var wave = waveDataBuffer[index];
-			var h0 = spectrumBuffer[index];
+			var wave = r_WaveData[index];
+			var h0 = r_Spectrum[index];
 			var phase = wave.w*time;
 			var exponent = vec2<f32>(cos(phase),sin(phase));
 			var h = complexMult(h0.xy,exponent)+complexMult(h0.zw,vec2<f32>(exponent.x,-exponent.y));
@@ -346,20 +393,21 @@ constructor(params) {
 			var displacementZ_dz = -h*wave.z*wave.z*wave.y;
 			//displacementX_dz ist the same like displacementZ_dx
 			//Sum up all amplitudes (real and complex)
-			writeDxDzBuffer[index]  = vec2<f32>(displacementX.x-displacementZ.y,displacementX.y+displacementZ.x);
-			writeDyDxzBuffer[index] = vec2<f32>(displacementY.x-displacementZ_dx.y,displacementY.y+displacementZ_dx.x);
+			w_DxDz[index]  = vec2<f32>(displacementX.x-displacementZ.y,displacementX.y+displacementZ.x);
+			w_DyDxz[index] = vec2<f32>(displacementY.x-displacementZ_dx.y,displacementY.y+displacementZ_dx.x);
 		}
 		fn complexMult(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
 			return vec2<f32>(a.r*b.r-a.g*b.g,a.r*b.g+a.g*b.r);
 		}
 	`);
-	//- IFFT_Init ---------------------------------------------------------------
+
+	//= 5. IFFT Initialize ======================================================
 	this.IFFT_InitWGSL = wgslFn(`
 		fn computeWGSL(
-			butterflyBuffer: ptr<storage,array<vec4<f32>>,read>,
-			pingpongBuffer: ptr<storage,array<vec4<f32>>,read_write>,
-			DxDzBuffer: ptr<storage,array<vec2<f32>>,read>,
-			DyDxzBuffer: ptr<storage,array<vec2<f32>>,read>,
+			r_Btrfly: ptr<storage,array<vec4<f32>>,read>,
+			r_DxDz: ptr<storage,array<vec2<f32>>,read>,
+			r_DyDxz: ptr<storage,array<vec2<f32>>,read>,
+			w_PingPong: ptr<storage,array<vec4<f32>>,read_write>,
 			index: u32,
 			size: u32,
 			initBufferIndex: u32,
@@ -371,23 +419,23 @@ constructor(params) {
 		) -> void {
 			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
 			let butterflyIndex = pos.x*logN+step;
-			let data = butterflyBuffer[butterflyIndex];
+			let data = r_Btrfly[butterflyIndex];
 			let bufferIndex = pos.y*size+u32(data.z);
 			let bufferIndexOdd = pos.y*size+u32(data.w);
-			var even = select(DxDzBuffer[bufferIndex],DyDxzBuffer[bufferIndex],initBufferIndex == 1u);
-			var odd = select(DxDzBuffer[bufferIndexOdd],DyDxzBuffer[bufferIndexOdd],initBufferIndex == 1u);
+			var even = select(r_DxDz[bufferIndex],r_DyDxz[bufferIndex],initBufferIndex == 1u);
+			var odd = select(r_DxDz[bufferIndexOdd],r_DyDxz[bufferIndexOdd],initBufferIndex == 1u);
 			var H: vec2<f32> = even+multiplyComplex(vec2<f32>(data.r,-data.g),odd);
-			pingpongBuffer[index] = vec4<f32>(0.0,0.0,H);
+			w_PingPong[index] = vec4<f32>(0.0,0.0,H);
 		}
 		fn multiplyComplex(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
 			return vec2<f32>(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
 	`);	
-	//- IFFT_Horizontal ---------------------------------------------------------
+	//= 6. IFFT_Horizontal ======================================================
 	this.IFFT_HorizontalWGSL = wgslFn(`
 		fn computeWGSL(
-			butterflyBuffer: ptr<storage,array<vec4<f32>>,read>,
-			pingpongBuffer: ptr<storage,array<vec4<f32>>,read_write>,
+			r_Btrfly: ptr<storage,array<vec4<f32>>,read>,
+			rw_PingPong: ptr<storage,array<vec4<f32>>,read_write>,
 			index: u32,
 			size: u32,
 			initBufferIndex: u32,
@@ -400,26 +448,27 @@ constructor(params) {
 		) -> void {
 			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
 			let butterflyIndex = pos.x*logN+step;
-			let data = butterflyBuffer[butterflyIndex];
+			let data = r_Btrfly[butterflyIndex];
 			let bufferIndexEven = pos.y*size+u32(data.z);
 			let bufferIndexOdd = pos.y*size+u32(data.w);
-			let even = select(pingpongBuffer[bufferIndexEven].xy,pingpongBuffer[bufferIndexEven].zw,pingpong == 0);
-			let odd  = select(pingpongBuffer[bufferIndexOdd].xy,pingpongBuffer[bufferIndexOdd].zw,pingpong == 0);
+			let even = select(rw_PingPong[bufferIndexEven].xy,rw_PingPong[bufferIndexEven].zw,pingpong == 0);
+			let odd  = select(rw_PingPong[bufferIndexOdd].xy,rw_PingPong[bufferIndexOdd].zw,pingpong == 0);
 			let H: vec2<f32> = even+multiplyComplex(data.rg,odd);
-			pingpongBuffer[index] = vec4<f32>(
-				select(pingpongBuffer[index].xy,H,pingpong == 0),
-				select(H,pingpongBuffer[index].zw,pingpong == 0)
+			rw_PingPong[index] = vec4<f32>(
+				select(rw_PingPong[index].xy,H,pingpong == 0),
+				select(H,rw_PingPong[index].zw,pingpong == 0)
 			);
 		}
 		fn multiplyComplex(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
 			return vec2<f32>(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
-	`);	
-	//- IFFT_Vertical -----------------------------------------------------------
+	`);
+	
+	//= 7. IFFT_Vertical ========================================================
 	this.IFFT_VerticalWGSL = wgslFn(`
 		fn computeWGSL(
-			butterflyBuffer: ptr<storage,array<vec4<f32>>,read>,
-			pingpongBuffer: ptr<storage,array<vec4<f32>>,read_write>,
+			r_Btrfly: ptr<storage,array<vec4<f32>>,read>,
+			rw_PingPong: ptr<storage,array<vec4<f32>>,read_write>,
 			index: u32,
 			size: u32,
 			initBufferIndex: u32,
@@ -432,27 +481,28 @@ constructor(params) {
 		) -> void {
 			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
 			let butterflyIndex = pos.y*logN+step;
-			let data = butterflyBuffer[butterflyIndex];
+			let data = r_Btrfly[butterflyIndex];
 			let bufferIndexEven = u32(data.z)*size+pos.x;
 			let bufferIndexOdd = u32(data.w)*size+pos.x;
-			let even = select(pingpongBuffer[bufferIndexEven].xy,pingpongBuffer[bufferIndexEven].zw,pingpong == 0);
-			let odd  = select(pingpongBuffer[bufferIndexOdd].xy,pingpongBuffer[bufferIndexOdd].zw,pingpong == 0);
+			let even = select(rw_PingPong[bufferIndexEven].xy,rw_PingPong[bufferIndexEven].zw,pingpong == 0);
+			let odd  = select(rw_PingPong[bufferIndexOdd].xy,rw_PingPong[bufferIndexOdd].zw,pingpong == 0);
 			let H: vec2<f32> = even+multiplyComplex(data.rg,odd);
-			pingpongBuffer[index] = vec4<f32>(
-				select(pingpongBuffer[index].xy,H,pingpong == 0),
-				select(H,pingpongBuffer[index].zw,pingpong == 0)
+			rw_PingPong[index] = vec4<f32>(
+				select(rw_PingPong[index].xy,H,pingpong == 0),
+				select(H,rw_PingPong[index].zw,pingpong == 0)
 			);
 		}
 		fn multiplyComplex(a: vec2<f32>,b: vec2<f32>) -> vec2<f32> {
 			return vec2<f32>(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
 	`);
-	//- IFFT Permute ------------------------------------------------------------
+
+	//= 8. IFFT Permute =========================================================
 	this.IFFT_PermuteWGSL = wgslFn(`
 		fn computeWGSL(
-			pingpongBuffer: ptr<storage,array<vec4<f32>>,read>,
-			DxDzBuffer: ptr<storage,array<vec2<f32>>,read_write>,
-			DyDxzBuffer: ptr<storage,array<vec2<f32>>,read_write>,
+			r_PingPong: ptr<storage,array<vec4<f32>>,read>,
+			rw_DxDz: ptr<storage,array<vec2<f32>>,read_write>,
+			rw_DyDxz: ptr<storage,array<vec2<f32>>,read_write>,
 			initBufferIndex: u32,
 			index: u32,
 			size: u32,
@@ -461,18 +511,18 @@ constructor(params) {
 			localId: vec3<u32>,
 		) -> void {
 			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
-			let input = pingpongBuffer[index].xy;
+			let input = r_PingPong[index].xy;
 			let output = input*(1.0-2.0*f32((pos.x+pos.y) % 2));
-			DxDzBuffer[index] = select(DxDzBuffer[index],output,initBufferIndex == 0u);
-			DyDxzBuffer[index] = select(DyDxzBuffer[index],output,initBufferIndex == 1u);
+			rw_DxDz[index] = select(rw_DxDz[index],output,initBufferIndex == 0u);
+			rw_DyDxz[index] = select(rw_DyDxz[index],output,initBufferIndex == 1u);
 		} 
 	`);
-	//- TexturesMerger ----------------------------------------------------------
+	//= 9. Textures Merger ======================================================
 	this.TexturesMergerWGSL = wgslFn(`
 		fn computeWGSL(
-			DxDzBuffer: ptr<storage,array<vec2<f32>>,read>,
-			DyDxzBuffer: ptr<storage,array<vec2<f32>>,read>,
-			writeDisplacement: texture_storage_2d<rgba16float,write>,
+			r_DxDz: ptr<storage,array<vec2<f32>>,read>,
+			r_DyDxz: ptr<storage,array<vec2<f32>>,read>,
+			w_DispMap: texture_storage_2d<rgba16float,write>,
 			size: u32,
 			lambda: f32,
 			workgroupSize: vec2<u32>,
@@ -481,16 +531,16 @@ constructor(params) {
 		) -> void {
 			let pos = workgroupSize.xy*workgroupId.xy+localId.xy;
 			let bufferIndex = pos.y*size+pos.x;
-			var x = DxDzBuffer[bufferIndex];
-			var y = DyDxzBuffer[bufferIndex];
-			textureStore(writeDisplacement,pos,vec4f(lambda*x.x,y.x,lambda*x.y,0));
+			var x = r_DxDz[bufferIndex];
+			var y = r_DyDxz[bufferIndex];
+			textureStore(w_DispMap,pos,vec4f(lambda*x.x,y.x,lambda*x.y,0));
 		}
 	`);
-	//-	Normal Map (Old) -------------------------------------------------------
+	//=	10. Normal Map (Old) ====================================================
 	this.computeNormalMapWGSL = wgslFn(`
 		fn computeWGSL(
-			r_disp: texture_2d<f32>,
-			w_norm: texture_storage_2d<rgba32float,write>,
+			r_DispMap: texture_2d<f32>,
+			w_NormMap: texture_storage_2d<rgba32float,write>,
 			indx: u32,
 			size: f32,
 			gsiz: f32,
@@ -509,15 +559,15 @@ constructor(params) {
 			let texel: f32 = 1/size;
 			let texelSize: f32 = gsiz/size;
 			//
-			let ctr = vec3<f32>(textureLoad(r_disp,idx,0).xyz);
+			let ctr = vec3<f32>(textureLoad(r_DispMap,idx,0).xyz);
 			let idxR = vec2<u32>(idxf+vec2<f32>(texel,0));
-			let rgt = vec3<f32>(vec3<f32>(texelSize,0,0)+textureLoad(r_disp,idxR,0).xyz)-ctr;
+			let rgt = vec3<f32>(vec3<f32>(texelSize,0,0)+textureLoad(r_DispMap,idxR,0).xyz)-ctr;
 			let idxL = vec2<u32>(idxf+vec2<f32>(-texel,0));
-			let lft = vec3<f32>(vec3<f32>(-texelSize,0,0)+textureLoad(r_disp,idxL,0).xyz)-ctr;
+			let lft = vec3<f32>(vec3<f32>(-texelSize,0,0)+textureLoad(r_DispMap,idxL,0).xyz)-ctr;
 			let idxT = vec2<u32>(idxf+vec2<f32>(0,-texel));
-			let top = vec3<f32>(vec3<f32>(0,0,-texelSize)+textureLoad(r_disp,idxT,0).xyz)-ctr;
+			let top = vec3<f32>(vec3<f32>(0,0,-texelSize)+textureLoad(r_DispMap,idxT,0).xyz)-ctr;
 			let idxB = vec2<u32>(idxf+vec2<f32>(0,texel));
-			let bot = vec3<f32>(vec3<f32>(0,0,texelSize)+textureLoad(r_disp,idxB,0).xyz)-ctr;
+			let bot = vec3<f32>(vec3<f32>(0,0,texelSize)+textureLoad(r_DispMap,idxB,0).xyz)-ctr;
 			//
 			let topRgt = vec3<f32>(cross(rgt,top));
 			let topLft = vec3<f32>(cross(top,lft));
@@ -526,16 +576,22 @@ constructor(params) {
 			var nrm3 = vec3<f32>(normalize(topRgt+topLft+botLft+botRgt));
 			//
 			nrm3 = vec3<f32>(nrm3)*0.5+0.5;
-			textureStore(w_norm,pos,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
+			textureStore(w_NormMap,pos,vec4f(nrm3.x,nrm3.z,nrm3.y,1));
 		}
 	`);
 
-//= INITIALIZE (continue) =======================================================
+	/****************************************************************************
+	*
+	*	CLASS INITIALIZE (continued)
+	*
+	****************************************************************************/
+
+	//= INITIALIZE COMPUTE BUFFERS ==============================================
 
 	//- Initial Spectrum --------------------------------------------------------
 	this.initialSpectrum = this.InitialSpectrumWGSL({ 
-		spectrumBuffer: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
-		waveDataBuffer: storage(this.waveDataBuffer,'vec4',this.waveDataBuffer.count),
+		w_Spectrum: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
+		w_WaveData: storage(this.waveDataBuffer,'vec4',this.waveDataBuffer.count),
 		index: instanceIndex,
 		size: this.size,
 		waveLength: params.waveLength,
@@ -565,37 +621,43 @@ constructor(params) {
 		d_fadeLimit: params.d_fadeLimit,	
 	}).compute(this.sqSize);
 	params.renderer.compute(this.initialSpectrum);
+	
 	//- Initial Spectrum with Inverse -------------------------------------------
 	this.initialSpectrumWithInverse = this.InitialSpectrumWithInverseWGSL({ 
-		spectrumBuffer: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
+		rw_Spectrum: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
 		index: instanceIndex,
 		size: this.size,
 	}).compute(this.sqSize);
 	params.renderer.compute(this.initialSpectrumWithInverse);
+	
 	//- Butterfly ---------------------------------------------------------------
 	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
 	this.butterfly = this.butterflyWGSL({ 
-		butterflyBuffer: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count),
+		w_Btrfly: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count),
 		index: instanceIndex,
 		N: this.size,
 	}).compute(Math.log2(this.size)*this.size);
 	params.renderer.compute(this.butterfly);
+	
+	//= UPDATE COMPUTE BUFFERS ==================================================
+	
 	// TimeSpectrum -------------------------------------------------------------
 	this.computeTimeSpectrum = this.TimeSpectrumWGSL({
-		spectrumBuffer: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
-		waveDataBuffer: storage(this.waveDataBuffer,'vec4',this.waveDataBuffer.count),
-		writeDxDzBuffer: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count),
-		writeDyDxzBuffer: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count),
+		r_Spectrum: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
+		r_WaveData: storage(this.waveDataBuffer,'vec4',this.waveDataBuffer.count),
+		w_DxDz: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count),
+		w_DyDxz: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count),
 		index: instanceIndex,
 		size: uint(params.size),
 		time: uniform(0)
 	}).computeKernel(this.workgroupSize);
+	
 	// IFFT_Initialize ----------------------------------------------------------
 	this.computeInitialize = this.IFFT_InitWGSL({ 
-		butterflyBuffer: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
-		DxDzBuffer: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count).toReadOnly(),
-		DyDxzBuffer: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count).toReadOnly(),
-		pingpongBuffer: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count),
+		r_Btrfly: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
+		r_DxDz: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count).toReadOnly(),
+		r_DyDxz: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count).toReadOnly(),
+		w_PingPong: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count),
 		index: instanceIndex,
 		size: uint(params.size),
 		initBufferIndex: uint(this.DDindex),
@@ -604,11 +666,12 @@ constructor(params) {
 		workgroupSize: uniform(new Vector2().fromArray(this.workgroupSize)),
 		workgroupId: workgroupId,
 		localId: localId			
-	}).computeKernel(this.workgroupSize); 
+	}).computeKernel(this.workgroupSize);
+	
 	// IFFT_Horizontal ----------------------------------------------------------
 	this.computeHorizontalPingPong = this.IFFT_HorizontalWGSL({ 
-		butterflyBuffer: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
-		pingpongBuffer: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count),
+		r_Btrfly: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
+		rw_PingPong: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count),
 		index: instanceIndex,
 		size: uint(params.size),
 		initBufferIndex: uint(this.DDindex),
@@ -619,10 +682,11 @@ constructor(params) {
 		workgroupId: workgroupId,
 		localId: localId
 	}).computeKernel(this.workgroupSize);
+	
 	// IFFT_Vertical ------------------------------------------------------------
 	this.computeVerticalPingPong = this.IFFT_VerticalWGSL({
-		butterflyBuffer: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
-		pingpongBuffer: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count),
+		r_Btrfly: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
+		rw_PingPong: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count),
 		index: instanceIndex,
 		size: uint(params.size),
 		initBufferIndex: uint(this.DDindex),
@@ -633,11 +697,12 @@ constructor(params) {
 		workgroupId: workgroupId,
 		localId: localId
 	}).computeKernel(this.workgroupSize);
+	
 	// IFFT_Permute -------------------------------------------------------------
 	this.computePermute = this.IFFT_PermuteWGSL({ 
-		pingpongBuffer: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count).toReadOnly(),
-		DxDzBuffer: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count),
-		DyDxzBuffer: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count),
+		r_PingPong: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count).toReadOnly(),
+		rw_DxDz: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count),
+		rw_DyDxz: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count),
 		index: instanceIndex,
 		size: uint(params.size),
 		initBufferIndex: uint(this.DDindex),
@@ -645,21 +710,25 @@ constructor(params) {
 		workgroupId: workgroupId,
 		localId: localId
 	}).computeKernel(this.workgroupSize);
+
+	//= UPDATE TEXTURE BUFFERS ==================================================
+	
 	// TexturesMerge ------------------------------------------------------------
 	this.computeMergeTextures = this.TexturesMergerWGSL({ 
-		DxDzBuffer: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count).toReadOnly(),
-		DyDxzBuffer: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count).toReadOnly(),
-		writeDisplacement: textureStore(this.displacement),
+		r_DxDz: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count).toReadOnly(),
+		r_DyDxz: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count).toReadOnly(),
+		w_DispMap: textureStore(this.displacement),
 		size: uint(params.size),
 		lambda: uniform(params.lambda),
 		workgroupSize: uniform(new Vector2().fromArray(this.workgroupSize)),
 		workgroupId: workgroupId,
 		localId: localId
 	}).computeKernel(this.workgroupSize);
+	
 	//- Normal Map --------------------------------------------------------------
 	this.computeNormalMap = this.computeNormalMapWGSL({
-		r_disp: texture(this.displacement),
-		w_norm: textureStore(this.normMapTexture),
+		r_DispMap: texture(this.displacement),
+		w_NormMap: textureStore(this.normMapTexture),
 		indx: instanceIndex,
 		size: this.size,
 		gsiz: params.gsiz,
@@ -671,39 +740,44 @@ constructor(params) {
 // End of Initialization
 };
 
-//= UPDATE CLASS (called by Main Program) =======================================
+/********************************************************************************
+*
+*	UPDATE CLASS
+*
+********************************************************************************/
 
 update(dt) {
 	const timeOffset = 1000;
 	this.computeTimeSpectrum.computeNode.parameters.time.value = timeOffset+performance.now()/1000;
-	this.params_.renderer.compute(this.computeTimeSpectrum, this.dispatchSize);
+	this.params_.renderer.compute(this.computeTimeSpectrum,this.dispatchSize);
 	this.IFFT(0);				//DxDz
 	this.IFFT(1);				//DyDxz
-	this.params_.renderer.compute(this.computeMergeTextures, this.dispatchSize);
-	this.params_.renderer.compute(this.computeNormalMap, this.dispatchSize);
+	this.params_.renderer.compute(this.computeMergeTextures,this.dispatchSize); //compute Displacement Map
+	this.params_.renderer.compute(this.computeNormalMap,this.dispatchSize); // compute Normal Map
 };
 
+//=	Ping Pong Computation =======================================================
 IFFT(index) {
 	this.DDindex.value = index;
 	let pingpong = true;
 	this.ifftStep.value = 0;
-	this.params_.renderer.compute(this.computeInitialize, this.dispatchSize);
+	this.params_.renderer.compute(this.computeInitialize,this.dispatchSize);
 	for(let i = 1; i < this.logN; i++){
 		pingpong = !pingpong;
 		this.ifftStep.value = i;
 		this.pingpong.value = pingpong ? 1 : 0;
-		this.params_.renderer.compute(this.computeHorizontalPingPong, this.dispatchSize);
+		this.params_.renderer.compute(this.computeHorizontalPingPong,this.dispatchSize);
 	}
 	for(let i = 0; i < this.logN; i++){
 		pingpong = !pingpong;
 		this.ifftStep.value = i;
 		this.pingpong.value = pingpong ? 1 : 0;
-		this.params_.renderer.compute(this.computeVerticalPingPong, this.dispatchSize);
+		this.params_.renderer.compute(this.computeVerticalPingPong,this.dispatchSize);
 	}
 	this.params_.renderer.compute(this.computePermute, this.dispatchSize);
 };
 
-};	// End of Module
+};	// End Class
 
 /********************************************************************************
 *
