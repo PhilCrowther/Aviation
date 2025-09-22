@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 14 Sep 2025
+Version dated 22 Sep 2025
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
@@ -213,9 +213,6 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 	document.getElementById("YAWR").addEventListener("click", toglYawR, false);
 	// Window Resize
 	window.addEventListener("resize", onWindowResize, false);
-//- Clock
-let clock = new THREE.Clock();
-let dt = uniform(0);
 //- Loading Manager
 let loadingManager = new THREE.LoadingManager();
 let RESOURCES_LOADED = false;
@@ -641,8 +638,6 @@ async function initAll() {
 		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(StatOn.dom);
 	}
-	dt = clock.getElapsedTime(); // Initialize Clock
-	dt = clock.getDelta();
 	LodFlg = 1;
 }
 
@@ -660,8 +655,7 @@ function rendAll() {
 		// Move Objects
 		moveAirObj();			// Move aircaft
 		// Move Grids
-		dt = clock.getDelta();
-		waves.update(dt); 		// Move Ocean
+		waves.update(); 		// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update();			// MoveGrids
 		// Other

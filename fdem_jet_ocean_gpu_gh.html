@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 14 Sep 2025
+Version dated 22 Sep 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -183,9 +183,6 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 	document.getElementById("YAWR").addEventListener("click", toglYawR, false);
 	// Window Resize
 	window.addEventListener("resize", onWindowResize, false);
-//- Clock
-let clock = new THREE.Clock();
-let dt = uniform(0);
 //- Loading Manager
 	// Create a loading manager to set RESOURCES_LOADED when appropriate.
 	// Pass loadingManager to all resource loaders.
@@ -449,8 +446,6 @@ function initAll() {
 	initAirObj(air_);			// Load Aircraft
 	initJetExh();
 	prntHUDval(air_);
-	dt = clock.getElapsedTime(); // Initialize Clock
-	dt = clock.getDelta();
 	LodFlg = 1;
 }
 
@@ -460,8 +455,7 @@ function rendAll() {
 		// Move Things
 		moveAirObj(air_);
 		grd_.MSP.copy(air_.MapSPS);
-		dt = clock.getDelta();
-		if (waves) waves.update(dt); // Move Ocean
+		if (waves) waves.update(); // Move Ocean
 		grids.update();			// Move Grids
 		if (StatOn) StatOn.update(); // update stats
 	}
