@@ -17,7 +17,7 @@ and is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.
 
 import {FloatType,HalfFloatType,LinearFilter,LinearMipMapLinearFilter,RepeatWrapping,Vector2,
 } from 'three';
-import {float,vec2,vec4,wgslFn,texture,
+import {float,vec2,vec4,wgslFn,texture, time,
 		uniform,instanceIndex,storage, // wave-generator, initial-spectrum and wave-cascade
 		textureStore,uint,workgroupId,localId, // wave-cascade
 } from 'three/tsl';
@@ -94,7 +94,7 @@ constructor(params) {
 	this.DDindex = uniform(0);
 	this.ifftStep = uniform(0);
 	this.pingpong = uniform(0);
-	this.deltaTime = uniform(0);
+//	this.deltaTime = uniform(0);
 	//- Workgroup Variables -----------------------------------------------------
 	this.workgroupSize = [16,16,1];
 	this.dispatchSize = [this.size/this.workgroupSize[0],this.size/this.workgroupSize[1]];
@@ -746,7 +746,7 @@ constructor(params) {
 *
 ********************************************************************************/
 
-update(dt) {
+update() {
 	const timeOffset = 1000;
 	this.computeTimeSpectrum.computeNode.parameters.time.value = timeOffset+performance.now()/1000;
 	this.params_.renderer.compute(this.computeTimeSpectrum,this.dispatchSize);
