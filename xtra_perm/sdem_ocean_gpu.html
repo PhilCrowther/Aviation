@@ -39,7 +39,13 @@ import Stats from "stats-gl";
 //- Custom Modules
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
 
-/*= VARIABLES ================================================================*/
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
+
+//= GENERAL ====================//===============================================
 //-	Math Predefined
 let	DegRad = Math.PI/180;		// Convert Degrees to Radians
 let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
@@ -94,9 +100,6 @@ let	controls = new OrbitControls(camera,renderer.domElement);
 //- Inputs
 	document.addEventListener("keydown",onDocumentKeyDown,false);
 	window.addEventListener("resize",onWindowResize,false);
-//- Clock
-let clock = new THREE.Clock();
-let dt = uniform(0);
 //- Loading Manager
 	// Create a loading manager to set RESOURCES_LOADED when appropriate.
 	// Pass loadingManager to all resource loaders.
@@ -181,10 +184,16 @@ let Cam_HdgNode = document.createTextNode("");
 	Cam_HdgElement.appendChild(Cam_HdgNode);
 let Cam_Alt,Cam_Hdg;
 
-//= MAIN PROGRAM ================================================================
+/********************************************************************************
+*
+*	MAIN PROGRAM
+*
+********************************************************************************/
+
 	loadAll();
 
 //= 0 LOAD ALL ==================================================================
+
 function loadAll() {
 	loadSkyBox();
 	loadOceans();
@@ -201,14 +210,14 @@ function loadAll() {
 }
 
 //= 1 INITIALIZE ===============//===============================================
+
 function initAll() {
 	initOceans(); // Initialize Ocean
-	dt = clock.getElapsedTime(); // Init Clock
-	dt = clock.getDelta();
 	LodFlg = 1;
 }
 
 //= 2 RENDER ===================//===============================================
+
 function rendAll() {
 //	requestAnimationFrame(rendAll);	
 	if (!PawsOn && LodFlg) {
@@ -216,8 +225,7 @@ function rendAll() {
 		if(camera.position.y < 0.0) {
 			camera.position.y = 2.0;
 		}
-		dt = clock.getDelta();
-		if (waves) waves.update(dt); // Move Ocean
+		if (waves) waves.update(); // Move Ocean
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval();
@@ -225,7 +233,11 @@ function rendAll() {
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-//= SKY BOX =====================================================================
+/********************************************************************************
+*
+*	SKY BOX
+*
+********************************************************************************/
 
 function loadSkyBox() {
 	let envMap = cubeLoader
@@ -236,7 +248,13 @@ function loadSkyBox() {
 	scene.background = envMap;
 }
 
-//= OCEANS =====================//===============================================
+/********************************************************************************
+*
+*	OCEANS
+*
+********************************************************************************/
+
+//=	LOAD ========================================================================
 
 function loadOceans() {
 	//- Diffuse Texture
@@ -261,22 +279,21 @@ function loadOceans() {
 	});
 }
 
+//= INITIALIZE =================//===============================================
+
 function initOceans() {
 	waves = new Ocean(wav_);
 	WtrGeo = new THREE.PlaneGeometry(GrdSiz,GrdSiz,GrdSeg,GrdSeg);	
 	WtrGeo.rotateX(-Math.PI*0.5);
 	WtrMat = new THREE.MeshStandardNodeMaterial({
-//		colorNode: color(WtrCol), // Water Color Only
 		colorNode: texture(DifTxt), // Diffuse Color Only
-//		colorNode: color(WtrCol).add (texture(DifTxt)), // Water Color + Diffuse Color
-//		colorNode: color(WtrCol).add (texture(DifTxt)), // Water Color * Diffuse Color
 		metalness: 0.5,
 		roughness: 0.1,
 		roughnessMap: RufMap,	// Not a texture
 		positionNode: positionLocal.add(texture(waves.displacement)),
-		normalNode: normalMap(texture(waves.normMapTexture),new THREE.Vector2(1.0,1.0)),	// Animated texture
+		normalNode: normalMap(texture(waves.normMapTexture),new THREE.Vector2(1.0,1.0)), // Animated map
 		envMap: scene.background,
-		envMapIntensity: 1,
+		envMapIntensity: 0.5,
 	});
 
 	// Compute Starting Z and X Values
@@ -299,18 +316,26 @@ function initOceans() {
 	}
 }
 
-//= MISC SUBROUTINES ===========//===============================================
+/********************************************************************************
+*
+*	MISC SUBROUTINES
+*
+********************************************************************************/
 
-//- Converts degrees to 360
+//= Converts degrees to 360 ====//===============================================
 function Mod360(deg) {
 	while (deg < 0) deg = deg+360;	// Make deg a positive number
 	deg = deg % 360;			// Compute remainder of any number divided by 360
 return deg;}
 
+/********************************************************************************
+*
+*	OUTPUTS
+*
+********************************************************************************/
 
-//= OUTPUTS ====================//===============================================
+//= Print HUD Values ===========//===============================================
 
-// Print HUD Values
 function prntHUDval() {
 	CamLat = controls.getPolarAngle();
 	CamLat = 90-CamLat*RadDeg;
@@ -325,9 +350,13 @@ function prntHUDval() {
 	Cam_HdgNode.nodeValue = Cam_Hdg.toFixed(0);
 }
 
-//= INPUTS =====================//===============================================
+/********************************************************************************
+*
+*	INPUTS
+*
+********************************************************************************/
 
-//- Keyboard --------------------------------------------------------------------
+//= Keyboard ====================================================================
 
 //- Key Down
 function onDocumentKeyDown(event) {
@@ -364,7 +393,8 @@ function toggleWire() {
 	}
 }
 
-//- Window Resize Input ---------------------------------------------------------
+//= Window Resize Input =========================================================
+
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
