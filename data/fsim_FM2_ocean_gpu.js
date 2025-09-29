@@ -255,9 +255,9 @@ let txt_ = {
 let isl_ = {
 		ObjNum: 2,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
-				 "https://PhilCrowther.github.io/Aviation/scenery/models/giaros2.glb"],
+				 "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
 		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.png",
-				 "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros_2.png"],
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png"],
 		ObjAdr: [],
 		ObjSiz: [MtrMil,1.5*MtrMil], // Scale
 		RndOrd: [0,0],			// renderOrder (not used)
