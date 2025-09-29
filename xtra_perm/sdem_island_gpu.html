@@ -177,7 +177,7 @@ let wav_ = {
 
 //= Island ======================================================================
 let	IslMsh = "https://PhilCrowther.github.io/Aviation/scenery/models/giaros2.glb";	// Cut-out Mesh
-let	IslTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros_2.png";	// Texture (Nontransparent)
+let	IslTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros2.png";	// Texture (Nontransparent)
 let	IslNrm = "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros_nm.png";	// Normal map
 let	IslPtr= 0;
 
@@ -336,11 +336,11 @@ function initOceans() {
 //= Load Island ================//===============================================
 function loadIsland() {
 	IslTxt = txtrLoader.load(IslTxt);
-	IslNrm = txtrLoader.load(IslNrm);
+//	IslNrm = txtrLoader.load(IslNrm);
 //	let IslMat = new THREE.MeshLambertNodeMaterial({colorNode: texture(IslTxt), transparent: true});
 	let IslMat = new THREE.MeshLambertNodeMaterial({
 		colorNode: texture(IslTxt),
-		normalNode: normalMap(texture(IslNrm),new THREE.Vector2(1.0,1.0)),
+//		normalNode: normalMap(texture(IslNrm),new THREE.Vector2(1.0,1.0)),
 	});
 	gltfLoader.load(IslMsh,
 		function (gltf) {		// OnLoad function
@@ -349,11 +349,7 @@ function loadIsland() {
 				if (child.isMesh) child.material = IslMat;				
 			});
 			IslPtr= gltf.scene;
-			let s = Mtr2KM;		// 1 meter = 1 km
-			IslPtr.scale.set(s,s,s);
-//			IslPtr.renderOrder = 0;	// No reason to set since default = 0
-//			IslPtr.position.set(0,3,0); // Up
-//			IslPtr.position.set(0,-7,0); // Down (giaros mesh)
+			IslPtr.scale.setScalar(Mtr2KM);
 			IslPtr.position.set(0,-25,0); // Down (giaros2 mesh)
 			scene.add(IslPtr);
 		},
