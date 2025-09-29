@@ -264,6 +264,7 @@ let isl_ = {
 		ObjRot: [0,0],			// Rotation
 		MapPos: [0,0],			// Absolute Position
 		ObjGrp: [0,0],			// Group
+		AltMul: [0.99,1]		// Altitude Adjustment // ### 250929
 	};
 //- Static Objects -------------//----------------------------------------------
 //- 0 = Hangar;
