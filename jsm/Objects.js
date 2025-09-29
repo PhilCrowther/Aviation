@@ -1,5 +1,5 @@
 /*
- * Objects.js (vers 25.08.10)
+ * Objects.js (vers 25.09.29)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -94,7 +94,8 @@ function moveIsland(isl_,air_,gen_) {
 		// Compute New Relative Position
 		// (cause Islands to elevate above water as we climb to prevent flicker)
 		X = isl_.MapPos[i].x-air_.MapPos.x;
-		Y = isl_.MapPos[i].y-gen_.AltDif;
+//		Y = isl_.MapPos[i].y-gen_.AltDif;
+		Y = isl_.MapPos[i].y-(air_.MapPos.y*isl_.AltMul[i]); // 250929
 		Z = air_.MapPos.z-isl_.MapPos[i].z;
 		isl_.ObjGrp[i].position.set(X,Y,Z);
 	}
@@ -567,4 +568,5 @@ export {loadIsland,initIsland,moveIsland,
 250528: Added animations to loadMyCrew/moveMyCrew
 250529: Marged this Objects Module with Vehicles Module
 250810: No Rep of Plane Handler sequence
+250929:	Make AltMul for Islands Optional
 */
