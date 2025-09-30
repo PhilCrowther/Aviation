@@ -35,7 +35,6 @@ import {
 	// People
 	AnimationClip,
 	AnimationMixer,
-	Vector3,
 } from 'three';
 
 import {color,texture} from "three/tsl";
