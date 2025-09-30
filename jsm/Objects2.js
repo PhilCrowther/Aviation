@@ -132,7 +132,7 @@ function moveFxdObj(fxd_,air_,gen_) {
 	let AltAdj = gen_.AltDif*0.01;
 	// Change Altitude on Linked Objects to Prevent Flicker
 	for (let i = 0; i < fxd_.ObjNum; i++) {
-		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y + AltAdj;
+		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y+AltAdj+fxd_.VrtAdj[i];
 	}
 }
 
