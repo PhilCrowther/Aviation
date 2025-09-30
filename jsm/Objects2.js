@@ -22,6 +22,8 @@ This currently includes mountains/islands, and also fixed and animated objects a
 
 import {
 	// Common
+	Vector2,
+	Vector3,
 	MeshLambertNodeMaterial,
 	// Flag
 	DoubleSide,
@@ -47,6 +49,8 @@ import {color,texture} from "three/tsl";
 //= CONSTANTS ==================//===============================================
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const FlgSiz = new Vector2(30,16); // Standard Flag Dimensions
+const FlgSeg = new Vector2(30,16); // Standard Flag Segments
 
 /********************************************************************************
 *
@@ -145,9 +149,8 @@ function moveFxdObj(fxd_,air_,gen_) {
 
 //=	LOAD AND INITIALIZE FLAGS ==//===============================================
 function loadAnmFlg(txtrLoader,flg_) {
-	let FlgSiz = new THREE.Vector2(30,16); // Standard Dimensions
-	let FlgSeg = new THREE.Vector2(30,16); // Standard Segments
-	let FlgGeo = new PlaneGeometry(FlgSiz.x,FlgSiz.y,FltSeg.x,FltSeg.y); // Standard Dimensions and Segments
+	let FlgGeo = new PlaneGeometry(FlgSiz.x,FlgSiz.y,FlgSeg.x,FlgSeg.y); // Standard Dimensions and Segments
+	let FlgMat;
 	// For Each Flag
 	for (let n = 0; n < flg_.ObjNum; n++) {
 		txtrLoader.load(flg_.ObjTxt[n], function(FlgTxt) {
@@ -156,7 +159,7 @@ function loadAnmFlg(txtrLoader,flg_) {
 			FlgTxt.minFilter = LinearMipMapLinearFilter;
 			FlgTxt.generateMipmaps = true;
 			FlgTxt.needsUpdate = true;
-			let flgMat = new MeshLambertNodeMaterial({colorNode: texture(FlgTxt), side: DoubleSide});
+			flgMat = new MeshLambertNodeMaterial({colorNode: texture(FlgTxt), side: DoubleSide});
 			flg_.ObjSrc[n] = FlgGeo;
 			flg_.ObjSrc[n].rotateY(180*DegRad);
 			flg_.ObjAdr[n] = new Mesh(flg_.ObjSrc[n],flgMat);
@@ -171,28 +174,24 @@ function loadAnmFlg(txtrLoader,flg_) {
 
 //=	MOVE FLAG MESHES ===========//===============================================
 function moveAnmFlg(flg_,tim_) {
-	let FlgSeg = new THREE.Vector2(30,16); // Standard Segments
+	let flgSeg = new Vector2(FlgSeg.x+1,FlgSeg.y+1); // Standard Flag Segments + 1
 	for (let n = 0; n < flg_.ObjNum; n++) {
-		let flgSgX = FlgSeg.x;	// Segments X
-		let flgSgY = FlgSeg.y;	// Segments Y
 		// Get Distance to Parent Object
-		let flgPsX = Math.abs(flg_.ObjAdr[n].position.x);
-		let flgPsY = Math.abs(flg_.ObjAdr[n].position.y);
-		let flgPsZ = Math.abs(flg_.ObjAdr[n].position.z);
+		let flgPos = new Vector3(Math.abs(flg_.ObjAdr[n].position.x),
+								 Math.abs(flg_.ObjAdr[n].position.y),
+								 Math.abs(flg_.ObjAdr[n].position.z))
 		let MinDst = flg_.ObjDst[n];
 		// Only Animate if Within Min Distance to Parent Object
-		if (flgPsX < MinDst && flgPsY < MinDst && flgPsZ < MinDst) {
-			flgSgX = flgSgX+1;
-			flgSgY = flgSgY+1;		
+		if (flgPos.x < MinDst && flgPos.y < MinDst && flgPos.z < MinDst) {
 			let h = 0.5; 		// Horizontal
 			let v = 0.3; 		// Vertical
 			let w = 0.075; 		// Swing
 			let s = 400; 		// Speed
 			let idx,val;
 			let tim = tim_.NowTim*s/50;	
-			for (let y = 0; y < flgSgY; y++) {
-				for (let x = 0; x < flgSgX; x++) {
-	            	idx = x + y*(flgSgX);
+			for (let y = 0; y < flgSeg.y; y++) {
+				for (let x = 0; x < flgSeg.x; x++) {
+	            	idx = x + y*(flgSeg.x);
 					val = Math.sin(h*x+v*y-tim)*w*x/4;
 					flg_.ObjSrc[n].attributes.position.setZ(idx,val);
 	            }
