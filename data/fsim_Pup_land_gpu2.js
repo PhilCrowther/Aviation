@@ -249,6 +249,7 @@ let fxd_ = {
 		ObjRot: [0],			// Rotation
 		MapPos: [0],			// Relative Position
 		ObjRef: [0],			// Parent
+		VrtAdj: [-mnt_.VrtAdj[0]] // Vertical Adjustment // ### 250930
 	};
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================

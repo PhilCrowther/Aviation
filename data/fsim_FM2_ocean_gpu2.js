@@ -279,6 +279,7 @@ let fxd_ = {
 		ObjRot: [0],			// Rotation
 		MapPos: [0],			// Relative Position
 		ObjRef: [0],			// Parent
+		VrtAdj: [0],			// Vertical Adjustment
 	};
 
 //= MOVING OBJECTS =============//==============================================
