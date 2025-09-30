@@ -35,6 +35,7 @@ import {
 	// People
 	AnimationClip,
 	AnimationMixer,
+
 } from 'three';
 
 import {color,texture} from "three/tsl";
@@ -158,7 +159,7 @@ function loadAnmFlg(txtrLoader,flg_) {
 			FlgTxt.minFilter = LinearMipMapLinearFilter;
 			FlgTxt.generateMipmaps = true;
 			FlgTxt.needsUpdate = true;
-			flgMat = new MeshLambertNodeMaterial({colorNode: texture(FlgTxt), side: DoubleSide});
+			FlgMat = new MeshLambertNodeMaterial({colorNode: texture(FlgTxt), side: DoubleSide});
 			flg_.ObjSrc[n] = FlgGeo;
 			flg_.ObjSrc[n].rotateY(180*DegRad);
 			flg_.ObjAdr[n] = new Mesh(flg_.ObjSrc[n],flgMat);
