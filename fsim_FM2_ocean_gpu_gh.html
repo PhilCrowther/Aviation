@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 22 Sep 2025
+Version dated 29 Sep 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -370,7 +370,8 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //- Islands --------------------//-----------------------------------------------
 //	Adjustments
 	isl_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation
-	isl_.MapPos = [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)];
+//	isl_.MapPos = [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)];
+	isl_.MapPos = [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,-15,2440)]; // 250929 Sink giaros by 25
 	isl_.ObjGrp = [new THREE.Object3D,new THREE.Object3D]; // Group
 //- Static Objects -------------//-----------------------------------------------
 //	Adjustments
@@ -803,12 +804,14 @@ function initStatic() {
 	initIsland(isl_,air_,gen_);
 	initVlkSmk();				// Load Volcano Smoke
 	if (fxd_.ObjNum) initFxdObj(fxd_,air_,gen_);	
+//	isl_.ObjGrp[1].position.y -25; // Adjust giaros mesh down ### 250929
 //	initHgrFyr();				// Load Hangar Fire (needs more work)
 }
 
 function moveStatic() {
 	moveIsland(isl_,air_,gen_);
 	if (fxd_.ObjNum) moveFxdObj(fxd_,air_,gen_);
+//	isl_.ObjGrp[1].position.y = isl_.ObjGrp[1].position.y - 25; // Adjust giaros mesh down ### 250929
 }
 
 //- Moving Objects -------------//----------------------------------------------
