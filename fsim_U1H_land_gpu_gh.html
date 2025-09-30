@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Sep 2025
+Version dated 29 Sep 2025
 
 A flight simulation of an animated airplane model over procedural land using
 -->
@@ -462,7 +462,7 @@ let ObjIdx = 0;
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb";
 	ObjTxt[ObjIdx] = 0; 	
 	ObjMPX[ObjIdx] = 1000;		// [m]
-	ObjMPY[ObjIdx] = 0.3048;	// [m] 1 ft
+	ObjMPY[ObjIdx] = Ft2Mtr;	// [m] 1 ft
 	ObjMPZ[ObjIdx] = 1524;		// [m] 5000 ft
 	ObjIdx = ObjIdx + 1;
 //- Giaros Island
@@ -471,7 +471,8 @@ let ObjIdx = 0;
 	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb";
 	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png";
 	ObjMPX[ObjIdx] = -1609.344;	// [m] 1 mile
-	ObjMPY[ObjIdx] = 2*Ft2Mtr;	// [m] 2 ft
+//	ObjMPY[ObjIdx] = 2*Ft2Mtr;	// [m] 2 ft
+	ObjMPY[ObjIdx] = -50;		// [m]
 	ObjMPZ[ObjIdx] = 8046.72;	// [m] 5 miles
 //= MY AIRPLANE ================//==============================================
 let dat_ = {
