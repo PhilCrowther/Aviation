@@ -1,5 +1,5 @@
 /*
- * Objects.js (vers 25.09.29)
+ * Objects.js (vers 25.09.30)
  * Copyright 2022-2025, Phil Crowther
  * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 */
@@ -11,14 +11,14 @@
  */
 
 /* NOTES:
-This currently includes islands, and also fixed and animated objects attached to the scenery
+This currently includes mountains/islands, and also fixed and animated objects attached to the scenery
 */
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	IMPORTS
 *
-*******************************************************************************/
+********************************************************************************/
 
 import {
 	// Common
@@ -38,33 +38,33 @@ import {
 
 import {color,texture} from "three/tsl";
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	VARIABLES
 *
-*******************************************************************************/
+********************************************************************************/
 
-//= CONSTANTS ==================//==============================================
+//= CONSTANTS ==================//===============================================
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 
-/*******************************************************************************
+/********************************************************************************
 *
-*	ISLANDS
+*	MOUNTAINS/ISLANDS
 *
-*******************************************************************************/
+********************************************************************************/
 
-//=	LOAD ISLANDS ===============//==============================================
-function loadIsland(scene,isl_,air_,gen_,txtrLoader,gltfLoader) {
-	for (let i = 0; i < isl_.ObjNum; i++) {
-		isl_.ObjGrp[i].position.copy(isl_.MapPos[i]);
-		scene.add(isl_.ObjGrp[i]);
+//=	LOAD MOUNTAINS/ISLANDS ===============//=====================================
+function loadMountn(scene,mnt_,air_,txtrLoader,gltfLoader) {
+	for (let i = 0; i < mnt_.ObjNum; i++) {
+		mnt_.ObjGrp[i].position.copy(mnt_.MapPos[i]);
+		scene.add(mnt_.ObjGrp[i]);
 	}
-	for (let i = 0; i < isl_.ObjNum; i++) {
-	// Transparent Island Objects
-		txtrLoader.load(isl_.ObjTxt[i], function (IslTxt) {	
+	for (let i = 0; i < mnt_.ObjNum; i++) {
+	// Mountain/Island Objects (Transparent for now)
+		txtrLoader.load(mnt_.ObjTxt[i], function (IslTxt) {	
 			let mat = new MeshLambertNodeMaterial({colorNode: texture(IslTxt), transparent: true});
-			gltfLoader.load(isl_.ObjSrc[i], function (gltf) {
+			gltfLoader.load(mnt_.ObjSrc[i], function (gltf) {
 				gltf.scene.traverse(function (child) {
 				// Note: Blender island must include a UV map
 					if (child.isMesh) {
@@ -72,42 +72,44 @@ function loadIsland(scene,isl_,air_,gen_,txtrLoader,gltfLoader) {
 						child.receiveShadow = true;
 					}
 				});
-				isl_.ObjAdr[i] = gltf.scene;
-				isl_.ObjAdr[i].scale.setScalar(isl_.ObjSiz[i]);
-				isl_.ObjAdr[i].rotation.copy(isl_.ObjRot[i]);
-				isl_.ObjGrp[i].add(isl_.ObjAdr[i]);
+				mnt_.ObjAdr[i] = gltf.scene;
+				mnt_.ObjAdr[i].scale.setScalar(mnt_.ObjSiz[i]);
+				mnt_.ObjAdr[i].rotation.copy(mnt_.ObjRot[i]);
+				mnt_.ObjGrp[i].add(mnt_.ObjAdr[i]);
 			});
 		});
 	}
 }
 
-//=	INIT ISLANDS ===============//==============================================
-function initIsland(isl_,air_,gen_) {
-	moveIsland(isl_,air_,gen_);
+//=	INIT MOUNTAINS/ISLANDS ===============//=====================================
+function initMountn(mnt_,air_) {
+	moveMountn(mnt_,air_);
 }
 
-//=	MOVE ISLANDS ===============//==============================================
+//=	MOVE MOUNTAINS/ISLANDS ===============//=====================================
 
-function moveIsland(isl_,air_,gen_) {
+function moveMountn(mnt_,air_) {
+//	Assumes that objects are at Sea Level
 	let X,Y,Z;
-	for (let i = 0; i < isl_.ObjNum; i ++) {
+	for (let i = 0; i < mnt_.ObjNum; i ++) {
 		// Compute New Relative Position
 		// (cause Islands to elevate above water as we climb to prevent flicker)
-		X = isl_.MapPos[i].x-air_.MapPos.x;
-//		Y = isl_.MapPos[i].y-gen_.AltDif;
-		Y = isl_.MapPos[i].y-(air_.MapPos.y*isl_.AltMul[i]); // 250929
-		Z = air_.MapPos.z-isl_.MapPos[i].z;
-		isl_.ObjGrp[i].position.set(X,Y,Z);
+		X = mnt_.MapPos[i].x-air_.MapPos.x;
+//		Y = mnt_.MapPos[i].y-gen_.AltDif;
+//		Y = mnt_.MapPos[i].y-(air_.MapPos.y*mnt_.AltMul[i]); // 250929
+		Y = mnt_.MapPos[i].y-(air_.MapPos.y*mnt_.AltMul[i])+mnt_.VrtAdj[i]; // 250930
+		Z = air_.MapPos.z-mnt_.MapPos[i].z;
+		mnt_.ObjGrp[i].position.set(X,Y,Z);
 	}
 }
 
-/*******************************************************************************
+/********************************************************************************
 *
-*	FIXED OBJECTS - Only Objects Attached to Islands (for Now)
+*	FIXED OBJECTS - Only Objects Attached to Mountains/Islands (for Now)
 *
-*******************************************************************************/
+********************************************************************************/
 
-//=	LOAD OBJECTS ===============//==============================================
+//=	LOAD OBJECTS ===============//===============================================
 function loadFxdObj(scene,fxd_,gltfLoader) {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
 		gltfLoader.load(fxd_.ObjSrc[i], function (gltf) {
@@ -120,33 +122,32 @@ function loadFxdObj(scene,fxd_,gltfLoader) {
 	}
 }
 
-//=	INIT OBJECTS ===============//==============================================
+//=	INIT OBJECTS ===============//===============================================
 function initFxdObj(fxd_,air_,gen_) {
 	moveFxdObj(fxd_,air_,gen_);
 }
 
-//=	MOVE OBJECTS ===============//==============================================
+//=	MOVE OBJECTS ===============//===============================================
 function moveFxdObj(fxd_,air_,gen_) {
+	let AltAdj = gen_.AltDif*0.01;
 	// Change Altitude on Linked Objects to Prevent Flicker
 	for (let i = 0; i < fxd_.ObjNum; i++) {
-		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y + gen_.AltDif*0.01;
+		fxd_.ObjAdr[i].position.y = fxd_.MapPos[i].y+AltAdj+fxd_.VrtAdj[i];
 	}
 }
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	ANIMATED FLAGS
 *
-*******************************************************************************/
+********************************************************************************/
 //	Adapted from example at https://codepen.io/okada-web/pen/OJydGzy. Thanks!
 
-//=	LOAD AND INITIALIZE FLAGS ==//==============================================
+//=	LOAD AND INITIALIZE FLAGS ==//===============================================
 function loadAnmFlg(txtrLoader,flg_) {
-	let flgSzX = 30;			// Size X
-	let flgSzY = 16;			// Size Y
 	let flgSgX = 30;			// Segments X
 	let flgSgY = 16;			// Segments Y
-	let FlgGeo = new PlaneGeometry(flgSzX,flgSzY,flgSgX,flgSgY);
+	let FlgGeo = new PlaneGeometry(30,30,flgSgX,flgSgY); // SizX,SizY,SegX,SegY
 	// For Each Flag
 	for (let n = 0; n < flg_.ObjNum; n++) {
 		txtrLoader.load(flg_.ObjTxt[n], function(FlgTxt) {
@@ -168,7 +169,7 @@ function loadAnmFlg(txtrLoader,flg_) {
 	}
 }
 
-//=	MOVE FLAG MESHES ===========//==============================================
+//=	MOVE FLAG MESHES ===========//===============================================
 function moveAnmFlg(flg_,tim_) {
 //	let n = 0;
 	for (let n = 0; n < flg_.ObjNum; n++) {
@@ -206,14 +207,13 @@ function moveAnmFlg(flg_,tim_) {
 	}
 }
 
-
-/*******************************************************************************
+/********************************************************************************
 *
 *	AIRPLANES
 *
-*******************************************************************************/
+********************************************************************************/
 
-//=	LOAD AIRPLANES =============//==============================================
+//=	LOAD AIRPLANES =============//===============================================
 
 function loadXACVeh(gltfLoader,xac_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
@@ -247,7 +247,7 @@ function loadXACVeh(gltfLoader,xac_) {
 
 }
 
-//=	INIT AIRPLANES =============//==============================================
+//=	INIT AIRPLANES =============//===============================================
 
 function initXACVeh(xac_,air_,scene) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
@@ -261,16 +261,17 @@ function initXACVeh(xac_,air_,scene) {
 	};
 };
 
-//=	MOVE AIRPLANES ===============//============================================
+//=	MOVE AIRPLANES ===============//=============================================
 
+// No pathing yet
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	SHIPS
 *
-*******************************************************************************/
+********************************************************************************/
 
-//=	LOAD SHIPS =================//==============================================
+//=	LOAD SHIPS =================//===============================================
 
 function loadXSHVeh(gltfLoader,xsh_) {
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
@@ -297,7 +298,7 @@ function loadXSHVeh(gltfLoader,xsh_) {
 	}
 }
 
-//=	INIT SHIPS =================//==============================================
+//=	INIT SHIPS =================//===============================================
 
 function initXSHVeh(xsh_,air_,scene) {
 // Always use group
@@ -315,7 +316,7 @@ function initXSHVeh(xsh_,air_,scene) {
 	}
 }
 
-//=	MOVE SHIPS =================//==============================================
+//=	MOVE SHIPS =================//===============================================
 
 function moveXSHVeh(xsh_,air_) {
 	let X,Y,Z;
@@ -358,13 +359,13 @@ function moveXSHVeh(xsh_,air_) {
 	}
 };
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	RIGGED ANIMATED PEOPLE
 *
-*******************************************************************************/
+********************************************************************************/
 
-//= LOAD MY PEOPLE =============//==============================================
+//= LOAD MY PEOPLE =============//===============================================
 function loadMyPeep(gltfLoader,myp_) {
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
@@ -393,7 +394,7 @@ function loadMyPeep(gltfLoader,myp_) {
 	}
 }
 
-//= MOVE MY PEOPLE =============//==============================================
+//= MOVE MY PEOPLE =============//===============================================
 function moveMyPeep(myp_,tim_) {
 	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
@@ -401,11 +402,11 @@ function moveMyPeep(myp_,tim_) {
 	// For Each Character (n)
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		if (myp_.SegRef[n] != myp_.SegNum[n]) { // If Have Not Reached Max Segments
-			//= Play Animations ----//----------------------------------------------
+			//= Play Animations //-----------------------------------------------
 			if (myp_.ObjViz[n]) {	// If in Visual Range
 				// Set Position - AnmTim = time on timeline - setTime converts to position
 				myp_.AnmMxr[n].setTime(myp_.AnmTim[n]);
-				//. Update or Delay Counter .........................................
+				//. Update or Delay Counter .....................................
 				// If No Delay, Update Position Time
 				if (!myp_.DlyRem[n]) myp_.AnmTim[n] = myp_.AnmTim[n] + tim_.DifTim;
 				// If Delay, Don't Change Position Time
@@ -439,7 +440,7 @@ function moveMyPeep(myp_,tim_) {
 				}
 			}
 		}
-		//- Turn On or Off Based on Distance -----------------------------------
+		//- Turn On or Off Based on Distance ------------------------------------
 		// Get Distances
 		if (myp_.ObjRef[n]) { // If Linked
 			ObjRef = myp_.ObjRef[n];
@@ -461,13 +462,13 @@ function moveMyPeep(myp_,tim_) {
 	}
 }
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	ANIMATED PEOPLE (Not Rigged)
 *
-*******************************************************************************/
+********************************************************************************/
 
-//= LOAD MY CREW ===============//==============================================
+//= LOAD MY CREW ===============//===============================================
 function loadMyCrew(gltfLoader,myc_) {
 	let clip = 0;
 	for (let n = 0; n < myc_.ObjNum; n++) {
@@ -496,13 +497,13 @@ function loadMyCrew(gltfLoader,myc_) {
 	}
 }
 
-//= MOVE MY CREW ===============//==============================================
+//= MOVE MY CREW ===============//===============================================
 function moveMyCrew(myc_) {
 	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
 	for (let n = 0; n < myc_.ObjNum; n++) {
-		// Turn On or Off Based on Distance ------------------------------------
+		// Turn On or Off Based on Distance -------------------------------------
 		// Get Distances
 		if (myc_.ObjRef[n]) { // If Linked
 			ObjRef = myc_.ObjRef[n];
@@ -530,11 +531,11 @@ function moveMyCrew(myc_) {
 	}
 }
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	SUBROUTINES
 *
-*******************************************************************************/
+********************************************************************************/
 
 /* Converts degrees to 360 */
 function Mod360(deg) {
@@ -542,13 +543,13 @@ function Mod360(deg) {
 	deg = deg % 360;				 // Compute remainder of any number divided by 360
 return deg;}
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	EXPORTS
 *
-*******************************************************************************/
+********************************************************************************/
 
-export {loadIsland,initIsland,moveIsland,
+export {loadMountn,initMountn,moveMountn,
 		loadFxdObj,initFxdObj,moveFxdObj,
 		loadAnmFlg,moveAnmFlg,
 		loadXACVeh,initXACVeh,
@@ -557,11 +558,11 @@ export {loadIsland,initIsland,moveIsland,
 		loadMyCrew,moveMyCrew,
 	};
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	REVISIONS
 *
-*******************************************************************************/
+********************************************************************************/
 /*
 250405:	In development
 250523: Added loadMyCrew/moveMyCrew
@@ -569,4 +570,5 @@ export {loadIsland,initIsland,moveIsland,
 250529: Marged this Objects Module with Vehicles Module
 250810: No Rep of Plane Handler sequence
 250929:	Make AltMul for Islands Optional
+250930: Changed Islands to Mountains/Islands, load/init/move, isl_ to mnt_, added mnt_.VrtAdj
 */
