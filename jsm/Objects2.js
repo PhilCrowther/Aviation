@@ -162,7 +162,7 @@ function loadAnmFlg(txtrLoader,flg_) {
 			FlgMat = new MeshLambertNodeMaterial({colorNode: texture(FlgTxt), side: DoubleSide});
 			flg_.ObjSrc[n] = FlgGeo;
 			flg_.ObjSrc[n].rotateY(180*DegRad);
-			flg_.ObjAdr[n] = new Mesh(flg_.ObjSrc[n],flgMat);
+			flg_.ObjAdr[n] = new Mesh(FlgGeo,FlgMat);
 			flg_.ObjAdr[n].rotation.copy(flg_.ObjRot[n]);
 			flg_.ObjAdr[n].position.copy(flg_.MapPos[n]);
 			flg_.ObjAdr[n].scale.setScalar(flg_.ObjSiz[n]); // Height = 2 meters
