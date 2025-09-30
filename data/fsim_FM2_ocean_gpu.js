@@ -257,7 +257,7 @@ let mnt_ = {
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
 				 "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
 		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.png",
-				 "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png"],
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.jpg"],
 		ObjAdr: [],
 		ObjSiz: [MtrMil,1.5*MtrMil], // Scale
 		RndOrd: [0,0],			// renderOrder (not used)
@@ -381,6 +381,9 @@ let xsh_ = {
 //	Can attach to Ships or Flagpoles
 let	flg_ = {
 		ObjNum:	1,				// Number of Flags
+		// Standard Size
+		StdSiz: 0,				// Standard Dimensions
+		StdSeg: 0,				// Standard Segments		
 		// Material and Geometry
 		ObjSrc: [0],			// Geometry Address (can use this for all flags)
 		ObjTxt: ["https://PhilCrowther.github.io/Aviation/models/vehicles/textures/USA_48.png"],

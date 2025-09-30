@@ -227,7 +227,7 @@ let tre_ = {
 let mnt_ = {
 		ObjNum: 1,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
-		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png"],
+		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.jpg"],
 		ObjAdr: [],
 		ObjSiz: [3.75*MtrMil], // Scale
 		RndOrd: [0],			// renderOrder (not used)
