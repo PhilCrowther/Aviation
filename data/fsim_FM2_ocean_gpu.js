@@ -18,7 +18,7 @@
 	4. OBJECT VARIABLES
 		SHARED TEXTURES				(txt_)
 		STATIC OBJECTS
-			Islands					(isl_)
+			Mountains/Islands		(mnt_)
 			Fixed Objects			(fxd_)
 		MOVING VEHICLES
 			Moving Airplanes		(xac_)
@@ -252,7 +252,7 @@ let txt_ = {
 
 //= STATIC OBJECTS =============//==============================================
 //- Islands --------------------//----------------------------------------------
-let isl_ = {
+let mnt_ = {
 		ObjNum: 2,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb",
 				 "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
@@ -264,7 +264,8 @@ let isl_ = {
 		ObjRot: [0,0],			// Rotation
 		MapPos: [0,0],			// Absolute Position
 		ObjGrp: [0,0],			// Group
-		AltMul: [0.99,1]		// Altitude Adjustment // ### 250929
+		AltMul: [0.99,1],		// Altitude Adjustment // ### 250929
+		VrtAdj: [0,-15]			// Vertical Adjustment // ### 250940
 	};
 //- Static Objects -------------//----------------------------------------------
 //- 0 = Hangar;
@@ -278,6 +279,7 @@ let fxd_ = {
 		ObjRot: [0],			// Rotation
 		MapPos: [0],			// Relative Position
 		ObjRef: [0],			// Parent
+		VrtAdj: [0],			// Vertical Adjustment
 	};
 
 //= MOVING OBJECTS =============//==============================================
