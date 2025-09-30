@@ -79,7 +79,7 @@ let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //= BASIC SETUP ================================================================
 //- Camera
 let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,SkyLim);
-	camera.position.set(0,500,800);
+	camera.position.set(-375,20,-800);
 //- Scene
 let	scene = new THREE.Scene();
 //- Renderer
@@ -177,8 +177,10 @@ let wav_ = {
 
 //= Island ======================================================================
 let	IslMsh = "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb";	// Cut-out Mesh
-let	IslTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.png";	// Diffuse Texture (Nontransparent)
+let	IslTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.jpg";	// Diffuse Texture (Nontransparent)
 let	IslPtr= 0;
+let IslSiz = Mtr2KM;
+let IslVrt = -25;
 
 //= Key Bindings ===============//===============================================
 let K_Paws = 80;			    // Pause (p)
@@ -336,19 +338,13 @@ function initOceans() {
 function loadIsland() {
 	IslTxt = txtrLoader.load(IslTxt);
 	let IslMat = new THREE.MeshLambertNodeMaterial({colorNode: texture(IslTxt)});
-	gltfLoader.load(IslMsh,
-		function (gltf) {		// OnLoad function
-			gltf.scene.traverse(function (child) {
-				// Note: Blender object must include a UV map
-				if (child.isMesh) child.material = IslMat;				
-			});
-			IslPtr= gltf.scene;
-			IslPtr.scale.setScalar(Mtr2KM);
-			IslPtr.position.set(0,-15,0); // Down (giaros2 mesh)
-			scene.add(IslPtr);
-		},
-		null, null				// OnProgress/OnError functions
-	);
+	gltfLoader.load(IslMsh,function (gltf) {
+		gltf.scene.traverse(function (child) {if (child.isMesh) child.material = IslMat;});
+		IslPtr= gltf.scene;
+		IslPtr.scale.setScalar(IslSiz);
+		IslPtr.position.set(0,IslVrt,0); // Push Island into the Waves
+		scene.add(IslPtr);
+	},);
 }
 
 /********************************************************************************
