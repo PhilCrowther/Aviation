@@ -56,7 +56,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu2.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/fm2/data/data.js"></script>
 
 <script type="importmap">
@@ -230,7 +230,7 @@ TO DO:
 
 //= 1. MAIN VARIABLES ==========//===============================================
 //- INPUTS ---------------------//-----------------------------------------------
-let BegLoc = 1;					// 0 = Island; 1 = CVE; 2 = Air
+let BegLoc = 0;					// 0 = Island; 1 = CVE; 2 = Air
 //- FLIGHT CONTROLS ------------//-----------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
@@ -370,13 +370,15 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //- Mountains/Islands ----------//-----------------------------------------------
 //	Adjustments
 	mnt_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation
-//	mnt_.MapPos = [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,10,2440)];
-	mnt_.MapPos = [new THREE.Vector3(610,30,5275),new THREE.Vector3(-1610,-15,2440)]; // 250929 Sink giaros by 25
+	mnt_.MapPos = [new THREE.Vector3(610,0,5275),new THREE.Vector3(-1610,10,2440)]; // X has no effect!!!!
 	mnt_.ObjGrp = [new THREE.Object3D,new THREE.Object3D]; // Group
+//	Overrides	
+//	mnt_.VrtAdj = [-2.075,-15];	// Vertical Adjustment // ### 250930
+	mnt_.VrtAdj = [-2,-15];	// Vertical Adjustment // ### 250930
 //- Static Objects -------------//-----------------------------------------------
 //	Adjustments
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
-	fxd_.MapPos = [new THREE.Vector3(-562,-22.5,-363)]; // Relative Position
+	fxd_.MapPos = [new THREE.Vector3(-562,7.5,-363)]; // Relative Position
 	fxd_.ObjRef = [mnt_.ObjGrp[0]];
 //- MOVING VEHICLES ------------//-----------------------------------------------
 //. Moving Airplanes ...........//...............................................
@@ -780,7 +782,7 @@ function moveObject() {
 	moveMoving();
 	moveAnmObj();
 	moveFxdGun();				// Perform Targeting
-	moveMyPeep(myp_,tim_);
+	if(BegLoc == 1) moveMyPeep(myp_,tim_);
 	moveMyCrew(myc_);
 }
 
