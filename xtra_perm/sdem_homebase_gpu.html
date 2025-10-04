@@ -1,0 +1,545 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<!--
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 4 Oct 2025
+
+Homebase with smoke, hangars and animated waves
+-->
+
+<head>
+<title>sdem homebase gpu r180</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
+</head>
+
+<body oncontextmenu="return false;">
+
+<div id="container">
+	<div class="overlay1">
+		<div>Altitude.: <span id="Cam_Alt"></span> ft</div>
+		<div>Heading..: <span id="Cam_Hdg"></span> deg</div>
+	</div>
+</div>
+
+<body oncontextmenu="return false;">
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+		}
+	}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import {color,texture,uniform,positionLocal,normalMap,
+		float,vec2,attribute,range,uv,mix,	// smoke
+		rotateUV,				// r168
+		time,					// r170	
+		} from 'three/tsl';
+import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import Stats from "stats-gl";
+//- Custom Modules
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
+
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
+
+//= GENERAL ====================//===============================================
+//-	Math Predefined
+let	DegRad = Math.PI/180;		// Convert Degrees to Radians
+let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let Ft2Mtr = .3048;
+let	Mtr2Ft = 1/Ft2Mtr;
+let MtrMil = 1609.34;			// Meters per Mile
+let Mtr2KM = 1000;
+//- Flags				
+let LodFlg = 0;
+let PawsOn = 0;
+let WireOn = 0;
+let StatOn = 1;					// Stats ((0 = off, 1 = on)
+
+//= SKYBOX =====================================================================
+let SkyCol = 0x1732c1;		// Sky
+let SkyLim = 100000;			// Max viewing distance 
+//- Texture
+let SBPath = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+
+//= SUN ========================================================================
+let SunCol = 0xffffff;			// Sun
+let SunInt = 3;					// Intensity
+//- Rotation and Position (fixed)
+let SunLat = 23;				// Direction - Vert (+/- 90)
+let SunLon = 312;				// Direction - Horz (0->360)
+let SunDst = 10000;				// Distance (for shadows and lensflare)
+//- New
+let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+
+//= BASIC SETUP ================================================================
+//- Camera
+let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,SkyLim);
+	camera.position.set(-1000,100,-800);
+//- Scene
+let	scene = new THREE.Scene();
+//- Renderer
+let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
+    await renderer.init();		// ### NEW
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.autoUpdate = true;
+	renderer.receiveShadow = true;
+	renderer.shadowMap.type = THREE.BasicShadowMap;
+	container.appendChild(renderer.domElement);
+let maxAnisotropy = renderer.getMaxAnisotropy();
+//- Lights
+let sunLight = new THREE.DirectionalLight(SunCol,3.0);
+	sunLight.position.copy(SunPos).normalize();
+	scene.add(sunLight);
+//- Controls
+let	controls = new OrbitControls(camera,renderer.domElement);
+//- Inputs
+	document.addEventListener("keydown",onDocumentKeyDown,false);
+	window.addEventListener("resize",onWindowResize,false);
+//- Loading Manager
+	// Create a loading manager to set RESOURCES_LOADED when appropriate.
+	// Pass loadingManager to all resource loaders.
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+let	gltfLoader = new GLTFLoader(loadingManager);
+
+//= CAMERA ======================================================================
+let	CamDst, CamLat, CamHdg, CamAlt = 0;	
+
+//= MATERIALS ===================================================================
+let WtrCol = 0x001080;			// Water (Navy)
+//- Textures --------------------------------------------------------------------
+let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png";
+//- Maps ------------------------------------------------------------------------
+let RufMap = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+
+//= GRID DATA ===================================================================
+let GrdSiz = 2400;				// Size of Smallest Grid Square (meters)
+let GrdSeg = 384;				// Segments per Plane (256 = OK, 512 = too much)
+//- Planes
+let GrdRCs = 2;
+let GrdPtr = [0];
+let WavMZV = [0];
+let WavMXV = [0];
+//- Common Values
+let WtrGeo,WtrMat,WtrMsh = 0;
+
+//= OCEAN MODULE ================================================================
+let waves = 0;
+let wav_ = {
+		// General
+		size: 1024,				// resolution of iFFT computation
+		gsiz: GrdSiz,			// size of grid square (used to compute Normal Map)
+		lambda: 0.9,
+		renderer: renderer,
+		anisotropy: maxAnisotropy,
+		// InitSpec Variables (for Grdsiz = 2400 meters)
+		waveLength: 1500,		// was 250
+		boundaryLow: 0.0001,	// ### ok???
+		boundaryHigh: 9999,		// ### ok???
+		// Wave Spectrum 1
+		depth: 100,				// was 20
+		scaleHeight: 1,
+		windSpeed: 3,			// was 2
+		windDirection: 315,
+		fetch: 100000,
+		spreadBlend: 1,
+		swell: 0.198,
+		peakEnhancement: 3.3,
+		shortWaveFade: 0.01,
+		fadeLimit: 0.0,
+		// Wave Spectrum 2
+		d_depth: 100,			// was 20
+		d_scaleHeight: 1,
+		d_windSpeed: 2,			// was 1
+		d_windDirection: 315,
+		d_fetch: 300000,
+		d_spreadBlend: 1,
+		d_swell: 0.5,
+		d_peakEnhancement: 3.3,
+		d_shortWaveFade: 0.01,
+		d_fadeLimit: 0.0,
+	};
+
+//= ISLAND =====================//===============================================
+let	IslMsh = "https://PhilCrowther.github.io/Aviation/scenery/models/homebase_ctr0.glb"; // Mesh
+let	IslTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.jpg"; // Texture
+let	IslPtr= 0;
+let IslSiz = MtrMil;
+let IslVrt = 0;					// Runway height approx = 0, around 36 ft in sim =
+
+//= SMOKE =======================================================================
+let SmkAdr = "https://threejs.org/examples/textures/opengameart/smoke1.png";
+let SmkMap = 0;
+let smokeInstancedSprite;
+let SmkPos = new THREE.Vector3(50,75,-25);
+
+//= HANGAR ======================================================================
+let HngSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb";
+let HngPtr = 0;
+let HngPos = new THREE.Vector3(-562,10,-345); // Relative Position
+let HngSiz = Ft2Mtr;
+
+//= KEY BINDINGS ===============//===============================================
+let K_Paws = 80;			    // Pause (p)
+let K_Wire = 87;				// Wireframe (w)
+
+//= HTML OVERLAY TEXT ===========================================================
+let Cam_AltElement = document.getElementById("Cam_Alt"); // Altitude
+let Cam_AltNode = document.createTextNode("");
+	Cam_AltElement.appendChild(Cam_AltNode);
+let Cam_HdgElement = document.getElementById("Cam_Hdg"); // Heading
+let Cam_HdgNode = document.createTextNode("");
+	Cam_HdgElement.appendChild(Cam_HdgNode);
+let Cam_Alt,Cam_Hdg;
+
+//= GROUPS =====================================================================
+let VlkGrp = new THREE.Group();
+	VlkGrp.rotation.order = "YXZ";
+	VlkGrp.position.set(0,0,0);
+	scene.add(VlkGrp);
+
+/********************************************************************************
+*
+*	MAIN PROGRAM
+*
+********************************************************************************/
+
+	loadAll();
+
+//= 0 LOAD ALL =================//===============================================
+
+function loadAll() {
+	loadSkyBox();
+	loadOceans();
+	loadIsland();				// Load Island
+	loadVulkan();				// Load Smoke
+	loadHangar();				// Load Hangars
+	// Load stats
+	if (StatOn) {				// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(StatOn.dom);
+	}
+}
+
+//= 1 INITIALIZE ===============//===============================================
+
+function initAll() {
+	initOceans(); // Initialize Ocean
+	initVulkan();
+	LodFlg = 1;
+}
+
+//= 2 RENDER ===================//===============================================
+
+function rendAll() {
+//	requestAnimationFrame(rendAll);	
+	if (!PawsOn && LodFlg) {
+		// Update camera position
+		if(camera.position.y < 0.0) {
+			camera.position.y = 2.0;
+		}
+		if (waves) waves.update(); // Move Ocean
+		if (StatOn) StatOn.update(); // update stats
+	}
+	prntHUDval();
+	renderer.renderAsync(scene,camera); // WebGPU requires Async
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+}
+
+/********************************************************************************
+*
+*	SKY BOX
+*
+********************************************************************************/
+
+function loadSkyBox() {
+	let envMap = cubeLoader
+		.setPath(SBPath)
+		.load(["px.jpg","nx.jpg","py.jpg","ny.jpg","pz.jpg","nz.jpg"]);
+	envMap.format = THREE.RGBAFormat;
+	envMap.colorSpace = THREE.SRGBColorSpace; // r152
+	scene.background = envMap;
+}
+
+/********************************************************************************
+*
+*	OCEANS
+*
+********************************************************************************/
+
+//=	LOAD ========================================================================
+
+function loadOceans() {
+	//- Diffuse Texture
+	txtrLoader.load(DifTxt,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.needsUpdate = true;
+		DifTxt = texture;
+	});
+	//- Roughness Map
+	txtrLoader.load(RufMap,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.needsUpdate = true;
+		RufMap = texture;
+	});
+}
+
+//= INITIALIZE =================//===============================================
+
+function initOceans() {
+	waves = new Ocean(wav_);
+	WtrGeo = new THREE.PlaneGeometry(GrdSiz,GrdSiz,GrdSeg,GrdSeg);	
+	WtrGeo.rotateX(-Math.PI*0.5);
+	WtrMat = new THREE.MeshStandardNodeMaterial({
+		colorNode: texture(DifTxt), // Diffuse Color Only
+		metalness: 0.5,
+		roughness: 0.1,
+		roughnessMap: RufMap,	// Not a texture
+		positionNode: positionLocal.add(texture(waves.displacement)),
+		normalNode: normalMap(texture(waves.normMapTexture),new THREE.Vector2(1.0,1.0)), // Animated map
+		envMap: scene.background,
+		envMapIntensity: 0.5,
+	});
+
+	// Compute Starting Z and X Values
+	let zx = -0.5*(GrdRCs)*GrdSiz+0.5*GrdSiz;
+	for (let i = 0; i < GrdRCs; i++) {
+		WavMZV[i] = zx;
+		WavMXV[i] = zx;
+		zx = zx + GrdSiz;
+	}
+  
+	// 4 Adjacent Planes
+	let n = 0;
+	for (let z = 0; z < GrdRCs; z++) {		// Row X2
+		for (let x = 0; x < GrdRCs; x++) {	// Column X2
+			GrdPtr[n] = new THREE.Mesh(WtrGeo,WtrMat);
+			scene.add(GrdPtr[n]);
+			GrdPtr[n].position.set(WavMXV[x],0,-WavMZV[z]);
+			n++;
+		}
+	}
+}
+
+/********************************************************************************
+*
+*	ISLAND
+*
+********************************************************************************/
+
+//= Load Island ================//===============================================
+function loadIsland() {
+	IslTxt = txtrLoader.load(IslTxt);
+	let IslMat = new THREE.MeshLambertNodeMaterial({colorNode: texture(IslTxt)});
+	gltfLoader.load(IslMsh,function (gltf) {
+		gltf.scene.traverse(function (child) {if (child.isMesh) child.material = IslMat;});
+		IslPtr= gltf.scene;
+		IslPtr.scale.setScalar(IslSiz);
+		IslPtr.position.set(0,IslVrt,0); // Push Island into the Waves
+//		scene.add(IslPtr);
+		VlkGrp.add(IslPtr);
+	},);
+}
+
+/********************************************************************************
+*
+*	SMOKE
+*
+********************************************************************************/
+
+//= Load Smoke ==================================================================
+function loadVulkan() {
+	SmkMap = txtrLoader.load(SmkAdr);
+}
+
+//= Init Smoke ==================================================================
+//- (Based on Ship Wake - this somehow eliminates frustum culling problem when
+//	 used as part of a group.)
+function initVulkan() {
+	//- Timer
+//	let timer = timerLocal(.001,1);	// First variable controls speed. Second variable = 1.
+	let speed = uniform(.001); // r170
+//	let scaledTime = time.add(5).mul(speed); // r170
+	let scaledTime = time.add(125).mul(speed); // r170
+	//- Life
+	let lifeRange = range(.1,1);
+//	let lifeTime = timer.mul(lifeRange).mod(.05);
+	let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
+	let life = lifeTime.div(lifeRange);
+	//- Rotation Range
+	let rotateRange = range(.1,4);
+//	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange))); // r168
+	let textureNode = texture(SmkMap, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170	
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
+	//- Lateral Offset (XZ = Horizontal, Y = vertical)	
+//	let offsetRange = range(new THREE.Vector3(0,3,0), new THREE.Vector3(0,5,0));	// Vertical
+	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(1,5,1));	// Cone Shaped
+//	let offsetRange = range(new THREE.Vector3(-.5,3,-.5), new THREE.Vector3(2,5,-2));	// Leaning Cone Shaped
+	//- Size Range
+//	let scaleRange = range(.01,.02);
+	let scaleRange = range(.1,.2);
+	//
+	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
+	// Wake
+	let smokeColor = mix(color(0xe0e0e0),color(0xd0d0d0),positionLocal.y.mul(3).clamp());
+	let smokeNodeMaterial = new THREE.SpriteNodeMaterial();
+		smokeNodeMaterial.colorNode = mix(color(0xffffff),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.opacityNode = opacityNode;
+		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
+		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		smokeNodeMaterial.depthWrite = false;
+		smokeNodeMaterial.transparent = true;
+	let smokeInstancedSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smokeNodeMaterial);
+		smokeInstancedSprite.scale.setScalar(4000);
+		smokeInstancedSprite.isInstancedMesh = true;
+		smokeInstancedSprite.count = 600;
+		smokeInstancedSprite.position.copy(SmkPos);
+		smokeInstancedSprite.renderOrder = 1;	// This allows the transparent smoke to work with transparent island
+		VlkGrp.add(smokeInstancedSprite);
+}
+
+/********************************************************************************
+*
+*	HANGARS
+*
+********************************************************************************/
+
+//= Load Hangar ==================================================================
+function loadHangar() {
+	gltfLoader.load(HngSrc,function (gltf) {
+		HngPtr= gltf.scene;
+		HngPtr.scale.setScalar(HngSiz);
+		HngPtr.position.copy(HngPos);
+		VlkGrp.add(HngPtr);
+	},);	
+}
+
+/********************************************************************************
+*
+*	MISC SUBROUTINES
+*
+********************************************************************************/
+
+//= Converts degrees to 360 ====//===============================================
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;	// Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
+return deg;}
+
+/********************************************************************************
+*
+*	OUTPUTS
+*
+********************************************************************************/
+
+//= Print HUD Values ===========//===============================================
+
+function prntHUDval() {
+	CamLat = controls.getPolarAngle();
+	CamLat = 90-CamLat*RadDeg;
+	CamHdg = controls.getAzimuthalAngle();
+	CamHdg = Mod360(-CamHdg*RadDeg)
+	CamDst = controls.getDistance();
+	CamAlt = CamDst*Math.sin(CamLat*DegRad);		
+	//
+	Cam_Alt = Mtr2Ft*CamAlt;	// Altitude
+	Cam_AltNode.nodeValue = Cam_Alt.toFixed(0);
+	Cam_Hdg = CamHdg;			// Heading
+	Cam_HdgNode.nodeValue = Cam_Hdg.toFixed(0);
+}
+
+/********************************************************************************
+*
+*	INPUTS
+*
+********************************************************************************/
+
+//= Keyboard ====================================================================
+
+//- Key Down
+function onDocumentKeyDown(event) {
+	let keyCode = event.which;
+	if (event.keyCode == K_Paws) togglePaws(); // Pause
+	if (event.keyCode == K_Wire) toggleWire(); // Wireframe
+}
+
+//- Key Up
+function onDocumentKeyUp(event) {
+	let keyCode = event.which;
+	//
+}
+
+//- Toggle Pause
+function togglePaws() {
+	PawsOn = 1 - PawsOn;
+}
+
+//- Toggle Wire
+function toggleWire() {
+	WireOn = 1 - WireOn;
+	if (WireOn) {
+		for (let x = 0; x < 16; x++) {
+			WtrMat.wireframe = true;
+			WtrMat.needsUpdate = true;		
+		}
+	}
+	else {
+		for (let x = 0; x < 16; x++) {
+			WtrMat.wireframe = false;
+			WtrMat.needsUpdate = true;
+		}
+	}
+}
+
+//= Window Resize Input =========================================================
+
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth,window.innerHeight);
+}
+
+</script>
+</body>
+</html>
