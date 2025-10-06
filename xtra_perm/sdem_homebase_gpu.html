@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Oct 2025
+Version dated 6 Oct 2025
 
 Homebase with smoke, hangars and animated waves
 -->
@@ -189,7 +189,7 @@ let wav_ = {
 	};
 
 //= ISLAND =====================//===============================================
-let	IslMsh = "https://PhilCrowther.github.io/Aviation/scenery/models/homebase.glb"; // Mesh
+let	IslMsh = "https://PhilCrowther.github.io/Aviation/scenery/models/homebase2.glb"; // Mesh
 let	IslTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.jpg"; // Texture
 let	IslPtr= 0;
 let IslSiz = MtrMil;
@@ -369,15 +369,18 @@ function initOceans() {
 ********************************************************************************/
 
 //= Load Island ================//===============================================
+//	This loads the Mesh and Texture Separately and Combines them into a Textured Mesh
+
 function loadIsland() {
+	// Load Texture and Convert to Material
 	IslTxt = txtrLoader.load(IslTxt);
 	let IslMat = new THREE.MeshLambertNodeMaterial({colorNode: texture(IslTxt)});
+	// Load Mesh and Attach Material
 	gltfLoader.load(IslMsh,function (gltf) {
 		gltf.scene.traverse(function (child) {if (child.isMesh) child.material = IslMat;});
 		IslPtr= gltf.scene;
 		IslPtr.scale.setScalar(IslSiz);
 		IslPtr.position.set(0,IslVrt,0); // Push Island into the Waves
-//		scene.add(IslPtr);
 		VlkGrp.add(IslPtr);
 	},);
 }
