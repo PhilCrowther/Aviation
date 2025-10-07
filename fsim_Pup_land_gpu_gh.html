@@ -2,9 +2,15 @@
 <html>
 
 <!--
+/********************************************************************************
+*
+*	FSIM PUP LAND GPU
+*
+*********************************************************************************
+
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 Sep 2025
+Version dated 7 Oct 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -158,6 +164,7 @@ let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+	await renderer.init();		// r179
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -166,11 +173,20 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.receiveShadow = true;	
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
-	gen_.maxAns = renderer.getMaxAnisotropy();
-	await renderer.init();		// r179
+let	maxAnisotropy = renderer.getMaxAnisotropy();
+//	Depth Buffer
+	renderer.logarithmicDepthBuffer = true;
+//	Tone Mapping
+	renderer.toneMapping = THREE.NoToneMapping;			// clouded
+//	renderer.toneMapping = THREE.LinearToneMapping;		// brighter?
+//	renderer.toneMapping = THREE.ReinhardToneMapping;	// clouded
+//	renderer.toneMapping = THREE.CineonToneMapping;		// contrast - dark
+//	renderer.toneMapping = THREE.ACESFilmicToneMapping;	// contrast - not as dark
+//	renderer.toneMapping = THREE.AgXToneMapping;		// normal
+//	renderer.toneMapping = THREE.NeutralToneMapping;	// contrast - dark
+	renderer.toneMappingExposure = 0.75;				// Higher = brighter (default = 1)
 //- Clock
-let clock = new THREE.Clock();
-let oldTim, nowTim, difTim = 0;
+let clock = new THREE.Clock(); // not used, if activated, use tim_ variable
 //- Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);
@@ -220,6 +236,7 @@ let ImgSiz = 1024;
 	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
 	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5000)];
 	mnt_.ObjGrp = [new THREE.Object3D]; // Group
+	mnt_.MaxAni = maxAnisotropy;
 //- Static Objects -------------//-----------------------------------------------
 //	Adjustments
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
@@ -387,6 +404,7 @@ function initAll() {
 		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(gen_.StatOn.dom);
 	}
+	tim_.NowTim = clock.getElapsedTime(); // Initialize Clock
 	gen_.LodFlg = 1;
 }
 
@@ -483,7 +501,7 @@ function moveObject() {
 //- Static Objects -------------//-----------------------------------------------
 
 function loadStatic() {
-	loadMountn(scene,mnt_,air_,txtrLoader,gltfLoader);
+	loadMountn(scene,mnt_,air_,gen_,txtrLoader,gltfLoader);
 	loadFxdObj(scene,fxd_,gltfLoader);	
 }
 

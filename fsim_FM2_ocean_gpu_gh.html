@@ -2,9 +2,15 @@
 <html>
 
 <!--
+/********************************************************************************
+*
+*	FSIM FM2 OCEAN GPU
+*
+*********************************************************************************
+
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Oct 2025
+Version dated 7 Oct 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -372,6 +378,7 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 	mnt_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation
 	mnt_.MapPos = [new THREE.Vector3(610,0,5275),new THREE.Vector3(-1610,10,2440)]; // X has no effect!!!!
 	mnt_.ObjGrp = [new THREE.Object3D,new THREE.Object3D]; // Group
+	mnt_.MaxAni = maxAnisotropy;
 //- Static Objects -------------//-----------------------------------------------
 //	Adjustments
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
@@ -656,7 +663,6 @@ function initAll() {
 		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
 		container.appendChild(gen_.StatOn.dom);
 	}
-	tim_.NowTim = clock.getElapsedTime(); // Initialize Clock
 	gen_.LodFlg = 1;
 }
 
@@ -795,7 +801,7 @@ function loadShared() {
 //- Static Objects -------------//-----------------------------------------------
 
 function loadStatic() {
-	loadMountn(scene,mnt_,air_,txtrLoader,gltfLoader);
+	loadMountn(scene,mnt_,air_,gen_,txtrLoader,gltfLoader);
 	if (fxd_.ObjNum) loadFxdObj(scene,fxd_,gltfLoader);	
 }
 
