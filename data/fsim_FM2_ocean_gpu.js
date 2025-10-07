@@ -1,19 +1,14 @@
 ﻿
 /********************************************************************************
 *
-*	FM2 FSIM DATA: 251005
+*	FSIM FM2 DATA: 251007
 *
 *********************************************************************************
 
-	This is pre-loaded data for the FM2 fsim.
-	Cannot use three.js rountines since three.js has not been loaded yet.
-/
+This data is pre-loaded data into the program.
+Cannot reference three.js routines because three.js has not been loaded yet.
 
-/********************************************************************************
-*
-*	INDEX TO VARIABLES
-*
-*********************************************************************************
+INDEX TO VARIABLES
 
 	1. MAIN VARIABLES
 	   Constants
@@ -102,6 +97,10 @@ let gen_ = {
 		//	Altitude Adjustment
 		AltAdj:	0.99,			// Raises objects above map as altitude increases
 		AltDif:	0,
+		// Misc
+		contxt: 0,
+		canvas: 0,
+		MaxAni: 0,
 	}
 
 let tim_ = {

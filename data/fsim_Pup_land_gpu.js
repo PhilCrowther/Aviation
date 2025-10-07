@@ -1,11 +1,14 @@
-﻿//= PRE-LOAD DATA ==============================================================
-//	No three.js routines allowed since three.js has not been loaded yet.
+﻿
+/********************************************************************************
+*
+*	FSIM PUP DATA: 251007
+*
+*********************************************************************************
 
-/*******************************************************************************
-*
-*	INDEX TO VARIABLES
-*
-*******************************************************************************
+This data is pre-loaded data into the program.
+Cannot reference three.js routines because three.js has not been loaded yet.
+
+INDEX TO VARIABLES
 
 	1. MAIN VARIABLES
 	   Constants
@@ -97,7 +100,7 @@ let gen_ = {
 		// Misc
 		contxt: 0,
 		canvas: 0,
-		maxAns: 0,
+		MaxAni: 0,
 	}
 
 let tim_ = {
