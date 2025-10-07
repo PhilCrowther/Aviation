@@ -204,6 +204,7 @@ let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+	await renderer.init();		// r179
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -213,7 +214,6 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
-	await renderer.init();		// r179
 //- Clock
 let clock = new THREE.Clock();
 let oldTim, nowTim, difTim = 0;
@@ -1431,7 +1431,7 @@ function makeTClr(dtColr,dtData,Weight) {
 }
 
 /* Load and Move Fixed Objects ===============================================*/
-/* These objects include the airfield, islands and hangar */
+/* These objects include the airfield, mountains and hangar */
 
 function loadObject() {
 	for (let i = 0; i < ObjNum; i++) {		// For Each Object
@@ -1444,6 +1444,7 @@ function loadObject() {
 		}
 		if (ObjTyp[i] == 1) {
 			let texture = txtrLoader.load(ObjTxt[i]);
+			texture.anisotropy = maxAnisotropy;
 			let material = new THREE.MeshLambertMaterial({map: texture, transparent: true});
 			gltfLoader.load(ObjMdl[i], function (gltf) {
 				gltf.scene.traverse(function (child) {
