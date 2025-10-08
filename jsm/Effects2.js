@@ -1,7 +1,12 @@
 /*
- * Effects.js (vers 25.06.3)
- * Copyright 2022-2025, Phil Crowther
- * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+/********************************************************************************
+*
+*	EFFECTS
+*
+*********************************************************************************
+Copyright 2022-2025, Phil Crowther
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version: 251008 
 */
 
 /*
@@ -836,7 +841,7 @@ function initXSHWak(wak_,txt_) {
 		wak_.ObjAdr[n].position.y = -5; // Added
 		//	Link
 		wak_.ObjRef[n].add(wak_.ObjAdr[n]);
-		wak_.ObjAdr[n].rotation.y = wak_.ObjRot.y*DegRad;
+		wak_.ObjAdr[n].rotation.y = wak_.ObjRot[n].y*DegRad;
 	}
 }
 
