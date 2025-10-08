@@ -75,7 +75,7 @@ function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 
 // Load Animations -------------//-----------------------------------------------
 function loadAirAnmX(gltf,air_,mxr_,anm_) {		
-	/* Animations ---------------------------------------------------------------
+	// Animations ---------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(gltf.animations, "propellerAction");
 	mxr_.Prp = new AnimationMixer(mxr_.Adr);
@@ -145,7 +145,7 @@ function moveAirExt(air_,mxr_,anm_) {
 	anm_.ailrgt = 180 - ailbnk * 30;
 	if (anm_.ailrgt < 151) anm_.ailrgt = 151;				// Range = 00 to 60
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
-	/* Animations (Display) -----------------------------------------------------
+	// Animations (Display) -----------------------------------------------------
 	// Propeller
 	if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
 	// Rudder
