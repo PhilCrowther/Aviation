@@ -1,10 +1,11 @@
 /********************************************************************************
 *
-*	OBJECTS: 251007
+*	OBJECTS MODULE
 *
 *********************************************************************************
 Copyright 2022-2025, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 8 Oct 2025
 
 @fileoverview
  * Subroutines to create an air combat simulation
