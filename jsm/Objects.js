@@ -1,16 +1,14 @@
 /********************************************************************************
 *
-*	OBJECTS MODULE
+*	OBJECTS: 251007
 *
 *********************************************************************************
-
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2022-2025, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Oct 2025
 
 @fileoverview
-Subroutines to create an air combat simulation
-See http://philcrowther.com/Aviation for more details.
+ * Subroutines to create an air combat simulation
+ * See http://philcrowther.com/Aviation for more details.
 
 NOTES:
 This currently includes mountains/islands, and also fixed and animated objects attached to the scenery
@@ -61,14 +59,15 @@ const FlgSeg = new Vector2(30,16); // Standard Flag Segments
 ********************************************************************************/
 
 //=	LOAD MOUNTAINS/ISLANDS ===============//=====================================
-function loadMountn(scene,mnt_,air_,txtrLoader,gltfLoader) {
+function loadMountn(scene,mnt_,air_,gen_,txtrLoader,gltfLoader) {
 	for (let i = 0; i < mnt_.ObjNum; i++) {
 		mnt_.ObjGrp[i].position.copy(mnt_.MapPos[i]);
 		scene.add(mnt_.ObjGrp[i]);
 	}
 	for (let i = 0; i < mnt_.ObjNum; i++) {
 	// Mountain/Island Objects (Transparent for now)
-		txtrLoader.load(mnt_.ObjTxt[i], function (IslTxt) {	
+		txtrLoader.load(mnt_.ObjTxt[i], function (IslTxt) {
+			IslTxt.anisotropy = gen_.maxAns;
 			let mat = new MeshLambertNodeMaterial({colorNode: texture(IslTxt), transparent: true});
 			gltfLoader.load(mnt_.ObjSrc[i], function (gltf) {
 				gltf.scene.traverse(function (child) {
@@ -572,4 +571,5 @@ export {loadMountn,initMountn,moveMountn,
 250810: No Rep of Plane Handler sequence
 250929:	Make AltMul for Islands Optional
 250930: Changed Islands to Mountains/Islands, load/init/move, isl_ to mnt_, added mnt_.VrtAdj
+251007: Added maxAni to Mountains/Islands
 */
