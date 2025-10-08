@@ -1,27 +1,22 @@
-/*
- * Effects.js (vers 25.06.3)
- * Copyright 2022-2025, Phil Crowther
- * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-*/
-
-/*
- * @fileoverview
- * Subroutines to create an air combat simulation
- * See http://philcrowther.com/Aviation for more details.
- */
-
-/* NOTES:
-	Bul refers to aircraft bullets with double lines
-	AAA refers to anti-aircraft bullets with singles lines
-	Use lines and 2 colors so bullets appear against both light sky and dark ground
-*/
-
-/*******************************************************************************
+/********************************************************************************
 *
-*	NOTES
+*	EFFECTS MODULE
 *
-*******************************************************************************/
-/*
+*********************************************************************************
+
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 8 Oct 2025
+
+@fileoverview
+Subroutines to create an air combat simulation
+See http://philcrowther.com/Aviation for more details.
+
+NOTES:
+Bul refers to aircraft bullets with double lines
+AAA refers to anti-aircraft bullets with singles lines
+Use lines and 2 colors so bullets appear against both light sky and dark ground
+
 The AA module does not cycle through all bullets, but only enough to fill the sky.
 This is because, once the time of flight has passed and the wait time has passed,
 each bullet is ready to be fired again and the program uses the first available
