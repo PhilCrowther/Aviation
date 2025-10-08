@@ -1,19 +1,23 @@
-/*
- * AHflyt_mod.js (vers 22.11.15)
- * Copyright 2017-22, Phil Crowther
- * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+/********************************************************************************
+*
+*	FLIGHTH MODULE
+*
+*********************************************************************************
+
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 8 Oct 2025
+
+This module is used for helicopter flight
+
+
+@fileoverview
+This file contains variables and functions for 3D Flight.
+The primary functions are: InitFlyt(Obj) and RoteFlyt(Obj)
+where Obj is the address of the aircraft object.
+The primary inputs are listed below and in the separate aircraft data file.
+See http://philcrowther.com/Aviation/ACflyt.htm for more details.
 */
-
-// AHflyt_mod is a module used for helicopter flight
-
-/*
- * @fileoverview
- * This file contains variables and functions for 3D Flight.
- * The primary functions are: InitFlyt(Obj) and RoteFlyt(Obj)
- * where Obj is the address of the aircraft object.
- * The primary inputs are listed below and in the separate aircraft data file.
- * See http://philcrowther.com/Aviation/ACflyt.htm for more details.
- */
 
 /* = INITIALIZE VALUES =======================================================*/
 
