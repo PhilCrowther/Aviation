@@ -1,14 +1,17 @@
-/*
- * Controls.js (vers 25.05.30)
- * Copyright 2022-2025, Phil Crowther
- * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-*/
+/********************************************************************************
+*
+*	CONTROLS MODULE
+*
+*********************************************************************************
 
-/*
- * @fileoverview
- * The three.js pointer lock control (modified) and camera controls
- * See http://philcrowther.com/Aviation for more details.
- */
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 8 Oct 2025
+
+@fileoverview
+The three.js pointer lock control (modified) and camera controls
+See http://philcrowther.com/Aviation for more details.
+*/
 
 /*******************************************************************************
 *
@@ -135,9 +138,9 @@ function moveCamera(camera,cam_,air_,key_) {
 			if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
 		}
 		if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
-		if (key_.R45flg) cam_.CamLLD.y = 45;		// Look Right 45
+		if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
 		if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-		if (key_.R90flg) cam_.CamLLD.y = 90;		// Look Right 90
+		if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
 		if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
 		if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135		
 	}
