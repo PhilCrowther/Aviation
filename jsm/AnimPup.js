@@ -1,50 +1,53 @@
-/*
- * AnimPup.js (25.06.07)
- * Copyright 2022-2025, Phil Crowther
- * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+/********************************************************************************
+*
+*	ANIM PUP MODULE
+*
+*********************************************************************************
+
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 8 Oct 2025
+
+@fileoverview
+A three.js class-type module for animating a Sopwith Pup aircraft model
+See http://philcrowther.com/Aviation for more details.
 */
 
-/*
- * @fileoverview
- * A three.js class-type module for animating a Sopwith Pup aircraft model
- * See http://philcrowther.com/Aviation for more details.
- */
-
-/*******************************************************************************
+/********************************************************************************
 *
 *	IMPORTS
 *
-*******************************************************************************/
+********************************************************************************/
 
 import {
 	AnimationClip,
 	AnimationMixer
 } from 'three';
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	VARIABLES
 *
-*******************************************************************************/
+********************************************************************************/
 
-//= 1. MAIN VARIABLES ==========//==============================================
+//= 1. MAIN VARIABLES ==========//===============================================
 
-//- CONSTANTS ------------------//----------------------------------------------
+//- CONSTANTS ------------------//-----------------------------------------------
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 //-	Conversions
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
 const Km2Mil = 0.621371;
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	PROGRAM
 *
-*******************************************************************************/
+********************************************************************************/
 
-//= LOAD AIR EXTERNAL ==========================================================
+//= LOAD AIR EXTERNAL ===========================================================
 
-//-	Load Airplane Model --------//----------------------------------------------
+//-	Load Airplane Model --------//-----------------------------------------------
 function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 	gltfLoader.load(mxr_.Src, function (gltf) {				// The OnLoad function
 		gltf.scene.traverse(function (child) {	
@@ -70,9 +73,9 @@ function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 	});	
 }
 
-// Load Animations -------------//----------------------------------------------
+// Load Animations -------------//-----------------------------------------------
 function loadAirAnmX(gltf,air_,mxr_,anm_) {		
-	/* Animations --------------------------------------------------------------- */
+	/* Animations ---------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(gltf.animations, "propellerAction");
 	mxr_.Prp = new AnimationMixer(mxr_.Adr);
@@ -117,10 +120,10 @@ function loadAirAnmX(gltf,air_,mxr_,anm_) {
 	if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 }
 
-//= MOVE AIR EXTERNAL ==========//==============================================
+//= MOVE AIR EXTERNAL ==========//===============================================
 
 function moveAirExt(air_,mxr_,anm_) {
-	// Animate -----------------------------------------------------------------	
+	// Animate ------------------------------------------------------------------
 	// Propeller
 	let prpspd =  4 * (air_.PwrPct - 0.6);					// Range = -2.4 to + 1.6
 	anm_.spnprp = anm_.spnprp - prpspd;
@@ -142,7 +145,7 @@ function moveAirExt(air_,mxr_,anm_) {
 	anm_.ailrgt = 180 - ailbnk * 30;
 	if (anm_.ailrgt < 151) anm_.ailrgt = 151;				// Range = 00 to 60
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
-	/* Animations (Display) ------------------------------------------------- */
+	/* Animations (Display) -----------------------------------------------------
 	// Propeller
 	if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
 	// Rudder
@@ -158,19 +161,19 @@ function moveAirExt(air_,mxr_,anm_) {
 	if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 }
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	EXPORTS
 *
-*******************************************************************************/
+********************************************************************************/
 
 export {loadAirExt,moveAirExt};
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	REVISIONS
 *
-*******************************************************************************/
+********************************************************************************/
 /*
  * 250607:	Create
 */

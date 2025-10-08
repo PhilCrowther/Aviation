@@ -1,50 +1,53 @@
-/*
- * AnimFM2.js (25.06.27)
- * Copyright 2022-2025, Phil Crowther
- * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+/*********************************************************************************
+*
+*	ANIMFM2 MODULE
+*
+*********************************************************************************
+
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 8 Oct 2025
+
+@fileoverview
+A three.js class-type module for animating a FM2 aircraft model
+See http://philcrowther.com/Aviation for more details.
 */
 
-/*
- * @fileoverview
- * A three.js class-type module for animating a FM2 aircraft model
- * See http://philcrowther.com/Aviation for more details.
- */
-
-/*******************************************************************************
+/********************************************************************************
 *
 *	IMPORTS
 *
-*******************************************************************************/
+********************************************************************************/
 
 import {
 	AnimationClip,
 	AnimationMixer
 } from 'three';
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	VARIABLES
 *
-*******************************************************************************/
+********************************************************************************/
 
-//= 1. MAIN VARIABLES ==========//==============================================
+//= 1. MAIN VARIABLES ==========//===============================================
 
-//- CONSTANTS ------------------//----------------------------------------------
+//- CONSTANTS ------------------//-----------------------------------------------
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 //-	Conversions
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
 const Km2Mil = 0.621371;
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	PROGRAM
 *
-*******************************************************************************/
+********************************************************************************/
 
-//= LOAD AIR EXTERNAL ==========================================================
+//= LOAD AIR EXTERNAL ===========================================================
 
-//-	Load Airplane Model --------//----------------------------------------------
+//-	Load Airplane Model --------//-----------------------------------------------
 function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 	gltfLoader.load(mxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
@@ -72,7 +75,7 @@ function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 	});		
 }
 
-// Load Animations -------------//----------------------------------------------
+// Load Animations -------------//-----------------------------------------------
 function loadAirAnmX(gltf,air_,mxr_,anm_) {
 	// Propeller
 	let clip = AnimationClip.findByName(gltf.animations,"propellerAction");
@@ -191,9 +194,9 @@ function loadAirAnmX(gltf,air_,mxr_,anm_) {
 	if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anm_.anmfps);
 }
 
-//= LOAD AIR INTERNAL ==========================================================
+//= LOAD AIR INTERNAL ===========================================================
 
-//-	Load Virtual Cockpit -------//----------------------------------------------
+//-	Load Virtual Cockpit -------//-----------------------------------------------
 function loadAirInt(scene,gltfLoader,air_,vxr_,anm_) {
 	gltfLoader.load(vxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
@@ -219,7 +222,7 @@ function loadAirInt(scene,gltfLoader,air_,vxr_,anm_) {
 	});
 }	
 
-// Load Animations -------------//----------------------------------------------
+// Load Animations -------------//-----------------------------------------------
 function loadAirAnmI(gltf,vxr_,anm_) {		
 	// Propeller
 	let clip = AnimationClip.findByName(gltf.animations,"propellerAction");
@@ -385,7 +388,7 @@ function loadAirAnmI(gltf,vxr_,anm_) {
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.yawval/anm_.anmfps);	
 }
 
-//= MOVE AIR EXTERNAL ==========//==============================================
+//= MOVE AIR EXTERNAL ==========//===============================================
 
 function moveAirExt(air_,mxr_,anm_) {
 	// General
@@ -430,7 +433,7 @@ function moveAirExt(air_,mxr_,anm_) {
 	}
 }
 
-//= MOVE AIR INTERNAL ==========//==============================================
+//= MOVE AIR INTERNAL ==========//===============================================
 
 function moveAirInt(air_,vxr_,anm_,CamRot) {
 	// General
@@ -535,7 +538,7 @@ function moveAirInt(air_,vxr_,anm_,CamRot) {
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
 }
 
-//= MOVE COMMON ANIMATION ======//==============================================
+//= MOVE COMMON ANIMATION ======//===============================================
 
 //  Animations which act in all views: Propeller, Ailerons, Gear, Flaps, Canopy, Tailhook
 function moveAirCom(air_,anm_) {
@@ -630,11 +633,11 @@ function moveAirCom(air_,anm_) {
 	}
 }
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	SUBROUTINES
 *
-*******************************************************************************/
+********************************************************************************/
 
 /* Converts degrees to 360 */
 function Mod360(deg) {
@@ -647,19 +650,19 @@ function PoM360(deg) {
 	if (deg > 180) deg = deg - 360;
 return deg;}
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	EXPORTS
 *
-*******************************************************************************/
+********************************************************************************/
 
 export {loadAirExt,loadAirInt,moveAirExt,moveAirInt};
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	REVISIONS
 *
-*******************************************************************************/
+********************************************************************************/
 /*
  * 240420:	Converted to SI units
  * 240424:	Changed all air_ variables to 8 character names
