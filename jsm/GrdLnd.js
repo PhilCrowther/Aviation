@@ -1,13 +1,16 @@
-//= GRIDMAP3b MODULE ===========================================================
+/********************************************************************************
+*
+*	GRID LAND MODULE
+*
+*********************************************************************************
 
-// GrdMap Module (8 Jun 2025)
-// Copyright 2022-2025, Phil Crowther
-// icensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 8 Oct 2025
 
-//
-// @fileoverview
-// This moduel contains functions creating a scrolling grid map for Land
-//
+@fileoverview
+This moduel contains functions creating a scrolling grid map for Land
+*/
 
 /*******************************************************************************
 *

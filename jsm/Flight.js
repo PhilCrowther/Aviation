@@ -1,15 +1,17 @@
-//= FLIGHT MODULE ===============================================================
-/*
- * Flight.js (25.08.04)
- * Copyright 2017-25, Phil Crowther
- * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-*/
+/********************************************************************************
+*
+*	FLIGHT MODULE
+*
+*********************************************************************************
 
-/*
- * @fileoverview
- * A three.js class-type module for Flight Simulation
- * See http://philcrowther.com/Aviation for more details.
-*/
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 8 Oct 2025
+
+@fileoverview
+A three.js class-type module for Flight Simulation
+See http://philcrowther.com/Aviation for more details
+ */
 
 /*******************************************************************************
 *
