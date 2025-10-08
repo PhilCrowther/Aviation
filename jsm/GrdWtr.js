@@ -1,71 +1,72 @@
-﻿/*******************************************************************************
+﻿/********************************************************************************
 *
-*	GRID MAP MODULE (for use with Ocean2)
+*	GRID WATER MODULE
 *
-*******************************************************************************/
+*********************************************************************************
 
-// GrdWtr.js (9 Sep 2025)
-// Copyright 2022-2025, Phil Crowther
-// Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-//
-// @fileoverview
-// This version of the GrdMap module is designed to work with your main program 
-// and the Ocean module to create a nested scrolling Gridmap with three different
-// sizes of grids and materials that include as many as 4 types of textures.
-//
-// The materials are created using the animated Ocean displacement and normal maps 
-// along with diffuse and roughness textures that are loaded, subdivided in your 
-// main program and saved to the grd_ variable (below).
-//
-// The grids have the following dimensions and use the following textures:
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 8 Oct 2025
 
-// DIMENSIONS:
-//           Square Size   Grid Units      Grid Size          Visibility
-// Grid0	 3.2 km / 2 mi     4x4      12.8 km /  8 mi     6.4 km /  4 mi
-// Grid1     3.2 km / 2 mi    16x16     51.2 km / 32 mi    25.6 km / 16 mi
-// Grid2	12.8 km / 8 mi    16x16    204.8 km / 128 mi  102.4 km / 64 mi
-//
-// TEXTURE MAPS:
-//            Displacement    Normal        Diffuse           Rougness
-// Grid0      Animated 4x    Animated 4x    Static 1/16      Static 1/16
-// Grid1        None         Animated 4x    Static 1/16      Static 1/16
-// Grid2        None         Static  16x    Static 1x        Static 1x
+@fileoverview
+This version of the GrdMap module is designed to work with your main program 
+and the Ocean module to create a nested scrolling Gridmap with three different
+sizes of grids and materials that include as many as 4 types of textures.
 
-// Previously Grid0 squares were 1/4 the size of Grid1 squares which meant that we had to flip over
-// a block of 4x4 Grid0 squares at at time. Since this made the 4x4 Grid0 squares equivalent to
-// a Grid1 squares, we changed Grid0 squares to be the same size as Grid1 squares and flipped them 
-// over 1 at a time. We increased the resolution of displacement and normal maps by repeating
-// then 4x in each direction.
+The materials are created using the animated Ocean displacement and normal maps 
+along with diffuse and roughness textures that are loaded, subdivided in your 
+main program and saved to the grd_ variable (below).
 
-// @grd_ variable
-// Here is the main grd_ variable:
-//grd_ = {
-//	MSP: new THREE.Vector3 (),	// MSX, MPY, MSZ (meters) (from Flight)
-//	RCs: 16,				// Squares in each of first 2 grids
-//	Siz: GrdSiz,			// Size of smallest square
-//	Stp: 4,					// Squares in each of first 2 grids
-//	Seg: GrdSeg,			// Segments for smallest square
-//	Grx: [],				// Index of Grids (0-2)
-//	Geo: [],				// Master Index of Basic Geometries
-//	Col: WtrCol,			// Color
-//	Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
-//	Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
-//	Df0: [],				// Grid 0-1 Diffuse Maps
-//	Rf0: [],				// Grid 0-1 Roughness Maps
-//	Mt0: [],				// Grid 0 Materials
-//	Mt1: [],				// Grid 1 Materials
-//	Dif: 0,					// Grid 2 Diffuse Map
-//	Ruf: 0,					// Grid 2 Roughness Maps
-//	Gr2: 0,					// Grid 2 Normal Map
-//	Mat: [],				// Grid 2 Materials
-//	WMx: WavMax,			// Max wave height, used to lower outer squares
-//};
+The grids have the following dimensions and use the following textures:
 
-/*******************************************************************************
+DIMENSIONS:
+         Square Size     Grid Units    Grid Size          Visibility
+Grid0	 3.2 km / 2 mi     4x4      12.8 km /  8 mi     6.4 km /  4 mi
+Grid1    3.2 km / 2 mi    16x16     51.2 km / 32 mi    25.6 km / 16 mi
+Grid2	12.8 km / 8 mi    16x16    204.8 km / 128 mi  102.4 km / 64 mi
+
+TEXTURE MAPS:
+           Displacement    Normal        Diffuse           Rougness
+Grid0      Animated 4x    Animated 4x    Static 1/16      Static 1/16
+Grid1        None         Animated 4x    Static 1/16      Static 1/16
+Grid2        None         Static  16x    Static 1x        Static 1x
+
+Previously Grid0 squares were 1/4 the size of Grid1 squares which meant that we had to flip over
+a block of 4x4 Grid0 squares at at time. Since this made the 4x4 Grid0 squares equivalent to
+a Grid1 squares, we changed Grid0 squares to be the same size as Grid1 squares and flipped them 
+over 1 at a time. We increased the resolution of displacement and normal maps by repeating
+then 4x in each direction.
+
+@grd_ variable
+Here is the main grd_ variable:
+grd_ = {
+	MSP: new THREE.Vector3 (),	// MSX, MPY, MSZ (meters) (from Flight)
+	RCs: 16,				// Squares in each of first 2 grids
+	Siz: GrdSiz,			// Size of smallest square
+	Stp: 4,					// Squares in each of first 2 grids
+	Seg: GrdSeg,			// Segments for smallest square
+	Grx: [],				// Index of Grids (0-2)
+	Geo: [],				// Master Index of Basic Geometries
+	Col: WtrCol,			// Color
+	Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
+	Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
+	Df0: [],				// Grid 0-1 Diffuse Maps
+	Rf0: [],				// Grid 0-1 Roughness Maps
+	Mt0: [],				// Grid 0 Materials
+	Mt1: [],				// Grid 1 Materials
+	Dif: 0,					// Grid 2 Diffuse Map
+	Ruf: 0,					// Grid 2 Roughness Maps
+	Gr2: 0,					// Grid 2 Normal Map
+	Mat: [],				// Grid 2 Materials
+	WMx: WavMax,			// Max wave height, used to lower outer squares
+};
+*/
+
+/********************************************************************************
 *
 *	IMPORTS
 *
-*******************************************************************************/
+********************************************************************************/
 
 import {DataTexture,
 		LinearFilter,
@@ -78,17 +79,16 @@ import {DataTexture,
 	} from 'three';
 import {color,texture,normalMap,positionLocal} from 'three/tsl';
 
-
-/*******************************************************************************
+/********************************************************************************
 *
 *	LOADGEOMAT
 *
-*******************************************************************************/
+********************************************************************************/
 
 function loadGeoMat(imagLoader,txtrLoader,grd_,context) {
 	loadGe1Mat(imagLoader,grd_,context,grd_.DfS,grd_.DfM); // Diffuse Textures
 	loadGe1Mat(imagLoader,grd_,context,grd_.RfS,grd_.RfM); // Roughness Textures
-	// Static Normal Map (Grid 2 Only) -----------------------------------------
+	// Static Normal Map (Grid 2 Only) ------------------------------------------
 	txtrLoader.load(grd_.N2S,function(texture) {
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
@@ -139,11 +139,11 @@ function loadGe1Mat(imagLoader,grd_,context,fnam,dest) {
 	});
 } 
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	GRDMAP
 *
-*******************************************************************************/
+********************************************************************************/
 
 class GrdMap {
 
@@ -151,7 +151,7 @@ constructor(grd_,scene) {
 	this.grd_ = grd_;
 	this.scene = scene;
 
-//- Grid 0 ---------------------//----------------------------------------------
+//- Grid 0 ---------------------//-----------------------------------------------
 	this.grd_.Grx[0] = {
 		Typ:	0,				// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs/grd_.Stp, // Since each square is 4x4, only need 4x4 
@@ -169,7 +169,7 @@ constructor(grd_,scene) {
 		NSA:	0,				// N/A
 		EWA:	0,				// N/A
 	}
-//- Grid 1 ---------------------//----------------------------------------------
+//- Grid 1 ---------------------//-----------------------------------------------
 	this.grd_.Grx[1] = {
 		Typ:	1,				// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,		// Rows and Columns - use odd number
@@ -187,7 +187,7 @@ constructor(grd_,scene) {
 		NSA:	0,				// Shared North/South Adjustment (updated)
 		EWA:	0,				// Shared East/West Adjustment (updated)
 	}
-//- Grid 2 ---------------------//----------------------------------------------
+//- Grid 2 ---------------------//-----------------------------------------------
 	this.grd_.Grx[2] = {
 		Typ:	2,				// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,		// Rows and Columns - use odd number (for now = divisible by 3)
@@ -242,7 +242,7 @@ _initGeoMat(grd_,scene) {
 	let sg0 = grd_.Seg*grd_.Stp;
 	grd_.Geo[n] = new PlaneGeometry(sz0,sz0,sg0,sg0);
 	grd_.Geo[n].rotateX(-Math.PI/2);
-	//- Grid1 ------------------//----------------------------------------------
+	//- Grid1 ------------------//-----------------------------------------------
 	// For Grid1, using geometry = siz*stp
 	// Grid1 has no displacement
 	// Color texture is full-sized, normal map repeats (line 140)
@@ -265,7 +265,7 @@ _initGeoMat(grd_,scene) {
 	// Geometry (same as Grid0, but no segments)
 	grd_.Geo[1] = new PlaneGeometry(sz0,sz0);
 	grd_.Geo[1].rotateX(-Math.PI/2);
-	//- Grid2 ------------------//----------------------------------------------
+	//- Grid2 ------------------//-----------------------------------------------
 	// Grid2 has generic normal map
 	n = 2;
 	grd_.Mat[n] = new MeshStandardNodeMaterial({
@@ -283,7 +283,7 @@ _initGeoMat(grd_,scene) {
 	grd_.Geo[n].rotateX(-Math.PI/2);
 }
 
-//- Init Moving Map (Ocean) ----//----------------------------------------------
+//- Init Moving Map (Ocean) ----//-----------------------------------------------
 
 _init1GrMap(grx_,grd_,scene) {
 	// Load Variables
@@ -331,13 +331,13 @@ _init1GrMap(grx_,grd_,scene) {
 	}
 }
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	UPDATE CLASS
 *
-*******************************************************************************/
+********************************************************************************/
 
-//= (called by Main Program) ===================================================
+//= (called by Main Program) ====================================================
 
 update() {
 	this._move1GrMap(this.grd_.Grx[0],this.grd_);
@@ -345,7 +345,7 @@ update() {
 	this._move1GrMap(this.grd_.Grx[2],this.grd_);
 }
 
-//- Move Moving Map ------------//----------------------------------------------
+//- Move Moving Map ------------//-----------------------------------------------
 
 _move1GrMap(grx_,grd_) {
 	let grd1_ = grd_.Grx[1];
@@ -480,20 +480,20 @@ _move1GrMap(grx_,grd_) {
 
 } // END OF MODULE
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	EXPORTS
 *
-*******************************************************************************/
+********************************************************************************/
 
 export {loadGeoMat,GrdMap};
 
-/*******************************************************************************
+/********************************************************************************
 *
 *	REVISIONS
 *
-*******************************************************************************/
-/*
+*********************************************************************************
+
 230530		Created this simplified version of GrdMap by moving Grid Definitions 
 			and routines for creating Geometries and Materials into this Module
 240108		This version 2 initalizes large-sized diffuse and roughness maps

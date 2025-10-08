@@ -1,12 +1,15 @@
-﻿/*= OCEAN MODULE ================================================================
-
-Ocean5.js (14 Sep 2025)
-
+﻿/********************************************************************************
+*
+*	OCEAN MODULE
+*
+*********************************************************************************
 This is single-pass version of the Ocean Wave Generator created by Attila Schroeder
 The complete version is available on his GitHub Repository at:
 https://github.com/Spiri0/Threejs-WebGPU-IFFT-Ocean
 This was extracted and converted to a module by Phil Crowther with his assistance and permission
 and is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Copyright 2025, Attila Schroeder
+Version dated 8 Oct 2025
 */
 
 /********************************************************************************
@@ -94,7 +97,6 @@ constructor(params) {
 	this.DDindex = uniform(0);
 	this.ifftStep = uniform(0);
 	this.pingpong = uniform(0);
-//	this.deltaTime = uniform(0);
 	//- Workgroup Variables -----------------------------------------------------
 	this.workgroupSize = [16,16,1];
 	this.dispatchSize = [this.size/this.workgroupSize[0],this.size/this.workgroupSize[1]];
