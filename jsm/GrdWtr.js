@@ -41,24 +41,24 @@ then 4x in each direction.
 Here is the main grd_ variable:
 grd_ = {
 	MSP: new THREE.Vector3 (),	// MSX, MPY, MSZ (meters) (from Flight)
-	RCs: 16,				// Squares in each of first 2 grids
-	Siz: GrdSiz,			// Size of smallest square
-	Stp: 4,					// Squares in each of first 2 grids
-	Seg: GrdSeg,			// Segments for smallest square
-	Grx: [],				// Index of Grids (0-2)
-	Geo: [],				// Master Index of Basic Geometries
-	Col: WtrCol,			// Color
-	Dsp: 0,					// Grid 0 Displacement Map (from Ocean)
-	Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
-	Df0: [],				// Grid 0-1 Diffuse Maps
-	Rf0: [],				// Grid 0-1 Roughness Maps
-	Mt0: [],				// Grid 0 Materials
-	Mt1: [],				// Grid 1 Materials
-	Dif: 0,					// Grid 2 Diffuse Map
-	Ruf: 0,					// Grid 2 Roughness Maps
-	Gr2: 0,					// Grid 2 Normal Map
-	Mat: [],				// Grid 2 Materials
-	WMx: WavMax,			// Max wave height, used to lower outer squares
+	RCs: 16,					// Squares in each of first 2 grids
+	Siz: GrdSiz,				// Size of smallest square
+	Stp: 4,						// Squares in each of first 2 grids
+	Seg: GrdSeg,				// Segments for smallest square
+	Grx: [],					// Index of Grids (0-2)
+	Geo: [],					// Master Index of Basic Geometries
+	Col: WtrCol,				// Color
+	Dsp: 0,						// Grid 0 Displacement Map (from Ocean)
+	Nrm: 0,						// Grid 0-1 Normal Map (from Ocean)
+	Df0: [],					// Grid 0-1 Diffuse Maps
+	Rf0: [],					// Grid 0-1 Roughness Maps
+	Mt0: [],					// Grid 0 Materials
+	Mt1: [],					// Grid 1 Materials
+	Dif: 0,						// Grid 2 Diffuse Map
+	Ruf: 0,						// Grid 2 Roughness Maps
+	Gr2: 0,						// Grid 2 Normal Map
+	Mat: [],					// Grid 2 Materials
+	WMx: WavMax,				// Max wave height, used to lower outer squares
 };
 */
 
@@ -337,8 +337,6 @@ _init1GrMap(grx_,grd_,scene) {
 *
 ********************************************************************************/
 
-//= (called by Main Program) ====================================================
-
 update() {
 	this._move1GrMap(this.grd_.Grx[0],this.grd_);
 	this._move1GrMap(this.grd_.Grx[1],this.grd_);
@@ -506,4 +504,5 @@ export {loadGeoMat,GrdMap};
 250601:		Add loadGeoMat to Module
 250901: 	Color and map no longer mix; using colored map instead
 250909: v2	For use with Ocean2 (compute shaders) due to increases res, no detail required
+
 */

@@ -793,8 +793,9 @@ export {Ocean};
 *
 *	REVISIONS
 *
-//******************************************************************************/
-/*
-	250908: Initial Version - Uses Compute Shaders
-	250914:	Adjust Wind Direction
+//*******************************************************************************
+
+250908: Initial Version - Uses Compute Shaders
+250914:	Adjust Wind Direction
+
 */

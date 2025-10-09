@@ -662,12 +662,13 @@ export {loadAirExt,loadAirInt,moveAirExt,moveAirInt};
 *
 *	REVISIONS
 *
-********************************************************************************/
-/*
- * 240420:	Converted to SI units
- * 240424:	Changed all air_ variables to 8 character names
- * 240928:	Changed Airspeed Indicatator to IAS and Limit Rudder Travel
- * 241013:	Cleanup
- * 241118:	Cleanup
- * 250406:	Loads airplane and animations (ver 2a)
+********************************************************************************
+
+240420:	Converted to SI units
+240424:	Changed all air_ variables to 8 character names
+240928:	Changed Airspeed Indicatator to IAS and Limit Rudder Travel
+241013:	Cleanup
+241118:	Cleanup
+250406:	Loads airplane and animations (ver 2a)
+
 */

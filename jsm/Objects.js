@@ -59,7 +59,7 @@ const FlgSeg = new Vector2(30,16); // Standard Flag Segments
 *
 ********************************************************************************/
 
-//=	LOAD MOUNTAINS/ISLANDS ===============//=====================================
+//=	LOAD MOUNTAINS/ISLANDS ======================================================
 function loadMountn(scene,mnt_,air_,gen_,txtrLoader,gltfLoader) {
 	for (let i = 0; i < mnt_.ObjNum; i++) {
 		mnt_.ObjGrp[i].position.copy(mnt_.MapPos[i]);
@@ -92,7 +92,7 @@ function initMountn(mnt_,air_) {
 	moveMountn(mnt_,air_);
 }
 
-//=	MOVE MOUNTAINS/ISLANDS ===============//=====================================
+//=	MOVE MOUNTAINS/ISLANDS ======================================================
 
 function moveMountn(mnt_,air_) {
 //	Assumes that objects are at Sea Level
@@ -115,7 +115,7 @@ function moveMountn(mnt_,air_) {
 *
 ********************************************************************************/
 
-//=	LOAD OBJECTS ===============//===============================================
+//=	LOAD OBJECTS ================================================================
 function loadFxdObj(scene,fxd_,gltfLoader) {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
 		gltfLoader.load(fxd_.ObjSrc[i], function (gltf) {
@@ -133,7 +133,7 @@ function initFxdObj(fxd_,air_,gen_) {
 	moveFxdObj(fxd_,air_,gen_);
 }
 
-//=	MOVE OBJECTS ===============//===============================================
+//=	MOVE OBJECTS ================================================================
 function moveFxdObj(fxd_,air_,gen_) {
 	let AltAdj = gen_.AltDif*0.01;
 	// Change Altitude on Linked Objects to Prevent Flicker
@@ -214,7 +214,7 @@ function moveAnmFlg(flg_,tim_) {
 *
 ********************************************************************************/
 
-//=	LOAD AIRPLANES =============//===============================================
+//=	LOAD AIRPLANES ==============================================================
 
 function loadXACVeh(gltfLoader,xac_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
@@ -248,7 +248,7 @@ function loadXACVeh(gltfLoader,xac_) {
 
 }
 
-//=	INIT AIRPLANES =============//===============================================
+//=	INIT AIRPLANES ==============================================================
 
 function initXACVeh(xac_,air_,scene) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
@@ -272,7 +272,7 @@ function initXACVeh(xac_,air_,scene) {
 *
 ********************************************************************************/
 
-//=	LOAD SHIPS =================//===============================================
+//=	LOAD SHIPS ==================================================================
 
 function loadXSHVeh(gltfLoader,xsh_) {
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
@@ -563,8 +563,8 @@ export {loadMountn,initMountn,moveMountn,
 *
 *	REVISIONS
 *
-********************************************************************************/
-/*
+********************************************************************************
+
 250405:	In development
 250523: Added loadMyCrew/moveMyCrew
 250528: Added animations to loadMyCrew/moveMyCrew
@@ -573,4 +573,5 @@ export {loadMountn,initMountn,moveMountn,
 250929:	Make AltMul for Islands Optional
 250930: Changed Islands to Mountains/Islands, load/init/move, isl_ to mnt_, added mnt_.VrtAdj
 251007: Added maxAni to Mountains/Islands
+
 */

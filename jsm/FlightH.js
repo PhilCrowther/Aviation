@@ -1,6 +1,6 @@
 /********************************************************************************
 *
-*	FLIGHTH MODULE
+*	FLIGHTH SUBROUTINES
 *
 *********************************************************************************
 
@@ -10,7 +10,6 @@ Version dated 8 Oct 2025
 
 This module is used for helicopter flight
 
-
 @fileoverview
 This file contains variables and functions for 3D Flight.
 The primary functions are: InitFlyt(Obj) and RoteFlyt(Obj)
@@ -19,7 +18,11 @@ The primary inputs are listed below and in the separate aircraft data file.
 See http://philcrowther.com/Aviation/ACflyt.htm for more details.
 */
 
-/* = INITIALIZE VALUES =======================================================*/
+/********************************************************************************
+*
+*	INITIALIZE
+*
+********************************************************************************/
 
 /* Initialize Rotation and Vectors*/
 function init3dFlyt() {
@@ -51,7 +54,12 @@ function init3dFlyt() {
 	move3dFlyt();
 }
 
-/* = COMPUTE VALUES ==========================================================*/
+/********************************************************************************
+*
+*	UPDATE
+*
+********************************************************************************/
+
 // Inputs: GrFlag, GrdZed, AltDif, MSpdZS, ACPtch, ACBank
 
 function move3dFlyt() {
@@ -157,22 +165,26 @@ function move3dFlyt() {
 	SpdUPS = SpdUPH * 5280 / 3600;		// (fps)
 }
 
-/* = MISCELLANOUS SUBROUTINES ================================================*/
+/********************************************************************************
+*
+*	SUBROUTINES
+*
+********************************************************************************/
 
-/* - Conversions -------------------------------------------------------------*/
+//- Conversions -----------------------------------------------------------------
 
-/* Converts degrees to 360 */
+//  Converts degrees to 360
 function Mod360(deg) {
 	while (deg < 0) deg = deg + 360;	// Make deg a positive number
 	deg = deg % 360;					// Compute remainder of any number divided by 360
 return deg;}
 
-/* Converts 360 degrees to +/- 180 */
+// Converts 360 degrees to +/- 180
 function PoM360(deg) {
 	if (deg > 180) deg = deg - 360;
 return deg;}
 
-/* - Rotate Vector -----------------------------------------------------------*/
+//- Rotate Vector -----------------------------------------------------------====
 // For given vector and XY radians
 // Computes rotated XYZ point values
 function RotVec(Dst,XRd,YRd) {
@@ -184,5 +196,18 @@ function RotVec(Dst,XRd,YRd) {
 	VectRZ = VectRZ * Math.cos(YRd);
 }
 
+/********************************************************************************
+*
+*	EXPORTS
+*
+********************************************************************************/
 
 export {init3dFlyt, move3dFlyt, Mod360, PoM360, RotVec};
+
+/********************************************************************************
+*
+*	REVISIONS
+*
+*********************************************************************************
+
+*/

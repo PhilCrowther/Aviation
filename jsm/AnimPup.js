@@ -49,12 +49,11 @@ const Km2Mil = 0.621371;
 
 //-	Load Airplane Model --------//-----------------------------------------------
 function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
-	gltfLoader.load(mxr_.Src, function (gltf) {				// The OnLoad function
+	gltfLoader.load(mxr_.Src, function (gltf) {		// The OnLoad function
 		gltf.scene.traverse(function (child) {	
 			if (child.isMesh) {
 				child.castShadow = true;
 				child.receiveShadow = true;
-//				child.geometry.computeVertexNormals();		// Better result?  Or remove smoothing?
 			}
 			if (child.name == "propeller") {
 				child.castShadow = false;
@@ -125,25 +124,25 @@ function loadAirAnmX(gltf,air_,mxr_,anm_) {
 function moveAirExt(air_,mxr_,anm_) {
 	// Animate ------------------------------------------------------------------
 	// Propeller
-	let prpspd =  4 * (air_.PwrPct - 0.6);					// Range = -2.4 to + 1.6
+	let prpspd =  4 * (air_.PwrPct - 0.6);			// Range = -2.4 to + 1.6
 	anm_.spnprp = anm_.spnprp - prpspd;
-	if (anm_.spnprp < 0) anm_.spnprp = 359;					// A complete circle
+	if (anm_.spnprp < 0) anm_.spnprp = 359;			// A complete circle
 	// Rudder
 	anm_.rudder = 180 + air_.RotDif.y * 100;
 	// Elevator
-	anm_.elvatr = 180 - 10*air_.ACPAdj-25;					// estimated adjustment
-	if (anm_.elvatr < 150) anm_.elvatr = 150;				// Range = 00 to 60
+	anm_.elvatr = 180 - 10*air_.ACPAdj-25;			// estimated adjustment
+	if (anm_.elvatr < 150) anm_.elvatr = 150;		// Range = 00 to 60
 	else if (anm_.elvatr > 209) anm_.elvatr = 209;
 	// Ailerons
 	let ailbnk = air_.RotDif.z;
 	if (air_.GrFlag) ailbnk = AGBank;
 	// Left
 	anm_.aillft = 180 + ailbnk * 30;
-	if (anm_.aillft < 151) anm_.aillft = 151;				// Range = 00 to 60
+	if (anm_.aillft < 151) anm_.aillft = 151;		// Range = 00 to 60
 	else if (anm_.aillft > 209) anm_.aillft = 209;
 	// Right
 	anm_.ailrgt = 180 - ailbnk * 30;
-	if (anm_.ailrgt < 151) anm_.ailrgt = 151;				// Range = 00 to 60
+	if (anm_.ailrgt < 151) anm_.ailrgt = 151;		// Range = 00 to 60
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 	// Animations (Display) -----------------------------------------------------
 	// Propeller
@@ -173,7 +172,8 @@ export {loadAirExt,moveAirExt};
 *
 *	REVISIONS
 *
-********************************************************************************/
-/*
- * 250607:	Create
+*********************************************************************************
+
+250607:	Create
+
 */
