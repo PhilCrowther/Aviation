@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html>
-
 <!--
 /********************************************************************************
 *
@@ -10,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Oct 2025
+Version dated 9 Oct 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -236,7 +235,7 @@ TO DO:
 
 //= 1. MAIN VARIABLES ==========//===============================================
 //- INPUTS ---------------------//-----------------------------------------------
-let BegLoc = 1;					// 0 = Island; 1 = CVE; 2 = Air (only CVE works for now)
+let BegLoc = 1;					// 0 = Island; 1 = CVE; 2 = Air
 //- FLIGHT CONTROLS ------------//-----------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
@@ -593,8 +592,8 @@ let instructions = document.getElementById("instructions");
 		instructions.style.display = "";
 	});
 //- Other
-let ThrFlg = 1;					// On CVE, Throttle Disabled Until Animation Done
-let AnmFlg = 1;					// Set to Zero When Animation Complete
+let ThrFlg = 0;					// On CVE, 1 = Throttle Disabled Until Animation Done
+let AnmFlg = 0;					// On CVE, 1 = Animation Not Complete set
 
 /********************************************************************************
 *
@@ -1075,7 +1074,7 @@ function initXACFyr(n) {
 function initMovShp() {
 	initXSHVeh(xsh_,air_,scene);
 	initXSHWak(wak_,txt_);		// Init Ship Wake
-	initXSHSmk(xss_,txt_);		// Init Ship Wake
+	initXSHSmk(xss_,txt_);		// Init Ship Smoke
 	initAAAGun(xsg_,txt_,air_,gen_,scene); // Init Common Testure
 }
 
@@ -1205,7 +1204,7 @@ function initAirObj() {
 		air_.MapPos.x = mnt_.MapPos[0].x-610;
 		air_.MapPos.z = mnt_.MapPos[0].z-275;	
 		air_.MapPos.y = air_.GrdZed = alt_.Alt[0];
-		anm_.lngpos = 0;		// Landing Gear Down
+		anm_.lngpos = 0;		// Landing Gear Down	
 	}
 	if (BegLoc == 1) { 			// CVE
 		air_.GrdFlg = air_.MovFlg = 1;
@@ -1217,9 +1216,14 @@ function initAirObj() {
 		xsh_.ShpLok[0].add(air_.AirObj);
 		anm_.lngpos = 0;		// Landing Gear Down
 		anm_.canpos = 0;		// Canopy Open
+		ThrFlg = 1;				// Disable Throttle
+		AnmFlg = 1;				// Animation Not Complete
 	}
 	if (BegLoc == 2) { 			// Air
-		gen_.PwrDif = 1000;
+		let Pwr = 1.0;			// Range = 0 to 1
+		Throtl = Pwr;			// for Display
+		air_.PwrPct = Pwr;		// Power Setting
+		LagPwr.z = Pwr;			// So Power = Display
 		air_.SpdKPH = 200;
 		air_.MapPos.y = air_.MapSPS.y = 200;
 		anm_.lngpos = 180;		// Landing Gear Up
@@ -1250,7 +1254,7 @@ function moveAirObj() {
 	let gal = gen_.PwrDif * LagPwr.x; // Current input delayed
 	let lag = LagPwr.y * LagPwr.z; // Released from Cumulator
 	LagPwr.z = LagPwr.z + gal - lag; // Change in Cumulator
-	gen_.PwrDif = gen_.PwrDif - gal + lag;
+	gen_.PwrDif = gen_.PwrDif - gal + lag; 
 	// Input Engine Power
 	air_.PwrPct = air_.PwrPct + gen_.PwrDif;
 	if (air_.PwrPct > 1) air_.PwrPct = 1;
