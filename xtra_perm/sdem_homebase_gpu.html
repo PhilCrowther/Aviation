@@ -51,6 +51,9 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "stats-gl";
 //- Custom Modules
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
+import {initXSHWak,moveXSHWak,	// Ship Wake
+		initXSHSmk,				// Ship Smoke
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 
 /********************************************************************************
 *
@@ -139,6 +142,14 @@ let WtrCol = 0x001080;			// Water (Navy)
 let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png";
 //- Maps ------------------------------------------------------------------------
 let RufMap = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+//- Shared Textures
+let txt_ = {
+		ObjNum: 3,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
+		ObjTxt: [],
+	};
 
 //= GRID DATA ===================================================================
 let GrdSiz = 2400;				// Size of Smallest Grid Square (meters)
@@ -207,6 +218,44 @@ let HngPtr = 0;
 let HngPos = new THREE.Vector3(-562,10,-345); // Relative Position
 let HngSiz = Ft2Mtr;
 
+//= MOVING ======================================================================
+//	Ship
+let ShpSrc = "https://PhilCrowther.github.io/Aviation/models/vehicles/tramp.glb";
+let	ShpPtr = 0;
+let ShpSiz = 1;
+//- Rotation
+let	ShpObj = new THREE.Object3D();				// Armature base - use to rotate camera
+	ShpObj.rotation.order = "YXZ";
+	scene.add(ShpObj);
+let ShpLon = 0;
+//- Ship Wake ------------------//-----------------------------------------------
+let wak_ = {
+		ObjNum: 1,				// Number of Wakes
+		ObjSrc: [0],			// Not Used
+		ObjTxt: [0],			// Shared Texture Reference Number
+		ObjMat: [0],			// Material
+		ObjAdr: [0],			// Emitter Address
+		ObjSiz: [4000], 		// Scale
+		RndOrd: [1],			// renderOrder
+//		ObjRot: [new THREE.Euler(0,0,0)], // Rotation (not used)
+		ObjRot: [new THREE.Vector3(0,0,0)], // Rotation (not used)
+		MapPos: [new THREE.Vector3(50,75,25)], // Offset Position
+		ObjRef: [0],			// Parent Object
+	};
+//- Ship Smoke -----------------//-----------------------------------------------
+let xss_ = {
+		ObjNum: 1,				// Number of Stacks
+		ObjSrc: [0],			// Not Used
+		ObjTxt: [0],			// Shared Texture Reference Number
+		ObjMat: [0],			// Material
+		ObjAdr: [0],			// Emitter Address
+		ObjSiz: [200],			// Scale
+		RndOrd: [1],			// renderOrder
+		ObjRot: [new THREE.Euler()], // Rotation (not used)
+		ObjPos: [new THREE.Vector3(0,10,5)], // Offset Position
+		ObjRef: [0],			// Parent Object
+	};
+
 //= KEY BINDINGS ===============//===============================================
 let K_Paws = 80;			    // Pause (p)
 let K_Wire = 87;				// Wireframe (w)
@@ -242,6 +291,7 @@ function loadAll() {
 	loadIsland();				// Load Island
 	loadVulkan();				// Load Smoke
 	loadHangar();				// Load Hangars
+	loadMoving();				// Load Ship
 	// Load stats
 	if (StatOn) {				// show stats
 		StatOn = new Stats({
@@ -272,6 +322,7 @@ function rendAll() {
 			camera.position.y = 2.0;
 		}
 		if (waves) waves.update(); // Move Ocean
+		moveMoving();
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval();
@@ -364,6 +415,20 @@ function initOceans() {
 
 /********************************************************************************
 *
+*	SHARED TEXTURES
+*
+********************************************************************************/
+//- Shared Textures ------------//-----------------------------------------------
+function loadShared() {
+	if (txt_.ObjNum) {
+		for (let n = 0; n < txt_.ObjNum; n++) {
+			txt_.ObjTxt[n] = txtrLoader.load(txt_.ObjSrc[n]);	
+		}
+	}
+};
+
+/********************************************************************************
+*
 *	ISLAND
 *
 ********************************************************************************/
@@ -374,6 +439,7 @@ function initOceans() {
 function loadIsland() {
 	// Load Texture and Convert to Material
 	IslTxt = txtrLoader.load(IslTxt);
+	IslTxt.anisotropy = maxAnisotropy;
 	let IslMat = new THREE.MeshLambertNodeMaterial({colorNode: texture(IslTxt)});
 	// Load Mesh and Attach Material
 	gltfLoader.load(IslMsh,function (gltf) {
@@ -456,6 +522,35 @@ function loadHangar() {
 		HngPtr.position.copy(HngPos);
 		VlkGrp.add(HngPtr);
 	},);	
+}
+
+/********************************************************************************
+*
+*	SHIP
+*
+********************************************************************************/
+//	Ship Circles the Island
+
+//= Load Ship ==================//==============================================
+function loadMoving() {
+	gltfLoader.load(ShpSrc,function (gltf) {
+		ShpPtr = gltf.scene;
+		ShpPtr.scale.setScalar(ShpSiz);
+		ShpPtr.position.z = -1000;
+		ShpPtr.rotation.y = 270*DegRad; // Pointed Along Path
+		ShpObj.add(ShpPtr);		// Rotator
+		wak_.ObjRef[0] = ShpPtr;	// Parent Object
+		xss_.ObjRef[0] = ShpPtr;	// Parent Object
+		loadShared();				// Load Shared Textures
+		initXSHWak(wak_,txt_);		// Init Ship Wake
+		initXSHSmk(xss_,txt_);		// Init Ship Smoke
+	},);	
+}
+
+//= Move Ship ===================================================================
+function moveMoving() {
+	ShpLon = ShpLon - .01;
+	ShpObj.rotation.y = Mod360(ShpLon+90)*DegRad;
 }
 
 /********************************************************************************
