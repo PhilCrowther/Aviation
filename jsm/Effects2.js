@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Oct 2025
+Version dated 10 Oct 2025
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -829,7 +829,7 @@ function initXSHWak(wak_,txt_) {
 		wak_.ObjAdr[n].count = 600; // Increases continuity (was 100)
 		RotRad = wak_.ObjRot[n].scale.setScalar(DegRad);
 		wak_.ObjAdr[n].rotation.x = Math.PI/2; // Set Flat
-		wak_.ObjAdr[n].rotation.y = wak_.ObjRot[n].y*DegRad; rotation around corner
+		wak_.ObjAdr[n].rotation.y = wak_.ObjRot[n].y*DegRad; //rotation around corner
 //		wak_.ObjAdr[n].position.y = -5; // Added
 		wak_.ObjAdr[n].position.copy(wak_.ObjPos[n]);
 		//	Link
@@ -931,5 +931,6 @@ export {initFad2Blk,moveFad2Blk,
 
 250125:	In Development
 251010:	Replace MakMsh with Object3D
+		Allow position and rotation of wak_
 
 */
