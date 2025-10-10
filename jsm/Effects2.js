@@ -827,7 +827,6 @@ function initXSHWak(wak_,txt_) {
 		wak_.ObjAdr[n].scale.setScalar(wak_.ObjSiz[n]);
 		wak_.ObjAdr[n].isInstancedMesh = true;
 		wak_.ObjAdr[n].count = 600; // Increases continuity (was 100)
-		RotRad = wak_.ObjRot[n].scale.setScalar(DegRad);
 		wak_.ObjAdr[n].rotation.x = Math.PI/2; // Set Flat
 		wak_.ObjAdr[n].rotation.y = wak_.ObjRot[n].y*DegRad; //rotation around corner
 //		wak_.ObjAdr[n].position.y = -5; // Added
