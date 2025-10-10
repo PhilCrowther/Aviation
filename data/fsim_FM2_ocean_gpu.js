@@ -469,7 +469,7 @@ let wak_ = {
 		ObjSiz: [4000,4000,4000], // Scale
 		RndOrd: [1,1,1],		// renderOrder
 		ObjRot: [0,0,0],		// Rotation (not used)
-		MapPos: [0,0,0],		// Map Position
+		ObjPos: [0,0,0],		// Map Position
 		ObjRef: [0,0,0],		// Parent Object
 	};
 
