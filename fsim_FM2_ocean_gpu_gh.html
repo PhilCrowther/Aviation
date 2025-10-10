@@ -140,6 +140,7 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
+	* Can't switch views on ground at island
 	* Red Out not very red.
 	* Don't hear EA guns or engines (used to hear engines)9
 	* Reset landed airplane to starting position (R) - WIP
@@ -235,7 +236,7 @@ TO DO:
 
 //= 1. MAIN VARIABLES ==========//===============================================
 //- INPUTS ---------------------//-----------------------------------------------
-let BegLoc = 1;					// 0 = Island; 1 = CVE; 2 = Air
+let BegLoc = 0;					// 1 = Island; 1 = CVE; 2 = Air
 //- FLIGHT CONTROLS ------------//-----------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
@@ -1248,7 +1249,7 @@ function initAirObj() {
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
 function moveAirObj() {
-	// Compute Inputs ----------..-----------------------------------------------
+	// Compute Inputs ----------//-----------------------------------------------
 	// Power Percent ............................................................
 	// Add Delay
 	let gal = gen_.PwrDif * LagPwr.x; // Current input delayed
@@ -1758,14 +1759,8 @@ function onDocumentMouseWheel(event) {
 	if (!ThrFlg) { // On CVE, Engine Enabled
 		gen_.PwrDif = - event.deltaY * gen_.PwrMul; // Increment = 1%
 		Throtl = Throtl + gen_.PwrDif;
-		if (Throtl > 1) {
-			Throtl = 1;
-			gen_.PwrDif = 0;
-		}
-		if (Throtl < 0) {
-			Throtl = 0;
-			gen_.PwrDif = 0;
-		}
+		if (Throtl > 1) Throtl = 1;
+		if (Throtl <= 0) Throtl = 0;
 	}
 }
 
