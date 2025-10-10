@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Oct 2025
+Version dated 10 Oct 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -75,6 +75,12 @@ This demo has now been expanded to include a battle scenario which will eventual
 		}
 	}
 </script>
+
+/********************************************************************************
+*
+*	MAIN MODULE
+*
+********************************************************************************/
 
 <script type="module">
 
@@ -214,7 +220,7 @@ TO DO:
 	   RendAll						Render
 	   FadMsh						Fade to Black
 	2. SKYBOX						Fog, SkyCube and Lensflare
-	3. GEOMAT						Grids and Textures
+	3. GRID - HARDENED SURFACES
 	4. OBJECTS						Static and Moving Objects and Animations
 	    mnt							Mountains/Islands
 	    Fxd							Fixed Objects
@@ -410,40 +416,42 @@ let context = canvas.getContext("2d",{willReadFrequently: true});
 //= SMOKE MODULE ===============//===============================================
 //- Vertical Smoke -------------//----------------------------------------------
 //	Adjustments
-	grs_.ObjRot = [new THREE.Euler()];				// Rotation (not used)
-	grs_.MapPos = [new THREE.Vector3(50,75,25)];	// Map Position
-	grs_.ObjRef = [mnt_.ObjGrp[0]];					// Parent Object
+	grs_.ObjRot = [new THREE.Euler()]; // Rotation (degrees) [not used]
+	grs_.MapPos = [new THREE.Vector3(50,75,25)]; // Map Position
+	grs_.ObjRef = [mnt_.ObjGrp[0]]; // Parent Object
 //- Ground Fire ----------------//-----------------------------------------------
 //	Adjustments
-	grf_.ObjRot = [new THREE.Euler()];				// Rotation
+	grf_.ObjRot = [new THREE.Euler()]; // Rotation (degrees) [not used]
 	grf_.MapPos = [new THREE.Vector3(-562,-22.5,-363)]; // Map Position
-	grf_.ObjRef = [mnt_.ObjGrp[0]],					// Parent Object
+	grf_.ObjRef = [mnt_.ObjGrp[0]], // Parent Object
 //- Ship Wake ------------------//-----------------------------------------------
 //	Adjustments
-	wak_.ObjRot = [new THREE.Euler(),new THREE.Euler(),new THREE.Euler()]; // Rotation (not used)
-	wak_.MapPos = [new THREE.Vector3(50,75,25),		// Map Position
-				   new THREE.Vector3(50,75,25),
-				   new THREE.Vector3(50,75,25)],
-	wak_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[1],xsh_.ObjGrp[2]];	// Parent Object
+	wak_.ObjRot = [new THREE.Euler(0,0,0), // Rotation (degrees) [not used]
+				   new THREE.Euler(0,0,0),
+				   new THREE.Euler(0,0,0)];
+	wak_.ObjPos = [new THREE.Vector3(0,-5,0), // Offset Position
+				   new THREE.Vector3(0,-5,0),
+				   new THREE.Vector3(0,-5,0)],
+	wak_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[1],xsh_.ObjGrp[2]]; // Parent Object
 //- Ship Smoke (destroyer only) -------------------------------------------------
 //	Adjustments
-	xss_.ObjRot = [new THREE.Euler(), 				// Rotation (not used)
+	xss_.ObjRot = [new THREE.Euler(), // Rotation (degrees) [not used]
 				   new THREE.Euler()];
-	xss_.ObjPos = [new THREE.Vector3(0,13.5,-9.5),	// Offset Position
+	xss_.ObjPos = [new THREE.Vector3(0,13.5,-9.5), // Offset Position
 				   new THREE.Vector3(0,12.5,6)];	
-	xss_.ObjRef = [xsh_.ObjGrp[1],					// Parent Object (destroyer only)
+	xss_.ObjRef = [xsh_.ObjGrp[1], // Parent Object (destroyer only)
 				   xsh_.ObjGrp[1]];
 	xss_.ObjSiz = [200,200];
 //= MY PEOPLE (Rigged Animated Characters) ======================================
 //	Adjustments
-	myp_.ObjRot = [new THREE.Euler(0,-45,0)];		// Rotation (degrees)
-	myp_.MapPos = [new THREE.Vector3(6,12.9,40)];	// Relative Position (if parent)
-	myp_.ObjRef = [xsh_.ObjGrp[0]];					// Parent, if any
+	myp_.ObjRot = [new THREE.Euler(0,-45,0)]; // Rotation (degrees)
+	myp_.MapPos = [new THREE.Vector3(6,12.9,40)]; // Relative Position (if parent)
+	myp_.ObjRef = [xsh_.ObjGrp[0]]; // Parent, if any
 //= MY CREW (Ship Crew - Animated Not Rigged) ===================================
 //	Adjustments
-	myc_.ObjRot = [new THREE.Euler(0,0,0)];			// Rotation (degrees)
-	myc_.MapPos = [new THREE.Vector3(0,0,0)];		// Relative Position (if parent)
-	myc_.ObjRef = [xsh_.ObjGrp[0]];					// Parent, if any
+	myc_.ObjRot = [new THREE.Euler(0,0,0)]; // Rotation (degrees)
+	myc_.MapPos = [new THREE.Vector3(0,0,0)]; // Relative Position (if parent)
+	myc_.ObjRef = [xsh_.ObjGrp[0]]; // Parent, if any
 //= MINIMUM ALTITUDE ===========//===============================================
 //- Adjustments
 	alt_.Ref = [mnt_.ObjGrp[0],xsh_.ObjGrp[0]]; // can't load until object exists
@@ -598,14 +606,14 @@ let AnmFlg = 0;					// On CVE, 1 = Animation Not Complete set
 
 /********************************************************************************
 *
-*	PROGRAM
+*	1. MAIN PROGRAM
 *
 ********************************************************************************/
 
-//= 1. MAIN PROGRAMS ===========//===============================================
 	loadAll();
 	
-//-	0 LOAD ALL------------------//-----------------------------------------------
+//= LOAD ALL ===================//===============================================
+
 function loadAll() {
 	WaitScreen();				// load loading screen
 	loadSkyBox();
@@ -616,6 +624,7 @@ function loadAll() {
 }
 
 //- WAIT SCREEN ----------------//-----------------------------------------------
+
 function WaitScreen() {
 	// Set up the loading screen scene - it can be treated just like our main scene.
 	let BoxGeo = new THREE.PlaneGeometry(1,1);
@@ -628,7 +637,8 @@ function WaitScreen() {
 	loadingScreen.scene.add(loadingScreen.box);
 }
 
-//-	INITIALIZE -----------------//-----------------------------------------------
+//=	INIT ALL ===================//===============================================
+
 function initAll() {
 	// Time
 	tim_.DLTime = 1/60;			// Seconds per frame (default)
@@ -666,8 +676,9 @@ function initAll() {
 	gen_.LodFlg = 1;
 }
 
-//- RENDER ---------------------//-----------------------------------------------
-function rendAll() {		// r173 added async
+//= REND ALL ===================//===============================================
+
+function rendAll() {			// r173 added async
 	// This block runs while resources are loading.
 	if(RESOURCES_LOADED == false){
 		boxrot = Mod360(boxrot - 3);
@@ -725,9 +736,14 @@ function rendAll() {		// r173 added async
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-//= 2. SKY =====================//===============================================
+/********************************************************************************
+*
+*	2. SKY
+*
+********************************************************************************/
 
-//- Load SkyBox ----------------//-----------------------------------------------
+//= LOAD SKY ===================//===============================================
+
 function loadSkyBox() {
 	sky_.envMap = cubeLoader
 		.setPath(sky_.SBxSrc)
@@ -737,13 +753,14 @@ function loadSkyBox() {
 	scene.background = sky_.envMap;
 //	scene.environment = sky_.envMap;
 	// LensFlare
-	if (gen_.LnFFlg) {				// SunFlare	
+	if (gen_.LnFFlg) {			// SunFlare	
 		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
 		sky_.LF1Txt = txtrLoader.load(sky_.LF1Src);
 	}
 }
 
-//- Init SkyBox ----------------//-----------------------------------------------
+//= INIT SKY ===================//===============================================
+
 function initSkyBox() {
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
@@ -763,7 +780,101 @@ function initSkyBox() {
 	}
 }
 
-//= 4. OBJECTS =================//===============================================
+/********************************************************************************
+*
+*	3. GRID
+*
+********************************************************************************/
+
+//= HARDENED SURFACES ===========================================================
+// The hardened surfaces are the Home Airfield and the CVE Deck (moving)
+// Where CVE not facing north, can we rotate ref points and airplane to north?
+
+//- Compute Minimum Altitude ---//-----------------------------------------------
+function moveMinAlt() {
+	air_.GrdZed = 0;			// Default
+	let PX,PZ;
+	let Msh = 0;
+	for (let i = 0; i < alt_.Num; i++) {
+		Msh = alt_.Ref[i];
+		PX = -Msh.position.x;
+		PZ = Msh.position.z;
+		if (alt_.Lft[i] < PX && alt_.Rgt[i] > PX && alt_.Fnt[i] > PZ && alt_.Bak[i] < PZ) {
+			air_.GrdZed = alt_.Alt[i];
+			if (alt_.Typ[i]) moveShpAlt();
+		}
+	}
+}
+
+//- Subroutine: Min Alt for Moving Carrier --------------------------------------
+function moveShpAlt() {
+	gen_.InpBrk = 0;			// Default = no brake
+	air_.ShpPit = 0;			// Default
+	// Recompute GrdZed
+	let ZDst = xsh_.MapPos[0].z - air_.MapPos.z; // Z-distance from ship center
+	let YDif = ZDst * Math.sin(xsh_.ObjRot[0].x); // Y-change caused by ship pitch
+	air_.GrdZed = alt_.Alt[1] - YDif;
+	// If On Deck
+	if (air_.GrdFlg) {
+		let ShpKPH = xsh_.SpdMPS[0]*3.6; // Ship speed
+		//= LANDING =============================================================
+		if (air_.PwrPct < 0.5 && anm_.thkpos < 180) gen_.InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
+		//- Lock to Deck --------------------------------------------------------
+		// 	Note: This Will Keep Re-Locking to Deck if AirSpd < ShpSpd
+		if (!air_.MovFlg && air_.SpdKPH < ShpKPH) { // If airplane speed <= Ship speed, lock to deck	
+			air_.MovFlg = 1; // Flag 
+			gen_.InpBrk = 0; // Brake off
+			let XOff = air_.MapPos.x - xsh_.MapPos[0].x;
+			let ZOff = air_.MapPos.z - xsh_.MapPos[0].z; // Z-distance from ship center
+			xsh_.ShpLok[0].position.x = XOff;
+			xsh_.ShpLok[0].position.z = ZOff;
+			xsh_.ShpLok[0].add(air_.AirObj); // Lock to Deck
+			if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
+		}
+		//= ANIMATION SEQUENCE ==================================================
+		// Run-Up
+		if (myp_.SegRef[0] == 2) ThrFlg = 0; // Enable Throttle
+		if (myp_.SegRef[0] == 2 && air_.PwrPct) myp_.DlyRem[0] = 0; // If Throttle Moved, Begin Sequenc
+		// Final Animation
+		if (AnmFlg && myp_.SegRef[0] == myp_.SegNum[0]) AnmFlg = 0;		
+		//= TAKE-OFF ============================================================		
+		if (air_.MovFlg && air_.SpdKPH > ShpKPH) air_.MovFlg = 0; // Unlock from deck if moving faster than Ship
+		//- If Locked to Deck ---------------------------------------------------
+		if (air_.MovFlg) {	// Otherwise remain locked to deck
+//			sunLight.shadow.camera.far = sky_.SunDst+2*sky_.ShdBox; // Default on deck
+			// Recompute Speed and Position
+			air_.MapSpd.z = -xsh_.MapSpd[0].z;
+			air_.MapSpd.x = -xsh_.MapSpd[0].x;
+			air_.MapPos.z = air_.MapPos.z + air_.MapSpd.z;
+			air_.MapPos.x = air_.MapPos.x + air_.MapSpd.x;
+			air_.MapSPS.x = air_.MapSpd.x;
+			air_.MapSPS.z = air_.MapSpd.z;			
+			// Recompute air_.Spd
+			if (AnmFlg) {
+				air_.SpdKPH = air_.SpdMPS = 0;
+				air_.ShpPit = -xsh_.ObjRot[0].x;
+			}
+			else {
+				air_.SpdKPH = ShpKPH; // (KPH)
+				air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
+				xsh_.ShpLok[0].remove(air_.AirObj); // Unlock
+				scene.add(air_.AirObj); // Was detached from scene
+				if (!cam_.CamSel) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst;
+			}
+//			sunLight.shadow.camera.updateProjectionMatrix(); // only switch matrix if airborne
+			// Point Same Direction as Carrier
+			// [WIP]
+		}
+	}
+}
+
+/********************************************************************************
+*
+*	4. OBJECTS
+*
+********************************************************************************/
+
+//== LOAD OBJECTS ===============================================================
 
 function loadObject() {
 	loadShared();
@@ -774,11 +885,15 @@ function loadObject() {
 	loadMyCrew(gltfLoader,myc_);
 }
 
+//== INIT OBJECTS ===============================================================
+
 function initObject() {
 	initStatic();
 	initMoving();
 	initAAAGun(aaf_,txt_,air_,gen_,scene);
 }
+
+//== MOVE OBJECTS ===============================================================
 
 function moveObject() {
 	moveStatic();
@@ -789,7 +904,7 @@ function moveObject() {
 	moveMyCrew(myc_);
 }
 
-//- Shared Textures ------------//-----------------------------------------------
+//- SHARED TEXTURES ------------//-----------------------------------------------
 function loadShared() {
 	if (txt_.ObjNum) {
 		for (let n = 0; n < txt_.ObjNum; n++) {
@@ -798,7 +913,7 @@ function loadShared() {
 	}
 };
 
-//- Static Objects -------------//-----------------------------------------------
+//- STATIC OBJECTS -------------//-----------------------------------------------
 
 function loadStatic() {
 	loadMountn(scene,mnt_,air_,gen_,txtrLoader,gltfLoader);
@@ -818,7 +933,7 @@ function moveStatic() {
 //	mnt_.ObjGrp[1].position.y = mnt_.ObjGrp[1].position.y - 25; // Adjust giaros mesh down ### 250929
 }
 
-//- Moving Objects -------------//-----------------------------------------------
+//- MOVING OBJECTS -------------//-----------------------------------------------
 
 function loadMoving() {
 	loadXACVeh(gltfLoader,xac_,anm_); // Airplanes
@@ -1106,98 +1221,22 @@ function moveXSHGun(n) {
 	}
 }
 
-//= HARDENED SURFACES ==========//===============================================
-// The hardened surfaces are the Home Airfield and the CVE Deck (moving)
-// Where CVE not facing north, can we rotate ref points and airplane to north?
+/********************************************************************************
+*
+*	5. MY AIRPLANE
+*
+********************************************************************************/
 
-//- Compute Minimum Altitude ---//-----------------------------------------------
-function moveMinAlt() {
-	air_.GrdZed = 0;			// Default
-	let PX,PZ;
-	let Msh = 0;
-	for (let i = 0; i < alt_.Num; i++) {
-		Msh = alt_.Ref[i];
-		PX = -Msh.position.x;
-		PZ = Msh.position.z;
-		if (alt_.Lft[i] < PX && alt_.Rgt[i] > PX && alt_.Fnt[i] > PZ && alt_.Bak[i] < PZ) {
-			air_.GrdZed = alt_.Alt[i];
-			if (alt_.Typ[i]) moveShpAlt();
-		}
-	}
-}
+//= LOAD AIRPLANE ==============//===============================================
 
-//- Subroutine: Min Alt for Moving Carrier --------------------------------------
-function moveShpAlt() {
-	gen_.InpBrk = 0;			// Default = no brake
-	air_.ShpPit = 0;			// Default
-	// Recompute GrdZed
-	let ZDst = xsh_.MapPos[0].z - air_.MapPos.z; // Z-distance from ship center
-	let YDif = ZDst * Math.sin(xsh_.ObjRot[0].x); // Y-change caused by ship pitch
-	air_.GrdZed = alt_.Alt[1] - YDif;
-	// If On Deck
-	if (air_.GrdFlg) {
-		let ShpKPH = xsh_.SpdMPS[0]*3.6; // Ship speed
-		//= LANDING =============================================================
-		if (air_.PwrPct < 0.5 && anm_.thkpos < 180) gen_.InpBrk = 0.01; // Auto-braking if power < 50% and hook extended
-		//- Lock to Deck --------------------------------------------------------
-		// 	Note: This Will Keep Re-Locking to Deck if AirSpd < ShpSpd
-		if (!air_.MovFlg && air_.SpdKPH < ShpKPH) { // If airplane speed <= Ship speed, lock to deck	
-			air_.MovFlg = 1; // Flag 
-			gen_.InpBrk = 0; // Brake off
-			let XOff = air_.MapPos.x - xsh_.MapPos[0].x;
-			let ZOff = air_.MapPos.z - xsh_.MapPos[0].z; // Z-distance from ship center
-			xsh_.ShpLok[0].position.x = XOff;
-			xsh_.ShpLok[0].position.z = ZOff;
-			xsh_.ShpLok[0].add(air_.AirObj); // Lock to Deck
-			if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
-		}
-		//= ANIMATION SEQUENCE ==================================================
-		// Run-Up
-		if (myp_.SegRef[0] == 2) ThrFlg = 0; // Enable Throttle
-		if (myp_.SegRef[0] == 2 && air_.PwrPct) myp_.DlyRem[0] = 0; // If Throttle Moved, Begin Sequenc
-		// Final Animation
-		if (AnmFlg && myp_.SegRef[0] == myp_.SegNum[0]) AnmFlg = 0;		
-		//= TAKE-OFF ============================================================		
-		if (air_.MovFlg && air_.SpdKPH > ShpKPH) air_.MovFlg = 0; // Unlock from deck if moving faster than Ship
-		//- If Locked to Deck ---------------------------------------------------
-		if (air_.MovFlg) {	// Otherwise remain locked to deck
-			sunLight.shadow.camera.far = sky_.SunDst+2*sky_.ShdBox; // Default on deck
-			// Recompute Speed and Position
-			air_.MapSpd.z = -xsh_.MapSpd[0].z;
-			air_.MapSpd.x = -xsh_.MapSpd[0].x;
-			air_.MapPos.z = air_.MapPos.z + air_.MapSpd.z;
-			air_.MapPos.x = air_.MapPos.x + air_.MapSpd.x;
-			air_.MapSPS.x = air_.MapSpd.x;
-			air_.MapSPS.z = air_.MapSpd.z;			
-			// Recompute air_.Spd
-			if (AnmFlg) {
-				air_.SpdKPH = air_.SpdMPS = 0;
-				air_.ShpPit = -xsh_.ObjRot[0].x;
-			}
-			else {
-				air_.SpdKPH = ShpKPH; // (KPH)
-				air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
-				xsh_.ShpLok[0].remove(air_.AirObj); // Unlock
-				scene.add(air_.AirObj); // Was detached from scene
-				if (!cam_.CamSel) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst;
-			}
-			sunLight.shadow.camera.updateProjectionMatrix();
-			// Point Same Direction as Carrier
-			// [WIP]
-		}
-	}
-}
-
-//= 5. MY AIRPLANE =============//===============================================
-
-//= Load Airplane ==============//===============================================
 function loadAirObj() {
 	loadAirExt(scene,gltfLoader,air_,mxr_,anm_);
 	loadAirInt(scene,gltfLoader,air_,vxr_,anm_);
 }
 
-//= Init Airplane ==============//===============================================
+//= INIT AIRPLANE ==============//===============================================
 // This section initializes starting location and variables before passing to Flight Module
+
 function initAirObj() {
 	//	Starting Location
 	if (BegLoc == 0) { 			// Base
@@ -1245,9 +1284,10 @@ function initAirObj() {
 	initBullet(myg_,scene);
 }
 
-//= Move Airplane ==============//===============================================
+//= MOVE AIRPLANE ==============//===============================================
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
+
 function moveAirObj() {
 	// Compute Inputs ----------//-----------------------------------------------
 	// Power Percent ............................................................
@@ -1319,9 +1359,14 @@ function moveAirObj() {
 	moveBullet(myg_,air_,gen_,tim_,xac_);
 }
 
-//= 6. SOUNDS ==================//===============================================
+/********************************************************************************
+*
+*	6. SOUNDS
+*
+********************************************************************************/
 
-//- Load and Initialize Positional Sounds ---------------------------------------
+//= LOAD SOUNDS =================================================================
+
 function loadSounds() {
 	air_.AirObj.add(mys_.AirMsh);
 	mys_.AirMsh.position.z = -5;
@@ -1410,7 +1455,33 @@ function loadSounds() {
 	gen_.LodSnd = 1;
 }
 
-//- Change All Sounds ----------//-----------------------------------------------
+//- INIT 1 SOUND ---------------//-----------------------------------------------
+
+//- Positional Audio
+function init1Sound(dest,dist,volm,rate,loop,link) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+	link.add(dest);
+}
+
+//- Positional Audio
+function init2Sound(dest,dist,volm,rate,loop) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+}
+
+//- Audio
+function initASound(dest,volm,rate) {
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+}
+
+//= MOVE SOUNDS =================================================================
+
 function moveSounds() {
 	//- My Airplane .............................................................
 	// Switch Between Idle and Engine Sounds
@@ -1574,43 +1645,25 @@ function playRadSg2(n) {
 	}
 }
 
-//- INIT 1 SOUND ---------------//-----------------------------------------------
+/********************************************************************************
+*
+*	7. CAMERA
+*
+********************************************************************************/
 
-//- Positional Audio
-function init1Sound(dest,dist,volm,rate,loop,link) {
-	dest.setRefDistance(dist);	// Position
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-	if (loop) dest.setLoop(true);
-	link.add(dest);
-}
+//== INIT CAMERA ===============//===============================================
 
-//- Positional Audio
-function init2Sound(dest,dist,volm,rate,loop) {
-	dest.setRefDistance(dist);	// Position
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-	if (loop) dest.setLoop(true);
-}
-
-//- Audio
-function initASound(dest,volm,rate) {
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-}
-
-//= 7. CAMERA ==================//===============================================
-
-//- Init Camera View -----------//-----------------------------------------------
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.CamLLD.z;
 	camera.rotation.y = cam_.CamAdj*DegRad;
 	cam_.MshRot.add(camera);	// Attach to rotator
 	//
 	if (!cam_.CamSel) {			// 0 = External View
-		sunLight.shadow.mapSize.set(2048,2048);
-		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
-		sunLight.shadow.camera.updateProjectionMatrix();
+		if (!air_.GrdFlg) {
+			sunLight.shadow.mapSize.set(2048,2048);
+			sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
+			sunLight.shadow.camera.updateProjectionMatrix();
+		}
 		mxr_.Adr.visible = true;
 		vxr_.Adr.visible = false;
 		// Flaps
@@ -1631,9 +1684,11 @@ function initCamera(camera,cam_) {
 		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anm_.anmfps);
 	}	
 	if (cam_.CamSel) {			// 1 = Internal View
-		sunLight.shadow.mapSize.set(8192,8192);
-		sunLight.shadow.camera.far = sky_.SunDst+2*sky_.ShdBox;
-		sunLight.shadow.camera.updateProjectionMatrix();
+		if (!air_.GrdFlg) {
+			sunLight.shadow.mapSize.set(8192,8192);
+			sunLight.shadow.camera.far = sky_.SunDst+2*sky_.ShdBox;
+			sunLight.shadow.camera.updateProjectionMatrix();
+		}
 		mxr_.Adr.visible = false;
 		vxr_.Adr.visible = true;
 		// Canopy
@@ -1653,7 +1708,11 @@ function initCamera(camera,cam_) {
 	moveCamera(camera,cam_,air_,key_);
 }
 
-//= 8. OUTPUTS =================//===============================================
+/********************************************************************************
+*
+*	8. OUTPUTS
+*
+********************************************************************************/
 
 //-	Print HUD Values -----------//-----------------------------------------------
 function prntHUDval() {
@@ -1726,11 +1785,15 @@ function onInfo(n){
 	On_Inf9Node.nodeValue = InfoData[n][9];
 }
 
-//= 9. INPUTS ==================//===============================================
+/********************************************************************************
+*
+*	9. INPUTS
+*
+********************************************************************************/
 // The PointerLockControls creates inputs for mouse movement.
 // This creates inputs for mouse buttons and keys.
 
-//- MOUSE ----------------------//-----------------------------------------------
+//= MOUSE ======================//===============================================
 
 //- Mouse Buttons (Down) -------//-----------------------------------------------
 function onDocumentMouseDown(event) {
@@ -1764,7 +1827,7 @@ function onDocumentMouseWheel(event) {
 	}
 }
 
-//- KEYBOARD -------------------//-----------------------------------------------
+//- KEYBOARD ===================//===============================================
 
 //- Keyboard (Down) ------------//-----------------------------------------------
 function onDocumentKeyDown(event) {
@@ -1928,6 +1991,19 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
+
+/********************************************************************************
+*
+*	CHANGE LOG
+*
+*********************************************************************************
+
+251008	On MouseWheel Input, if Throtl is 0 or 1, don't also set gen_.PwrDif = 0  - prevents thrust from reaching zero
+251010	Don't allow swithing of Shadow Values unless airborne - causes shadow error (only )
+		While in cockpit, use high resolution, short distance view.
+		Only need long-distance view when switch to external view while airborne
+
+*/
 
 </script>
 </body>

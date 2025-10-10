@@ -10,7 +10,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Oct 2025
+Version dated 10 Oct 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -73,6 +73,12 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 	}
 </script>
 
+/********************************************************************************
+*
+*	MAIN MODULE
+*
+********************************************************************************/
+
 <script type="module">
 
 import * as THREE from "three";
@@ -113,6 +119,12 @@ TO DO:
 	* After landing with brakes, not always stay stopped.
 	* Sometimes, need to wiggle plane to take off.
 */
+
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
 
 //= INPUTS =====================//===============================================
 //- AIRPLANE: Start -----------------------------------------------------------
@@ -341,11 +353,15 @@ let instructions = document.getElementById("instructions");
 		instructions.style.display = "";
 	});
 
-//= MAIN PROGRAMS ===============================================================
+/********************************************************************************
+*
+*	1. MAIN PROGRAM
+*
+********************************************************************************/
 
 	loadAll();
 
-//=	0 LOAD ALL =================//===============================================
+//=	LOAD ALL ===================//===============================================
 
 function loadAll() {
 	// Initialize Loading Screen
@@ -356,7 +372,7 @@ function loadAll() {
 	loadObject();
 }
 
-//= WAIT SCREEN ================//===============================================
+//- WAIT SCREEN ----------------//-----------------------------------------------
 
 function WaitScreen() {
 	// Set up the loading screen scene.
@@ -371,7 +387,7 @@ function WaitScreen() {
 	loadingScreen.scene.add(loadingScreen.box);
 }
 
-//= 1 INITIALIZE ================//===============================================
+//=	INIT ALL ===================//===============================================
 
 function initAll() {
 	// Time
@@ -408,7 +424,7 @@ function initAll() {
 	gen_.LodFlg = 1;
 }
 
-//= 2 RENDER ===================//===============================================
+//= REND ALL ===================//===============================================
 
 function rendAll() {
 	// This block runs while resources are loading.
@@ -443,7 +459,13 @@ function rendAll() {
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-//= SKYBOX =====================//===============================================
+/********************************************************************************
+*
+*	2. SKY
+*
+********************************************************************************/
+
+//= LOAD SKY ===================//===============================================
 
 function loadSkyBox() {
 	sky_.envMap = cubeLoader
@@ -459,10 +481,12 @@ function loadSkyBox() {
 	}
 }
 
-function initSkyBox() {
+//= INIT SKY ===================//===============================================
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
 	// Fog (doesn't work with Normal Material)
+
+function initSkyBox() {
 	scene.fog = new THREE.Fog(sky_.FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
 	// Lensflare
 	if (gen_.LnFFlg) {			// SunFlare		
@@ -478,27 +502,32 @@ function initSkyBox() {
 	}
 }
 
-//= OBJECTS ====================//===============================================
+/********************************************************************************
+*
+*	4. OBJECTS
+*
+********************************************************************************/
 
-//- LOAD OBJECTS ---------------//-----------------------------------------------
+//== LOAD OBJECTS ===============================================================
 
 function loadObject() {
 	loadStatic();
 }
 
-//- INIT OBJECTS ---------------//-----------------------------------------------
+//== INIT OBJECTS ===============================================================
+
 
 function initObject() {
 	initStatic();
 }
 
-//- MOVE OBJECTS ---------------//-----------------------------------------------
+//== MOVE OBJECTS ===============================================================
 
 function moveObject() {
 	moveStatic();
 }
 
-//- Static Objects -------------//-----------------------------------------------
+//- STATIC OBJECTS -------------//-----------------------------------------------
 
 function loadStatic() {
 	loadMountn(scene,mnt_,air_,gen_,txtrLoader,gltfLoader);
@@ -515,14 +544,20 @@ function moveStatic() {
 	moveFxdObj(fxd_,air_,gen_);
 }
 
-//= 5. MY AIRPLANE =============//===============================================
+/********************************************************************************
+*
+*	5. MY AIRPLANE
+*
+********************************************************************************/
 
-//= Load Airplane ==============//===============================================
+//= LOAD AIRPLANE ==============//===============================================
+
 function loadAirObj() {
 	loadAirExt(scene,gltfLoader,air_,mxr_,anm_);
 }
 
-//= Init Airplane ==============//===============================================
+//= INIT AIRPLANE ==============//===============================================
+
 // This section initializes starting location and variables before passing to Flight Module
 function initAirObj() {
 	//	Starting Location
@@ -553,9 +588,10 @@ function initAirObj() {
 	initBullet(myg_,scene);		// Bullets
 }
 
-//= Move Airplane ==============//===============================================
+//= MMOVE AIRPLANE ==============//===============================================
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
+
 function moveAirObj() {
 	// Compute Inputs -----------------------------------------------------------
 	// Power Percent ............................................................
@@ -626,9 +662,14 @@ function moveAirObj() {
 	moveBullet(myg_,air_,gen_,tim_,0); // Bullets
 }
 
-//= SOUNDS =====================//===============================================
+/********************************************************************************
+*
+*	6. SOUNDS
+*
+********************************************************************************/
 
-//- Load and Initialize Sounds --------------------------------------------------
+//= LOAD SOUNDS =================================================================
+
 function loadSounds() {
 	// Engine Sounds ............................................................
 	air_.AirObj.add(mys_.AirMsh);
@@ -657,7 +698,33 @@ function loadSounds() {
 	gen_.LodSnd = 1;
 }
 
-//- Change Sounds ---------------------------------------------------------------
+//- INIT 1 SOUND ---------------//-----------------------------------------------
+
+//- Positional Audio
+function init1Sound(dest,dist,volm,rate,loop,link) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+	link.add(dest);
+}
+
+//- Positional Audio
+function init2Sound(dest,dist,volm,rate,loop) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+}
+
+//- Audio
+function initASound(dest,volm,rate) {
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+}
+
+//= MOVE SOUNDS =================================================================
+
 function moveSounds() {
 	// Switch Between Idle and Engine Sounds
 	if (Throtl < .25 && mys_.EngSnd.isPlaying) {
@@ -695,34 +762,14 @@ function stopSounds() {
 	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();}
 }
 
-//- INIT 1 SOUND ---------------//-----------------------------------------------
+/********************************************************************************
+*
+*	7. CAMERA
+*
+********************************************************************************/
 
-//- Positional Audio
-function init1Sound(dest,dist,volm,rate,loop,link) {
-	dest.setRefDistance(dist);	// Position
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-	if (loop) dest.setLoop(true);
-	link.add(dest);
-}
+//== INIT CAMERA ===============//===============================================
 
-//- Positional Audio
-function init2Sound(dest,dist,volm,rate,loop) {
-	dest.setRefDistance(dist);	// Position
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-	if (loop) dest.setLoop(true);
-}
-
-//- Audio
-function initASound(dest,volm,rate) {
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-}
-
-//= CAMERA =====================//===============================================
-
-//- Init Camera ----------------//-----------------------------------------------
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.CamLLD.z;
 	camera.rotation.y = cam_.CamAdj*DegRad;
@@ -742,7 +789,8 @@ function initCamera(camera,cam_) {
 
 }
 
-//- Move Camera ----------------//-----------------------------------------------
+//== MOVE CAMERA ===============//===============================================
+
 function moveCamera(camera,cam_) {
 	// Move Camera In/Out
 	camera.position.z = -cam_.CamLLD.z;
@@ -847,7 +895,11 @@ function moveCamera(camera,cam_) {
 	}
 }
 
-//= OUTPUTS ====================//===============================================
+/********************************************************************************
+*
+*	8. OUTPUTS
+*
+********************************************************************************/
 
 //-	Print HUD Values ------------------------------------------------------------
 function prntHUDval() {
@@ -921,11 +973,15 @@ function onInfo2(){
 	On_Inf8Node.nodeValue = "";
 }
 
-//= INPUTS ======================================================================
+/********************************************************************************
+*
+*	9. INPUTS
+*
+********************************************************************************/
 // The PointerLockControls creates inputs for mouse movement.
 // This creates inputs for mouse buttons and keys.
 
-//- MOUSE -----------------------------------------------------------------------
+//= MOUSE ======================//===============================================
 
 //- Mouse Buttons (Down) --------------------------------------------------------
 function onDocumentMouseDown(event) {
@@ -953,17 +1009,11 @@ function onDocumentMouseWheel(event) {
 	event.preventDefault();
 	gen_.PwrDif = - event.deltaY * gen_.PwrMul;	// Increment = 1%
 	Throtl = Throtl + gen_.PwrDif;
-	if (Throtl > 1) {
-		Throtl = 1;
-		gen_.PwrDif = 0;
-	}
-	if (Throtl < 0) {
-		Throtl = 0;
-		gen_.PwrDif = 0;
-	}
+	if (Throtl > 1) Throtl = 1;
+	if (Throtl < 0) Throtl = 0;
 }
 
-//- KEYBOARD --------------------------------------------------------------------
+//- KEYBOARD ===================//===============================================
 
 //- Keyboard (Down) -------------------------------------------------------------
 function onDocumentKeyDown(event) {
@@ -1084,6 +1134,15 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
+
+/********************************************************************************
+*
+*	CHANGE LOG
+*
+*********************************************************************************
+
+251010	On MouseWheel Input, if Throtl is 0 or 1, don't also set gen_.PwrDif = 0  - prevents thrust from reaching zero
+*/
 
 </script>
 </body>
