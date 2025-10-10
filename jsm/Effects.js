@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Oct 2025
+Version dated 10 Oct 2025
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -44,12 +44,12 @@ sound delay may be superfluous.
 import {
 	AdditiveBlending,
 	BackSide,
-	BoxGeometry,
 	BufferGeometry,
 	Line,
 	LineBasicNodeMaterial,
 	MeshBasicNodeMaterial,
 	Mesh,
+	Object3D,
 	PlaneGeometry,
 	SphereGeometry,
 	Spherical,
@@ -152,7 +152,7 @@ function initBullet(myg_,scene) {
 	let BulMtD = new LineBasicNodeMaterial({colorNode: color(myg_.BulClr.y)});
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
-		myg_.BulPtr[i] = new makMsh();
+		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
 			line = new Line(BltGeo,BulMtL); // Lite Color
 			line.position.copy(myg_.ObjPos[j]);
@@ -277,7 +277,7 @@ function initXACBul(xag_,scene) {
 		// Load Bullets
 		for (let i = 0; i < xag_.BulNum; i ++) {	
 			//	Create Bull Meshes - Double Line 2 Colors
-			xag_.BulPtr[n][i] = new makMsh();
+			xag_.BulPtr[n][i] = new Object3D();
 			//	Left
 			line = new Line(BulGeL,BulMtL); // Lite Color
 			line.position.z = -lnF;
@@ -480,7 +480,7 @@ function initAAGuns(aag_,air_,gen_,scene) {
 		//	Load Bullets
 		for (let i = 0; i < aag_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
-			aag_.AAAPtr[n][i] = new makMsh();
+			aag_.AAAPtr[n][i] = new Object3D();
 			line = new Line(AAAGeL,AAAMtL); // Lite Color
 			line.position.z = -lnF;
 			aag_.AAAPtr[n][i].add(line);
@@ -828,7 +828,9 @@ function initXSHWak(wak_,txt_) {
 		wak_.ObjAdr[n].isInstancedMesh = true;
 		wak_.ObjAdr[n].count = 600; // Increases continuity (was 100)
 		wak_.ObjAdr[n].rotation.x = Math.PI/2; // Set Flat
-		wak_.ObjAdr[n].position.y = -5; // Added
+		wak_.ObjAdr[n].rotation.y = wak_.ObjRot[n].y*DegRad; //rotation around corner
+//		wak_.ObjAdr[n].position.y = -5; // Added
+		wak_.ObjAdr[n].position.copy(wak_.ObjPos[n]);
 		//	Link
 		wak_.ObjRef[n].add(wak_.ObjAdr[n]);
 	}
@@ -895,13 +897,6 @@ function Mod360(deg) {
 	deg = deg % 360;				 // Compute remainder of any number divided by 360
 return deg;}
 
-//- Make Mesh -------------------------------------------------------------------
-function makMsh() {
-	let geometry = new BoxGeometry(0.01,0.01,0.01); 
-	let material = new MeshBasicNodeMaterial({colorNode:color("black"),transparent:true,opacity:0});
-	let mesh = new Mesh(geometry,material);
-return mesh;}
-
 //- Sphere ---------------------//----------------------------------------------
 //	Used to create flash explosions
 function makeSphere() {
@@ -934,5 +929,7 @@ export {initFad2Blk,moveFad2Blk,
 *********************************************************************************
 
 250125:	In Development
+251010:	Replace MakMsh with Object3D
+		Allow position and rotation of wak_
 
 */
