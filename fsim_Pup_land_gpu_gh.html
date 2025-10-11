@@ -73,13 +73,13 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 	}
 </script>
 
+<script type="module">
+
 /********************************************************************************
 *
 *	MAIN MODULE
 *
 ********************************************************************************/
-
-<script type="module">
 
 import * as THREE from "three";
 import {color,float,texture} from "three/tsl";
@@ -455,7 +455,7 @@ function rendAll() {
 		stopSounds();
 		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
-	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
+	renderer.render(scene, camera);
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
@@ -1142,6 +1142,7 @@ function onWindowResize() {
 *********************************************************************************
 
 251010	On MouseWheel Input, if Throtl is 0 or 1, don't also set gen_.PwrDif = 0  - prevents thrust from reaching zero
+251011	Replaced renderASync with render
 */
 
 </script>
