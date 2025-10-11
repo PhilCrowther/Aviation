@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Oct 2025
+Version dated 11 Oct 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -80,17 +80,18 @@ This demo has now been expanded to include a battle scenario which will eventual
 
 /********************************************************************************
 *
-*	MAIN MODULE
+*	PROGRAM
 *
 ********************************************************************************/
 
-// Basic Modules
+//= LOAD MODULES ================================================================
+//- Basic Modules ---------------------------------------------------------------
 import * as THREE from "three";
 import {color,texture,uniform} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
-// Special Modules (in Alphabetical Order)
+//- Special Modules (in Alphabetical Order) -------------------------------------
 import {loadAirExt,loadAirInt,	// Load External Model
 		moveAirExt,moveAirInt,	// Load Internal Model
 	} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
@@ -1986,6 +1987,7 @@ function toglSoun() {
 }
 
 //= WINDOW RESIZE ==============//===============================================
+
 function onWindowResize() {
 	CamAsp = window.innerWidth/window.innerHeight;
 	camera.aspect = CamAsp;
@@ -2000,7 +2002,7 @@ function onWindowResize() {
 *********************************************************************************
 
 251008	On MouseWheel Input, if Throtl is 0 or 1, don't also set gen_.PwrDif = 0  - prevents thrust from reaching zero
-251010	Don't allow swithing of Shadow Values unless airborne - causes shadow error (only )
+251010	Don't allow switching of Shadow Values unless airborne - causes shadow error (only )
 		While in cockpit, use high resolution, short distance view.
 		Only need long-distance view when switch to external view while airborne
 251011	Replaced renderASync with render; added TimestampQuery.COMPUTE after waves.update
