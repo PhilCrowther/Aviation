@@ -1,5 +1,14 @@
 ﻿<!doctype html>
-<html lang="en">
+<html>
+
+<!--
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 11 Oct 2025
+
+A display of the WebGPU Ocean Module buffers.
+-->
+
 <head>
 <meta charset="utf-8">
 <title>disp ocean gpu r180</title>
@@ -63,9 +72,6 @@ let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeig
 	camera.position.set(0,0,150);
 //- Controls
 	window.addEventListener('resize',onWindowResize);
-//- Clock
-let clock = new THREE.Clock();
-let dt = 0;
 
 //= OCEAN ======================================================================
 let waves = 0;
@@ -201,12 +207,12 @@ let copyButterfly2Texture,copySpectrum2Texture,copyWaveData2Texture,copyDxDz2Tex
 
 	initAll();
 
-//= INITIALIZE ==================================================================
+//= INITIALIZE =================//===============================================
 
 function initAll() {
 	initOcean();
 	// Show stats
-	if (StatOn) {							// show stats
+	if (StatOn) {				// show stats
 		StatOn = new Stats({
 			precision: 3,
 			horizontal: false
@@ -217,13 +223,12 @@ function initAll() {
 	}
 }
 
-//= RENDER ======================================================================
+//= RENDER =====================//===============================================
 
 function rendAll() {
 	moveOcean();
-	if (StatOn) StatOn.update();		// Stats
-	renderer.renderAsync(scene, camera);
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+	if (StatOn) StatOn.update(); // Stats
+	renderer.render(scene, camera);
 }
 
 //= DISPLAY ====================//===============================================
@@ -282,8 +287,7 @@ function initOcean() {
 
 //= MOVE
 function moveOcean() {
-	dt = clock.getDelta();
-	if (waves) waves.update(dt);
+	if (waves) waves.update();
 	renderer.compute(copyDxDz2Texture,dispatchSize);
 	renderer.compute(copyDyDxz2Texture,dispatchSize);
 	renderer.compute(copyPingPhas2Texture,dispatchSize);

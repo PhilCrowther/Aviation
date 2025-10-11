@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Oct 2025
+Version dated 11 Oct 2025
 
 Giaros Island with animated waves
 -->
@@ -246,11 +246,12 @@ function rendAll() {
 			camera.position.y = 2.0;
 		}
 		if (waves) waves.update(); // Move Ocean
+		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval();
-	renderer.renderAsync(scene,camera); // WebGPU requires Async
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+	renderer.render(scene,camera);
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // ### added 251010
 }
 
 /********************************************************************************

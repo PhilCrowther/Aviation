@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<!--
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 11 Oct 2025
+
+A WebGPU demo of the GrdWtr and Ocean modules.
+-->
+
 <head>
 <title>sdem ocean gpu r180</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
@@ -226,11 +234,12 @@ function rendAll() {
 			camera.position.y = 2.0;
 		}
 		if (waves) waves.update(); // Move Ocean
+		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval();
-	renderer.renderAsync(scene,camera); // WebGPU requires Async
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+	renderer.render(scene,camera); // WebGPU requires Async
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // ### added 251010
 }
 
 /********************************************************************************
