@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 22 Sep 2025
+Version dated 11 Oct 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -456,13 +456,14 @@ function rendAll() {
 		moveAirObj(air_);
 		grd_.MSP.copy(air_.MapSPS);
 		if (waves) waves.update(); // Move Ocean
+		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		grids.update();			// Move Grids
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval(air_);
 	moveCamera(camera,cam_);
-	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+	renderer.render(scene, camera);
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // ### added 251010
 }
 
 //= SKYBOX =====================//===============================================
