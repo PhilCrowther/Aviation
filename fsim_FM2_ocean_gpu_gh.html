@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Oct 2025
+Version dated 13 Oct 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -831,6 +831,7 @@ function moveShpAlt() {
 			xsh_.ShpLok[0].position.x = XOff;
 			xsh_.ShpLok[0].position.z = ZOff;
 			xsh_.ShpLok[0].add(air_.AirObj); // Lock to Deck
+			air_.LokFlg = 1;
 			if (anm_.thkpos < 180) anm_.thkspd = 1;	// Retract tailhook
 		}
 		//= ANIMATION SEQUENCE ==================================================
@@ -860,6 +861,12 @@ function moveShpAlt() {
 				air_.SpdKPH = ShpKPH; // (KPH)
 				air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
 				xsh_.ShpLok[0].remove(air_.AirObj); // Unlock
+				// End Vibe
+				air_.LokFlg = 0;
+//				air_.AirObj.rotation.y = xsh_.ObjGrp.rotation.y;
+				air_.AirRot.y = xsh_.ObjRot.y;					
+				air_.RotDif.y = 0;
+				//
 				scene.add(air_.AirObj); // Was detached from scene
 				if (!cam_.CamSel) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst;
 			}
@@ -1256,6 +1263,7 @@ function initAirObj() {
 		air_.MapPos.z = air_.MapPos.z - ZDst;
 		xsh_.ShpLok[0].position.z = ZDst;
 		xsh_.ShpLok[0].add(air_.AirObj);
+		air_.LokFlg = 1;
 		anm_.lngpos = 0;		// Landing Gear Down
 		anm_.canpos = 0;		// Canopy Open
 		ThrFlg = 1;				// Disable Throttle
@@ -1350,6 +1358,12 @@ function moveAirObj() {
 	}
 	// Input Yaw
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
+	// Vibe
+	if (air_.LokFlg) { // Vibration
+		let vibe = Math.sin(air_.HrzBuf*DegRad);
+		air_.RotDif.y = air_.RotDif.y + vibe * air_.PwrPct / 7.5;
+		air_.HrzBuf = Mod360(air_.HrzBuf+90);	
+	}
 	// Input Brakes
 	air_.BrkVal = gen_.InpBrk;		// Brakes
 	// Compute Rotation and Vectors ---------------------------------------------
@@ -2006,6 +2020,7 @@ function onWindowResize() {
 		While in cockpit, use high resolution, short distance view.
 		Only need long-distance view when switch to external view while airborne
 251011	Replaced renderASync with render; added TimestampQuery.COMPUTE after waves.update
+251013	Added pre-launch horizontal vibration
 */
 
 </script>
