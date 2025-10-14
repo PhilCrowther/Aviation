@@ -626,6 +626,9 @@ let air_ = {
 		ShpBnk: 0,
 		// G-Force
 		GFmult: 0,
+		// Vibration
+		LokFlg: 0,
+		HrzBuf: 0,
 	}
 
 //- Load Models and Animations -//-----------------------------------------------
