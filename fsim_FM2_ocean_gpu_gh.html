@@ -726,9 +726,6 @@ function rendAll() {			// r173 added async
 		if (rad_.Sq1Tim) contRadSq1();
 		prntHUDval();			// print HUD values
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
-		// Shadow Tests (confirms that shadow values changed)
-		// console.log(sunLight.shadow.mapSize.width);
-		// console.log(sunLight.shadow.camera.far);
 	}
 	if (controls.isLocked === false && gen_.LodSnd) {
 		stopSounds();
@@ -753,7 +750,6 @@ function loadSkyBox() {
 	sky_.envMap.format = THREE.RGBAFormat;
 	sky_.envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = sky_.envMap;
-//	scene.environment = sky_.envMap;
 	// LensFlare
 	if (gen_.LnFFlg) {			// SunFlare	
 		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
@@ -842,9 +838,8 @@ function moveShpAlt() {
 		if (AnmFlg && myp_.SegRef[0] == myp_.SegNum[0]) AnmFlg = 0;		
 		//= TAKE-OFF ============================================================		
 		if (air_.MovFlg && air_.SpdKPH > ShpKPH) air_.MovFlg = 0; // Unlock from deck if moving faster than Ship
-		//- If Locked to Deck ---------------------------------------------------
+		//- If Locked to Deck --------//-----------------------------------------
 		if (air_.MovFlg) {	// Otherwise remain locked to deck
-//			sunLight.shadow.camera.far = sky_.SunDst+2*sky_.ShdBox; // Default on deck
 			// Recompute Speed and Position
 			air_.MapSpd.z = -xsh_.MapSpd[0].z;
 			air_.MapSpd.x = -xsh_.MapSpd[0].x;
@@ -853,20 +848,17 @@ function moveShpAlt() {
 			air_.MapSPS.x = air_.MapSpd.x;
 			air_.MapSPS.z = air_.MapSpd.z;			
 			// Recompute air_.Spd
-			if (AnmFlg) {
+			if (AnmFlg) { // Wait for animation to complete
 				air_.SpdKPH = air_.SpdMPS = 0;
 				air_.ShpPit = -xsh_.ObjRot[0].x;
 			}
 			else {
-				air_.SpdKPH = ShpKPH; // (KPH)
-				air_.SpdMPS = air_.SpdKPH/3.6; // (mps)
-				xsh_.ShpLok[0].remove(air_.AirObj); // Unlock
-				// End Vibe
-				air_.LokFlg = 0;
-//				air_.AirObj.rotation.y = xsh_.ObjGrp.rotation.y;
-				air_.AirRot.y = xsh_.ObjRot.y;					
-				air_.RotDif.y = 0;
-				//
+				air_.SpdKPH = ShpKPH; // Airplane has same speed as carrier (KPH)
+				air_.SpdMPS = air_.SpdKPH/3.6; // Compute mps
+				xsh_.ShpLok[0].remove(air_.AirObj); // Unlock airplane from carrier
+				air_.LokFlg = 0;	// This releases airplane and ends vibration
+				air_.AirRot.y = xsh_.ObjRot.y; // Airplane pointed in same direction as ship				
+				air_.RotDif.y = 0;	// Start with no horizontal yaw or vibration
 				scene.add(air_.AirObj); // Was detached from scene
 				if (!cam_.CamSel) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst;
 			}
@@ -1177,7 +1169,6 @@ function initXACSmk(n) {
 	initAirSmk(xas_);
 	// Attach to Friendly Airplane
 	xac_.ObjAdr[n].add(xas_.SmkMsh[0]);
-//	xas_.SmkMsh[0].visible = false;	// Always On
 }
 
 //- Init Airplane Black Smoke --//-----------------------------------------------
@@ -1358,7 +1349,7 @@ function moveAirObj() {
 	}
 	// Input Yaw
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
-	// Vibe
+	// Vibration/Buffet
 	if (air_.LokFlg && cam_.CamSel) { // Vibration (Internal View Only)
 		let vibe = Math.sin(air_.HrzBuf*DegRad);
 		air_.RotDif.y = air_.RotDif.y + vibe * air_.PwrPct / 7.5;
@@ -1668,8 +1659,9 @@ function playRadSg2(n) {
 ********************************************************************************/
 
 //== INIT CAMERA ===============//===============================================
+// Two position camera: rxternal and internal views
 
-function initCamera(camera,cam_) {
+function initCamera() {
 	camera.position.z = -cam_.CamLLD.z;
 	camera.rotation.y = cam_.CamAdj*DegRad;
 	cam_.MshRot.add(camera);	// Attach to rotator
