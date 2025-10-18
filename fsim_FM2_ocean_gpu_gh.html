@@ -1359,7 +1359,7 @@ function moveAirObj() {
 	// Input Yaw
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
 	// Vibe
-	if (air_.LokFlg) { // Vibration
+	if (air_.LokFlg && cam_.CamSel) { // Vibration (Internal View Only)
 		let vibe = Math.sin(air_.HrzBuf*DegRad);
 		air_.RotDif.y = air_.RotDif.y + vibe * air_.PwrPct / 7.5;
 		air_.HrzBuf = Mod360(air_.HrzBuf+90);	
