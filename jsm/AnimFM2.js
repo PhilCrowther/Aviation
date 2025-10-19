@@ -21,7 +21,8 @@ See http://philcrowther.com/Aviation for more details.
 
 import {
 	AnimationClip,
-	AnimationMixer
+	AnimationMixer,
+	PositionalAudio,
 } from 'three';
 
 /********************************************************************************
@@ -635,6 +636,107 @@ function moveAirCom(air_,anm_) {
 
 /********************************************************************************
 *
+*	SOUNDS
+*
+********************************************************************************/
+
+//= LOAD SOUNDS =================================================================
+
+function loadMySong(audoLoader,listener,air_,mys_,myg_) {
+	air_.AirObj.add(mys_.AirMsh);
+	mys_.AirMsh.position.z = -5;
+	let RefDst = 25;			// Reference distance for Positional Audio
+	// My Airplane ..............................................................	
+	// Engine - Idle
+	mys_.IdlSnd = new PositionalAudio(listener);
+	audoLoader.load(mys_.IdlSrc,function(buffer) {
+		mys_.IdlSnd.setBuffer(buffer);
+		init1Sound(mys_.IdlSnd,RefDst,0,1,1,mys_.AirMsh);		
+	});	
+	// Engine
+	mys_.EngSnd = new PositionalAudio(listener);
+	audoLoader.load(mys_.EngSrc,function(buffer) {
+		mys_.EngSnd.setBuffer(buffer);
+		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
+	});
+	// My Prop
+	mys_.PrpSnd = new PositionalAudio(listener);
+	audoLoader.load(mys_.PrpSrc,function(buffer) {
+		mys_.PrpSnd.setBuffer(buffer);
+		init1Sound(mys_.PrpSnd,RefDst,0,1,1,mys_.AirMsh);
+	});
+	// My Guns (Left and Rite)
+	let xoff = 5
+	for (let n = 0; n < myg_.ObjNum; n ++) {
+		myg_.SndPtr[n] = new PositionalAudio(listener);
+		audoLoader.load(myg_.SndSrc,function(buffer) {
+			myg_.SndPtr[n].setBuffer(buffer);
+			init1Sound(myg_.SndPtr[n],RefDst,0,1,1,myg_.SndMsh[n]);
+			xoff = -xoff;
+			myg_.SndMsh[n].position.x = xoff;
+			air_.AirObj.add(myg_.SndMsh[n]);
+		});
+	}
+}
+
+//- Positional Audio
+function init1Sound(dest,dist,volm,rate,loop,link) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+	link.add(dest);
+}
+
+//= MOVE SOUNDS =================================================================
+
+function moveMySong(air_,mys_,myg_) {
+	//- My Airplane .............................................................
+	// Switch Between Idle and Engine Sounds
+	if (mys_.IdlFlg && mys_.EngSnd.isPlaying) {
+		mys_.EngSnd.stop();
+		mys_.IdlSnd.play();
+	}
+	if (mys_.IdlFlg && mys_.IdlSnd.isPlaying) {
+		mys_.IdlSnd.stop();
+		mys_.EngSnd.play();
+	}
+	// Idle Sound
+	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.setVolume(mys_.IdlVol);
+	else {mys_.IdlSnd.setVolume(0);}
+	// My Engine
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.setVolume(mys_.EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
+	else {mys_.EngSnd.setVolume(0);};	
+	mys_.EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
+	//-	Prop Spinning
+	mys_.PrpSnd.setVolume(mys_.PrpVol + air_.PwrPct * 0.15); // Range = .1 to .4
+	mys_.PrpSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
+	//-	Guns Firing (Left and Rite)
+	for (let n = 0; n < myg_.ObjNum; n ++) {myg_.SndPtr[n].setVolume(myg_.SndVol);}
+}
+
+//= PLAY SOUNDS =================================================================
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+
+function playMySong(mys_,myg_,gen_) {
+	if (mys_.IdlFlg && !mys_.IdlSnd.isPlaying) mys_.IdlSnd.play();	// Idle
+	if (!mys_.IdlFlg && !mys_.EngSnd.isPlaying) mys_.EngSnd.play(); // Engine
+	if (!mys_.PrpSnd.isPlaying) mys_.PrpSnd.play(); // Prop
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();} // Guns (L/R)
+}
+
+//= STOP SOUNDS =================================================================
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+
+function stopMySong(mys_,myg_) {
+	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.stop(); // Idle
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop(); // Engine
+	if (mys_.PrpSnd.isPlaying) mys_.PrpSnd.stop(); // Prop
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();} // Guns (L/R)
+}
+
+/********************************************************************************
+*
 *	SUBROUTINES
 *
 ********************************************************************************/
@@ -656,7 +758,7 @@ return deg;}
 *
 ********************************************************************************/
 
-export {loadAirExt,loadAirInt,moveAirExt,moveAirInt};
+export {loadAirExt,loadAirInt,moveAirExt,moveAirInt,loadMySong,moveMySong,playMySong,stopMySong};
 
 /********************************************************************************
 *
@@ -670,5 +772,6 @@ export {loadAirExt,loadAirInt,moveAirExt,moveAirInt};
 241013:	Cleanup
 241118:	Cleanup
 250406:	Loads airplane and animations (ver 2a)
+251019: Added Sounds
 
 */
