@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Oct 2025
+Version dated 19 Oct 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -94,6 +94,7 @@ import Stats from "stats-gl";
 //- Special Modules (in Alphabetical Order) -------------------------------------
 import {loadAirExt,loadAirInt,	// Load External Model
 		moveAirExt,moveAirInt,	// Load Internal Model
+		loadMySong,moveMySong,playMySong,stopMySong,	
 	} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {PointerLockControls,	// three.js modified
 		moveCamera,				//
@@ -1375,40 +1376,8 @@ function moveAirObj() {
 //= LOAD SOUNDS =================================================================
 
 function loadSounds() {
-	air_.AirObj.add(mys_.AirMsh);
-	mys_.AirMsh.position.z = -5;
 	let RefDst = 25;			// Reference distance for Positional Audio
-	// My Airplane ..............................................................	
-	// Engine - Idle
-	mys_.IdlSnd = new THREE.PositionalAudio(listener);
-	audoLoader.load(mys_.IdlSrc,function(buffer) {
-		mys_.IdlSnd.setBuffer(buffer);
-		init1Sound(mys_.IdlSnd,RefDst,0,1,1,mys_.AirMsh);		
-	});	
-	// Engine
-	mys_.EngSnd = new THREE.PositionalAudio(listener);
-	audoLoader.load(mys_.EngSrc,function(buffer) {
-		mys_.EngSnd.setBuffer(buffer);
-		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
-	});
-	// My Prop
-	mys_.PrpSnd = new THREE.PositionalAudio(listener);
-	audoLoader.load(mys_.PrpSrc,function(buffer) {
-		mys_.PrpSnd.setBuffer(buffer);
-		init1Sound(mys_.PrpSnd,RefDst,0,1,1,mys_.AirMsh);
-	});
-	// My Guns (Left and Rite)
-	let xoff = 5
-	for (let n = 0; n < myg_.ObjNum; n ++) {
-		myg_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		audoLoader.load(myg_.SndSrc,function(buffer) {
-			myg_.SndPtr[n].setBuffer(buffer);
-			init1Sound(myg_.SndPtr[n],RefDst,0,1,1,myg_.SndMsh[n]);
-			xoff = -xoff;
-			myg_.SndMsh[n].position.x = xoff;
-			air_.AirObj.add(myg_.SndMsh[n]);
-		});
-	}
+	loadMySong(audoLoader,listener,air_,mys_,myg_); // My Airplane Sounds
 	// Load XAC Sounds ..........................................................
 	// XP Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
@@ -1473,80 +1442,41 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	link.add(dest);
 }
 
-//- Positional Audio
-function init2Sound(dest,dist,volm,rate,loop) {
-	dest.setRefDistance(dist);	// Position
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-	if (loop) dest.setLoop(true);
-}
-
-//- Audio
-function initASound(dest,volm,rate) {
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-}
-
-//= MOVE SOUNDS =================================================================
+//= MOVE SOUNDS ================//===============================================
 
 function moveSounds() {
-	//- My Airplane .............................................................
-	// Switch Between Idle and Engine Sounds
-	if (Throtl < .25 && mys_.EngSnd.isPlaying) {
-		mys_.IdlSnd.play();
-		mys_.EngSnd.stop();
-	}
-	if (Throtl >= .25 && mys_.IdlSnd.isPlaying) {
-		mys_.IdlSnd.stop();
-		mys_.EngSnd.play();
-	}
-	// Idle Sound
-	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.setVolume(mys_.IdlVol);
-	else {mys_.IdlSnd.setVolume(0);}
-	// My Engine
-	if (mys_.EngSnd.isPlaying) mys_.EngSnd.setVolume(mys_.EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
-	else {mys_.EngSnd.setVolume(0);};	
-	mys_.EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
-	//-	Prop Spinning
-	mys_.PrpSnd.setVolume(mys_.PrpVol + air_.PwrPct * 0.15); // Range = .1 to .4
-	mys_.PrpSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
-	//-	Guns Firing (Left and Rite)
-	for (let n = 0; n < myg_.ObjNum; n ++) {myg_.SndPtr[n].setVolume(myg_.SndVol);}
-	//- XAC ....................................................................
+	mys_.IdlFlg = 0;			// Default = Not Idling
+	if (Throtl < .25) mys_.IdlFlg = 1; // Idling
+	moveMySong(air_,mys_,myg_);	// My Airplane
+	//- XAC .....................................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Endinge
 	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);} // Gun
-	//-	Ending Explosions ......................................................
+	//-	Explosions ..............................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.SndPtr[n].setVolume(xac_.SndVol);} // XAC
 	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);} // XAS
 	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);} // AAA
 }
 
-//- Play All Sounds ------------//-----------------------------------------------
+//= PLAY SOUNDS =================================================================
+
 function playSounds() {
 	// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
-	//- My Airplane ............................................................,
-	if (!mys_.IdlSnd.isPlaying) mys_.IdlSnd.play();	// Idle
-	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play(); // Engine
-	if (!mys_.PrpSnd.isPlaying) mys_.PrpSnd.play(); // Prop
-	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();} // Guns (L/R)
+	playMySong(mys_,myg_,gen_); // My Airplane
 	//- XAC ....................................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {if (!xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].play();} // Engine
 	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();} // ### FIX THIS - only when firing}
-	//- Ending Explosions Activated Elsewhere (XAC,XAG,AAF)
+	//- Explosions Activated Elsewhere (XAC,XAG,AAF)
 }
 
-//- Stop All Sounds ------------//-----------------------------------------------
+//= STOP SOUNDS =================================================================
+
 function stopSounds() {
 	// This leaves gen_.SndFlg = 0 and gen_.MYGFlg unchanged.
-	//- My Airplane .............................................................
-	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.stop(); // Idle
-	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop(); // Engine
-	if (mys_.PrpSnd.isPlaying) mys_.PrpSnd.stop(); // Prop
-	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();} // Guns (L/R)
-	//- XAC ....................................................................
+	stopMySong(mys_,myg_)
+	//- XAC .....................................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].stop();} // Engine
 	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();} // Guns
-	//-	End Explosions
+	//-	Explosions ..............................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();} // XAC
 	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.SndPtr[n].isPlaying) xsg_.SndPtr[n].stop();}
 	for (let n = 0; n < aaf_.ObjNum; n ++) {if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();}
@@ -1574,6 +1504,12 @@ function loadRadios() {
 		rad_.SndAdr[2].setBuffer(buffer);
 		initASound(rad_.SndAdr[2],0.7,1.05); // Source, Volume, Playback Rate
 	});
+}
+
+//- Audio
+function initASound(dest,volm,rate) {
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
 }
 
 //- Pilot ----------------------//-----------------------------------------------
@@ -1730,7 +1666,7 @@ function prntHUDval() {
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
 	Air_Alt = air_.MapPos.y*Mtr2Ft; // Altitude
 	Air_AltNode.nodeValue = Air_Alt.toFixed(0);
-	Air_Hdg = air_.AirRot.y;	// Heading
+	Air_Hdg = Mod360(air_.AirRot.y); // Heading
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
 	Air_CfL = air_.CfLift;		// Cf Lift
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
@@ -2013,6 +1949,7 @@ function onWindowResize() {
 		Only need long-distance view when switch to external view while airborne
 251011	Replaced renderASync with render; added TimestampQuery.COMPUTE after waves.update
 251013	Added pre-launch horizontal vibration
+251019	Move My Airplane sounds to AnimFM2
 */
 
 </script>
