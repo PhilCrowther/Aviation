@@ -119,6 +119,7 @@ import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadXSHVeh,initXSHVeh,moveXSHVeh,	// Moving Ships
 		loadMyPeep,moveMyPeep,	// Rigged Animated People
 		loadMyCrew,moveMyCrew,	// Ship Crew
+		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd, // Object Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
 
@@ -1373,113 +1374,37 @@ function moveAirObj() {
 *
 ********************************************************************************/
 
-//= LOAD SOUNDS =================================================================
+//= LOAD SOUNDS ================//===============================================
 
 function loadSounds() {
-	let RefDst = 25;			// Reference distance for Positional Audio
 	loadMySong(audoLoader,listener,air_,mys_,myg_); // My Airplane Sounds
-	// Load XAC Sounds ..........................................................
-	// XP Engines
-	for (let n = 0; n < xac_.ObjNum; n ++) {
-		xac_.EngPtr[n] = new THREE.PositionalAudio(listener);
-		audoLoader.load(xac_.EngSrc[n],function(buffer) {
-			xac_.EngPtr[n].setBuffer(buffer);
-			init1Sound(xac_.EngPtr[n],RefDst,0,1.3,1,xac_.EngMsh[n]);
-			xac_.ObjAdr[n].add(xac_.EngMsh[n]);
-		});
-	}
-	// XP Guns
-	for (let n = 0; n < xag_.ObjNum; n ++) {
-		xag_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		audoLoader.load(xag_.SndSrc[n],function(buffer) {
-			xag_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xag_.SndPtr[n],RefDst,0,1.3,1,xag_.SndMsh[n]);
-			xac_.ObjAdr[n].add(xag_.SndMsh[n]);
-		});
-	}
-	// The Next 3 Sounds Are All the Same (for now)
-	//
-	// XP End Explosion
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		xac_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		audoLoader.load(xac_.SndSrc,function(buffer) {
-			xac_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xac_.SndPtr[n],RefDst,0,1,0,xac_.SndMsh[n]);
-			xac_.ObjAdr[n].add(xac_.SndMsh[n]);
-		});
-	}
-	// Load AAA Sounds ..........................................................
-	// XS Guns - End Explosion
-	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		xsg_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		audoLoader.load(xsg_.SndSrc,function(buffer) {
-			xsg_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xsg_.SndPtr[n],RefDst,0,1,0,xsg_.SndMsh[n]);
-			xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
-		});
-	}
-	// AA Guns - End Explosion
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		aaf_.SndPtr[n] = new THREE.PositionalAudio(listener);
-		audoLoader.load(aaf_.SndSrc, function(buffer) {
-			aaf_.SndPtr[n].setBuffer(buffer);
-			init1Sound(aaf_.SndPtr[n],RefDst,0,1,0,aaf_.SndMsh[n]);
-			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
-		});	
-	}
-	//- Set Flag
-	gen_.LodSnd = 1;
-}
-
-//- INIT 1 SOUND ---------------//-----------------------------------------------
-
-//- Positional Audio
-function init1Sound(dest,dist,volm,rate,loop,link) {
-	dest.setRefDistance(dist);	// Position
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-	if (loop) dest.setLoop(true);
-	link.add(dest);
+	loadObjSnd(audoLoader,listener,xac_,xag_,xsg_,aaf_) ; Object Sounds
+	gen_.LodSnd = 1;			//- Set Flag
 }
 
 //= MOVE SOUNDS ================//===============================================
 
 function moveSounds() {
 	mys_.IdlFlg = 0;			// Default = Not Idling
-	if (Throtl < .25) mys_.IdlFlg = 1; // Idling
+	if (Throtl < .25) mys_.IdlFlg = 1; // If Idling
 	moveMySong(air_,mys_,myg_);	// My Airplane
-	//- XAC .....................................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Endinge
-	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);} // Gun
-	//-	Explosions ..............................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.SndPtr[n].setVolume(xac_.SndVol);} // XAC
-	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);} // XAS
-	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);} // AAA
+	moveObjSnd(xac_,xag_,xsg_,aaf_); // Objects
 }
 
 //= PLAY SOUNDS =================================================================
 
 function playSounds() {
-	// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 	playMySong(mys_,myg_,gen_); // My Airplane
-	//- XAC ....................................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {if (!xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].play();} // Engine
-	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();} // ### FIX THIS - only when firing}
-	//- Explosions Activated Elsewhere (XAC,XAG,AAF)
+	playObjSnd(xac_,xag_);		// Objects
 }
 
 //= STOP SOUNDS =================================================================
 
 function stopSounds() {
-	// This leaves gen_.SndFlg = 0 and gen_.MYGFlg unchanged.
-	stopMySong(mys_,myg_)
-	//- XAC .....................................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].stop();} // Engine
-	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();} // Guns
-	//-	Explosions ..............................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();} // XAC
-	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.SndPtr[n].isPlaying) xsg_.SndPtr[n].stop();}
-	for (let n = 0; n < aaf_.ObjNum; n ++) {if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();}
+// This leaves gen_.SndFlg = 0 and gen_.MYGFlg unchanged.
+	stopMySong(mys_,myg_);		// My Airplane
+	stopObjSnd(xac_,xag_,xsg_,aaf_); // Objects
 }
 
 //= RADIO SOUNDS ===============//===============================================
@@ -1949,7 +1874,7 @@ function onWindowResize() {
 		Only need long-distance view when switch to external view while airborne
 251011	Replaced renderASync with render; added TimestampQuery.COMPUTE after waves.update
 251013	Added pre-launch horizontal vibration
-251019	Move My Airplane sounds to AnimFM2
+251019	Move My Airplane sounds to AnimFM2 module and Object sounds to Objects module
 */
 
 </script>
