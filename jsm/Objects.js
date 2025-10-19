@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2025, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Oct 2025
+Version dated 19 Oct 2025
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -36,7 +36,8 @@ import {
 	// People
 	AnimationClip,
 	AnimationMixer,
-
+	// Sounds
+	PositionalAudio,
 } from 'three';
 
 import {color,texture} from "three/tsl";
@@ -534,6 +535,111 @@ function moveMyCrew(myc_) {
 
 /********************************************************************************
 *
+*	SOUNDS
+*
+********************************************************************************/
+
+//= LOAD SOUNDS =================================================================
+
+function loadObjSnd(audoLoader,listener,xac_,xag_,xsg_,aaf_) {
+	let RefDst = 25;			// Reference distance for Positional Audio
+	// Load XAC Sounds ..........................................................
+	// XP Engines
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		xac_.EngPtr[n] = new PositionalAudio(listener);
+		audoLoader.load(xac_.EngSrc[n],function(buffer) {
+			xac_.EngPtr[n].setBuffer(buffer);
+			init1Sound(xac_.EngPtr[n],RefDst,0,1.3,1,xac_.EngMsh[n]);
+			xac_.ObjAdr[n].add(xac_.EngMsh[n]);
+		});
+	}
+	// XP Guns
+	for (let n = 0; n < xag_.ObjNum; n ++) {
+		xag_.SndPtr[n] = new PositionalAudio(listener);
+		audoLoader.load(xag_.SndSrc[n],function(buffer) {
+			xag_.SndPtr[n].setBuffer(buffer);
+			init1Sound(xag_.SndPtr[n],RefDst,0,1.3,1,xag_.SndMsh[n]);
+			xac_.ObjAdr[n].add(xag_.SndMsh[n]);
+		});
+	}
+	// The Next 3 Sounds Are All the Same (for now)
+	//
+	// XP End Explosion
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		xac_.SndPtr[n] = new PositionalAudio(listener);
+		audoLoader.load(xac_.SndSrc,function(buffer) {
+			xac_.SndPtr[n].setBuffer(buffer);
+			init1Sound(xac_.SndPtr[n],RefDst,0,1,0,xac_.SndMsh[n]);
+			xac_.ObjAdr[n].add(xac_.SndMsh[n]);
+		});
+	}
+	// Load AAA Sounds ..........................................................
+	// XS Guns - End Explosion
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		xsg_.SndPtr[n] = new PositionalAudio(listener);
+		audoLoader.load(xsg_.SndSrc,function(buffer) {
+			xsg_.SndPtr[n].setBuffer(buffer);
+			init1Sound(xsg_.SndPtr[n],RefDst,0,1,0,xsg_.SndMsh[n]);
+			xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
+		});
+	}
+	// AA Guns - End Explosion
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		aaf_.SndPtr[n] = new PositionalAudio(listener);
+		audoLoader.load(aaf_.SndSrc, function(buffer) {
+			aaf_.SndPtr[n].setBuffer(buffer);
+			init1Sound(aaf_.SndPtr[n],RefDst,0,1,0,aaf_.SndMsh[n]);
+			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
+		});	
+	}
+}
+
+//- Positional Audio
+function init1Sound(dest,dist,volm,rate,loop,link) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+	link.add(dest);
+}
+
+//= MOVE SOUNDS =================================================================
+
+function moveObjSnd(xac_,xag_,xsg_,aaf_) {
+	//- XAC .....................................................................
+	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Endinge
+	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);} // Gun
+	//-	Explosions ..............................................................
+	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.SndPtr[n].setVolume(xac_.SndVol);} // XAC
+	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);} // XAS
+	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);} // AAA
+}
+
+//= PLAY SOUNDS =================================================================
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+
+function playObjSnd(xac_,xag_) {
+	//- XAC ....................................................................
+	for (let n = 0; n < xac_.ObjNum; n ++) {if (!xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].play();} // Engine
+	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();} // ### FIX THIS - only when firing}
+	//- Explosions Activated Elsewhere (XAC,XAG,AAF)
+}
+
+//= STOP SOUNDS =================================================================
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+
+function stopObjSnd(xac_,xag_,xsg_,aaf_) {
+	//- XAC .....................................................................
+	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].stop();} // Engine
+	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();} // Guns
+	//-	Explosions ..............................................................
+	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();} // XAC
+	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.SndPtr[n].isPlaying) xsg_.SndPtr[n].stop();}
+	for (let n = 0; n < aaf_.ObjNum; n ++) {if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();}
+}
+
+/********************************************************************************
+*
 *	SUBROUTINES
 *
 ********************************************************************************/
@@ -557,6 +663,7 @@ export {loadMountn,initMountn,moveMountn,
 		loadXSHVeh,initXSHVeh,moveXSHVeh,
 		loadMyPeep,moveMyPeep,
 		loadMyCrew,moveMyCrew,
+		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd
 	};
 
 /********************************************************************************
@@ -565,13 +672,14 @@ export {loadMountn,initMountn,moveMountn,
 *
 ********************************************************************************
 
-250405:	In development
-250523: Added loadMyCrew/moveMyCrew
-250528: Added animations to loadMyCrew/moveMyCrew
-250529: Marged this Objects Module with Vehicles Module
-250810: No Rep of Plane Handler sequence
-250929:	Make AltMul for Islands Optional
-250930: Changed Islands to Mountains/Islands, load/init/move, isl_ to mnt_, added mnt_.VrtAdj
-251007: Added maxAni to Mountains/Islands
+250405	In development
+250523	Added loadMyCrew/moveMyCrew
+250528	Added animations to loadMyCrew/moveMyCrew
+250529	Marged this Objects Module with Vehicles Module
+250810	No Rep of Plane Handler sequence
+250929	Make AltMul for Islands Optional
+250930	Changed Islands to Mountains/Islands, load/init/move, isl_ to mnt_, added mnt_.VrtAdj
+251007	Added maxAni to Mountains/Islands
+251019	Added Object Sounds
 
 */
