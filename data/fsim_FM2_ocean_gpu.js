@@ -910,7 +910,7 @@ let mys_ = {
 		PrpSnd: 0,				// Address
 		PrpVol: 0.5,			// Volume
 		//
-		IdlFlg: 1;				// 1 = Idling
+		IdlFlg: 1,				// 1 = Idling
 	}
 //- Radio Variables ------------//----------------------------------------------
 let RadTim = 0;					// Start this timer for Linear Segment
