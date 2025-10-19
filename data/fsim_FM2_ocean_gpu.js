@@ -1,9 +1,9 @@
 ﻿
-/********************************************************************************
+/*******************************************************************************
 *
-*	FSIM FM2 DATA: 251013
+*	FSIM FM2 DATA: 251019
 *
-*********************************************************************************
+********************************************************************************
 
 This data is pre-loaded data into the program.
 Cannot reference three.js routines because three.js has not been loaded yet.
@@ -54,15 +54,15 @@ INDEX TO VARIABLES
 	   Pointer Lock Control
 */
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	VARIABLES
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= 1. MAIN VARIABLES ==========//===============================================
+//= 1. MAIN VARIABLES ==========//==============================================
 
-//- CONSTANTS ------------------//-----------------------------------------------
+//- CONSTANTS ------------------//----------------------------------------------
 //	Conversions
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
@@ -77,7 +77,7 @@ const BegTmp = 303.15;			// K = 86F (loaded into _air)
 // These values could also be used by modules, but that would require that all 
 // module users also create a data file - which complicates the use of modules.
 
-//- GENERAL VARIABLES ----------//-----------------------------------------------
+//- GENERAL VARIABLES ----------//----------------------------------------------
 
 let gen_ = {
 		//- Flght Controls
@@ -111,7 +111,7 @@ let tim_ = {
 		DifTim: 0,
 	}
 
-//- Fade2Black Values -----------//----------------------------------------------
+//- Fade2Black Values -----------//---------------------------------------------
 //	If FadBeg > 0, Prop Invisible.
 //	Therefore, limit use to where Prop would be invisible.
 let f2b_ = {
@@ -124,7 +124,7 @@ let f2b_ = {
 		Msh: 0,
 	}
 	
-//= 2. SKY VARIABLES ===========//===============================================
+//= 2. SKY VARIABLES ===========//==============================================
 let sky_ = {
 		// Sun
 		SunCol: "white",		// Sun
@@ -150,12 +150,12 @@ let sky_ = {
 		ShdDst: 1500,			// Shadow Distance (meters)
 	}
 
-//= 3. OCEAN GRID VARIABLES ====//===============================================
+//= 3. OCEAN GRID VARIABLES ====//==============================================
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-//- GRDWTR ---------------------//-----------------------------------------------
+//- GRDWTR ---------------------//----------------------------------------------
 let grids = 0;
 let grd_ = {
 		MSP: 0,					// MSX, MPY, MSZ (meters) (from Flight)
@@ -188,7 +188,7 @@ let grd_ = {
 		// Other
 		WMx: 5,					// Max wave height, used to lower outer squares
 	};
-//- OCEAN MODULE ---------------//-----------------------------------------------		
+//- OCEAN MODULE ---------------//----------------------------------------------
 let waves = 0;
 let wav_ = {
 		// General
@@ -225,7 +225,7 @@ let wav_ = {
 		d_fadeLimit: 0.0,
 	};
 
-//= 4. OBJECT VARIABLES ========//===============================================
+//= 4. OBJECT VARIABLES ========//==============================================
 
 // Sample Variable
 //let var_ = {
@@ -248,7 +248,7 @@ let wav_ = {
 //		AnmNam: [0]				// Animation
 //	};
 
-//= SHARED TEXTURES ============//===============================================
+//= SHARED TEXTURES ============//==============================================
 let txt_ = {
 		ObjNum: 3,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
@@ -257,8 +257,8 @@ let txt_ = {
 		ObjTxt: [],
 	};
 
-//= STATIC OBJECTS =============//===============================================
-//- Islands --------------------//-----------------------------------------------
+//= STATIC OBJECTS =============//==============================================
+//- Islands --------------------//----------------------------------------------
 let mnt_ = {
 		ObjNum: 2,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/homebase.glb",
@@ -274,7 +274,7 @@ let mnt_ = {
 		AltMul: [1,1],			// Altitude Adjustment // ### variable added 250929
 		VrtAdj: [-2,-15]		// Vertical Adjustment // ### variable added 250930
 	};
-//- Static Objects -------------//-----------------------------------------------
+//- Static Objects -------------//----------------------------------------------
 //- 0 = Hangar;
 let fxd_ = {
 		ObjNum: 1,
@@ -289,8 +289,8 @@ let fxd_ = {
 		VrtAdj: [0],			// Vertical Adjustment
 	};
 
-//= MOVING OBJECTS =============//===============================================
-//- Moving Airplanes -----------//-----------------------------------------------
+//= MOVING OBJECTS =============//==============================================
+//- Moving Airplanes -----------//----------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
 const XP2Nam = "A6M_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
@@ -335,7 +335,7 @@ let xac_ = {
 		SndDTm: [0,0],
 	};
 
-//- Airplane Smoke Trail .......//...............................................
+//- Airplane Smoke Trail .......//..............................................
 let xas_ = {
 		// Shared Values
 		ObjNum: 1,				// Number of Smoke Trails
@@ -346,7 +346,7 @@ let xas_ = {
 		SmkMsh: [0],			// Emitter Address
 	};
 
-//- Airplane Flame Trail .......//...............................................
+//- Airplane Flame Trail .......//..............................................
 let xaf_ = {
 		ObjNum: 1,				// Number of Smoke Trails
 		// Shared Values
@@ -360,7 +360,7 @@ let xaf_ = {
 		FyrMsh: [0],			// Mesh
 	};
 
-//. Moving Ships ---------------//----------------------------------------------.
+//. Moving Ships ---------------//----------------------------------------------
 let xsh_ = {
 		ObjNum: 3,				// Number of ships
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb",
@@ -384,7 +384,7 @@ let xsh_ = {
 		ShpLok: [0,0,0],		// Deck Lock
 	};
 
-//= ANIMATED FLAGS =============//===============================================
+//= ANIMATED FLAGS =============//==============================================
 //	Can attach to Ships or Flagpoles
 let	flg_ = {
 		ObjNum:	1,				// Number of Flags
@@ -406,7 +406,7 @@ let	flg_ = {
 		ObjAdj: [0]
 	};
 
-//= AIRPLANE END SEQUENCE ======//===============================================
+//= AIRPLANE END SEQUENCE ======//==============================================
 let xat_ = {
 		// Segments:
 		// 0 = 1st Explosion
@@ -419,15 +419,15 @@ let xat_ = {
 		TimRem: 0,
 	}
 
-//= AIRPLANE EXPLOSION =========//===============================================
+//= AIRPLANE EXPLOSION =========//==============================================
 let xae_ = {
 		ExpSiz: 0,				// Explosion Size
 		ExpLif: 0,				// Remaining Life
 		ExpMsh: 0,				// Mesh
 	};
 
-//= SMOKE MODULE ===============//===============================================
-//- Vertical Smoke -------------//-----------------------------------------------
+//= SMOKE MODULE ===============//==============================================
+//- Vertical Smoke -------------//----------------------------------------------
 let grs_ = {
 		ObjNum: 1,				// Number of Smokes
 		// Shared Values		
@@ -441,7 +441,7 @@ let grs_ = {
 		MapPos: [0], 			// Map Position
 		ObjRef: [0],			// Parent Object
 	};
-//- Ground Fire ----------------//-----------------------------------------------
+//- Ground Fire ----------------//----------------------------------------------
 let grf_ = {
 		ObjNum: 1,				// Number of Smoke Trails
 		// Shared Values
@@ -459,7 +459,7 @@ let grf_ = {
 		ObjRef: [0],			// Parent Object
 	};
 
-//- Ship Wake ------------------//-----------------------------------------------
+//- Ship Wake ------------------//----------------------------------------------
 let wak_ = {
 		ObjNum: xsh_.ObjNum,	// Number of Wakes
 		ObjSrc: [0,0,0],		// Not Used
@@ -473,7 +473,7 @@ let wak_ = {
 		ObjRef: [0,0,0],		// Parent Object
 	};
 
-//- Ship Smoke (destroyer only) -------------------------------------------------
+//- Ship Smoke (destroyer only) ------------------------------------------------
 let xss_ = {
 		ObjNum: 2,				// Number of Stacks
 		ObjSrc: [0,0],			// Not Used
@@ -487,8 +487,8 @@ let xss_ = {
 		ObjRef: [0,0],			// Parent Object
 	};
 
-//= MY PEOPLE ==================//===============================================
-//- Animated Rigged Characters: Linked ------------------------------------------
+//= MY PEOPLE ==================//==============================================
+//- Animated Rigged Characters: Linked -----------------------------------------
 let myp_ = {		
 		ObjNum: 1,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/people/Brian_Wave3.glb"],
@@ -550,7 +550,7 @@ let myc_ = {
 		ObjViz: [1,1],			// Visibility Flag On
 	};
 
-//= MINIMUM ALTITUDE ===========//===============================================
+//= MINIMUM ALTITUDE ===========//==============================================
 let alt_ = {
 		Num: 2,
 		Ref: [0,0],
@@ -563,9 +563,9 @@ let alt_ = {
 		Bak: [-335,-70.5]
 	};
 
-//= 5. MY AIRPLANE VARIABLES ===//===============================================
+//= 5. MY AIRPLANE VARIABLES ===//==============================================
 
-//- Flight Module --------------//-----------------------------------------------
+//- Flight Module --------------//----------------------------------------------
 let	flight = 0;
 let air_ = {
 		// General Variables
@@ -631,13 +631,13 @@ let air_ = {
 		HrzBuf: 0,
 	}
 
-//- Load Models and Animations -//-----------------------------------------------
+//- Load Models and Animations -//----------------------------------------------
 //	File Paths
 const AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/"; // Used to load models and sounds
 const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
 const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
 
-//- FM2 Animations --------------------------------------------------------------
+//- FM2 Animations -------------------------------------------------------------
 let	anmfps = 24;				// Blender FPS (used by Main Program and all modules (used by Objects.js)
 //	Animation Positions (all range from 0 to 360 with center at 180)
 let anm_ = {
@@ -714,12 +714,12 @@ let vxr_ = {
 		Cam: -0.1
 	}
 
-//= GUNASG MODULE ==============//===============================================
+//= GUNASG MODULE ==============//==============================================
 //	M2 Browning .50 caliber
 //	BulSpd = 887;				// Muzzle velocity [mps = 2910 fps]
 //	BulDLT = 0.5;				// Bullet Maximum Time in Flight
 
-//- My Guns --------------------//-----------------------------------------------
+//- My Guns --------------------//----------------------------------------------
 let myg_ = {
 		// Data
 		BulSpd: 887,			// Muzzle Velocity (mps)
@@ -744,7 +744,7 @@ let myg_ = {
 		HitDst: 10,				// Hit Radius
 	}
 
-//- Moving Airplanes -----------//-----------------------------------------------
+//- Moving Airplanes -----------//----------------------------------------------
 let xag_ = {
 		ObjNum: 2,
 		// Parent (use this instead of link because bullets not attached)
@@ -781,12 +781,12 @@ let xag_ = {
 		TimFlg: [0,120],		// Timer (pos = On, neg = Off)
 	};
 
-//-	AA Guns --------------------//-----------------------------------------------
+//-	AA Guns --------------------//----------------------------------------------
 //	Bofors anti-aircraft guns - 40 mm (1.57 in)
 //	AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
 //	AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
 
-//- Moving Ships ---------------//-----------------------------------------------
+//- Moving Ships ---------------//----------------------------------------------
 //	Same variable used for Fixed Guns
 let xsg_ = {
 		ObjNum: 3,				// Number of guns
@@ -840,7 +840,7 @@ let xsg_ = {
 	};
 
 
-//- Fixed Guns -----------------//-----------------------------------------------
+//- Fixed Guns -----------------//----------------------------------------------
 //	Same variable used for Ship Guns
 let aaf_ = {
 		ObjNum: 2,
@@ -893,8 +893,8 @@ let aaf_ = {
 		TimFlg: [0,1000],		// Timer (pos = On, neg = Off)		
 	};
 
-//- 6. SOUND VARIABLES =========//===============================================
-//- My Sounds ------------------//-----------------------------------------------
+//- 6. SOUND VARIABLES =========//==============================================
+//- My Engine Sounds -----------//----------------------------------------------
 let mys_ = {
 		AirMsh:	0,				// For Engine and Prop
 		// Engine Sound - Idle
@@ -909,6 +909,8 @@ let mys_ = {
 		PrpSrc: AirSrc + "sounds/fm2_prop.wav",
 		PrpSnd: 0,				// Address
 		PrpVol: 0.5,			// Volume
+		//
+		IdlFlg: 1;				// 1 = Idling
 	}
 //- Radio Variables ------------//----------------------------------------------
 let RadTim = 0;					// Start this timer for Linear Segment
@@ -948,7 +950,7 @@ let	rad_ = {
 		Sq2Flg: 0,				// 1 = Sequence Already Played		
 	}
 
-//= 7. CAMERA VARIABLES ========//===============================================
+//= 7. CAMERA VARIABLES ========//==============================================
 //-	Start
 let CamSel = 1;					// Camera Selection (0 = External; 1 = Internal)
 //- Variables
@@ -985,9 +987,9 @@ let cam_ = {
 		VewRot: 0,
 	}
 
-//= 8. OUTPUT VARIABLES ========//===============================================
+//= 8. OUTPUT VARIABLES ========//==============================================
 
-//- HTML OVERLAY TEXT ----------//-----------------------------------------------
+//- HTML OVERLAY TEXT ----------//----------------------------------------------
 let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
 let Air_PwrNode = document.createTextNode("");
 	Air_PwrElement.appendChild(Air_PwrNode);
@@ -1047,7 +1049,7 @@ let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL,Air_GFm;
 let On_Paws,Air_AtP;
 let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
-//- Info Text -------------------------------------------------------------------
+//- Info Text ------------------------------------------------------------------
 let InfoData = [
 		[
 			"Info : Press I","","","","","","","","",""
@@ -1077,9 +1079,9 @@ let InfoData = [
 		]
 	];
 
-//= 9. INPUT VARIABLES =========//===============================================
+//= 9. INPUT VARIABLES =========//==============================================
 		
-//- DEFAULT KEY BINDINGS -------//-----------------------------------------------
+//- DEFAULT KEY BINDINGS -------//----------------------------------------------
 let key_ = {
 		//	Basic
 		PwLU:	87,				// Power Up (w) - keyboard left
@@ -1120,7 +1122,7 @@ let key_ = {
 		Auto:	65,				// Autopilot (a)
 		Info:	73,				// Info (i)
 //		RSet:	82,				// Reset (r)
-		//-	Camera View Keys -----------//---------------------------------------
+		//-	Camera View Keys -----------//--------------------------------------
 		U45flg:	0,				// Up 45 deg
 		D45flg:	0,				// Down 45 deg
 		L45flg:	0,				// Left 45 deg (315 deg)
@@ -1132,7 +1134,7 @@ let key_ = {
 		CBkflg:	0,				// Center Back (180 degrees)
 	}
 
-//- POINTER LOCK CONTROL -------//-----------------------------------------------
+//- POINTER LOCK CONTROL -------//----------------------------------------------
 //	Variables
 let InpMos = 0;					// Mouse Inputs
 let _changeEvent = {type: "change"};
