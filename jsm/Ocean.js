@@ -1,22 +1,22 @@
-﻿/********************************************************************************
+﻿/*******************************************************************************
 *
 *	OCEAN MODULE
 *
-*********************************************************************************
+********************************************************************************
 This is single-pass version of the Ocean Wave Generator created by Attila Schroeder
 The complete version is available on his GitHub Repository at:
 https://github.com/Spiri0/Threejs-WebGPU-IFFT-Ocean
 This was extracted and converted to a module by Phil Crowther with his assistance and permission
 and is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 Copyright 2025, Attila Schroeder
-Version dated 8 Oct 2025
+Version dated 19 Oct 2025
 */
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	IMPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 import {FloatType,HalfFloatType,LinearFilter,LinearMipMapLinearFilter,RepeatWrapping,Vector2,
 } from 'three';
@@ -26,11 +26,11 @@ import {float,vec2,vec4,wgslFn,texture, time,
 } from 'three/tsl';
 import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	VARIABLES
 *
-********************************************************************************/
+*******************************************************************************/
 let DegRad = Math.PI/180;		// Convert Degrees to Radians
 let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 
@@ -40,23 +40,23 @@ function Mod360(deg) {
 	deg = deg % 360;			// Compute remainder of any number divided by 360
 return deg;}
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	CLASS
 *
-********************************************************************************/
+*******************************************************************************/
 
 class Ocean {
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	INITIALIZE CLASS
 *
-********************************************************************************/
+*******************************************************************************/
 
 constructor(params) {
 
-	//= Variables ===============================================================
+	//= Variables ==============================================================
 	this.size = params.size;
 	this.params_ = params;
 	this.logN = Math.log2(params.size);
@@ -65,7 +65,7 @@ constructor(params) {
 	//- Compute Wind Direction (convert to 0 = right and counterclockwise rotation)
 	params.windDirection = Mod360(90-params.windDirection)*DegRad;
 	params.d_windDirection = Mod360(90-params.d_windDirection)*DegRad;
-	//-	Convert Numbers to Uniforms ----------------------------------------------
+	//-	Convert Numbers to Uniforms --------------------------------------------
 	params.lambda = uniform(params.lambda);
 	// InitSpec Variables
 	params.waveLength = uniform(params.waveLength);
@@ -93,15 +93,15 @@ constructor(params) {
 	params.d_peakEnhancement = uniform(params.d_peakEnhancement);
 	params.d_shortWaveFade = uniform(params.d_shortWaveFade);
 	params.d_fadeLimit = uniform(params.d_fadeLimit);
-	//- Add Uniform Variables ---------------------------------------------------
+	//- Add Uniform Variables --------------------------------------------------
 	this.DDindex = uniform(0);
 	this.ifftStep = uniform(0);
 	this.pingpong = uniform(0);
-	//- Workgroup Variables -----------------------------------------------------
+	//- Workgroup Variables ----------------------------------------------------
 	this.workgroupSize = [16,16,1];
 	this.dispatchSize = [this.size/this.workgroupSize[0],this.size/this.workgroupSize[1]];
 	
-	//= Create Storage Buffers ==================================================
+	//= Create Storage Buffers =================================================
 	this.spectrumBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
 	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
 	this.waveDataBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
@@ -109,8 +109,8 @@ constructor(params) {
 	this.DyDxzBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize),2);
 	this.pingpongBuffer = new StorageBufferAttribute(new Float32Array(this.bufferSize*2),4);
 	
-	//= Create Storage Textures =================================================
-	//- Displacement Texture ----------------------------------------------------
+	//= Create Storage Textures ================================================
+	//- Displacement Texture ---------------------------------------------------
 	this.displacement = new StorageTexture(this.size,this.size);
 	this.displacement.type = HalfFloatType;
 	this.displacement.generateMipmaps = true;
@@ -118,7 +118,7 @@ constructor(params) {
 	this.displacement.minFilter = LinearMipMapLinearFilter;
 	this.displacement.wrapS = this.displacement.wrapT = RepeatWrapping;
 	this.displacement.anisotropy = this.params_.anisotropy;
-	//- Normal Map Texture ------------------------------------------------------
+	//- Normal Map Texture -----------------------------------------------------
 	this.normMapTexture = new StorageTexture(this.size,this.size);
 	this.normMapTexture.type = FloatType;
 	this.normMapTexture.generateMipmaps = true;
@@ -126,13 +126,13 @@ constructor(params) {
 	this.normMapTexture.minFilter = LinearMipMapLinearFilter;
 	this.normMapTexture.wrapS = this.normMapTexture.wrapT = RepeatWrapping;
 
-	/****************************************************************************
+	/***************************************************************************
 	*
 	*	SHADERS
 	*
-	****************************************************************************/
+	***************************************************************************/
 	
-	/* LIST OF SHADERS ==========================================================
+	/* LIST OF SHADERS =========================================================
 	Fixed Compute Buffers
 	 1. Initial Spectrum
 	 	output: Spectrum and Wave Data Buffers)
@@ -166,7 +166,7 @@ constructor(params) {
 		output:	NormalMap Buffer
 	*/
 
-	//= 1. Initial Spectrum =====================================================
+	//= 1. Initial Spectrum ====================================================
 	this.InitialSpectrumWGSL = wgslFn(`
 		fn computeWGSL(
 			w_Spectrum: ptr<storage,array<vec4<f32>>,read_write>,
@@ -308,7 +308,7 @@ constructor(params) {
 		}
 	`);
 	
-	//= 2. Initial Spectrum with Inverse ========================================
+	//= 2. Initial Spectrum with Inverse =======================================
 	this.InitialSpectrumWithInverseWGSL = wgslFn(`
 		fn computeWGSL(
 			rw_Spectrum: ptr<storage,array<vec4<f32>>,read_write>,
@@ -322,7 +322,7 @@ constructor(params) {
 		}
 	`);
 	
-	//= 3. Butterfly ============================================================
+	//= 3. Butterfly ===========================================================
 	this.butterflyWGSL = wgslFn(`
 		fn computeWGSL(
 			w_Btrfly: ptr<storage,array<vec4<f32>>,read_write>,
@@ -367,7 +367,7 @@ constructor(params) {
 		}
 	`);
 
-	//= 4. Time Spectrum ========================================================
+	//= 4. Time Spectrum =======================================================
 	this.TimeSpectrumWGSL = wgslFn(`
 		fn computeWGSL(
 			r_Spectrum: ptr<storage,array<vec4<f32>>,read_write>,
@@ -403,7 +403,7 @@ constructor(params) {
 		}
 	`);
 
-	//= 5. IFFT Initialize ======================================================
+	//= 5. IFFT Initialize =====================================================
 	this.IFFT_InitWGSL = wgslFn(`
 		fn computeWGSL(
 			r_Btrfly: ptr<storage,array<vec4<f32>>,read>,
@@ -433,7 +433,7 @@ constructor(params) {
 			return vec2<f32>(a.x*b.x-a.y*b.y,a.y*b.x+a.x*b.y);
 		}
 	`);	
-	//= 6. IFFT_Horizontal ======================================================
+	//= 6. IFFT_Horizontal =====================================================
 	this.IFFT_HorizontalWGSL = wgslFn(`
 		fn computeWGSL(
 			r_Btrfly: ptr<storage,array<vec4<f32>>,read>,
@@ -466,7 +466,7 @@ constructor(params) {
 		}
 	`);
 	
-	//= 7. IFFT_Vertical ========================================================
+	//= 7. IFFT_Vertical =======================================================
 	this.IFFT_VerticalWGSL = wgslFn(`
 		fn computeWGSL(
 			r_Btrfly: ptr<storage,array<vec4<f32>>,read>,
@@ -499,7 +499,7 @@ constructor(params) {
 		}
 	`);
 
-	//= 8. IFFT Permute =========================================================
+	//= 8. IFFT Permute ========================================================
 	this.IFFT_PermuteWGSL = wgslFn(`
 		fn computeWGSL(
 			r_PingPong: ptr<storage,array<vec4<f32>>,read>,
@@ -519,7 +519,7 @@ constructor(params) {
 			rw_DyDxz[index] = select(rw_DyDxz[index],output,initBufferIndex == 1u);
 		} 
 	`);
-	//= 9. Textures Merger ======================================================
+	//= 9. Textures Merger =====================================================
 	this.TexturesMergerWGSL = wgslFn(`
 		fn computeWGSL(
 			r_DxDz: ptr<storage,array<vec2<f32>>,read>,
@@ -538,7 +538,7 @@ constructor(params) {
 			textureStore(w_DispMap,pos,vec4f(lambda*x.x,y.x,lambda*x.y,0));
 		}
 	`);
-	//=	10. Normal Map (Old) ====================================================
+	//=	10. Normal Map (Old) ===================================================
 	this.computeNormalMapWGSL = wgslFn(`
 		fn computeWGSL(
 			r_DispMap: texture_2d<f32>,
@@ -582,15 +582,15 @@ constructor(params) {
 		}
 	`);
 
-	/****************************************************************************
+	/***************************************************************************
 	*
 	*	CLASS INITIALIZE (continued)
 	*
-	****************************************************************************/
+	***************************************************************************/
 
-	//= INITIALIZE COMPUTE BUFFERS ==============================================
+	//= INITIALIZE COMPUTE BUFFERS =============================================
 
-	//- Initial Spectrum --------------------------------------------------------
+	//- Initial Spectrum -------------------------------------------------------
 	this.initialSpectrum = this.InitialSpectrumWGSL({ 
 		w_Spectrum: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
 		w_WaveData: storage(this.waveDataBuffer,'vec4',this.waveDataBuffer.count),
@@ -624,7 +624,7 @@ constructor(params) {
 	}).compute(this.sqSize);
 	params.renderer.compute(this.initialSpectrum);
 	
-	//- Initial Spectrum with Inverse -------------------------------------------
+	//- Initial Spectrum with Inverse ------------------------------------------
 	this.initialSpectrumWithInverse = this.InitialSpectrumWithInverseWGSL({ 
 		rw_Spectrum: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
 		index: instanceIndex,
@@ -632,7 +632,7 @@ constructor(params) {
 	}).compute(this.sqSize);
 	params.renderer.compute(this.initialSpectrumWithInverse);
 	
-	//- Butterfly ---------------------------------------------------------------
+	//- Butterfly --------------------------------------------------------------
 	this.butterflyBuffer = new StorageBufferAttribute(new Float32Array(Math.log2(this.size)*this.size*4),4);
 	this.butterfly = this.butterflyWGSL({ 
 		w_Btrfly: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count),
@@ -641,9 +641,9 @@ constructor(params) {
 	}).compute(Math.log2(this.size)*this.size);
 	params.renderer.compute(this.butterfly);
 	
-	//= UPDATE COMPUTE BUFFERS ==================================================
+	//= UPDATE COMPUTE BUFFERS =================================================
 	
-	// TimeSpectrum -------------------------------------------------------------
+	// TimeSpectrum ------------------------------------------------------------
 	this.computeTimeSpectrum = this.TimeSpectrumWGSL({
 		r_Spectrum: storage(this.spectrumBuffer,'vec4',this.spectrumBuffer.count),
 		r_WaveData: storage(this.waveDataBuffer,'vec4',this.waveDataBuffer.count),
@@ -654,7 +654,7 @@ constructor(params) {
 		time: uniform(0)
 	}).computeKernel(this.workgroupSize);
 	
-	// IFFT_Initialize ----------------------------------------------------------
+	// IFFT_Initialize ---------------------------------------------------------
 	this.computeInitialize = this.IFFT_InitWGSL({ 
 		r_Btrfly: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
 		r_DxDz: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count).toReadOnly(),
@@ -670,7 +670,7 @@ constructor(params) {
 		localId: localId			
 	}).computeKernel(this.workgroupSize);
 	
-	// IFFT_Horizontal ----------------------------------------------------------
+	// IFFT_Horizontal ---------------------------------------------------------
 	this.computeHorizontalPingPong = this.IFFT_HorizontalWGSL({ 
 		r_Btrfly: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
 		rw_PingPong: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count),
@@ -685,7 +685,7 @@ constructor(params) {
 		localId: localId
 	}).computeKernel(this.workgroupSize);
 	
-	// IFFT_Vertical ------------------------------------------------------------
+	// IFFT_Vertical -----------------------------------------------------------
 	this.computeVerticalPingPong = this.IFFT_VerticalWGSL({
 		r_Btrfly: storage(this.butterflyBuffer,'vec4',this.butterflyBuffer.count).toReadOnly(),
 		rw_PingPong: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count),
@@ -700,7 +700,7 @@ constructor(params) {
 		localId: localId
 	}).computeKernel(this.workgroupSize);
 	
-	// IFFT_Permute -------------------------------------------------------------
+	// IFFT_Permute ------------------------------------------------------------
 	this.computePermute = this.IFFT_PermuteWGSL({ 
 		r_PingPong: storage(this.pingpongBuffer,'vec4',this.pingpongBuffer.count).toReadOnly(),
 		rw_DxDz: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count),
@@ -713,9 +713,9 @@ constructor(params) {
 		localId: localId
 	}).computeKernel(this.workgroupSize);
 
-	//= UPDATE TEXTURE BUFFERS ==================================================
+	//= UPDATE TEXTURE BUFFERS =================================================
 	
-	// TexturesMerge ------------------------------------------------------------
+	// TexturesMerge -----------------------------------------------------------
 	this.computeMergeTextures = this.TexturesMergerWGSL({ 
 		r_DxDz: storage(this.DxDzBuffer,'vec2',this.DxDzBuffer.count).toReadOnly(),
 		r_DyDxz: storage(this.DyDxzBuffer,'vec2',this.DyDxzBuffer.count).toReadOnly(),
@@ -727,7 +727,7 @@ constructor(params) {
 		localId: localId
 	}).computeKernel(this.workgroupSize);
 	
-	//- Normal Map --------------------------------------------------------------
+	//- Normal Map -------------------------------------------------------------
 	this.computeNormalMap = this.computeNormalMapWGSL({
 		r_DispMap: texture(this.displacement),
 		w_NormMap: textureStore(this.normMapTexture),
@@ -742,11 +742,11 @@ constructor(params) {
 // End of Initialization
 };
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	UPDATE CLASS
 *
-********************************************************************************/
+*******************************************************************************/
 
 update() {
 	const timeOffset = 1000;
@@ -758,7 +758,7 @@ update() {
 	this.params_.renderer.compute(this.computeNormalMap,this.dispatchSize); // compute Normal Map
 };
 
-//=	Ping Pong Computation =======================================================
+//=	Ping Pong Computation ======================================================
 IFFT(index) {
 	this.DDindex.value = index;
 	let pingpong = true;
@@ -781,19 +781,19 @@ IFFT(index) {
 
 };	// End Class
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	EXPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 export {Ocean};
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	REVISIONS
 *
-//*******************************************************************************
+********************************************************************************
 
 250908: Initial Version - Uses Compute Shaders
 250914:	Adjust Wind Direction

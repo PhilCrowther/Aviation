@@ -1,8 +1,8 @@
-﻿/********************************************************************************
+﻿/*******************************************************************************
 *
 *	GRID WATER MODULE
 *
-*********************************************************************************
+********************************************************************************
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
@@ -62,11 +62,11 @@ grd_ = {
 };
 */
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	IMPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 import {DataTexture,
 		LinearFilter,
@@ -79,16 +79,16 @@ import {DataTexture,
 	} from 'three';
 import {color,texture,normalMap,positionLocal} from 'three/tsl';
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	LOADGEOMAT
 *
-********************************************************************************/
+*******************************************************************************/
 
 function loadGeoMat(imagLoader,txtrLoader,grd_,context) {
 	loadGe1Mat(imagLoader,grd_,context,grd_.DfS,grd_.DfM); // Diffuse Textures
 	loadGe1Mat(imagLoader,grd_,context,grd_.RfS,grd_.RfM); // Roughness Textures
-	// Static Normal Map (Grid 2 Only) ------------------------------------------
+	// Static Normal Map (Grid 2 Only) -----------------------------------------
 	txtrLoader.load(grd_.N2S,function(texture) {
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
@@ -139,11 +139,11 @@ function loadGe1Mat(imagLoader,grd_,context,fnam,dest) {
 	});
 } 
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	GRDMAP
 *
-********************************************************************************/
+*******************************************************************************/
 
 class GrdMap {
 
@@ -151,7 +151,7 @@ constructor(grd_,scene) {
 	this.grd_ = grd_;
 	this.scene = scene;
 
-//- Grid 0 ---------------------//-----------------------------------------------
+//- Grid 0 ---------------------//----------------------------------------------
 	this.grd_.Grx[0] = {
 		Typ:	0,				// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs/grd_.Stp, // Since each square is 4x4, only need 4x4 
@@ -169,7 +169,7 @@ constructor(grd_,scene) {
 		NSA:	0,				// N/A
 		EWA:	0,				// N/A
 	}
-//- Grid 1 ---------------------//-----------------------------------------------
+//- Grid 1 ---------------------//----------------------------------------------
 	this.grd_.Grx[1] = {
 		Typ:	1,				// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,		// Rows and Columns - use odd number
@@ -187,7 +187,7 @@ constructor(grd_,scene) {
 		NSA:	0,				// Shared North/South Adjustment (updated)
 		EWA:	0,				// Shared East/West Adjustment (updated)
 	}
-//- Grid 2 ---------------------//-----------------------------------------------
+//- Grid 2 ---------------------//----------------------------------------------
 	this.grd_.Grx[2] = {
 		Typ:	2,				// Type of Grid - Inner or Outer
 		RCs:	grd_.RCs,		// Rows and Columns - use odd number (for now = divisible by 3)
@@ -242,7 +242,7 @@ _initGeoMat(grd_,scene) {
 	let sg0 = grd_.Seg*grd_.Stp;
 	grd_.Geo[n] = new PlaneGeometry(sz0,sz0,sg0,sg0);
 	grd_.Geo[n].rotateX(-Math.PI/2);
-	//- Grid1 ------------------//-----------------------------------------------
+	//- Grid1 ------------------//----------------------------------------------
 	// For Grid1, using geometry = siz*stp
 	// Grid1 has no displacement
 	// Color texture is full-sized, normal map repeats (line 140)
@@ -265,7 +265,7 @@ _initGeoMat(grd_,scene) {
 	// Geometry (same as Grid0, but no segments)
 	grd_.Geo[1] = new PlaneGeometry(sz0,sz0);
 	grd_.Geo[1].rotateX(-Math.PI/2);
-	//- Grid2 ------------------//-----------------------------------------------
+	//- Grid2 ------------------//----------------------------------------------
 	// Grid2 has generic normal map
 	n = 2;
 	grd_.Mat[n] = new MeshStandardNodeMaterial({
@@ -283,7 +283,7 @@ _initGeoMat(grd_,scene) {
 	grd_.Geo[n].rotateX(-Math.PI/2);
 }
 
-//- Init Moving Map (Ocean) ----//-----------------------------------------------
+//- Init Moving Map (Ocean) ----//----------------------------------------------
 
 _init1GrMap(grx_,grd_,scene) {
 	// Load Variables
@@ -331,11 +331,11 @@ _init1GrMap(grx_,grd_,scene) {
 	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	UPDATE CLASS
 *
-********************************************************************************/
+*******************************************************************************/
 
 update() {
 	this._move1GrMap(this.grd_.Grx[0],this.grd_);
@@ -343,7 +343,7 @@ update() {
 	this._move1GrMap(this.grd_.Grx[2],this.grd_);
 }
 
-//- Move Moving Map ------------//-----------------------------------------------
+//- Move Moving Map ------------//----------------------------------------------
 
 _move1GrMap(grx_,grd_) {
 	let grd1_ = grd_.Grx[1];
@@ -478,19 +478,19 @@ _move1GrMap(grx_,grd_) {
 
 } // END OF MODULE
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	EXPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 export {loadGeoMat,GrdMap};
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	REVISIONS
 *
-*********************************************************************************
+********************************************************************************
 
 230530		Created this simplified version of GrdMap by moving Grid Definitions 
 			and routines for creating Geometries and Materials into this Module
@@ -504,5 +504,4 @@ export {loadGeoMat,GrdMap};
 250601:		Add loadGeoMat to Module
 250901: 	Color and map no longer mix; using colored map instead
 250909: v2	For use with Ocean2 (compute shaders) due to increases res, no detail required
-
 */

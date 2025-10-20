@@ -1,23 +1,23 @@
-/*********************************************************************************
+/*******************************************************************************
 *
 *	ANIMFM2 MODULE
 *
-*********************************************************************************
+********************************************************************************
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Oct 2025
+Version dated 19 Oct 2025
 
 @fileoverview
 A three.js class-type module for animating a FM2 aircraft model
 See http://philcrowther.com/Aviation for more details.
 */
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	IMPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 import {
 	AnimationClip,
@@ -25,30 +25,30 @@ import {
 	PositionalAudio,
 } from 'three';
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	VARIABLES
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= 1. MAIN VARIABLES ==========//===============================================
+//= 1. MAIN VARIABLES ==========//==============================================
 
-//- CONSTANTS ------------------//-----------------------------------------------
+//- CONSTANTS ------------------//----------------------------------------------
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 //-	Conversions
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
 const Km2Mil = 0.621371;
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	PROGRAM
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= LOAD AIR EXTERNAL ===========================================================
+//= LOAD AIR EXTERNAL ==========================================================
 
-//-	Load Airplane Model --------//-----------------------------------------------
+//-	Load Airplane Model --------//----------------------------------------------
 function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 	gltfLoader.load(mxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
@@ -76,7 +76,7 @@ function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 	});		
 }
 
-// Load Animations -------------//-----------------------------------------------
+// Load Animations -------------//----------------------------------------------
 function loadAirAnmX(gltf,air_,mxr_,anm_) {
 	// Propeller
 	let clip = AnimationClip.findByName(gltf.animations,"propellerAction");
@@ -195,9 +195,9 @@ function loadAirAnmX(gltf,air_,mxr_,anm_) {
 	if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anm_.anmfps);
 }
 
-//= LOAD AIR INTERNAL ===========================================================
+//= LOAD AIR INTERNAL ==========================================================
 
-//-	Load Virtual Cockpit -------//-----------------------------------------------
+//-	Load Virtual Cockpit -------//----------------------------------------------
 function loadAirInt(scene,gltfLoader,air_,vxr_,anm_) {
 	gltfLoader.load(vxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
@@ -223,7 +223,7 @@ function loadAirInt(scene,gltfLoader,air_,vxr_,anm_) {
 	});
 }	
 
-// Load Animations -------------//-----------------------------------------------
+// Load Animations -------------//----------------------------------------------
 function loadAirAnmI(gltf,vxr_,anm_) {		
 	// Propeller
 	let clip = AnimationClip.findByName(gltf.animations,"propellerAction");
@@ -389,7 +389,7 @@ function loadAirAnmI(gltf,vxr_,anm_) {
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.yawval/anm_.anmfps);	
 }
 
-//= MOVE AIR EXTERNAL ==========//===============================================
+//= MOVE AIR EXTERNAL ==========//==============================================
 
 function moveAirExt(air_,mxr_,anm_) {
 	// General
@@ -434,7 +434,7 @@ function moveAirExt(air_,mxr_,anm_) {
 	}
 }
 
-//= MOVE AIR INTERNAL ==========//===============================================
+//= MOVE AIR INTERNAL ==========//==============================================
 
 function moveAirInt(air_,vxr_,anm_,CamRot) {
 	// General
@@ -539,7 +539,7 @@ function moveAirInt(air_,vxr_,anm_,CamRot) {
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
 }
 
-//= MOVE COMMON ANIMATION ======//===============================================
+//= MOVE COMMON ANIMATION ======//==============================================
 
 //  Animations which act in all views: Propeller, Ailerons, Gear, Flaps, Canopy, Tailhook
 function moveAirCom(air_,anm_) {
@@ -634,19 +634,19 @@ function moveAirCom(air_,anm_) {
 	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	SOUNDS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= LOAD SOUNDS =================================================================
+//= LOAD SOUNDS ================================================================
 
 function loadMySong(audoLoader,listener,air_,mys_,myg_) {
 	air_.AirObj.add(mys_.AirMsh);
 	mys_.AirMsh.position.z = -5;
 	let RefDst = 25;			// Reference distance for Positional Audio
-	// My Airplane ..............................................................	
+	// My Airplane .............................................................
 	// Engine - Idle
 	mys_.IdlSnd = new PositionalAudio(listener);
 	audoLoader.load(mys_.IdlSrc,function(buffer) {
@@ -688,10 +688,10 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	link.add(dest);
 }
 
-//= MOVE SOUNDS =================================================================
+//= MOVE SOUNDS ================================================================
 
 function moveMySong(air_,mys_,myg_) {
-	//- My Airplane .............................................................
+	//- My Airplane ............................................................
 	// Switch Between Idle and Engine Sounds
 	if (mys_.IdlFlg && mys_.EngSnd.isPlaying) {
 		mys_.EngSnd.stop();
@@ -715,7 +715,7 @@ function moveMySong(air_,mys_,myg_) {
 	for (let n = 0; n < myg_.ObjNum; n ++) {myg_.SndPtr[n].setVolume(myg_.SndVol);}
 }
 
-//= PLAY SOUNDS =================================================================
+//= PLAY SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
 function playMySong(mys_,myg_,gen_) {
@@ -725,7 +725,7 @@ function playMySong(mys_,myg_,gen_) {
 	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();} // Guns (L/R)
 }
 
-//= STOP SOUNDS =================================================================
+//= STOP SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
 function stopMySong(mys_,myg_) {
@@ -735,11 +735,11 @@ function stopMySong(mys_,myg_) {
 	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();} // Guns (L/R)
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	SUBROUTINES
 *
-********************************************************************************/
+*******************************************************************************/
 
 /* Converts degrees to 360 */
 function Mod360(deg) {
@@ -752,15 +752,15 @@ function PoM360(deg) {
 	if (deg > 180) deg = deg - 360;
 return deg;}
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	EXPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 export {loadAirExt,loadAirInt,moveAirExt,moveAirInt,loadMySong,moveMySong,playMySong,stopMySong};
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	REVISIONS
 *
@@ -773,5 +773,4 @@ export {loadAirExt,loadAirInt,moveAirExt,moveAirInt,loadMySong,moveMySong,playMy
 241118:	Cleanup
 250406:	Loads airplane and animations (ver 2a)
 251019: Added Sounds
-
 */

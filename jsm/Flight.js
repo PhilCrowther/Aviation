@@ -1,32 +1,32 @@
-/********************************************************************************
+/*******************************************************************************
 *
 *	FLIGHT MODULE
 *
-*********************************************************************************
+********************************************************************************
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Oct 2025
+Version dated 19 Oct 2025
 
 @fileoverview
 A three.js class-type module for Flight Simulation
 See http://philcrowther.com/Aviation for more details
  */
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	IMPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 import {Quaternion} from 'three';
 import {color} from "three/tsl";
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	INITIALIZE CLASS
 *
-********************************************************************************/
+*******************************************************************************/
 
 class Flight {
 //= Initialize Ocean ===========//==============================================
@@ -44,7 +44,7 @@ constructor(air_) {
 	this.WingAs = 0;			// Wing Aspect Ratio
 	this.FrcAcc = 0;			// Convert Force to Acceleration
 	this.ThrstK = 0;			// Thrust Constant
-	//- Air Density and IAS Computations ----------------------------------------
+	//- Air Density and IAS Computations ---------------------------------------
 	this.air_.AirDSL = AirDns(this.air_.BegTmp,this.air_.MapSPS.y);	//###
 	this.air_.SpdIAS = AirIAS(this.air_.AirDSL,this.air_.SpdKPH);
 	// Basic Flight Data (SI Adjustments)
@@ -76,7 +76,7 @@ constructor(air_) {
 			this.air_.MapPos.y = this.dat_.Ax2CGD*Math.cos(XRad)+this.dat_.WheelR+this.air_.GrdZed;	// Set Height
 		}
 	}
-	// If Start in Air ----------------------------------------------------------
+	// If Start in Air ---------------------------------------------------------
 	else {
 		// Speed
 		if (this.air_.SpdKPH <= 0) this.air_.SpdKPH = this.SmallV; // Avoid division by zero
@@ -121,15 +121,15 @@ constructor(air_) {
 	this.update();
 };	// End of Initialize
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	UPDATE CLASS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= (called by Main Program) ===//===============================================
+//= (called by Main Program) ===//==============================================
 update() {
-	// 1. COMPUTE VECTORS ------//-----------------------------------------------
+	// 1. COMPUTE VECTORS ------//----------------------------------------------
 	// Most of these comps are also used while on ground, so compute and adjust
 	// Inputs: this.air_.SpdMPS, this.air_.GrvMPS
 	// Comps
@@ -152,7 +152,7 @@ update() {
 	let LftMaxF = this.air_.CfLMax*DynPrs*this.dat_.WingAr;	// Max Lift at this Speed
 	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
 	this.air_.MaxBnk = Math.acos(this.air_.Weight/LftMaxF)*this.RadDeg;	// Max Bank Angle for Max Lift
-	// a. COMPUTE LIFT ROTATION //...............................................
+	// a. COMPUTE LIFT ROTATION //..............................................
 	// Lift = DynPres*this.dat_.WingArea*Cl
 	let CfLftT = this.air_.CfLift+this.air_.CfFlap;	// Default
 	if (this.air_.AutoOn) {
@@ -173,7 +173,7 @@ update() {
 	// Compute this.air_.RotDif.x
 	this.air_.RotDif.x = ACLftD; // Pitch Degrees (before Gravity)
 	this.air_.GFmult = ACLift/LftMax; // Save G-Force
-	// b. COMPUTE GRAVITY CHANGES ...............................................
+	// b. COMPUTE GRAVITY CHANGES ..............................................
 	let GrvThr = GrvDLT*Math.sin(this.air_.AirObj.rotation.x);	// Gravity opposing Thrust = Grav * sin(ACPrad)
 	let GrvACP = GrvDLT*Math.cos(this.air_.AirObj.rotation.x);	// Vertical Gravity
 	let GrvACD = (GrvACP/this.air_.SpdMPF)*this.RadDeg;	// Degrees = (GrvACP/V)*(180/(PI()) = (GrvACP/V)*this.RadDeg
@@ -203,7 +203,7 @@ update() {
 	// this.air_.ACPAdj is an adjustment to ACPtch that allows the aircraft to pitch relative to the direction of flight
 	// to match pitch required to produce specified lift; or, if on ground, to pitch around main wheel axis
 	this.air_.ACPAdj = (this.air_.CfLift*10)-this.dat_.AngInc; // Default (1.3 = 13)
-	// 2. GRDFLG ADJUSTMENTS ----------------------------------------------------
+	// 2. GRDFLG ADJUSTMENTS ---------------------------------------------------
 	// Adjust for 3 alternatives: (1) Leaving Ground; (2) Hitting Ground; and (3) On Ground
 	// Determine if Leaving Ground
 	if (this.air_.GrdFlg) {
@@ -258,7 +258,7 @@ update() {
 		let XRad = this.DegRad*Mod360(this.dat_.Ax2CGA-this.air_.ACPAdj);
 		this.air_.MapPos.y = this.dat_.Ax2CGD*Math.cos(XRad)+this.dat_.WheelR+this.air_.GrdZed;
 	}
-	// 2. COMPUTE DIRECTION OF FLIGHT -------------------------------------------
+	// 2. COMPUTE DIRECTION OF FLIGHT ------------------------------------------
 	// Inputs: this.air_.RotDif
 	// This routine uses 2 linked meshes to correctly rotate aircraft.
 	// Rotate Aircraft (Heading Not Change)
@@ -281,35 +281,35 @@ update() {
 	this.air_.AirPBY.rotation.z = 0;
 	this.air_.AirPBY.rotation.x = this.air_.ACPAdj*this.DegRad;	// Make Pitch Adjustment here [220120 change]
 	this.air_.AirPBY.rotation.y = 0;
-	// Pitch --------------------------------------------------------------------
+	// Pitch -------------------------------------------------------------------
 	this.air_.AirRot.x = PoM360(this.air_.AirObj.rotation.x*this.RadDeg);
 	this.air_.AirRot.x = this.air_.AirRot.x + this.air_.ShpPit; // Add Ship Pitch
-	// Heading ------------------------------------------------------------------
+	// Heading -----------------------------------------------------------------
 	this.air_.AirRot.y = Mod360(-this.air_.AirObj.rotation.y*this.RadDeg);
 	this.air_.HdgDif = (this.air_.AirRot.y-this.air_.OldRot.y)/this.air_.DLTime; // Change in Heading (display)
 	this.air_.OldRot.y = this.air_.AirRot.y;					// Save old heading	
-	// Bank ---------------------------------------------------------------------
+	// Bank --------------------------------------------------------------------
 	if (this.air_.AutoOn && this.air_.InpKey.z == 0) {
 		// Keep Same Bank
 		this.air_.AirObj.rotation.z = this.air_.OldRot.z;
-		// Self-Center ..........................................................
+		// Self-Center .........................................................
 		if (this.air_.AirRot.z > 0 && this.air_.AirRot.z < 2) this.air_.OldRot.z = 0.000001*this.air_.AirRot.z*this.DegRad;
 		if (this.air_.AirRot.z < 360 && this.air_.AirRot.z > (360-2)) this.air_.OldRot.z = -0.000001*(360-this.air_.AirRot.z)*this.DegRad;
 	}
 	else {this.air_.OldRot.z = this.air_.AirObj.rotation.z;}
 	//
 	this.air_.AirRot.z = Mod360(-this.air_.AirObj.rotation.z*this.RadDeg);
-	// Limit to Max Bank (### ATP) ..............................................
+	// Limit to Max Bank (### ATP) .............................................
 	if (this.air_.AutoOn && (this.air_.AirRot.z > 270 || this.air_.AirRot.z < 90)) {	// Only if Flag Set and Not Upside Down
 		let ACBnew = this.air_.AirRot.z;	// 270 to 90
 		if (ACBnew > 180) ACBnew = ACBnew-360;	// -90 to 90
 		if (ACBnew >  this.air_.MaxBnk) ACBnew = this.air_.MaxBnk;  // Limit Pos Bank
 		if (ACBnew < -this.air_.MaxBnk) ACBnew = -this.air_.MaxBnk;	// Limit Neg Bank
-		this.air_.AirRot.z = Mod360(ACBnew+360); 		// 270 to 90
+		this.air_.AirRot.z = Mod360(ACBnew+360); // 270 to 90
 		this.air_.AirObj.rotation.z = -this.air_.AirRot.z*this.DegRad;
 	}
 	this.air_.AirRot.z = this.air_.AirRot.z + this.air_.ShpBnk; // Add Ship Bank		
-	// 3. COMPUTE MAP SPEED -----------------------------------------------------
+	// 3. COMPUTE MAP SPEED ----------------------------------------------------
 	// Inputs:	this.air_.SpdMPF, ACThrG, ACPtch, ACHead, this.air_.MapPos
 	// Results:	this.air_.SpdKPH, PSpdZV, PSpdYV, ACPtch, this.air_.MapSpd, this.air_.MapPos
 	// a. Compute Speed
@@ -341,13 +341,13 @@ update() {
 
 };	// End of Module
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	SUBROUTINES
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= Compute Air Density and Indcated Airspeed ===================================
+//= Compute Air Density and Indcated Airspeed ==================================
 function AirDns(BegTmp,Height) {
 	//- Altitude Index
 	let AltIdx = Height/1000;
@@ -366,7 +366,7 @@ function AirIAS(AirDSL,SpdKPH) {
 	let SpdIAS = SpdKPH*Math.sqrt(AirDnR);
 return SpdIAS}
 
-//= Geometric Conversions ======//===============================================
+//= Geometric Conversions ======//==============================================
 
 //  Converts degrees to 360
 function Mod360(deg) {
@@ -385,19 +385,19 @@ function MaxVal(x, max) {
 	if (x < 0 && x < -max) x = -max;
 return x;}
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	EXPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 export {Flight, Mod360, PoM360, MaxVal};
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	REVISIONS
 *
-*********************************************************************************
+********************************************************************************
 
 211216:	This new EZ version uses three.js rotations to compute orientation.
 		Added standard linked objects AirAxe and AirPBY
@@ -425,7 +425,7 @@ export {Flight, Mod360, PoM360, MaxVal};
 250603:	Eliminate makmsh (replaced with Object3D)
 250804: Simplify Map Speed Comps
 
-FUTURE PLANNED REVISIONS (make as part of version change) =======================
+FUTURE PLANNED REVISIONS (make as part of version change) ======================
 ______:	Combine air_.ShpPit/Bnk into ShpRot
 
 */
