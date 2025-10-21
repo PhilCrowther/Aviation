@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 251019
+*	FSIM FM2 DATA: 251021
 *
 ********************************************************************************
 
@@ -951,22 +951,14 @@ let	rad_ = {
 	}
 
 //= 7. CAMERA VARIABLES ========//==============================================
-//-	Start
-let CamSel = 1;					// Camera Selection (0 = External; 1 = Internal)
-//- Variables
-let CamNum = 2;
-let CamFlg = [0,1];				// 1 = Internal View
-let CamLnk = [1,1];				// 1 = Linked to Airplane
-//- Variables
-let CamAdj = [180,0];
+//	Only Two Views: 0 = External; 1 = Internal			
 //- Shared Variables
 let cam_ = {
-		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
-		CamNum: CamNum,
+		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
 		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
 		// Camera
 		CamLLD: 0, 				// cam_.MshRot Lat, Lon, Dst
-		CamAdj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
+		CamAdj: 0,				// Camera Adjustment (180 = look in)
 		CamMMD: 0,				// In/Out - min,max,spd
 		// Rotator
 		MshRot: 0,				// Camera Rotator
@@ -985,6 +977,14 @@ let cam_ = {
 		CmLagX: 0,				// Transition Offset
 		// Beginning Head Rotation
 		VewRot: 0,
+		//- Source
+		SrcLLD: [0,0],
+		SrcMMD: [0,0],
+		SrcMMR: [0,0],
+		SrcPar: [0,0],
+		SrcAdj: [180,0],
+		SrcFlg: [0,1],			// 1 = Internal View
+		SrcLnk: [1,1],			// 1 = Linked to Airplane
 	}
 
 //= 8. OUTPUT VARIABLES ========//==============================================
