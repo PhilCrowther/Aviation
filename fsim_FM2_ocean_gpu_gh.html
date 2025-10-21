@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Oct 2025
+Version dated 21 Oct 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -61,7 +61,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu2.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/fm2/data/data.js"></script>
 
 <script type="importmap">
@@ -558,31 +558,38 @@ const CamPVC = new THREE.Object3D;
 	CamPVC.position.set(0,1.0668,0.762);	// Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
-//- Start
-let VewRot = 0;					// Used to rotate head in beginning Internal View
-if (BegLoc == 1) VewRot = 45;	// Use this instead of R45, in case no access to View Keys
-//- Variables
-let CamLLD = [new THREE.Vector3(-10,0,30),
-			  new THREE.Vector3(0,0,0.001)];
-let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
-			  new THREE.Vector3(0,1,0.001)];	// Internal View: Throttle - min,max,spd
-let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
-			  new THREE.Vector3(45,110,0.5)];
-let CamPar = [air_.AirObj,CamPVC];
+//let CamLLD = [new THREE.Vector3(-10,0,30),
+//			  new THREE.Vector3(0,0,0.001)];
+//let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
+//			  new THREE.Vector3(0,1,0.001)];	// Internal View: Throttle - min,max,spd
+//let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
+//			  new THREE.Vector3(45,110,0.5)];
+//let CamPar = [air_.AirObj,CamPVC];
+	cam_.SrcLLD = [new THREE.Vector3(-10,0,30),new THREE.Vector3(0,0,0.001)];
+	cam_.SrcMMD = [new THREE.Vector3(cam_.SrcLLD[0].z*0.5,cam_.SrcLLD[0].z*2.0,0.1),new THREE.Vector3(0,1,0.001)]; // In/Out - min,max,spd
+	cam_.SrcMMR = [new THREE.Vector3(80,0,0.5),new THREE.Vector3(45,110,0.5)]; // Rotate - min/max Lat/Lon,rspd			   
+	cam_.SrcPar = [air_.AirObj,CamPVC];
 //- Adjustments
-	cam_.CamLLD = new THREE.Vector3().copy(CamLLD[CamSel]); // cam_.MshRot Lat, Lon, Dst
-	cam_.CamMMD = new THREE.Vector3().copy(CamMMD[CamSel]); // In/Out - min,max,spd
+	cam_.CamSel = 1;
+	cam_.CamLLD = new THREE.Vector3().copy(cam_.SrcLLD[cam_.CamSel]); // cam_.MshRot Lat, Lon, Dst
+	cam_.CamMMD = new THREE.Vector3().copy(cam_.SrcMMD[cam_.CamSel]); // In/Out - min,max,spd
+	cam_.CamMMR = new THREE.Vector3().copy(cam_.SrcMMR[cam_.CamSel]); // Rotate - min/max Lat/Lon,rspd
+	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
+	cam_.CamFlg = cam_.SrcFlg[cam_.CamSel];	// 1 = Internal
+	cam_.CamLnk = cam_.SrcLnk[cam_.CamSel];	// 1 = Linked to Airplane
+//- Head Y-Rotation
+	cam_.VewRot = 0;
+	if (BegLoc == 1) cam_.VewRot = 45;	// Use this instead of R45, in case no access to View Keys
+//- Objects
 	cam_.MshRot = new THREE.Object3D;	// Camera Rotator
 	cam_.MshRot.rotation.order = "YXZ";
-	cam_.CamMMR = new THREE.Vector3().copy(CamMMR[CamSel]); // Rotate - min/max Lat/Lon,rspd
-	cam_.CamPar = CamPar[CamSel];	// Center of Rotation	
 	cam_.MshObj = new THREE.Object3D;
 	cam_.MshObj.rotation.order = "YXZ";
 	cam_.MshDeg = new THREE.Object3D;
 	cam_.MshDeg.rotation.order = "YXZ";
-	cam_.VewRot = VewRot;
 //- Adjustments and Links
 	camera.rotation.order = "YXZ";
+	cam_.MshRot.add(camera);	// Attach camera to rotator
 	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
 	cam_.MshObj.add(cam_.MshDeg);
 
@@ -661,7 +668,7 @@ function initAll() {
 	grd_.Nrm = waves.normMapTexture;
 	grids = new GrdMap(grd_,scene);
 	// Other
-	initCamera(camera,cam_);	// position camera
+	initCamFM2();				// position camera
 	prntHUDval();				// print HUD values
 	PawsText();
 	AutoText();
@@ -864,7 +871,6 @@ function moveShpAlt() {
 				scene.add(air_.AirObj); // Was detached from scene
 				if (!cam_.CamSel) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst;
 			}
-//			sunLight.shadow.camera.updateProjectionMatrix(); // only switch matrix if airborne
 			// Point Same Direction as Carrier
 			// [WIP]
 		}
@@ -1521,11 +1527,11 @@ function playRadSg2(n) {
 
 //== INIT CAMERA ===============//==============================================
 // Two position camera: rxternal and internal views
+// Called every time camera slection changed
 
-function initCamera() {
+function initCamFM2() {
 	camera.position.z = -cam_.CamLLD.z;
 	camera.rotation.y = cam_.CamAdj*DegRad;
-	cam_.MshRot.add(camera);	// Attach to rotator
 	//
 	if (!cam_.CamSel) {			// 0 = External View
 		if (!air_.GrdFlg) {
@@ -1564,15 +1570,17 @@ function initCamera() {
 		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
 	}
 	// Common Changes
-	cam_.CamLLD.copy(CamLLD[cam_.CamSel]);	// Restore Saved Values
-	cam_.CamMMD.copy(CamMMD[cam_.CamSel]);	// In/Out - min, max, spd
-	cam_.CamAdj = CamAdj[cam_.CamSel];		// Load Adjustment
+	cam_.CamLLD = new THREE.Vector3().copy(cam_.SrcLLD[cam_.CamSel]); // cam_.MshRot Lat, Lon, Dst
+	cam_.CamMMD = new THREE.Vector3().copy(cam_.SrcMMD[cam_.CamSel]); // In/Out - min,max,spd
+	cam_.CamMMR = new THREE.Vector3().copy(cam_.SrcMMR[cam_.CamSel]); // Rotate - min/max Lat/Lon,rspd
+	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
+	cam_.CamAdj = cam_.SrcAdj[cam_.CamSel];	// Load Adjustment
+	cam_.CamFlg = cam_.SrcFlg[cam_.CamSel];	// 1 = Internal
+	cam_.CamLnk = cam_.SrcLnk[cam_.CamSel];	// 1 = Linked to Airplane
+	//
+//	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators
+	//
 	camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
-	cam_.CamMMR.copy(CamMMR[cam_.CamSel]);	// Rotation min, max, spd
-	cam_.CamPar = CamPar[cam_.CamSel]		// Load New Parent
-	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators
-	cam_.CamFlg = CamFlg[cam_.CamSel];		// 1 = Internal
-	cam_.CamLnk = CamLnk[cam_.CamSel];		// 1 = Linked to Airplane
 	//
 	moveCamera(camera,cam_,air_,key_);
 }
@@ -1833,15 +1841,14 @@ function toglInfo() {
 	InfoText();
 }
 
-//. Toggle Camera View (3-Way) -//----------------------------------------------
+//. Toggle Camera View (2-Way) -//----------------------------------------------
 function toglView() {
 	// Old CamSel
-	cam_.CamPar.remove(cam_.MshRot);		// Unlink Old Parent
-	CamLLD[cam_.CamSel].copy(cam_.CamLLD);	// Save lld
+//	cam_.CamPar.remove(cam_.MshRot);		// Unlink Old Parent
+	cam_.SrcLLD[cam_.CamSel].copy(cam_.CamLLD);	// Save LLD
 	// New CamSel
-	cam_.CamSel++
-	if (cam_.CamSel == cam_.CamNum) cam_.CamSel = 0;
-	initCamera(camera,cam_)
+	cam_.CamSel = 1 - cam_.CamSel;
+	initCamFM2();
 }
 
 //. Toggle Sound ...............//..............................................
