@@ -61,7 +61,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu2.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_FM2_ocean_gpu.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/fm2/data/data.js"></script>
 
 <script type="importmap">
@@ -1578,7 +1578,7 @@ function initCamFM2() {
 	cam_.CamFlg = cam_.SrcFlg[cam_.CamSel];	// 1 = Internal
 	cam_.CamLnk = cam_.SrcLnk[cam_.CamSel];	// 1 = Linked to Airplane
 	//
-//	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators
+	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators (toggle unlinks - if not, view is too low)
 	//
 	camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
 	//
@@ -1844,7 +1844,7 @@ function toglInfo() {
 //. Toggle Camera View (2-Way) -//----------------------------------------------
 function toglView() {
 	// Old CamSel
-//	cam_.CamPar.remove(cam_.MshRot);		// Unlink Old Parent
+	cam_.CamPar.remove(cam_.MshRot); // Unlink Old Parent
 	cam_.SrcLLD[cam_.CamSel].copy(cam_.CamLLD);	// Save LLD
 	// New CamSel
 	cam_.CamSel = 1 - cam_.CamSel;
