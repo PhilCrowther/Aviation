@@ -246,6 +246,7 @@ TO DO:
 //= 1. MAIN VARIABLES ==========//==============================================
 //- INPUTS ---------------------//----------------------------------------------
 let BegLoc = 1;					// 1 = Island; 1 = CVE; 2 = Air
+let BegCam = 1;					// 0 = External; 1 = Internal (default)
 //- FLIGHT CONTROLS ------------//----------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Control Multiplier for FM2
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
@@ -287,13 +288,12 @@ const sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.shadow.camera.right = sky_.ShdBLR+1;
 	sunLight.shadow.camera.top = sky_.ShdBTB;
 	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
-//	sunLight.shadow.bias = -0.0002; // WebGPU
 	sunLight.shadow.bias = -0.0005; // WebGPU
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 const camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
-//	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
+	camera.rotation.order = "YXZ";
 //	Renderer
 const renderer = new THREE.WebGPURenderer({antialias: true});
 	await renderer.init();		// r179
@@ -558,40 +558,23 @@ const CamPVC = new THREE.Object3D;
 	CamPVC.position.set(0,1.0668,0.762);	// Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
-//let CamLLD = [new THREE.Vector3(-10,0,30),
-//			  new THREE.Vector3(0,0,0.001)];
-//let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
-//			  new THREE.Vector3(0,1,0.001)];	// Internal View: Throttle - min,max,spd
-//let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
-//			  new THREE.Vector3(45,110,0.5)];
-//let CamPar = [air_.AirObj,CamPVC];
 	cam_.SrcLLD = [new THREE.Vector3(-10,0,30),new THREE.Vector3(0,0,0.001)];
 	cam_.SrcMMD = [new THREE.Vector3(cam_.SrcLLD[0].z*0.5,cam_.SrcLLD[0].z*2.0,0.1),new THREE.Vector3(0,1,0.001)]; // In/Out - min,max,spd
 	cam_.SrcMMR = [new THREE.Vector3(80,0,0.5),new THREE.Vector3(45,110,0.5)]; // Rotate - min/max Lat/Lon,rspd			   
 	cam_.SrcPar = [air_.AirObj,CamPVC];
-//- Adjustments
-	cam_.CamSel = 1;
-	cam_.CamLLD = new THREE.Vector3().copy(cam_.SrcLLD[cam_.CamSel]); // cam_.MshRot Lat, Lon, Dst
-	cam_.CamMMD = new THREE.Vector3().copy(cam_.SrcMMD[cam_.CamSel]); // In/Out - min,max,spd
-	cam_.CamMMR = new THREE.Vector3().copy(cam_.SrcMMR[cam_.CamSel]); // Rotate - min/max Lat/Lon,rspd
-	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
-	cam_.CamFlg = cam_.SrcFlg[cam_.CamSel];	// 1 = Internal
-	cam_.CamLnk = cam_.SrcLnk[cam_.CamSel];	// 1 = Linked to Airplane
-//- Head Y-Rotation
-	cam_.VewRot = 0;
-	if (BegLoc == 1) cam_.VewRot = 45;	// Use this instead of R45, in case no access to View Keys
-//- Objects
+//- Objects --------------------------------------------------------------------
 	cam_.MshRot = new THREE.Object3D;	// Camera Rotator
 	cam_.MshRot.rotation.order = "YXZ";
+	cam_.MshRot.add(camera);	// Attach camera to rotator	
 	cam_.MshObj = new THREE.Object3D;
 	cam_.MshObj.rotation.order = "YXZ";
 	cam_.MshDeg = new THREE.Object3D;
 	cam_.MshDeg.rotation.order = "YXZ";
-//- Adjustments and Links
-	camera.rotation.order = "YXZ";
-	cam_.MshRot.add(camera);	// Attach camera to rotator
-	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
 	cam_.MshObj.add(cam_.MshDeg);
+//- Adjustments ----------------------------------------------------------------
+	cam_.CamSel = BegCam;
+	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
+	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
 
 //= 9. INPUT VARIABLES =========//==============================================
 //- POINTER LOCK CONTROLS ------//----------------------------------------------
@@ -1267,6 +1250,7 @@ function initAirObj() {
 		anm_.canpos = 0;		// Canopy Open
 		ThrFlg = 1;				// Disable Throttle
 		AnmFlg = 1;				// Animation Not Complete
+		cam_.VewRot = 45;		// Rotate head 45 deg (Use this instead of R45, in case no access to View Keys)
 	}
 	if (BegLoc == 2) { 			// Air
 		let Pwr = 1.0;			// Range = 0 to 1
@@ -1532,7 +1516,7 @@ function playRadSg2(n) {
 function initCamFM2() {
 	camera.position.z = -cam_.CamLLD.z;
 	camera.rotation.y = cam_.CamAdj*DegRad;
-	//
+	//- FM2 Adjustments --------------------------------------------------------
 	if (!cam_.CamSel) {			// 0 = External View
 		if (!air_.GrdFlg) {
 			sunLight.shadow.mapSize.set(2048,2048);
@@ -1569,7 +1553,7 @@ function initCamFM2() {
 		// Canopy
 		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
 	}
-	// Common Changes
+	//- Load New Values --------------------------------------------------------
 	cam_.CamLLD = new THREE.Vector3().copy(cam_.SrcLLD[cam_.CamSel]); // cam_.MshRot Lat, Lon, Dst
 	cam_.CamMMD = new THREE.Vector3().copy(cam_.SrcMMD[cam_.CamSel]); // In/Out - min,max,spd
 	cam_.CamMMR = new THREE.Vector3().copy(cam_.SrcMMR[cam_.CamSel]); // Rotate - min/max Lat/Lon,rspd
@@ -1577,11 +1561,9 @@ function initCamFM2() {
 	cam_.CamAdj = cam_.SrcAdj[cam_.CamSel];	// Load Adjustment
 	cam_.CamFlg = cam_.SrcFlg[cam_.CamSel];	// 1 = Internal
 	cam_.CamLnk = cam_.SrcLnk[cam_.CamSel];	// 1 = Linked to Airplane
-	//
-	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators (toggle unlinks - if not, view is too low)
-	//
+	//- Final Adjustments ------------------------------------------------------
+	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators to new CamPar (AirObj or CamPVC)
 	camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
-	//
 	moveCamera(camera,cam_,air_,key_);
 }
 
@@ -1882,6 +1864,7 @@ function onWindowResize() {
 251011	Replaced renderASync with render; added TimestampQuery.COMPUTE after waves.update
 251013	Added pre-launch horizontal vibration
 251019	Move My Airplane sounds to AnimFM2 module and Object sounds to Objects module
+251021	Revise initCamFM2
 */
 
 </script>
