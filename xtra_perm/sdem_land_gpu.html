@@ -1,0 +1,628 @@
+﻿<!doctype html>
+<html>
+
+<!--
+Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 29 Oct 2025
+-->
+
+<head>
+<title>sdem land gpu r180</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<link rel="stylesheet" href="styles/body2z.css">
+</head>
+<body>
+
+<body oncontextmenu="return false;">
+
+<div id="container">
+	<div class="overlay1">
+		<div>Altitude.: <span id="Cam_Alt"></span> ft</div>
+		<div>Heading..: <span id="Cam_Hdg"></span> deg</div>
+	</div>
+</div>
+
+<button id="TYP" class="d1TypeButton">Type</button>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+		}
+	}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import {color,texture,uniform,positionLocal,normalMap} from 'three/tsl';
+import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import Stats from "stats-gl";
+
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
+
+//= GENERAL ====================//===============================================
+//-	Math Predefined
+let	DegRad = Math.PI/180;		// Convert Degrees to Radians
+let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+let	Mtr2Ft = 3.28084;
+//- Flags				
+let LodFlg = 0;
+let StatOn = 1;					// Stats ((0 = off, 1 = on)
+let dtType = 3;					// Texture Type (0-9)
+
+//= SKYBOX ======================================================================
+let SkyCol = 0x1732c1;			// Sky
+let SkyLim = 100000;			// Max viewing distance 
+//- Texture
+let SBPath = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+
+//= SUN =========================================================================
+let SunCol = 0xffffff;			// Sun
+let SunInt = 3;					// Intensity
+//- Rotation and Position (fixed)
+let SunLat = 23;				// Direction - Vert (+/- 90)
+let SunLon = 312;				// Direction - Horz (0->360)
+let SunDst = 10000;				// Distance (for shadows and lensflare)
+//- New
+let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+//	Shadows
+let ShdBox = 6;					// Size of shadow box
+let ShdBLR = 6.5;
+let ShdBTB = 4;
+let ShdDst = 1500;				// Shadow Distance (meters)
+
+//= BASIC SETUP =================================================================
+//- Scene
+let	scene = new THREE.Scene();
+//- Lights
+let sunLight = new THREE.DirectionalLight(SunCol,3.0);
+	sunLight.position.copy(SunPos).normalize();
+	scene.add(sunLight);
+//- Camera
+let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,SkyLim);
+	camera.position.set(-40,10,400);
+//- Renderer
+let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
+    await renderer.init();		// ### NEW
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.setAnimationLoop(rendAll);
+	container.appendChild(renderer.domElement);
+let maxAnisotropy = renderer.getMaxAnisotropy();
+//- Controls
+let	controls = new OrbitControls(camera,renderer.domElement);
+//- Inputs
+	document.getElementById("TYP").addEventListener("click", toggleType, false);
+	window.addEventListener("resize",onWindowResize,false);
+//- Loading Manager
+	// Create a loading manager to set RESOURCES_LOADED when appropriate.
+	// Pass loadingManager to all resource loaders.
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+let gltfLoader = new GLTFLoader(loadingManager);
+
+//= CAMERA ======================================================================
+let	CamDst, CamLat, CamHdg, CamAlt = 0;	
+
+//= Data ========================================================================
+//- Maps ------------------------------------------------------------------------
+let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+//- Ground Square ---------------------------------------------------------------
+let dqSize = 805;	// size of quarter section in meters = 2640 feet (2 ft per row = 1320 rows)
+let datMax = 6;
+//- Data Textures ---------------------------------------------------------------
+let dtSize = 1024;		// 8 pixels per row = 128 rows
+let dtArea = dtSize*dtSize;
+let d0Data = new Uint8Array(4*dtArea);	// Dirt
+let d1Data = new Uint8Array(4*dtArea);
+let d2Data = new Uint8Array(4*dtArea);
+let d3Data = new Uint8Array(4*dtArea);
+let d4Data = new Uint8Array(4*dtArea);
+let d5Data = new Uint8Array(4*dtArea);
+let d6Data = new Uint8Array(4*dtArea);
+let d7Data = new Uint8Array(4*dtArea);
+let d8Data = new Uint8Array(4*dtArea);
+let d9Data = new Uint8Array(4*dtArea);
+let dtPtrs = [d0Data,d1Data,d2Data,d3Data,d4Data,d5Data,d6Data,d7Data,d8Data,d9Data];
+//- Materials -------------------------------------------------------------------
+let dtMats = [0,0,0,0,0,0,0,0,0,0];
+//- Meshes ----------------------------------------------------------------------
+let dtMesh = [0,0,0,0,0,0,0,0,0,0];
+//- Colors ----------------------------------------------------------------------
+let red = [0,0];
+let grn = [0,0];
+let blu = [0,0];
+let drtclr = [0xbaa590,0x654321];	// Dirt
+let pstclr = [0x00b000,0x005000];	// Pasture
+let cvrclr = [0x00c000,0x004000];	// Green
+let whtclr = [0xfbf4e5,0xeabb63];	// Wheat
+let bnsclr = [0x00e000,0x006000];	// Beans
+
+//= Tree Line ===================================================================
+let treSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb";
+let treObj = 0;
+let trsSrc = "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png";
+let treShd = new THREE.Object3D;
+	treShd.rotation.order = "YXZ";
+let treLin = new THREE.Group;
+//= HTML OVERLAY TEXT ==========================================================
+let Cam_AltElement = document.getElementById("Cam_Alt"); // Altitude
+let Cam_AltNode = document.createTextNode("");
+	Cam_AltElement.appendChild(Cam_AltNode);
+let Cam_HdgElement = document.getElementById("Cam_Hdg"); // Heading
+let Cam_HdgNode = document.createTextNode("");
+	Cam_HdgElement.appendChild(Cam_HdgNode);
+let Cam_Alt,Cam_Hdg;
+
+/********************************************************************************
+*
+*	MAIN PROGRAM
+*
+********************************************************************************/
+
+	loadAll();
+
+//= 0 LOAD ALL ==================================================================
+
+function loadAll() {
+	loadSkyBox();
+	loadTreLin();
+	loadTreShd();
+	loadDifTxt();
+	// Load stats
+	if (StatOn) {				// show stats
+		StatOn = new Stats({
+			precision: 3,
+			horizontal: false
+		});
+		StatOn.init(renderer);
+		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(StatOn.dom);
+	}
+}
+
+//= 1 INIT ALL =================================================================
+
+function initAll() {
+	initCover();
+//	initTrees();
+	LodFlg = 1;
+}
+
+// 2 REND ALL ====================================================================
+
+function rendAll() {
+	if (LodFlg) {
+		// Update camera position
+		if(camera.position.y < 0.0) {
+			camera.position.y = 2.0;
+		}
+		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
+		if (StatOn) StatOn.update(); // update stats
+	}
+	prntHUDval();
+	renderer.render(scene,camera);
+	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+}
+
+/*******************************************************************************
+*
+*	SKY BOX
+*
+*******************************************************************************/
+
+function loadSkyBox() {
+	let envMap = cubeLoader
+		.setPath(SBPath)
+		.load(["px.jpg","nx.jpg","py.jpg","ny.jpg","pz.jpg","nz.jpg"]);
+	envMap.format = THREE.RGBAFormat;
+	envMap.colorSpace = THREE.SRGBColorSpace; // r152
+	scene.background = envMap;
+}
+
+/*******************************************************************************
+*
+*	LAND
+*
+*******************************************************************************/
+// 5280 feet = 1024 pixels
+// 4.65 feet = 1 pixel
+
+//= LOAD =======================================================================
+
+function loadDifTxt() {
+	//- Diffuse Texture
+	txtrLoader.load(DifTxt,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.needsUpdate = true;
+		DifTxt = texture;
+	});
+}
+
+//= INIT =======================================================================
+
+function initCover() {
+// 1024/8 = 128 rows
+// 2640 ft - 80 ft border =  2,560 ft 
+// 2560 ft at 1 row per 2 ft = 1280 rows = 10 reps
+	initTxtr();
+	dtMesh[dtType].visible = true;
+}
+
+function initTxtr() {
+	// Dirt Underneath All
+	for (let i = 0; i < 10; i++) {
+		makeDirt(i);
+	}
+	// Add Other Textures
+	makePast(1);						// Pasture
+	makePlow(2);						// Plowed
+	makeCovr(3);						// Green Line
+	makeWeat(4);						// Yellow Line
+	makeBean(5);						// Green Dots
+	// Init
+	// Make Materials and Meshes
+	let geometry = new THREE.PlaneGeometry(dqSize, dqSize);
+	for (let i = 0; i < 10; i++) {
+		let dtData = dtPtrs[i];
+		let DatTxt = new THREE.DataTexture(dtData, dtSize, dtSize);
+		DatTxt.format = THREE.RGBAFormat;
+		DatTxt.magFilter = THREE.LinearFilter;
+		DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
+		DatTxt.generateMipmaps = true;
+		DatTxt.wrapS = DatTxt.wrapT = THREE.RepeatWrapping;
+		DatTxt.offset.set(0,0);
+		DatTxt.repeat.set(10,10);
+		DatTxt.anisotropy = maxAnisotropy;		// ###
+		DatTxt.needsUpdate = true;
+		dtMats[i] = new THREE.MeshLambertNodeMaterial({
+//			colorNode: texture(DatTxt),
+			colorNode: texture(DatTxt).add(texture(DifTxt)),
+//			roughnessMap: DifTxt,	// Not a texture
+		});
+		dtMesh[i] = new THREE.Mesh(geometry,dtMats[i]);
+		dtMesh[i].rotation.x = -90*DegRad;
+		dtMesh[i].receiveShadow = true;
+		scene.add(dtMesh[i]);
+		dtMesh[i].visible = false;
+	}
+}
+
+function makeDirt(typ) {
+// Two colors, weighted towards color1
+	let dtData = dtPtrs[typ];
+	for (let i = 0; i < 2; i++) {
+		let clr = new THREE.Color(drtclr[i]);
+		red[i] = Math.floor(clr.r * 255);
+		grn[i] = Math.floor(clr.g * 255);
+		blu[i] = Math.floor(clr.b * 255);
+	}
+	for (let y = 0; y < dtSize; y++) {
+		for (let x = 0; x < dtSize; x++) {
+			let i = Math.floor(1.6*Math.random());
+			let idx = (y*dtSize + x) * 4;
+			dtData[idx  ] = red[i];
+			dtData[idx+1] = grn[i];
+			dtData[idx+2] = blu[i];
+			dtData[idx+3] = 255;
+		}
+	}
+}
+
+function makePast(typ) {
+	let dtData = dtPtrs[typ];
+//	makeDirt();
+	let clr;
+// Two colors, weighted towards color1
+	for (let i = 0; i < 2; i++) {
+		let clr = new THREE.Color(pstclr[i]);
+		red[i] = Math.floor(clr.r * 255);
+		grn[i] = Math.floor(clr.g * 255);
+		blu[i] = Math.floor(clr.b * 255);
+	}
+	let idx, i;
+	for (let y = 0; y < dtSize; y++) {
+		for (let x = 0; x < dtSize; x++) {
+			i = Math.floor(4*Math.random());
+			idx = (y*dtSize + x) * 4;
+			if (i == 0 || i == 1) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+		}	
+	}
+}
+
+function makePlow() {
+// Two colors - one on each side of row
+//	makeDirt();
+	let clr;
+	for (let i = 0; i < 2; i++) {
+		clr = new THREE.Color(drtclr[i]);
+		red[i] = Math.floor(clr.r * 255);
+		grn[i] = Math.floor(clr.g * 255);
+		blu[i] = Math.floor(clr.b * 255);
+	}
+	makeVrtL(2);
+}
+
+function makeCovr() {
+// Two colors - one on each side of row
+//	makeDirt();
+	let clr;
+	for (let i = 0; i < 2; i++) {
+		clr = new THREE.Color(cvrclr[i]);
+		red[i] = Math.floor(clr.r * 255);
+		grn[i] = Math.floor(clr.g * 255);
+		blu[i] = Math.floor(clr.b * 255);
+	}
+	makeVrtL(3);
+}
+
+function makeBean() {
+// Two colors - one on each side of row
+//	makeDirt();
+	let clr;
+	for (let i = 0; i < 2; i++) {
+		clr = new THREE.Color(bnsclr[i]);
+		red[i] = Math.floor(clr.r * 255);
+		grn[i] = Math.floor(clr.g * 255);
+		blu[i] = Math.floor(clr.b * 255);
+	}
+	makeVrtD(4);
+}
+
+function makeWeat() {
+// Two colors - one on each side of row
+//	makeDirt();
+	let clr;
+	for (let i = 0; i < 2; i++) {
+		clr = new THREE.Color(whtclr[i]);
+		red[i] = Math.floor(clr.r * 255);
+		grn[i] = Math.floor(clr.g * 255);
+		blu[i] = Math.floor(clr.b * 255);
+	}
+	makeVrtL(5);
+}
+
+function makeVrtL(typ) {
+	let dtData = dtPtrs[typ];
+	let idx, i;
+	for (let x = 4; x < dtSize; x+=8) {	// Rows
+		for (let y = 0; y < dtSize; y++) {
+			idx = (y*dtSize + x) * 4;
+			i = Math.floor(1.9*Math.random());
+			if (i == 1) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+			idx = idx+4;
+			i = Math.floor(1.5*Math.random());
+			if (i == 0) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+			idx = idx+4;
+			i = Math.floor(1.5*Math.random());
+			if (i == 0) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+			idx = idx+4;
+			i = Math.floor(1.9*Math.random());
+			if (i == 1) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+		}
+	}
+}
+
+function makeVrtD(typ) {
+	let dtData = dtPtrs[typ];
+	let idx, i;
+	for (let x = 4; x < dtSize; x+=8) {	// Rows
+		for (let y = 0; y < dtSize; y++) {
+			idx = (y*dtSize + x) * 4;
+			i = Math.floor(8*Math.random());
+			if (i == 1) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+			idx = idx+4;
+			i = Math.floor(8*Math.random());
+			if (i == 0 || i == 1) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+			idx = idx+4;
+			i = Math.floor(8*Math.random());
+			if (i == 0 || i == 1) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+			idx = idx+4;
+			i = Math.floor(8*Math.random());
+			if (i == 1) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+		}
+	}
+}
+
+function makeHorz(dtData,clr,x1,y1,x2,y2,spr,spp) {
+	clr = new THREE.Color(clr);
+	let red = Math.floor(clr.r * 255);
+	let grn = Math.floor(clr.g * 255);
+	let blu = Math.floor(clr.b * 255);
+	for (let y = y1; y < y2; y+=spr) {	// Rows
+		for (let x = x1; x < x2; x+=spp) {
+			let idx = (y*dtSize + x) * 4;
+			dtData[idx  ] = red;
+			dtData[idx+1] = grn;
+			dtData[idx+2] = blu;
+			dtData[idx+3] = 255;
+		}
+	}
+}
+
+function makeVert(dtData,clr,x1,y1,x2,y2,spr,spp) {
+	clr = new THREE.Color(clr);
+	let red = Math.floor(clr.r * 255);
+	let grn = Math.floor(clr.g * 255);
+	let blu = Math.floor(clr.b * 255);
+	for (let x = x1; x < x2; x+=spr) {	// Rows
+		for (let y = y1; y < y2; y+=spp) {
+			let idx = (y*dtSize + x) * 4;
+			dtData[idx  ] = red;
+			dtData[idx+1] = grn;
+			dtData[idx+2] = blu;
+			dtData[idx+3] = 255;
+		}
+	}
+}
+
+/*******************************************************************************
+*
+*	TREE LINE
+*
+*******************************************************************************/
+
+//= LOAD =======================================================================
+
+//- Tree Object ----------------------------------------------------------------
+function loadTreLin() {
+	gltfLoader.load(treSrc, function (gltf) {
+		treObj = gltf.scene;
+		treObj.scale.setScalar(1.0);
+		scene.add(treObj);
+	});
+}
+
+//- Tree Shadow -----------------------------------------------------------------
+function loadTreShd() {
+	txtrLoader.load(trsSrc, function (TreShd) {
+		TreShd.anisotropy = maxAnisotropy;
+		let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(TreShd), transparent: true});
+		let geo = new THREE.PlaneGeometry(16,16);
+		// Create 5 Shadows
+		let AddZ = -40;
+		for (let n = 0; n < 5; n++) {	
+			let msh = new THREE.Mesh(geo,mat);
+			msh.rotation.x = -Math.PI/2;
+			msh.position.z = (128/16-2.25)+AddZ;	// +south; -north
+			msh.position.x = 5.4;
+			msh.rotation.z = Mod360(SunLon-90)*DegRad;
+			treShd.add(msh);
+			AddZ = AddZ+20;
+		}
+		treShd.position.y = 0.2;
+//		treShd.position.x = 5.5;
+//		treShd.position.z = 5.5;
+		scene.add(treShd);
+	});
+}
+
+/*******************************************************************************
+*
+*	MISC SUBROUTINES
+*
+*******************************************************************************/
+
+//= Converts degrees to 360 ====//==============================================
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;	// Make deg a positive number
+	deg = deg % 360;			// Compute remainder of any number divided by 360
+return deg;}
+
+/*******************************************************************************
+*
+*	OUTPUTS
+*
+*******************************************************************************/
+
+//= Print HUD Values ===========//==============================================
+
+function prntHUDval() {
+	CamLat = controls.getPolarAngle();
+	CamLat = 90-CamLat*RadDeg;
+	CamHdg = controls.getAzimuthalAngle();
+	CamHdg = Mod360(-CamHdg*RadDeg)
+	CamDst = controls.getDistance();
+	CamAlt = CamDst*Math.sin(CamLat*DegRad);		
+	//
+	Cam_Alt = Mtr2Ft*CamAlt;	// Altitude
+	Cam_AltNode.nodeValue = Cam_Alt.toFixed(0);
+	Cam_Hdg = CamHdg;			// Heading
+	Cam_HdgNode.nodeValue = Cam_Hdg.toFixed(0);
+}
+
+/*******************************************************************************
+*
+*	INPUTS
+*
+*******************************************************************************/
+
+//= Keyboard ===================================================================
+
+// Toggle Type
+function toggleType() {
+	dtMesh[dtType].visible = false;
+	dtType++;
+	if (dtType == datMax) dtType = 0;
+	dtMesh[dtType].visible = true;
+}
+
+//= Window Resize Input ========================================================
+
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth,window.innerHeight);
+}
+
+</script>
+</body>
+</html>
