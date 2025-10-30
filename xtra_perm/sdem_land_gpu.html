@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 29 Oct 2025
+Version dated 30 Oct 2025
 -->
 
 <head>
@@ -159,11 +159,13 @@ let bnsclr = [0x00e000,0x006000];	// Beans
 
 //= Tree Line ===================================================================
 let treSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb";
-let treObj = 0;
+let treNum = 2;
+let treObj = [0,0];
+let treRoY = [0,90];
+let trePoX = [0,0];
 let trsSrc = "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png";
-let treShd = new THREE.Object3D;
-	treShd.rotation.order = "YXZ";
-let treLin = new THREE.Group;
+let treShd = [new THREE.Object3D,new THREE.Object3D];
+let trsOff = 40;
 //= HTML OVERLAY TEXT ==========================================================
 let Cam_AltElement = document.getElementById("Cam_Alt"); // Altitude
 let Cam_AltNode = document.createTextNode("");
@@ -204,7 +206,6 @@ function loadAll() {
 
 function initAll() {
 	initCover();
-//	initTrees();
 	LodFlg = 1;
 }
 
@@ -534,35 +535,43 @@ function makeVert(dtData,clr,x1,y1,x2,y2,spr,spp) {
 
 //- Tree Object ----------------------------------------------------------------
 function loadTreLin() {
-	gltfLoader.load(treSrc, function (gltf) {
-		treObj = gltf.scene;
-		treObj.scale.setScalar(1.0);
-		scene.add(treObj);
-	});
+	for (let n = 0; n < treNum; n++) {
+		gltfLoader.load(treSrc, function (gltf) {
+			treObj[n] = gltf.scene;
+			treObj[n].rotation.y = treRoY[n]*DegRad;
+			scene.add(treObj[n]);
+		});
+	}
 }
 
 //- Tree Shadow -----------------------------------------------------------------
 function loadTreShd() {
-	txtrLoader.load(trsSrc, function (TreShd) {
-		TreShd.anisotropy = maxAnisotropy;
-		let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(TreShd), transparent: true});
-		let geo = new THREE.PlaneGeometry(16,16);
-		// Create 5 Shadows
-		let AddZ = -40;
-		for (let n = 0; n < 5; n++) {	
-			let msh = new THREE.Mesh(geo,mat);
-			msh.rotation.x = -Math.PI/2;
-			msh.position.z = (128/16-2.25)+AddZ;	// +south; -north
-			msh.position.x = 5.4;
-			msh.rotation.z = Mod360(SunLon-90)*DegRad;
-			treShd.add(msh);
-			AddZ = AddZ+20;
-		}
-		treShd.position.y = 0.2;
-//		treShd.position.x = 5.5;
-//		treShd.position.z = 5.5;
-		scene.add(treShd);
-	});
+	let geoX = 16;
+	let geoY = 16/Math.tan(SunLat*DegRad);
+	let geo = new THREE.PlaneGeometry(geoX,geoY);
+	for (let n = 0; n < treNum; n++) {
+		txtrLoader.load(trsSrc, function (TreShd) {
+			TreShd.anisotropy = maxAnisotropy;
+			let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(TreShd), transparent: true});
+			// Create 5 Shadows
+			let AddZ = -trsOff;
+			for (let i = 0; i < 5; i++) {	
+				let msh = new THREE.Mesh(geo,mat);
+				msh.rotation.x = -90*DegRad;
+				msh.rotation.z = Mod360(SunLon-90-treRoY[n])*DegRad;
+				msh.position.z = AddZ;
+				treShd[n].add(msh);
+				AddZ = AddZ+trsOff/2;
+			}
+			treShd[n].position.y = 0.2;
+			let offX = Math.cos(SunLon*DegRad)*geoY/2;
+			treShd[n].position.x = offX;
+			let offZ = Math.sin(SunLon*DegRad)*geoY/2;
+			treShd[n].position.z = -offZ;
+			treShd[n].rotation.y = treRoY[n]*DegRad;
+			scene.add(treShd[n]);
+		});
+	}
 }
 
 /*******************************************************************************
