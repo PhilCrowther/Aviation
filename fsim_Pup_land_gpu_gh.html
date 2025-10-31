@@ -405,7 +405,7 @@ function initAll() {
 	grd_.SPS.y = air_.MapSPS.y;
 	grids = new GrdMap(grd_,scene);	// Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
-	initRoads(rd0_,rd1_,rd2_,grd_,scene);
+	initRoads(grd_,scene);		// Add Roads
 	moveTreLin(tre_,grd_,air_,gen_)
 	initObject();				// Stationary Objects
 	// Other
@@ -446,7 +446,7 @@ function rendAll() {
 		// Move Grids
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
-		moveRoads(grd_,rd1_,rd2_);
+		moveRoads(grd_);		// Move Roads
 		moveTreLin(tre_,grd_,air_,gen_);	
 		moveObject();			// Move objects
 		// Other
@@ -1226,6 +1226,8 @@ function onWindowResize() {
 
 251010	On MouseWheel Input, if Throtl is 0 or 1, don't also set gen_.PwrDif = 0  - prevents thrust from reaching zero
 251011	Replaced renderASync with render
+251031	New Tree Generator
+251031: Move Road Data to GrdLnd
 */
 
 </script>
