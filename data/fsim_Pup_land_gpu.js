@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM PUP DATA: 251007
+*	FSIM PUP DATA: 251031
 *
 *********************************************************************************
 
@@ -213,16 +213,17 @@ let rd2_ = {
 //= Trees ======================//==============================================
 
 let tre_ = {
-		treclr: [0x75b24c,0x2e471e], // Colors
-		//	Hot Pepper Green ( similar ) Color | 568338 Monochromatic Color
-		//	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
-		t0Size: 128,
-		t0Data: 0,
-		txttre: 0,
-		TreTot: 64,
-		t0Tree: [],
-		t0PosZ: [],
-		t0PosX: [],
+		ObjNum: 64,
+		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb",
+		ObjAdr: [],				// Object Address
+		ShdSrc: "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png",
+		ShdAdr: [],				// Shadow Address
+		ObjMpZ: [],				// Map Address Z
+		ObjMpX: [],				// Map Address X
+		ObjRot: [],				// Rotation (0 or -90)
+		ShdGeX: 16,				// Shadow Width
+		ShdGeY: 16/Math.tan(sky_.SunLat*DegRad), // Shadow Height
+		ObjOff: 20,				// Tree Spacing 
 }
 
 //= STATIC OBJECTS =============//==============================================
