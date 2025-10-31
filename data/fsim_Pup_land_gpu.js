@@ -167,49 +167,6 @@ let grd_ = {
 		Mat: [0],				// Index to Materials
 	}
 
-//= Roads =====================//===============================================
-//- Materials
-let rd0_ = {
-		rodclr: [0xd0b894,0x8e6d3d], // Colors
-		//-	Tones of Dirt Brown Color | #836539 Monochromatic Color
-		//-	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
-		r0Size: 32,
-		r0Data: 0,
-		txtrod: 0,
-	}
-//- North/South
-let rd1_ = {
-		Typ:	1,
-		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	2*grd_.Siz,		// Size of square
-		Stp:	1,				// Squares to flip
-		RCi:	0,				// Rows and Columns Index (computed)
-		MZV:	[0],			// Ground Z Value
-		MXV:	[0],			// Ground X Value
-		Nor:	0,				// Max North Square (updated)
-		Est:	0,				// Max East Square (updated)
-		Num:	0,				// Size of array (computed)
-		Ptr:	[0],			// Ground Address
-		Txt:	0,				// Texture Address
-		Shd:	1				// Shadow enabled
-	}
-//- East West
-let rd2_ = {
-		Typ:	2,
-		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	2*grd_.Siz,		// Size of square
-		Stp:	1,				// Squares to flip
-		RCi:	0,				// Rows and Columns Index (computed)
-		MZV:	[0],			// Ground Z Value
-		MXV:	[0],			// Ground X Value
-		Nor:	0,				// Max North Square (updated)
-		Est:	0,				// Max East Square (updated)
-		Num:	0,				// Size of array (computed)
-		Ptr:	[0],			// Ground Address
-		Txt:	0,				// Texture Address
-		Shd:	1				// Shadow enabled
-	}
-
 //= Trees ======================//==============================================
 
 let tre_ = {
