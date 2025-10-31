@@ -15,9 +15,10 @@ INDEX TO VARIABLES
 	   Input Values					(gen_)
 	   Fad2Black					(f2b_)
 	2. SKY VARIABLES				(sky_)
-	3. OCEAN GRID VARIABLES
+	3. LAND GRID VARIABLES
 		GRDWTR MODULE				(grd_)
-		OCEAN MODULE				(wav_)
+		ROADS MODULE				(rd0_,rd1_,rd2_)
+		TREES MODULE				(tre_)
 	4. OBJECT VARIABLES
 		SHARED TEXTURES				(txt_)
 		STATIC OBJECTS
