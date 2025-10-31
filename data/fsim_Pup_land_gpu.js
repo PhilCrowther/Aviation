@@ -155,12 +155,11 @@ let sky_ = {
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-let GrdSiz = 804.67;			// Size of Smallest Grid Square (1/4 section = 1/2 mile)
 let grids = 0;
 let grd_ = {
 		SPS: 0,					// MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 27,				// Squares in each of first 2 grids
-		Siz: GrdSiz,			// Size of smallest square
+		Siz: 804.67,			// Size of smallest square (1/4 section = 1/2 mile)
 		Stp: 3,					// Squares in each of first 2 grids
 		Grx: [],				// Index of Grids (0-2)
 		Idx: [0],				// Index to Patterns
@@ -181,7 +180,7 @@ let rd0_ = {
 let rd1_ = {
 		Typ:	1,
 		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	2*GrdSiz,		// Size of square
+		Siz:	2*grd_.Siz,		// Size of square
 		Stp:	1,				// Squares to flip
 		RCi:	0,				// Rows and Columns Index (computed)
 		MZV:	[0],			// Ground Z Value
@@ -197,7 +196,7 @@ let rd1_ = {
 let rd2_ = {
 		Typ:	2,
 		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	2*GrdSiz,		// Size of square
+		Siz:	2*grd_.Siz,		// Size of square
 		Stp:	1,				// Squares to flip
 		RCi:	0,				// Rows and Columns Index (computed)
 		MZV:	[0],			// Ground Z Value
