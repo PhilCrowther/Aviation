@@ -160,6 +160,50 @@ let gt2_ = {
 		G2MPtr: [],
 	}
 
+//= ROADS ======================//==============================================
+
+//- Materials
+let rd0_ = {
+		rodclr: [0xd0b894,0x8e6d3d], // Colors
+		//-	Tones of Dirt Brown Color | #836539 Monochromatic Color
+		//-	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
+		r0Size: 32,
+		r0Data: 0,
+		txtrod: 0,
+	}
+//- North/South
+let rd1_ = {
+		Typ:	1,
+		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	0,				// Size of square
+		Stp:	1,				// Squares to flip
+		RCi:	0,				// Rows and Columns Index (computed)
+		MZV:	[0],			// Ground Z Value
+		MXV:	[0],			// Ground X Value
+		Nor:	0,				// Max North Square (updated)
+		Est:	0,				// Max East Square (updated)
+		Num:	0,				// Size of array (computed)
+		Ptr:	[0],			// Ground Address
+		Txt:	0,				// Texture Address
+		Shd:	1				// Shadow enabled
+	}
+//- East West
+let rd2_ = {
+		Typ:	2,
+		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	0,				// Size of square
+		Stp:	1,				// Squares to flip
+		RCi:	0,				// Rows and Columns Index (computed)
+		MZV:	[0],			// Ground Z Value
+		MXV:	[0],			// Ground X Value
+		Nor:	0,				// Max North Square (updated)
+		Est:	0,				// Max East Square (updated)
+		Num:	0,				// Size of array (computed)
+		Ptr:	[0],			// Ground Address
+		Txt:	0,				// Texture Address
+		Shd:	1				// Shadow enabled
+	}
+
 /*******************************************************************************
 *
 *	INIT GRID MATERIALS
@@ -430,7 +474,9 @@ function makeVrtD(dtColr,dtData,Weight) {
 
 //= INIT ROADS =================//==============================================
 
-function initRoads(rd0_,rd1_,rd2_,grd_,scene) {
+function initRoads(grd_,scene) {
+	rd1_.Siz = 2*grd_.Siz;
+	rd2_.Siz = 2*grd_.Siz;
 	rd0_.r0Data = new Uint8Array(4*rd0_.r0Size*rd0_.r0Size);
 	initRClr(rd0_.rodclr,rd0_.r0Data,1);
 	rd0_.txtrod = new DataTexture(rd0_.r0Data,rd0_.r0Size,rd0_.r0Size);
@@ -531,7 +577,7 @@ function init1Road(Rod,grd_,scene) {
 
 //= MOVE ROADS =================//==============================================
 
-function moveRoads(grd_,rd1_,rd2_) {
+function moveRoads(grd_) {
 // Convert Distances into Meters to match landscape program
 	move1Road(grd_,rd1_);
 	move1Road(grd_,rd2_);
@@ -679,7 +725,6 @@ function initTrees(tre_,grd_,scene) {
 	}
 	tre_.t0Tree[0].position.x = 0;
 	tre_.t0Tree[0].position.y = 9.8;
-	let pz = 90;
 	for (let n = 1; n < tre_.TreTot; n++) {
 		tre_.t0Tree[n] = tre_.t0Tree[0].clone();
 		scene.add(tre_.t0Tree[n]);
@@ -712,8 +757,6 @@ function initTClr(dtColr,dtData,Weight) {
 }
 
 //= MOVE TREES =================//==============================================
-
-//- MOVE TREES -----------------//----------------------------------------------
 
 function moveTrees(tre_,grd_,air_,gen_) {
 	// Convert Distances into Meters to match landscape program
