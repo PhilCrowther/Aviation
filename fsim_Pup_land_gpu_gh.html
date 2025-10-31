@@ -10,7 +10,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Oct 2025
+Version dated 31 Oct 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -256,6 +256,14 @@ let ImgSiz = 1024;
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
 	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,4750)]; // Relative Position
 	fxd_.ObjRef = [mnt_.ObjGrp[0]];
+//- Tree Line ------------------//-----------------------------------------------
+let treSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb";
+let trsSrc = "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png";
+let geoX = 16;
+let geoY = 16/Math.tan(sky_.SunLat*DegRad);
+let treShd = [];
+let trsOff = 20;
+let treRot = [];
 
 //= 5. MY AIRPLANE VARIABLES ===//===============================================
 //- Adjustments
@@ -369,6 +377,7 @@ function loadAll() {
 	// Initialize Loading Screen
 	WaitScreen();				// init loading screen
 	loadSkyBox();
+	loadTreLin();
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadObject();
@@ -405,7 +414,7 @@ function initAll() {
 	grids = new GrdMap(grd_,scene);	// Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
 	initRoads(rd0_,rd1_,rd2_,grd_,scene);
-	initTrees(tre_,grd_,scene);
+	moveTreLin(tre_,grd_,air_,gen_)
 	initObject();				// Stationary Objects
 	// Other
 	initCamera(camera,cam_);	// position camera
@@ -446,7 +455,8 @@ function rendAll() {
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
 		moveRoads(grd_,rd1_,rd2_);
-		moveTrees(tre_,grd_,air_,gen_);		
+//		moveTrees(tre_,grd_,air_,gen_);
+		moveTreLin(tre_,grd_,air_,gen_);	
 		moveObject();			// Move objects
 		// Other
 		moveSounds();
@@ -506,24 +516,105 @@ function initSkyBox() {
 
 /********************************************************************************
 *
+*	3. GROUND
+*
+********************************************************************************/
+
+//= LOAD TREELINES =============//===============================================
+
+function loadTreLin() {
+	for (let n = 0; n < tre_.TreTot; n++) {
+		// Tree Position on Edge of Square (NS = east of NS road but crosses EW road; EW = south of EW road but crosses NS road)
+		tre_.t0PosX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
+		tre_.t0PosZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
+		// Tree Rotation = 0 or -90
+		treRot[n] = (Math.floor(Math.random()+0.5))*-90;
+		// Initialize Shadow Objects
+		treShd[n] = new THREE.Object3D;
+	}
+	loadTreObj();
+	loadTreShd();
+}
+
+//- Tree Object ----------------//-----------------------------------------------
+function loadTreObj() {
+	for (let n = 0; n < tre_.TreTot; n++) {
+		gltfLoader.load(treSrc, function (gltf) {
+			tre_.t0Tree[n] = gltf.scene;
+			tre_.t0Tree[n].scale.setScalar(1.0);
+			scene.add(tre_.t0Tree[n]);
+			tre_.t0Tree[n].rotation.y = treRot[n]*DegRad;
+		});
+	}
+}
+
+//- Tree Shadow ----------------//-----------------------------------------------
+function loadTreShd() {
+	let geo = new THREE.PlaneGeometry(geoX,geoY);
+	for (let n = 0; n < tre_.TreTot; n++) {
+		txtrLoader.load(trsSrc, function (shadow) {
+			shadow.anisotropy = maxAnisotropy;
+			let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
+			// Create 5 Shadows
+			let AddX = 0;
+			for (let i = 0; i < 5; i++) {	
+				let msh = new THREE.Mesh(geo,mat);
+				msh.rotation.x = -90*DegRad;
+				msh.rotation.z = Mod360(sky_.SunLon-90-treRot[n])*DegRad;
+				msh.position.x = AddX;
+				treShd[n].add(msh);
+				AddX = AddX+trsOff; // Add distance between trees
+			}
+			treShd[n].rotation.y = treRot[n]*DegRad;
+			scene.add(treShd[n]);
+		});
+	}
+}
+
+//= MOVE TREELINES =============//===============================================
+
+function moveTreLin(tre_,grd_,air_,gen_) {
+	// Convert Distances into Meters to match landscape program
+	let a = 13.5*grd_.Siz;
+	let x,y,z;
+	for (let n = 0; n < tre_.TreTot; n ++) {
+		// Set Tree Object Position 
+		x = tre_.t0PosX[n]-air_.MapPos.x-grd_.Siz/2;
+		if (x > a) x = x - 2*a;
+		if (x < -a) x = x + 2*a;
+		z = air_.MapPos.z-tre_.t0PosZ[n]-grd_.Siz/2;
+		if (z > a) z = z - 2*a;
+		if (z < -a) z = z + 2*a;
+		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
+		tre_.t0Tree[n].position.set(x,y,z);
+		// Set Tree Shadow Position
+		x = x + Math.cos(sky_.SunLon*DegRad)*geoY/2;
+		z = z - Math.sin(sky_.SunLon*DegRad)*geoY/2;
+		y = y + 1;
+		treShd[n].position.set(x,y,z);
+	}
+}
+
+/********************************************************************************
+*
 *	4. OBJECTS
 *
 ********************************************************************************/
 
-//== LOAD OBJECTS ===============================================================
+//= LOAD OBJECTS ================================================================
 
 function loadObject() {
 	loadStatic();
 }
 
-//== INIT OBJECTS ===============================================================
+//= INIT OBJECTS ================================================================
 
 
 function initObject() {
 	initStatic();
 }
 
-//== MOVE OBJECTS ===============================================================
+//= MOVE OBJECTS ================================================================
 
 function moveObject() {
 	moveStatic();
