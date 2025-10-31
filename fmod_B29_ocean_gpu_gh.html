@@ -1,16 +1,24 @@
 ﻿<!DOCTYPE html>
 <html>
-
 <!--
+/********************************************************************************
+*
+*	FMOD B29 GPU
+*
+*********************************************************************************
+
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Sep 2025
+Version dated 31 Oct 2025
+
+A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
+This demo has now been expanded to include a battle scenario which will eventually involve air combat
 
 This shows an animated model of an airplane in flight over an animated ocean using WebGPU and Nodes.
 -->
 
 <head>
-<title>fmod B29 ocean gpu r180</title>
+<title>fmod B29 ocean gpu r181</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_b29.css">
 </head>
@@ -41,10 +49,10 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -52,21 +60,35 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 
 <script type="module">
 
-// Basic Modules
+/********************************************************************************
+*
+*	PROGRAM
+*
+*********************************************************************************
+
+NOTES
+* Improve Shadows (bias is key)
+* Colors seem different for middle and outer grids
+*/
+
+//= LOAD MODULES ================================================================
+//- Basic Modules ---------------------------------------------------------------
 import * as THREE from "three";
 import {texture,uniform} from 'three/tsl';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from 'stats-gl';
-// Special Modules
+//- Special Modules -------------------------------------------------------------
 import {Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // r171
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
 
-//= NOTES ======================================================================
-//	* Improve Shadows (bias is key)
-//	* Colors seem different for middle and outer grids
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
 
 //= STARTING VALUES ============//==============================================
 //- MY CAMERA ------------------------------------------------------------------
@@ -506,10 +528,16 @@ let Air_HdgNode = document.createTextNode("");
 	Air_HdgElement.appendChild(Air_HdgNode);
 let Air_Spd, Air_Alt,Air_Hdg;
 
-//= Main Programs ===============================================================
+/********************************************************************************
+*
+*	1. MAIN PROGRAM
+*
+********************************************************************************/
+
 	loadAll();
 	
-//=	0 Load All ==================================================================
+//= LOAD ALL ===================//===============================================
+
 function loadAll() {
 	// Load Values Used to initialize my Aircraft and Objects		
 	WaitScreen();			// load loading screen
@@ -518,7 +546,7 @@ function loadAll() {
 	loadAirObj();
 }
 
-//= Wait Screen =================================================================
+//- WAIT SCREEN ----------------//-----------------------------------------------
 
 function WaitScreen() {
 	// Set up the loading screen scene.
@@ -533,7 +561,7 @@ function WaitScreen() {
 	loadingScreen.scene.add(loadingScreen.box);
 }
 
-//= 1 Initialize ================//==============================================
+//=	INIT ALL ===================//===============================================
 
 async function initAll() {
 	air_.MapSPS.y = air_.MapPos.y; // Altitude (meters)
@@ -558,7 +586,7 @@ async function initAll() {
 	LodFlg = 1;
 }
 
-//= 2 Render ===================//===============================================
+//=	REND ALL ===================//===============================================
 
 function rendAll() {
 	// This block runs while resources are loading.
@@ -566,13 +594,14 @@ function rendAll() {
 		boxrot = Mod360(boxrot - 3);
 		loadingScreen.box.rotation.set(Math.PI,0,boxrot * DegRad);
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
-		return;							// Stop the function here.
+		return;					// Stop the function here.
 	}
 	if (PawsOn == 0 && LodFlg > 0) {
 		// Move Objects
 		moveAirObj();			// Move aircaft
 		// Move Grids
 		waves.update(); 		// Move Ocean
+		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update();			// MoveGrids
 		// Other
@@ -581,11 +610,17 @@ function rendAll() {
 		if (StatOn) StatOn.update(); // update stats
 	}
 	moveCamera(camera,cam_);
-	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
+	renderer.render(scene, camera);
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173	
 }
 
-//= SKYBOX =====================//===============================================
+/********************************************************************************
+*
+*	2. SKY
+*
+********************************************************************************/
+
+//= LOAD SKY ===================//===============================================
 
 function loadSkyBox() {
 	envMap = cubeLoader
@@ -601,6 +636,8 @@ function loadSkyBox() {
 		LF1Txt = txtrLoader.load(LF1Src);
 	}
 }
+
+//= INIT SKY ===================//===============================================
 
 function initSkyBox() {
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
@@ -621,7 +658,13 @@ function initSkyBox() {
 	}
 }
 
-//= AIR OBJECT =================//==============================================
+/********************************************************************************
+*
+*	5. AIRPLANE
+*
+********************************************************************************/
+
+//= LOAD AIRPLANE ==============//===============================================
 
 function loadAirObj() {
 	loadAirExt();
@@ -665,7 +708,8 @@ function loadAirExt() {
 	});
 }
 
-//- Move Airplane Models -------//----------------------------------------------
+//= MOVE AIRPLANE ==============//===============================================
+
 function moveAirObj() {
 	// Pitch -----------------------------------------------
 //	air_.RotDif.x = InpKey.x;	// Change to Pitch Speed
@@ -815,9 +859,14 @@ function moveACanimA() {
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 }
 
-//= SOUNDS =====================//==============================================
+/********************************************************************************
+*
+*	6. SOUNDS
+*
+********************************************************************************/
 
-// Load Sounds
+//= LOAD SOUNDS =================================================================
+
 function loadSounds() {	
 	//- My Engines -------------------------------------------------------------
 	let fname = ACPath + "sounds/" + acsnd1;
@@ -829,14 +878,21 @@ function loadSounds() {
 	});
 }
 
-// Change Sounds
+//= MOVE SOUNDS =================================================================
+
 function moveSounds(air_) {
 	// My Engine
 	EngSnd.setVolume(acvol1 + air_.PwrPct * 0.05);	// Range = .1 to .2
 	EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5);	// Range = 1 to 1.5
 }
 
-//= CAMERA =====================//==============================================
+/********************************************************************************
+*
+*	7. CAMERA
+*
+********************************************************************************/
+
+//== INIT CAMERA ===============//===============================================
 
 function initCamera(camera,cam_) {
 	camera.rotation.order = "YXZ";
@@ -844,6 +900,8 @@ function initCamera(camera,cam_) {
 	camera.rotation.y = cam_.adj*DegRad;
 	cam_.rot.add(camera);		// Attach to rotator
 }
+
+//== MOVE CAMERA ===============//===============================================
 
 function moveCamera(camera,cam_) {
 	// In external view, the camera is facing in and the armature is pointing out:
@@ -858,7 +916,11 @@ function moveCamera(camera,cam_) {
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
 }
 
-//= OUTPUTS ====================//=============================================
+/********************************************************************************
+*
+*	8. OUTPUTS
+*
+********************************************************************************/
 
 // Print HUD Values
 function prntHUDval() {
@@ -870,36 +932,13 @@ function prntHUDval() {
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
 }
 
-//= INPUTS =====================================================================
+/********************************************************************************
+*
+*	9. INPUTS
+*
+********************************************************************************/
 
-//= Keyboard Input =============================================================
-
-// Key Down
-function onDocumentKeyDown(event) {
-	let keyCode = event.which;
-	if (event.keyCode == K_BnkL) InpKey.z = -KeyVal.z;	// Bank Left
-	if (event.keyCode == K_BnkR) InpKey.z = KeyVal.z;	// Bank Right
-	if (event.keyCode == K_PitU) InpKey.x = KeyVal.x;	// Pitch Up
-	if (event.keyCode == K_PitD) InpKey.x = -KeyVal.x;	// Pitch Down
-	if (event.keyCode == K_YawL) InpKey.y = -0.1;		// Yaw Left
-	if (event.keyCode == K_YawR) InpKey.y = 0.1;		// Yaw Right
-	if (event.keyCode == K_Soun) toglSoun();			// Sound
-	if (event.keyCode == K_View) toglView();			// View
-	if (event.keyCode == K_Paws) toglPaws();			// Pause
-}
-
-// Key Up
-function onDocumentKeyUp(event) {
-	let keyCode = event.which;
-	if (event.keyCode == K_BnkL) InpKey.z = 0;			// Bank Left
-	if (event.keyCode == K_BnkR) InpKey.z = 0;			// Bank Right
-	if (event.keyCode == K_PitU) InpKey.x = 0;			// Pitch Up
-	if (event.keyCode == K_PitD) InpKey.x = 0;			// Pitch Down
-	if (event.keyCode == K_YawL) InpKey.y = 0;			// Yaw Left
-	if (event.keyCode == K_YawR) InpKey.y = 0;			// Yaw Right
-}
-
-//= Mouse Input [MY CAMERA] ====================================================
+//= MOUSE ======================//===============================================
 
 function onMouseDown(event) {
 	event.preventDefault();
@@ -936,7 +975,36 @@ function onMouseWheel(event) {
 	}
 }
 
-//= Touch Screen Input [MY CAMERA] =============================================
+//- KEYBOARD ===================//===============================================
+
+//- Keyboard (Down) ------------//-----------------------------------------------
+
+function onDocumentKeyDown(event) {
+	let keyCode = event.which;
+	if (event.keyCode == K_BnkL) InpKey.z = -KeyVal.z;	// Bank Left
+	if (event.keyCode == K_BnkR) InpKey.z = KeyVal.z;	// Bank Right
+	if (event.keyCode == K_PitU) InpKey.x = KeyVal.x;	// Pitch Up
+	if (event.keyCode == K_PitD) InpKey.x = -KeyVal.x;	// Pitch Down
+	if (event.keyCode == K_YawL) InpKey.y = -0.1;		// Yaw Left
+	if (event.keyCode == K_YawR) InpKey.y = 0.1;		// Yaw Right
+	if (event.keyCode == K_Soun) toglSoun();			// Sound
+	if (event.keyCode == K_View) toglView();			// View
+	if (event.keyCode == K_Paws) toglPaws();			// Pause
+}
+
+//- Keyboard (Up) --------------//-----------------------------------------------
+
+function onDocumentKeyUp(event) {
+	let keyCode = event.which;
+	if (event.keyCode == K_BnkL) InpKey.z = 0;			// Bank Left
+	if (event.keyCode == K_BnkR) InpKey.z = 0;			// Bank Right
+	if (event.keyCode == K_PitU) InpKey.x = 0;			// Pitch Up
+	if (event.keyCode == K_PitD) InpKey.x = 0;			// Pitch Down
+	if (event.keyCode == K_YawL) InpKey.y = 0;			// Yaw Left
+	if (event.keyCode == K_YawR) InpKey.y = 0;			// Yaw Right
+}
+
+//- TOUCH SCREEN ===============//===============================================
 
 function onTouchStart(event) {
 	// Single Touch
@@ -960,7 +1028,7 @@ function onTouchMove(event) {
 	}
 }
 
-//= Button Input ===============//==============================================
+//- BUTTONS ====================//===============================================
 
 //- Toggle Pause
 function toglPaws() {
@@ -1040,7 +1108,7 @@ function toglYawR() {
 	else InpKey.y = 0.1;
 }
 
-//= Window Resize Input ========================================================
+//= WINDOW RESIZE ==============//===============================================
 
 function onWindowResize() {
 	CamAsp = window.innerWidth/window.innerHeight;
@@ -1048,6 +1116,15 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
+
+/********************************************************************************
+*
+*	CHANGE LOG
+*
+*********************************************************************************
+
+251011	Replaced renderASync with render; added TimestampQuery.COMPUTE after waves.update
+*/
 
 </script>
 </body>
