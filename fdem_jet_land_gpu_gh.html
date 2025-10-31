@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Oct 2025
+Version dated 31 Oct 2025
 
 This demo program uses included versions of the GrdMap module.
 
@@ -55,6 +55,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 		rotateUV,				// r168 added
 		time,					// r170 changed from timerLocal
 } from "three/tsl";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Custom Modules
@@ -196,6 +197,7 @@ let RESOURCES_LOADED = false;
 const txtrLoader = new THREE.TextureLoader(loadingManager);
 const imagLoader = new THREE.ImageLoader(loadingManager);
 const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+let gltfLoader = new GLTFLoader(loadingManager);
 
 //= SKYBOX =====================//==============================================
 const FogCol = 0xbab4a6;			// Sky (for Fog only)
@@ -398,26 +400,26 @@ const r0Area = r0Size*r0Size;
 let r0Data = new Uint8Array(4*r0Area);
 
 //= TREES ======================//==============================================
-const TreTot = 64;
-const t0Size = 128;
-const t0Area = t0Size*t0Size;
-let t0Data = new Uint8Array(4*t0Area);
-let Trees = [];
-	Trees[TreTot-1] = 0;
-let TreePZ = [0];
-	TreePZ[TreTot-1] = 0;
-let	TreePX = [0];
-	TreePX[TreTot-1] = 0;
-let treclr = [0x75b24c,0x2e471e]; // Colors
-//	Hot Pepper Green ( similar ) Color | 568338 Monochromatic Color
-//	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
+let tre_ = {
+		ObjNum: 64,
+		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb",
+		ObjAdr: [],				// Object Address
+		ShdSrc: "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png",
+		ShdAdr: [],				// Shadow Address
+		ObjMpZ: [],				// Map Address Z
+		ObjMpX: [],				// Map Address X
+		ObjRot: [],				// Rotation (0 or -90)
+		ShdGeX: 16,				// Shadow Width
+		ShdGeY: 16/Math.tan(SunLat*DegRad), // Shadow Height
+		ObjOff: 20,				// Tree Spacing 
+}
 
 //= AIROBJ =====================//============================================
 let air_ = {
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Vector3(), // Object Rotation (degrees)
-		AirObj: new THREE.Object3D,		// Airplane Object
-		AirPBY: new THREE.Object3D,			
+		AirObj: new THREE.Object3D,	// Airplane Object
+		AirPBY: new THREE.Object3D,
 		// Airplane PBY Changes
 		RotDif: new THREE.Vector3(0,0,0), // Change
 		// Inputs
@@ -537,6 +539,7 @@ function loadAll() {
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad;		// Heading
 	air_.MapSPS.y = air_.MapPos.y;
 	loadSkyBox();
+	loadTreLin();
 	loadJetExh();
 }
 
@@ -549,7 +552,6 @@ function initAll() {
 	grids = new GrdMap(grd_,scene);		// Init Grid Map
 	grids.update(grd_);					// Mode Grid Map
 	makeRoads();
-	makeTrees();
 	initAirObj(air_);						// Load Aircraft
 	initJetExh();
 	prntHUDval(air_);
@@ -578,7 +580,7 @@ function rendAll() {
 		grd_.SPS.copy(air_.MapSPS);
 		grids.update(grd_);				// Mode Grid Map
 		moveRoads();
-		moveTrees();
+		moveTreLin();
 		if (StatOn) StatOn.update();	// update stats
 	}
 	prntHUDval(air_);
@@ -906,7 +908,7 @@ function makeRClr(dtColr,dtData,Weight) {
 	}
 	// Assign colors
 	let idx, i;
-	for (let n = 0; n < t0Area*4; n+=4) {
+	for (let n = 0; n < r0Area*4; n+=4) {
 		i = Math.floor(Weight*Math.random());
 		dtData[n  ] = red[i];
 		dtData[n+1] = grn[i];
@@ -1066,107 +1068,83 @@ function moveRoad2(Rod) {
 	}
 }
 
-//= TREES ======================================================================
+/********************************************************************************
+*
+*	TREELINE
+*
+********************************************************************************/
 
-//- Make Trees ------------------------------------------------------------------
+//= LOAD TREELINES =============//===============================================
 
-function makeTrees() {
-	let points = [
-		new THREE.Vector2(4.0,-6.7),	// Bot
-		new THREE.Vector2(4.9,-3.0),
-		new THREE.Vector2(4.2, 3.0),
-		new THREE.Vector2(3,5, 2.0),
-		new THREE.Vector2(1.8, 5.8),
-		new THREE.Vector2(0.1, 6.0)		// Top
-	];
-	let gomtre = new THREE.LatheGeometry(points,6);
-	let gomtrn = new THREE.BoxGeometry(0.9,3.0,0.9);
-	let gomshd = new THREE.CircleGeometry(6.0,16);
-	// Make Texture	
-	makeTClr(treclr,t0Data,1.9);
-	let txttre = new THREE.DataTexture(t0Data, t0Size, t0Size);
-	txttre.format = THREE.RGBAFormat;
-	txttre.magFilter = THREE.LinearFilter;
-	txttre.minFilter = THREE.LinearMipMapLinearFilter;
-	txttre.generateMipmaps = true;
-	txttre.anisotropy = maxAnisotropy;	// ###
-	txttre.needsUpdate = true;
-	let mtltre = new THREE.MeshLambertNodeMaterial({colorNode: texture(txttre)});
-	let mtltrn = new THREE.MeshLambertNodeMaterial({colorNode: color(0x161005)});
-	let mtlshd = new THREE.MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
-	// Make Prototype Tree
-	let tree0 = new THREE.Mesh(gomtre,mtltre);
-	let trnk = new THREE.Mesh(gomtrn,mtltrn);
-	trnk.position.y = -7.9;
-	tree0.add(trnk);
-	let shad = new THREE.Mesh(gomshd,mtlshd);
-	shad.position.y = -9.4;
-	shad.rotation.x = -90*DegRad;
-	tree0.add(shad);
-	Trees[0] = tree0.clone();
-	// Make Row of Trees
-	let sx = 15.0;
-	let ry = 13.7;
-	let dy = 13.7;
-	let px = sx;
-	for (let x = 0; x < 10; x++) {
-		let tree = tree0.clone();
-		tree.position.x = px;
-		ry = Mod360(360*Math.random());
-		tree.rotation.y = ry*DegRad;
-		tree.rotation.z = Mod360(2*Math.random()*DegRad);
-		tree.rotation.x = Mod360(2*Math.random()*DegRad);
-		ry = ry+dy;
-		px = px+sx;
-		Trees[0].add(tree);
+function loadTreLin() {
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		// Position
+		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
+		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
+		// Rotation = 0 or -90
+		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
+		// Initialize Shadow Objects
+		tre_.ShdAdr[n] = new THREE.Object3D;
 	}
-	Trees[0].position.x = 0;
-	Trees[0].position.y = 9.8;
-	let pz = 90;
-	for (let n = 1; n < TreTot; n++) {
-		Trees[n] = Trees[0].clone();
-		scene.add(Trees[n]);
-		Trees[n].rotation.y = (Math.floor(Math.random()+0.5))*90*DegRad;
-		Trees[n].position.y = 9.8;
-		TreePX[n] = GrdSiz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
-		TreePZ[n] = GrdSiz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
+	loadTreObj();
+	loadTreShd();
+}
+
+//- Tree Object ----------------//-----------------------------------------------
+function loadTreObj() {
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		gltfLoader.load(tre_.ObjSrc, function (gltf) {
+			tre_.ObjAdr[n] = gltf.scene;
+			tre_.ObjAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
+			scene.add(tre_.ObjAdr[n]);
+		});
 	}
 }
 
-//- Move Trees -----------------------------------------------------------------
+//- Tree Shadow ----------------//-----------------------------------------------
+function loadTreShd() {
+	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		txtrLoader.load(tre_.ShdSrc, function (shadow) {
+			shadow.anisotropy = maxAnisotropy;
+			let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
+			// Create 5 Shadows
+			let AddX = 0;
+			for (let i = 0; i < 5; i++) {	
+				let msh = new THREE.Mesh(geo,mat);
+				msh.rotation.x = -90*DegRad;
+				msh.rotation.z = Mod360(SunLon-90-tre_.ObjRot[n])*DegRad;
+				msh.position.x = AddX;
+				tre_.ShdAdr[n].add(msh);
+				AddX = AddX+tre_.ObjOff; // Add distance between trees
+			}
+			tre_.ShdAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
+			scene.add(tre_.ShdAdr[n]);
+		});
+	}
+}
 
-function moveTrees() {
+//= MOVE TREELINES =============//===============================================
+
+function moveTreLin() {
 	// Convert Distances into Meters to match landscape program
 	let a = 13.5*GrdSiz;
-	for (let n = 0; n < TreTot; n ++) {
-		// Set Position 
-		let x = TreePX[n]-air_.MapPos.x-GrdSiz/2;
+	let x,y,z;
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		// Set Tree Object Position 
+		x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
 		if (x > a) x = x - 2*a;
 		if (x < -a) x = x + 2*a;
-		let z = air_.MapPos.z-TreePZ[n]-GrdSiz/2;
+		z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
 		if (z > a) z = z - 2*a;
 		if (z < -a) z = z + 2*a;
-		let y = -grd_.SPS.y*.99+9.8;	// Objects elevate above ground as we climb to prevent flicker
-		Trees[n].position.set(x,y,z);
-	}
-}
-
-function makeTClr(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	// Assign colors
-	let idx, i;
-	for (let n = 0; n < t0Area*4; n+=4) {
-		i = Math.floor(Weight*Math.random());
-		dtData[n  ] = red[i];
-		dtData[n+1] = grn[i];
-		dtData[n+2] = blu[i];
-		dtData[n+3] = 255;
+		y = -grd_.SPS.y*.999;	// Objects elevate above ground as we climb to prevent flicker
+		tre_.ObjAdr[n].position.set(x,y,z);
+		// Set Tree Shadow Position
+		x = x + Math.cos(SunLon*DegRad)*tre_.ShdGeY/2;
+		z = z - Math.sin(SunLon*DegRad)*tre_.ShdGeY/2;
+		y = y + 1;
+		tre_.ShdAdr[n].position.set(x,y,z);
 	}
 }
 
