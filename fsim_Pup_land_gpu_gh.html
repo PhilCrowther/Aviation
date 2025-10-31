@@ -455,7 +455,6 @@ function rendAll() {
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
 		moveRoads(grd_,rd1_,rd2_);
-//		moveTrees(tre_,grd_,air_,gen_);
 		moveTreLin(tre_,grd_,air_,gen_);	
 		moveObject();			// Move objects
 		// Other
@@ -574,7 +573,7 @@ function loadTreShd() {
 
 function moveTreLin() {
 	// Convert Distances into Meters to match landscape program
-	let a = 13.5*GrdSiz;
+	let a = 13.5*grd_.Siz;
 	let x,y,z;
 	for (let n = 0; n < tre_.ObjNum; n++) {
 		// Set Tree Object Position 
