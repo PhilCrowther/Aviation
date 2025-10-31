@@ -242,14 +242,6 @@ let ImgSiz = 1024;
 	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
 //- Adjustments
 	grd_.SPS = new THREE.Vector3(); // MSX, MPY, MSZ (meters) (from Flight)
-//- Tree Line ------------------//-----------------------------------------------
-let treSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb";
-let trsSrc = "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png";
-let geoX = 16;
-let geoY = 16/Math.tan(sky_.SunLat*DegRad);
-let treShd = [];
-let trsOff = 20;
-let treRot = [];
 
 //= 4. OBJECT VARIABLES ========//===============================================
 //= STATIC OBJECTS =============//===============================================
