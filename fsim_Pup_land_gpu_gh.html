@@ -93,7 +93,7 @@ import {loadAirExt,moveAirExt} from "https://PhilCrowther.github.io/Aviation/jsm
 import {PointerLockControls} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
-import {initGrdMat,GrdMap,initRoads,moveRoads,initTrees,moveTrees} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
+import {initGrdMat,GrdMap,initRoads,moveRoads} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
 import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
@@ -187,7 +187,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.receiveShadow = true;	
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
-let	maxAnisotropy = renderer.getMaxAnisotropy();
+	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Depth Buffer
 	renderer.logarithmicDepthBuffer = true;
 //	Tone Mapping
@@ -242,20 +242,6 @@ let ImgSiz = 1024;
 	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
 //- Adjustments
 	grd_.SPS = new THREE.Vector3(); // MSX, MPY, MSZ (meters) (from Flight)
-
-//= 4. OBJECT VARIABLES ========//===============================================
-//= STATIC OBJECTS =============//===============================================
-//- Mountains/Islands ----------//-----------------------------------------------
-//	Adjustments
-	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
-	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5000)];
-	mnt_.ObjGrp = [new THREE.Object3D]; // Group
-	mnt_.MaxAni = maxAnisotropy;
-//- Static Objects -------------//-----------------------------------------------
-//	Adjustments
-	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
-	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,4750)]; // Relative Position
-	fxd_.ObjRef = [mnt_.ObjGrp[0]];
 //- Tree Line ------------------//-----------------------------------------------
 let treSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb";
 let trsSrc = "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png";
@@ -264,6 +250,20 @@ let geoY = 16/Math.tan(sky_.SunLat*DegRad);
 let treShd = [];
 let trsOff = 20;
 let treRot = [];
+
+//= 4. OBJECT VARIABLES ========//===============================================
+//= STATIC OBJECTS =============//===============================================
+//- Mountains/Islands ----------//-----------------------------------------------
+//	Adjustments
+	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
+	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5000)];
+	mnt_.ObjGrp = [new THREE.Object3D]; // Group
+	mnt_.MaxAni = gen_.MaxAni;
+//- Static Objects -------------//-----------------------------------------------
+//	Adjustments
+	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
+	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,4750)]; // Relative Position
+	fxd_.ObjRef = [mnt_.ObjGrp[0]];
 
 //= 5. MY AIRPLANE VARIABLES ===//===============================================
 //- Adjustments
@@ -523,14 +523,14 @@ function initSkyBox() {
 //= LOAD TREELINES =============//===============================================
 
 function loadTreLin() {
-	for (let n = 0; n < tre_.TreTot; n++) {
-		// Tree Position on Edge of Square (NS = east of NS road but crosses EW road; EW = south of EW road but crosses NS road)
-		tre_.t0PosX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
-		tre_.t0PosZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
-		// Tree Rotation = 0 or -90
-		treRot[n] = (Math.floor(Math.random()+0.5))*-90;
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		// Position
+		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
+		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
+		// Rotation = 0 or -90
+		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
 		// Initialize Shadow Objects
-		treShd[n] = new THREE.Object3D;
+		tre_.ShdAdr[n] = new THREE.Object3D;
 	}
 	loadTreObj();
 	loadTreShd();
@@ -538,60 +538,59 @@ function loadTreLin() {
 
 //- Tree Object ----------------//-----------------------------------------------
 function loadTreObj() {
-	for (let n = 0; n < tre_.TreTot; n++) {
-		gltfLoader.load(treSrc, function (gltf) {
-			tre_.t0Tree[n] = gltf.scene;
-			tre_.t0Tree[n].scale.setScalar(1.0);
-			scene.add(tre_.t0Tree[n]);
-			tre_.t0Tree[n].rotation.y = treRot[n]*DegRad;
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		gltfLoader.load(tre_.ObjSrc, function (gltf) {
+			tre_.ObjAdr[n] = gltf.scene;
+			tre_.ObjAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
+			scene.add(tre_.ObjAdr[n]);
 		});
 	}
 }
 
 //- Tree Shadow ----------------//-----------------------------------------------
 function loadTreShd() {
-	let geo = new THREE.PlaneGeometry(geoX,geoY);
-	for (let n = 0; n < tre_.TreTot; n++) {
-		txtrLoader.load(trsSrc, function (shadow) {
-			shadow.anisotropy = maxAnisotropy;
+	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		txtrLoader.load(tre_.ShdSrc, function (shadow) {
+			shadow.anisotropy = gen_.MaxAni;
 			let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
 			// Create 5 Shadows
 			let AddX = 0;
 			for (let i = 0; i < 5; i++) {	
 				let msh = new THREE.Mesh(geo,mat);
 				msh.rotation.x = -90*DegRad;
-				msh.rotation.z = Mod360(sky_.SunLon-90-treRot[n])*DegRad;
+				msh.rotation.z = Mod360(sky_.SunLon-90-tre_.ObjRot[n])*DegRad;
 				msh.position.x = AddX;
-				treShd[n].add(msh);
-				AddX = AddX+trsOff; // Add distance between trees
+				tre_.ShdAdr[n].add(msh);
+				AddX = AddX+tre_.ObjOff; // Add distance between trees
 			}
-			treShd[n].rotation.y = treRot[n]*DegRad;
-			scene.add(treShd[n]);
+			tre_.ShdAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
+			scene.add(tre_.ShdAdr[n]);
 		});
 	}
 }
 
 //= MOVE TREELINES =============//===============================================
 
-function moveTreLin(tre_,grd_,air_,gen_) {
+function moveTreLin() {
 	// Convert Distances into Meters to match landscape program
-	let a = 13.5*grd_.Siz;
+	let a = 13.5*GrdSiz;
 	let x,y,z;
-	for (let n = 0; n < tre_.TreTot; n ++) {
+	for (let n = 0; n < tre_.ObjNum; n++) {
 		// Set Tree Object Position 
-		x = tre_.t0PosX[n]-air_.MapPos.x-grd_.Siz/2;
+		x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
 		if (x > a) x = x - 2*a;
 		if (x < -a) x = x + 2*a;
-		z = air_.MapPos.z-tre_.t0PosZ[n]-grd_.Siz/2;
+		z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
 		if (z > a) z = z - 2*a;
 		if (z < -a) z = z + 2*a;
 		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
-		tre_.t0Tree[n].position.set(x,y,z);
+		tre_.ObjAdr[n].position.set(x,y,z);
 		// Set Tree Shadow Position
-		x = x + Math.cos(sky_.SunLon*DegRad)*geoY/2;
-		z = z - Math.sin(sky_.SunLon*DegRad)*geoY/2;
-		y = y + 1;
-		treShd[n].position.set(x,y,z);
+		x = x + Math.cos(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
+		z = z - Math.sin(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
+		y = y + 0.1;
+		tre_.ShdAdr[n].position.set(x,y,z);
 	}
 }
 
