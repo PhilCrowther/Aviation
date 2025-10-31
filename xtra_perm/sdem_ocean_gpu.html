@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Oct 2025
+Version dated 31 Oct 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
 
 <head>
-<title>sdem ocean gpu r180</title>
+<title>sdem ocean gpu r181</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b.css">
 </head>
@@ -24,15 +24,13 @@ A WebGPU demo of the GrdWtr and Ocean modules.
 	</div>
 </div>
 
-<body oncontextmenu="return false;">
-
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
 			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
 		}
 	}
@@ -47,13 +45,13 @@ import Stats from "stats-gl";
 //- Custom Modules
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	VARIABLES
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= GENERAL ====================//===============================================
+//= GENERAL ====================//==============================================
 //-	Math Predefined
 let	DegRad = Math.PI/180;		// Convert Degrees to Radians
 let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
@@ -121,17 +119,17 @@ let RESOURCES_LOADED = false;
 let txtrLoader = new THREE.TextureLoader(loadingManager);
 let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
-//= CAMERA ======================================================================
+//= CAMERA =====================================================================
 let	CamDst, CamLat, CamHdg, CamAlt = 0;	
 
-//= MATERIALS ===================================================================
+//= MATERIALS ==================================================================
 let WtrCol = 0x001080;			// Water (Navy)
-//- Textures --------------------------------------------------------------------
+//- Textures -------------------------------------------------------------------
 let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png";
-//- Maps ------------------------------------------------------------------------
+//- Maps -----------------------------------------------------------------------
 let RufMap = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 
-//= GRID DATA ===================================================================
+//= GRID DATA ==================================================================
 let GrdSiz = 2400;				// Size of Smallest Grid Square (meters)
 let GrdSeg = 384;				// Segments per Plane (256 = OK, 512 = too much)
 //- Planes
@@ -142,7 +140,7 @@ let WavMXV = [0];
 //- Common Values
 let WtrGeo,WtrMat,WtrMsh = 0;
 
-//= OCEAN MODULE ================================================================
+//= OCEAN MODULE ===============================================================
 let waves = 0;
 let wav_ = {
 		// General
@@ -179,11 +177,11 @@ let wav_ = {
 		d_fadeLimit: 0.0,
 	};
 
-//= Key Bindings ===============//===============================================
+//= Key Bindings ===============//==============================================
 let K_Paws = 80;				        // Pause (p)
 let K_Wire = 87;				        // Wireframe (w)
 
-//= HTML OVERLAY TEXT ===========================================================
+//= HTML OVERLAY TEXT ==========================================================
 let Cam_AltElement = document.getElementById("Cam_Alt"); // Altitude
 let Cam_AltNode = document.createTextNode("");
 	Cam_AltElement.appendChild(Cam_AltNode);
@@ -192,15 +190,15 @@ let Cam_HdgNode = document.createTextNode("");
 	Cam_HdgElement.appendChild(Cam_HdgNode);
 let Cam_Alt,Cam_Hdg;
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	MAIN PROGRAM
 *
-********************************************************************************/
+*******************************************************************************/
 
 	loadAll();
 
-//= 0 LOAD ALL ==================================================================
+//= 0 LOAD ALL =================================================================
 
 function loadAll() {
 	loadSkyBox();
@@ -217,17 +215,16 @@ function loadAll() {
 	}
 }
 
-//= 1 INITIALIZE ===============//===============================================
+//= 1 INIT ALL ===============//================================================
 
 function initAll() {
 	initOceans(); // Initialize Ocean
 	LodFlg = 1;
 }
 
-//= 2 RENDER ===================//===============================================
+//= 2 REND ALL ===================//============================================
 
 function rendAll() {
-//	requestAnimationFrame(rendAll);	
 	if (!PawsOn && LodFlg) {
 		// Update camera position
 		if(camera.position.y < 0.0) {
@@ -242,11 +239,11 @@ function rendAll() {
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	SKY BOX
 *
-********************************************************************************/
+*******************************************************************************/
 
 function loadSkyBox() {
 	let envMap = cubeLoader
@@ -257,13 +254,13 @@ function loadSkyBox() {
 	scene.background = envMap;
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	OCEANS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//=	LOAD ========================================================================
+//=	LOAD =======================================================================
 
 function loadOceans() {
 	//- Diffuse Texture
@@ -288,7 +285,7 @@ function loadOceans() {
 	});
 }
 
-//= INITIALIZE =================//===============================================
+//= INITIALIZE =================//==============================================
 
 function initOceans() {
 	waves = new Ocean(wav_);
@@ -325,25 +322,25 @@ function initOceans() {
 	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	MISC SUBROUTINES
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= Converts degrees to 360 ====//===============================================
+//= Converts degrees to 360 ====//==============================================
 function Mod360(deg) {
 	while (deg < 0) deg = deg+360;	// Make deg a positive number
 	deg = deg % 360;			// Compute remainder of any number divided by 360
 return deg;}
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	OUTPUTS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= Print HUD Values ===========//===============================================
+//= Print HUD Values ===========//==============================================
 
 function prntHUDval() {
 	CamLat = controls.getPolarAngle();
@@ -359,13 +356,13 @@ function prntHUDval() {
 	Cam_HdgNode.nodeValue = Cam_Hdg.toFixed(0);
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	INPUTS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= Keyboard ====================================================================
+//= Keyboard ===================================================================
 
 //- Key Down
 function onDocumentKeyDown(event) {
@@ -402,7 +399,7 @@ function toggleWire() {
 	}
 }
 
-//= Window Resize Input =========================================================
+//= Window Resize Input ========================================================
 
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
