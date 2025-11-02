@@ -195,12 +195,12 @@ let tre_ = {
 				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow2.png",
 				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow3.png",
 				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow4.png"],
-		ObjMpZ: [0,20],			// Map Address Z (+South,-North)
+		ObjMpZ: [0,25],			// Map Address Z (+South,-North)
 		ObjMpX: [0,0],			// Map Address X
 		ObjRot: [0,-90],		// Rotation (0 or -90)
 		ShdGeX: 16,				// Shadow Width
-		ShdGeY: (16/Math.tan(sky_.SunLat*DegRad))*0.65, // Shadow Height (X factor to prevent flicker)
-		ObjOff: 20,				// Tree Spacing 
+		ShdGeY: (16/Math.tan(sky_.SunLat*DegRad)), // Shadow Height (X factor to prevent flicker)
+		ObjOff: 25,				// Tree Spacing 
 }
 
 //= HTML OVERLAY TEXT ==========================================================
@@ -253,12 +253,12 @@ function rendAll() {
 		if(camera.position.y < 0.0) {
 			camera.position.y = 2.0;
 		}
-		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
+//		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 	}
 	prntHUDval();
 	renderer.render(scene,camera);
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+//	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
 /*******************************************************************************
@@ -570,33 +570,51 @@ function makeVert(dtData,clr,x1,y1,x2,y2,spr,spp) {
 //= LOAD =======================================================================
 
 function loadTreLin() {
+	// standard geometry for shadow
 	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
+	// load all the treelines
 	for (let n = 0; n < tre_.ObjNum; n++) {
 		gltfLoader.load(tre_.ObjSrc, function (gltf) {
+			// base treeline object (shadows will be added to this)
 			tre_.ObjAdr[n] = new THREE.Object3D;
-			// Create 5 Shadows
+			// load, adjust and add 5 shadows to base treeline object
 			let AddX = 0;
 			for (let i = 0; i < 5; i++) {
 				txtrLoader.load(tre_.ShdSrc[i],function(shadow) {
+					// create shadow texture
 					shadow.anisotropy = gen_.MaxAni;
 					let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
 					let msh = new THREE.Mesh(geo,mat);
-					msh.rotation.x = -90*DegRad;
+					// rotate, taking into account position of the Sun and rotation of treeline
 					msh.rotation.z = Mod360(sky_.SunLon-90-tre_.ObjRot[n])*DegRad;
+					// make mesh flat
+					msh.rotation.x = -90*DegRad;
+					// compute Offset
 					let XOff = Math.cos(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
+					let ZOff = Math.sin(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
+					// if rotation = 0 degrees;
 					msh.position.x = AddX + XOff;
-					if (tre_.ObjRot[n]) msh.position.x = 80.75-AddX + XOff;
-					msh.position.z = -Math.sin(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
-					if (tre_.ObjRot[n]) msh.position.z = -msh.position.z + 1;
-					msh.position.y = 0.1;
+					msh.position.z = -ZOff;
+					// if rotation = 90 degrees
+					if (tre_.ObjRot[n]) {
+//						msh.position.x = 80.75-AddX + XOff;
+						msh.position.x = AddX + XOff + 2;
+						msh.position.z = -msh.position.z + 1;
+					}
+					// float above ground (prevent flickering)
+					msh.position.y = 0.2;
+					// add mesh to treeline object
 					tre_.ObjAdr[n].add(msh);
 					AddX = AddX+tre_.ObjOff; // Add distance between trees
 				});	
 			}
+			// add treeline object to base treeline object
 			tre_.ObjAdr[n].add(gltf.scene);
+			// rotate and position each treeline object
 			tre_.ObjAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
 			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
 			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
+			// add to scene
 			scene.add(tre_.ObjAdr[n]);
 		});
 	}
