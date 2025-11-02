@@ -51,43 +51,71 @@ import Stats from "stats-gl";
 *
 ********************************************************************************/
 
-//= GENERAL ====================//===============================================
-//-	Math Predefined
+//= 1. MAIN VARIABLES ==========//==============================================
+
+let dtType = 3;					// Texture Type (0-9)
+
+//- CONSTANTS ------------------//----------------------------------------------
+//	Conversions
 let	DegRad = Math.PI/180;		// Convert Degrees to Radians
 let	RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 let	Mtr2Ft = 3.28084;
-//- Flags				
-let LodFlg = 0;
-let StatOn = 1;					// Stats ((0 = off, 1 = on)
-let dtType = 3;					// Texture Type (0-9)
+			
+//- GENERAL VARIABLES ----------//----------------------------------------------
+let gen_ = {
+		//- Display
+		StatOn:	1,				// Stats (0 = off, 1 = on)
+		LnFFlg:	1,				// Lensflare
+		// Program Flags
+		LodFlg:	0,				// Set at end of initialization
+		// Altitude Adjustment
+		AltAdj:	0.99,			// Raises objects above map as altitude increases
+		AltDif:	0,
+		// Misc
+		contxt: 0,
+		canvas: 0,
+		MaxAni: 0,
+	}
 
-//= SKYBOX ======================================================================
-let SkyCol = 0x1732c1;			// Sky
-let SkyLim = 100000;			// Max viewing distance 
-//- Texture
-let SBPath = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+//= 2. SKY VARIABLES ===========//==============================================
+let sky_ = {
+		// Sun
+		SunCol: "white",		// Sun
+		SunInt: 3,
+		// Fog
+		FogCol: 0xbab4a6,		// Sky (for Fog only)
+		// SkyBox
+		SBxSrc: "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
+		envMap: 0,				// For this SkyBox
+		// Sun (position in SkyBox)
+		SunLat: 23,				// Direction - Vert (+/- 90) deg
+		SunLon: 312,			// Direction - Horz (0->360) deg
+		// LensFlare		
+		LF0Src: "https://PhilCrowther.github.io/Aviation/textures/fx/lensflare1.png",
+		LF1Src: "https://PhilCrowther.github.io/Aviation/textures/fx/lensflare3.png",
+		LF0Txt: 0,
+		LF1Txt: 0,
+		// Shadow Beg Info
+		SunDst: 10000,			// Distance
+		ShdBox: 6,				// Size of shadow box
+		ShdBLR: 6.5,
+		ShdBTB: 4,
+		ShdDst: 1500,			// Shadow Distance (meters)
+	}
 
-//= SUN =========================================================================
-let SunCol = 0xffffff;			// Sun
-let SunInt = 3;					// Intensity
-//- Rotation and Position (fixed)
-let SunLat = 23;				// Direction - Vert (+/- 90)
-let SunLon = 312;				// Direction - Horz (0->360)
-let SunDst = 10000;				// Distance (for shadows and lensflare)
-//- New
-let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+//= SUN VALUES =================//===============================================
+//- New	
+let SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
-//	Shadows
-let ShdBox = 6;					// Size of shadow box
-let ShdBLR = 6.5;
-let ShdBTB = 4;
-let ShdDst = 1500;				// Shadow Distance (meters)
+
+//= CAMERA VARIABLES ============================================================
+let SkyLim = 100000;			// Max viewing distance 
 
 //= BASIC SETUP =================================================================
 //- Scene
 let	scene = new THREE.Scene();
 //- Lights
-let sunLight = new THREE.DirectionalLight(SunCol,3.0);
+let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.position.copy(SunPos).normalize();
 	scene.add(sunLight);
 //- Camera
@@ -100,7 +128,7 @@ let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
 	container.appendChild(renderer.domElement);
-let maxAnisotropy = renderer.getMaxAnisotropy();
+	gen_.MaxAni = renderer.getMaxAnisotropy();
 //- Controls
 let	controls = new OrbitControls(camera,renderer.domElement);
 //- Inputs
@@ -157,16 +185,24 @@ let cvrclr = [0x00c000,0x004000];	// Green
 let whtclr = [0xfbf4e5,0xeabb63];	// Wheat
 let bnsclr = [0x00e000,0x006000];	// Beans
 
-//= Treeline ===================//===============================================
-let treNum = 2;					// Number of Objects
-//	Object
-let treSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb";
-let treObj = [0,0];
-let treRot = [0,-90];			// Y-Rotation
-//	Shadow
-let trsSrc = "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png";
-let treShd = [0,0];
-let trsOff = 20;				// Tree Spacing
+//= TREELINE ===================//==============================================
+let tre_ = {
+		ObjNum: 2,
+		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb",
+		ObjAdr: [],				// Object Address
+		ShdSrc: ["https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow0.png",
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow1.png",
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow2.png",
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow3.png",
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow4.png"],
+		ObjMpZ: [0,20],			// Map Address Z (+South,-North)
+		ObjMpX: [0,0],			// Map Address X
+		ObjRot: [0,-90],		// Rotation (0 or -90)
+		ShdGeX: 16,				// Shadow Width
+		ShdGeY: (16/Math.tan(sky_.SunLat*DegRad))*0.65, // Shadow Height (X factor to prevent flicker)
+		ObjOff: 20,				// Tree Spacing 
+}
+
 //= HTML OVERLAY TEXT ==========================================================
 let Cam_AltElement = document.getElementById("Cam_Alt"); // Altitude
 let Cam_AltNode = document.createTextNode("");
@@ -189,17 +225,16 @@ let Cam_Alt,Cam_Hdg;
 function loadAll() {
 	loadSkyBox();
 	loadTreLin();
-	loadTreShd();
 	loadDifTxt();
 	// Load stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
+	if (gen_.StatOn) {				// show stats
+		gen_.StatOn = new Stats({
 			precision: 3,
 			horizontal: false
 		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
+		gen_.StatOn.init(renderer);
+		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(gen_.StatOn.dom);
 	}
 }
 
@@ -207,19 +242,19 @@ function loadAll() {
 
 function initAll() {
 	initCover();
-	LodFlg = 1;
+	gen_.LodFlg = 1;
 }
 
 // 2 REND ALL ====================================================================
 
 function rendAll() {
-	if (LodFlg) {
+	if (gen_.LodFlg) {
 		// Update camera position
 		if(camera.position.y < 0.0) {
 			camera.position.y = 2.0;
 		}
 		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
-		if (StatOn) StatOn.update(); // update stats
+		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 	}
 	prntHUDval();
 	renderer.render(scene,camera);
@@ -233,12 +268,12 @@ function rendAll() {
 *******************************************************************************/
 
 function loadSkyBox() {
-	let envMap = cubeLoader
-		.setPath(SBPath)
+	sky_.envMap = cubeLoader
+		.setPath(sky_.SBxSrc)
 		.load(["px.jpg","nx.jpg","py.jpg","ny.jpg","pz.jpg","nz.jpg"]);
-	envMap.format = THREE.RGBAFormat;
-	envMap.colorSpace = THREE.SRGBColorSpace; // r152
-	scene.background = envMap;
+	sky_.envMap.format = THREE.RGBAFormat;
+	sky_.envMap.colorSpace = THREE.SRGBColorSpace; // r152
+	scene.background = sky_.envMap;
 }
 
 /*******************************************************************************
@@ -298,7 +333,7 @@ function initTxtr() {
 		DatTxt.wrapS = DatTxt.wrapT = THREE.RepeatWrapping;
 		DatTxt.offset.set(0,0);
 		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = maxAnisotropy;		// ###
+		DatTxt.anisotropy = gen_.MaxAni;		// ###
 		DatTxt.needsUpdate = true;
 		dtMats[i] = new THREE.MeshLambertNodeMaterial({
 //			colorNode: texture(DatTxt),
@@ -528,59 +563,41 @@ function makeVert(dtData,clr,x1,y1,x2,y2,spr,spp) {
 
 /*******************************************************************************
 *
-*	TREE LINE
+*	TREELINE
 *
 *******************************************************************************/
 
 //= LOAD =======================================================================
 
 function loadTreLin() {
-	for (let n = 0; n < 2; n++) {
-		treShd[n] = new THREE.Object3D;
-	}
-	loadTreObj();
-	loadTreShd();
-}
-
-//- Tree Object ----------------------------------------------------------------
-function loadTreObj() {
-	for (let n = 0; n < treNum; n++) {
-		gltfLoader.load(treSrc, function (gltf) {
-			treObj[n] = gltf.scene;
-			treObj[n].rotation.y = treRot[n]*DegRad;
-			scene.add(treObj[n]);
-		});
-	}
-}
-
-//- Tree Shadow -----------------------------------------------------------------
-function loadTreShd() {
-	let geoX = 16;
-	let geoY = 16/Math.tan(SunLat*DegRad);
-	let geo = new THREE.PlaneGeometry(geoX,geoY);
-	for (let n = 0; n < treNum; n++) {
-		txtrLoader.load(trsSrc, function (shadow) {
-			shadow.anisotropy = maxAnisotropy;
-			let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
+	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		gltfLoader.load(tre_.ObjSrc, function (gltf) {
+			tre_.ObjAdr[n] = new THREE.Object3D;
 			// Create 5 Shadows
 			let AddX = 0;
-			for (let i = 0; i < 5; i++) {	
-				let msh = new THREE.Mesh(geo,mat);
-				msh.rotation.x = -90*DegRad;
-				msh.rotation.z = Mod360(SunLon-90-treRot[n])*DegRad;
-				msh.position.x = AddX;
-				treShd[n].add(msh);
-				AddX = AddX+trsOff; // Add distance between trees
+			for (let i = 0; i < 5; i++) {
+				txtrLoader.load(tre_.ShdSrc[i],function(shadow) {
+					shadow.anisotropy = gen_.MaxAni;
+					let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
+					let msh = new THREE.Mesh(geo,mat);
+					msh.rotation.x = -90*DegRad;
+					msh.rotation.z = Mod360(sky_.SunLon-90-tre_.ObjRot[n])*DegRad;
+					let XOff = Math.cos(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
+					msh.position.x = AddX + XOff;
+					if (tre_.ObjRot[n]) msh.position.x = 80.75-AddX + XOff;
+					msh.position.z = -Math.sin(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
+					if (tre_.ObjRot[n]) msh.position.z = -msh.position.z + 1;
+					msh.position.y = 0.1;
+					tre_.ObjAdr[n].add(msh);
+					AddX = AddX+tre_.ObjOff; // Add distance between trees
+				});	
 			}
-			// Position
-			treShd[n].position.y = 0.2;
-			let offX = Math.cos(SunLon*DegRad)*geoY/2;
-			treShd[n].position.x = offX;
-			let offZ = Math.sin(SunLon*DegRad)*geoY/2;
-			treShd[n].position.z = -offZ;
-			// Rotation
-			treShd[n].rotation.y = treRot[n]*DegRad;
-			scene.add(treShd[n]);
+			tre_.ObjAdr[n].add(gltf.scene);
+			tre_.ObjAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
+			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
+			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
+			scene.add(tre_.ObjAdr[n]);
 		});
 	}
 }
