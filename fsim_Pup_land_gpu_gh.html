@@ -10,7 +10,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2025
+Version dated 3 Nov 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -514,49 +514,55 @@ function initSkyBox() {
 //= LOAD TREELINES =============//===============================================
 
 function loadTreLin() {
+	// Standard Geometry for Shadows
+	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
+	// Load all Treeline Objects and Attach Shadows
 	for (let n = 0; n < tre_.ObjNum; n++) {
-		// Position
+		// Assign Random Map Position
 		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
 		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
 		// Rotation = 0 or -90
 		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
 		// Initialize Shadow Objects
-		tre_.ShdAdr[n] = new THREE.Object3D;
-	}
-	loadTreObj();
-	loadTreShd();
-}
-
-//- Tree Object ----------------//-----------------------------------------------
-function loadTreObj() {
-	for (let n = 0; n < tre_.ObjNum; n++) {
 		gltfLoader.load(tre_.ObjSrc, function (gltf) {
-			tre_.ObjAdr[n] = gltf.scene;
-			tre_.ObjAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
-			scene.add(tre_.ObjAdr[n]);
-		});
-	}
-}
-
-//- Tree Shadow ----------------//-----------------------------------------------
-function loadTreShd() {
-	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
-	for (let n = 0; n < tre_.ObjNum; n++) {
-		txtrLoader.load(tre_.ShdSrc, function (shadow) {
-			shadow.anisotropy = gen_.MaxAni;
-			let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
-			// Create 5 Shadows
+			// base treeline object (shadows will be added to this)
+			tre_.ObjAdr[n] = new THREE.Object3D;
+			// load, adjust and add 5 shadows to base treeline object
 			let AddX = 0;
-			for (let i = 0; i < 5; i++) {	
-				let msh = new THREE.Mesh(geo,mat);
-				msh.rotation.x = -90*DegRad;
-				msh.rotation.z = Mod360(sky_.SunLon-90-tre_.ObjRot[n])*DegRad;
-				msh.position.x = AddX;
-				tre_.ShdAdr[n].add(msh);
-				AddX = AddX+tre_.ObjOff; // Add distance between trees
+			for (let i = 0; i < 5; i++) {
+				txtrLoader.load(tre_.ShdSrc[i],function(shadow) {
+					// create shadow texture
+					shadow.anisotropy = gen_.MaxAni;
+					let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
+					let msh = new THREE.Mesh(geo,mat);
+					// rotate, taking into account position of the Sun and rotation of treeline
+					msh.rotation.z = Mod360(sky_.SunLon-90-tre_.ObjRot[n])*DegRad;
+					// make mesh flat
+					msh.rotation.x = -90*DegRad;
+					// compute Offset
+					let XOff = Math.cos(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
+					let ZOff = Math.sin(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
+					// if rotation = 0 degrees;
+					msh.position.x = AddX + XOff + 0.1; // X-Offset
+					msh.position.z = -ZOff; // Z-Offset
+					// if rotation = 90 degrees
+					if (tre_.ObjRot[n]) {
+						msh.position.x = AddX + XOff + 1.5; // Z-Offset
+						msh.position.z = -msh.position.z + 1.2; // X-Offset
+					}
+					// float above ground (prevent flickering)
+					msh.position.y = 0.2;
+					// add mesh to treeline object
+					tre_.ObjAdr[n].add(msh);
+					AddX = AddX+tre_.ObjOff; // Add distance between trees
+				});	
 			}
-			tre_.ShdAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
-			scene.add(tre_.ShdAdr[n]);
+			// add treeline object to base treeline object
+			tre_.ObjAdr[n].add(gltf.scene);
+			// rotate and position each treeline object
+			tre_.ObjAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
+			// add to scene
+			scene.add(tre_.ObjAdr[n]);
 		});
 	}
 }
@@ -577,11 +583,6 @@ function moveTreLin() {
 		if (z < -a) z = z + 2*a;
 		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
 		tre_.ObjAdr[n].position.set(x,y,z);
-		// Set Tree Shadow Position
-		x = x + Math.cos(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
-		z = z - Math.sin(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
-		y = y + 0.1;
-		tre_.ShdAdr[n].position.set(x,y,z);
 	}
 }
 
