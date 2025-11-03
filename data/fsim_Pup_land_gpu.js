@@ -169,18 +169,22 @@ let grd_ = {
 
 //= Trees ======================//==============================================
 
+//= TREES ======================//==============================================
 let tre_ = {
 		ObjNum: 64,
 		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb",
 		ObjAdr: [],				// Object Address
-		ShdSrc: "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png",
-		ShdAdr: [],				// Shadow Address
+		ShdSrc: ["https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow0.png",
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow1.png",
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow2.png",
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow3.png",
+				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow4.png"],
 		ObjMpZ: [],				// Map Address Z
 		ObjMpX: [],				// Map Address X
 		ObjRot: [],				// Rotation (0 or -90)
 		ShdGeX: 16,				// Shadow Width
 		ShdGeY: 16/Math.tan(sky_.SunLat*DegRad), // Shadow Height
-		ObjOff: 20,				// Tree Spacing 
+		ObjOff: 25,				// Tree Spacing 
 }
 
 //= STATIC OBJECTS =============//==============================================
