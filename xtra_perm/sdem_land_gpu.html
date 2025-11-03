@@ -4,7 +4,9 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2025
+Version dated 3 Nov 2025
+
+This programs shows procedurally generated farmland plus medium quality trees.
 -->
 
 <head>
@@ -593,13 +595,12 @@ function loadTreLin() {
 					let XOff = Math.cos(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
 					let ZOff = Math.sin(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
 					// if rotation = 0 degrees;
-					msh.position.x = AddX + XOff;
-					msh.position.z = -ZOff;
+					msh.position.x = AddX + XOff + 0.1; // X-Offset
+					msh.position.z = -ZOff; // Z-Offset
 					// if rotation = 90 degrees
 					if (tre_.ObjRot[n]) {
-//						msh.position.x = 80.75-AddX + XOff;
-						msh.position.x = AddX + XOff + 2;
-						msh.position.z = -msh.position.z + 1;
+						msh.position.x = AddX + XOff + 1.5; // Z-Offset
+						msh.position.z = -msh.position.z + 1.2; // X-Offset
 					}
 					// float above ground (prevent flickering)
 					msh.position.y = 0.2;
