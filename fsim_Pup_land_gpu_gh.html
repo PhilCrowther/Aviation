@@ -405,7 +405,7 @@ function initAll() {
 	grd_.SPS.y = air_.MapSPS.y;
 	grids = new GrdMap(grd_,scene);	// Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
-	initRoads(grd_,scene);		// Add Roads
+	initRoads(grd_,gen_,scene);		// Add Roads
 	moveTreLin(grd_,air_,gen_); // Add TreeLines
 	initObject();				// Stationary Objects
 	// Other
@@ -446,7 +446,7 @@ function rendAll() {
 		// Move Grids
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
-		moveRoads(grd_);		// Move Roads
+		moveRoads(grd_,gen_);		// Move Roads
 		moveTreLin(grd_,air_,gen_); // Move TreeLines	
 		moveObject();			// Move objects
 		// Other
