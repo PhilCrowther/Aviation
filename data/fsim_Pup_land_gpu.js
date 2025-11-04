@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM PUP DATA: 251031
+*	FSIM PUP DATA: 251104
 *
 *********************************************************************************
 
@@ -167,24 +167,15 @@ let grd_ = {
 		Mat: [0],				// Index to Materials
 	}
 
-//= Trees ======================//==============================================
-
 //= TREES ======================//==============================================
 let tre_ = {
 		ObjNum: 64,
-		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb",
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
+				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
 		ObjAdr: [],				// Object Address
-		ShdSrc: ["https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow0.png",
-				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow1.png",
-				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow2.png",
-				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow3.png",
-				 "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow4.png"],
 		ObjMpZ: [],				// Map Address Z
 		ObjMpX: [],				// Map Address X
 		ObjRot: [],				// Rotation (0 or -90)
-		ShdGeX: 16,				// Shadow Width
-		ShdGeY: 16/Math.tan(sky_.SunLat*DegRad), // Shadow Height
-		ObjOff: 25,				// Tree Spacing 
 }
 
 //= STATIC OBJECTS =============//==============================================
