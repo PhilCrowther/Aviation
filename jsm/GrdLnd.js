@@ -486,7 +486,7 @@ function makeVrtD(dtColr,dtData,Weight) {
 
 //= INIT ROADS =================//==============================================
 
-function initRoads(grd_,scene) {
+function initRoads(grd_,gen_,scene) {
 	rd1_.Siz = 2*grd_.Siz;
 	rd2_.Siz = 2*grd_.Siz;
 	rd0_.r0Data = new Uint8Array(4*rd0_.r0Size*rd0_.r0Size);
@@ -500,8 +500,8 @@ function initRoads(grd_,scene) {
 	rd0_.txtrod.offset.set(0,0);
 	rd1_.Txt = rd0_.txtrod;
 	rd2_.Txt = rd0_.txtrod;
-	init1Road(rd1_,grd_,scene);
-	init1Road(rd2_,grd_,scene);
+	init1Road(rd1_,grd_,gen_,scene);
+	init1Road(rd2_,grd_,gen_,scene);
 }
 
 function initRClr(dtColr,dtData,Weight) {
@@ -524,7 +524,7 @@ function initRClr(dtColr,dtData,Weight) {
 	}
 }
 
-function init1Road(Rod,grd_,scene) {
+function init1Road(Rod,grd_,gen_,scene) {
 	// Load Variables
 	Rod.RCi = Rod.RCs-1;				// Max Index Value
 	Rod.MZV[Rod.RCi] = 0;				// Z-Values
@@ -589,14 +589,14 @@ function init1Road(Rod,grd_,scene) {
 
 //= MOVE ROADS =================//==============================================
 
-function moveRoads(grd_) {
+function moveRoads(grd_,gen_) {
 // Convert Distances into Meters to match landscape program
-	move1Road(grd_,rd1_);
-	move1Road(grd_,rd2_);
+	move1Road(grd_,gen_,rd1_);
+	move1Road(grd_,gen_,rd2_);
 }
 
 // Move Roads
-function move1Road(grd_,Rod) {
+function move1Road(grd_,gen_,Rod) {
 	let j = 0;
 	let v = 0; 
 	let max = 0.5*Rod.RCs*Rod.Siz;
