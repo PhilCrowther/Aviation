@@ -10,7 +10,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Nov 2025
+Version dated 4 Nov 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -406,7 +406,7 @@ function initAll() {
 	grids = new GrdMap(grd_,scene);	// Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
 	initRoads(grd_,scene);		// Add Roads
-	moveTreLin(tre_,grd_,air_,gen_)
+	moveTreLin()
 	initObject();				// Stationary Objects
 	// Other
 	initCamera(camera,cam_);	// position camera
@@ -523,45 +523,13 @@ function loadTreLin() {
 		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
 		// Rotation = 0 or -90
 		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
-		// Initialize Shadow Objects
-		gltfLoader.load(tre_.ObjSrc, function (gltf) {
-			// base treeline object (shadows will be added to this)
-			tre_.ObjAdr[n] = new THREE.Object3D;
-			// load, adjust and add 5 shadows to base treeline object
-			let AddX = 0;
-			for (let i = 0; i < 5; i++) {
-				txtrLoader.load(tre_.ShdSrc[i],function(shadow) {
-					// create shadow texture
-					shadow.anisotropy = gen_.MaxAni;
-					let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
-					let msh = new THREE.Mesh(geo,mat);
-					// rotate, taking into account position of the Sun and rotation of treeline
-					msh.rotation.z = Mod360(sky_.SunLon-90-tre_.ObjRot[n])*DegRad;
-					// make mesh flat
-					msh.rotation.x = -90*DegRad;
-					// compute Offset
-					let XOff = Math.cos(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
-					let ZOff = Math.sin(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
-					// if rotation = 0 degrees;
-					msh.position.x = AddX + XOff + 0.1; // X-Offset
-					msh.position.z = -ZOff; // Z-Offset
-					// if rotation = 90 degrees
-					if (tre_.ObjRot[n]) {
-						msh.position.x = AddX + XOff + 1.5; // Z-Offset
-						msh.position.z = -msh.position.z + 1.2; // X-Offset
-					}
-					// float above ground (prevent flickering)
-					msh.position.y = 0.2;
-					// add mesh to treeline object
-					tre_.ObjAdr[n].add(msh);
-					AddX = AddX+tre_.ObjOff; // Add distance between trees
-				});	
-			}
-			// add treeline object to base treeline object
-			tre_.ObjAdr[n].add(gltf.scene);
-			// rotate and position each treeline object
-			tre_.ObjAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
-			// add to scene
+		// Select Object
+		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
+		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
+		gltfLoader.load(ObjSrc, function (gltf) {
+			tre_.ObjAdr[n] = gltf.scene;
+			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
+			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
 			scene.add(tre_.ObjAdr[n]);
 		});
 	}
