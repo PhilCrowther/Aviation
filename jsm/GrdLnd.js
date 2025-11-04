@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Oct 2025
+Version dated 3 Nov 2025
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -203,6 +203,17 @@ let rd2_ = {
 		Txt:	0,				// Texture Address
 		Shd:	1				// Shadow enabled
 	}
+
+//= TREES ======================//==============================================
+let tre_ = {
+		ObjNum: 64,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
+				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
+		ObjAdr: [],				// Object Address
+		ObjMpZ: [],				// Map Address Z
+		ObjMpX: [],				// Map Address X
+		ObjRot: [],				// Rotation (0 or -90)
+}
 
 /*******************************************************************************
 *
@@ -666,13 +677,35 @@ function move1Road(grd_,Rod) {
 
 /*******************************************************************************
 *
-*	TREES
+*	TREELINE
 *
 *******************************************************************************/
 
-//= INIT TREES =================//==============================================
+//= LOAD TREELINE ==============//==============================================
 
-function initTrees(tre_,grd_,scene) {
+function loadTreLin(grd_,gltfLoader,scene) {
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		// Assign Random Map Position
+		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
+		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
+		// Rotation = 0 or -90
+		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
+		// Select Object
+		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
+		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
+		gltfLoader.load(ObjSrc, function (gltf) {
+			tre_.ObjAdr[n] = gltf.scene;
+			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
+			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
+			scene.add(tre_.ObjAdr[n]);
+		});
+	}
+}
+
+//= INIT TREELINE ==============//==============================================
+// Procedurally generated treeline (not used)
+
+function makeTreLin(grd_,scene) {
 	let points = [
 		new Vector2(4.0,-6.7),	// Bot
 		new Vector2(4.9,-3.0),
@@ -756,21 +789,22 @@ function initTClr(dtColr,dtData,Weight) {
 	}
 }
 
-//= MOVE TREES =================//==============================================
+//= MOVE TREELINE =================//==============================================
 
-function moveTrees(tre_,grd_,air_,gen_) {
+function moveTreLin(grd_,air_,gen_) {
 	// Convert Distances into Meters to match landscape program
 	let a = 13.5*grd_.Siz;
-	for (let n = 0; n < tre_.TreTot; n ++) {
-		// Set Position 
-		let x = tre_.t0PosX[n]-air_.MapPos.x-grd_.Siz/2;
+	let x,y,z;
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		// Set Tree Object Position 
+		x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
 		if (x > a) x = x - 2*a;
 		if (x < -a) x = x + 2*a;
-		let z = air_.MapPos.z-tre_.t0PosZ[n]-grd_.Siz/2;
+		z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
 		if (z > a) z = z - 2*a;
 		if (z < -a) z = z + 2*a;
-		let y = -grd_.SPS.y*gen_.AltAdj+9.8;	// Objects elevate above ground as we climb to prevent flicker
-		tre_.t0Tree[n].position.set(x,y,z);
+		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
+		tre_.ObjAdr[n].position.set(x,y,z);
 	}
 }
 
@@ -1126,7 +1160,7 @@ return deg;}
 *
 *******************************************************************************/
 
-export {initGrdMat,GrdMap,initRoads,moveRoads,initTrees,moveTrees};
+export {initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,makeTreLin,moveTreLin};
 
 /*******************************************************************************
 *
@@ -1137,4 +1171,5 @@ export {initGrdMat,GrdMap,initRoads,moveRoads,initTrees,moveTrees};
 241220: Version3b	: NodeMaterials moved from tsl to main (r171)
 250331:	Use **2 to square numbers
 250531:	Rename GrdMap3b as GrdMap
+251103: Added LoadTreLin
 */
