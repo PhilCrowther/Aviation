@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Oct 2025
+Version dated 3 Nov 2025
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -1163,7 +1163,7 @@ return deg;}
 *
 *******************************************************************************/
 
-export {initGrdMat,GrdMap,initRoads,moveRoads,initTreLin,makeTreLin,moveTreLin};
+export {initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,makeTreLin,moveTreLin};
 
 /*******************************************************************************
 *
