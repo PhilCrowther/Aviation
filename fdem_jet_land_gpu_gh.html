@@ -4,9 +4,9 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2025
+Version dated 4 Nov 2025
 
-This demo program uses included versions of the GrdMap module.
+This demo program uses portions of the GrdLnd module.
 
 -->
 
@@ -264,11 +264,6 @@ const bnsclr = [0xacd193,0x5d8e3d]; // Beans
 //	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
 // [https://icolorpalette.com/color/dirt-brown
 
-//= MATERIALS ==================================================================
-
-
-
-
 //= GRID MODULE ================//==============================================
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
@@ -334,16 +329,12 @@ let r0Data = new Uint8Array(4*r0Area);
 //= TREES ======================//==============================================
 let tre_ = {
 		ObjNum: 64,
-		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treeline.glb",
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
+				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
 		ObjAdr: [],				// Object Address
-		ShdSrc: "https://PhilCrowther.github.io/Aviation/scenery/textures/tree_shadow.png",
-		ShdAdr: [],				// Shadow Address
 		ObjMpZ: [],				// Map Address Z
 		ObjMpX: [],				// Map Address X
 		ObjRot: [],				// Rotation (0 or -90)
-		ShdGeX: 16,				// Shadow Width
-		ShdGeY: 16/Math.tan(sky_.SunLat*DegRad), // Shadow Height
-		ObjOff: 20,				// Tree Spacing 
 }
 
 //= AIROBJ =====================//============================================
@@ -758,49 +749,23 @@ function moveRoad2(Rod) {
 //= LOAD TREELINES =============//===============================================
 
 function loadTreLin() {
+	// Standard Geometry for Shadows
+	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
+	// Load all Treeline Objects and Attach Shadows
 	for (let n = 0; n < tre_.ObjNum; n++) {
-		// Position
+		// Assign Random Map Position
 		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
 		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
 		// Rotation = 0 or -90
 		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
-		// Initialize Shadow Objects
-		tre_.ShdAdr[n] = new THREE.Object3D;
-	}
-	loadTreObj();
-	loadTreShd();
-}
-
-//- Tree Object ----------------//-----------------------------------------------
-function loadTreObj() {
-	for (let n = 0; n < tre_.ObjNum; n++) {
-		gltfLoader.load(tre_.ObjSrc, function (gltf) {
+		// Select Object
+		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
+		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
+		gltfLoader.load(ObjSrc, function (gltf) {
 			tre_.ObjAdr[n] = gltf.scene;
-			tre_.ObjAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
+			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
+			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
 			scene.add(tre_.ObjAdr[n]);
-		});
-	}
-}
-
-//- Tree Shadow ----------------//-----------------------------------------------
-function loadTreShd() {
-	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
-	for (let n = 0; n < tre_.ObjNum; n++) {
-		txtrLoader.load(tre_.ShdSrc, function (shadow) {
-			shadow.anisotropy = gen_.MaxAni;
-			let mat = new THREE.MeshLambertNodeMaterial({colorNode: texture(shadow), transparent: true});
-			// Create 5 Shadows
-			let AddX = 0;
-			for (let i = 0; i < 5; i++) {	
-				let msh = new THREE.Mesh(geo,mat);
-				msh.rotation.x = -90*DegRad;
-				msh.rotation.z = Mod360(sky_.SunLon-90-tre_.ObjRot[n])*DegRad;
-				msh.position.x = AddX;
-				tre_.ShdAdr[n].add(msh);
-				AddX = AddX+tre_.ObjOff; // Add distance between trees
-			}
-			tre_.ShdAdr[n].rotation.y = tre_.ObjRot[n]*DegRad;
-			scene.add(tre_.ShdAdr[n]);
 		});
 	}
 }
@@ -821,11 +786,6 @@ function moveTreLin() {
 		if (z < -a) z = z + 2*a;
 		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
 		tre_.ObjAdr[n].position.set(x,y,z);
-		// Set Tree Shadow Position
-		x = x + Math.cos(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
-		z = z - Math.sin(sky_.SunLon*DegRad)*tre_.ShdGeY/2;
-		y = y + 0.1;
-		tre_.ShdAdr[n].position.set(x,y,z);
 	}
 }
 
