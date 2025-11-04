@@ -167,17 +167,6 @@ let grd_ = {
 		Mat: [0],				// Index to Materials
 	}
 
-//= TREES ======================//==============================================
-let tre_ = {
-		ObjNum: 64,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
-				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
-		ObjAdr: [],				// Object Address
-		ObjMpZ: [],				// Map Address Z
-		ObjMpX: [],				// Map Address X
-		ObjRot: [],				// Rotation (0 or -90)
-}
-
 //= STATIC OBJECTS =============//==============================================
 //- Islands --------------------//----------------------------------------------
 let mnt_ = {
