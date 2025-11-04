@@ -59,7 +59,10 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Custom Modules
-import {initGrdMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
+import {initGrdMat,GrdMap,
+		initRoads,moveRoads,
+		loadTreLin,moveTreLin
+	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
 
 //= NOTES
 //- Sections relating to my Camera Rotator are designated MY CAMERA
@@ -276,66 +279,11 @@ let grd_ = {
 		Siz: 804.67,			// Size of smallest square (1/4 section = 1/2 mile)
 		Stp: 3,					// Squares in each of first 2 grids
 		Grx: [],				// Index of Grids (0-2)
-//		Idx: [G0Indx,G1Indx],	// Index to Patterns
 		Idx: [0],				// Index to Patterns
-//		Mat: [G0MPtr,G1MPtr,G2MPtr], // Materials
 		Mat: [0],				// Index to Materials
 	}
 // Adjust
-	grd_.SPS = new THREE.Vector3()
-
-//= ROADS ======================//==============================================
-// North/South
-let Rod1 = {
-		Typ:	1,
-		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	2*grd_.Siz,		// Size of square
-		Stp:	1,				// Squares to flip
-		RCi:	0,				// Rows and Columns Index (computed)
-		MZV:	[0],			// Ground Z Value
-		MXV:	[0],			// Ground X Value
-		Nor:	0,				// Max North Square (updated)
-		Est:	0,				// Max East Square (updated)
-		Num:	0,				// Size of array (computed)
-		Ptr:	[0],			// Ground Address
-		Txt:	0,				// Texture Address
-		Shd:	1				// Shadow enabled
-	}
-// East West
-let Rod2 = {
-		Typ:	2,
-		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	2*grd_.Siz,		// Size of square
-		Stp:	1,				// Squares to flip
-		RCi:	0,				// Rows and Columns Index (computed)
-		MZV:	[0],			// Ground Z Value
-		MXV:	[0],			// Ground X Value
-		Nor:	0,				// Max North Square (updated)
-		Est:	0,				// Max East Square (updated)
-		Num:	0,				// Size of array (computed)
-		Ptr:	[0],			// Ground Address
-		Txt:	0,				// Texture Address
-		Shd:	1				// Shadow enabled
-	}
-
-//= Materials
-const rodclr = [0xd0b894,0x8e6d3d];		// Colors
-//	Tones of Dirt Brown Color | #836539 Monochromatic Color
-//	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
-const r0Size = 32;
-const r0Area = r0Size*r0Size;
-let r0Data = new Uint8Array(4*r0Area);
-
-//= TREES ======================//==============================================
-let tre_ = {
-		ObjNum: 64,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
-				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
-		ObjAdr: [],				// Object Address
-		ObjMpZ: [],				// Map Address Z
-		ObjMpX: [],				// Map Address X
-		ObjRot: [],				// Rotation (0 or -90)
-}
+	grd_.SPS = new THREE.Vector3();
 
 //= AIROBJ =====================//============================================
 let air_ = {
@@ -462,7 +410,7 @@ function loadAll() {
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad;		// Heading
 	air_.MapSPS.y = air_.MapPos.y;
 	loadSkyBox();
-	loadTreLin();
+	loadTreLin(grd_,gltfLoader,scene);
 	loadJetExh();
 }
 
@@ -473,11 +421,11 @@ function initAll() {
 	initAirObj(air_);			// Load Aircraft
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	initGrdMat(grd_,gen_);
-//	makeGrdTxt();
 	grd_.SPS.copy(air_.MapSPS);
 	grids = new GrdMap(grd_,scene); // Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
-	makeRoads();
+	initRoads(grd_,gen_,scene);
+	moveTreLin(grd_,air_,gen_); // Add TreeLines
 	initJetExh();
 	prntHUDval(air_);
 	// Show stats
@@ -504,8 +452,8 @@ function rendAll() {
 		moveAirObj(air_);
 		grd_.SPS.copy(air_.MapSPS);
 		grids.update(grd_);		// Mode Grid Map
-		moveRoads();
-		moveTreLin();
+		moveRoads(grd_,gen_);
+		moveTreLin(grd_,air_,gen_); // Add TreeLines
 		if (gen_.StatOn) gen_.StatOn.update();	// update stats
 	}
 	prntHUDval(air_);
@@ -547,245 +495,6 @@ function initSkyBox() {
 			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
 			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
 		spotLight.add(LF);
-	}
-}
-
-//= ROADS ======================================================================
-
-//- Make Roads -----------------------------------------------------------------
-
-function makeRoads() {
-	let txtrod,matrod,georod;
-	makeRClr(rodclr,r0Data,1);
-	txtrod = new THREE.DataTexture(r0Data, r0Size, r0Size);
-	txtrod.format = THREE.RGBAFormat;
-	txtrod.magFilter = THREE.LinearFilter;
-	txtrod.minFilter = THREE.LinearMipMapLinearFilter;
-	txtrod.generateMipmaps = true;
-	txtrod.wrapS = txtrod.wrapT = THREE.RepeatWrapping;
-	txtrod.offset.set(0,0);
-	Rod1.Txt = txtrod;
-	Rod2.Txt = txtrod;
-	initRoad2(Rod1);
-	initRoad2(Rod2);
-}
-
-function makeRClr(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	// Assign colors
-	let idx, i;
-	for (let n = 0; n < r0Area*4; n+=4) {
-		i = Math.floor(Weight*Math.random());
-		dtData[n  ] = red[i];
-		dtData[n+1] = grn[i];
-		dtData[n+2] = blu[i];
-		dtData[n+3] = 255;
-	}
-}
-
-//- Move Roads -----------------------------------------------------------------
-
-function moveRoads() {
-// Convert Distances into Meters to match landscape program
-	moveRoad2(Rod1);
-	moveRoad2(Rod2);
-}
-
-function initRoad2(Rod) {
-
-	// Load Variables
-	Rod.RCi = Rod.RCs-1;				// Max Index Value
-	Rod.MZV[Rod.RCi] = 0;				// Z-Values
-	Rod.MXV[Rod.RCi] = 0;				// X-Values
-	Rod.Nor = Rod.RCi;					// Max North Square (updated)
-	Rod.Est = Rod.RCi;					// Max East Square (updated)
-	Rod.Num = Rod.RCs * Rod.RCs;		// Size of array
-	Rod.Ptr[Rod.Num-1] = 0;				// Mesh Pointers
-
-	if (Rod.Typ == 1) {
-		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz-0.5*grd_.Siz;
-		for (let i = 0; i < Rod.RCs; i++) {
-			Rod.MZV[i] = zx;
-			Rod.MXV[i] = zx;
-			zx = zx + Rod.Siz;
-		}
-		let geometry = new THREE.PlaneGeometry(20*Ft2Mtr, Rod.Siz);	// N/S Road;
-		let DatTxt = Rod.Txt;
-		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = gen_.MaxAni;		// ###
-		DatTxt.needsUpdate = true;
-		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
-			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
-		}
-	}
-	
-	if (Rod.Typ == 2) {
-		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz+0.5*grd_.Siz;
-		for (let i = 0; i < Rod.RCs; i++) {
-			Rod.MZV[i] = zx;
-			Rod.MXV[i] = zx;
-			zx = zx + Rod.Siz;
-		}
-		let geometry = new THREE.PlaneGeometry(Rod.Siz, 20*Ft2Mtr);	// E/W Road;
-		let DatTxt = Rod.Txt;
-		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = gen_.MaxAni;		// ###
-		DatTxt.needsUpdate = true;
-		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
-			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
-		}
-	}
-			
-	let n = 0;
-	// Set Starting Position of Squares
-	for (let z = 0; z < Rod.RCs; z++) {		// Row
-		for (let x = 0; x < Rod.RCs; x++) {	// Column
-			Rod.Ptr[n].rotation.x = -90*DegRad;
-			scene.add(Rod.Ptr[n]);
-			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*.999+0.01,-Rod.MZV[z]);
-			n++;
-		}
-	}
-}
-
-function moveRoad2(Rod) {
-	let j = 0;
-	let v = 0; 
-	let max = 0.5*Rod.RCs*Rod.Siz;
-	let min = -max;
-	// Update Z and X-Values
-	for (let i = 0; i < Rod.RCs; i++) {
-		Rod.MZV[i] = Rod.MZV[i] - grd_.SPS.z;	// Rows
-		Rod.MXV[i] = Rod.MXV[i] - grd_.SPS.x;	// Columns
-	}
-	// Test North/South
-	if (grd_.SPS.z < 0) {					// If Moving South
-		j = Rod.Nor;
-		if (Rod.MZV[j] >= max) {
-			v = min+(Rod.MZV[j]-max);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MZV[j] = v;
-				j = j - 1;
-				if (j < 0) j = Rod.RCi;
-				v = v - Rod.Siz;
-			}
-			Rod.Nor = Rod.Nor - Rod.Stp;
-			if (Rod.Nor < 0) Rod.Nor = Rod.Nor + Rod.RCs;
-		}
-	}
-	if (grd_.SPS.z > 0) {					// If Moving North
-		j = Rod.Nor + 1;
-		if (j > Rod.RCi) j = 0;
-		if (Rod.MZV[j] <= min) {
-			v = max-(min-Rod.MZV[j]);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MZV[j] = v;
-				j++;
-				if (j > Rod.RCi) j = 0;
-				v = v + Rod.Siz;
-			}
-			Rod.Nor = Rod.Nor + Rod.Stp;
-			if (Rod.Nor > Rod.RCi) Rod.Nor = Rod.Nor - Rod.RCs;
-		}
-	}
-	// Test East/West
-	if (grd_.SPS.x < 0) {					// If Moving West
-		j = Rod.Est;
-		if (Rod.MXV[j] >= max) {
-			v = min+(Rod.MXV[j]-max);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MXV[j] = v;
-				j = j - 1;
-				if (j < 0) j = Rod.RCi;
-				v = v - Rod.Siz;
-			}
-			Rod.Est = Rod.Est - Rod.Stp;
-			if (Rod.Est < 0) Rod.Est = Rod.Est + Rod.RCs;
-		}
-	}
-	if (grd_.SPS.x > 0) {						// If Moving East
-		j = Rod.Est + 1;
-		if (j > Rod.RCi) j = 0;	
-		if (Rod.MXV[j] <= min) {
-			v = max-(min-Rod.MXV[j]);
-			for (let i = 0; i < Rod.Stp; i++) {			
-				Rod.MXV[j] = v;
-				j++;
-				if (j > Rod.RCi) j = 0;
-				v = v + Rod.Siz;
-			}
-			Rod.Est = Rod.Est + Rod.Stp;
-			if (Rod.Est > Rod.RCi) Rod.Est = Rod.Est - Rod.RCs;
-		}
-	}
-	// Set Position
-	let n = 0;
-	for (let z = 0; z < Rod.RCs; z++) {	// Row
-		for (let x = 0; x < Rod.RCs; x++) {	// Col
-			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*.999+0.01,-Rod.MZV[z]);
-			n++;
-		}
-	}
-}
-
-/********************************************************************************
-*
-*	TREELINE
-*
-********************************************************************************/
-
-//= LOAD TREELINES =============//===============================================
-
-function loadTreLin() {
-	// Standard Geometry for Shadows
-	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
-	// Load all Treeline Objects and Attach Shadows
-	for (let n = 0; n < tre_.ObjNum; n++) {
-		// Assign Random Map Position
-		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
-		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
-		// Rotation = 0 or -90
-		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
-		// Select Object
-		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
-		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
-		gltfLoader.load(ObjSrc, function (gltf) {
-			tre_.ObjAdr[n] = gltf.scene;
-			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
-			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
-			scene.add(tre_.ObjAdr[n]);
-		});
-	}
-}
-
-//= MOVE TREELINES =============//===============================================
-
-function moveTreLin() {
-	// Convert Distances into Meters to match landscape program
-	let a = 13.5*grd_.Siz;
-	let x,y,z;
-	for (let n = 0; n < tre_.ObjNum; n++) {
-		// Set Tree Object Position 
-		x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
-		if (x > a) x = x - 2*a;
-		if (x < -a) x = x + 2*a;
-		z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
-		if (z > a) z = z - 2*a;
-		if (z < -a) z = z + 2*a;
-		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
-		tre_.ObjAdr[n].position.set(x,y,z);
 	}
 }
 

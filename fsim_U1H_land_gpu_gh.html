@@ -10,9 +10,9 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2025
+Version dated 4 Nov 2025
 
-A flight simulation of an animated airplane model over procedural land using
+A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
 
 <head>
@@ -75,15 +75,26 @@ A flight simulation of an animated airplane model over procedural land using
 
 <script type="module">
 
+/********************************************************************************
+*
+*	PROGRAM
+*
+********************************************************************************/
+
+//= LOAD MODULES ================================================================
+//- Basic Modules ---------------------------------------------------------------
 import * as THREE from "three";
 import {color,float,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "stats-gl";
 // Special Modules
-import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
+import {initGrdMat,GrdMap,
+		initRoads,moveRoads,
+		loadTreLin,moveTreLin
+} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
 
-//= GENERAL ===================================================================
+//= GENERAL ====================================================================
 
 //	This flight simulation demo uses the most advanced version of three.js
 
@@ -101,44 +112,52 @@ import {GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; //
 
 //=	TO DO:
 //-	Flight Module:
-//	* Fix Weathervan adjustment (YawAdj)
+//	* Fix Weathervane adjustment (YawAdj)
 //	* Allow for greater pitch and bank adjustments where excess thrust available.
 //	* Reduce excess thrust available as altitude increases.
 //	* Reduce/increase excess thrust available as climb/descend
 
-//= INPUTS =====================//==============================================	
-//- CAMERA ---------------------------------------------------------------------
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
+
+//= INPUTS =====================//===============================================	
+//- CAMERA ----------------------------------------------------------------------
 let CamSel = 0;					// Camera Seletion (0 = External; 1 = Internal)
-//- AIRPLANE: Start -----------------------------------------------------------
+//- AIRPLANE: Start -------------------------------------------------------------
 let BegPwr = 0;					// Initial Power Percent
 let BegSpd = 0;					// Speed (kph)
 let BegRot = new THREE.Euler(0,0,0); // Position (degrees) ### new
 let BegPos = new THREE.Vector3(0,0,0); // Position (meters)
-//- AIRPLANE: Inputs -----------------------------------------------------------
+//- AIRPLANE: Inputs ------------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.1,1,0.1); // Basic airplane values
 let	MosMul = new THREE.Vector3(1,1,1); // Adjustment to PYBmul (default = 1)
 let AltMul = 0.0001;			// Power % Input - Mouse Multiplier
 let AltDif = 0;					// Power % Input - Value
-//- Mouse Delays ...............................................................
+//- Mouse Delays ...............................................................-
 //- (x = diverted, y = released, z = stored)
 //let PwrMsD = new THREE.Vector3(1-1/30,1/15,0);	// Power
 //let PitMsD = new THREE.Vector3(1-1/30,1/15,0);	// CfL
 //let BnkMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //let YawMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
-//- Keys -----------------------------------------------------------------------
+//- Keys ------------------------------------------------------------------------
 let KeyVal = new THREE.Vector3(0.5,0.4,0.5); // Key Values
 let InpAlt = 0;					// Input Altitude
 let InpACP = 0;					// Input Pitch
 let InpACB = 0;					// Input Bank
 let InpYaw = 0;					// Input Yaw
 
-//- POINTER LOCK CONTROLS ------------------------------------------------------
+//- POINTER LOCK CONTROLS -------------------------------------------------------
 let InpMos = new THREE.Vector2();	// Inputs - Mouse
 let _changeEvent = {type: "change"};
 let _lockEvent = {type: "lock"};
 let _unlockEvent = {type: "unlock"};
 
-//= CONSTANTS ==================//==============================================
+//= 1. MAIN VARIABLES ==========//===============================================
+
+//- CONSTANTS ------------------//-----------------------------------------------
 //	Time
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 let DLTim2 = DLTime*DLTime;		//
@@ -154,54 +173,77 @@ let AirDen = 1.225;				// (kg/m3)
 //	Starting Constants per frame
 let BegTmp = 288.15;			// K = 59F
 
-//= INPUT VALUES ===============//==============================================
-//- Display
-let PawsOn = 0;					// Pause
-let InfoOn = 0;					// Info
-let SndFlg = 0;
-let StatOn = 1;					// Stats ((0 = off, 1 = on)
-let LnFFlg = 1;					// Lensflare
-//	Program Flags
-let LodFlg = 0;					// Set at end of initialization
-let LodSnd = 0;					// Set when sound initialized
-//	Altitude Adjustment
-let AltAdj = 0.99;				// Raises objects above map as altitude increases
+//- GENERAL VARIABLES ----------//-----------------------------------------------
+let gen_ = {
+		//- Display
+		PawsOn:	0,				// Pause
+		StatOn:	1,				// Stats (0 = off, 1 = on)
+		LnFFlg:	1,				// Lensflare
+		// Program Flags
+		LodFlg:	0,				// Set at end of initialization
+		LodSnd: 0,
+		// Altitude Adjustment
+		AltAdj:	0.99,			// Raises objects above map as altitude increases
+		AltDif:	0,
+		// Misc
+		contxt: 0,
+		canvas: 0,
+		MaxAni: 0,
+	}
 
-//= SUN VALUES =================//==============================================
-let SunCol = 0xffffff;			// Sun
-let SunInt = 3;					// Default intensity of light/sun
-//- Rotation and Position (fixed)
-let SunDst = 50;				// Distance (for shadows)
-let SunLat = 23;				// Direction - Vert (+/- 90)
-let SunLon = 312;				// Direction - Horz (0->360)
-//- New
-let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
+let tim_ = {
+		DLTime: 1/60,
+	}
+
+//= 2. SKY VARIABLES ===========//===============================================
+let sky_ = {
+		// Sun
+		SunCol: "white",		// Sun
+		SunInt: 3,
+		// Fog
+		FogCol: 0xbab4a6,		// Sky (for Fog only)
+		// SkyBox
+		SBxSrc: "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
+		envMap: 0,				// For this SkyBox
+		// Sun (position in SkyBox)
+		SunLat: 23,				// Direction - Vert (+/- 90) deg
+		SunLon: 312,			// Direction - Horz (0->360) deg
+		// LensFlare		
+		LF0Src: "https://PhilCrowther.github.io/Aviation/textures/fx/lensflare1.png",
+		LF1Src: "https://PhilCrowther.github.io/Aviation/textures/fx/lensflare3.png",
+		LF0Txt: 0,
+		LF1Txt: 0,
+		// Shadow Beg Info
+		SunDst: 50,				// Distance
+		ShdBox: 6,				// Size of shadow box
+		ShdBLR: 6.5,
+		ShdBTB: 4,
+		ShdDst: 1500,			// Shadow Distance (meters)
+	}
+
+//= SUN VALUES =================//===============================================
+let SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
-//	Shadows
-let ShdBox = 6;					// Size of shadow box
-let ShdBLR = 10;
-let ShdBTB = 6;
-let ShdDst = 1500;				// Shadow Distance (meters)
 
-//= STANDARD SETUP =============//==============================================
+//= STANDARD SETUP =============//===============================================
 //- Scene
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
 //- Light
-let ambLight = new THREE.AmbientLight(SunCol,0.2);
+let ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 	scene.add(ambLight);
 //- SunLight
-let sunLight = new THREE.DirectionalLight(SunCol,SunInt);
+let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = SunDst*0.75;
-	sunLight.shadow.camera.far = SunDst+ShdDst+ShdBox;
+	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.camera.left = -ShdBLR;
-	sunLight.shadow.camera.right = ShdBLR;
-	sunLight.shadow.camera.top = ShdBTB;
-	sunLight.shadow.camera.bottom = -ShdBTB;
+	sunLight.shadow.camera.left = -sky_.ShdBLR;
+	sunLight.shadow.camera.right = sky_.ShdBLR;
+	sunLight.shadow.camera.top = sky_.ShdBTB;
+	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
 	sunLight.shadow.bias = -0.0002; // WebGPU (0 flashing; -0.0001 no wheels)
 	scene.add(sunLight);
 // 	Camera
@@ -219,7 +261,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.receiveShadow = true;	
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
-let maxAnisotropy = renderer.getMaxAnisotropy();
+	gen_.MaxAni = renderer.getMaxAnisotropy();
 //- Clock
 let clock = new THREE.Clock();
 let oldTim, nowTim, difTim = 0;
@@ -252,196 +294,32 @@ let loadingScreen = {
 };
 let boxrot = 0;
 
-//= SKY ========================//==============================================
-let FogCol = 0xbab4a6;			// Sky (for Fog only)
-//- SkyBox
-let SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
-//-	LensFlare
-let LF0Src = "https://threejs.org/examples/textures/lensflare/lensflare1.png";
-let LF1Src = "https://threejs.org/examples/textures/lensflare/lensflare3.png";
-let LF0Txt, LF1Txt = 0;
+//= GRIDS ======================//===============================================
+let ImgSiz = 1024;
+	gen_.canvas = document.createElement("canvas");
+	gen_.canvas.width = ImgSiz;
+	gen_.canvas.height = ImgSiz;
+	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
 
-//= GEOMAT =====================//==============================================
-//= Textures Data ==============//==============================================
-//- All textures are 512X512
-let dqSize = 1024;
-let dqArea = dqSize*dqSize;
-let dtSize = 512;
-let dtArea = dtSize*dtSize;
-let dtData = 0;
-let txtTot = 6;					// Total Textures
-//- Canvas
-let ImgSiz = 1024;				// !!! Change this for each image
-let canvas = document.createElement("canvas");
-	canvas.width = ImgSiz;
-	canvas.height = ImgSiz;
-let context = canvas.getContext("2d",{willReadFrequently: true});
-//= Grid 4 Data ================//==============================================
-//- 1/4 section squares (1/2 mile X 1/2 mile)
-//- Variables
-let GrdMul = 10;
-let red = [0,0];
-let grn = [0,0];
-let blu = [0,0];
-//- Colors
-let GrdDrt = "#1c160e";			// Color of underlying dirt (affects brightness)
-let drtclr = [0x8e6d3d,0x47361e]; // Dirt
-let pstclr = [0x00b000,0x005000]; // Pasture
-let cvrclr = [0x75b24c,0x466b2d]; // Green
-let whtclr = [0xfbf4e5,0xeabb63]; // Wheat
-let bnsclr = [0xacd193,0x5d8e3d]; // Beans
-//	Tones of Dirt Brown Color | #836539 Monochromatic Color
-//	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
-//	Neutral Scheme (Brown to Green)
-//	0x836539, 0x837738, 0x7b8338, 0x698338, 0x568338, 0x448338
-//	Hot Pepper Green ( similar ) Color | 568338 Monochromatic Color
-//	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
-//	[https://icolorpalette.com/color/dirt-brown
-let count0;
-//= MATERIALS ==================//==============================================
-//= Grid 0 Data ================//==============================================
-//- Image Data
-let G0DPtr = [];
-	G0DPtr[txtTot-1] = 0;
-//- Materials
-let G0MPtr = [];
-	G0MPtr[txtTot-1] = 0;
-// Patterns for Grid 5 3X3 Textures
-// Also used to draw Grid 4 textures
-// 0 = Dirt
-// 1 = Pasture
-// 2 = Plowed Dirt
-// 3 = Green Vertical
-// 4 = Wheat
-// 5 = Green Horizontal
-// Per Pattern: 1X 0-2 2X 3-5
-let G0Id00 = [4,3,5,4,3,0,5,2,1];
-let G0Id01 = [3,0,4,1,2,4,5,3,5];
-let G0Id02 = [5,1,3,4,5,0,2,4,3];
-let G0Id03 = [2,4,1,3,5,3,5,0,4];
-let G0Id04 = [5,1,5,0,3,4,2,4,3];
-let G0Id05 = [3,0,5,3,4,5,1,2,4];
-let G0Id06 = [2,0,3,5,3,1,4,4,5];
-let G0Id07 = [1,5,4,3,5,0,2,4,3];
-let G0Id08 = [2,3,0,5,3,1,4,5,4];
-let G0Id09 = [0,2,5,3,4,3,5,1,4];	// 1 = airport
-let G0Id10 = [4,3,5,4,5,2,1,3,0];
-let G0Id11 = [4,5,3,1,0,4,3,5,2];
-let G0Id12 = [3,1,2,4,5,3,5,0,4];
-let G0Id13 = [0,5,3,1,4,2,4,3,5];
-let G0Id14 = [1,4,2,5,3,0,4,5,3];
-let G0Id15 = [4,1,5,0,3,4,3,5,2];
-let G0Indx = [
-		G0Id00,G0Id01,G0Id02,G0Id03,G0Id04,G0Id05,G0Id06,G0Id07,G0Id08,G0Id09,
-		G0Id10,G0Id11,G0Id12,G0Id13,G0Id14,G0Id15
-	];
-//= Grid 1 Data ================//==============================================
-let Gr1Mul = 3;
-let Gr1Siz = Math.floor(dtSize/Gr1Mul);
-// Image Data (Source Data - Resized)
-let G1SPtr = [];
-	G1SPtr[G0Indx.length-1] = 0;
-// Image Data
-let G1DPtr = [];
-	G1DPtr[G0Indx.length-1] = 0;
-// Materials
-let G1MPtr = [];
-	G1MPtr[G1DPtr.length-1] = 0;
-// Index to Display of G1 Textures by Type
-// Used by G0 to position squares
-// And by G1 to create textures
-let G1Indx = [
-		 0, 1, 2, 3, 4, 5, 6, 7, 8,	//value of 9-15 in first row causes white space 
-		10, 2, 4,15,10,12,10, 9, 5,
-		 3,12,11, 8,13, 3, 1, 0,14,
-		 0, 7,10,14,12,10,11, 2, 4,
-		 9,14, 5, 4, 9,13, 8,12, 7,	// 9 = over
-		 4, 7,15,12, 3,11, 9,13, 4,	// 3 = Airport
-		11,12, 8, 5,13, 2,10,15,13,
-		 6,10, 7, 9,15,14,12, 5,11,
-		 0,13, 6,10, 3, 2,14, 4, 8
-	];
-//= Grid 2 Data ================//==============================================
-let Gr2Mul = 3;
-let Gr2Siz = Math.floor(dtSize/Gr2Mul);
-// Image Data (Source Data - Resized)
-let G2SPtr = [0,0,0,0,0,0,0,0,0];
-// Image Data
-let G2DPtr = [0,0,0,0,0,0,0,0,0];
-// Materials
-let G2MPtr = [0,0,0,0,0,0,0,0,0];
-
-//= GRID MODULE ================//==============================================
+//= GRID MODULE ================//===============================================
 //	This ocean map has 3 nested grids of squares.
 //	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
 //	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
 //	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
-let GrdSiz = 804.67;			// Size of Smallest Grid Square (1/4 section = 1/2 mile)
 let grids = 0;
 let grd_ = {
-		SPS: new THREE.Vector3 (), // MSX, MPY, MSZ (meters) (from Flight)
+		SPS: 0,					// MSX, MPY, MSZ (meters) (from Flight)
 		RCs: 27,				// Squares in each of first 2 grids
-		Siz: GrdSiz,			// Size of smallest square
+		Siz: 804.67,			// Size of smallest square (1/4 section = 1/2 mile)
 		Stp: 3,					// Squares in each of first 2 grids
 		Grx: [],				// Index of Grids (0-2)
-		Idx: [G0Indx,G1Indx],	// Index to Patterns
-		Mat: [G0MPtr,G1MPtr,G2MPtr], // Materials
+		Idx: [0],				// Index to Patterns
+		Mat: [0],				// Index to Materials
 	}
-/* = Roads =====================//============================================*/
-//- North/South
-let Rod1 = {
-		Typ:	1,
-		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	2*GrdSiz,		// Size of square
-		Stp:	1,				// Squares to flip
-		RCi:	0,				// Rows and Columns Index (computed)
-		MZV:	[0],			// Ground Z Value
-		MXV:	[0],			// Ground X Value
-		Nor:	0,				// Max North Square (updated)
-		Est:	0,				// Max East Square (updated)
-		Num:	0,				// Size of array (computed)
-		Ptr:	[0],			// Ground Address
-		Txt:	0,				// Texture Address
-		Shd:	1				// Shadow enabled
-	}
-//- East West
-let Rod2 = {
-		Typ:	2,
-		RCs:	21,				// Rows and Columns - use odd number (for now = divisible by 3)
-		Siz:	2*GrdSiz,		// Size of square
-		Stp:	1,				// Squares to flip
-		RCi:	0,				// Rows and Columns Index (computed)
-		MZV:	[0],			// Ground Z Value
-		MXV:	[0],			// Ground X Value
-		Nor:	0,				// Max North Square (updated)
-		Est:	0,				// Max East Square (updated)
-		Num:	0,				// Size of array (computed)
-		Ptr:	[0],			// Ground Address
-		Txt:	0,				// Texture Address
-		Shd:	1				// Shadow enabled
-	}
-//- Materials
-let rodclr = [0xd0b894,0x8e6d3d];		// Colors
-//-	Tones of Dirt Brown Color | #836539 Monochromatic Color
-//-	0xefe7db, 0xe0cfb7, 0xd0b894, 0xc1a070, 0xb1884d, 0x8e6d3d, 0x6a522e, 0x47361e
-let r0Size = 32;
-let r0Area = r0Size*r0Size;
-let r0Data = new Uint8Array(4*r0Area);
-//= Trees ======================//==============================================
-let TreTot = 64;
-let t0Size = 128;
-let t0Area = t0Size*t0Size;
-let t0Data = new Uint8Array(4*t0Area);
-let Trees = [];
-	Trees[TreTot-1] = 0;
-let TreePZ = [0];
-	TreePZ[TreTot-1] = 0;
-let	TreePX = [0];
-	TreePX[TreTot-1] = 0;
-let treclr = [0x75b24c,0x2e471e];		// Colors
-//	Hot Pepper Green ( similar ) Color | 568338 Monochromatic Color
-//	0xe3efdb, 0xc7e0b7, 0xacd193, 0x90c170, 0x75b24c, 0x5d8e3d, 0x466b2d, 0x2e471e
-//= Objects ====================//==============================================
+// Adjust
+	grd_.SPS = new THREE.Vector3();
+
+//= OBJECTS ====================//===============================================
 //- Distances in Meters
 let ObjNum = 2;					// number of objects
 let ObjTyp = [0];				// Object Type
@@ -480,7 +358,8 @@ let ObjIdx = 0;
 //	ObjMPY[ObjIdx] = 2*Ft2Mtr;	// [m] 2 ft
 	ObjMPY[ObjIdx] = -50;		// [m]
 	ObjMPZ[ObjIdx] = 8046.72;	// [m] 5 miles
-//= MY AIRPLANE ================//==============================================
+	
+//= MY HELICOPTER ==============//===============================================
 let dat_ = {
 		MaxThr: 32620,			// Level Flight Thrust (N = 7333 lbs)
 		MaxAng: 30,				// Max Rotor and Body Angle (deg) [rotor moves +/-11 deg]
@@ -559,13 +438,13 @@ let spnprp = 180;				// Main Rotor - Spin
 let spnrtr = 180;				// Tail Rotor - Spin (not used)
 let doormn = 0;					// Main Doors
 
-//=	SOUNDS =====================//==============================================
+//=	SOUNDS =====================//===============================================
 let EngSrc = "xbell_rotor03a.wav"; // File (my engine)
 let EngVol = 0.1;				// Volume
 let EngSnd = 0;
 let EngMsh = new THREE.Object3D;		// Aircraft Engine
 
-//= POINTER LOCK CONTROL =======================================================
+//= POINTER LOCK CONTROL ========================================================
 class PointerLockControls extends THREE.EventDispatcher {
 	constructor(camera, domElement) {
 		super();
@@ -613,7 +492,7 @@ class PointerLockControls extends THREE.EventDispatcher {
 		this.connect();
 	}
 }
-//- Setup ----------------------------------------------------------------------
+//- Setup -----------------------------------------------------------------------
 let controls = new PointerLockControls(camera, renderer.domElement);
 let blocker = document.getElementById("blocker");
 let instructions = document.getElementById("instructions");
@@ -627,7 +506,7 @@ let instructions = document.getElementById("instructions");
 		instructions.style.display = "";
 	});
 
-//= DEFAULT KEY BINDINGS =======//==============================================
+//= DEFAULT KEY BINDINGS =======//===============================================
 let	K_AltU = 81;				// Altitude Up (q)
 let	K_AltD = 69;				// Altitude Dn (e)
 let	A_PitU = 40;				// Pitch up (down arrow)
@@ -653,7 +532,7 @@ let K_Soun = 83;				// Toggle sound (s)
 let K_Paws = 80;				// Pause (p)
 let K_Info = 73;				// Info (i)
 
-//=	VIEW KEYS ==================//==============================================
+//=	VIEW KEYS ==================//===============================================
 let U45flg = 0;					// Up 45 degrees
 let D45flg = 0;					// Down 45 degrees
 let	L45flg = 0;					// Left 45 degrees
@@ -661,7 +540,7 @@ let R45flg = 0;					// Right 45 degrees
 let L90flg = 0;					// Left 90 degrees
 let R90flg = 0;					// Right 90 degrees
 
-//= CAMERA =====================//==============================================
+//= CAMERA =====================//===============================================
 //- Create Cockpit Attach Point
 let	CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
@@ -709,7 +588,7 @@ let cam_ = {
 	cam_.par.add(cam_.rot);			// Attach Rotator
 	cam_.obj.add(cam_.deg);
 
-//= HTML OVERLAY TEXT ==========================================================
+//= HTML OVERLAY TEXT ===========================================================
 let AC_HiteElement = document.getElementById("AC_Hite");
 let AC_HiteNode = document.createTextNode("");
 	AC_HiteElement.appendChild(AC_HiteNode);
@@ -765,19 +644,25 @@ let On_Info09Node = document.createTextNode("");
 let AC_Hite, AC_Ptch, AC_SpdZ, AC_Bank, AC_SpdX, AC_Head, AC_DFly;
 let On_Paws, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, On_Info07, On_Info08;
 
-//= MAIN PROGRAMS ==============================================================
+/********************************************************************************
+*
+*	1. MAIN PROGRAM
+*
+********************************************************************************/
+
 	loadAll();
 
-//=	0 LOAD ALL =================//==============================================
+//=	0 LOAD ALL =================//===============================================
 
 function loadAll() {
 	WaitScreen();				// init loading screen
 	loadSkyBox();
+	loadTreLin(grd_,gltfLoader,scene);
 	loadObject();
 	loadAirObj();
 }
 
-//= WAIT SCREEN ================//==============================================
+//= WAIT SCREEN ================//===============================================
 
 function WaitScreen() {
 	// Set up the loading screen scene.
@@ -792,36 +677,37 @@ function WaitScreen() {
 	loadingScreen.scene.add(loadingScreen.box);
 }
 
-//= 1 INITIALIZE ================//==============================================
+//= 1 INITIALIZE ================//===============================================
 
 function initAll() {
 	initSkyBox();				// load skybox
-	initAirObj();	
-	initGrdTxt();
+	initAirObj();
+	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
+	initGrdMat(grd_,gen_);
 	grd_.SPS.y = air_.MapPos.y;	// Init Position
 	grids = new GrdMap(grd_,scene);	// Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
-	initRoads();
-	makeTrees();
+	initRoads(grd_,gen_,scene);
+	moveTreLin(grd_,air_,gen_); // Add TreeLines
 	initObject();				// Stationary Objects
 	// Other
 	initCamera(camera,cam_);	// position camera
 	PawsText();
 	InfoText();
 	// Show stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
+	if (gen_.StatOn) {				// show stats
+		gen_.StatOn = new Stats({
 			precision: 3,
 			horizontal: false
 		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
+		gen_.StatOn.init(renderer);
+		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
+		container.appendChild(gen_.StatOn.dom);
 	}
-	LodFlg = 1;
+	gen_.LodFlg = 1;
 }
 
-//= 2 RENDER ===================//==============================================
+//= 2 RENDER ===================//===============================================
 
 function rendAll() {
 	// This block runs while resources are loading.
@@ -831,42 +717,46 @@ function rendAll() {
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;												// Stop the function here.
 	}
-	if (controls.isLocked === true && !LodSnd) loadSounds();
-	if (!PawsOn && LodFlg && controls.isLocked === true) {
+	if (controls.isLocked === true && !gen_.LodSnd) loadSounds();
+	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
 		moveCamera(camera,cam_);
 		// Move AirObj
 		moveAirObj();
 		// Move Objects
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
-		moveRoads();
-		moveTrees();		
+		moveRoads(grd_,gen_);
+		moveTreLin(grd_,air_,gen_); // Add TreeLines		
 		moveObject();			// Move objects
 		moveSounds();
 		prntHUDval();			// change HUD value
-		if (StatOn) StatOn.update(); // update stats
+		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 	}
-	if (controls.isLocked === false && LodSnd) {
+	if (controls.isLocked === false && gen_.LodSnd) {
 		stopSounds();
-		SndFlg = 0;
+		gen_.SndFlg = 0;
 	}
 	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
 	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-//= SKYBOX =====================//==============================================
+/********************************************************************************
+*
+*	2. SKY
+*
+********************************************************************************/
 
 function loadSkyBox() {
 	let envMap = cubeLoader
-		.setPath(SBxSrc)
+		.setPath(sky_.SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = envMap;
 	// LensFlare
-	if (LnFFlg) {				// SunFlare	
-		LF0Txt = txtrLoader.load(LF0Src);
-		LF1Txt = txtrLoader.load(LF1Src);
+	if (gen_.LnFFlg) {				// SunFlare	
+		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
+		sky_.LF1Txt = txtrLoader.load(sky_.LF1Src);
 	}
 }
 
@@ -874,570 +764,27 @@ function initSkyBox() {
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
 	// Fog (doesn't work with Normal Material)
-	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
+	scene.fog = new THREE.Fog(sky_.FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
 	// Lensflare
-	if (LnFFlg) {				// SunFlare		
+	if (gen_.LnFFlg) {				// SunFlare		
 		let	spotLight = new THREE.PointLight(0xffffff);
 		scene.add(spotLight);
 		spotLight.position.copy(SunPos).normalize;
 		spotLight.position.multiplyScalar(1000);	
 		let LF = new LensflareMesh();
-			LF.addElement(new LensflareElement(LF0Txt,256,0));
-			LF.addElement(new LensflareElement(LF1Txt,32,0.2));
-			LF.addElement(new LensflareElement(LF1Txt,256,0.9));
+			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
 		spotLight.add(LF);
 	}
 }
 
-//= GRID MAP ===================================================================
-
-//= Make Grid Map Textures =====================================================
-
-function initGrdTxt() {
-	initGr0Txt();
-	initGr1Txt();
-	initGr6Txt();
-}
-
-function initGr0Txt() {
-	for (let n = 0; n < txtTot; n++) {
-		// Make Large Image and Get ImageData
-		context.fillStyle = GrdDrt;
-		context.fillRect(0,0,dqSize,dqSize);
-		G0DPtr[n] = context.getImageData(0,0,dqSize,dqSize);
-		let dtData = G0DPtr[n].data;
-		makeClr1(drtclr,dtData,1.6);	// Dirt
-		if (n == 1) makeClr2(pstclr,dtData,4);	// Pasture
-		if (n == 2) makeVrtL(drtclr,dtData,1.9,1.5);	// Plowed Line
-		if (n == 3) makeVrtL(cvrclr,dtData,1.9,1.5);	// Bean Line
-		if (n == 4) makeVrtL(whtclr,dtData,1.9,1.5);	// Wheat Line
-		if (n == 5) makeVrtD(bnsclr,dtData,8);	// Bean Dots
-		// Make Materials
-		let DatTxt = new THREE.DataTexture(dtData, dqSize, dqSize);
-		DatTxt.format = THREE.RGBAFormat;
-		DatTxt.magFilter = THREE.LinearFilter;
-		DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
-		DatTxt.generateMipmaps = true;
-		DatTxt.wrapS = DatTxt.wrapT = THREE.RepeatWrapping;
-		DatTxt.offset.set(0,0);
-		DatTxt.repeat.set(GrdMul,GrdMul);
-		DatTxt.anisotropy = maxAnisotropy;
-		DatTxt.needsUpdate = true;		
-		G0MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		// Gr5Source = Resized Gr4Data
-		// Note: Dividing a Repeated Data Can Lead to Odd Results
-		// e.g. If Repeat X10 and then divide by 10, result = Data
-		context.putImageData(G0DPtr[n],0,0);
-		context.drawImage(canvas,0,0,dqSize,dqSize,0,0,Gr1Siz,Gr1Siz);		// Draw 1024 image into 1/3 of 512 canvas
-		G1SPtr[n] = context.getImageData(0,0,Gr1Siz,Gr1Siz);				//
-	}
-}
-
-function initGr1Txt() {
-// This creates up to 81 unique 3X3 Textures (similar to FSX textures)
-// Created using ImageData from Gr4IPtr and patterns from Gr4TPtr
-// Stored by ID number
-// Repeated 9X on the full map.	
-	let dd, sd, idx;
-	let fx = dtSize/Gr1Mul;
-	// For Destination (9 locations arranged linearly)
-	for (let n = 0; n < G0Indx.length; n++) {	// Destination
-		// For 3X3 Source
-		let stIndx = G0Indx[n];			// Index to this pattern
-		idx = 0;
-		for (let ys1 = 0; ys1 < 3; ys1++) {	// Find source within 9x9 Square
-			for (let xs1 = 0; xs1 < 3; xs1++) {
-				let ImgDat = G1SPtr[stIndx[idx]];	// Correct, but causes dirt lines
-				context.putImageData(ImgDat,Math.floor(xs1*fx),Math.floor(ys1*fx));
-				idx++;
-			}
-		}
-		G1DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// This should be the 3X3 image saved
-		let DatTxt = new THREE.DataTexture(G1DPtr[n].data,dtSize,dtSize);
-		DatTxt.format = THREE.RGBAFormat;
-		DatTxt.magFilter = THREE.LinearFilter;
-		DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
-		DatTxt.generateMipmaps = true;
-		DatTxt.anisotropy = maxAnisotropy;
-		DatTxt.needsUpdate = true;
-		G1MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
-		// Gr6Source = Resized Gr5Data		
-		context.putImageData(G1DPtr[n],0,0);
-		context.drawImage(canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
-		G2SPtr[n] = context.getImageData(0,0,Gr2Siz,Gr2Siz);
-	}
-}
-
-function initGr6Txt() {
-	// Need 27 3X3 textures which will be repeated 27 times
-	// Create Grid 6 Texture Data and Materials (9 squares repeated)
-	let yd0, xd0;
-	let fx = dtSize/Gr2Mul;
-	let n = 0;
-	// For Destination (9 locations arranged linearly)
-	for (let ys0 = 0; ys0 < 3; ys0++) {	// Source of Each 9x9 Square
-		for (let xs0 = 0; xs0 < 3; xs0++) {
-			// Loads 3x3 Grid of Textures
-			for (let ys1 = 0; ys1 < 3; ys1++) {	// Find source within 9x9 Square
-				for (let xs1 = 0; xs1 < 3; xs1++) {
-					let ImgDat = G2SPtr[G1Indx[ys0*27+xs0*3+ys1*9+xs1]];
-					context.putImageData(ImgDat,Math.floor(xs1*fx),Math.floor(ys1*fx));
-				}
-			}
-			//	
-			G2DPtr[n] = context.getImageData(0,0,dtSize,dtSize);	// Saved, not used yet
-			let DatTxt = new THREE.DataTexture(G2DPtr[n].data, dtSize, dtSize);
-			DatTxt.format = THREE.RGBAFormat;
-			DatTxt.magFilter = THREE.LinearFilter;
-			DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
-			DatTxt.generateMipmaps = true;
-			DatTxt.anisotropy = maxAnisotropy;
-			DatTxt.needsUpdate = true;
-			G2MPtr[n] = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
-			n++;
-		}
-	}	
-}
-
-//= Make Textures ==============================================================
-
-function makeClr1(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	// Assign colors
-	let idx, i;
-	for (let y = 0; y < dqSize; y++) {
-		for (let x = 0; x < dqSize; x++) {
-			i = Math.floor(Weight*Math.random());
-			idx = (y*dqSize + x) * 4;
-			dtData[idx  ] = red[i];
-			dtData[idx+1] = grn[i];
-			dtData[idx+2] = blu[i];
-			dtData[idx+3] = 255;
-		}
-	}
-}
-
-function makeClr2(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	// Assign colors
-	let idx, i;
-	for (let y = 0; y < dqSize; y++) {
-		for (let x = 0; x < dqSize; x++) {
-			i = Math.floor(Weight*Math.random());
-			idx = (y*dqSize + x) * 4;
-			if (i == 0 || i == 1) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-		}	
-	}
-}
-
-// Make Vertical Line
-function makeVrtL(dtColr,dtData,Weight1,Weight2) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	let idx, i;
-	for (let x = 4; x < dqSize; x+=8) {	// Rows
-		for (let y = 0; y < dqSize; y++) {
-			idx = (y*dqSize + x) * 4;
-			i = Math.floor(Weight1*Math.random());
-			if (i == 1) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-			idx = idx+4;
-			i = Math.floor(Weight2*Math.random());
-			if (i == 0) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-			idx = idx+4;
-			i = Math.floor(Weight2*Math.random());
-			if (i == 0) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-			idx = idx+4;
-			i = Math.floor(Weight1*Math.random());
-			if (i == 1) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-		}
-	}
-}
-
-// Make Vertical Dots
-function makeVrtD(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	let idx, i;
-	for (let x = 4; x < dqSize; x+=8) {	// Rows
-		for (let y = 0; y < dqSize; y++) {
-			idx = (y*dqSize + x) * 4;
-			i = Math.floor(Weight*Math.random());
-			if (i == 1) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-			idx = idx+4;
-			i = Math.floor(Weight*Math.random());
-			if (i == 0 || i == 1) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-			idx = idx+4;
-			i = Math.floor(Weight*Math.random());
-			if (i == 0 || i == 1) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-			idx = idx+4;
-			i = Math.floor(Weight*Math.random());
-			if (i == 1) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-		}
-	}
-}
-
-/* Roads ==================================================================*/
-
-function initRoads() {
-	let txtrod,matrod,georod;
-	makeRClr(rodclr,r0Data,1);
-	txtrod = new THREE.DataTexture(r0Data, r0Size, r0Size);
-	txtrod.format = THREE.RGBAFormat;
-	txtrod.magFilter = THREE.LinearFilter;
-	txtrod.minFilter = THREE.LinearMipMapLinearFilter;
-	txtrod.generateMipmaps = true;
-	txtrod.wrapS = txtrod.wrapT = THREE.RepeatWrapping;
-	txtrod.offset.set(0,0);
-	Rod1.Txt = txtrod;
-	Rod2.Txt = txtrod;
-	initRoad2(Rod1);
-	initRoad2(Rod2);
-}
-
-function moveRoads() {
-// Convert Distances into Meters to match landscape program
-	moveRoad2(Rod1);
-	moveRoad2(Rod2);
-}
-
-function makeRClr(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	// Assign colors
-	let idx, i;
-	for (let n = 0; n < t0Area*4; n+=4) {
-		i = Math.floor(Weight*Math.random());
-		dtData[n  ] = red[i];
-		dtData[n+1] = grn[i];
-		dtData[n+2] = blu[i];
-		dtData[n+3] = 255;
-	}
-}
-
-function initRoad2(Rod) {
-
-	// Load Variables
-	Rod.RCi = Rod.RCs-1;				// Max Index Value
-	Rod.MZV[Rod.RCi] = 0;				// Z-Values
-	Rod.MXV[Rod.RCi] = 0;				// X-Values
-	Rod.Nor = Rod.RCi;					// Max North Square (updated)
-	Rod.Est = Rod.RCi;					// Max East Square (updated)
-	Rod.Num = Rod.RCs * Rod.RCs;		// Size of array
-	Rod.Ptr[Rod.Num-1] = 0;				// Mesh Pointers
-
-	if (Rod.Typ == 1) {
-		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz-0.5*GrdSiz;
-		for (let i = 0; i < Rod.RCs; i++) {
-			Rod.MZV[i] = zx;
-			Rod.MXV[i] = zx;
-			zx = zx + Rod.Siz;
-		}
-		let geometry = new THREE.PlaneGeometry(25*Ft2Mtr,Rod.Siz);	// N/S Road;
-		let DatTxt = Rod.Txt;
-		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = maxAnisotropy;		// ###
-		DatTxt.needsUpdate = true;
-		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
-			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
-		}
-	}
-	
-	if (Rod.Typ == 2) {
-		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz+0.5*GrdSiz;
-		for (let i = 0; i < Rod.RCs; i++) {
-			Rod.MZV[i] = zx;
-			Rod.MXV[i] = zx;
-			zx = zx + Rod.Siz;
-		}
-		let geometry = new THREE.PlaneGeometry(Rod.Siz,25*Ft2Mtr);	// E/W Road;
-		let DatTxt = Rod.Txt;
-		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = maxAnisotropy;		// ###
-		DatTxt.needsUpdate = true;
-		let material = new THREE.MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new THREE.Mesh(geometry,material);
-			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
-		}
-	}
-			
-	let n = 0;
-	// Set Starting Position of Squares
-	for (let z = 0; z < Rod.RCs; z++) {		// Row
-		for (let x = 0; x < Rod.RCs; x++) {	// Column
-			Rod.Ptr[n].rotation.x = -90*DegRad;
-			scene.add(Rod.Ptr[n]);
-			Rod.Ptr[n].renderOrder = 1;
-			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*AltAdj+0.01,-Rod.MZV[z]);
-			n++;
-		}
-	}
-}
-
-// Move Roads
-function moveRoad2(Rod) {
-	let j = 0;
-	let v = 0; 
-	let max = 0.5*Rod.RCs*Rod.Siz;
-	let min = -max;
-	// Update Z and X-Values
-	for (let i = 0; i < Rod.RCs; i++) {
-		Rod.MZV[i] = Rod.MZV[i] - grd_.SPS.z;	// Rows
-		Rod.MXV[i] = Rod.MXV[i] - grd_.SPS.x;	// Columns
-	}
-	// Test North/South
-	if (grd_.SPS.z < 0) {					// If Moving South
-		j = Rod.Nor;
-		if (Rod.MZV[j] >= max) {
-			v = min+(Rod.MZV[j]-max);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MZV[j] = v;
-				j = j - 1;
-				if (j < 0) j = Rod.RCi;
-				v = v - Rod.Siz;
-			}
-			Rod.Nor = Rod.Nor - Rod.Stp;
-			if (Rod.Nor < 0) Rod.Nor = Rod.Nor + Rod.RCs;
-		}
-	}
-	if (grd_.SPS.z > 0) {					// If Moving North
-		j = Rod.Nor + 1;
-		if (j > Rod.RCi) j = 0;
-		if (Rod.MZV[j] <= min) {
-			v = max-(min-Rod.MZV[j]);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MZV[j] = v;
-				j++;
-				if (j > Rod.RCi) j = 0;
-				v = v + Rod.Siz;
-			}
-			Rod.Nor = Rod.Nor + Rod.Stp;
-			if (Rod.Nor > Rod.RCi) Rod.Nor = Rod.Nor - Rod.RCs;
-		}
-	}
-	// Test East/West
-	if (grd_.SPS.x < 0) {					// If Moving West
-		j = Rod.Est;
-		if (Rod.MXV[j] >= max) {
-			v = min+(Rod.MXV[j]-max);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MXV[j] = v;
-				j = j - 1;
-				if (j < 0) j = Rod.RCi;
-				v = v - Rod.Siz;
-			}
-			Rod.Est = Rod.Est - Rod.Stp;
-			if (Rod.Est < 0) Rod.Est = Rod.Est + Rod.RCs;
-		}
-	}
-	if (grd_.SPS.x > 0) {						// If Moving East
-		j = Rod.Est + 1;
-		if (j > Rod.RCi) j = 0;	
-		if (Rod.MXV[j] <= min) {
-			v = max-(min-Rod.MXV[j]);
-			for (let i = 0; i < Rod.Stp; i++) {			
-				Rod.MXV[j] = v;
-				j++;
-				if (j > Rod.RCi) j = 0;
-				v = v + Rod.Siz;
-			}
-			Rod.Est = Rod.Est + Rod.Stp;
-			if (Rod.Est > Rod.RCi) Rod.Est = Rod.Est - Rod.RCs;
-		}
-	}
-	// Set Position
-	let n = 0;
-	for (let z = 0; z < Rod.RCs; z++) {	// Row
-		for (let x = 0; x < Rod.RCs; x++) {	// Col
-			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*AltAdj+0.01,-Rod.MZV[z]);
-			n++;
-		}
-	}
-}
-
-//= TREES ======================================================================
-
-//- Make Trees ------------------------------------------------------------------
-
-function makeTrees() {
-	let points = [
-		new THREE.Vector2(4.0,-6.7),	// Bot
-		new THREE.Vector2(4.9,-3.0),
-		new THREE.Vector2(4.2, 3.0),
-		new THREE.Vector2(3,5, 2.0),
-		new THREE.Vector2(1.8, 5.8),
-		new THREE.Vector2(0.1, 6.0)		// Top
-	];
-	let gomtre = new THREE.LatheGeometry(points,6);
-	let gomtrn = new THREE.BoxGeometry(0.9,3.0,0.9);
-	let gomshd = new THREE.CircleGeometry(6.0,16);
-	// Make Texture	
-	makeTClr(treclr,t0Data,1.9);
-	let txttre = new THREE.DataTexture(t0Data, t0Size, t0Size);
-	txttre.format = THREE.RGBAFormat;
-	txttre.magFilter = THREE.LinearFilter;
-	txttre.minFilter = THREE.LinearMipMapLinearFilter;
-	txttre.generateMipmaps = true;
-	txttre.anisotropy = maxAnisotropy;	// ###
-	txttre.needsUpdate = true;
-	let mtltre = new THREE.MeshLambertNodeMaterial({colorNode: texture(txttre)});
-	let mtltrn = new THREE.MeshLambertNodeMaterial({colorNode: color(0x161005)});
-	let mtlshd = new THREE.MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
-	// Make Prototype Tree
-	let tree0 = new THREE.Mesh(gomtre,mtltre);
-	let trnk = new THREE.Mesh(gomtrn,mtltrn);
-	trnk.position.y = -7.9;
-	tree0.add(trnk);
-	let shad = new THREE.Mesh(gomshd,mtlshd);
-	shad.position.y = -9.4;
-	shad.rotation.x = -90*DegRad;
-	tree0.add(shad);
-	Trees[0] = tree0.clone();
-	// Make Row of Trees
-	let sx = 15.0;
-	let ry = 13.7;
-	let dy = 13.7;
-	let px = sx;
-	for (let x = 0; x < 10; x++) {
-		let tree = tree0.clone();
-		tree.position.x = px;
-		ry = Mod360(360*Math.random());
-		tree.rotation.y = ry*DegRad;
-		tree.rotation.z = Mod360(2*Math.random()*DegRad);
-		tree.rotation.x = Mod360(2*Math.random()*DegRad);
-		ry = ry+dy;
-		px = px+sx;
-		Trees[0].add(tree);
-	}
-	Trees[0].position.x = 0;
-	Trees[0].position.y = 9.8;
-	let pz = 90;
-	for (let n = 1; n < TreTot; n++) {
-		Trees[n] = Trees[0].clone();
-		scene.add(Trees[n]);
-		Trees[n].rotation.y = (Math.floor(Math.random()+0.5))*90*DegRad;
-		Trees[n].position.y = 9.8;
-		TreePX[n] = GrdSiz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
-		TreePZ[n] = GrdSiz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
-	}
-	moveTrees();
-}
-
-//- Move Trees -----------------------------------------------------------------
-
-function moveTrees() {
-	// Convert Distances into Meters to match landscape program
-	let a = 13.5*GrdSiz;
-	for (let n = 0; n < TreTot; n ++) {
-		// Set Position 
-		let x = TreePX[n]-air_.MapPos.x-GrdSiz/2;
-		if (x > a) x = x - 2*a;
-		if (x < -a) x = x + 2*a;
-		let z = air_.MapPos.z-TreePZ[n]-GrdSiz/2;
-		if (z > a) z = z - 2*a;
-		if (z < -a) z = z + 2*a;
-		let y = -grd_.SPS.y*AltAdj+9.8;	// Objects elevate above ground as we climb to prevent flicker
-		Trees[n].position.set(x,y,z);
-	}
-}
-
-function makeTClr(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new THREE.Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	// Assign colors
-	let idx, i;
-	for (let n = 0; n < t0Area*4; n+=4) {
-		i = Math.floor(Weight*Math.random());
-		dtData[n  ] = red[i];
-		dtData[n+1] = grn[i];
-		dtData[n+2] = blu[i];
-		dtData[n+3] = 255;
-	}
-}
-
-/* Load and Move Fixed Objects ===============================================*/
-/* These objects include the airfield, mountains and hangar */
+/********************************************************************************
+*
+*	4. OBJECTS
+*
+********************************************************************************/
+//= These objects include the airfield, mountains and hangar
 
 function loadObject() {
 	for (let i = 0; i < ObjNum; i++) {		// For Each Object
@@ -1450,7 +797,7 @@ function loadObject() {
 		}
 		if (ObjTyp[i] == 1) {
 			let texture = txtrLoader.load(ObjTxt[i]);
-			texture.anisotropy = maxAnisotropy;
+			texture.anisotropy = gen_.MaxAni;
 			let material = new THREE.MeshLambertMaterial({map: texture, transparent: true});
 			gltfLoader.load(ObjMdl[i], function (gltf) {
 				gltf.scene.traverse(function (child) {
@@ -1473,7 +820,7 @@ function initObject() {
 	for (let i = 0; i < ObjNum; i++) {
 		// Set Position (cause Objects to elevate above ground as we climb to prevent flicker)
 		let X = ObjMPX[i]-air_.MapPos.x;
-		let Y = ObjMPY[i]-air_.MapPos.y*AltAdj;
+		let Y = ObjMPY[i]-air_.MapPos.y*gen_.AltAdj;
 		let Z = air_.MapPos.z-ObjMPZ[i];
 		ObjPtr[i].position.set(X,Y,Z);
 		scene.add(ObjPtr[i]);
@@ -1486,15 +833,19 @@ function moveObject() {
 	for (let i = 0; i < ObjNum; i ++) {
 		// Set Position (cause Objects to elevate above ground as we climb to prevent flicker)
 		let X = ObjMPX[i]-air_.MapPos.x;
-		let Y = ObjMPY[i]-air_.MapPos.y*AltAdj;
+		let Y = ObjMPY[i]-air_.MapPos.y*gen_.AltAdj;
 		let Z = air_.MapPos.z-ObjMPZ[i];
 		ObjPtr[i].position.set(X,Y,Z);
 	}
 }
 
-//= HELICOPTER =================//==============================================
+/********************************************************************************
+*
+*	5. HELICOPTER
+*
+********************************************************************************/
 
-//- LOAD =======================//==============================================
+//- LOAD =======================//===============================================
 function loadAirObj() {
 	let fname = ACPath + ACFile;
 	gltfLoader.load(fname, function (gltf) {			// The OnLoad function
@@ -1564,12 +915,12 @@ function loadAirObj() {
 	});
 }
 
-//= INIT =======================//==============================================
+//= INIT =======================//===============================================
 function initAirObj() {
 	initFlight();				// initalize variables
 }
 
-//= MOVE =======================//==============================================
+//= MOVE =======================//===============================================
 function moveAirObj() {
 	// Altitude Change
 	air_.AltDif = AltDif * AltMul + InpAlt;
@@ -1586,12 +937,12 @@ function moveAirObj() {
 	air_.RotDif.y = InpYaw;
 	// Compute Rotation and Vectors
 	moveFlight();
-	/* Animations ----------------------------------------------------------- */
+	//- Animations --------------------------------------------------------------
 	// Rotors - Speed
 	let prpspd = 33;
 	spnprp = spnprp - prpspd;
 	if (spnprp < 0) spnprp = 359; // A complete circle
-	/* Aircraft ------------------------------------------------------------- */
+	//- Aircraft ----------------------------------------------------------------
 	// Rotate Aircraft (order:YXZ)
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad; // Heading
 	// Pitch - exclude first 11 degrees
@@ -1634,7 +985,7 @@ function moveAirObj() {
 	if (mxRtrT) mxRtrT.setTime(spnprp/anmfps);
 	// Doors
 //	if (mxDoor) mxDoor.setTime(doormn/anmfps);
-	// View Keys ---------------------------------------------------------------
+	// View Keys ----------------------------------------------------------------
 	if (cam_.pan < 1) {			// Only If Not Panning		
 		// If No Keys Pressed, Set Default View
 		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
@@ -1687,7 +1038,7 @@ function moveAirObj() {
 	}
 }
 
-//= FLIGHT MODULE ==============//==============================================
+//= FLIGHT MODULE ==============//===============================================
 
 function initFlight() {
 	// Transfer Constants from dat_ to air_
@@ -1707,7 +1058,7 @@ function initFlight() {
 	moveFlight();
 }
 
-//= MOVE =======================//==============================================
+//= MOVE =======================//===============================================
 function moveFlight() {
 // Inputs: air_.GrdFlg, GrdZed, air_.AltDif, air_.MapSpd.z, air_.AirRot.x, air_.AirRot.z
 	// Compute Vectors
@@ -1723,7 +1074,7 @@ function moveFlight() {
 		let PSpdXS = air_.MapSpd.z * Math.sin(-ACHRad) + air_.MapSpd.x * Math.cos(-ACHRad);
 		air_.AirSpd.z = PSpdZS / air_.DLTime; // Convert to mps
 		air_.AirSpd.x = PSpdXS / air_.DLTime;
-		// 2. Compute Total Drag at Those Speeds ...............................
+		// 2. Compute Total Drag at Those Speeds ................................
 		// Forward/Backwards Drag Force
 		let DynPrZ = 0.5 * air_.AirDSL * (air_.AirSpd.z * air_.AirSpd.z); // Dynamic Pressure (Absolute value)
 		let PDrgZF = DynPrZ * air_.FrntAr * air_.DrgCdz; // Parasitic Drag
@@ -1734,7 +1085,7 @@ function moveFlight() {
 		if (PSpdXS < 0) PDrgXF = -PDrgXF; // If going left, drag = right
 		// Total Drag
 		let DrgTot = Math.abs(PDrgZF) + Math.abs(PDrgXF);
-		// 3. Forward Speed (mps) ..............................................	
+		// 3. Forward Speed (mps) ...............................................	
 		// Thrust Force
 		let ACPRad = -air_.AirRot.x * DegRad;
 		let PThrZF = air_.MaxThr * Math.sin(ACPRad); // Propeller Acceleration - Forward
@@ -1742,7 +1093,7 @@ function moveFlight() {
 		let PnetZF = PThrZF - PDrgZF; // Net Force
 		let PnetZA = PnetZF * FrcAcc; // Net Acc (mpf)
 		PSpdZS = PSpdZS + PnetZA; // new Speed (mpf)
-		// 4. Lateral Speed (mps) ..............................................
+		// 4. Lateral Speed (mps) ...............................................
 		// Thrust Force
 		let ACBRad = air_.AirRot.z * DegRad;
 		let PThrXF = air_.MaxThr * Math.sin(ACBRad); // Propeller Acceleration - Lateral
@@ -1750,7 +1101,7 @@ function moveFlight() {
 		let PnetXF = PThrXF - PDrgXF; // Net Force
 		let PnetXA = PnetXF * FrcAcc; // Net Acc (mpf)
 		PSpdXS = PSpdXS + PnetXA; // new Speed (mpf)
-		// 5. Vertical Speed (mpf) .............................................
+		// 5. Vertical Speed (mpf) ..............................................
 		air_.AirSpd.y = air_.AirSpd.y + air_.AltDif;
 		if (air_.AirSpd.y > KeyVal.y) air_.AirSpd.y = KeyVal.y; // Max Up
 		if (air_.AirSpd.y < -KeyVal.y) air_.AirSpd.y = -KeyVal.y; // Max Down
@@ -1829,7 +1180,11 @@ function _landFlight(MinAlt) {
 		air_.DirFlt = air_.AirRot.y;	
 }
 
-//= SUBROUTINES ================//============================================
+/********************************************************************************
+*
+*	SUBROUTINES
+*
+********************************************************************************/
 
 //- Convert degrees to 360
 function Mod360(deg) {
@@ -1848,11 +1203,16 @@ function MaxVal(x, max) {
 	if (x < 0 && x < -max) x = -max;
 return x;}
 
-//= SOUNDS =====================//==============================================
+/********************************************************************************
+*
+*	6. SOUNDS
+*
+********************************************************************************/
 
-//- Load and Initialize Sounds -------------------------------------------------
+//= LOAD SOUNDS =================================================================
+
 function loadSounds() {
-	// Load Sounds .............................................................
+	// Load Sounds ..............................................................
 	let audioLoader = new THREE.AudioLoader();
 	let RefDst = 25;			// Reference distance for Positional Audio
 	// My Engine
@@ -1863,7 +1223,7 @@ function loadSounds() {
 		EngSnd.setLoop(true);
 		EngSnd.setVolume(0);
 	});
-	// Init Sounds .............................................................
+	// Init Sounds ..............................................................
 	let	listener = new THREE.AudioListener();
 	camera.add(listener);
 	// My Engine
@@ -1871,8 +1231,10 @@ function loadSounds() {
 	EngMsh.add(EngSnd);			// Engine
 	air_.AirObj.add(EngMsh);
 	//- Set Flag
-	LodSnd = 1;	
+	gen_.LodSnd = 1;	
 }
+
+//= MOVE SOUNDS =================================================================
 
 // Change Sounds
 function moveSounds() {
@@ -1881,19 +1243,25 @@ function moveSounds() {
 	EngSnd.setPlaybackRate(1);
 }
 
-//- Play Sounds ----------------------------------------------------------------
+//- Play Sounds -----------------------------------------------------------------
 function playSounds() {
 	// This leaves SndFlg and GunFlg unchanged.
 	if (!EngSnd.isPlaying) EngSnd.play();
 }
 
-//- Stop Sounds ----------------------------------------------------------------
+//- Stop Sounds -----------------------------------------------------------------
 function stopSounds() {
 	// This leaves SndFlg and GunFlg unchanged.
 	if (EngSnd.isPlaying) EngSnd.stop();
 }
 
-//= CAMERA =====================//==============================================
+/********************************************************************************
+*
+*	7. CAMERA
+*
+********************************************************************************/
+
+//== INIT CAMERA ===============//===============================================
 
 function initCamera(camera,cam_) {
 	camera.position.z = -cam_.lld.z;
@@ -1913,6 +1281,8 @@ function initCamera(camera,cam_) {
 	moveCamera(camera,cam_);
 
 }
+
+//== MOVE CAMERA ===============//===============================================
 
 function moveCamera(camera,cam_) {
 	// Move Camera In/Out
@@ -1947,7 +1317,11 @@ function moveCamera(camera,cam_) {
 	}
 }
 
-//= OUTPUTS ====================//==============================================
+/********************************************************************************
+*
+*	8. OUTPUTS
+*
+********************************************************************************/
 
 // Change HUD Values
 function prntHUDval() {
@@ -1969,15 +1343,15 @@ function prntHUDval() {
 
 //	Paused On
 function PawsText(){
-	if (PawsOn) On_PawsNode.nodeValue = "Paused";
+	if (gen_.PawsOn) On_PawsNode.nodeValue = "Paused";
 	else {On_PawsNode.nodeValue = "Pause: Press P";}
 }
 
 //	Info
 function InfoText() {
-	if (!InfoOn) onInfo0();
-	else if (InfoOn == 1) onInfo1();
-	else if (InfoOn == 2) onInfo2();
+	if (!gen_.InfoOn) onInfo0();
+	else if (gen_.InfoOn == 1) onInfo1();
+	else if (gen_.InfoOn == 2) onInfo2();
 }
 
 //	Info Off
@@ -2021,13 +1395,18 @@ function onInfo2(){
 	On_Info09Node.nodeValue = "";
 }
 
-//= INPUTS =====================================================================
+/********************************************************************************
+*
+*	9. INPUTS
+*
+********************************************************************************/
+
 // The PointerLockControls creates inputs for mouse movement.
 // This creates inputs for mouse buttons and keys.
 
-//- MOUSE ----------------------------------------------------------------------
+//= MOUSE ======================//===============================================
 
-//- Mouse Buttons (Down) -------------------------------------------------------
+//- Mouse Buttons (Down) --------------------------------------------------------
 function onDocumentMouseDown(event) {
 	event.preventDefault();
 	if (event.button == 0) {	// Yaw Left
@@ -2038,7 +1417,7 @@ function onDocumentMouseDown(event) {
 	}
 }
 
-//- Mouse Buttons (Up) ---------------------------------------------------------
+//- Mouse Buttons (Up) ----------------------------------------------------------
 function onDocumentMouseUp(event) {
 	if (event.button == 0) {	// Yaw Left Off
 		InpYaw = 0;
@@ -2054,9 +1433,9 @@ function onDocumentMouseWheel(event) {
 	AltDif = - event.deltaY;
 }
 
-//- KEYBOARD -------------------------------------------------------------------
+//- KEYBOARD ===================//===============================================
 
-//- Keyboard (Down) ------------------------------------------------------------
+//- Keyboard (Down) -------------------------------------------------------------
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
 	// Basic
@@ -2086,7 +1465,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
 }
 
-//-	Keyboard (Up) --------------------------------------------------------------
+//-	Keyboard (Up) ---------------------------------------------------------------
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
 	// Basic
@@ -2112,38 +1491,38 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
 }
 
-//- Subroutines ----------------------------------------------------------------
+//- Subroutines -----------------------------------------------------------------
 
-//. Toggle Pause ...............................................................
+//. Toggle Pause ................................................................
 function toglPaws() {
-	PawsOn = 1 - PawsOn;
-	if (PawsOn && SndFlg) {		//On to Off
+	gen_.PawsOn = 1 - gen_.PawsOn;
+	if (gen_.PawsOn && gen_.SndFlg) {		//On to Off
 		stopSounds();
 	}
-	if (!PawsOn && SndFlg) {	// Off to On
+	if (!gen_.PawsOn && gen_.SndFlg) {	// Off to On
 		playSounds();
 	}
 	PawsText();
 }
 
-//. Toggle AutoPilot ...........................................................
+//. Toggle AutoPilot ............................................................
 function toglAuto() {
 	air_.AutoOn = 1 - air_.AutoOn;
 	AutoText();
 }
 
-//. Toggle Info ................................................................
+//. Toggle Info .................................................................
 function toglInfo() {
-	InfoOn++
-	if (InfoOn == 3) InfoOn = 0;
+	gen_.InfoOn++
+	if (gen_.InfoOn == 3) gen_.InfoOn = 0;
 	InfoText();
 }
 
-//. Toggle Sound ...............................................................
+//. Toggle Sound ................................................................
 function toglSoun() {
-	if (!PawsOn) {
-		SndFlg = 1 - SndFlg;
-		if (SndFlg) {			// Off to On
+	if (!gen_.PawsOn) {
+		gen_.SndFlg = 1 - gen_.SndFlg;
+		if (gen_.SndFlg) {			// Off to On
 			playSounds();
 		}
 		else {					// On to Off
@@ -2152,13 +1531,20 @@ function toglSoun() {
 	}
 }
 
-//= WINDOW RESIZE ==============================================================
+//= WINDOW RESIZE ===============================================================
 function onWindowResize() {
 	CamAsp = window.innerWidth/window.innerHeight;
 	camera.aspect = CamAsp;
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
+
+/********************************************************************************
+*
+*	CHANGE LOG
+*
+*********************************************************************************
+*/
 
 </script>
 </body>
