@@ -93,7 +93,7 @@ import {loadAirExt,moveAirExt} from "https://PhilCrowther.github.io/Aviation/jsm
 import {PointerLockControls} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
-import {initGrdMat,GrdMap,initRoads,moveRoads} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
+import {initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,moveTreLin} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
 import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
@@ -369,7 +369,7 @@ function loadAll() {
 	// Initialize Loading Screen
 	WaitScreen();				// init loading screen
 	loadSkyBox();
-	loadTreLin();
+	loadTreLin(grd_,gltfLoader,scene);
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadObject();
@@ -406,7 +406,7 @@ function initAll() {
 	grids = new GrdMap(grd_,scene);	// Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
 	initRoads(grd_,scene);		// Add Roads
-	moveTreLin()
+	moveTreLin(grd_,air_,gen_); // Add TreeLines
 	initObject();				// Stationary Objects
 	// Other
 	initCamera(camera,cam_);	// position camera
@@ -447,7 +447,7 @@ function rendAll() {
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
 		moveRoads(grd_);		// Move Roads
-		moveTreLin(tre_,grd_,air_,gen_);	
+		moveTreLin(grd_,air_,gen_); // Move TreeLines	
 		moveObject();			// Move objects
 		// Other
 		moveSounds();
@@ -502,55 +502,6 @@ function initSkyBox() {
 			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
 			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
 		spotLight.add(LF);
-	}
-}
-
-/********************************************************************************
-*
-*	3. GROUND
-*
-********************************************************************************/
-
-//= LOAD TREELINES =============//===============================================
-
-function loadTreLin() {
-	// Standard Geometry for Shadows
-	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
-	// Load all Treeline Objects and Attach Shadows
-	for (let n = 0; n < tre_.ObjNum; n++) {
-		// Assign Random Map Position
-		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
-		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
-		// Rotation = 0 or -90
-		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
-		// Select Object
-		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
-		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
-		gltfLoader.load(ObjSrc, function (gltf) {
-			tre_.ObjAdr[n] = gltf.scene;
-			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
-			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
-			scene.add(tre_.ObjAdr[n]);
-		});
-	}
-}
-
-//= MOVE TREELINES =============//===============================================
-
-function moveTreLin() {
-	// Convert Distances into Meters to match landscape program
-	let a = 13.5*grd_.Siz;
-	let x,y,z;
-	for (let n = 0; n < tre_.ObjNum; n++) {
-		// Set Tree Object Position 
-		x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
-		if (x > a) x = x - 2*a;
-		if (x < -a) x = x + 2*a;
-		z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
-		if (z > a) z = z - 2*a;
-		if (z < -a) z = z + 2*a;
-		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
-		tre_.ObjAdr[n].position.set(x,y,z);
 	}
 }
 
