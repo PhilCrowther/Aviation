@@ -683,10 +683,7 @@ function move1Road(grd_,Rod) {
 
 //= LOAD TREELINE ==============//==============================================
 
-function loadTreLin(tre_,grd_,gltfLoader,scene) {
-	// Standard Geometry for Shadows
-	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
-	// Load all Treeline Objects and Attach Shadows
+function loadTreLin(grd_,gltfLoader,scene) {
 	for (let n = 0; n < tre_.ObjNum; n++) {
 		// Assign Random Map Position
 		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
@@ -708,7 +705,7 @@ function loadTreLin(tre_,grd_,gltfLoader,scene) {
 //= INIT TREELINE ==============//==============================================
 // Procedurally generated treeline (not used)
 
-function makeTreLin(tre_,grd_,scene) {
+function makeTreLin(grd_,scene) {
 	let points = [
 		new Vector2(4.0,-6.7),	// Bot
 		new Vector2(4.9,-3.0),
@@ -794,7 +791,7 @@ function initTClr(dtColr,dtData,Weight) {
 
 //= MOVE TREELINE =================//==============================================
 
-function moveTreLin(tre_,grd_,air_,gen_) {
+function moveTreLin(grd_,air_,gen_) {
 	// Convert Distances into Meters to match landscape program
 	let a = 13.5*grd_.Siz;
 	let x,y,z;
