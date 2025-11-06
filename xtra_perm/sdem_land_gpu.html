@@ -125,7 +125,6 @@ let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeig
 	camera.position.set(-40,10,400);
 //- Renderer
 let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
-    await renderer.init();		// ### NEW
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -248,12 +247,10 @@ function rendAll() {
 		if(camera.position.y < 0.0) {
 			camera.position.y = 2.0;
 		}
-//		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 	}
 	prntHUDval();
 	renderer.render(scene,camera);
-//	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
 /*******************************************************************************
