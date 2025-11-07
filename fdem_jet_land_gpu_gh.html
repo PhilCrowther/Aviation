@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Nov 2025
+Version dated 7 Nov 2025
 
 This demo program uses portions of the GrdLnd module.
 
@@ -43,8 +43,7 @@ This demo program uses portions of the GrdLnd module.
 			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
 		}
 	}
 </script>
@@ -57,7 +56,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 } from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
-import Stats from "stats-gl";
+import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
 import {initGrdMat,GrdMap,
 		initRoads,moveRoads,
@@ -412,6 +411,12 @@ function loadAll() {
 	loadSkyBox();
 	loadTreLin(grd_,gltfLoader,scene);
 	loadJetExh();
+	// Load stats
+	if (gen_.StatOn) {			// show stats
+		gen_.StatOn = new Stats();
+		document.body.appendChild(gen_.StatOn.dom);
+		gen_.StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
+	}
 }
 
 //= 1 INITIALIZE (called by loading manager) ===================================
@@ -428,16 +433,6 @@ function initAll() {
 	moveTreLin(grd_,air_,gen_); // Add TreeLines
 	initJetExh();
 	prntHUDval(air_);
-	// Show stats
-	if (gen_.StatOn) {			// show stats
-		gen_.StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		gen_.StatOn.init(renderer);
-		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(gen_.StatOn.dom);
-	}
 	gen_.LodFlg = 1;
 }
 
@@ -458,9 +453,7 @@ function rendAll() {
 	}
 	prntHUDval(air_);
 	moveCamera(camera,cam_);
-//	renderer.renderAsync(scene, camera); // Render
 	renderer.render(scene, camera); // Render
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
 //= SKYBOX =====================//==============================================
