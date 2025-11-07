@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Nov 2025
+Version dated 7 Nov 2025
 
 This programs shows procedurally generated farmland plus medium quality trees.
 -->
@@ -33,8 +33,7 @@ This programs shows procedurally generated farmland plus medium quality trees.
 			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
 		}
 	}
 </script>
@@ -45,7 +44,7 @@ import {color,texture,uniform,positionLocal,normalMap} from 'three/tsl';
 import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
-import Stats from "stats-gl";
+import Stats from "three/addons/libs/stats.module.js";
 
 /********************************************************************************
 *
@@ -222,13 +221,9 @@ function loadAll() {
 	loadDifTxt();
 	// Load stats
 	if (gen_.StatOn) {				// show stats
-		gen_.StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		gen_.StatOn.init(renderer);
-		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(gen_.StatOn.dom);
+		gen_.StatOn = new Stats();
+		document.body.appendChild(gen_.StatOn.dom);
+		gen_.StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
 	}
 }
 
