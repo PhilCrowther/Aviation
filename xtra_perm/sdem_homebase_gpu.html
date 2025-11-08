@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2025
+Version dated 7 Nov 2025
 
 Homebase with smoke, hangars and animated waves
 -->
@@ -32,8 +32,7 @@ Homebase with smoke, hangars and animated waves
 			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
 		}
 	}
 </script>
@@ -48,7 +47,7 @@ import {color,texture,uniform,positionLocal,normalMap,
 import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import Stats from "stats-gl";
+import Stats from "three/addons/libs/stats.module.js";
 //- Custom Modules
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
 import {initXSHWak,moveXSHWak,	// Ship Wake
@@ -100,7 +99,6 @@ let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeig
 let	scene = new THREE.Scene();
 //- Renderer
 let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
-    await renderer.init();		// ### NEW
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -108,7 +106,8 @@ let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.BasicShadowMap;
-	container.appendChild(renderer.domElement);
+	document.body.appendChild(renderer.domElement);
+    await renderer.init();		// still used with ocean module, but get timestamp err
 let maxAnisotropy = renderer.getMaxAnisotropy();
 //- Lights
 let sunLight = new THREE.DirectionalLight(SunCol,3.0);
@@ -291,23 +290,18 @@ function loadAll() {
 	loadVulkan();				// Load Smoke
 	loadHangar();				// Load Hangars
 	loadMoving();				// Load Ship
-	// Load stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
+	if (StatOn) {				// Load Stats
+		StatOn = new Stats();
+		document.body.appendChild(StatOn.dom);
+		StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
 	}
 }
 
 //= 1 INITIALIZE ===============//===============================================
 
 function initAll() {
-	initOceans(); // Initialize Ocean
-	initVulkan();
+	initOceans();				// Initialize Ocean
+	initVulkan();				// Initialize Smoke
 	LodFlg = 1;
 }
 
@@ -321,13 +315,11 @@ function rendAll() {
 			camera.position.y = 2.0;
 		}
 		if (waves) waves.update(); // Move Ocean
-		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		moveMoving();
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval();
 	renderer.render(scene,camera);
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
 /********************************************************************************
@@ -632,10 +624,10 @@ function toggleWire() {
 	}
 }
 
-//= Window Resize Input =========================================================
+//= WINDOW RESIZE ==============//==============================================
 
 function onWindowResize() {
-	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.aspect = window.innerWidth/window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }

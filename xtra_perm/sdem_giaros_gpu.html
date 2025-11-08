@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2025
+Version dated 7 Nov 2025
 
 Giaros Island with animated waves
 -->
@@ -32,8 +32,7 @@ Giaros Island with animated waves
 			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
 		}
 	}
 </script>
@@ -44,7 +43,7 @@ import {color,texture,uniform,positionLocal,normalMap} from 'three/tsl';
 import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import Stats from "stats-gl";
+import Stats from "three/addons/libs/stats.module.js";
 //- Custom Modules
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
 
@@ -85,27 +84,28 @@ let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*De
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 
 //= BASIC SETUP ================================================================
-//- Camera
-let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,SkyLim);
-	camera.position.set(-375,20,-800);
 //- Scene
 let	scene = new THREE.Scene();
 //- Renderer
 let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
-    await renderer.init();		// ### NEW
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
+	document.body.appendChild(renderer.domElement);
+	await renderer.init();		// Alow time for backend to initialize
+let maxAnisotropy = renderer.getMaxAnisotropy();
+	// Shadows
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.BasicShadowMap;
-	container.appendChild(renderer.domElement);
-let maxAnisotropy = renderer.getMaxAnisotropy();
 //- Lights
 let sunLight = new THREE.DirectionalLight(SunCol,3.0);
 	sunLight.position.copy(SunPos).normalize();
 	scene.add(sunLight);
+//- Camera
+let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,SkyLim);
+	camera.position.set(-375,20,-800);
 //- Controls
 let	controls = new OrbitControls(camera,renderer.domElement);
 //- Inputs
@@ -217,22 +217,17 @@ function loadAll() {
 	loadSkyBox();
 	loadOceans();
 	loadIsland();				// Load Island
-	// Load stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
+	if (StatOn) {				// Load Stats
+		StatOn = new Stats();
+		document.body.appendChild(StatOn.dom);
+		StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
 	}
 }
 
 //= 1 INITIALIZE ===============//===============================================
 
 function initAll() {
-	initOceans(); // Initialize Ocean
+	initOceans();				// Initialize Ocean
 	LodFlg = 1;
 }
 
@@ -246,12 +241,10 @@ function rendAll() {
 			camera.position.y = 2.0;
 		}
 		if (waves) waves.update(); // Move Ocean
-		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
-		if (StatOn) StatOn.update(); // update stats
+		if (StatOn) StatOn.update(); // Update stats
 	}
 	prntHUDval();
 	renderer.render(scene,camera);
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
 /********************************************************************************
@@ -433,10 +426,10 @@ function toggleWire() {
 	}
 }
 
-//= Window Resize Input =========================================================
+//= WINDOW RESIZE ==============//==============================================
 
 function onWindowResize() {
-	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.aspect = window.innerWidth/window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
