@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2025
+Version dated 7 Nov 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -58,8 +58,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
 		}
 	}
 </script>
@@ -84,7 +83,7 @@ import {texture,uniform} from 'three/tsl';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
-import Stats from 'stats-gl';
+import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules -------------------------------------------------------------
 import {Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadAirExt,loadAirInt,moveAirExt,moveAirInt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
@@ -627,6 +626,12 @@ function loadAll() {
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,context);
 	loadAirObj();
+	// Load Stats
+	if (StatOn) {
+		StatOn = new Stats();
+		document.body.appendChild(StatOn.dom);
+		StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
+	}
 }
 
 //- WAIT SCREEN ----------------//-----------------------------------------------
@@ -656,16 +661,6 @@ async function initAll() {
 	// Other
 	initCamera(camera,cam_);	// position camera
 	prntHUDval();				// print HUD values
-	// Show stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
-	}
 	LodFlg = 1;
 }
 
@@ -684,7 +679,6 @@ function rendAll() {
 		moveAirObj();			// Move aircaft
 		// Move Grids
 		waves.update(); 		// Move Ocean
-		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update();			// MoveGrids
 		// Other
@@ -694,7 +688,6 @@ function rendAll() {
 	}
 	moveCamera(camera,cam_);
 	renderer.render(scene, camera);
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
 /********************************************************************************
@@ -1143,13 +1136,12 @@ function toglYawR() {
 	else InpKey.y = 0.1;
 }
 
-//= WINDOW RESIZE ==============//===============================================
+//= WINDOW RESIZE ==============//==============================================
 
 function onWindowResize() {
-	CamAsp = window.innerWidth/window.innerHeight;
-	camera.aspect = CamAsp;
+	camera.aspect = window.innerWidth/window.innerHeight;
 	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setSize(window.innerWidth,window.innerHeight);
 }
 
 /********************************************************************************

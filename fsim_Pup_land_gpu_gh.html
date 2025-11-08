@@ -1126,10 +1126,10 @@ function toglSoun() {
 	}
 }
 
-//= WINDOW RESIZE ==============//===============================================
+//= WINDOW RESIZE ==============//==============================================
+
 function onWindowResize() {
-	CamAsp = window.innerWidth/window.innerHeight;
-	camera.aspect = CamAsp;
+	camera.aspect = window.innerWidth/window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }

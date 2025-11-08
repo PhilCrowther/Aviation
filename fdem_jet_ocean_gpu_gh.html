@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2025
+Version dated 7 Nov 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -42,8 +42,7 @@ A WebGPU demo of the GrdWtr and Ocean modules.
 			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
 		}
 	}
 </script>
@@ -55,7 +54,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 		time,					// r170 changed from timerLocal
 } from "three/tsl";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
-import Stats from "stats-gl";
+import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // No detail texture required
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
@@ -67,6 +66,12 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // U
 //-	1. Rotate around a point the map center, looking inward (like Orbit Controls)
 //- 2. Rotate around a static or moving object (like an Airplane) looking inwards.
 //- 3. Attach to a static or moving object (like an Airplane) looking outwards
+
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
 
 //= STARTING VALUES ============//===============================================
 //- MY CAMERA -------------------------------------------------------------------
@@ -146,7 +151,6 @@ const camera = new THREE.PerspectiveCamera(55,CamAsp,1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
 const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
-	await renderer.init();		// r179
     renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -410,10 +414,15 @@ let Air_Spd, Air_Alt,Air_Hdg;
 	scene.add(air_.AirObj);
 let quaternion = new THREE.Quaternion();
 	
-//= MAIN PROGRAM ================================================================
+/********************************************************************************
+*
+*	MAIN PROGRAM
+*
+********************************************************************************/
+
 	loadAll();
 
-//= 0 LOAD ALL ==================================================================
+//= 0 LOAD ALL =================//===============================================
 function loadAll() {
 	air_.AirObj.rotation.z = Mod360(360-air_.AirRot.z) * DegRad; // Bank
 	air_.AirObj.rotation.x = Mod360(air_.AirRot.x) * DegRad; // Pitch
@@ -422,15 +431,10 @@ function loadAll() {
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,context);
 	loadJetExh();
-	// Load stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
+	if (StatOn) {				// Load Stats
+		StatOn = new Stats();
+		document.body.appendChild(StatOn.dom);
+		StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
 	}
 }
 
@@ -456,17 +460,19 @@ function rendAll() {
 		moveAirObj(air_);
 		grd_.MSP.copy(air_.MapSPS);
 		if (waves) waves.update(); // Move Ocean
-		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		grids.update();			// Move Grids
 		if (StatOn) StatOn.update(); // update stats
 	}
 	prntHUDval(air_);
 	moveCamera(camera,cam_);
 	renderer.render(scene, camera);
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
-//= SKYBOX =====================//===============================================
+/********************************************************************************
+*
+*	SKY BOX
+*
+********************************************************************************/
 
 function loadSkyBox() {
 	let envMap = cubeLoader
@@ -502,7 +508,12 @@ function initSkyBox() {
 	}
 }
 
-//= AIROBJ ======================================================================
+/********************************************************************************
+*
+*	AIRPLANE
+*
+********************************************************************************/
+
 
 //- Load AirObj -----------------------------------------------------------------
 function initAirObj(air_) {
@@ -617,7 +628,11 @@ function moveAirObj(air_) {
 	air_.MapSPS.z = air_.MapSpd.z;
 }
 
-//= JET EXHAUST =================================================================
+/********************************************************************************
+*
+*	JET EXHAUST
+*
+********************************************************************************/
 
 //- Load Jet Exhaust ------------------------------------------------------------
 function loadJetExh() {
@@ -647,7 +662,11 @@ function initJetExh() {
 		air_.AirObj.add(smokeInstancedSprite);
 }
 
-//= MY CAMERA ===================================================================
+/********************************************************************************
+*
+*	CAMERA
+*
+********************************************************************************/
 
 function initCamera(camera,cam_) {
 	camera.rotation.order = "YXZ";
@@ -669,7 +688,11 @@ function moveCamera(camera,cam_) {
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
 }
 
-//= 4 MISC SUBROUTINES ==========================================================
+/********************************************************************************
+*
+*	MISC SUBROUTINES
+*
+********************************************************************************/
 
 //- Converts degrees to 360 -----------------------------------------------------
 function Mod360(deg) {
@@ -682,7 +705,11 @@ function PoM360(deg) {
 	if (deg > 180) deg = deg-360;
 return deg;}
 
-//= OUTPUTS =====================================================================
+/********************************************************************************
+*
+*	OUTPUTS
+*
+********************************************************************************/
 
 // Print HUD Values
 function prntHUDval(air_) {
@@ -694,7 +721,11 @@ function prntHUDval(air_) {
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
 }
 
-//= 5 INPUTS ====================================================================
+/********************************************************************************
+*
+*	INPUTS
+*
+********************************************************************************/
 
 //= Keyboard Input ==============================================================
 
@@ -856,13 +887,12 @@ function toglYawR() {
 	else air_.InpRot.y = 0;
 }
 
-//= Window Resize Input =========================================================
+//= WINDOW RESIZE ==============//==============================================
 
 function onWindowResize() {
-	CamAsp = window.innerWidth/window.innerHeight;
-	camera.aspect = CamAsp;
+	camera.aspect = window.innerWidth/window.innerHeight;
 	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setSize(window.innerWidth,window.innerHeight);
 }
 
 </script>

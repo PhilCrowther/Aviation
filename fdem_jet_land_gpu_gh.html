@@ -71,12 +71,18 @@ import {initGrdMat,GrdMap,
 //- 2. Rotate around a static or moving object (like an Airplane) looking inwards.
 //- 3. Attach to a static or moving object (like an Airplane) looking outwards
 
-//= STARTING VALUES ============//==============================================
-//- MY CAMERA ------------------------------------------------------------------
+/********************************************************************************
+*
+*	VARIABLES
+*
+********************************************************************************/
+
+//= STARTING VALUES ============//===============================================
+//- MY CAMERA -------------------------------------------------------------------
 let CamSel = 0;					// Camera Seletion (0 = linked to grid, 1 = linked to Airplane)
 let CamLat = -10;				// Camera Direction - Vert (+/- 90)
 let CamLon = 315;				// Camera Direction - Horz (0->360)
-//- Airplane -------------------------------------------------------------------
+//- Airplane --------------------------------------------------------------------
 let USorSI = "US";				// Starting Units of Measurement (US or SI)
 let BegSpd = 500;				// Aircraft Speed (miles per hour)
 let BegPos = new THREE.Vector3(0,2000,0); // Position (ft)
@@ -84,9 +90,9 @@ let InpVal = new THREE.Vector3(1,0.1,1); // Rotation Change
 let BnkSpd = 1;					// Bank Speed
 let PitSpd = 1;					// Pitch Speed
 
-//= 1. MAIN VARIABLES ==========//==============================================
+//= 1. MAIN VARIABLES ==========//===============================================
 
-//- CONSTANTS ------------------//----------------------------------------------
+//- CONSTANTS ------------------//-----------------------------------------------
 //	Conversions
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
@@ -399,10 +405,15 @@ let Air_Spd, Air_Alt,Air_Hdg;
 	scene.add(air_.AirObj);
 let quaternion = new THREE.Quaternion();
 	
-//= MAIN PROGRAM ===============================================================
+/********************************************************************************
+*
+*	MAIN PROGRAM
+*
+********************************************************************************/
+
 	loadAll();
 
-//= 0 LOAD ALL =================================================================
+//= 0 LOAD ALL =================//==============================================
 function loadAll() {
 	air_.AirObj.rotation.z = Mod360(360-air_.AirRot.z) * DegRad;	// Bank
 	air_.AirObj.rotation.x = Mod360(air_.AirRot.x) * DegRad;		// Pitch
@@ -411,8 +422,7 @@ function loadAll() {
 	loadSkyBox();
 	loadTreLin(grd_,gltfLoader,scene);
 	loadJetExh();
-	// Load stats
-	if (gen_.StatOn) {			// show stats
+	if (gen_.StatOn) {			// Load Stats
 		gen_.StatOn = new Stats();
 		document.body.appendChild(gen_.StatOn.dom);
 		gen_.StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
@@ -456,7 +466,11 @@ function rendAll() {
 	renderer.render(scene, camera); // Render
 }
 
-//= SKYBOX =====================//==============================================
+/********************************************************************************
+*
+*	SKY BOX
+*
+********************************************************************************/
 
 function loadSkyBox() {
 	sky_.envMap = cubeLoader
@@ -466,7 +480,7 @@ function loadSkyBox() {
 	sky_.envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
 	scene.background = sky_.envMap;
 	// LensFlare
-	if (gen_.LnFFlg) {				// SunFlare	
+	if (gen_.LnFFlg) {			// SunFlare	
 		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
 		sky_.LF1Txt = txtrLoader.load(sky_.LF1Src);
 	}
@@ -491,9 +505,13 @@ function initSkyBox() {
 	}
 }
 
-//= AIROBJ =====================================================================
+/********************************************************************************
+*
+*	AIRPLANE
+*
+********************************************************************************/
 
-//- Load AirObj ----------------------------------------------------------------
+//- Load AirObj -----------------------------------------------------------------
 function initAirObj(air_) {
 	// Front
 	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 2.5, 15, 3, 1, "false"), new THREE.MeshStandardNodeMaterial({colorNode:color(0xff00ff)}));
@@ -606,14 +624,18 @@ function moveAirObj(air_) {
 	air_.MapSPS.z = air_.MapSpd.z;
 }
 
-//= JET EXHAUST ===============================================================
+/********************************************************************************
+*
+*	JET EXHAUST
+*
+********************************************************************************/
 
-//- Load Jet Exhaust ----------------------------------------------------------
+//- Load Jet Exhaust ------------------------------------------------------------
 function loadJetExh() {
 	SmkMap = txtrLoader.load(SmkMat);
 }
 
-//- Init Jet Exhaust ----------------------------------------------------------
+//- Init Jet Exhaust ------------------------------------------------------------
 function initJetExh() {
 	let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
 //	let textureNode = texture(SmkMap, rotateUV(uv(),timer.mul(rotateRange))); // r168
@@ -636,7 +658,11 @@ function initJetExh() {
 		air_.AirObj.add(smokeInstancedSprite);
 }
 
-//= MY CAMERA ==================================================================
+/********************************************************************************
+*
+*	CAMERA
+*
+********************************************************************************/
 
 function initCamera(camera,cam_) {
 	camera.rotation.order = "YXZ";
@@ -654,7 +680,11 @@ function moveCamera(camera,cam_) {
 	cam_.rot.rotation.y = Mod360(cam_.adj-cam_.lld.y)*DegRad;
 }
 
-//= 4 MISC SUBROUTINES =========================================================
+/********************************************************************************
+*
+*	MISC SUBROUTINES
+*
+********************************************************************************/
 
 //- Converts degrees to 360 ----------------------------------------------------
 function Mod360(deg) {
@@ -667,7 +697,11 @@ function PoM360(deg) {
 	if (deg > 180) deg = deg-360;
 return deg;}
 
-//= OUTPUTS ====================================================================
+/********************************************************************************
+*
+*	OUTPUTS
+*
+********************************************************************************/
 
 // Print HUD Values
 function prntHUDval(air_) {
@@ -679,7 +713,11 @@ function prntHUDval(air_) {
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
 }
 
-//= 5 INPUTS ===================================================================
+/********************************************************************************
+*
+*	INPUTS
+*
+********************************************************************************/
 
 //= Keyboard Input =============================================================
 
@@ -844,10 +882,9 @@ function toglYawR() {
 //= Window Resize Input ========================================================
 
 function onWindowResize() {
-	CamAsp = window.innerWidth/window.innerHeight;
-	camera.aspect = CamAsp;
+	camera.aspect = window.innerWidth/window.innerHeight;
 	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setSize(window.innerWidth,window.innerHeight);
 }
 
 </script>

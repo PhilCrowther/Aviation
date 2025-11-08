@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Oct 2025
+Version dated 7 Nov 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -70,8 +70,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
 			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
 		}
 	}
 </script>
@@ -90,7 +89,7 @@ import * as THREE from "three";
 import {color,texture,uniform} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
-import Stats from "stats-gl";
+import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) ------------------------------------
 import {loadAirExt,loadAirInt,	// Load External Model
 		moveAirExt,moveAirInt,	// Load Internal Model
@@ -296,7 +295,6 @@ const camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
 	camera.rotation.order = "YXZ";
 //	Renderer
 const renderer = new THREE.WebGPURenderer({antialias: true});
-	await renderer.init();		// r179
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);	
@@ -614,6 +612,12 @@ function loadAll() {
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadObject();				// load objects
+	// Load stats
+	if (gen_.StatOn) {			// show stats
+		gen_.StatOn = new Stats();
+		document.body.appendChild(gen_.StatOn.dom);
+		gen_.StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
+	}
 }
 
 //- WAIT SCREEN ----------------//----------------------------------------------
@@ -656,16 +660,6 @@ function initAll() {
 	PawsText();
 	AutoText();
 	InfoText();
-	// Show stats
-	if (gen_.StatOn) {			// show stats
-		gen_.StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		gen_.StatOn.init(renderer);
-		gen_.StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(gen_.StatOn.dom);
-	}
 	gen_.LodFlg = 1;
 }
 
@@ -708,7 +702,6 @@ function rendAll() {			// r173 added async
 		moveObject();			// Move objects
 		// Move Grids
 		waves.update();			// Move Ocean
-		renderer.resolveTimestampsAsync(THREE.TimestampQuery.COMPUTE); // ### added 251010
 		grd_.MSP.copy(air_.MapSPS);
 		grids.update();			// Move Grids	
 		// Sounds
@@ -724,7 +717,6 @@ function rendAll() {			// r173 added async
 		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
 	renderer.render(scene, camera);
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
 }
 
 /*******************************************************************************
@@ -1845,8 +1837,7 @@ function toglSoun() {
 //= WINDOW RESIZE ==============//==============================================
 
 function onWindowResize() {
-	CamAsp = window.innerWidth/window.innerHeight;
-	camera.aspect = CamAsp;
+	camera.aspect = window.innerWidth/window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
