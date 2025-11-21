@@ -224,7 +224,7 @@ let tre_ = {
 *
 *******************************************************************************/
 
-function loadDifTxt(txtrLoader) {
+function loadGeoMatX(imagLoader,txtrLoader,grd_,gen_) {
 	//- Diffuse Texture
 	txtrLoader.load(DifTxt,function(texture) {
 		texture.format = RGBAFormat;
@@ -234,6 +234,47 @@ function loadDifTxt(txtrLoader) {
 		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.needsUpdate = true;
 		DifTxt = texture;
+	});
+}
+
+//function loadGeoMat(imagLoader,grd_,gen_) {
+//	loadGe1Mat(imagLoader,grd_,gen_); // Diffuse Textures
+//}
+
+//- Load One GeoMap
+function loadGeoMat(imagLoader,grd_,gen_) {
+	let ImgDat = 0;
+	let texture = 0;
+	imagLoader.load(grd_.DfS,function(image) { // Load, Split and Save Textures
+		context.drawImage(image,0,0,grd_.MSz,grd_.MSz);
+		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
+		let idx = 0;
+		let siz = grd_.MSz/4;
+		for (let z = 0; z < 4; z++) {
+			for (let x = 0; x < 4; x++) {
+				ImgDat = gen_.contxt.getImageData(siz*x,siz*z,siz,siz);
+				texture = new DataTexture(ImgDat.data,siz,siz);
+				texture.format = RGBAFormat;
+				texture.magFilter = LinearFilter;
+				texture.minFilter = LinearMipMapLinearFilter;
+				texture.generateMipmaps = true;
+				texture.needsUpdate = true;
+				grd_.DfM[0][idx] = texture;
+				grd_.DfM[1][idx] = texture;
+				idx++;
+			}
+		}
+		// Grid2 - Static Color Map Texture
+		ImgDat = gen_.contxt.getImageData(0,0,grd_.MSz,grd_.MSz);
+		texture = new DataTexture(ImgDat.data,grd_.MSz,grd_.MSz);
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.offset.set(0,0);
+		texture.needsUpdate = true;
+		grd_.DfM[2] = texture;
 	});
 }
 
@@ -274,7 +315,8 @@ function initGr0Mat(grd_,gen_) {
 		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;
 //		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});		
-		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
+//		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
+//		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
 		// e.g. If Repeat X10 and then divide by 10, result = Data
@@ -345,7 +387,8 @@ function initGr2Mat(grd_,gen_) {
 			DatTxt.generateMipmaps = true;
 			DatTxt.anisotropy = gen_.maxAns;
 			DatTxt.needsUpdate = true;
-			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+//			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
 			n++;
 		}
 	}	
@@ -1178,7 +1221,7 @@ return deg;}
 *
 *******************************************************************************/
 
-export {loadDifTxt,initGrdMat,GrdMap,
+export {loadGeoMat,initGrdMat,GrdMap,
 		initRoads,moveRoads,
 		loadTreLin,makeTreLin,moveTreLin
 		};
