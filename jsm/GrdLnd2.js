@@ -273,7 +273,7 @@ function initGr0Mat(grd_,gen_) {
 		DatTxt.repeat.set(GrdMul,GrdMul);
 		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;
-//		gt0_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});		
+//		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});		
 		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
@@ -312,7 +312,7 @@ function initGr1Mat(grd_,gen_) {
 		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;
 //		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		gt1_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
+		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
 		// Gr6Source = Resized Gr5Data		
 		gen_.contxt.putImageData(gt1_.G1DPtr[n],0,0);
 		gen_.contxt.drawImage(gen_.canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
