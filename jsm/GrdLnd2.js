@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 15 Nov 2025
+Version dated 3 Nov 2025
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -50,6 +50,8 @@ let DegRad = Math.PI/180;		// Convert Degrees to Radians
 
 //= GRIDS =======================//=============================================
 //= Textures Data ==============//==============================================
+//- Maps ------------------------------------------------------------------------
+let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
 //- All textures are 512X512
 let dqSize = 1024;
 let dqArea = dqSize*dqSize;
@@ -208,8 +210,8 @@ let rd2_ = {
 //= TREES ======================//==============================================
 let tre_ = {
 		ObjNum: 64,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW2.glb",
-				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS2.glb"],
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
+				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
 		ObjAdr: [],				// Object Address
 		ObjMpZ: [],				// Map Address Z
 		ObjMpX: [],				// Map Address X
@@ -221,6 +223,19 @@ let tre_ = {
 *	INIT GRID MATERIALS
 *
 *******************************************************************************/
+
+function loadDifTxt(txtrLoader) {
+	//- Diffuse Texture
+	txtrLoader.load(DifTxt,function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.needsUpdate = true;
+		DifTxt = texture;
+	});
+}
 
 //= Make Grid Map Textures =====//==============================================
 
@@ -257,8 +272,9 @@ function initGr0Mat(grd_,gen_) {
 		DatTxt.offset.set(0,0);
 		DatTxt.repeat.set(GrdMul,GrdMul);
 		DatTxt.anisotropy = gen_.maxAns;
-		DatTxt.needsUpdate = true;		
-		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		DatTxt.needsUpdate = true;
+//		gt0_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});		
+		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt)});
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
 		// e.g. If Repeat X10 and then divide by 10, result = Data
@@ -295,7 +311,8 @@ function initGr1Mat(grd_,gen_) {
 		DatTxt.generateMipmaps = true;
 		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;
-		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+//		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		gt1_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt)});
 		// Gr6Source = Resized Gr5Data		
 		gen_.contxt.putImageData(gt1_.G1DPtr[n],0,0);
 		gen_.contxt.drawImage(gen_.canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
@@ -696,9 +713,6 @@ function loadTreLin(grd_,gltfLoader,scene) {
 		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
 		gltfLoader.load(ObjSrc, function (gltf) {
 			tre_.ObjAdr[n] = gltf.scene;
-			tre_.ObjAdr[n].traverse((child) => {
-				if (child.isMesh) child.castShadow = true;
-			});
 			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
 			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
 			scene.add(tre_.ObjAdr[n]);
@@ -1164,7 +1178,10 @@ return deg;}
 *
 *******************************************************************************/
 
-export {initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,makeTreLin,moveTreLin};
+export {loadDifTxt,initGrdMat,GrdMap,
+		initRoads,moveRoads,
+		loadTreLin,makeTreLin,moveTreLin
+		};
 
 /*******************************************************************************
 *
