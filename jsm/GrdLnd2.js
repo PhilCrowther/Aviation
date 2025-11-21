@@ -291,6 +291,7 @@ function initGrdMat(grd_,gen_) {
 }
 
 function initGr0Mat(grd_,gen_) {
+	let idx = 0;
 	for (let n = 0; n < txtTot; n++) {
 		// Make Large Image and Get ImageData
 		gen_.contxt.fillStyle = GrdDrt;
@@ -315,14 +316,14 @@ function initGr0Mat(grd_,gen_) {
 		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;
 //		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});		
-//		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
-//		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
+		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(grd_.DfM[n][idx]))});
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
 		// e.g. If Repeat X10 and then divide by 10, result = Data
 		gen_.contxt.putImageData(gt0_.G0DPtr[n],0,0);
 		gen_.contxt.drawImage(gen_.canvas,0,0,dqSize,dqSize,0,0,Gr1Siz,Gr1Siz);		// Draw 1024 image into 1/3 of 512 canvas
 		gt1_.G1SPtr[n] = gen_.contxt.getImageData(0,0,Gr1Siz,Gr1Siz);				//
+		idx++
 	}
 }
 
@@ -330,7 +331,8 @@ function initGr1Mat(grd_,gen_) {
 // This creates up to 81 unique 3X3 Textures (similar to FSX textures)
 // Created using ImageData from Gr4IPtr and patterns from Gr4TPtr
 // Stored by ID number
-// Repeated 9X on the full map.	
+// Repeated 9X on the full map.
+	let idx2 = 0;
 	let dd, sd, idx;
 	let fx = dtSize/Gr1Mul;
 	// For Destination (9 locations arranged linearly)
@@ -354,7 +356,7 @@ function initGr1Mat(grd_,gen_) {
 		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;
 //		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
+		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(grd_.DfM[n][idx2]))});
 		// Gr6Source = Resized Gr5Data		
 		gen_.contxt.putImageData(gt1_.G1DPtr[n],0,0);
 		gen_.contxt.drawImage(gen_.canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
@@ -388,7 +390,7 @@ function initGr2Mat(grd_,gen_) {
 			DatTxt.anisotropy = gen_.maxAns;
 			DatTxt.needsUpdate = true;
 //			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
-			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(DifTxt))});
+			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt).add(texture(grd_.DfM[n]))});
 			n++;
 		}
 	}	
