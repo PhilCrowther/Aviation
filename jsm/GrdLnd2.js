@@ -246,7 +246,7 @@ function loadGeoMat(imagLoader,grd_,gen_) {
 	let ImgDat = 0;
 	let texture = 0;
 	imagLoader.load(grd_.DfS,function(image) { // Load, Split and Save Textures
-		context.drawImage(image,0,0,grd_.MSz,grd_.MSz);
+		gen_.contxt.drawImage(image,0,0,grd_.MSz,grd_.MSz);
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
 		let idx = 0;
 		let siz = grd_.MSz/4;
