@@ -265,7 +265,7 @@ function loadGeoMat(imagLoader,grd_,gen_) {
 		}
 		// Grid 1 - Static Color Texture - Divided into 3 Parts
 		idx = 0;
-		let siz = grd_.MSz/3;
+		siz = grd_.MSz/3;
 		for (let z = 0; z < 3; z++) {
 			for (let x = 0; x < 3; x++) {
 				ImgDat = gen_.contxt.getImageData(siz*x,siz*z,siz,siz);
@@ -563,7 +563,7 @@ function makeVrtD(dtColr,dtData,Weight) {
 
 //= INIT ROADS =================//==============================================
 
-function initRoads(grd_,gen_,scene) {
+function initStreet(grd_,gen_,scene) {
 	rd1_.Siz = 2*grd_.Siz;
 	rd2_.Siz = 2*grd_.Siz;
 	rd0_.r0Data = new Uint8Array(4*rd0_.r0Size*rd0_.r0Size);
@@ -666,7 +666,7 @@ function init1Road(Rod,grd_,gen_,scene) {
 
 //= MOVE ROADS =================//==============================================
 
-function moveRoads(grd_,gen_) {
+function moveStreet(grd_,gen_) {
 // Convert Distances into Meters to match landscape program
 	move1Road(grd_,gen_,rd1_);
 	move1Road(grd_,gen_,rd2_);
@@ -1239,7 +1239,7 @@ return deg;}
 *******************************************************************************/
 
 export {loadGeoMat,initGrdMat,GrdMap,
-		initRoads,moveRoads,
+		initStreet,moveStreet,
 		loadTreLin,makeTreLin,moveTreLin
 		};
 
