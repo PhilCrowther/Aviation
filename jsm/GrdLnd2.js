@@ -247,11 +247,11 @@ function loadGeoMat(imagLoader,grd_,gen_) {
 	let texture = 0;
 	imagLoader.load(grd_.DfS,function(image) { // Load, Split and Save Textures
 		gen_.contxt.drawImage(image,0,0,grd_.MSz,grd_.MSz);
-		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
+		// Grid0 - Static Color Texture - Divided into 9 Parts
 		let idx = 0;
-		let siz = grd_.MSz/4;
-		for (let z = 0; z < 4; z++) {
-			for (let x = 0; x < 4; x++) {
+		let siz = grd_.MSz/9;
+		for (let z = 0; z < 9; z++) {
+			for (let x = 0; x < 9; x++) {
 				ImgDat = gen_.contxt.getImageData(siz*x,siz*z,siz,siz);
 				texture = new DataTexture(ImgDat.data,siz,siz);
 				texture.format = RGBAFormat;
@@ -260,6 +260,21 @@ function loadGeoMat(imagLoader,grd_,gen_) {
 				texture.generateMipmaps = true;
 				texture.needsUpdate = true;
 				grd_.DfM[0][idx] = texture;
+				idx++;
+			}
+		}
+		// Grid 1 - Static Color Texture - Divided into 3 Parts
+		idx = 0;
+		let siz = grd_.MSz/3;
+		for (let z = 0; z < 3; z++) {
+			for (let x = 0; x < 3; x++) {
+				ImgDat = gen_.contxt.getImageData(siz*x,siz*z,siz,siz);
+				texture = new DataTexture(ImgDat.data,siz,siz);
+				texture.format = RGBAFormat;
+				texture.magFilter = LinearFilter;
+				texture.minFilter = LinearMipMapLinearFilter;
+				texture.generateMipmaps = true;
+				texture.needsUpdate = true;
 				grd_.DfM[1][idx] = texture;
 				idx++;
 			}
