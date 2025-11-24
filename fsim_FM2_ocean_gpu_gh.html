@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Nov 2025
+Version dated 24 Nov 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -356,12 +356,12 @@ let boxrot = 0;
 //= 3. OCEAN GRID VARIABLES ====//==============================================
 //- GrdWtr Module --------------//----------------------------------------------
 //- Canvas (for splitting up textures)
-let canvas = document.createElement("canvas");
-	canvas.width = grd_.MSz;
-	canvas.height = grd_.MSz;
-let context = canvas.getContext("2d",{willReadFrequently: true});
-	context.translate(0, grd_.MSz); // Flips vertical for three.js
-	context.scale(1,-1);
+	gen_.canvas = document.createElement("canvas");
+	gen_.canvas.width = grd_.MSz;
+	gen_.canvas.height = grd_.MSz;
+	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
+	gen_.contxt.translate(0, grd_.MSz); // Flips vertical for three.js
+	gen_.contxt.scale(1,-1);
 //-	Adjustments
 	grd_.MSP = new THREE.Vector3();
 	grd_.Col = new THREE.Color(0x004080); // (was Navy Blue = 0x1060ff, but that appeared purple)
@@ -608,7 +608,7 @@ let AnmFlg = 0;					// On CVE, 1 = Animation Not Complete set
 function loadAll() {
 	WaitScreen();				// load loading screen
 	loadSkyBox();
-	loadGeoMat(imagLoader,txtrLoader,grd_,context);
+	loadGeoMat(imagLoader,txtrLoader,grd_,gen_);
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadObject();				// load objects
@@ -1856,6 +1856,7 @@ function onWindowResize() {
 251013	Added pre-launch horizontal vibration
 251019	Move My Airplane sounds to AnimFM2 module and Object sounds to Objects module
 251021	Revise initCamFM2
+251124:	Replace context with gen_.contxt
 */
 
 </script>

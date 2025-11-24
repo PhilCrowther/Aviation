@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Nov 2025
+Version dated 24 Nov 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -56,7 +56,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
-import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // No detail texture required
+import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr9.js"; // No detail texture required
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
 
 //= NOTES
@@ -107,6 +107,30 @@ let StatOn = 1;					// Stats ((0 = off, 1 = on)
 let LnFFlg = 1;					// 1 = LensFlare On
 //-	Program Flags
 let LodFlg = 0;					// Done initializing
+
+let gen_ = {
+		//- Flght Controls
+		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
+		PwrDif:	0,				// Power % Input - Value
+		InpBrk:	0,				// Brakes
+		//- Display
+		PawsOn:	0,				// Pause
+		InfoOn:	0,				// Info
+		SndFlg:	0,				// Sound (0 = off; 1 = on)
+		StatOn:	1,				// Stats (0 = off, 1 = on)
+		LnFFlg:	1,				// Lensflare
+		//	Program Flags
+		LodFlg:	0,				// Set at end of initialization
+		LodSnd:	0,				// Set when sound initialized
+		MYGFlg:	0,				// My Guns (1 = firing)
+		//	Altitude Adjustment
+		AltAdj:	0.99,			// Raises objects above map as altitude increases
+		AltDif:	0,
+		// Misc
+		contxt: 0,
+		canvas: 0,
+		MaxAni: 0,
+	}
 
 //= SUN VALUES =================//===============================================
 let SunCol = "white";			// Sun
@@ -256,12 +280,16 @@ let grd_ = {
 		WMx: WavMax,			// Max wave height, used to lower outer squares
 	};
 //- Canvas (for splitting up textures) ------------------------------------------
-let canvas = document.createElement("canvas");
-	canvas.width = grd_.MSz;
-	canvas.height = grd_.MSz;
-let context = canvas.getContext("2d",{willReadFrequently: true});
-	context.translate(0, grd_.MSz); // Flips vertical for three.js
-	context.scale(1,-1);
+	gen_.canvas = document.createElement("canvas");
+	gen_.canvas.width = grd_.MSz;
+	gen_.canvas.height = grd_.MSz;
+	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
+//	gen_.contxt.translate(0, grd_.MSz); // Flips vertical for three.js
+//	gen_.contxt.scale(1,-1);
+
+//= GRIDS ======================//===============================================
+//- Adjustments
+	grd_.SPS = new THREE.Vector3(); // MSX, MPY, MSZ (meters) (from Flight)
 
 //= OCEAN MODULE ===============//===============================================
 let waves = 0;
@@ -429,7 +457,7 @@ function loadAll() {
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad; // Heading
 	air_.MapSPS.y = air_.MapPos.y;
 	loadSkyBox();
-	loadGeoMat(imagLoader,txtrLoader,grd_,context);
+	loadGeoMat(imagLoader,txtrLoader,grd_,gen_);
 	loadJetExh();
 	if (StatOn) {				// Load Stats
 		StatOn = new Stats();
