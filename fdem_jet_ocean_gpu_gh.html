@@ -56,7 +56,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
-import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr9.js"; // No detail texture required
+import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // No detail texture required
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // Uses Compute Shaders
 
 //= NOTES
@@ -79,9 +79,8 @@ let CamSel = 0;					// Camera Seletion (0 = linked to grid, 1 = linked to Airpla
 let CamLat = -10;				// Camera Direction - Vert (+/- 90)
 let CamLon = 315;				// Camera Direction - Horz (0->360)
 //- Airplane --------------------------------------------------------------------
-let USorSI = "US";				// Starting Units of Measurement (US or SI)
-let BegSpd = 500;				// Aircraft Speed (miles per hour)
-let BegPos = new THREE.Vector3(0,5000,0); // Position (ft)
+let BegSpd = 804.67;			// Aircraft Speed (804.67 KPH = 500 MPH)
+let BegPos = new THREE.Vector3(0,1524,0); // Position (1524m = 5000ft)
 let InpVal = new THREE.Vector3(1,0.1,1); // Rotation Change
 let BnkSpd = 1;					// Bank Speed
 let PitSpd = 1;					// Pitch Speed
@@ -90,47 +89,25 @@ let PitSpd = 1;					// Pitch Speed
 //-	Conversions
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
-const Mtr2Ft = 3.28084;			// Meters to Feet
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
+const Mtr2Ft = 1/Ft2Mtr;		// Convert Meters to Feet
 const Km2Mil = 0.621371;
 const Mil2Km = 1.60934;
-//- Convert
-if (USorSI = "US") {
-	BegSpd = BegSpd*Mil2Km;
-	BegPos.multiplyScalar(Ft2Mtr);
-}
-//-	Time
-let DLTime = 1/60;				// Frames per Second
-//-	Flags
-let PawsOn = 0;					// Pause
-let StatOn = 1;					// Stats ((0 = off, 1 = on)
-let LnFFlg = 1;					// 1 = LensFlare On
-//-	Program Flags
-let LodFlg = 0;					// Done initializing
-
+//- General
 let gen_ = {
-		//- Flght Controls
-		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
-		PwrDif:	0,				// Power % Input - Value
-		InpBrk:	0,				// Brakes
 		//- Display
 		PawsOn:	0,				// Pause
-		InfoOn:	0,				// Info
-		SndFlg:	0,				// Sound (0 = off; 1 = on)
 		StatOn:	1,				// Stats (0 = off, 1 = on)
 		LnFFlg:	1,				// Lensflare
 		//	Program Flags
 		LodFlg:	0,				// Set at end of initialization
-		LodSnd:	0,				// Set when sound initialized
-		MYGFlg:	0,				// My Guns (1 = firing)
-		//	Altitude Adjustment
-		AltAdj:	0.99,			// Raises objects above map as altitude increases
-		AltDif:	0,
 		// Misc
 		contxt: 0,
 		canvas: 0,
 		MaxAni: 0,
 	}
+//-	Time
+let DLTime = 1/60;				// Frames per Second
 
 //= SUN VALUES =================//===============================================
 let SunCol = "white";			// Sun
@@ -183,7 +160,7 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
-let maxAnisotropy = renderer.getMaxAnisotropy();
+	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Depth Buffer
 	renderer.logarithmicDepthBuffer = true;
 //- Inputs
@@ -284,6 +261,7 @@ let grd_ = {
 	gen_.canvas.width = grd_.MSz;
 	gen_.canvas.height = grd_.MSz;
 	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
+	// No Longer Necessary?
 //	gen_.contxt.translate(0, grd_.MSz); // Flips vertical for three.js
 //	gen_.contxt.scale(1,-1);
 
@@ -299,7 +277,7 @@ let wav_ = {
 		gsiz: 2400,				// size of grid square (used to compute Normal Map)
 		lambda: 0.9,
 		renderer: renderer,
-		anisotropy: maxAnisotropy,
+		anisotropy: gen_.MaxAni,
 		// InitSpec Variables
 		waveLength: 1500,		// was 250
 		boundaryLow: 0.0001,	// ### ok??
@@ -459,10 +437,10 @@ function loadAll() {
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,gen_);
 	loadJetExh();
-	if (StatOn) {				// Load Stats
-		StatOn = new Stats();
-		document.body.appendChild(StatOn.dom);
-		StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
+	if (gen_.StatOn) {				// Load Stats
+		gen_.StatOn = new Stats();
+		document.body.appendChild(gen_.StatOn.dom);
+		gen_.StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
 	}
 }
 
@@ -478,18 +456,18 @@ function initAll() {
 	initAirObj(air_);			// Load Aircraft
 	initJetExh();
 	prntHUDval(air_);
-	LodFlg = 1;
+	gen_.LodFlg = 1;
 }
 
 //= 2 RENDER (called by program) ================================================
 function rendAll() {
-	if (PawsOn == 0 && LodFlg > 0) {
+	if (gen_.PawsOn == 0 && gen_.LodFlg > 0) {
 		// Move Things
 		moveAirObj(air_);
 		grd_.MSP.copy(air_.MapSPS);
 		if (waves) waves.update(); // Move Ocean
 		grids.update();			// Move Grids
-		if (StatOn) StatOn.update(); // update stats
+		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 	}
 	prntHUDval(air_);
 	moveCamera(camera,cam_);
@@ -511,7 +489,7 @@ function loadSkyBox() {
 	scene.background = envMap;
 //	scene.environment = envMap;
 	// LensFlare
-	if (LnFFlg) {				// SunFlare	
+	if (gen_.LnFFlg) {				// SunFlare	
 		LF0Txt = txtrLoader.load(LF0Src);
 		LF1Txt = txtrLoader.load(LF1Src);
 	}
@@ -523,7 +501,7 @@ function initSkyBox() {
 	// Fog (doesn't work with Normal Material)
 	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
 	// Lensflare
-	if (LnFFlg) {				// SunFlare		
+	if (gen_.LnFFlg) {				// SunFlare		
 		let	spotLight = new THREE.PointLight(0xffffff);
 		scene.add(spotLight);
 		spotLight.position.copy(SunPos).normalize;
@@ -843,7 +821,7 @@ function onTouchMove(event) {
 
 //- Toggle Pause
 function toglPaws() {
-	PawsOn = 1 - PawsOn;
+	gen_.PawsOn = 1 - gen_.PawsOn;
 }
 
 //- Change Camera View
