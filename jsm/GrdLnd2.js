@@ -224,17 +224,17 @@ let tre_ = {
 
 //= Make Grid Map Textures =====//==============================================
 
-function initGrdMat(gen_,grd_) {
+function initGrdMat(grd_,gen_) {
 	// Create Links
 	grd_.Idx = [gt0_.G0Indx,gt1_.G1Indx]; // Index to Patterns
 	grd_.Mat = [gt0_.G0MPtr,gt1_.G1MPtr,gt2_.G2MPtr], // Materials
 	// Initialze Textures
-	initGr0Mat(gen_,grd_);
-	initGr1Mat(gen_,grd_);
-	initGr2Mat(gen_,grd_);
+	initGr0Mat(grd_,gen_);
+	initGr1Mat(grd_,gen_);
+	initGr2Mat(grd_,gen_);
 }
 
-function initGr0Mat(gen_,grd_) {
+function initGr0Mat(grd_,gen_) {
 	for (let n = 0; n < txtTot; n++) {
 		// Make Large Image and Get ImageData
 		gen_.contxt.fillStyle = GrdDrt;
@@ -268,7 +268,7 @@ function initGr0Mat(gen_,grd_) {
 	}
 }
 
-function initGr1Mat(gen_,grd_) {
+function initGr1Mat(grd_,gen_) {
 // This creates up to 81 unique 3X3 Textures (similar to FSX textures)
 // Created using ImageData from Gr4IPtr and patterns from Gr4TPtr
 // Stored by ID number
@@ -303,7 +303,7 @@ function initGr1Mat(gen_,grd_) {
 	}
 }
 
-function initGr2Mat(gen_,grd_) {
+function initGr2Mat(grd_,gen_) {
 	// Need 27 3X3 textures which will be repeated 27 times
 	// Create Grid 6 Texture Data and Materials (9 squares repeated)
 	let yd0, xd0;
