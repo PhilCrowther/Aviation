@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Nov 2025
+Version dated 25 Nov 2025
 
 @fileoverview
 This version of the GrdMap module is designed to work with your main program 
@@ -85,11 +85,11 @@ import {color,texture,normalMap,positionLocal} from 'three/tsl';
 *
 *******************************************************************************/
 
-function loadGeoMat(imagLoader,txtrLoader,grd_,gen_) {
-	loadGe1Mat(imagLoader,grd_.DfS,grd_.MSz,grd_.DfM,gen_.contxt); // Diffuse Textures
-	loadGe1Mat(imagLoader,grd_.RfS,grd_.MSz,grd_.RfM,gen_.contxt); // Roughness Textures
+function loadGeoMat(grd_,gen_) {
+	loadGe1Mat(grd_,gen_,grd_.DfS,grd_.DfM); // Diffuse Textures
+	loadGe1Mat(grd_,gen_,grd_.RfS,grd_.RfM); // Roughness Textures
 	// Static Normal Map (Grid 2 Only) -----------------------------------------
-	txtrLoader.load(grd_.N2S,function(texture) {
+	gen_.txtrLd.load(grd_.N2S,function(texture) {
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
 		texture.minFilter = LinearMipMapLinearFilter;
@@ -103,17 +103,17 @@ function loadGeoMat(imagLoader,txtrLoader,grd_,gen_) {
 }
 
 //- Load One GeoMap
-function loadGe1Mat(imagLoader,fnm,MSz,dst,ctx) {
+function loadGe1Mat(grd_,gen_,src,dst) {
 	let ImgDat = 0;
 	let texture = 0;
-	imagLoader.load(fnm,function(image) { // Load, Split and Save Textures
-		ctx.drawImage(image,0,0,MSz,MSz);
+	gen_.imagLd.load(src,function(image) { // Load, Split and Save Textures
+		gen_.contxt.drawImage(image,0,0,grd_.MSz,grd_.MSz);
 		// Grid0 and Grid1 - Static Color Texture - Divided into 4 Parts
 		let idx = 0;
-		let siz = MSz/4;
+		let siz = grd_.MSz/4;
 		for (let z = 0; z < 4; z++) {
 			for (let x = 0; x < 4; x++) {
-				ImgDat = ctx.getImageData(siz*x,siz*z,siz,siz);
+				ImgDat = gen_.contxt.getImageData(siz*x,siz*z,siz,siz);
 				texture = new DataTexture(ImgDat.data,siz,siz);
 				texture.format = RGBAFormat;
 				texture.magFilter = LinearFilter;
@@ -126,8 +126,8 @@ function loadGe1Mat(imagLoader,fnm,MSz,dst,ctx) {
 			}
 		}
 		// Grid2 - Static Color Map Texture
-		ImgDat = ctx.getImageData(0,0,MSz,MSz);
-		texture = new DataTexture(ImgDat.data,MSz,MSz);
+		ImgDat = gen_.contxt.getImageData(0,0,grd_.MSz,grd_.MSz);
+		texture = new DataTexture(ImgDat.data,grd_.MSz,grd_.MSz);
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
 		texture.minFilter = LinearMipMapLinearFilter;
@@ -147,9 +147,9 @@ function loadGe1Mat(imagLoader,fnm,MSz,dst,ctx) {
 
 class GrdMap {
 
-constructor(grd_,scene) {
+constructor(grd_,gen_) {
 	this.grd_ = grd_;
-	this.scene = scene;
+	this.scene = gen_.scene;
 
 //- Grid 0 ---------------------//----------------------------------------------
 	this.grd_.Grx[0] = {
@@ -505,4 +505,5 @@ export {loadGeoMat,GrdMap};
 250901: 	Color and map no longer mix; using colored map instead
 250909: v2	For use with Ocean2 (compute shaders) due to increases res, no detail required
 251124:		Changed context source to gen_.contxt
+251125:		Add scene and Loaders to gen_
 */
