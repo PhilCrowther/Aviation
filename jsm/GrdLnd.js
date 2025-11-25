@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Nov 2025
+Version dated 25 Nov 2025
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -486,7 +486,7 @@ function makeVrtD(dtColr,dtData,Weight) {
 
 //= INIT ROADS =================//==============================================
 
-function initRoads(grd_,gen_,scene) {
+function initRoads(grd_,gen_) {
 	rd1_.Siz = 2*grd_.Siz;
 	rd2_.Siz = 2*grd_.Siz;
 	rd0_.r0Data = new Uint8Array(4*rd0_.r0Size*rd0_.r0Size);
@@ -500,8 +500,8 @@ function initRoads(grd_,gen_,scene) {
 	rd0_.txtrod.offset.set(0,0);
 	rd1_.Txt = rd0_.txtrod;
 	rd2_.Txt = rd0_.txtrod;
-	init1Road(rd1_,grd_,gen_,scene);
-	init1Road(rd2_,grd_,gen_,scene);
+	init1Road(grd_,gen_,rd1_);
+	init1Road(grd_,gen_,rd2_);
 }
 
 function initRClr(dtColr,dtData,Weight) {
@@ -524,64 +524,64 @@ function initRClr(dtColr,dtData,Weight) {
 	}
 }
 
-function init1Road(Rod,grd_,gen_,scene) {
+function init1Road(grd_,gen_,road) {
 	// Load Variables
-	Rod.RCi = Rod.RCs-1;				// Max Index Value
-	Rod.MZV[Rod.RCi] = 0;				// Z-Values
-	Rod.MXV[Rod.RCi] = 0;				// X-Values
-	Rod.Nor = Rod.RCi;					// Max North Square (updated)
-	Rod.Est = Rod.RCi;					// Max East Square (updated)
-	Rod.Num = Rod.RCs * Rod.RCs;		// Size of array
-	Rod.Ptr[Rod.Num-1] = 0;				// Mesh Pointers
+	road.RCi = road.RCs-1;				// Max Index Value
+	road.MZV[road.RCi] = 0;				// Z-Values
+	road.MXV[road.RCi] = 0;				// X-Values
+	road.Nor = road.RCi;					// Max North Square (updated)
+	road.Est = road.RCi;					// Max East Square (updated)
+	road.Num = road.RCs * road.RCs;		// Size of array
+	road.Ptr[road.Num-1] = 0;				// Mesh Pointers
 
-	if (Rod.Typ == 1) {
+	if (road.Typ == 1) {
 		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz-0.5*grd_.Siz;
-		for (let i = 0; i < Rod.RCs; i++) {
-			Rod.MZV[i] = zx;
-			Rod.MXV[i] = zx;
-			zx = zx + Rod.Siz;
+		let zx = -0.5*(road.RCs)*road.Siz-0.5*grd_.Siz;
+		for (let i = 0; i < road.RCs; i++) {
+			road.MZV[i] = zx;
+			road.MXV[i] = zx;
+			zx = zx + road.Siz;
 		}
-		let geometry = new PlaneGeometry(25*Ft2Mtr,Rod.Siz);	// N/S Road;
-		let DatTxt = Rod.Txt;
+		let geometry = new PlaneGeometry(25*Ft2Mtr,road.Siz);	// N/S Road;
+		let DatTxt = road.Txt;
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = gen_.maxAns;		// ###
 		DatTxt.needsUpdate = true;
 		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new Mesh(geometry,material);
-			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
+		for (let n = 0; n < road.Num; n++) {	// Source
+			road.Ptr[n] = new Mesh(geometry,material);
+			if (road.Shd == 1) road.Ptr[n].receiveShadow = true;
 		}
 	}
 	
-	if (Rod.Typ == 2) {
+	if (road.Typ == 2) {
 		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz+0.5*grd_.Siz;
-		for (let i = 0; i < Rod.RCs; i++) {
-			Rod.MZV[i] = zx;
-			Rod.MXV[i] = zx;
-			zx = zx + Rod.Siz;
+		let zx = -0.5*(road.RCs)*road.Siz+0.5*grd_.Siz;
+		for (let i = 0; i < road.RCs; i++) {
+			road.MZV[i] = zx;
+			road.MXV[i] = zx;
+			zx = zx + road.Siz;
 		}
-		let geometry = new PlaneGeometry(Rod.Siz,25*Ft2Mtr);	// E/W Road;
-		let DatTxt = Rod.Txt;
+		let geometry = new PlaneGeometry(road.Siz,25*Ft2Mtr);	// E/W Road;
+		let DatTxt = road.Txt;
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = gen_.maxAns;		// ###
 		DatTxt.needsUpdate = true;
 		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new Mesh(geometry,material);
-			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
+		for (let n = 0; n < road.Num; n++) {	// Source
+			road.Ptr[n] = new Mesh(geometry,material);
+			if (road.Shd == 1) road.Ptr[n].receiveShadow = true;
 		}
 	}
 			
 	let n = 0;
 	// Set Starting Position of Squares
-	for (let z = 0; z < Rod.RCs; z++) {		// Row
-		for (let x = 0; x < Rod.RCs; x++) {	// Column
-			Rod.Ptr[n].rotation.x = -90*DegRad;
-			scene.add(Rod.Ptr[n]);
-			Rod.Ptr[n].renderOrder = 1;
-			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-Rod.MZV[z]);
+	for (let z = 0; z < road.RCs; z++) {		// Row
+		for (let x = 0; x < road.RCs; x++) {	// Column
+			road.Ptr[n].rotation.x = -90*DegRad;
+			gen_.scene.add(road.Ptr[n]);
+			road.Ptr[n].renderOrder = 1;
+			road.Ptr[n].position.set(road.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-road.MZV[z]);
 			n++;
 		}
 	}
@@ -596,81 +596,81 @@ function moveRoads(grd_,gen_) {
 }
 
 // Move Roads
-function move1Road(grd_,gen_,Rod) {
+function move1Road(grd_,gen_,road) {
 	let j = 0;
 	let v = 0; 
-	let max = 0.5*Rod.RCs*Rod.Siz;
+	let max = 0.5*road.RCs*road.Siz;
 	let min = -max;
 	// Update Z and X-Values
-	for (let i = 0; i < Rod.RCs; i++) {
-		Rod.MZV[i] = Rod.MZV[i] - grd_.SPS.z;	// Rows
-		Rod.MXV[i] = Rod.MXV[i] - grd_.SPS.x;	// Columns
+	for (let i = 0; i < road.RCs; i++) {
+		road.MZV[i] = road.MZV[i] - grd_.SPS.z;	// Rows
+		road.MXV[i] = road.MXV[i] - grd_.SPS.x;	// Columns
 	}
 	// Test North/South
 	if (grd_.SPS.z < 0) {		// If Moving South
-		j = Rod.Nor;
-		if (Rod.MZV[j] >= max) {
-			v = min+(Rod.MZV[j]-max);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MZV[j] = v;
+		j = road.Nor;
+		if (road.MZV[j] >= max) {
+			v = min+(road.MZV[j]-max);
+			for (let i = 0; i < road.Stp; i++) {
+				road.MZV[j] = v;
 				j = j - 1;
-				if (j < 0) j = Rod.RCi;
-				v = v - Rod.Siz;
+				if (j < 0) j = road.RCi;
+				v = v - road.Siz;
 			}
-			Rod.Nor = Rod.Nor - Rod.Stp;
-			if (Rod.Nor < 0) Rod.Nor = Rod.Nor + Rod.RCs;
+			road.Nor = road.Nor - road.Stp;
+			if (road.Nor < 0) road.Nor = road.Nor + road.RCs;
 		}
 	}
 	if (grd_.SPS.z > 0) {		// If Moving North
-		j = Rod.Nor + 1;
-		if (j > Rod.RCi) j = 0;
-		if (Rod.MZV[j] <= min) {
-			v = max-(min-Rod.MZV[j]);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MZV[j] = v;
+		j = road.Nor + 1;
+		if (j > road.RCi) j = 0;
+		if (road.MZV[j] <= min) {
+			v = max-(min-road.MZV[j]);
+			for (let i = 0; i < road.Stp; i++) {
+				road.MZV[j] = v;
 				j++;
-				if (j > Rod.RCi) j = 0;
-				v = v + Rod.Siz;
+				if (j > road.RCi) j = 0;
+				v = v + road.Siz;
 			}
-			Rod.Nor = Rod.Nor + Rod.Stp;
-			if (Rod.Nor > Rod.RCi) Rod.Nor = Rod.Nor - Rod.RCs;
+			road.Nor = road.Nor + road.Stp;
+			if (road.Nor > road.RCi) road.Nor = road.Nor - road.RCs;
 		}
 	}
 	// Test East/West
 	if (grd_.SPS.x < 0) {		// If Moving West
-		j = Rod.Est;
-		if (Rod.MXV[j] >= max) {
-			v = min+(Rod.MXV[j]-max);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MXV[j] = v;
+		j = road.Est;
+		if (road.MXV[j] >= max) {
+			v = min+(road.MXV[j]-max);
+			for (let i = 0; i < road.Stp; i++) {
+				road.MXV[j] = v;
 				j = j - 1;
-				if (j < 0) j = Rod.RCi;
-				v = v - Rod.Siz;
+				if (j < 0) j = road.RCi;
+				v = v - road.Siz;
 			}
-			Rod.Est = Rod.Est - Rod.Stp;
-			if (Rod.Est < 0) Rod.Est = Rod.Est + Rod.RCs;
+			road.Est = road.Est - road.Stp;
+			if (road.Est < 0) road.Est = road.Est + road.RCs;
 		}
 	}
 	if (grd_.SPS.x > 0) {		// If Moving East
-		j = Rod.Est + 1;
-		if (j > Rod.RCi) j = 0;	
-		if (Rod.MXV[j] <= min) {
-			v = max-(min-Rod.MXV[j]);
-			for (let i = 0; i < Rod.Stp; i++) {			
-				Rod.MXV[j] = v;
+		j = road.Est + 1;
+		if (j > road.RCi) j = 0;	
+		if (road.MXV[j] <= min) {
+			v = max-(min-road.MXV[j]);
+			for (let i = 0; i < road.Stp; i++) {			
+				road.MXV[j] = v;
 				j++;
-				if (j > Rod.RCi) j = 0;
-				v = v + Rod.Siz;
+				if (j > road.RCi) j = 0;
+				v = v + road.Siz;
 			}
-			Rod.Est = Rod.Est + Rod.Stp;
-			if (Rod.Est > Rod.RCi) Rod.Est = Rod.Est - Rod.RCs;
+			road.Est = road.Est + road.Stp;
+			if (road.Est > road.RCi) road.Est = road.Est - road.RCs;
 		}
 	}
 	// Set Position
 	let n = 0;
-	for (let z = 0; z < Rod.RCs; z++) {	// Row
-		for (let x = 0; x < Rod.RCs; x++) {	// Col
-			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-Rod.MZV[z]);
+	for (let z = 0; z < road.RCs; z++) {	// Row
+		for (let x = 0; x < road.RCs; x++) {	// Col
+			road.Ptr[n].position.set(road.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-road.MZV[z]);
 			n++;
 		}
 	}
@@ -684,7 +684,7 @@ function move1Road(grd_,gen_,Rod) {
 
 //= LOAD TREELINE ==============//==============================================
 
-function loadTreLin(grd_,gltfLoader,scene) {
+function loadTreLin(grd_,gen_) {
 	for (let n = 0; n < tre_.ObjNum; n++) {
 		// Assign Random Map Position
 		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
@@ -694,11 +694,11 @@ function loadTreLin(grd_,gltfLoader,scene) {
 		// Select Object
 		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
 		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
-		gltfLoader.load(ObjSrc, function (gltf) {
+		gen_.gltfLd.load(ObjSrc, function (gltf) {
 			tre_.ObjAdr[n] = gltf.scene;
 			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
 			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
-			scene.add(tre_.ObjAdr[n]);
+			gen_.scene.add(tre_.ObjAdr[n]);
 		});
 	}
 }
@@ -706,7 +706,7 @@ function loadTreLin(grd_,gltfLoader,scene) {
 //= INIT TREELINE ==============//==============================================
 // Procedurally generated treeline (not used)
 
-function makeTreLin(grd_,scene) {
+function makeTreLin(grd_,gen_) {
 	let points = [
 		new Vector2(4.0,-6.7),	// Bot
 		new Vector2(4.9,-3.0),
@@ -761,7 +761,7 @@ function makeTreLin(grd_,scene) {
 	tre_.t0Tree[0].position.y = 9.8;
 	for (let n = 1; n < tre_.TreTot; n++) {
 		tre_.t0Tree[n] = tre_.t0Tree[0].clone();
-		scene.add(tre_.t0Tree[n]);
+		gen_.scene.add(tre_.t0Tree[n]);
 		tre_.t0Tree[n].rotation.y = (Math.floor(Math.random()+0.5))*90*DegRad;
 		tre_.t0Tree[n].position.y = 9.8;
 		tre_.t0PosX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
@@ -792,7 +792,7 @@ function initTClr(dtColr,dtData,Weight) {
 
 //= MOVE TREELINE =================//==============================================
 
-function moveTreLin(grd_,air_,gen_) {
+function moveTreLin(grd_,gen_,air_) {
 	// Convert Distances into Meters to match landscape program
 	let a = 13.5*grd_.Siz;
 	let x,y,z;
@@ -815,7 +815,7 @@ function moveTreLin(grd_,air_,gen_) {
 *
 *******************************************************************************/
 
-let GrdMap = function (grd_, scene) {
+let GrdMap = function (grd_,gen_) {
 
 //- Grid 0 ---------------------//----------------------------------------------
 	grd_.Grx[0] = {
@@ -874,15 +874,15 @@ let GrdMap = function (grd_, scene) {
 		EWA:	0,				// Shared East/West Adjustment (updated)
 		Mat:	0				// Match Texture of Outer and Inner Blocks
 	}
-	init1GrMap(grd_.Grx[0], grd_, scene);
-	init1GrMap(grd_.Grx[1], grd_, scene);
-	init1GrMap(grd_.Grx[2], grd_, scene);
+	init1GrMap(grd_,grd_.Grx[0],gen_);
+	init1GrMap(grd_,grd_.Grx[1],gen_);
+	init1GrMap(grd_,grd_.Grx[2],gen_);
 }
 
 GrdMap.prototype.update = function (grd_) {
-	move1GrMap(grd_.Grx[0], grd_);
-	move1GrMap(grd_.Grx[1], grd_);
-	move1GrMap(grd_.Grx[2], grd_);
+	move1GrMap(grd_,grd_.Grx[0]);
+	move1GrMap(grd_,grd_.Grx[1]);
+	move1GrMap(grd_,grd_.Grx[2]);
 }
 
 /*******************************************************************************
@@ -891,7 +891,7 @@ GrdMap.prototype.update = function (grd_) {
 *
 *******************************************************************************/
 
-function init1GrMap(grx_, grd_, scene) {
+function init1GrMap(grd_,grx_,gen_) {
 	// Load Variables
 	grx_.RCi = grx_.RCs-1;		// Max Index Value
 	grx_.MZV[grx_.RCi] = 0;		// Z-Values
@@ -1000,7 +1000,7 @@ function init1GrMap(grx_, grd_, scene) {
 	for (let y = 0; y < grx_.RCs; y++) {		// Row
 		for (let x = 0; x < grx_.RCs; x++) {	// Column
 			grx_.Ptr[n].rotation.x = -90*DegRad;
-			scene.add(grx_.Ptr[n]);
+			gen_.scene.add(grx_.Ptr[n]);
 			grx_.Ptr[n].position.set(grx_.MXV[x],-grd_.SPS.y,-grx_.MZV[y]);
 			n++;
 		}
@@ -1013,7 +1013,7 @@ function init1GrMap(grx_, grd_, scene) {
 *
 *******************************************************************************/
 
-function move1GrMap(grx_, grd_) {
+function move1GrMap(grd_,grx_) {
 	let grd1_ = grd_.Grx[1];
 	let grd2_ = grd_.Grx[2];
 	let j, v = 0;
@@ -1173,4 +1173,5 @@ export {initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,makeTreLin,moveTreLin};
 250331:	Use **2 to square numbers
 250531:	Rename GrdMap3b as GrdMap
 251103: Added LoadTreLin
+251125: Use gen_ to Store Loader and Scene Values
 */
