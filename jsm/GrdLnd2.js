@@ -500,8 +500,8 @@ function initRoads(grd_,gen_) {
 	rd0_.txtrod.offset.set(0,0);
 	rd1_.Txt = rd0_.txtrod;
 	rd2_.Txt = rd0_.txtrod;
-	init1Road(grd_,gen_,rd1);
-	init1Road(grd_,gen_,rd2);
+	init1Road(grd_,gen_,rd1_);
+	init1Road(grd_,gen_,rd2_);
 }
 
 function initRClr(dtColr,dtData,Weight) {
@@ -524,64 +524,64 @@ function initRClr(dtColr,dtData,Weight) {
 	}
 }
 
-function init1Road(grd_,gen_,Rod) {
+function init1Road(grd_,gen_,road) {
 	// Load Variables
-	Rod.RCi = Rod.RCs-1;				// Max Index Value
-	Rod.MZV[Rod.RCi] = 0;				// Z-Values
-	Rod.MXV[Rod.RCi] = 0;				// X-Values
-	Rod.Nor = Rod.RCi;					// Max North Square (updated)
-	Rod.Est = Rod.RCi;					// Max East Square (updated)
-	Rod.Num = Rod.RCs * Rod.RCs;		// Size of array
-	Rod.Ptr[Rod.Num-1] = 0;				// Mesh Pointers
+	road.RCi = road.RCs-1;				// Max Index Value
+	road.MZV[road.RCi] = 0;				// Z-Values
+	road.MXV[road.RCi] = 0;				// X-Values
+	road.Nor = road.RCi;					// Max North Square (updated)
+	road.Est = road.RCi;					// Max East Square (updated)
+	road.Num = road.RCs * road.RCs;		// Size of array
+	road.Ptr[road.Num-1] = 0;				// Mesh Pointers
 
-	if (Rod.Typ == 1) {
+	if (road.Typ == 1) {
 		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz-0.5*grd_.Siz;
-		for (let i = 0; i < Rod.RCs; i++) {
-			Rod.MZV[i] = zx;
-			Rod.MXV[i] = zx;
-			zx = zx + Rod.Siz;
+		let zx = -0.5*(road.RCs)*road.Siz-0.5*grd_.Siz;
+		for (let i = 0; i < road.RCs; i++) {
+			road.MZV[i] = zx;
+			road.MXV[i] = zx;
+			zx = zx + road.Siz;
 		}
-		let geometry = new PlaneGeometry(25*Ft2Mtr,Rod.Siz);	// N/S Road;
-		let DatTxt = Rod.Txt;
+		let geometry = new PlaneGeometry(25*Ft2Mtr,road.Siz);	// N/S Road;
+		let DatTxt = road.Txt;
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = gen_.maxAns;		// ###
 		DatTxt.needsUpdate = true;
 		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new Mesh(geometry,material);
-			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
+		for (let n = 0; n < road.Num; n++) {	// Source
+			road.Ptr[n] = new Mesh(geometry,material);
+			if (road.Shd == 1) road.Ptr[n].receiveShadow = true;
 		}
 	}
 	
-	if (Rod.Typ == 2) {
+	if (road.Typ == 2) {
 		// Compute Starting Z and X Values
-		let zx = -0.5*(Rod.RCs)*Rod.Siz+0.5*grd_.Siz;
-		for (let i = 0; i < Rod.RCs; i++) {
-			Rod.MZV[i] = zx;
-			Rod.MXV[i] = zx;
-			zx = zx + Rod.Siz;
+		let zx = -0.5*(road.RCs)*road.Siz+0.5*grd_.Siz;
+		for (let i = 0; i < road.RCs; i++) {
+			road.MZV[i] = zx;
+			road.MXV[i] = zx;
+			zx = zx + road.Siz;
 		}
-		let geometry = new PlaneGeometry(Rod.Siz,25*Ft2Mtr);	// E/W Road;
-		let DatTxt = Rod.Txt;
+		let geometry = new PlaneGeometry(road.Siz,25*Ft2Mtr);	// E/W Road;
+		let DatTxt = road.Txt;
 		DatTxt.repeat.set(10,10);
 		DatTxt.anisotropy = gen_.maxAns;		// ###
 		DatTxt.needsUpdate = true;
 		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		for (let n = 0; n < Rod.Num; n++) {	// Source
-			Rod.Ptr[n] = new Mesh(geometry,material);
-			if (Rod.Shd == 1) Rod.Ptr[n].receiveShadow = true;
+		for (let n = 0; n < road.Num; n++) {	// Source
+			road.Ptr[n] = new Mesh(geometry,material);
+			if (road.Shd == 1) road.Ptr[n].receiveShadow = true;
 		}
 	}
 			
 	let n = 0;
 	// Set Starting Position of Squares
-	for (let z = 0; z < Rod.RCs; z++) {		// Row
-		for (let x = 0; x < Rod.RCs; x++) {	// Column
-			Rod.Ptr[n].rotation.x = -90*DegRad;
-			gen_.scene.add(Rod.Ptr[n]);
-			Rod.Ptr[n].renderOrder = 1;
-			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-Rod.MZV[z]);
+	for (let z = 0; z < road.RCs; z++) {		// Row
+		for (let x = 0; x < road.RCs; x++) {	// Column
+			road.Ptr[n].rotation.x = -90*DegRad;
+			gen_.scene.add(road.Ptr[n]);
+			road.Ptr[n].renderOrder = 1;
+			road.Ptr[n].position.set(road.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-road.MZV[z]);
 			n++;
 		}
 	}
@@ -596,81 +596,81 @@ function moveRoads(grd_,gen_) {
 }
 
 // Move Roads
-function move1Road(grd_,gen_,Rod) {
+function move1Road(grd_,gen_,road) {
 	let j = 0;
 	let v = 0; 
-	let max = 0.5*Rod.RCs*Rod.Siz;
+	let max = 0.5*road.RCs*road.Siz;
 	let min = -max;
 	// Update Z and X-Values
-	for (let i = 0; i < Rod.RCs; i++) {
-		Rod.MZV[i] = Rod.MZV[i] - grd_.SPS.z;	// Rows
-		Rod.MXV[i] = Rod.MXV[i] - grd_.SPS.x;	// Columns
+	for (let i = 0; i < road.RCs; i++) {
+		road.MZV[i] = road.MZV[i] - grd_.SPS.z;	// Rows
+		road.MXV[i] = road.MXV[i] - grd_.SPS.x;	// Columns
 	}
 	// Test North/South
 	if (grd_.SPS.z < 0) {		// If Moving South
-		j = Rod.Nor;
-		if (Rod.MZV[j] >= max) {
-			v = min+(Rod.MZV[j]-max);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MZV[j] = v;
+		j = road.Nor;
+		if (road.MZV[j] >= max) {
+			v = min+(road.MZV[j]-max);
+			for (let i = 0; i < road.Stp; i++) {
+				road.MZV[j] = v;
 				j = j - 1;
-				if (j < 0) j = Rod.RCi;
-				v = v - Rod.Siz;
+				if (j < 0) j = road.RCi;
+				v = v - road.Siz;
 			}
-			Rod.Nor = Rod.Nor - Rod.Stp;
-			if (Rod.Nor < 0) Rod.Nor = Rod.Nor + Rod.RCs;
+			road.Nor = road.Nor - road.Stp;
+			if (road.Nor < 0) road.Nor = road.Nor + road.RCs;
 		}
 	}
 	if (grd_.SPS.z > 0) {		// If Moving North
-		j = Rod.Nor + 1;
-		if (j > Rod.RCi) j = 0;
-		if (Rod.MZV[j] <= min) {
-			v = max-(min-Rod.MZV[j]);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MZV[j] = v;
+		j = road.Nor + 1;
+		if (j > road.RCi) j = 0;
+		if (road.MZV[j] <= min) {
+			v = max-(min-road.MZV[j]);
+			for (let i = 0; i < road.Stp; i++) {
+				road.MZV[j] = v;
 				j++;
-				if (j > Rod.RCi) j = 0;
-				v = v + Rod.Siz;
+				if (j > road.RCi) j = 0;
+				v = v + road.Siz;
 			}
-			Rod.Nor = Rod.Nor + Rod.Stp;
-			if (Rod.Nor > Rod.RCi) Rod.Nor = Rod.Nor - Rod.RCs;
+			road.Nor = road.Nor + road.Stp;
+			if (road.Nor > road.RCi) road.Nor = road.Nor - road.RCs;
 		}
 	}
 	// Test East/West
 	if (grd_.SPS.x < 0) {		// If Moving West
-		j = Rod.Est;
-		if (Rod.MXV[j] >= max) {
-			v = min+(Rod.MXV[j]-max);
-			for (let i = 0; i < Rod.Stp; i++) {
-				Rod.MXV[j] = v;
+		j = road.Est;
+		if (road.MXV[j] >= max) {
+			v = min+(road.MXV[j]-max);
+			for (let i = 0; i < road.Stp; i++) {
+				road.MXV[j] = v;
 				j = j - 1;
-				if (j < 0) j = Rod.RCi;
-				v = v - Rod.Siz;
+				if (j < 0) j = road.RCi;
+				v = v - road.Siz;
 			}
-			Rod.Est = Rod.Est - Rod.Stp;
-			if (Rod.Est < 0) Rod.Est = Rod.Est + Rod.RCs;
+			road.Est = road.Est - road.Stp;
+			if (road.Est < 0) road.Est = road.Est + road.RCs;
 		}
 	}
 	if (grd_.SPS.x > 0) {		// If Moving East
-		j = Rod.Est + 1;
-		if (j > Rod.RCi) j = 0;	
-		if (Rod.MXV[j] <= min) {
-			v = max-(min-Rod.MXV[j]);
-			for (let i = 0; i < Rod.Stp; i++) {			
-				Rod.MXV[j] = v;
+		j = road.Est + 1;
+		if (j > road.RCi) j = 0;	
+		if (road.MXV[j] <= min) {
+			v = max-(min-road.MXV[j]);
+			for (let i = 0; i < road.Stp; i++) {			
+				road.MXV[j] = v;
 				j++;
-				if (j > Rod.RCi) j = 0;
-				v = v + Rod.Siz;
+				if (j > road.RCi) j = 0;
+				v = v + road.Siz;
 			}
-			Rod.Est = Rod.Est + Rod.Stp;
-			if (Rod.Est > Rod.RCi) Rod.Est = Rod.Est - Rod.RCs;
+			road.Est = road.Est + road.Stp;
+			if (road.Est > road.RCi) road.Est = road.Est - road.RCs;
 		}
 	}
 	// Set Position
 	let n = 0;
-	for (let z = 0; z < Rod.RCs; z++) {	// Row
-		for (let x = 0; x < Rod.RCs; x++) {	// Col
-			Rod.Ptr[n].position.set(Rod.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-Rod.MZV[z]);
+	for (let z = 0; z < road.RCs; z++) {	// Row
+		for (let x = 0; x < road.RCs; x++) {	// Col
+			road.Ptr[n].position.set(road.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-road.MZV[z]);
 			n++;
 		}
 	}
