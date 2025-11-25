@@ -816,7 +816,7 @@ function moveTreLin(gen_,grd_,air_) {
 *
 *******************************************************************************/
 
-let GrdMap = function (grd_, scene) {
+let GrdMap = function (grd_,gen_) {
 
 //- Grid 0 ---------------------//----------------------------------------------
 	grd_.Grx[0] = {
@@ -875,9 +875,9 @@ let GrdMap = function (grd_, scene) {
 		EWA:	0,				// Shared East/West Adjustment (updated)
 		Mat:	0				// Match Texture of Outer and Inner Blocks
 	}
-	init1GrMap(gen_,grd_,grd_.Grx[0]);
-	init1GrMap(gen_,grd_,grd_.Grx[1]);
-	init1GrMap(gen_,grd_,grd_.Grx[2]);
+	init1GrMap(grd_,grd_.Grx[0],gen_);
+	init1GrMap(grd_,grd_.Grx[1],gen_);
+	init1GrMap(grd_,grd_.Grx[2],gen_);
 }
 
 GrdMap.prototype.update = function (grd_) {
@@ -892,7 +892,7 @@ GrdMap.prototype.update = function (grd_) {
 *
 *******************************************************************************/
 
-function init1GrMap(gen_,grd_,grx_) {
+function init1GrMap(grd_,grx_,gen_) {
 	// Load Variables
 	grx_.RCi = grx_.RCs-1;		// Max Index Value
 	grx_.MZV[grx_.RCi] = 0;		// Z-Values
