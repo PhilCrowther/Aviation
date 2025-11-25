@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 251021
+*	FSIM FM2 DATA: 251125
 *
 ********************************************************************************
 
@@ -80,6 +80,12 @@ const BegTmp = 303.15;			// K = 86F (loaded into _air)
 //- GENERAL VARIABLES ----------//----------------------------------------------
 
 let gen_ = {
+		// General
+		scene:  0,				// Scene
+		render: 0,				// Renderer
+		imagLd: 0,				// Image Loader
+		txtrLd: 0,				// Texture Loader
+		gltfLd: 0,				// GLTF Loader
 		//- Flght Controls
 		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
 		PwrDif:	0,				// Power % Input - Value
