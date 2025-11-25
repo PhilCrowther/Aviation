@@ -10,7 +10,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Nov 2025
+Version dated 25 Nov 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -235,6 +235,13 @@ let loadingScreen = {
 	};
 let boxrot = 0;
 
+//= MODULES - General ==========//==============================================
+	gen_.scene  = scene;
+	gen_.render = renderer;
+	gen_.txtrLd = txtrLoader;
+	gen_.imagLd = imagLoader;
+	gen_.gltfLd = gltfLoader;
+
 //= GRIDS ======================//===============================================
 let ImgSiz = 1024;
 	gen_.canvas = document.createElement("canvas");
@@ -370,9 +377,9 @@ function loadAll() {
 	// Initialize Loading Screen
 	WaitScreen();				// init loading screen
 	loadSkyBox();
-	loadTreLin(grd_,gltfLoader,scene);
+	loadTreLin(grd_,gen_);
 	loadAirObj();
-	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
+	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
 	loadObject();
 	// Load stats
 	if (gen_.StatOn) {			// show stats
@@ -407,13 +414,13 @@ function initAll() {
 	initSkyBox();				// load skybox
 	// Objects
 	initAirObj();
-	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
+	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
 	initGrdMat(grd_,gen_);
 	grd_.SPS.y = air_.MapSPS.y;
-	grids = new GrdMap(grd_,scene);	// Init Grid Map
+	grids = new GrdMap(grd_,gen_);	// Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
-	initRoads(grd_,gen_,scene);		// Add Roads
-	moveTreLin(grd_,air_,gen_); // Add TreeLines
+	initRoads(grd_,gen_);		// Add Roads
+	moveTreLin(grd_,gen_,air_); // Add TreeLines
 	initObject();				// Stationary Objects
 	// Other
 	initCamera(camera,cam_);	// position camera
@@ -439,12 +446,12 @@ function rendAll() {
 		moveCamera(camera,cam_);
 		// Move Objects
 		moveAirObj();			// Move aircaft
-		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
+		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
 		// Move Grids
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
 		moveRoads(grd_,gen_);		// Move Roads
-		moveTreLin(grd_,air_,gen_); // Move TreeLines	
+		moveTreLin(grd_,gen_,air_); // Move TreeLines	
 		moveObject();			// Move objects
 		// Other
 		moveSounds();
@@ -455,7 +462,7 @@ function rendAll() {
 		stopSounds();
 		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
-	renderer.render(scene, camera);
+	renderer.render(scene,camera);
 }
 
 /********************************************************************************
@@ -1144,6 +1151,7 @@ function onWindowResize() {
 251011	Replaced renderASync with render
 251031	New Tree Generator
 251031: Move Road Data to GrdLnd
+251125: Use gen_ to Store Loader and Scene values
 */
 
 </script>

@@ -10,7 +10,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Nov 2025
+Version dated 25 Nov 2025
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -174,6 +174,12 @@ let BegTmp = 288.15;			// K = 59F
 
 //- GENERAL VARIABLES ----------//-----------------------------------------------
 let gen_ = {
+		// General
+		scene:  0,				// Scene
+		render: 0,				// Renderer
+		imagLd: 0,				// Image Loader
+		txtrLd: 0,				// Texture Loader
+		gltfLd: 0,				// GLTF Loader
 		//- Display
 		PawsOn:	0,				// Pause
 		StatOn:	1,				// Stats (0 = off, 1 = on)
@@ -291,6 +297,13 @@ let loadingScreen = {
 	box: 0
 };
 let boxrot = 0;
+
+//= MODULES - General ==========//==============================================
+	gen_.scene  = scene;
+	gen_.render = renderer;
+	gen_.txtrLd = txtrLoader;
+	gen_.imagLd = imagLoader;
+	gen_.gltfLd = gltfLoader;
 
 //= GRIDS ======================//===============================================
 let ImgSiz = 1024;
@@ -655,7 +668,7 @@ let On_Paws, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, O
 function loadAll() {
 	WaitScreen();				// init loading screen
 	loadSkyBox();
-	loadTreLin(grd_,gltfLoader,scene);
+	loadTreLin(grd_,gen_);
 	loadObject();
 	loadAirObj();
 	// Load stats
@@ -689,10 +702,10 @@ function initAll() {
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	initGrdMat(grd_,gen_);
 	grd_.SPS.y = air_.MapPos.y;	// Init Position
-	grids = new GrdMap(grd_,scene);	// Init Grid Map
+	grids = new GrdMap(grd_,gen_);	// Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
-	initRoads(grd_,gen_,scene);
-	moveTreLin(grd_,air_,gen_); // Add TreeLines
+	initRoads(grd_,gen_);
+	moveTreLin(grd_,gen_,air_); // Add TreeLines
 	initObject();				// Stationary Objects
 	// Other
 	initCamera(camera,cam_);	// position camera
@@ -720,7 +733,7 @@ function rendAll() {
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
 		moveRoads(grd_,gen_);
-		moveTreLin(grd_,air_,gen_); // Add TreeLines		
+		moveTreLin(grd_,gen_,air_); // Add TreeLines		
 		moveObject();			// Move objects
 		moveSounds();
 		prntHUDval();			// change HUD value
@@ -730,7 +743,7 @@ function rendAll() {
 		stopSounds();
 		gen_.SndFlg = 0;
 	}
-	renderer.render(scene, camera);
+	renderer.render(scene,camera);
 }
 
 /********************************************************************************
@@ -1537,6 +1550,7 @@ function onWindowResize() {
 *	CHANGE LOG
 *
 *********************************************************************************
+251125: Use gen_ to Store Loader and Scene values
 */
 
 </script>
