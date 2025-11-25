@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Nov 2025
+Version dated 25 Nov 2025
 
 This demo program uses portions of the GrdLnd module.
 
@@ -109,6 +109,12 @@ if (USorSI = "US") {
 
 //- GENERAL VARIABLES ----------//----------------------------------------------
 let gen_ = {
+		// General
+		scene:  0,				// Scene
+		render: 0,				// Renderer
+		imagLd: 0,				// Image Loader
+		txtrLd: 0,				// Texture Loader
+		gltfLd: 0,				// GLTF Loader
 		//- Display
 		PawsOn:	0,				// Pause
 		StatOn:	1,				// Stats (0 = off, 1 = on)
@@ -116,12 +122,13 @@ let gen_ = {
 		// Program Flags
 		LodFlg:	0,				// Set at end of initialization
 		// Altitude Adjustment
-		AltAdj:	0.99,			// Raises objects above map as altitude increases
+		AltAdj:	0.999,			// Raises objects above map as altitude increases
 		AltDif:	0,
 		// Misc
+		MaxAni: 0,				// MaxAnisotropy
+		// Canvas
 		contxt: 0,
 		canvas: 0,
-		MaxAni: 0,
 	}
 
 let tim_ = {
@@ -195,6 +202,8 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// r168
 	renderer.shadowMap.type = THREE.BasicShadowMap;
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
+//	Depth Buffer
+	renderer.logarithmicDepthBuffer = true;
 //- Clock
 const clock = new THREE.Clock();
 let oldTim, nowTim, difTim = 0;
@@ -233,16 +242,24 @@ let RESOURCES_LOADED = false;
 		RESOURCES_LOADED = true;
 		initAll();
 	};
-const txtrLoader = new THREE.TextureLoader(loadingManager);
-const imagLoader = new THREE.ImageLoader(loadingManager);
-const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
-let gltfLoader = new GLTFLoader(loadingManager);
+let	txtrLoader = new THREE.TextureLoader(loadingManager);
+let	imagLoader = new THREE.ImageLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+let	gltfLoader = new GLTFLoader(loadingManager);
+
+//= MODULES - General ==========//==============================================
+	gen_.scene  = scene;
+	gen_.render = renderer;
+	gen_.txtrLd = txtrLoader;
+	gen_.imagLd = imagLoader;
+	gen_.gltfLd = gltfLoader;
 
 //= GROUND TEXTURES ============//==============================================
 //- Canvas
+let ImgSiz = 1024				// Size of Ground Texture
 	gen_.canvas = document.createElement("canvas");
-	gen_.canvas.width = 1024;
-	gen_.canvas.height = 1024;
+	gen_.canvas.width = ImgSiz;
+	gen_.canvas.height = ImgSiz;
 	gen_.contxt = gen_.canvas.getContext('2d',{willReadFrequently: true});
 //- Dimensions
 let dqSize = 1024;				// For Sections
@@ -404,7 +421,7 @@ let Air_Spd, Air_Alt,Air_Hdg;
 	air_.AirObj.add(air_.AirPBY);
 	scene.add(air_.AirObj);
 let quaternion = new THREE.Quaternion();
-	
+
 /********************************************************************************
 *
 *	MAIN PROGRAM
@@ -419,8 +436,9 @@ function loadAll() {
 	air_.AirObj.rotation.x = Mod360(air_.AirRot.x) * DegRad;		// Pitch
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad;		// Heading
 	air_.MapSPS.y = air_.MapPos.y;
+	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadSkyBox();
-	loadTreLin(grd_,gltfLoader,scene);
+	loadTreLin(grd_,gen_);
 	loadJetExh();
 	if (gen_.StatOn) {			// Load Stats
 		gen_.StatOn = new Stats();
@@ -437,10 +455,10 @@ function initAll() {
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	initGrdMat(grd_,gen_);
 	grd_.SPS.copy(air_.MapSPS);
-	grids = new GrdMap(grd_,scene); // Init Grid Map
+	grids = new GrdMap(grd_,gen_); // Init Grid Map
 	grids.update(grd_);			// Mode Grid Map
-	initRoads(grd_,gen_,scene);
-	moveTreLin(grd_,air_,gen_); // Add TreeLines
+	initRoads(grd_,gen_);
+	moveTreLin(grd_,gen_,air_); // Add TreeLines
 	initJetExh();
 	prntHUDval(air_);
 	gen_.LodFlg = 1;
@@ -455,10 +473,11 @@ function rendAll() {
 		oldTim = nowTim;
 		// Move Things
 		moveAirObj(air_);
+		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 		grd_.SPS.copy(air_.MapSPS);
 		grids.update(grd_);		// Mode Grid Map
 		moveRoads(grd_,gen_);
-		moveTreLin(grd_,air_,gen_); // Add TreeLines
+		moveTreLin(grd_,gen_,air_); // Add TreeLines
 		if (gen_.StatOn) gen_.StatOn.update();	// update stats
 	}
 	prntHUDval(air_);
