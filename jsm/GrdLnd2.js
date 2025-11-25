@@ -701,7 +701,7 @@ function loadTreLin(gen_,grd_,air_) {
 			gen_.scene.add(tre_.ObjAdr[n]);
 		});
 	}
-	moveTreLin(gen_,grd_,air_)
+//	moveTreLin(gen_,grd_,air_);
 }
 
 //= INIT TREELINE ==============//==============================================
