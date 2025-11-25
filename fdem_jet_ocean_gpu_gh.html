@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Nov 2025
+Version dated 25 Nov 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -95,6 +95,12 @@ const Km2Mil = 0.621371;
 const Mil2Km = 1.60934;
 //- General
 let gen_ = {
+		// General
+		scene:  0,				// Scene
+		render: 0,				// Renderer
+		imagLd: 0,				// Image Loader
+		txtrLd: 0,				// Texture Loader
+		gltfLd: 0,				// GLTF Loader
 		//- Display
 		PawsOn:	0,				// Pause
 		StatOn:	1,				// Stats (0 = off, 1 = on)
@@ -202,6 +208,12 @@ const imagLoader = new THREE.ImageLoader(loadingManager);
 const txtrLoader = new THREE.TextureLoader(loadingManager);
 const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 
+//= MODULES - General ==========//==============================================
+	gen_.scene  = scene;
+	gen_.render = renderer;
+	gen_.imagLd = imagLoader;
+	gen_.txtrLd = txtrLoader;
+
 //= SKYBOX =====================//===============================================
 const FogCol = 0xbab4a6;		// Sky (for Fog only)
 //- Texture
@@ -261,9 +273,9 @@ let grd_ = {
 	gen_.canvas.width = grd_.MSz;
 	gen_.canvas.height = grd_.MSz;
 	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
-	// No Longer Necessary?
-//	gen_.contxt.translate(0, grd_.MSz); // Flips vertical for three.js
-//	gen_.contxt.scale(1,-1);
+	// Optional (seems to give more seamless display)
+	gen_.contxt.translate(0, grd_.MSz); // Flips vertical for three.js
+	gen_.contxt.scale(1,-1);
 
 //= GRIDS ======================//===============================================
 //- Adjustments
@@ -435,9 +447,9 @@ function loadAll() {
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad; // Heading
 	air_.MapSPS.y = air_.MapPos.y;
 	loadSkyBox();
-	loadGeoMat(imagLoader,txtrLoader,grd_,gen_);
+	loadGeoMat(grd_,gen_);
 	loadJetExh();
-	if (gen_.StatOn) {				// Load Stats
+	if (gen_.StatOn) {			// Load Stats
 		gen_.StatOn = new Stats();
 		document.body.appendChild(gen_.StatOn.dom);
 		gen_.StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
@@ -452,7 +464,7 @@ function initAll() {
 	grd_.Dsp = waves.displacement;
 	grd_.Nrm = waves.normMapTexture;
 	grd_.MSP.copy(air_.MapSPS);
-	grids = new GrdMap(grd_,scene);
+	grids = new GrdMap(grd_,gen_);
 	initAirObj(air_);			// Load Aircraft
 	initJetExh();
 	prntHUDval(air_);

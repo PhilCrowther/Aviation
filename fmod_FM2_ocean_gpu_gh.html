@@ -130,6 +130,12 @@ let GrvDLT = GrvMPS*DLTim2;
 let	AirDSL = 1.225;				// Density - Sea Level (kg/m3)
 //- General
 let gen_ = {
+		// General
+		scene:  0,				// Scene
+		render: 0,				// Renderer
+		imagLd: 0,				// Image Loader
+		txtrLd: 0,				// Texture Loader
+		gltfLd: 0,				// GLTF Loader
 		//- Display
 		PawsOn:	0,				// Pause
 		SndFlg:	0,				// Sound (0 = off; 1 = on)
@@ -257,6 +263,13 @@ let loadingScreen = {
 };
 let boxrot = 0;					//keep = 0
 
+//= MODULES - General ==========//==============================================
+	gen_.scene  = scene;
+	gen_.render = renderer;
+	gen_.imagLd = imagLoader;
+	gen_.txtrLd = txtrLoader;
+	gen_.gltfLd = gltfLoader;
+
 //= SKYBOX =====================//===============================================
 const FogCol = 0xbab4a6;		// Sky (for Fog only)
 //- Texture
@@ -312,7 +325,7 @@ let grd_ = {
 	gen_.canvas.width = grd_.MSz;
 	gen_.canvas.height = grd_.MSz;
 	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
-	// Optional
+	// Optional (seems to give more seamless display)
 	gen_.contxt.translate(0, grd_.MSz); // Flips vertical for three.js
 	gen_.contxt.scale(1,-1);
 
@@ -627,7 +640,7 @@ function loadAll() {
 	// Load Values Used to initialize my Aircraft and Objects		
 	WaitScreen();				// load loading screen
 	loadSkyBox();
-	loadGeoMat(imagLoader,txtrLoader,grd_,gen_);
+	loadGeoMat(grd_,gen_);
 	loadAirObj();
 	// Load Stats
 	if (gen_.StatOn) {
@@ -660,7 +673,7 @@ async function initAll() {
 	waves = new Ocean(wav_);	// Init Ocean
 	grd_.Dsp = waves.displacement;
 	grd_.Nrm = waves.normMapTexture;
-	grids = new GrdMap(grd_,scene);
+	grids = new GrdMap(grd_,gen_);
 	// Other
 	initCamera(camera,cam_);	// position camera
 	prntHUDval();				// print HUD values

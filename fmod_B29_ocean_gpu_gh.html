@@ -92,7 +92,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r
 //= STARTING VALUES ============//==============================================
 //- MY CAMERA ------------------------------------------------------------------
 let CamSel = 0;					// Camera Seletion (0 = linked to grid, 1 = linked to Airplane)
-let CamLat = -10;				// Camera Direction - Vert (+/- 90)
+let CamLat = -15;				// Camera Direction - Vert (+/- 90)
 let CamLon = 312;				// Camera Direction - Horz (0->360)
 //- AIRPLANE: Start ------------------------------------------------------------
 let PwrPct = 0.8;				// Initial Power
@@ -123,6 +123,12 @@ let GrvDLT = GrvMPS*DLTim2;
 let	AirDSL = 1.225;				// Density - Sea Level (kg/m3)
 //- General
 let gen_ = {
+		// General
+		scene:  0,				// Scene
+		render: 0,				// Renderer
+		imagLd: 0,				// Image Loader
+		txtrLd: 0,				// Texture Loader
+		gltfLd: 0,				// GLTF Loader
 		//- Display
 		PawsOn:	0,				// Pause
 		SndFlg:	0,				// Sound (0 = off; 1 = on)
@@ -189,7 +195,7 @@ let renderer = new THREE.WebGPURenderer({antialias:true});
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Depth Buffer
-//	renderer.logarithmicDepthBuffer = true;				//
+	renderer.logarithmicDepthBuffer = true;				//
 //	Tone Mapping
 	renderer.toneMapping = THREE.NoToneMapping;			// clouded
 //	renderer.toneMapping = THREE.LinearToneMapping;		// brighter?
@@ -245,6 +251,13 @@ let loadingScreen = {
 	box: 0
 };
 let boxrot = 0;					//keep = 0
+
+//= MODULES - General ==========//==============================================
+	gen_.scene  = scene;
+	gen_.render = renderer;
+	gen_.imagLd = imagLoader;
+	gen_.txtrLd = txtrLoader;
+	gen_.gltfLd = gltfLoader;
 
 //= SKYBOX =====================//==============================================
 const FogCol = 0xbab4a6;		// Sky (for Fog only)
@@ -302,7 +315,7 @@ let grd_ = {
 	gen_.canvas.width = grd_.MSz;
 	gen_.canvas.height = grd_.MSz;
 	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
-	// Optional
+	// Optional (seems to give more seamless display)
 	gen_.contxt.translate(0, grd_.MSz); // Flips vertical for three.js
 	gen_.contxt.scale(1,-1);
 
@@ -545,10 +558,10 @@ function loadAll() {
 	// Load Values Used to initialize my Aircraft and Objects		
 	WaitScreen();				// load loading screen
 	loadSkyBox();
-	loadGeoMat(imagLoader,txtrLoader,grd_,gen_);
+	loadGeoMat(grd_,gen_);
 	loadAirObj();
 	// Load Stats
-	if (gen_.StatOn) {
+	if (gen_.StatOn) {			// Load Stats
 		gen_.StatOn = new Stats();
 		document.body.appendChild(gen_.StatOn.dom);
 		gen_.StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
@@ -575,10 +588,10 @@ function WaitScreen() {
 async function initAll() {
 	air_.MapSPS.y = air_.MapPos.y; // Altitude (meters)
 	initSkyBox();
-	waves = new Ocean(wav_); // Init Ocean
+	waves = new Ocean(wav_); 	// Initialize Ocean
 	grd_.Dsp = waves.displacement;
 	grd_.Nrm = waves.normMapTexture;
-	grids = new GrdMap(grd_,scene);
+	grids = new GrdMap(grd_,gen_);
 	// Other
 	initCamera(camera,cam_);	// position camera
 	prntHUDval();				// print HUD values
