@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM PUP DATA: 251104
+*	FSIM PUP DATA: 251125
 *
 *********************************************************************************
 
@@ -81,6 +81,12 @@ const BegTmp = 288.15;			// K = 59F (loaded into _air)
 //- GENERAL VARIABLES ----------//----------------------------------------------
 
 let gen_ = {
+		// General
+		scene:  0,				// Scene
+		render: 0,				// Renderer
+		imagLd: 0,				// Image Loader
+		txtrLd: 0,				// Texture Loader
+		gltfLd: 0,				// GLTF Loader	
 		// Flght Controls
 		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
 		PwrDif:	0,				// Power % Input - Value
