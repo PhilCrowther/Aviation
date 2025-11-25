@@ -9,8 +9,8 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Nov 2025
-
+Version dated 24 Nov 2025
+camlo
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
 
@@ -93,7 +93,7 @@ import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r
 //- MY CAMERA ------------------------------------------------------------------
 let CamSel = 0;					// Camera Seletion (0 = linked to grid, 1 = linked to Airplane)
 let CamLat = -10;				// Camera Direction - Vert (+/- 90)
-let CamLon = 240;				// Camera Direction - Horz (0->360)
+let CamLon = 312;				// Camera Direction - Horz (0->360)
 //- AIRPLANE: Start ------------------------------------------------------------
 let PwrPct = 0.8;				// Initial Power
 let BegSpd = 290;				// Speed (180 mph)
@@ -107,7 +107,7 @@ let PwrDif = 0;					// Power % Input - Value
 //= CONSTANTS ==================//==============================================
 //-	Time
 let	DLTime = 1/60;				// Delta Time (1/60 seconds)
-let DLTim2 = DLTime*DLTime;
+let DLTim2 = DLTime**2;
 //-	Conversions
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
@@ -116,22 +116,25 @@ const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const Km2Mil = 0.621371;
 const Mil2Km = 1.60934;
 //-	Default Constants (US)
-const	GrvMPS = 9.80665; // (mps)
+const GrvMPS = 9.80665; // (mps)
 //-	Starting Constants per frame
-let GrvDLT = GrvMPS * DLTim2;
+let GrvDLT = GrvMPS*DLTim2;
 //-	Starting Air Density
 let	AirDSL = 1.225;				// Density - Sea Level (kg/m3)
-
-//= INPUT VALUES ===============//=============================================
-//-	Display
-let PawsOn = 0;					// Pause
-let SndFlg = 0;				// (1 = Sounds On)
-let StatOn = 1;					// Stats ((0 = off, 1 = on)
-let LnFFlg = 1;					// 1 = Lensflare On
-//	Program Flags
-let LodFlg = 0;
-//-	Altitude Adjustment
-let AltAdj = 0.96;				// Raises objects above map as altitude increases
+//- General
+let gen_ = {
+		//- Display
+		PawsOn:	0,				// Pause
+		SndFlg:	0,				// Sound (0 = off; 1 = on)
+		StatOn:	1,				// Stats (0 = off, 1 = on)
+		LnFFlg:	1,				// Lensflare (0 = off, 1 =on)
+		//	Program Flags
+		LodFlg:	0,				// Set at end of initialization
+		// Misc
+		contxt: 0,
+		canvas: 0,
+		MaxAni: 0,
+	}
 
 //= SUN ========================================================================
 const SunCol = "white";		// Sun
@@ -184,7 +187,7 @@ let renderer = new THREE.WebGPURenderer({antialias:true});
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
-let maxAnisotropy = renderer.getMaxAnisotropy();
+	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Depth Buffer
 //	renderer.logarithmicDepthBuffer = true;				//
 //	Tone Mapping
@@ -295,12 +298,13 @@ let grd_ = {
 		WMx: WavMax,			// Max wave height, used to lower outer squares
 	};
 //- Canvas (for splitting up textures)
-let canvas = document.createElement("canvas");
-	canvas.width = grd_.MSz;
-	canvas.height = grd_.MSz;
-let context = canvas.getContext("2d",{willReadFrequently: true});
-	context.translate(0, grd_.MSz); // Flips vertical for three.js
-	context.scale(1,-1);
+	gen_.canvas = document.createElement("canvas");
+	gen_.canvas.width = grd_.MSz;
+	gen_.canvas.height = grd_.MSz;
+	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
+	// Optional
+	gen_.contxt.translate(0, grd_.MSz); // Flips vertical for three.js
+	gen_.contxt.scale(1,-1);
 
 //= OCEAN MODULE ===============//===============================================
 let waves = 0;
@@ -310,7 +314,7 @@ let wav_ = {
 		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform)
 		lambda: 0.9,
 		renderer: renderer,
-		anisotropy: maxAnisotropy,
+		anisotropy: gen_.MaxAni,
 		// InitSpec Variables
 		waveLength: 1500,		// was 250
 		boundaryLow: 0.0001,	// ### ok?
@@ -512,8 +516,8 @@ let cam_ = {
 	cam_.deg.rotation.order = "YXZ";
 	cam_.obj.add(cam_.deg);	
 //-	Controls
-let onPointerDownX, onPointerDownY;
-let onPointerDownLon, onPointerDownLat;
+let onPointerDownX,onPointerDownY;
+let onPointerDownLon,onPointerDownLat;
 
 //= HTML OVERLAY TEXT ==========//==============================================
 let Air_SpdElement = document.getElementById("Air_Spd"); // Airspeed
@@ -541,13 +545,13 @@ function loadAll() {
 	// Load Values Used to initialize my Aircraft and Objects		
 	WaitScreen();				// load loading screen
 	loadSkyBox();
-	loadGeoMat(imagLoader,txtrLoader,grd_,context);
+	loadGeoMat(imagLoader,txtrLoader,grd_,gen_);
 	loadAirObj();
 	// Load Stats
-	if (StatOn) {
-		StatOn = new Stats();
-		document.body.appendChild(StatOn.dom);
-		StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
+	if (gen_.StatOn) {
+		gen_.StatOn = new Stats();
+		document.body.appendChild(gen_.StatOn.dom);
+		gen_.StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
 	}
 }
 
@@ -578,7 +582,7 @@ async function initAll() {
 	// Other
 	initCamera(camera,cam_);	// position camera
 	prntHUDval();				// print HUD values
-	LodFlg = 1;
+	gen_.LodFlg = 1;
 }
 
 //=	REND ALL ===================//===============================================
@@ -591,7 +595,7 @@ function rendAll() {
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;					// Stop the function here.
 	}
-	if (PawsOn == 0 && LodFlg > 0) {
+	if (gen_.PawsOn == 0 && gen_.LodFlg > 0) {
 		// Move Objects
 		moveAirObj();			// Move aircaft
 		// Move Grids
@@ -601,7 +605,7 @@ function rendAll() {
 		// Other
 		moveSounds(air_);
 		prntHUDval();			// print HUD values
-		if (StatOn) StatOn.update(); // update stats
+		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 	}
 	moveCamera(camera,cam_);
 	renderer.render(scene, camera);
@@ -624,7 +628,7 @@ function loadSkyBox() {
 	scene.background = envMap;
 	scene.environment = envMap; // ??? required?
 	// LensFlare
-	if (LnFFlg) {				// LensFlare	
+	if (gen_.LnFFlg) {				// LensFlare	
 		LF0Txt = txtrLoader.load(LF0Src);
 		LF1Txt = txtrLoader.load(LF1Src);
 	}
@@ -636,9 +640,9 @@ function initSkyBox() {
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
 	// Fog (doesn't work with Normal Material)
-	scene.fog = new THREE.Fog(FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
+	scene.fog = new THREE.Fog(FogCol,0.25,95000);	// less than camera distance, sky colored fog
 	// Lensflare
-	if (LnFFlg) {				// SunFlare		
+	if (gen_.LnFFlg) {			// SunFlare		
 		let	spotLight = new THREE.PointLight(0xffffff);
 		scene.add(spotLight);
 		spotLight.position.copy(SunPos).normalize;
@@ -1025,14 +1029,14 @@ function onTouchMove(event) {
 
 //- Toggle Pause
 function toglPaws() {
-	PawsOn = 1 - PawsOn;
+	gen_.PawsOn = 1 - gen_.PawsOn;
 }
 
 // Toggle Sound
 function toglSoun() {
-	if (!SndFlg) {EngSnd.play();}
+	if (!gen_.SndFlg) {EngSnd.play();}
 	else {EngSnd.stop();}
-	SndFlg = 1 - SndFlg;
+	gen_.SndFlg = 1 - gen_.SndFlg;
 }
 
 // Change Camera View (2-Way)
