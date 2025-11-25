@@ -486,7 +486,7 @@ function makeVrtD(dtColr,dtData,Weight) {
 
 //= INIT ROADS =================//==============================================
 
-function initRoads(gen_,grd) {
+function initRoads(grd_,gen_) {
 	rd1_.Siz = 2*grd_.Siz;
 	rd2_.Siz = 2*grd_.Siz;
 	rd0_.r0Data = new Uint8Array(4*rd0_.r0Size*rd0_.r0Size);
@@ -500,8 +500,8 @@ function initRoads(gen_,grd) {
 	rd0_.txtrod.offset.set(0,0);
 	rd1_.Txt = rd0_.txtrod;
 	rd2_.Txt = rd0_.txtrod;
-	init1Road(rd1_,gen_,grd_);
-	init1Road(rd2_,gen_,grd_);
+	init1Road(grd_,gen_,rd1);
+	init1Road(grd_,gen_,rd2);
 }
 
 function initRClr(dtColr,dtData,Weight) {
@@ -524,7 +524,7 @@ function initRClr(dtColr,dtData,Weight) {
 	}
 }
 
-function init1Road(Rod,gen_,grd_) {
+function init1Road(grd_,gen_,Rod) {
 	// Load Variables
 	Rod.RCi = Rod.RCs-1;				// Max Index Value
 	Rod.MZV[Rod.RCi] = 0;				// Z-Values
@@ -684,7 +684,7 @@ function move1Road(grd_,gen_,Rod) {
 
 //= LOAD TREELINE ==============//==============================================
 
-function loadTreLin(gen_,grd_,air_) {
+function loadTreLin(grd_,gen_) {
 	for (let n = 0; n < tre_.ObjNum; n++) {
 		// Assign Random Map Position
 		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
@@ -701,13 +701,12 @@ function loadTreLin(gen_,grd_,air_) {
 			gen_.scene.add(tre_.ObjAdr[n]);
 		});
 	}
-//	moveTreLin(gen_,grd_,air_);
 }
 
 //= INIT TREELINE ==============//==============================================
 // Procedurally generated treeline (not used)
 
-function makeTreLin(gen_,grd_) {
+function makeTreLin(grd_,gen_) {
 	let points = [
 		new Vector2(4.0,-6.7),	// Bot
 		new Vector2(4.9,-3.0),
@@ -793,7 +792,7 @@ function initTClr(dtColr,dtData,Weight) {
 
 //= MOVE TREELINE =================//==============================================
 
-function moveTreLin(gen_,grd_,air_) {
+function moveTreLin(grd_,gen_,air_) {
 	// Convert Distances into Meters to match landscape program
 	let a = 13.5*grd_.Siz;
 	let x,y,z;
