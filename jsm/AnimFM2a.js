@@ -642,34 +642,34 @@ function moveAirCom(air_,anm_) {
 
 //= LOAD SOUNDS ================================================================
 
-function loadMySong(audoLoader,listener,air_,mys_,myg_) {
+function loadMySong(air_,mys_,myg_,gen_) {
 	air_.AirObj.add(mys_.AirMsh);
 	mys_.AirMsh.position.z = -5;
 	let RefDst = 25;			// Reference distance for Positional Audio
 	// My Airplane .............................................................
 	// Engine - Idle
-	mys_.IdlSnd = new PositionalAudio(listener);
-	audoLoader.load(mys_.IdlSrc,function(buffer) {
+	mys_.IdlSnd = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(mys_.IdlSrc,function(buffer) {
 		mys_.IdlSnd.setBuffer(buffer);
 		init1Sound(mys_.IdlSnd,RefDst,0,1,1,mys_.AirMsh);		
 	});	
 	// Engine
-	mys_.EngSnd = new PositionalAudio(listener);
-	audoLoader.load(mys_.EngSrc,function(buffer) {
+	mys_.EngSnd = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(mys_.EngSrc,function(buffer) {
 		mys_.EngSnd.setBuffer(buffer);
 		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
 	});
 	// My Prop
-	mys_.PrpSnd = new PositionalAudio(listener);
-	audoLoader.load(mys_.PrpSrc,function(buffer) {
+	mys_.PrpSnd = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(mys_.PrpSrc,function(buffer) {
 		mys_.PrpSnd.setBuffer(buffer);
 		init1Sound(mys_.PrpSnd,RefDst,0,1,1,mys_.AirMsh);
 	});
 	// My Guns (Left and Rite)
 	let xoff = 5
 	for (let n = 0; n < myg_.ObjNum; n ++) {
-		myg_.SndPtr[n] = new PositionalAudio(listener);
-		audoLoader.load(myg_.SndSrc,function(buffer) {
+		myg_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(myg_.SndSrc,function(buffer) {
 			myg_.SndPtr[n].setBuffer(buffer);
 			init1Sound(myg_.SndPtr[n],RefDst,0,1,1,myg_.SndMsh[n]);
 			xoff = -xoff;
