@@ -681,7 +681,7 @@ function rendAll() {			// r173 added async
 	if(RESOURCES_LOADED == false){
 		boxrot = Mod360(boxrot - 3);
 		loadingScreen.box.rotation.set(Math.PI,0,boxrot * DegRad);
-		renderer.render(loadingScreen.scene, loadingScreen.camera);
+		renderer.render(loadingScreen.scene,loadingScreen.camera);
 		return;					// Stop the function here.
 	}
 	if (controls.isLocked === true && !gen_.LodSnd) {
@@ -727,7 +727,7 @@ function rendAll() {			// r173 added async
 		stopSounds();
 		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
-	renderer.render(scene, camera);
+	renderer.render(scene,camera);
 }
 
 /*******************************************************************************
@@ -1185,7 +1185,7 @@ function initMovShp() {
 	initXSHVeh(xsh_,air_,gen_);
 	initXSHWak(wak_,txt_);		// Init Ship Wake
 	initXSHSmk(xss_,txt_);		// Init Ship Smoke
-	initAAAGun(xsg_,txt_,air_,gen_,scene); // Init Common Testure
+	initAAAGun(xsg_,txt_,air_,gen_); // Init Common Testure
 }
 
 //-	Move Ship ------------------//----------------------------------------------
