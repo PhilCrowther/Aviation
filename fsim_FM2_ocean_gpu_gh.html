@@ -353,6 +353,7 @@ let boxrot = 0;
 //= MODULES - General ==========//==============================================
 	gen_.scene  = scene;
 	gen_.render = renderer;
+	gen_.camera = camera;
 	gen_.imagLd = imagLoader;
 	gen_.txtrLd = txtrLoader;
 	gen_.gltfLd = gltfLoader;
@@ -652,7 +653,7 @@ function initAll() {
 	tim_.DLTim2 = tim_.DLTime**2;
 	tim_.GrvDLT = GrvMPS*tim_.DLTim2;
 	// Fad2Blk
-	initFad2Blk(camera,f2b_);
+	initFad2Blk(f2b_,gen_);
 	// SkyBox
 	initSkyBox();
 	// Objects
@@ -884,7 +885,7 @@ function loadObject() {
 function initObject() {
 	initStatic();
 	initMoving();
-	initAAAGun(aaf_,txt_,air_,gen_,scene);
+	initAAAGun(aaf_,txt_,air_,gen_);
 }
 
 //== MOVE OBJECTS ==============================================================
@@ -990,7 +991,7 @@ function initHgrFyr() {
 //- Init Airplane --------------//----------------------------------------------
 function initMovPln() {
 	initXACVeh(xac_,air_,gen_);
-	initXACBul(xag_,scene);		// For All Airplanes
+	initXACBul(xag_,gen_);		// For All Airplanes
 	initXACSmk(0);				// Friendly Airplane Only	
 	initXACFyr(1);				// Enemy Airplane Only
 	initXACExp(1);				// Enemy Airplane Only
@@ -1276,7 +1277,7 @@ function initAirObj() {
 	air_.PYBmul.x = air_.PYBmul.x*MosMul.x;	// Pitch Adjustment
 	air_.PYBmul.z = air_.PYBmul.x*MosMul.z;	// Bank Adjustment
 	// Init Bullets
-	initBullet(myg_,scene);
+	initBullet(myg_,gen_);
 }
 
 //= MOVE AIRPLANE ==============//==============================================
@@ -1867,7 +1868,7 @@ function onWindowResize() {
 251019	Move My Airplane sounds to AnimFM2 module and Object sounds to Objects module
 251021	Revise initCamFM2
 251124:	Replace context with gen_.contxt
-251125:	Add scene, Loaders and listener to gen_
+251125:	Add scene, renderer, camera, Loaders and listener to gen_
 */
 
 </script>

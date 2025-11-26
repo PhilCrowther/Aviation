@@ -238,6 +238,7 @@ let boxrot = 0;
 //= MODULES - General ==========//==============================================
 	gen_.scene  = scene;
 	gen_.render = renderer;
+	gen_.camera = camera;
 	gen_.txtrLd = txtrLoader;
 	gen_.imagLd = imagLoader;
 	gen_.gltfLd = gltfLoader;
@@ -593,7 +594,7 @@ function initAirObj() {
 	// If on Ground, Reaadjust
 	grd_.SPS.y = air_.MapSPS.y; // Use to initialize objects (if on ground)
 	// Init Bullets
-	initBullet(myg_,scene);		// Bullets
+	initBullet(myg_,gen_);		// Bullets
 }
 
 //= MMOVE AIRPLANE ==============//===============================================
@@ -1153,7 +1154,7 @@ function onWindowResize() {
 251011	Replaced renderASync with render
 251031	New Tree Generator
 251031: Move Road Data to GrdLnd
-251125: Added scene and Loaders to gen_
+251125: Added scene, renderer, camera and Loaders to gen_
 */
 
 </script>
