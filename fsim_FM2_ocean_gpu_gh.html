@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Nov 2025
+Version dated 26 Nov 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -334,11 +334,11 @@ let RESOURCES_LOADED = false;
 		RESOURCES_LOADED = true;
 		initAll();
 	};
-const imagLoader = new THREE.ImageLoader(loadingManager);
-const txtrLoader = new THREE.TextureLoader(loadingManager);
-const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
-const gltfLoader = new GLTFLoader(loadingManager);
-const audoLoader = new THREE.AudioLoader();
+let imagLoader = new THREE.ImageLoader(loadingManager);
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
+let gltfLoader = new GLTFLoader(loadingManager);
+let audoLoader = new THREE.AudioLoader();
 // Create Audio Listener
 let	listener = new THREE.AudioListener();
 	camera.add(listener);
@@ -685,7 +685,7 @@ function rendAll() {			// r173 added async
 	}
 	if (controls.isLocked === true && !gen_.LodSnd) {
 		loadSounds();
-		loadRadios();
+		loadRadios(gen_);
 	}
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
 		// Time (fixed for now)
@@ -874,9 +874,9 @@ function loadObject() {
 	loadShared();
 	loadStatic();
 	loadMoving();
-	loadAnmFlg(txtrLoader,flg_);
-	loadMyPeep(gltfLoader,myp_);
-	loadMyCrew(gltfLoader,myc_);
+	loadAnmFlg(flg_,gen_);
+	loadMyPeep(myp_,gen_);
+	loadMyCrew(myc_,gen_);
 }
 
 //== INIT OBJECTS ==============================================================
@@ -910,8 +910,8 @@ function loadShared() {
 //- STATIC OBJECTS -------------//----------------------------------------------
 
 function loadStatic() {
-	loadMountn(scene,mnt_,air_,gen_,txtrLoader,gltfLoader);
-	if (fxd_.ObjNum) loadFxdObj(scene,fxd_,gltfLoader);	
+	loadMountn(mnt_,air_,gen_);
+	if (fxd_.ObjNum) loadFxdObj(fxd_,gen_);	
 }
 
 function initStatic() {
@@ -930,8 +930,8 @@ function moveStatic() {
 //- MOVING OBJECTS -------------//----------------------------------------------
 
 function loadMoving() {
-	loadXACVeh(gltfLoader,xac_,anm_); // Airplanes
-	loadXSHVeh(gltfLoader,xsh_,anm_); // Ships
+	loadXACVeh(xac_,anm_,gen_); // Airplanes
+	loadXSHVeh(xsh_,anm_,gen_); // Ships
 }
 
 function initMoving() {
@@ -989,7 +989,7 @@ function initHgrFyr() {
 
 //- Init Airplane --------------//----------------------------------------------
 function initMovPln() {
-	initXACVeh(xac_,air_,scene);
+	initXACVeh(xac_,air_,gen_);
 	initXACBul(xag_,scene);		// For All Airplanes
 	initXACSmk(0);				// Friendly Airplane Only	
 	initXACFyr(1);				// Enemy Airplane Only
@@ -1181,7 +1181,7 @@ function initXACFyr(n) {
 
 //-	Init Ship ------------------//----------------------------------------------
 function initMovShp() {
-	initXSHVeh(xsh_,air_,scene);
+	initXSHVeh(xsh_,air_,gen_);
 	initXSHWak(wak_,txt_);		// Init Ship Wake
 	initXSHSmk(xss_,txt_);		// Init Ship Smoke
 	initAAAGun(xsg_,txt_,air_,gen_,scene); // Init Common Testure
@@ -1370,7 +1370,7 @@ function moveAirObj() {
 
 function loadSounds() {
 	loadMySong(air_,mys_,myg_,gen_); // My Airplane Sounds
-	loadObjSnd(audoLoader,listener,xac_,xag_,xsg_,aaf_); // Object Sounds
+	loadObjSnd(xac_,xag_,xsg_,aaf_,gen_); // Object Sounds
 	gen_.LodSnd = 1;			//- Set Flag
 }
 
@@ -1402,22 +1402,22 @@ function stopSounds() {
 //= RADIO SOUNDS ===============//==============================================
 
 //-	Load Radio Sounds ----------//----------------------------------------------
-function loadRadios() {	
+function loadRadios(gen_) {	
 	//-	Static
-	rad_.SndAdr[0] = new THREE.Audio(listener);	
-	audoLoader.load(rad_.SndSrc[0],function(buffer) {
+	rad_.SndAdr[0] = new THREE.Audio(gen_.listnr);	
+	gen_.audoLd.load(rad_.SndSrc[0],function(buffer) {
 		rad_.SndAdr[0].setBuffer(buffer);
 		initASound(rad_.SndAdr[0],1.0,1); // Source, Volume, Playback Rate
 	});
 	//-	Pilot
-	rad_.SndAdr[1] = new THREE.Audio(listener);	
-	audoLoader.load(rad_.SndSrc[1],function(buffer) {
+	rad_.SndAdr[1] = new THREE.Audio(gen_.listnr);	
+	gen_.audoLd.load(rad_.SndSrc[1],function(buffer) {
 		rad_.SndAdr[1].setBuffer(buffer);
 		initASound(rad_.SndAdr[1],0.7,1.05); // Source, Volume, Playback Rate
 	});
 	//-	Director
-	rad_.SndAdr[2] = new THREE.Audio(listener);	
-	audoLoader.load(rad_.SndSrc[2],function(buffer) {
+	rad_.SndAdr[2] = new THREE.Audio(gen_.listnr);	
+	gen_.audoLd.load(rad_.SndSrc[2],function(buffer) {
 		rad_.SndAdr[2].setBuffer(buffer);
 		initASound(rad_.SndAdr[2],0.7,1.05); // Source, Volume, Playback Rate
 	});

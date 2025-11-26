@@ -10,7 +10,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Nov 2025
+Version dated 26 Nov 2025
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -98,7 +98,7 @@ import {initGrdMat,GrdMap,
 	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
 import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects2.js";
 
 /*= GENERAL ====================//===============================================
 
@@ -241,6 +241,8 @@ let boxrot = 0;
 	gen_.txtrLd = txtrLoader;
 	gen_.imagLd = imagLoader;
 	gen_.gltfLd = gltfLoader;
+	gen_.audoLd = audoLoader;
+	gen_.listnr = listener;
 
 //= GRIDS ======================//===============================================
 let ImgSiz = 1024;
@@ -536,8 +538,8 @@ function moveObject() {
 //- STATIC OBJECTS -------------//-----------------------------------------------
 
 function loadStatic() {
-	loadMountn(scene,mnt_,air_,gen_,txtrLoader,gltfLoader);
-	loadFxdObj(scene,fxd_,gltfLoader);	
+	loadMountn(mnt_,air_,gen_);
+	loadFxdObj(fxd_,gen_);	
 }
 
 function initStatic() {
@@ -1151,7 +1153,7 @@ function onWindowResize() {
 251011	Replaced renderASync with render
 251031	New Tree Generator
 251031: Move Road Data to GrdLnd
-251125: Use gen_ to Store Loader and Scene values
+251125: Added scene and Loaders to gen_
 */
 
 </script>
