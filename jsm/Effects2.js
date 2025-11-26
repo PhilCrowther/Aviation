@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Oct 2025
+Version dated 26 Nov 2025
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -79,7 +79,7 @@ const DegRad = Math.PI/180;		// Convert Degrees to Radians
 //	In flight, this can emulate black-out, gray-out or red-out	
 
 //=	INIT FADE2BLK ==============//==============================================
-function initFad2Blk(camera,f2b_) {
+function initFad2Blk(f2b_,gen_) {
 	let geometry = new SphereGeometry(0.15,64,64);
 	f2b_.Mat = new MeshBasicNodeMaterial({
 		side:BackSide,
@@ -90,7 +90,7 @@ function initFad2Blk(camera,f2b_) {
 		transparent:true,
 	});
 	f2b_.Msh = new Mesh(geometry,f2b_.Mat);
-	camera.add(f2b_.Msh);
+	gen_.camera.add(f2b_.Msh);
 	//- Range and Visibility Tests
 	if (f2b_.Beg < f2b_.Flr) FedBeg = f2b_.Flr;
 	if (f2b_.Beg == f2b_.Flr) f2b_.Msh.visible = false;
@@ -141,7 +141,7 @@ function moveFad2Blk(f2b_) {
 //= INIT MY BULLETS ============//==============================================
 //	xp = distance left and right (FM2 = 2). If zero, single bullet
 
-function initBullet(myg_,scene) {
+function initBullet(myg_,gen_) {
 	// Line	
 	let line = 0
 	let points = [];
@@ -162,7 +162,7 @@ function initBullet(myg_,scene) {
 			myg_.BulPtr[i].add(line);
 		}
 		//
-		scene.add(myg_.BulPtr[i]);
+		gen_.scene.add(myg_.BulPtr[i]);
 		myg_.BulPtr[i].visible = false;
 		//	Initialize Speed and Position
 		myg_.BulMpS[i] = new Vector3();
@@ -247,7 +247,7 @@ function testHitBox(myg_,xac_) {
 
 //= INIT XAC BULLETS ===========//==============================================
 
-function initXACBul(xag_,scene) {
+function initXACBul(xag_,gen_) {
 	let line = 0
 	//- Front Line
 	let lnF = 6;
@@ -298,7 +298,7 @@ function initXACBul(xag_,scene) {
 			xag_.BulPtr[n][i].add(line);
 			xag_.BulPtr[n][i].rotation.order = "YXZ";
 		//
-			scene.add(xag_.BulPtr[n][i]);
+			gen_.scene.add(xag_.BulPtr[n][i]);
 			xag_.BulPtr[n][i].visible = false;
 			//	Initialize Speed and Position
 			xag_.BulMpS[n][i] = new Vector3();
@@ -365,10 +365,10 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 
 //= INIT AAA GUN ===============//==============================================
 
-function initAAAGun(aag_,txt_,air_,gen_,scene) {
+function initAAAGun(aag_,txt_,air_,gen_) {
 	if (aag_.ObjNum) {
 		aag_.SmkMap = txt_.ObjTxt[aag_.SmkMap];
-		initAAGuns(aag_,air_,gen_,scene);
+		initAAGuns(aag_,air_,gen_);
 		// Create Exploding Center
 		for (let n = 0; n < aag_.ObjNum; n ++) {
 			aag_.ExpPtr[n] = makeSphere();
@@ -433,7 +433,7 @@ function moveAAAGun(aag_,air_,gen_,tim_) {
 
 //= INIT AA GUNS ===============//==============================================
 
-function initAAGuns(aag_,air_,gen_,scene) {
+function initAAGuns(aag_,air_,gen_) {
 	//- Combined Rotation and Map Position of Parent plus Gun
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
@@ -476,7 +476,7 @@ function initAAGuns(aag_,air_,gen_,scene) {
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aag_.GunPtr[n].position.y = MapPos.y-gen_.AltDif;
 		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-		scene.add(aag_.GunPtr[n]);
+		gen_.scene.add(aag_.GunPtr[n]);
 		//	Load Bullets
 		for (let i = 0; i < aag_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
@@ -490,7 +490,7 @@ function initAAGuns(aag_,air_,gen_,scene) {
 			aag_.AAAPtr[n][i].scale.set(scale,scale,scale);
 			aag_.AAAPtr[n][i].rotation.order = "YXZ";
 			// 
-			scene.add(aag_.AAAPtr[n][i]);
+			gen_.scene.add(aag_.AAAPtr[n][i]);
 			aag_.AAAPtr[n][i].visible = false;
 			// Initialize Values
 			aag_.AAAMpS[n][i] = new Vector3();
@@ -507,7 +507,7 @@ function initAAGuns(aag_,air_,gen_,scene) {
 		//	Smoke Sprite
 		aag_.SmkPtr[n] = new Sprite(aag_.SmkMat[n]);
 		aag_.SmkPtr[n].scale.set(100,100,100);	
-		scene.add(aag_.SmkPtr[n]);
+		gen_.scene.add(aag_.SmkPtr[n]);
 		aag_.SmkPtr[n].visible = false;
 	} // end of n
 }
@@ -931,4 +931,5 @@ export {initFad2Blk,moveFad2Blk,
 250125:	In Development
 251010:	Replace MakMsh with Object3D
 		Allow position and rotation of wak_
+251126:	Add scene to gen_
 */
