@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Oct 2025
+Version dated 25 Nov 2025
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Pup aircraft model
@@ -48,8 +48,8 @@ const Km2Mil = 0.621371;
 //= LOAD AIR EXTERNAL ==========================================================
 
 //-	Load Airplane Model --------//----------------------------------------------
-function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
-	gltfLoader.load(mxr_.Src, function (gltf) {		// The OnLoad function
+function loadAirExt(air_,mxr_,anm_,gen_) {
+	gen_.gltfLd.load(mxr_.Src, function (gltf) {		// The OnLoad function
 		gltf.scene.traverse(function (child) {	
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -59,7 +59,7 @@ function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
 				child.castShadow = false;
 				child.receiveShadow = false;
 				child.renderOrder = 1;
-			}		
+			}
 		});
 		mxr_.Adr = gltf.scene;
 		mxr_.Adr.rotation.order = "YXZ";
@@ -175,5 +175,6 @@ export {loadAirExt,moveAirExt};
 ********************************************************************************
 
 250607:	Create
+251125:	Add Loaders to gen_
 
 */
