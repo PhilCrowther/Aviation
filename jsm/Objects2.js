@@ -251,7 +251,7 @@ function loadXACVeh(xac_,anm_,gen_) {
 
 //=	INIT AIRPLANES ==============================================================
 
-function initXACVeh(xac_,air_,scene) {
+function initXACVeh(xac_,air_,gen_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		// Compute Relative Position
 		// (cause Objects to elevate above water as we climb to prevent flicker)
@@ -259,7 +259,7 @@ function initXACVeh(xac_,air_,scene) {
 		let Y = xac_.MapPos[n].y-gen_.AltDif;
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
-		scene.add(xac_.ObjAdr[n]);
+		gen_.scene.add(xac_.ObjAdr[n]);
 	};
 };
 
@@ -302,7 +302,7 @@ function loadXSHVeh(xsh_,anm_,gen_) {
 
 //=	INIT SHIPS =================//===============================================
 
-function initXSHVeh(xsh_,air_,scene) {
+function initXSHVeh(xsh_,air_,gen_) {
 // Always use group
 	let X, Y, Z;
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
@@ -314,7 +314,7 @@ function initXSHVeh(xsh_,air_,scene) {
 		Z = air_.MapPos.z-xsh_.MapPos[n].z;
 		xsh_.ObjGrp[n].position.set(X,Y,Z);
 		xsh_.ObjGrp[n].add(xsh_.ObjAdr[n]);
-		scene.add(xsh_.ObjGrp[n]);		// Uses position of CVE to compute relative position
+		gen_.scene.add(xsh_.ObjGrp[n]);		// Uses position of CVE to compute relative position
 	}
 }
 
@@ -391,7 +391,7 @@ function loadMyPeep(myp_,gen_) {
 			myp_.ObjAdr[n].rotation.z = myp_.ObjRot[n].z * DegRad;
 			myp_.ObjAdr[n].position.copy(myp_.MapPos[n]); // Relative to moving object
 			if (myp_.ObjRef[n]) myp_.ObjRef[n].add(myp_.ObjAdr[n]); // Link to moving object
-			else {scene.add(myp_.ObjAdr[n]);}
+			else {gen_.scene.add(myp_.ObjAdr[n]);}
 		});
 	}
 }
@@ -487,7 +487,7 @@ function loadMyCrew(myc_,gen_) {
 			myc_.ObjAdr[n].rotation.z = myc_.ObjRot[n].z * DegRad;
 			myc_.ObjAdr[n].position.copy(myc_.MapPos[n]); // Relative to moving object
 			if (myc_.ObjRef[n]) myc_.ObjRef[n].add(myc_.ObjAdr[n]); // Link to moving object
-			else {scene.add(myc_.ObjAdr[n]);}
+			else {gen_.scene.add(myc_.ObjAdr[n]);}
 			// Load Animations
 			for (let a = 0; a < myc_.AnmNum[n][a]; a++) {
 				clip = AnimationClip.findByName(gltf.animations,myc_.AnmNam[n][a]);
@@ -681,5 +681,5 @@ export {loadMountn,initMountn,moveMountn,
 250930	Changed Islands to Mountains/Islands, load/init/move, isl_ to mnt_, added mnt_.VrtAdj
 251007	Added maxAni to Mountains/Islands
 251019	Added Object Sounds
-251125	Added scene and Loaders to gen_
+251125	Added scene, Loaders and listener to gen_
 */
