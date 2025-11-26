@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2025, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Nov 2025
+Version dated 25 Nov 2025
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -61,17 +61,17 @@ const FlgSeg = new Vector2(30,16); // Standard Flag Segments
 ********************************************************************************/
 
 //=	LOAD MOUNTAINS/ISLANDS ======================================================
-function loadMountn(scene,mnt_,air_,gen_,txtrLoader,gltfLoader) {
+function loadMountn(mnt_,air_,gen_) {
 	for (let i = 0; i < mnt_.ObjNum; i++) {
 		mnt_.ObjGrp[i].position.copy(mnt_.MapPos[i]);
-		scene.add(mnt_.ObjGrp[i]);
+		gen_.scene.add(mnt_.ObjGrp[i]);
 	}
 	for (let i = 0; i < mnt_.ObjNum; i++) {
 	// Mountain/Island Objects
-		txtrLoader.load(mnt_.ObjTxt[i], function (IslTxt) {
+		gen_.txtrLd.load(mnt_.ObjTxt[i], function (IslTxt) {
 			IslTxt.anisotropy = gen_.maxAns;
 			let mat = new MeshLambertNodeMaterial({colorNode: texture(IslTxt)});
-			gltfLoader.load(mnt_.ObjSrc[i], function (gltf) {
+			gen_.gltfLd.load(mnt_.ObjSrc[i], function (gltf) {
 				gltf.scene.traverse(function (child) {
 				// Note: Blender island must include a UV map
 					if (child.isMesh) {
@@ -117,9 +117,9 @@ function moveMountn(mnt_,air_) {
 ********************************************************************************/
 
 //=	LOAD OBJECTS ================================================================
-function loadFxdObj(scene,fxd_,gltfLoader) {
+function loadFxdObj(fxd_,gen_) {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
-		gltfLoader.load(fxd_.ObjSrc[i], function (gltf) {
+		gen_.gltfLd.load(fxd_.ObjSrc[i], function (gltf) {
 			fxd_.ObjAdr[i] = gltf.scene;
 			fxd_.ObjAdr[i].scale.setScalar(fxd_.ObjSiz[i]);
 			fxd_.ObjAdr[i].rotation.copy(fxd_.ObjRot[i]);
@@ -151,12 +151,12 @@ function moveFxdObj(fxd_,air_,gen_) {
 //	Adapted from example at https://codepen.io/okada-web/pen/OJydGzy. Thanks!
 
 //=	LOAD AND INITIALIZE FLAGS ==//===============================================
-function loadAnmFlg(txtrLoader,flg_) {
+function loadAnmFlg(flg_,gen_) {
 	let FlgGeo = new PlaneGeometry(FlgSiz.x,FlgSiz.y,FlgSeg.x,FlgSeg.y); // Standard Dimensions and Segments
 	let FlgMat;
 	// For Each Flag
 	for (let n = 0; n < flg_.ObjNum; n++) {
-		txtrLoader.load(flg_.ObjTxt[n], function(FlgTxt) {
+		gen_.txtrLd.load(flg_.ObjTxt[n], function(FlgTxt) {
 			FlgTxt.format = RGBAFormat;
 			FlgTxt.magFilter = LinearFilter;
 			FlgTxt.minFilter = LinearMipMapLinearFilter;
@@ -217,9 +217,9 @@ function moveAnmFlg(flg_,tim_) {
 
 //=	LOAD AIRPLANES ==============================================================
 
-function loadXACVeh(gltfLoader,xac_) {
+function loadXACVeh(xac_,anm_,gen_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		gltfLoader.load(xac_.ObjSrc[n], function (gltf) {
+		gen_.gltfLd.load(xac_.ObjSrc[n], function (gltf) {
 			xac_.ObjAdr[n] = gltf.scene;
 			// Convert from feet to meters
 			xac_.ObjAdr[n].scale.setScalar(xac_.ObjSiz[n]);
@@ -251,7 +251,7 @@ function loadXACVeh(gltfLoader,xac_) {
 
 //=	INIT AIRPLANES ==============================================================
 
-function initXACVeh(xac_,air_,scene) {
+function initXACVeh(xac_,air_,gen_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		// Compute Relative Position
 		// (cause Objects to elevate above water as we climb to prevent flicker)
@@ -259,7 +259,7 @@ function initXACVeh(xac_,air_,scene) {
 		let Y = xac_.MapPos[n].y-gen_.AltDif;
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
-		scene.add(xac_.ObjAdr[n]);
+		gen_.scene.add(xac_.ObjAdr[n]);
 	};
 };
 
@@ -275,9 +275,9 @@ function initXACVeh(xac_,air_,scene) {
 
 //=	LOAD SHIPS ==================================================================
 
-function loadXSHVeh(gltfLoader,xsh_) {
+function loadXSHVeh(xsh_,anm_,gen_) {
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
-		gltfLoader.load(xsh_.ObjSrc[n], function (gltf) {
+		gen_.gltfLd.load(xsh_.ObjSrc[n], function (gltf) {
 			gltf.scene.traverse(function (child) {
 				if (child.isMesh) {
 					child.castShadow = true;
@@ -302,7 +302,7 @@ function loadXSHVeh(gltfLoader,xsh_) {
 
 //=	INIT SHIPS =================//===============================================
 
-function initXSHVeh(xsh_,air_,scene) {
+function initXSHVeh(xsh_,air_,gen_) {
 // Always use group
 	let X, Y, Z;
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
@@ -314,7 +314,7 @@ function initXSHVeh(xsh_,air_,scene) {
 		Z = air_.MapPos.z-xsh_.MapPos[n].z;
 		xsh_.ObjGrp[n].position.set(X,Y,Z);
 		xsh_.ObjGrp[n].add(xsh_.ObjAdr[n]);
-		scene.add(xsh_.ObjGrp[n]);		// Uses position of CVE to compute relative position
+		gen_.scene.add(xsh_.ObjGrp[n]);		// Uses position of CVE to compute relative position
 	}
 }
 
@@ -368,9 +368,9 @@ function moveXSHVeh(xsh_,air_) {
 ********************************************************************************/
 
 //= LOAD MY PEOPLE =============//===============================================
-function loadMyPeep(gltfLoader,myp_) {
+function loadMyPeep(myp_,gen_) {
 	for (let n = 0; n < myp_.ObjNum; n++) {
-		gltfLoader.load(myp_.ObjSrc[n], function (gltf) {
+		gen_.gltfLd.load(myp_.ObjSrc[n], function (gltf) {
 			// Cast Shadow (but not in shadow zone)
 			gltf.scene.traverse(function (child) {
 				if (child.isMesh) child.castShadow = true;
@@ -391,7 +391,7 @@ function loadMyPeep(gltfLoader,myp_) {
 			myp_.ObjAdr[n].rotation.z = myp_.ObjRot[n].z * DegRad;
 			myp_.ObjAdr[n].position.copy(myp_.MapPos[n]); // Relative to moving object
 			if (myp_.ObjRef[n]) myp_.ObjRef[n].add(myp_.ObjAdr[n]); // Link to moving object
-			else {scene.add(myp_.ObjAdr[n]);}
+			else {gen_.scene.add(myp_.ObjAdr[n]);}
 		});
 	}
 }
@@ -471,10 +471,10 @@ function moveMyPeep(myp_,tim_) {
 ********************************************************************************/
 
 //= LOAD MY CREW ===============//===============================================
-function loadMyCrew(gltfLoader,myc_) {
+function loadMyCrew(myc_,gen_) {
 	let clip = 0;
 	for (let n = 0; n < myc_.ObjNum; n++) {
-		gltfLoader.load(myc_.ObjSrc[n], function (gltf) {
+		gen_.gltfLd.load(myc_.ObjSrc[n], function (gltf) {
 			// Cast Shadow (but not in shadow zone)
 			gltf.scene.traverse(function (child) {
 				if (child.isMesh) child.castShadow = true;
@@ -487,7 +487,7 @@ function loadMyCrew(gltfLoader,myc_) {
 			myc_.ObjAdr[n].rotation.z = myc_.ObjRot[n].z * DegRad;
 			myc_.ObjAdr[n].position.copy(myc_.MapPos[n]); // Relative to moving object
 			if (myc_.ObjRef[n]) myc_.ObjRef[n].add(myc_.ObjAdr[n]); // Link to moving object
-			else {scene.add(myc_.ObjAdr[n]);}
+			else {gen_.scene.add(myc_.ObjAdr[n]);}
 			// Load Animations
 			for (let a = 0; a < myc_.AnmNum[n][a]; a++) {
 				clip = AnimationClip.findByName(gltf.animations,myc_.AnmNam[n][a]);
@@ -541,13 +541,13 @@ function moveMyCrew(myc_) {
 
 //= LOAD SOUNDS =================================================================
 
-function loadObjSnd(audoLoader,listener,xac_,xag_,xsg_,aaf_) {
+function loadObjSnd(xac_,xag_,xsg_,aaf_,gen_) {
 	let RefDst = 25;			// Reference distance for Positional Audio
 	// Load XAC Sounds ..........................................................
 	// XP Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		xac_.EngPtr[n] = new PositionalAudio(listener);
-		audoLoader.load(xac_.EngSrc[n],function(buffer) {
+		xac_.EngPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(xac_.EngSrc[n],function(buffer) {
 			xac_.EngPtr[n].setBuffer(buffer);
 			init1Sound(xac_.EngPtr[n],RefDst,0,1.3,1,xac_.EngMsh[n]);
 			xac_.ObjAdr[n].add(xac_.EngMsh[n]);
@@ -555,8 +555,8 @@ function loadObjSnd(audoLoader,listener,xac_,xag_,xsg_,aaf_) {
 	}
 	// XP Guns
 	for (let n = 0; n < xag_.ObjNum; n ++) {
-		xag_.SndPtr[n] = new PositionalAudio(listener);
-		audoLoader.load(xag_.SndSrc[n],function(buffer) {
+		xag_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(xag_.SndSrc[n],function(buffer) {
 			xag_.SndPtr[n].setBuffer(buffer);
 			init1Sound(xag_.SndPtr[n],RefDst,0,1.3,1,xag_.SndMsh[n]);
 			xac_.ObjAdr[n].add(xag_.SndMsh[n]);
@@ -566,8 +566,8 @@ function loadObjSnd(audoLoader,listener,xac_,xag_,xsg_,aaf_) {
 	//
 	// XP End Explosion
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		xac_.SndPtr[n] = new PositionalAudio(listener);
-		audoLoader.load(xac_.SndSrc,function(buffer) {
+		xac_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(xac_.SndSrc,function(buffer) {
 			xac_.SndPtr[n].setBuffer(buffer);
 			init1Sound(xac_.SndPtr[n],RefDst,0,1,0,xac_.SndMsh[n]);
 			xac_.ObjAdr[n].add(xac_.SndMsh[n]);
@@ -576,8 +576,8 @@ function loadObjSnd(audoLoader,listener,xac_,xag_,xsg_,aaf_) {
 	// Load AAA Sounds ..........................................................
 	// XS Guns - End Explosion
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		xsg_.SndPtr[n] = new PositionalAudio(listener);
-		audoLoader.load(xsg_.SndSrc,function(buffer) {
+		xsg_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(xsg_.SndSrc,function(buffer) {
 			xsg_.SndPtr[n].setBuffer(buffer);
 			init1Sound(xsg_.SndPtr[n],RefDst,0,1,0,xsg_.SndMsh[n]);
 			xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
@@ -585,8 +585,8 @@ function loadObjSnd(audoLoader,listener,xac_,xag_,xsg_,aaf_) {
 	}
 	// AA Guns - End Explosion
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		aaf_.SndPtr[n] = new PositionalAudio(listener);
-		audoLoader.load(aaf_.SndSrc, function(buffer) {
+		aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 			aaf_.SndPtr[n].setBuffer(buffer);
 			init1Sound(aaf_.SndPtr[n],RefDst,0,1,0,aaf_.SndMsh[n]);
 			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
@@ -681,4 +681,5 @@ export {loadMountn,initMountn,moveMountn,
 250930	Changed Islands to Mountains/Islands, load/init/move, isl_ to mnt_, added mnt_.VrtAdj
 251007	Added maxAni to Mountains/Islands
 251019	Added Object Sounds
+251125	Added scene, Loaders and listener to gen_
 */
