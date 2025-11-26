@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Oct 2025
+Version dated 26 Nov 2025
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -37,7 +37,7 @@ import {
 //	Adapted from three.js version
 
 class PointerLockControls extends EventDispatcher {
-	constructor(camera, domElement, plc_) {
+	constructor(domElement) {
 		super();
 		this.domElement = domElement;
 		this.isLocked = false;
@@ -91,8 +91,8 @@ class PointerLockControls extends EventDispatcher {
 *******************************************************************************/
 
 //= MOVE CAMERA VIEW ===========//==============================================
-function moveCamera(camera,cam_,air_,key_) {
-	camera.rotation.x = 0;		// Default
+function moveCamera(cam_,air_,key_,gen_) {
+	gen_.camera.rotation.x = 0;		// Default
 	if (cam_.VewRot) {			// Beginning Head Rotation
 		// Zero Out When Moving Forward
 		if (!air_.MovFlg) {		// Throttle is trigger
@@ -101,7 +101,7 @@ function moveCamera(camera,cam_,air_,key_) {
 		}
 	}
 	// Camera In/Out
-	camera.position.z = -cam_.CamLLD.z;
+	gen_.camera.position.z = -cam_.CamLLD.z;
 	// PointerLockControls
 	if (cam_.OrbFlg) {			// If Orbiting
 		cam_.CamLLD.x = cam_.CamLLD.x - InpMos.y * cam_.CamMMR.z; // Camera Position (Lat)
@@ -171,7 +171,7 @@ function moveCamera(camera,cam_,air_,key_) {
 			cam_.CmLagX = 0.99*cam_.CmLagX; // Reduction in Adj/AdjOff
 			if (Math.abs(cam_.CmLagX) < 0.1) cam_.CmLagX = 0;
 		}
-		camera.rotation.x = cam_.CmAdjX*DegRad; // + = up/airplane down
+		gen_.camera.rotation.x = cam_.CmAdjX*DegRad; // + = up/airplane down
 		cam_.MshRot.rotation.x = Mod360(-cam_.CamLLD.x)*DegRad;
 		cam_.MshRot.rotation.y = Mod360(180-cam_.CamLLD.y)*DegRad;
 	}
@@ -211,4 +211,5 @@ export {PointerLockControls,moveCamera};
 
 250407:	In Development
 250529: Combined this Controls Module with Camera Module
+251126: Added camera to gen_
 */
