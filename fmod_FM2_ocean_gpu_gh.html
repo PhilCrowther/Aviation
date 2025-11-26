@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Nov 2025
+Version dated 25 Nov 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -136,6 +136,7 @@ let gen_ = {
 		imagLd: 0,				// Image Loader
 		txtrLd: 0,				// Texture Loader
 		gltfLd: 0,				// GLTF Loader
+		audoLd: 0,				// Audio Loader
 		//- Display
 		PawsOn:	0,				// Pause
 		SndFlg:	0,				// Sound (0 = off; 1 = on)
@@ -254,7 +255,7 @@ const imagLoader = new THREE.ImageLoader(loadingManager);
 const txtrLoader = new THREE.TextureLoader(loadingManager);
 const cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 const gltfLoader = new GLTFLoader(loadingManager);
-const audioLoader = new THREE.AudioLoader(loadingManager);
+const audoLoader = new THREE.AudioLoader(loadingManager);
 //- Wait Screen
 let loadingScreen = {
 	scene: new THREE.Scene(),
@@ -269,6 +270,7 @@ let boxrot = 0;					//keep = 0
 	gen_.imagLd = imagLoader;
 	gen_.txtrLd = txtrLoader;
 	gen_.gltfLd = gltfLoader;
+	gen_.audoLd = audoLoader;
 
 //= SKYBOX =====================//===============================================
 const FogCol = 0xbab4a6;		// Sky (for Fog only)
@@ -758,8 +760,8 @@ function initSkyBox() {
 //= LOAD AIRPLANE ==============//===============================================
 
 function loadAirObj() {
-	loadAirExt(scene,gltfLoader,air_,mxr_,anm_);
-	loadAirInt(scene,gltfLoader,air_,vxr_,anm_);
+	loadAirExt(air_,mxr_,anm_,gen_);
+	loadAirInt(air_,vxr_,anm_,gen_);
 }
 
 //= MOVE AIRPLANE ==============//===============================================
@@ -836,7 +838,7 @@ function moveAirObj() {
 function loadSounds() {	
 	//- My Engine ---------------------------------------------------------------
 	let fname = AirSrc + "sounds/" + acsnd1;
-	audioLoader.load(fname, function(buffer) {
+	audoLoader.load(fname, function(buffer) {
 		EngSnd.setBuffer(buffer);
 		EngSnd.setRefDistance(RefDst);
 		EngSnd.setLoop(true);
@@ -844,7 +846,7 @@ function loadSounds() {
 	});
 	//- My Prop -----------------------------------------------------------------
 	fname = AirSrc + "sounds/" + acsnd2;
-	audioLoader.load(fname, function(buffer) {
+	audoLoader.load(fname, function(buffer) {
 		PrpSnd.setBuffer(buffer);
 		PrpSnd.setRefDistance(RefDst);
 		PrpSnd.setLoop(true);
@@ -1166,7 +1168,8 @@ function onWindowResize() {
 *
 *********************************************************************************
 
-251011	Replaced renderASync with render; added TimestampQuery.COMPUTE after waves.update
+251011:	Replaced renderASync with render; added TimestampQuery.COMPUTE after waves.update
+251125: Added scene and Loaders to gen_
 */
 
 </script>

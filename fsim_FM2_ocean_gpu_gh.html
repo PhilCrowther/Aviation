@@ -356,6 +356,8 @@ let boxrot = 0;
 	gen_.imagLd = imagLoader;
 	gen_.txtrLd = txtrLoader;
 	gen_.gltfLd = gltfLoader;
+	gen_.audoLd = audoLoader;
+	gen_.listnr = listener;
 
 //= 2. SKY VARIABLES ===========//==============================================
 //	No Adjustments
@@ -1221,8 +1223,8 @@ function moveXSHGun(n) {
 //= LOAD AIRPLANE ==============//==============================================
 
 function loadAirObj() {
-	loadAirExt(scene,gltfLoader,air_,mxr_,anm_);
-	loadAirInt(scene,gltfLoader,air_,vxr_,anm_);
+	loadAirExt(air_,mxr_,anm_,gen_);
+	loadAirInt(air_,vxr_,anm_,gen_);
 }
 
 //= INIT AIRPLANE ==============//==============================================
@@ -1367,7 +1369,7 @@ function moveAirObj() {
 //= LOAD SOUNDS ================//==============================================
 
 function loadSounds() {
-	loadMySong(audoLoader,listener,air_,mys_,myg_); // My Airplane Sounds
+	loadMySong(air_,mys_,myg_,gen_); // My Airplane Sounds
 	loadObjSnd(audoLoader,listener,xac_,xag_,xsg_,aaf_); // Object Sounds
 	gen_.LodSnd = 1;			//- Set Flag
 }
@@ -1865,7 +1867,7 @@ function onWindowResize() {
 251019	Move My Airplane sounds to AnimFM2 module and Object sounds to Objects module
 251021	Revise initCamFM2
 251124:	Replace context with gen_.contxt
-251125:	Add scene and Loaders to gen_
+251125:	Add scene, Loaders and listener to gen_
 */
 
 </script>
