@@ -86,6 +86,7 @@ let gen_ = {
 		imagLd: 0,				// Image Loader
 		txtrLd: 0,				// Texture Loader
 		gltfLd: 0,				// GLTF Loader
+		audoLd: 0,				// Audio Loader
 		//- Flght Controls
 		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
 		PwrDif:	0,				// Power % Input - Value
