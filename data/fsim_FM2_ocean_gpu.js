@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 251125
+*	FSIM FM2 DATA: 251126
 *
 ********************************************************************************
 
@@ -83,6 +83,7 @@ let gen_ = {
 		// General
 		scene:  0,				// Scene
 		render: 0,				// Renderer
+		camera: 0,				// Camera
 		imagLd: 0,				// Image Loader
 		txtrLd: 0,				// Texture Loader
 		gltfLd: 0,				// GLTF Loader
