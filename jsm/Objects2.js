@@ -217,7 +217,7 @@ function moveAnmFlg(flg_,tim_) {
 
 //=	LOAD AIRPLANES ==============================================================
 
-function loadXACVeh(xac_,gen_) {
+function loadXACVeh(xac_,anm_,gen_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		gen_.gltfLd.load(xac_.ObjSrc[n], function (gltf) {
 			xac_.ObjAdr[n] = gltf.scene;
@@ -275,7 +275,7 @@ function initXACVeh(xac_,air_,scene) {
 
 //=	LOAD SHIPS ==================================================================
 
-function loadXSHVeh(xsh_,gen_) {
+function loadXSHVeh(xsh_,anm_,gen_) {
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		gen_.gltfLd.load(xsh_.ObjSrc[n], function (gltf) {
 			gltf.scene.traverse(function (child) {
