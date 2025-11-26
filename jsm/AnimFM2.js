@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Oct 2025
+Version dated 25 Nov 2025
 
 @fileoverview
 A three.js class-type module for animating a FM2 aircraft model
@@ -49,11 +49,11 @@ const Km2Mil = 0.621371;
 //= LOAD AIR EXTERNAL ==========================================================
 
 //-	Load Airplane Model --------//----------------------------------------------
-function loadAirExt(scene,gltfLoader,air_,mxr_,anm_) {
-	gltfLoader.load(mxr_.Src, function (gltf) {
+function loadAirExt(air_,mxr_,anm_,gen_) {
+	gen_.gltfLd.load(mxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
-				child.material.envMap = scene.envMap; // ??? required?
+				child.material.envMap = gen_.scene.envMap; // ??? required?
 				child.castShadow = true;
 				child.receiveShadow = true;
 			}
@@ -198,8 +198,8 @@ function loadAirAnmX(gltf,air_,mxr_,anm_) {
 //= LOAD AIR INTERNAL ==========================================================
 
 //-	Load Virtual Cockpit -------//----------------------------------------------
-function loadAirInt(scene,gltfLoader,air_,vxr_,anm_) {
-	gltfLoader.load(vxr_.Src, function (gltf) {
+function loadAirInt(air_,vxr_,anm_,gen_) {
+	gen_.gltfLd.load(vxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -642,34 +642,34 @@ function moveAirCom(air_,anm_) {
 
 //= LOAD SOUNDS ================================================================
 
-function loadMySong(audoLoader,listener,air_,mys_,myg_) {
+function loadMySong(air_,mys_,myg_,gen_) {
 	air_.AirObj.add(mys_.AirMsh);
 	mys_.AirMsh.position.z = -5;
 	let RefDst = 25;			// Reference distance for Positional Audio
 	// My Airplane .............................................................
 	// Engine - Idle
-	mys_.IdlSnd = new PositionalAudio(listener);
-	audoLoader.load(mys_.IdlSrc,function(buffer) {
+	mys_.IdlSnd = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(mys_.IdlSrc,function(buffer) {
 		mys_.IdlSnd.setBuffer(buffer);
 		init1Sound(mys_.IdlSnd,RefDst,0,1,1,mys_.AirMsh);		
 	});	
 	// Engine
-	mys_.EngSnd = new PositionalAudio(listener);
-	audoLoader.load(mys_.EngSrc,function(buffer) {
+	mys_.EngSnd = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(mys_.EngSrc,function(buffer) {
 		mys_.EngSnd.setBuffer(buffer);
 		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
 	});
 	// My Prop
-	mys_.PrpSnd = new PositionalAudio(listener);
-	audoLoader.load(mys_.PrpSrc,function(buffer) {
+	mys_.PrpSnd = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(mys_.PrpSrc,function(buffer) {
 		mys_.PrpSnd.setBuffer(buffer);
 		init1Sound(mys_.PrpSnd,RefDst,0,1,1,mys_.AirMsh);
 	});
 	// My Guns (Left and Rite)
 	let xoff = 5
 	for (let n = 0; n < myg_.ObjNum; n ++) {
-		myg_.SndPtr[n] = new PositionalAudio(listener);
-		audoLoader.load(myg_.SndSrc,function(buffer) {
+		myg_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(myg_.SndSrc,function(buffer) {
 			myg_.SndPtr[n].setBuffer(buffer);
 			init1Sound(myg_.SndPtr[n],RefDst,0,1,1,myg_.SndMsh[n]);
 			xoff = -xoff;
@@ -773,4 +773,5 @@ export {loadAirExt,loadAirInt,moveAirExt,moveAirInt,loadMySong,moveMySong,playMy
 241118:	Cleanup
 250406:	Loads airplane and animations (ver 2a)
 251019: Added Sounds
+251125: Added scene, Loaders, listener to gen_
 */
