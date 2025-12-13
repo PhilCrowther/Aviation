@@ -10,13 +10,13 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Nov 2025
+Version dated 12 Dec 2025
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
 
 <head>
-<title>fsim U1H land gpu r181</title>
+<title>fsim U1H land gpu r182</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
@@ -64,10 +64,10 @@ A flight simulation of an animated helicopter model over procedural land using W
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
 		}
 	}
 </script>
@@ -290,6 +290,10 @@ let txtrLoader = new THREE.TextureLoader(loadingManager);
 let imagLoader = new THREE.ImageLoader(loadingManager);
 let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 let gltfLoader = new GLTFLoader(loadingManager);
+let audoLoader = new THREE.AudioLoader();
+// Create Audio Listener
+let	listener = new THREE.AudioListener();
+	camera.add(listener);
 //- Wait Screen
 let loadingScreen = {
 	scene: new THREE.Scene(),
@@ -301,9 +305,12 @@ let boxrot = 0;
 //= MODULES - General ==========//==============================================
 	gen_.scene  = scene;
 	gen_.render = renderer;
+	gen_.camera = camera;
 	gen_.txtrLd = txtrLoader;
 	gen_.imagLd = imagLoader;
 	gen_.gltfLd = gltfLoader;
+	gen_.audoLd = audoLoader;
+	gen_.listnr = listener;
 
 //= GRIDS ======================//===============================================
 let ImgSiz = 1024;
@@ -450,10 +457,16 @@ let spnrtr = 180;				// Tail Rotor - Spin (not used)
 let doormn = 0;					// Main Doors
 
 //=	SOUNDS =====================//===============================================
-let EngSrc = "xbell_rotor03a.wav"; // File (my engine)
-let EngVol = 0.1;				// Volume
-let EngSnd = 0;
-let EngMsh = new THREE.Object3D;		// Aircraft Engine
+let mys_ = {
+		// General
+		RefDst: 25,				// Reference distance for Positional Audio		
+		// Engine
+		EngSrc: ACPath + "sounds/" + "xbell_rotor03a.wav",
+		EngSnd: new THREE.PositionalAudio(gen_.listnr),
+		EngMsh: new THREE.Object3D,
+		EngVol: 0.1,			// Volume
+	}
+	air_.AirObj.add(mys_.EngMsh);
 
 //= POINTER LOCK CONTROL ========================================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -724,7 +737,6 @@ function rendAll() {
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;					// Stop the function here.
 	}
-	if (controls.isLocked === true && !gen_.LodSnd) loadSounds();
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
 		moveCamera(camera,cam_);
 		// Move AirObj
@@ -918,6 +930,8 @@ function loadAirObj() {
 		if (mxDorR) mxDorR.setTime(doormn/anmfps);
 		//- Save
 		air_.AirObj.add(AirExt);
+		//- Sounds
+		loadSounds();
 	});
 }
 
@@ -1215,27 +1229,17 @@ return x;}
 *
 ********************************************************************************/
 
-//= LOAD SOUNDS =================================================================
+//= LOAD SOUNDS ================//===============================================
 
 function loadSounds() {
 	// Load Sounds ..............................................................
-	let audioLoader = new THREE.AudioLoader();
-	let RefDst = 25;			// Reference distance for Positional Audio
-	// My Engine
-	let fname = ACPath + "sounds/" + EngSrc;
-	audioLoader.load(fname, function(buffer) {
-		EngSnd.setBuffer(buffer);
-		EngSnd.setRefDistance(RefDst);
-		EngSnd.setLoop(true);
-		EngSnd.setVolume(0);
+	gen_.audoLd.load(mys_.EngSrc, function(buffer) {
+		mys_.EngSnd.setBuffer(buffer);
+		mys_.EngSnd.setRefDistance(mys_.RefDst);
+		mys_.EngSnd.setLoop(true);
+		mys_.EngSnd.setVolume(0);
+		mys_.EngMsh.add(mys_.EngSnd);
 	});
-	// Init Sounds ..............................................................
-	let	listener = new THREE.AudioListener();
-	camera.add(listener);
-	// My Engine
-	EngSnd = new THREE.PositionalAudio(listener);
-	EngMsh.add(EngSnd);			// Engine
-	air_.AirObj.add(EngMsh);
 	//- Set Flag
 	gen_.LodSnd = 1;	
 }
@@ -1245,20 +1249,20 @@ function loadSounds() {
 // Change Sounds
 function moveSounds() {
 	// My Engine
-	EngSnd.setVolume(EngVol);
-	EngSnd.setPlaybackRate(1);
+	mys_.EngSnd.setVolume(mys_.EngVol);
+	mys_.EngSnd.setPlaybackRate(1);
 }
 
 //- Play Sounds -----------------------------------------------------------------
 function playSounds() {
 	// This leaves SndFlg and GunFlg unchanged.
-	if (!EngSnd.isPlaying) EngSnd.play();
+	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play();
 }
 
 //- Stop Sounds -----------------------------------------------------------------
 function stopSounds() {
 	// This leaves SndFlg and GunFlg unchanged.
-	if (EngSnd.isPlaying) EngSnd.stop();
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop();
 }
 
 /********************************************************************************
@@ -1528,12 +1532,8 @@ function toglInfo() {
 function toglSoun() {
 	if (!gen_.PawsOn) {
 		gen_.SndFlg = 1 - gen_.SndFlg;
-		if (gen_.SndFlg) {			// Off to On
-			playSounds();
-		}
-		else {					// On to Off
-			stopSounds();
-		}
+		if (gen_.SndFlg) playSounds();	// Off to On
+		else {stopSounds();}			// On to Off
 	}
 }
 

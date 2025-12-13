@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Nov 2025
+Version dated 12 Dec 2025
 camlo
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -18,7 +18,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 -->
 
 <head>
-<title>fmod B29 ocean gpu r181</title>
+<title>fmod B29 ocean gpu r182</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_b29.css">
 </head>
@@ -49,10 +49,10 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
 		}
 	}
 </script>
@@ -608,7 +608,7 @@ function rendAll() {
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;					// Stop the function here.
 	}
-	if (gen_.PawsOn == 0 && gen_.LodFlg > 0) {
+	if (!gen_.PawsOn && gen_.LodFlg) {
 		// Move Objects
 		moveAirObj();			// Move aircaft
 		// Move Grids
@@ -1043,13 +1043,19 @@ function onTouchMove(event) {
 //- Toggle Pause
 function toglPaws() {
 	gen_.PawsOn = 1 - gen_.PawsOn;
+	if (gen_.SndFlg) {			// If Paused
+		if (gen_.PawsOn) EngSnd.stop();		//On to Off
+		if (!gen_.PawsOn) EngSnd.play();	// Off to On
+	}
 }
 
 // Toggle Sound
 function toglSoun() {
-	if (!gen_.SndFlg) {EngSnd.play();}
-	else {EngSnd.stop();}
-	gen_.SndFlg = 1 - gen_.SndFlg;
+	if (!gen_.PawsOn) {
+		if (!gen_.SndFlg) {EngSnd.play();}
+		else {EngSnd.stop();}
+		gen_.SndFlg = 1 - gen_.SndFlg;
+	}
 }
 
 // Change Camera View (2-Way)
