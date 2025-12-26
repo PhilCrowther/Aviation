@@ -148,6 +148,7 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
+	* For external view - no SonLight and original SunLight parameters
 	* Can't switch views on ground at island
 	* Red Out not very red.
 	* Don't hear EA guns or engines (used to hear engines)9
@@ -279,16 +280,33 @@ const ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 const sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+//	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+	sunLight.shadow.camera.near = sky_.SunDst+1;
 	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.camera.left = -sky_.ShdBLR;
+	sunLight.shadow.camera.left = -sky_.ShdBLR; // 12
 	sunLight.shadow.camera.right = sky_.ShdBLR+1;
-	sunLight.shadow.camera.top = sky_.ShdBTB;
+	sunLight.shadow.camera.top = sky_.ShdBTB; // 4
 	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
-	sunLight.shadow.bias = -0.0005; // WebGPU
+	sunLight.shadow.bias = -0.0001; // r182
 	scene.add(sunLight);
+//- SonLight (cockpit only)
+const sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
+	sonLight.position.copy(SunPos);
+	sonLight.castShadow = true;
+//	sonLight.shadow.camera.near = sky_.SunDst*0.75;
+	sonLight.shadow.camera.near = sky_.SunDst*0.9;
+//	sonLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
+	sonLight.shadow.camera.far = sky_.SunDst+5;  // creates shadow on wing
+	sonLight.shadow.mapSize.width = 4096;
+	sonLight.shadow.mapSize.height = 4096;
+	sonLight.shadow.camera.left = -2.5; // Gets entire wing on deck (but distortion)
+	sonLight.shadow.camera.right = 2.5; // Back of Plane
+	sonLight.shadow.camera.top = 2.5;
+	sonLight.shadow.camera.bottom = -2.5;
+	sonLight.shadow.bias = -0.0005; // r182
+	scene.add(sonLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 const camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
@@ -301,7 +319,7 @@ const renderer = new THREE.WebGPURenderer({antialias: true});
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap; // 
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
 //	Depth Buffer
