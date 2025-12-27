@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Dec 2025
+Version dated 27 Dec 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -148,7 +148,6 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
-	* For external view - no SonLight and original SunLight parameters
 	* Can't switch views on ground at island
 	* Red Out not very red.
 	* Don't hear EA guns or engines (used to hear engines)9
@@ -282,7 +281,8 @@ const sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = sky_.SunDst+1; // Internal View (Default)
 //	sunLight.shadow.camera.near = sky_.SunDst*0.75; // External View
-	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
+	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox; // In Air
+//	sunLight.shadow.camera.far = sky_.SunDst+25; // On Deck
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
 	sunLight.shadow.camera.left = -sky_.ShdBLR; // 12
@@ -871,7 +871,10 @@ function moveShpAlt() {
 				air_.AirRot.y = xsh_.ObjRot.y; // Airplane pointed in same direction as ship				
 				air_.RotDif.y = 0;	// Start with no horizontal yaw or vibration
 				scene.add(air_.AirObj); // Was detached from scene
-//				if (!cam_.CamSel) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst;
+				if (!cam_.CamSel) {
+					sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst;
+					sunLight.shadow.camera.updateProjectionMatrix();
+				}
 			}
 			// Point Same Direction as Carrier
 			// [WIP]
@@ -1538,9 +1541,11 @@ function initCamFM2() {
 	//- FM2 Adjustments --------------------------------------------------------
 	if (!cam_.CamSel) {			// 0 = External View
 		sunLight.shadow.camera.near = sky_.SunDst*0.75;
+		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Stop at 1000s of feet
+		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Stop at Deck Edge
 		sunLight.shadow.camera.updateProjectionMatrix();
 		sonLight.visible = false;
-//		sonLight.castShadow = false;
+		sonLight.castShadow = false;
 		mxr_.Adr.visible = true;
 		vxr_.Adr.visible = false;
 		// Flaps
@@ -1564,7 +1569,7 @@ function initCamFM2() {
 		sunLight.shadow.camera.near = sky_.SunDst+1;
 		sunLight.shadow.camera.updateProjectionMatrix();
 		sonLight.visible = true;
-//		sonLight.castShadow = true;
+		sonLight.castShadow = true;
 		mxr_.Adr.visible = false;
 		vxr_.Adr.visible = true;
 		// Canopy
