@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2025, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Nov 2025
+Version dated 27 Dec 2025
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -280,7 +280,7 @@ function loadXSHVeh(xsh_,anm_,gen_) {
 		gen_.gltfLd.load(xsh_.ObjSrc[n], function (gltf) {
 			gltf.scene.traverse(function (child) {
 				if (child.isMesh) {
-					child.castShadow = true;
+//					child.castShadow = true; // Disable until decide to make the whole ship cast shadow
 					child.receiveShadow = true;
 				}
 			});
@@ -682,4 +682,5 @@ export {loadMountn,initMountn,moveMountn,
 251007	Added maxAni to Mountains/Islands
 251019	Added Object Sounds
 251125	Added scene, Loaders and listener to gen_
+251227	Disable ship shadows for now
 */
