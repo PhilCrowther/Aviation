@@ -9,7 +9,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Dec 2025
+Version dated 28 Dec 2025
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -148,6 +148,7 @@ This flight simulation demo uses the most advanced version of three.js
 
 TO DO:
 -	Program:
+	* Odd Cockpit Shadows at Take-Off
 	* Can't switch views on ground at island
 	* Red Out not very red.
 	* Don't hear EA guns or engines (used to hear engines)9
@@ -275,14 +276,12 @@ const scene = new THREE.Scene();
 // 	Light
 const ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 	scene.add(ambLight);
-//- SunLight
+//- SunLight (External View)
 const sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = sky_.SunDst+1; // Internal View (Default)
-//	sunLight.shadow.camera.near = sky_.SunDst*0.75; // External View
-	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox; // In Air
-//	sunLight.shadow.camera.far = sky_.SunDst+25; // On Deck
+	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
 	sunLight.shadow.camera.left = -sky_.ShdBLR; // 12
@@ -291,7 +290,7 @@ const sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
 	sunLight.shadow.bias = -0.0001; // r182
 	scene.add(sunLight);
-//- SonLight (cockpit only)
+//- SonLight (Cockpit View Only)
 const sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sonLight.position.copy(SunPos);
 	sonLight.castShadow = true;
@@ -723,7 +722,14 @@ function rendAll() {			// r173 added async
 		moveCamera(cam_,air_,key_,gen_);
 		// Move Objects
 		air_.DLTime = tim_.DLTime;
+		let GrdFlg = air_.GrdFlg;
 		moveAirObj();			// Move aircaft
+		// If Take-Off or Landing, Adjust External Shadows
+		if (!cam_.CamSel) {		// 0 = External View
+			if (GrdFlg && !air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // If Take-Off, Out to 1500 meters
+			if (!GrdFlg && air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // If Landing, Out to Deck Edge
+			sunLight.shadow.camera.updateProjectionMatrix();
+		}
 		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
@@ -871,10 +877,6 @@ function moveShpAlt() {
 				air_.AirRot.y = xsh_.ObjRot.y; // Airplane pointed in same direction as ship				
 				air_.RotDif.y = 0;	// Start with no horizontal yaw or vibration
 				scene.add(air_.AirObj); // Was detached from scene
-				if (!cam_.CamSel) {
-					sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst;
-					sunLight.shadow.camera.updateProjectionMatrix();
-				}
 			}
 			// Point Same Direction as Carrier
 			// [WIP]
@@ -1540,12 +1542,15 @@ function initCamFM2() {
 	camera.rotation.y = cam_.CamAdj*DegRad;
 	//- FM2 Adjustments --------------------------------------------------------
 	if (!cam_.CamSel) {			// 0 = External View
+		// Shadow1
 		sunLight.shadow.camera.near = sky_.SunDst*0.75;
-		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Stop at 1000s of feet
-		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Stop at Deck Edge
+		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
+		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
 		sunLight.shadow.camera.updateProjectionMatrix();
-		sonLight.visible = false;
-		sonLight.castShadow = false;
+		// Shadow2
+		sonLight.visible = false; // Turn Off Cockpit Lighting
+		sonLight.castShadow = false; // and Shadows
+		// Airplane Models
 		mxr_.Adr.visible = true;
 		vxr_.Adr.visible = false;
 		// Flaps
@@ -1566,14 +1571,19 @@ function initCamFM2() {
 		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anm_.anmfps);
 	}	
 	if (cam_.CamSel) {			// 1 = Internal View
-		sunLight.shadow.camera.near = sky_.SunDst+1;
+		// Shadow1
+		sunLight.shadow.camera.near = sky_.SunDst+1; // Avoid Double Shadows
+		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
+		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
 		sunLight.shadow.camera.updateProjectionMatrix();
-		sonLight.visible = true;
-		sonLight.castShadow = true;
+		// Shadow2
+		sonLight.visible = true; // Turn on Cockpit Lighting
+		sonLight.castShadow = true; // and Shadows
+		// Airplane Models
 		mxr_.Adr.visible = false;
 		vxr_.Adr.visible = true;
 		// Canopy
-		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);
+		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);	
 	}
 	//- Load New Values --------------------------------------------------------
 	cam_.CamLLD = new THREE.Vector3().copy(cam_.SrcLLD[cam_.CamSel]); // cam_.MshRot Lat, Lon, Dst
@@ -1888,6 +1898,8 @@ function onWindowResize() {
 251021	Revise initCamFM2
 251124:	Replace context with gen_.contxt
 251125:	Add scene, renderer, camera, Loaders and listener to gen_
+251226: Added SonLight to illuminate and create shadows in cockpit view only
+251227: Varied SunLight parameters with change in view and take-off/landing
 */
 
 </script>
