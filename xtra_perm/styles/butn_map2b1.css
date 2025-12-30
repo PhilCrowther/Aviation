@@ -1,0 +1,108 @@
+﻿/* Body */
+
+body {
+	margin: 0;
+	background-color: #000;
+	overscroll-behavior: none;
+	overflow: hidden;
+	height: 100%;
+	width: 100%;
+	padding:0;
+	font-weight: bold;
+}
+
+/* Upper Left */
+
+.overlay1 {
+	position: absolute;
+	top: 1%;
+	left: 1%;
+	width: 240px;
+	height: 12px;
+	color: black;
+	font-family: Courier;
+	font-size: 12pt;
+	font-weight: bold;
+	z-index: 1;
+}
+
+/* Buttons */
+
+button {
+	-webkit-appearance: none;	
+	font-family: Courier;
+	font-size: 12pt;
+	text-align: center;
+	position: absolute;
+	min-width: 40px;
+	border-radius: 0;
+	z-index: 1;
+}
+
+/* Right Side */
+
+.pawsButton {
+	right: 20px;
+	top: 10px;
+}
+
+.viewButton {
+	right: 20px;
+	top: 40px;
+}
+
+/* Lower Left */
+
+.spddButton {
+	position: absolute;
+	left: 20px;
+	bottom: 100px;
+}
+
+.pitdButton {
+	position: absolute;
+	left: 70px;
+	bottom: 100px;
+}
+
+.spduButton {
+	position: absolute;
+	left: 120px;
+	bottom: 100px;
+}
+
+.bnklButton {
+	position: absolute;
+	left: 20px;
+	bottom: 70px;
+}
+
+.cntrButton {
+	position: absolute;
+	left: 70px;
+	bottom: 70px;
+}
+
+.bnkrButton {
+	position: absolute;
+	left: 120px;
+	bottom: 70px;
+}
+
+.yawlButton {
+	position: absolute;
+	left: 20px;
+	bottom: 40px;
+}
+
+.pituButton {
+	position: absolute;
+	left: 70px;
+	bottom: 40px;
+}
+
+.yawrButton {
+	position: absolute;
+	left: 120px;
+	bottom: 40px;
+}
