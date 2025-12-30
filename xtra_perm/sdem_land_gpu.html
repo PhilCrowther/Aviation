@@ -4,15 +4,16 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Nov 2025
+Version dated 12 Dec 2025
 
 This programs shows procedurally generated farmland plus medium quality trees.
 -->
 
 <head>
-<title>sdem land gpu r181</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<link rel="stylesheet" href="styles/body2z.css">
+<title>sdem land gpu r182</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<link rel="stylesheet" href="styles/body2z1.css">
 </head>
 <body>
 
@@ -30,10 +31,10 @@ This programs shows procedurally generated farmland plus medium quality trees.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
 		}
 	}
 </script>
@@ -45,6 +46,7 @@ import {StorageBufferAttribute,StorageTexture} from "three/webgpu";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
 /********************************************************************************
 *
@@ -117,8 +119,22 @@ let SkyLim = 100000;			// Max viewing distance
 let	scene = new THREE.Scene();
 //- Lights
 let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
-	sunLight.position.copy(SunPos).normalize();
+//	sunLight.position.copy(SunPos).normalize();
+	sunLight.position.copy(SunPos);	// x = -3420, y = 1954, z = -3080
+//	console.log(SunPos.x,SunPos.y,SunPos.z);
+	sunLight.shadow.mapSize.width = 2048;
+	sunLight.shadow.mapSize.height = 2048;
+	sunLight.castShadow = true;
+	sunLight.shadow.camera.left = -sky_.ShdBLR;
+	sunLight.shadow.camera.right = sky_.ShdBLR;
+	sunLight.shadow.camera.top = sky_.ShdBTB;
+	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
+	sunLight.shadow.camera.far = sky_.ShdDst;
+	sunLight.shadow.bias = -0.0005;
+	sunLight.shadow.camera.updateProjectionMatrix();
 	scene.add(sunLight);
+let helper = new THREE.DirectionalLightHelper(sunLight,5);
+//	scene.add( helper );
 //- Camera
 let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,SkyLim);
 	camera.position.set(-40,10,400);
@@ -127,6 +143,7 @@ let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
+renderer.shadowMap.enabled = true;
 	container.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 //- Controls
@@ -153,7 +170,7 @@ let	CamDst, CamLat, CamHdg, CamAlt = 0;
 
 //= Data ========================================================================
 //- Maps ------------------------------------------------------------------------
-let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+let DifTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F.png";
 //- Ground Square ---------------------------------------------------------------
 let dqSize = 805;	// size of quarter section in meters = 2640 feet (2 ft per row = 1320 rows)
 let datMax = 6;
@@ -188,12 +205,23 @@ let bnsclr = [0x00e000,0x006000];	// Beans
 //= TREELINE ===================//==============================================
 let tre_ = {
 		ObjNum: 2,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
-				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
-		ObjAdr: [],				// Object Address
 		ObjMpZ: [0,25],			// Map Address Z (+South,-North)
 		ObjMpX: [0,0],			// Map Address X
 		ObjRot: [0,-90],		// Rotation (0 or -90)
+}
+
+let	tr1_ = {
+		ObjNum: 2,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
+				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
+		ObjAdr: [],				// Object Address
+}
+
+let	tr2_ = {
+		ObjNum: 2,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW2.glb",
+				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS2.glb"],
+		ObjAdr: [],				// Object Address
 }
 
 //= HTML OVERLAY TEXT ==========================================================
@@ -217,7 +245,7 @@ let Cam_Alt,Cam_Hdg;
 
 function loadAll() {
 	loadSkyBox();
-	loadTreLin();
+	loadTreLin(tre_,tr1_,tr2_);
 	loadDifTxt();
 	if (gen_.StatOn) {			// Load Stats
 		gen_.StatOn = new Stats();
@@ -237,6 +265,7 @@ function initAll() {
 
 function rendAll() {
 	if (gen_.LodFlg) {
+		moveTreLin(tr1_,tr2_);
 		// Update camera position
 		if(camera.position.y < 0.0) {
 			camera.position.y = 2.0;
@@ -245,6 +274,7 @@ function rendAll() {
 	}
 	prntHUDval();
 	renderer.render(scene,camera);
+//	console.log(renderer.info);
 }
 
 /********************************************************************************
@@ -322,8 +352,8 @@ function initTxtr() {
 		DatTxt.anisotropy = gen_.MaxAni;		// ###
 		DatTxt.needsUpdate = true;
 		dtMats[i] = new THREE.MeshLambertNodeMaterial({
-//			colorNode: texture(DatTxt),
-			colorNode: texture(DatTxt).add(texture(DifTxt)),
+			colorNode: texture(DatTxt),
+//			colorNode: texture(DatTxt).mul(texture(DifTxt)),
 //			roughnessMap: DifTxt,	// Not a texture
 		});
 		dtMesh[i] = new THREE.Mesh(geometry,dtMats[i]);
@@ -555,20 +585,64 @@ function makeVert(dtData,clr,x1,y1,x2,y2,spr,spp) {
 
 //= LOAD ========================================================================
 
-function loadTreLin() {
-	// standard geometry for shadow
-	let geo = new THREE.PlaneGeometry(tre_.ShdGeX,tre_.ShdGeY);
+function loadTreLin(tre_,tr1_,tr2_) {
 	// load all the treelines
+	let ObjSrc = 0;
 	for (let n = 0; n < tre_.ObjNum; n++) {
-		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
-		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
+		// MidPoly Trees
+		ObjSrc = tr1_.ObjSrc[0]; // EW (default)
+		if (tre_.ObjRot[n]) ObjSrc = tr1_.ObjSrc[1]; // NS
 		gltfLoader.load(ObjSrc, function (gltf) {
-			tre_.ObjAdr[n] = gltf.scene;
-			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
-			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
-			scene.add(tre_.ObjAdr[n]);
+			tr1_.ObjAdr[n] = gltf.scene;		
+			tr1_.ObjAdr[n].position.x = tre_.ObjMpX[n];
+			tr1_.ObjAdr[n].position.z = tre_.ObjMpZ[n];		
+			scene.add(tr1_.ObjAdr[n]);
+		});
+		// LowPoly Trees
+		ObjSrc = tr2_.ObjSrc[0]; // EW (default)
+		if (tre_.ObjRot[n]) ObjSrc = tr2_.ObjSrc[1]; // NS
+		gltfLoader.load(ObjSrc, function (gltf) {
+			tr2_.ObjAdr[n] = gltf.scene;		
+			tr2_.ObjAdr[n].position.x = tre_.ObjMpX[n];
+			tr2_.ObjAdr[n].position.z = tre_.ObjMpZ[n];		
+			scene.add(tr2_.ObjAdr[n]);
+			tr2_.ObjAdr[n].visible = "false";
 		});
 	}
+//	moveTreLin();
+}
+
+//= MOVE ========================================================================
+
+function moveTreLin(tr1_,tr2_) {
+	let a = "";
+	for (let n = 0; n < tre_.ObjNum; n++) {
+		// Near
+		if (Math.abs(CamDst) < 500) {
+			tr1_.ObjAdr[n].visible = "true";
+			tr1_.ObjAdr[n].position.x = tre_.ObjMpX[n];
+			tr1_.ObjAdr[n].position.y = 0;
+			tr1_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
+			tr2_.ObjAdr[n].visible = "false";
+			tr2_.ObjAdr[n].position.x = -10000;
+			tr2_.ObjAdr[n].position.y = -10000;
+			tr2_.ObjAdr[n].position.z = -10000;
+			a = "near";
+		}
+		// Far
+		else {
+			tr1_.ObjAdr[n].visible = "false";
+			tr1_.ObjAdr[n].position.x = -10000;
+			tr1_.ObjAdr[n].position.y = -10000;
+			tr1_.ObjAdr[n].position.z = -10000;
+			tr2_.ObjAdr[n].visible = "true";
+			tr2_.ObjAdr[n].position.x = tre_.ObjMpX[n];
+			tr2_.ObjAdr[n].position.y = 0;
+			tr2_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
+			a = "far";
+		}
+	}
+	console.log(Math.round(CamDst),a);
 }
 
 /********************************************************************************
