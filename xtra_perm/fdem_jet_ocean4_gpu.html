@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 16 Sep 2025
+Version dated 30 Dec 2025
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
 
 <head>
-<title>fdem jet ocean4 gpu r180</title>
+<title>fdem jet ocean4 gpu r182</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="styles/butn_map2b.css">
 </head>
@@ -44,8 +44,7 @@ A WebGPU demo of the GrdWtr and Ocean modules.
 			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
 			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
 			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
 		}
 	}
 </script>
@@ -57,7 +56,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 		time,					// r170 changed from timerLocal
 } from "three/tsl";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
-import Stats from "stats-gl";
+import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/xtra_perm/jsm/GrdWtr4.js";
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra_perm/jsm/Ocean4.js"; // r173 (uses TimestampQuery)
@@ -156,7 +155,6 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
 let maxAnisotropy = renderer.getMaxAnisotropy();
-	await renderer.init();		// r179
 //- Inputs
 	// Key Input
 	document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -410,6 +408,11 @@ function loadAll() {
 	loadSkyBox();
 	loadGeoMat(imagLoader,txtrLoader,grd_,context);
 	loadJetExh();
+	if (StatOn) {			// Load Stats
+		StatOn = new Stats();
+		document.body.appendChild(StatOn.dom);
+		StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
+	}
 }
 
 //= INITIALIZE (called by loading manager) ======================================
@@ -425,16 +428,6 @@ function initAll() {
 	initAirPln(air_);			// Load Aircraft
 	initJetExh();
 	prntHUDval(air_);
-	// Show stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
-	}
 	LodFlg = 1;
 }
 
@@ -451,8 +444,7 @@ function rendAll() {
 	}
 	prntHUDval(air_);
 	moveCamera(camera,cam_);
-	renderer.renderAsync(scene, camera); // ### WebGPU requires Async
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+	renderer.render(scene, camera); // ### WebGPU requires Async
 }
 
 /********************************************************************************
