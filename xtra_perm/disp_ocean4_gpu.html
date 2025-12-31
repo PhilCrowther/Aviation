@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>disp ocean4 gpu r180</title>
+<title>disp ocean4 gpu r182</title>
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <style>
 body {
@@ -20,11 +20,10 @@ body {
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
 		}
 	}
 </script>
@@ -32,9 +31,9 @@ body {
 <script type="module">
 import * as THREE from 'three';
 import {texture} from 'three/tsl';
-import Stats from 'stats-gl';
+import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra_perm/jsm/Ocean4.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra_perm/jsm/Ocean4a.js";
 
 /********************************************************************************
 *
@@ -79,6 +78,7 @@ let	renderer = new THREE.WebGPURenderer({antialias: true});
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
 	document.body.appendChild(renderer.domElement);
+    await renderer.init();		// still used with ocean module
 //- Camera
 let	camera = new THREE.PerspectiveCamera(55.0,window.innerWidth/window.innerHeight,0.5,5000);
 	camera.position.set(0,0,150);
@@ -99,14 +99,10 @@ function initAll() {
 	waves = new Ocean(renderer,wav_);
 	Display();
 	// Show stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
+	if (StatOn) {				// Load Stats
+		StatOn = new Stats();
+		document.body.appendChild(StatOn.dom);
+		StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
 	}
 }
 
@@ -114,9 +110,8 @@ function initAll() {
 
 function rendAll() {
 	waves.update();
-	if (StatOn) StatOn.update(); // Stats
-	renderer.renderAsync(scene, camera);
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+	if (StatOn) StatOn.update(); // update stats
+	renderer.render(scene, camera);
 }
 
 /********************************************************************************
