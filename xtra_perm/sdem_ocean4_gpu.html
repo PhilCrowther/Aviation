@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-<title>sdem ocean4 gpu r180</title>
+<title>sdem ocean4 gpu r182</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="styles/butn_map2b.css">
 </head>
@@ -22,8 +22,7 @@
 			"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
 			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
 			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
-			"stats-gl": "https://cdn.jsdelivr.net/npm/stats-gl@2.2.8/dist/main.js"
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
 		}
 	}
 </script>
@@ -36,7 +35,7 @@ import {color,texture,normalMap,float,vec2,attribute,positionLocal,
 } from 'three/tsl';
 
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
-import Stats from 'stats-gl';
+import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
 import {Ocean} from "https://PhilCrowther.github.io/Aviation/xtra_perm/jsm/Ocean4.js";
 
@@ -91,6 +90,7 @@ let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.BasicShadowMap;
 	container.appendChild(renderer.domElement);
+    await renderer.init();		// still used with ocean module
 //- Lights
 let sunLight = new THREE.DirectionalLight(SunCol, 3.0);
 	sunLight.position.copy(SunPos).normalize();
@@ -180,22 +180,18 @@ let Cam_Alt,Cam_Hdg;
 function loadAll() {
 	loadSkyBox();
 	loadOceans();
-	// Show stats
-	if (StatOn) {				// show stats
-		StatOn = new Stats({
-			precision: 3,
-			horizontal: false
-		});
-		StatOn.init(renderer);
-		StatOn.domElement.style.cssText = "position:absolute;top:75%;left:95%;";
-		container.appendChild(StatOn.dom);
-	}
 }
 
 //= INITIALIZE =================//===============================================
 
 function initAll() {
 	initOceans(renderer,wav_);	// Initialize Ocean
+	// Show stats
+	if (StatOn) {				// Load Stats
+		StatOn = new Stats();
+		document.body.appendChild(StatOn.dom);
+		StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
+	}
 }
 
 //= RENDER =====================//===============================================
@@ -211,8 +207,7 @@ function rendAll() {
 		if (StatOn) StatOn.update();		// Stats
 	}
 	prntHUDval();
-	renderer.renderAsync(scene, camera);	// ### WebGPU requires Async
-	renderer.resolveTimestampsAsync(THREE.TimestampQuery.RENDER); // r173
+	renderer.render(scene, camera);	// ### WebGPU requires Async
 }
 
 /********************************************************************************
