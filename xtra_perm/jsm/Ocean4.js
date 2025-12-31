@@ -1,6 +1,6 @@
 ﻿//= OCEAN MODULE ================================================================
 
-// Ocean.js (15 Sep 2025)
+// Ocean.js (30 Dec 2025)
 //
 // History: This is an update of a three.js wave generator created in 2015 by Jérémy Bouny (github.com/fft-ocean),
 // based on a 2014 js version created by David Li (david.li/waves/) and adapted to three.js by Aleksandr Albert
@@ -8,6 +8,8 @@
 // In 2023, Phil Crowther <phil@philcrowther.com> updated and modified the wave generator to work as a module.  
 // Attila_Schroeder <> further upgraded and improved this module to work with GLSL3, WebGL2 and now WebGPU.
 // This version 4t is version 4 upgraded to work with r168 and uses timerLocal rather than WavTim.
+//
+// This version does not contain compute shaders.
 //
 // As with the original wave generators, this module is licensed under a
 // Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
@@ -28,7 +30,6 @@ import {
 	RepeatWrapping,
 	RGBAFormat,
 	StorageTexture,
-	TimestampQuery,				// r173 requires this
 } from 'three';
 import {
 	vec2,
@@ -46,7 +47,6 @@ import {
 *	OCEAN MODULE
 *
 ********************************************************************************/
-
 
 //= NOTES =======================================================================
 /*
@@ -603,8 +603,8 @@ constructor(renderer,wav_) {
 	
 	//= Render ==================================================================
 	
-	this.renderer.computeAsync(this.initSpectrumComp);
-	this.renderer.computeAsync(this.butterflyComp); // r179
+	this.renderer.compute(this.initSpectrumComp);
+	this.renderer.compute(this.butterflyComp); // r179
 
 };	// End of Initialize
 
@@ -650,9 +650,8 @@ update() {
 	}
 	
 	// 5. Displacement
-	this.renderer.computeAsync(this.permutationComp);
-	this.renderer.computeAsync(this.compNormalComp);
-	this.renderer.resolveTimestampsAsync(TimestampQuery.COMPUTE); // r173
+	this.renderer.compute(this.permutationComp);
+	this.renderer.compute(this.compNormalComp);
 	
 };	// End of Update
 
@@ -686,4 +685,5 @@ export {Ocean};
 // 250131:				: Added TimestampQuery after loops (r173)
 // 250531: Rename as Ocean
 // 250808:				: Fix coding error identified by r179.
+// 251230:				: Delete Async and TimeStamp references
 */
