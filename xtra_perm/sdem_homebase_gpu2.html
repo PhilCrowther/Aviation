@@ -139,9 +139,9 @@ let	CamDst, CamLat, CamHdg, CamAlt = 0;
 //= MATERIALS ===================================================================
 let WtrCol = 0x001080;			// Water (Navy)
 //- Textures --------------------------------------------------------------------
-let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png";
+let DifTxt = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition1F_color4.png"; // 512x512
 //- Maps ------------------------------------------------------------------------
-let RufMap = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png";
+let RufMap = "https://PhilCrowther.github.io/Aviation/textures/ocean/transition5.png"; // 512x512
 //- Shared Textures
 let txt_ = {
 		ObjNum: 3,
@@ -332,7 +332,7 @@ function rendAll() {
 function loadSkyBox() {
 	let envMap = cubeLoader
 		.setPath(SBPath)
-		.load(["px.jpg","nx.jpg","py.jpg","ny.jpg","pz.jpg","nz.jpg"]);
+		.load(["px2s.jpg","nx2s.jpg","py2s.jpg","ny2s.jpg","pz2s.jpg","nz2s.jpg"]);
 	envMap.format = THREE.RGBAFormat;
 	envMap.colorSpace = THREE.SRGBColorSpace; // r152
 	scene.background = envMap;
