@@ -3,9 +3,9 @@
 *	OBJECTS MODULE
 *
 *********************************************************************************
-Copyright 2022-2026, Phil Crowther
+Copyright 2022-2025, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Jan 2026
+Version dated 27 Dec 2025
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -278,12 +278,11 @@ function initXACVeh(xac_,air_,gen_) {
 function loadXSHVeh(xsh_,anm_,gen_) {
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
 		gen_.gltfLd.load(xsh_.ObjSrc[n], function (gltf) {
-			gltf.scene.traverse(function (child) {								
-//				if (child.isMesh) {
+			gltf.scene.traverse(function (child) {
+				if (child.isMesh) {
 //					child.castShadow = true; // Disable until decide to make the whole ship cast shadow
-//					child.receiveShadow = true;
-//				}
-				if (child.name == "deck") child.receiveShadow = true;
+					child.receiveShadow = true;
+				}
 			});
 			xsh_.ObjAdr[n] = gltf.scene;
 			xsh_.ObjAdr[n].scale.setScalar(xsh_.ObjSiz[n]); // Scale
