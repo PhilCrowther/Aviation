@@ -93,10 +93,6 @@ let	renderer = new THREE.WebGPURenderer({antialias: true});	//### r167
     renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
-	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.autoUpdate = true;
-	renderer.receiveShadow = true;
-	renderer.shadowMap.type = THREE.BasicShadowMap;
 	container.appendChild(renderer.domElement);
     await renderer.init();		// still used with ocean module
 //- Lights
