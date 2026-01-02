@@ -8,9 +8,9 @@
 *
 *********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Dec 2025
+Version dated 2 Jan 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -266,6 +266,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
+	await renderer.init();		// Allows time for backend to initialize
 //- Clock
 let clock = new THREE.Clock();
 let oldTim, nowTim, difTim = 0;

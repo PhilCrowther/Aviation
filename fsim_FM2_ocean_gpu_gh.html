@@ -7,9 +7,9 @@
 *
 ********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 Dec 2025
+Version dated 2 Jan 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -291,7 +291,7 @@ const sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.shadow.bias = -0.0001; // r182
 	scene.add(sunLight);
 //- SonLight (Cockpit View Only)
-const sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
+const sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
 	sonLight.position.copy(SunPos);
 	sonLight.castShadow = true;
 	sonLight.shadow.camera.near = sky_.SunDst*0.9;
@@ -318,7 +318,7 @@ const renderer = new THREE.WebGPURenderer({antialias: true});
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap; // 
 	document.body.appendChild(renderer.domElement);
-let maxAnisotropy = renderer.getMaxAnisotropy();
+	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Depth Buffer
 	renderer.logarithmicDepthBuffer = true;				// Seems to help with CVE deck flickering
 //	Tone Mapping
@@ -329,7 +329,8 @@ let maxAnisotropy = renderer.getMaxAnisotropy();
 //	renderer.toneMapping = THREE.ACESFilmicToneMapping;	// contrast - not as dark
 //	renderer.toneMapping = THREE.AgXToneMapping;		// normal
 //	renderer.toneMapping = THREE.NeutralToneMapping;	// contrast - dark
-	renderer.toneMappingExposure = 0.75;				// Higher = brighter (default = 1)
+	renderer.toneMappingExposure = 1.0;				// Higher = brighter (default = 1)
+	await renderer.init();		// Allows time for backend to initialize
 // 	Clock
 let	clock = new THREE.Clock();
 // 	Inputs
@@ -402,7 +403,7 @@ let boxrot = 0;
 //- Ocean Module ---------------//-----------------------------------------------
 //- Adjustments
 	wav_.renderer = renderer;
-	wav_.anisotropy = maxAnisotropy;
+	wav_.anisotropy = gen_.MaxAni;
 
 //= 4. OBJECT VARIABLES ========//==============================================
 //= STATIC OBJECTS =============//==============================================
@@ -411,7 +412,7 @@ let boxrot = 0;
 	mnt_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation
 	mnt_.MapPos = [new THREE.Vector3(610,0,5275),new THREE.Vector3(-1610,10,2440)]; // X has no effect!!!!
 	mnt_.ObjGrp = [new THREE.Object3D,new THREE.Object3D]; // Group
-	mnt_.MaxAni = maxAnisotropy;
+	mnt_.MaxAni = gen_.MaxAni;
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation

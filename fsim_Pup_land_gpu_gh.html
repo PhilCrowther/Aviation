@@ -8,9 +8,9 @@
 *
 *********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Dec 2025
+Version dated 2 Jan 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -186,7 +186,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;	
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	renderer.shadowMap.type = THREE.PCFShadowMap; // r182
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Depth Buffer
@@ -199,7 +199,8 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 //	renderer.toneMapping = THREE.ACESFilmicToneMapping;	// contrast - not as dark
 //	renderer.toneMapping = THREE.AgXToneMapping;		// normal
 //	renderer.toneMapping = THREE.NeutralToneMapping;	// contrast - dark
-	renderer.toneMappingExposure = 0.75;				// Higher = brighter (default = 1)
+	renderer.toneMappingExposure = 1.0;					// Higher = brighter (default = 1)
+	await renderer.init();		// Allows time for backend to initialize
 //- Clock
 let clock = new THREE.Clock(); // not used, if activated, use tim_ variable
 //- Inputs
