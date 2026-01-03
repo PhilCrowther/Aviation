@@ -2,9 +2,9 @@
 <html>
 
 <!--
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Dec 2025
+Version dated 3 Jan 2026
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
@@ -154,6 +154,7 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
+	await renderer.init();		// Allows time for backend to initialize
 let maxAnisotropy = renderer.getMaxAnisotropy();
 //- Inputs
 	// Key Input
