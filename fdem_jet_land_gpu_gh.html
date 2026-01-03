@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Jan 2026
+Version dated 3 Jan 2026
 
 This demo program uses portions of the GrdLnd module.
 
@@ -201,10 +201,10 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// r168
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.BasicShadowMap;
-	document.body.appendChild(renderer.domElement);
-	gen_.MaxAni = renderer.getMaxAnisotropy();
 	renderer.logarithmicDepthBuffer = true;
-	await renderer.init();		// Allows time for backend to initialize	
+	document.body.appendChild(renderer.domElement);
+	await renderer.init();		// Allows time for backend to initialize
+	gen_.MaxAni = renderer.getMaxAnisotropy();
 //- Clock
 const clock = new THREE.Clock();
 let oldTim, nowTim, difTim = 0;
