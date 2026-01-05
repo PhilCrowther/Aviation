@@ -7,9 +7,9 @@
 *
 *********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Dec 2025
+Version dated 5 Jan 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -79,7 +79,7 @@ NOTES
 //= LOAD MODULES ================================================================
 //- Basic Modules ---------------------------------------------------------------
 import * as THREE from "three";
-import {texture,uniform} from 'three/tsl';
+import {texture} from 'three/tsl';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
@@ -160,11 +160,6 @@ let SunLon = 312;				// Direction - Horz (0->360)
 //- New
 let SunSph = new THREE.Spherical(SunDst,(90-SunLat)*DegRad,Mod360(180-SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
-//	Shadows
-let ShdBox = 6;					// Size of shadow box
-let ShdBLR = 6.5;
-let ShdBTB = 4;
-let ShdDst = 1500;				// Shadow Distance (meters)
 
 //= STANDARD SETUP =============//===============================================
 //- Display
@@ -173,26 +168,25 @@ const scene = new THREE.Scene();
 //- Light
 const ambLight = new THREE.AmbientLight(SunCol, 0.5);
 	scene.add(ambLight);
-//- SunLight
+//- SunLight (same as SonLight in fsm)
 const sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = SunDst*0.75;
-	sunLight.shadow.camera.far = SunDst+2*ShdBox;
-	sunLight.shadow.mapSize.width = 8192;
-	sunLight.shadow.mapSize.height = 8192;
-	sunLight.shadow.camera.left = -ShdBLR;
-	sunLight.shadow.camera.right = ShdBLR;
-	sunLight.shadow.camera.top = ShdBTB;
-	sunLight.shadow.camera.bottom = -ShdBTB;
-	sunLight.shadow.bias = -0.0001; // WebGPU
+	sunLight.shadow.camera.near = SunDst*0.9;
+	sunLight.shadow.camera.far = SunDst+5;
+	sunLight.shadow.mapSize.width = 4096;
+	sunLight.shadow.mapSize.height = 4096;
+	sunLight.shadow.camera.left = -2.5;
+	sunLight.shadow.camera.right = 2.5;
+	sunLight.shadow.camera.top = 2.5;
+	sunLight.shadow.camera.bottom = -2.5;
+	sunLight.shadow.bias = -0.0005; // WebGPU
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 const camera = new THREE.PerspectiveCamera(45,CamAsp,0.1,100000);
 //- Renderer
 let renderer = new THREE.WebGPURenderer({antialias:true});
-	await renderer.init();		// r179
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -201,6 +195,7 @@ let renderer = new THREE.WebGPURenderer({antialias:true});
 	renderer.receiveShadow = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
+	await renderer.init();		// Allows time for backend to initialize
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Depth Buffer
 	renderer.logarithmicDepthBuffer = true;
@@ -336,7 +331,7 @@ let waves = 0;
 let wav_ = {
 		// General
 		size: 1024,				// 
-		gsiz: 2400,				// size of grid square (used to compute Normal Map) uniform)
+		gsiz: 2400,				// size of grid square (used to compute Normal Map)
 		lambda: 0.9,
 		renderer: renderer,
 		anisotropy: gen_.MaxAni,
