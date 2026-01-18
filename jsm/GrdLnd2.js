@@ -494,9 +494,9 @@ function makeVrtD(dtColr,dtData,Weight) {
 
 function makeShad(dtData) {
 	let idx;
-	for (let x = 7; x < dtSize; x+=8) {	// Rows
-		for (let y = 0; y < dtSize; y++) {
-			idx = (y*dtSize + x) * 4;
+	for (let x = 7; x < dqSize; x+=8) {	// Rows
+		for (let y = 0; y < dqSize; y++) {
+			idx = (y*dqSize + x) * 4;
 			dtData[idx  ] = dtData[idx  ] * 0.25;
 			dtData[idx+1] = dtData[idx+1] * 0.25;
 			dtData[idx+2] = dtData[idx+2] * 0.25;
