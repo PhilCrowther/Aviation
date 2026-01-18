@@ -4,9 +4,9 @@
 *
 ********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Nov 2025
+Version dated 17 Jan 2026
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -243,10 +243,22 @@ function initGr0Mat(grd_,gen_) {
 		let dtData = gt0_.G0DPtr[n].data;
 		makeClr1(drtclr,dtData,1.6);	// Dirt
 		if (n == 1) makeClr2(pstclr,dtData,4);	// Pasture
-		if (n == 2) makeVrtL(drtclr,dtData,1.9,1.5);	// Plowed Line
-		if (n == 3) makeVrtL(cvrclr,dtData,1.9,1.5);	// Bean Line
-		if (n == 4) makeVrtL(whtclr,dtData,1.9,1.5);	// Wheat Line
-		if (n == 5) makeVrtD(bnsclr,dtData,8);	// Bean Dots
+		if (n == 2) {
+			makeVrtL(drtclr,dtData,1.9,1.5);	// Plowed Line
+			makeShad(dtData);
+		}
+		if (n == 3) {
+			makeVrtL(cvrclr,dtData,1.9,1.5);	// Bean Line
+			makeShad(dtData);
+		}
+		if (n == 4) {
+			makeVrtL(whtclr,dtData,1.9,1.5);	// Wheat Line
+			makeShad(dtData);
+		}
+		if (n == 5) {
+			makeVrtD(bnsclr,dtData,8);	// Bean Dots
+			makeShad(dtData);
+		}
 		// Make Materials
 		let DatTxt = new DataTexture(dtData, dqSize, dqSize);
 		DatTxt.format = RGBAFormat;
@@ -474,6 +486,25 @@ function makeVrtD(dtColr,dtData,Weight) {
 				dtData[idx+2] = blu[i];
 				dtData[idx+3] = 255;
 			}
+		}
+	}
+}
+
+//- Make Shadow ----------------------------------------------------------------
+
+function makeShad(dtData) {
+	let idx;
+	for (let x = 7; x < dqSize; x+=8) {	// Rows
+		for (let y = 0; y < dqSize; y++) {
+			idx = (y*dqSize + x) * 4;
+			dtData[idx  ] = dtData[idx  ] * 0.25;
+			dtData[idx+1] = dtData[idx+1] * 0.25;
+			dtData[idx+2] = dtData[idx+2] * 0.25;
+			//
+			idx = idx+4;
+			dtData[idx  ] = dtData[idx  ] * 0.25;
+			dtData[idx+1] = dtData[idx+1] * 0.25;
+			dtData[idx+2] = dtData[idx+2] * 0.25;
 		}
 	}
 }
@@ -1174,4 +1205,5 @@ export {initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,makeTreLin,moveTreLin};
 250531:	Rename GrdMap3b as GrdMap
 251103: Added LoadTreLin
 251125: Use gen_ to Store Loader and Scene Values
+260117: Added shadows to plowed fields.
 */
