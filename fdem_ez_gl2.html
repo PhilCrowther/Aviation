@@ -2,9 +2,9 @@
 <html lang="en">
 
 <!--
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 Jun 2025
+Version dated 19 Jan 2026
 
 This simplified flight demonstrator shows how to set up animated parts, including a virtual cockpit.
 This demo uses a simplified version of the Flight module.
@@ -12,7 +12,7 @@ This demo uses a simplified version of the Flight module.
 
 <head>
 <meta charset="utf-8" />
-<title>fdem ez webgl2 r178</title>
+<title>fdem ez webgl2 r182</title>
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/main2pxD.css">
 </head>
 
@@ -66,8 +66,8 @@ This demo uses a simplified version of the Flight module.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.178.0/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.178.0/examples/jsm/"
+			"three": "https://unpkg.com/three@0.182.0/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
 		}
 	}
 </script>
@@ -1130,16 +1130,15 @@ function init1GrMap(Grd) {
 		zx = zx + Grd.Siz;
 	}
 	let geometry;
-	let material = new THREE.LineBasicMaterial({color: "green"});
 	if (Grd.Typ == 4) geometry = new THREE.PlaneGeometry(Grd.Siz, Grd.Siz,2,2);
 	if (Grd.Typ == 5) geometry = new THREE.PlaneGeometry(Grd.Siz, Grd.Siz, 2*Grd4.Stp, 2*Grd4.Stp);
 	ToQuads(geometry);
+	let material = new THREE.LineBasicMaterial({color: "green"});
 	// Set Starting Position of Squares
 	let n = 0;
 	for (let y = 0; y < Grd.RCs; y++) {		// Row
 		for (let x = 0; x < Grd.RCs; x++) {	// Column
 			Grd.Ptr[n] = new THREE.LineSegments(geometry,material);
-			Grd.Ptr[n].material.depthTest = false;
 			Grd.Ptr[n].rotation.x = -90*DegRad;
 			scene.add(Grd.Ptr[n]);
 			Grd.Ptr[n].position.set(Grd.MXV[x],-Grd0.SPS.y,-Grd.MZV[y]);
@@ -1150,8 +1149,8 @@ function init1GrMap(Grd) {
 
 function ToQuads(g) {
   let p = g.parameters;
-  let segmentsX = (g.type == "TorusBufferGeometry" ? p.tubularSegments : p.radialSegments) || p.widthSegments || p.thetaSegments || (p.points.length - 1) || 1;
-  let segmentsY = (g.type == "TorusBufferGeometry" ? p.radialSegments : p.tubularSegments) || p.heightSegments || p.phiSegments || p.segments || 1;
+  let segmentsX = (g.type == "TorusGeometry" ? p.tubularSegments : p.radialSegments) || p.widthSegments || p.thetaSegments || (p.points.length - 1) || 1;
+  let segmentsY = (g.type == "TorusGeometry" ? p.radialSegments : p.tubularSegments) || p.heightSegments || p.phiSegments || p.segments || 1;
   let indices = [];
   for (let i = 0; i < segmentsY + 1; i++) {
     let index11 = 0;
