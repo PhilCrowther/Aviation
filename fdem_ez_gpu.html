@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Jan 2026
+Version dated 19 Jan 2026
 
 This simplified flight demonstrator shows how to set up animated parts, including a virtual cockpit.
 This demo uses a simplified version of the Flight module.
@@ -79,18 +79,17 @@ import * as THREE from "three";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import {color,texture} from "three/tsl";
 	
-//= INPUTS =====================================================================
+//= INPUTS =====================//==============================================
 //- AIRPLANE: Start ------------------------------------------------------------
-let USorSI = "US";					// Starting Units of Measurement (US or SI)
-let PwrPct = 1.0;					// Initial Power
-let BegSpd = 299.225;				// Speed: 100% throttle/30 deg bank (mph)
-let BegPos = new THREE.Vector3(0,5000,0); // Position (ft)
+let PwrPct = 1.0;				// Initial Power
+let BegSpd = 481.556;			// Speed: 100% throttle/30 deg bank (299.225 mph)
+let BegPos = new THREE.Vector3(0,1524,0); // Position (5000 ft)
 let BegRot = new THREE.Vector3(0,0,60); // Beg Pitch, Heading, Bank Angles
 //- AIRPLANE: Flight Controls --------------------------------------------------
-let PwrMul = 0.0001;				// Power % Input - Mouse Multiplier
-let PwrDif = 0;						// Power % Input - Value
+let PwrMul = 0.0001;			// Power % Input - Mouse Multiplier
+let PwrDif = 0;					// Power % Input - Value
 //- POINTER LOCK CONTROLS ------------------------------------------------------
-let InpMos = new THREE.Vector2();	// Inputs - Mouse
+let InpMos = new THREE.Vector2(); // Inputs - Mouse
 let _changeEvent = {type: 'change'};
 let _lockEvent = {type: 'lock'};
 let _unlockEvent = {type: 'unlock'};
@@ -115,11 +114,6 @@ const Mil2Km = 1.60934;
 //- Basic Data
 const GrvUPS = 9.80665;			// Gravity (m/s2)
 let	AirDen = 1.225;				// Air Density - sea level (kg/m3)
-//- Convert Starting Values
-if (USorSI = "US") {
-	BegSpd = BegSpd*Mil2Km;
-	BegPos.multiplyScalar(Ft2Mtr);
-}
 
 //= INPUT VALUES ===============//==============================================
 //- Display
@@ -1148,7 +1142,6 @@ function init1GrMap(Grd) {
 		}
 	}
 }
-
 
 function ToQuads(g) {
   let p = g.parameters;
