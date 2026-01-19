@@ -2,9 +2,9 @@
 <html lang="en">
 
 <!--
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 May 2025
+Version dated 18 Jan 2026
 
 This simplified flight demonstrator shows how to set up animated parts, including a virtual cockpit.
 This demo uses a simplified version of the Flight module.
@@ -12,7 +12,7 @@ This demo uses a simplified version of the Flight module.
 
 <head>
 <meta charset="utf-8" />
-<title>fdem ez webgpu r175</title>
+<title>fdem ez webgpu r182</title>
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/main2pxD.css">
 </head>
 
@@ -66,10 +66,10 @@ This demo uses a simplified version of the Flight module.
 <script type="importmap">
 	{
 		"imports": {			
-			"three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/"	
+			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"	
 		}
 	}
 </script>
@@ -77,6 +77,7 @@ This demo uses a simplified version of the Flight module.
 <script type="module">
 import * as THREE from "three";
 import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
+import {color,texture} from "three/tsl";
 	
 //= INPUTS =====================================================================
 //- AIRPLANE: Start ------------------------------------------------------------
@@ -108,7 +109,7 @@ let DLTime = 1/60;				// Frames per Second
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
 const Ft2Mtr = 0.3048;			// Feet to Meters
-const Mtr2Ft = 1/Ft2Mtr;			// Meters to Feet
+const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
 const Km2Mil = 0.621371;
 const Mil2Km = 1.60934;
 //- Basic Data
@@ -563,10 +564,10 @@ function loadAll() {
 
 function initAll() {
 	if (SBxFlg) initSkyBox();	// SkyDome, Fog and Sun
-	initAirObj();				// Initialize Airplane Rotation
-	initGrdMap();				// Grid (Render First So in Background)
+	initAirObj();				// Initialize Airplane Rotation Only
 	makeAirPln();				// Load Airplane Models
 	initJetExh();
+	initGrdMap();				// Grid (Render First So in Background)
 	AutoPText();
 	PauseText();
 	LodFlg = 1;
@@ -578,9 +579,9 @@ function rendAll() {
 	if (PawsOn == 0 && (LodFlg) && controls.isLocked === true) {
 		moveCamera();			// Camera [1]
 		moveAirObj();
-		moveJetExh();
 		Grd0.SPS.copy(air_.MapSPS);	// Copy info from Air to Grid
 		moveGrdMap();
+		moveJetExh();
 		prntHUDval();
 		chngInst();
 	}
@@ -682,55 +683,51 @@ function makeAirPln() {
 
 function makeAirExt() {
 	// Front
-	let color = new THREE.Color("blue");
-	let material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
-	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 10, 60, 3), material);
+	let airmat = new THREE.MeshPhongNodeMaterial({colorNode: color("blue"), flatShading: true});
+	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 10, 60, 3), airmat);
 	mesh.position.set(0,0,-30);
 	mesh.rotation.set(-90*DegRad,0,0);
 	air_.AirExt.add(mesh);
 	// Back
-	mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 10, 90, 3), material);
+	mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 10, 90, 3), airmat);
 	mesh.position.set(0,0,45);
 	mesh.rotation.set(90*DegRad,180*DegRad,0);
 	air_.AirExt.add(mesh);
 	// Wings
 	makeAirCom(air_.AirExt,ane_);
 	// HTail
-	color = new THREE.Color("lightgray");
-	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,1,7.5), material);
+	airmat = new THREE.MeshPhongNodeMaterial({colorNode: color("lightgray"), flatShading: true});
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,1,7.5), airmat);
 	mesh.position.set(0,0,86.75);
 	air_.AirExt.add(mesh);
 	// Elevator Hinge
-	color = new THREE.Color("lightgray");
-	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
-	ane_.Hrz = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	airmat = new THREE.MeshPhongNodeMaterial({colorNode: color("lightgray"), flatShading: true});
+	ane_.Hrz = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), airmat);
 	ane_.Hrz.position.set(0,0,90.5);
 	air_.AirExt.add(ane_.Hrz);
 	// Elevator
-	material = new THREE.MeshPhongMaterial({color: color, map: AirTxE, flatShading: true});
-	ane_.Elv = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(20,1,7.5), material);
+	airmat = new THREE.MeshPhongNodeMaterial({colorNode: texture(AirTxE), flatShading: true});
+	ane_.Elv = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), airmat);
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(20,1,7.5), airmat);
 	mesh.position.set(-15,0,3.75);
 	ane_.Elv.add(mesh);
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(20,1,7.5), material);
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(20,1,7.5), airmat);
 	mesh.position.set(15,0,3.75);
 	ane_.Elv.add(mesh);
 	ane_.Hrz.add(ane_.Elv);
 	// VTail
-	color = new THREE.Color("red");
-	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(1,25,7.5), material);
+	airmat = new THREE.MeshPhongNodeMaterial({colorNode: color("red"), flatShading: true});
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(1,25,7.5), airmat);
 	mesh.position.set(0,12.5,86.75);
 	air_.AirExt.add(mesh);
 	// Rudder Hinge
-	ane_.Vrt = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	ane_.Vrt = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), airmat);
 	ane_.Vrt.position.set(0,6.25,90.5);
 	air_.AirExt.add(ane_.Vrt);
 	// Rudder 
-	ane_.Rud = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
-	material = new THREE.MeshPhongMaterial({color: color, map: AirTxR, flatShading: true});
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(1,25,7.5), material);
+	ane_.Rud = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), airmat);
+	airmat = new THREE.MeshPhongNodeMaterial({colorNode: texture(AirTxR), flatShading: true});
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(1,25,7.5), airmat);
 	mesh.position.set(0,6.25,3.75)
 	ane_.Rud.add(mesh);
 	ane_.Vrt.add(ane_.Rud);
@@ -742,15 +739,13 @@ function makeAirInt() {	// [2]
 	// Wings
 	makeAirCom(air_.AirInt,ani_);
 	// AoA Indicator
-	let color = new THREE.Color("red");
-	let material = new THREE.MeshBasicMaterial({color: color});
-	let mesh = new THREE.Mesh(new THREE.BoxGeometry(4,4,4), material);
+	let airmat = new THREE.MeshPhongNodeMaterial({colorNode: color("red")});
+	let mesh = new THREE.Mesh(new THREE.BoxGeometry(4,4,4), airmat);
 	mesh.position.set(0,0,-195);
 	air_.AirInt.add(mesh);
 	// Direction Indicator
-	color = new THREE.Color("black");
-	material = new THREE.MeshBasicMaterial({color: color});
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(6,4,4), material);
+	airmat = new THREE.MeshPhongNodeMaterial({colorNode: color("black")});
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(6,4,4), airmat);
 	mesh.position.set(0,0,-200);
 	ani_.Spd.add(mesh);
 	air_.AirInt.add(ani_.Spd);
@@ -758,23 +753,21 @@ function makeAirInt() {	// [2]
 	let cockpit = makeMesh();
 	cockpit.position.set(0,-3,0);
 	cam_.PVC.add(cockpit);
-	color = new THREE.Color("blue");
-	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
-	material.side = THREE.BackSide;
-	mesh = new THREE.Mesh(new THREE.CylinderGeometry(2,3.1,9,64), material);
+	airmat = new THREE.MeshPhongNodeMaterial({colorNode: color("blue")});
+	airmat.side = THREE.BackSide;
+	mesh = new THREE.Mesh(new THREE.CylinderGeometry(2,3.1,9,64), airmat);
 	mesh.rotation.set(-90*DegRad,0,0);
 	cockpit.add(mesh);
 	// Panel
-	color = new THREE.Color("gray");
-	material = new THREE.MeshBasicMaterial({map: PanTxt, transparent: true});
-	let panel = new THREE.Mesh(new THREE.CircleGeometry(PanMRd,64,0,Math.PI), material);
+	airmat = new THREE.MeshBasicNodeMaterial({colorNode: texture(PanTxt),transparent: true});
+	let panel = new THREE.Mesh(new THREE.CircleGeometry(PanMRd,64,0,Math.PI), airmat);
 	panel.position.set(0,0,-4);
 	cockpit.add(panel);
 	// Attitude Indicator
 	let geoAtI = new THREE.SphereGeometry(0.3,32,16);
 	geoAtI.rotateY(-90*DegRad);
 	geoAtI.rotateX(-12.5*DegRad);
-	let matAtI = new THREE.MeshBasicMaterial({map: AtITxt});
+	let matAtI = new THREE.MeshBasicNodeMaterial({colorNode: texture(AtITxt)});
 	gau_.AtIMsh = new THREE.Mesh(geoAtI, matAtI);
 	panel.add(gau_.AtIMsh);
 	gau_.AtIMsh.position.copy(gau_.AtIPos);
@@ -798,32 +791,31 @@ function makeAirInt() {	// [2]
 
 function makeAirCom(AirCom,anm_) {
 	// Wing - Front
-let	color = new THREE.Color("lightgray");
-let	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
-let	mesh = new THREE.Mesh(new THREE.BoxGeometry(200,1,14), material);
+let airmat = new THREE.MeshPhongNodeMaterial({colorNode: color("lightgray"), flatShading: true});
+let	mesh = new THREE.Mesh(new THREE.BoxGeometry(200,1,14), airmat);
 	mesh.position.set(0,0,-3);
 	AirCom.add(mesh);
 	// Wing - Back
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(140,1,7), material);
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(140,1,7), airmat);
 	mesh.position.set(0,0,7.5);	// = -3 + 14/2 + 7/2
 	AirCom.add(mesh);
 	// Aileron Hinge - Left
-	anm_.ALH = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	anm_.ALH = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), airmat);
 	anm_.ALH.position.set(-100,0,4);		// = -3 + 14/2
 	AirCom.add(anm_.ALH);
 	// Aileron Hinge - Right
-	anm_.ARH = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	anm_.ARH = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), airmat);
 	anm_.ARH.position.set(100,0,4);		// = -3 + 14/2
 	AirCom.add(anm_.ARH);
 	// Aileron Left
-	material = new THREE.MeshPhongMaterial({color: color, map: AirTxE, flatShading: true});
-	anm_.AiL = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);	// origin
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(30,1,7), material);
+	airmat = new THREE.MeshPhongNodeMaterial({colorNode: texture(AirTxE),flatShading: true});
+	anm_.AiL = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), airmat);	// origin
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(30,1,7), airmat);
 	mesh.position.set(15,0,3.5);
 	anm_.AiL.add(mesh);
 	// Aileron Right
-	anm_.AiR = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);	// origin
-	mesh = new THREE.Mesh(new THREE.BoxGeometry(30,1,7), material);
+	anm_.AiR = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), airmat);	// origin
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(30,1,7), airmat);
 	mesh.position.set(-15,0,3.5);
 	anm_.AiR.add(mesh);
 	anm_.ALH.add(anm_.AiL);
@@ -831,12 +823,12 @@ let	mesh = new THREE.Mesh(new THREE.BoxGeometry(200,1,14), material);
 }
 
 function makeLines(LinXYZ,LinPos) {
-	let material = new THREE.LineBasicMaterial({color:0xffffff});
+	let airmat = new THREE.LineBasicNodeMaterial({colorNode: color("white")});
 	let points = [];
 	points.push(new THREE.Vector3(0,0,0));
 	points.push(LinXYZ);
 	let geometry = new THREE.BufferGeometry().setFromPoints(points);
-	let line = new THREE.Line(geometry,material);
+	let line = new THREE.Line(geometry,airmat);
 	line.position.copy(LinPos);
 	return line;
 }
@@ -1079,8 +1071,8 @@ function initJetExh() {
 	let geometry = new THREE.BufferGeometry();
 	geometry.setAttribute('position', new THREE.Float32BufferAttribute(SmkPos, 3));
 	geometry.setAttribute('color', new THREE.Float32BufferAttribute(SmkCol, 4));
-	let material = new THREE.PointsMaterial({size: 4, vertexColors: true, transparent: true});
-	SmkPtr = new THREE.Points(geometry, material);
+	let airmat = new THREE.PointsMaterial({size: 4, vertexColors: true, transparent: true});
+	SmkPtr = new THREE.Points(geometry, airmat);
 	// add it to the scene
 	air_.AirPBY.add(SmkPtr);
 }
@@ -1140,16 +1132,15 @@ function init1GrMap(Grd) {
 		zx = zx + Grd.Siz;
 	}
 	let geometry;
-	let material = new THREE.LineBasicMaterial({color: "green"});
 	if (Grd.Typ == 4) geometry = new THREE.PlaneGeometry(Grd.Siz, Grd.Siz,2,2);
 	if (Grd.Typ == 5) geometry = new THREE.PlaneGeometry(Grd.Siz, Grd.Siz, 2*Grd4.Stp, 2*Grd4.Stp);
 	ToQuads(geometry);
+	let airmat = new THREE.LineBasicNodeMaterial({colorNode: color("green")});
 	// Set Starting Position of Squares
 	let n = 0;
 	for (let y = 0; y < Grd.RCs; y++) {		// Row
 		for (let x = 0; x < Grd.RCs; x++) {	// Column
-			Grd.Ptr[n] = new THREE.LineSegments(geometry,material);
-			Grd.Ptr[n].material.depthTest = false;
+			Grd.Ptr[n] = new THREE.LineSegments(geometry,airmat);
 			Grd.Ptr[n].rotation.x = -90*DegRad;
 			scene.add(Grd.Ptr[n]);
 			Grd.Ptr[n].position.set(Grd.MXV[x],-Grd0.SPS.y,-Grd.MZV[y]);
@@ -1158,10 +1149,11 @@ function init1GrMap(Grd) {
 	}
 }
 
+
 function ToQuads(g) {
   let p = g.parameters;
-  let segmentsX = (g.type == "TorusBufferGeometry" ? p.tubularSegments : p.radialSegments) || p.widthSegments || p.thetaSegments || (p.points.length - 1) || 1;
-  let segmentsY = (g.type == "TorusBufferGeometry" ? p.radialSegments : p.tubularSegments) || p.heightSegments || p.phiSegments || p.segments || 1;
+  let segmentsX = (g.type == "TorusGeometry" ? p.tubularSegments : p.radialSegments) || p.widthSegments || p.thetaSegments || (p.points.length - 1) || 1;
+  let segmentsY = (g.type == "TorusGeometry" ? p.radialSegments : p.tubularSegments) || p.heightSegments || p.phiSegments || p.segments || 1;
   let indices = [];
   for (let i = 0; i < segmentsY + 1; i++) {
     let index11 = 0;
@@ -1368,9 +1360,9 @@ return deg;}
 
 //= Make Mesh
 function makeMesh() {
-	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
-	let material = new THREE.MeshBasicMaterial({transparent:true,opacity:0});
-	let mesh = new THREE.Mesh(geometry, material);
+	let mshgeo = new THREE.BoxGeometry(0.01,0.01,0.01); 
+	let mshmat = new THREE.MeshBasicMaterial({transparent:true,opacity:0});
+	let mesh = new THREE.Mesh(mshgeo, mshmat);
 return mesh;}
 
 //- Limit Maximum +/- Value
