@@ -1,0 +1,1283 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<!--
+Copyright 2017-23, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 13 Feb 2024
+-->
+
+	
+<head>
+<meta charset="utf-8" />
+<title>Aircraft Flight Module: Vertical Climb</title>
+<link rel="stylesheet" href="../3js/common/styles/main2pxC.css">
+</head>
+
+<body oncontextmenu="return false;">
+
+<div class="container">
+	<div class="overlay1">
+		<div>AIRCRAFT FLIGHT MODULE</div>
+		<div>Lift and Gravity</div>
+	</div>
+	<div class="overlay2">
+		<div>AirSpeed: <span id="Air_Spd"></span> mph</div>
+		<div>AoA ....: <span id="Air_AoA"></span> deg</div>
+		<div>Throttle: <span id="Air_Pwr"></span> %</div>
+		<div>Vrt Spd.: <span id="Air_VSI"></span> fpm</div>
+		<div>Altitude: <span id="Air_Alt"></span> ft</div>
+	</div>
+	<div class="overlay3">
+		<div>Use Up/Down Arrow Keys to Change Lift</div>
+		<div>Use Left/Right Arrow Keys to Change Power</div>
+	</div>
+</div>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://unpkg.com/three@0.160/build/three.module.js", 
+			"three/addons/": "https://unpkg.com/three@0.160/examples/jsm/"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {FontLoader} from "three/addons/loaders/FontLoader.js";
+import {TextGeometry} from "three/addons/geometries/TextGeometry.js";
+	
+//= INTERNAL VARIABLES =========================================================
+
+//= Starting Values ============================================================
+//- Airplane
+let BegSpd = 250;
+let PwrPct = 1.0;						// % of Max Power (0 to 1)
+let BegAlt = 5000;						// Starting Position
+let BegRot = new THREE.Vector3(0,0,0); // Beg Vrt, Hrz, Bnk Angles
+//- Grids
+let GrdFlg = 1;
+
+//= Constants ==================================================================
+let DLTime = 1/60;						// Frames per Second
+//- Math Predefined
+let	PieVal = Math.PI;					// PI
+let	DegRad = PieVal/180;				// Convert Degrees to Radians
+let	RadDeg = 180/PieVal;				// Convert Radians to Degrees
+let Mtr2Ft = 3.28084;					// Meters to Feet
+let Ft2Mtr = 0.3048;					// Feet to Meters
+let MPHMPS = 0.44704;					// MPH to meters per second
+//- General
+let GrvUPS = 32.174;					// Gravity (ft/s2)
+let	AirDSL = 0.0765;					// Density (Sea Level Value) (US units)
+let	AirDen = AirDSL / GrvUPS;			// Density (Sea Level Value) (slugs)
+
+//= Variables ==================================================================
+let bakclr = new THREE.Color("white");
+let PawsOn = 0;
+let LodFlg = 0;
+
+//= Aircraft ===================================================================
+let air_ = {
+		// Airplane Rotation
+		Rot: new THREE.Vector3(BegRot.x,BegRot.y,BegRot.z),	// Object Rotation (degrees)
+		Obj: makeMesh(),		// Airplane Object
+		PBY: makeMesh(),				// Object Rotation Change (converted/radians)
+		// Airplane PBY Changes
+		Key: new THREE.Vector3(0.005,0,0.01),	// Key Values
+//		Inp: new THREE.Vector3(),		// Inputs
+		Dif: new THREE.Vector3(),		// Change
+		PPR: new THREE.Vector3(),		// Pitch Plane Angle
+		// Map Speed and Position
+		Spd: BegSpd,					// Speed in MPH
+		MpS: new THREE.Vector3(0,0,0),	// Map Speed (meters)
+		MpP: new THREE.Vector3(0,BegAlt*Ft2Mtr,0),	// Map Position (meters)
+		MSP: new THREE.Vector3(0,0,0),	// MSX, MPY, MSZ (meters)
+		// Models
+		Ext: makeMesh(),
+	}
+//- Additional
+	air_.Obj.rotation.order = "YXZ";
+	air_.PBY.rotation.order = "YXZ";
+	air_.Obj.add(air_.PBY);
+let quaternion = new THREE.Quaternion();
+let euler = new THREE.Euler();
+//- Moving Parts
+let anm_ = {
+		Hrz: 0,	// Elevator Hinge
+		Elv: 0,	// Elevator
+		Vrt: 0,	// Rudder Hinge
+		Rud: 0,	// Rudder
+		ALH: 0,	// Elevator Left Hinge
+		AiL: 0,	// Elevator Left
+		ARH: 0,	// Elevator Right Hings
+		AiR: 0,	// Elevator Right
+	}
+//- Textures
+let	AirSrc = "https://threejs.org/examples/textures/roughness_map.jpg";
+let AirTxE, AirTxR;
+//- Aircraft Data --------------------------------------------------------------
+let AirCfL = 0.265;						// Coefficient of Lift 			
+let AirHRS = 0;							// Heading Change in Turn
+//- Basic Aircraft Data */
+let JetMax = 0;							// Jet Only - Maximum Power (ft/lbs)
+let	PwrMax = 1350;						// Prop Only - Maximum Power (BHP)
+//	PwrMax = 525;						// Prop Only - Maximum Power (BHP)
+let	PropEf = 0.8;						// Prop Only - Prop Efficiency 
+let ThrstK = 550 * PropEf;				// Prop ONly - Constant (prop only)
+let	Weight = 7500;						// Aircraft Weight (lbs)
+let	CfLMax = 1.4;						// Maximum Coefficient of Lift
+let	WingSp = 38;						// Wing Span (ft)
+let	WingAr = 260;						// Wing Area (ft2)
+let	WingEf = 0.75;						// Wing Efficiency
+let	DrgCd0 = 0.0211;					// Coefficient of Drag
+let	GrvMax = 8;							// Maximum G-Force
+let	AngInc = 5;							// Angle of Incidence
+let	TrmAdj = 2.5;						// Elevator Trim Adjustment
+let Height = 2;
+//- Computed Values
+let ACMass = Weight / GrvUPS;			// Mass (slugs or kg)
+let WingAs = WingSp*WingSp/WingAr;		// Wing Aspect Ratio
+let	ACPMax = CfLMax * 10;				// Max aircraft pitch adjustment (+/- 15)
+let	ACPInc = ACPMax - AngInc;			// Net max aircraft pitch adjustment (10)
+//- Vector Info
+let SpdMax = 300						// MPH - Max level speed - to set speed vector length
+
+//= Inputs =====================================================================
+//	Inputs: Key
+let InpPwr = 0;							// Power
+let	InpCfL = 0;							// CfLift
+//	Inputs: Combined Total
+let PwrDif = 0;							// Power
+let CfLDif = 0;							// CfLift
+let BnkDif = 0;							// Bank 
+//	Input: Delay
+let PwrInC = 0;							// Cumulator for Delay
+let CfLInC = 0;							// Cumulator for Delay
+let BnkInC = 0;							// Cumulator for Delay
+//	Input: Delay
+let PwrInD = 30;						// Delays Input for this many cycles
+let PwrInE = 15;						// Emits delay over this many cycles
+let CfLInD = 5;							// Delays Input for this many cycles
+let CfLInE = 5;							// Emits delay over this many cycles
+let BnkInD = 30;						// Delays Input for this many cycles
+let BnkInE = 15;						// Emits delay over this many cycles
+//	Input: Delay
+let PwrInF = 1 / PwrInD;				// Input allowed 
+let PwrInG = 1 - PwrInF;				// Input delayed
+let PwrInH = 1 / PwrInE;				// Cumulative released
+let CfLInF = 1 / CfLInD;				// Input allowed 
+let CfLInG = 1 - CfLInF;				// Input delayed
+let CfLInH = 1 / CfLInE;				// Cumulative released
+let BnkInF = 1 / BnkInD;				// Input allowed 
+let BnkInG = 1 - BnkInF;				// Input delayed
+let BnkInH = 1 / BnkInE;				// Cumulative released
+
+//= Number Data ================================================================
+let ref_ = {
+		Grp: new THREE.Group(),
+		HzR: makeMesh(),	// Hrz Rotator
+		HzP: makeMesh(),	// Hrz Plane
+		VtP: makeMesh(),	// Vrt Plane
+		PtP: makeMesh(),	// Pit Plane
+		ACV: makeMesh(),	// Airplane Pitch Value
+		HNo: [0,0,0,0,0,0],	// Hrz Nos ###
+		VNo: [0,0,0,0,0,0],	// Vrt Nos +##
+	}
+// Links
+	ref_.HzP.rotation.x = -90*DegRad;
+	ref_.Grp.add(ref_.HzR);
+	ref_.Grp.add(ref_.HzP);
+	ref_.HzR.add(ref_.VtP);
+	air_.PBY.add(ref_.PtP);
+	ref_.VtP.add(ref_.ACV);
+//
+let ChrWid = 6;							// Width of each character
+let NumTxt = ["0","1","2","3","4","5","6","7","8","9"," ","+","-","."];
+let NumG_0,NumG_1,NumG_2,NumG_3,NumG_4,NumG_5,NumG_6,NumG_7,NumG_8,NumG_9,NumG_b,NumG_p,NumG_m,NumG_d;
+let NumGeo = [NumG_0,NumG_1,NumG_2,NumG_3,NumG_4,NumG_5,NumG_6,NumG_7,NumG_8,NumG_9,NumG_b,NumG_p,NumG_m,NumG_d];
+//- Vectors
+let SpdOff = -50;
+//- Speed Vector
+let	SpdVct = makeMesh();
+	SpdVct.position.z = SpdOff;
+let SpdMat = 0;					// for changing color
+let SpdLab = makeMesh();		// Label
+let SpdLen = 50;
+let SpdMul = 1;
+let SpdPtr;						// Pointer
+//- Lift Vector
+let	LftVct = makeMesh();
+	LftVct.rotation.x = 90*DegRad;
+let LftLab = makeMesh();		// Label
+let LftLen = 20;
+let LftMul = 1;
+let LftPtr;						// Pointer
+//- Gravity Vector
+let	GrvVct = makeMesh();
+	GrvVct.rotation.x = -90*DegRad;
+let GrvLab = makeMesh();		// Label
+let GrvLen = 20;
+let GrvMul = 1;
+let GrvPtr;						// Pointer
+//- Boxes
+let SpdBox = makeMesh()
+let GrvBox = makeMesh();
+
+//= Ground =====================================================================
+let Ground,CamViz;
+if (GrdFlg == 0) {
+		Ground = new THREE.GridHelper(10000, 50);	// 10k feet X 50 divisions = 200 feet per division
+		Ground.position.y = -air_.MpP.y;
+		CamViz = 10000;
+	}
+else {
+	CamViz = 50000;
+}
+
+//= Ground Squares =============================================================
+// Layer 1 constains smaller higher definition squares
+// Layer 2 contains larger lower definition squares (3X size of Layer 1 squares)
+let GrPosX = 0;
+let GrPosZ = 0;
+let GrdSiz = 1609.33;					// Grid Size 1 Mile (1609.33m)
+//- Both Grids -----------------------------------------------------------------
+// Used to Position Map
+let Grd0 = {
+		MSZ:	0,					// Map NSSpd (updated by program)
+		MSX:	0,					// Map EWSpd (updated by program)
+		MPY:	0,					// Map UpPos = Aircraft Altitude (updated by program)
+	}
+//= Grid 4 ---------------------------------------------------------------------
+let Grd4 = {
+		Typ:	4,					// Type of Grid - Inner or Outer
+		RCs:	27,					// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	GrdSiz,				// Size of square
+		Stp:	3,					// Steps
+		RCi:	0,					// Rows and Columns Index (computed)
+		MZV:	[0],				// Ground Z Value
+		MXV:	[0],				// Ground X Value
+		Nor:	0,					// Max North Square (updated)
+		Est:	0,					// Max East Square (updated)
+		Num:	0,					// Size of array (computed)
+		Ptr:	[0],				// Ground Address
+		RCF:	0,					// N/A
+		NSA:	0,					// Shared North/South Adjustment (updated)
+		EWA:	0,					// Shared East/West Adjustment (updated)
+		Mat:	0					// Match Material of Outer and Inner Blocks
+	}
+//- Grid 5 ---------------------------------------------------------------------
+let Grd5 = {
+		Typ:	5,					// Type of Grid - Inner or Outer
+		RCs:	27,					// Rows and Columns - use odd number (for now = divisible by 3)
+		Siz:	Grd4.Siz*Grd4.Stp,	// Size of square
+		Stp:	3,					// Steps (### changed)
+		RCi:	0,					// Rows and Columns Index (computed)
+		MZV:	[0],				// Ground Z Value
+		MXV:	[0],				// Ground X Value
+		Nor:	0,					// Max North Square (updated)
+		Est:	0,					// Max East Square (updated)
+		Num:	0,					// Size of array (computed)
+		Ptr:	[0],				// Ground Address
+		RCF:	Grd4.RCs/Grd4.Stp,	// Cut-Out Area (27/3 = 9)
+		NSA:	0,					// Shared North/South Adjustment (updated)
+		EWA:	0,					// Shared East/West Adjustment (updated)
+		Mat:	0					// Match Material of Outer and Inner Blocks
+	}
+
+//= Basic Values ===============================================================
+//- Display
+let scene = new THREE.Scene();
+	scene.background = new THREE.Color("white");
+let width  = window.innerWidth, height = window.innerHeight;
+let	renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(width, height);
+	renderer.setAnimationLoop(rendAll);
+	document.body.appendChild(renderer.domElement);
+//- Lights
+let dirLight = new THREE.DirectionalLight(0xffffff, 1);
+	dirLight.position.set(100, 100, 50);
+	scene.add(dirLight);
+let ambLight = new THREE.AmbientLight(0x404040);
+	scene.add(ambLight);
+//- Camera
+let camera = new THREE.PerspectiveCamera(70, width/height, 1, CamViz);
+	camera.position.set(200, 30, 0);
+//- Controls
+let	controls = new OrbitControls(camera, renderer.domElement);
+//- Inputs
+	document.addEventListener("keydown", onDocumentKeyDown, false);
+	document.addEventListener("keyup", onDocumentKeyUp, false);
+	window.addEventListener("resize", onWindowResize, false);
+// 	Loading Manager
+let loadingManager = new THREE.LoadingManager();
+let RESOURCES_LOADED = false;
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+		initAll();
+	};
+let txtrLoader = new THREE.TextureLoader(loadingManager);
+let fontLoader = new FontLoader(loadingManager);
+
+//= HTML Overlay Text ==========================================================
+let Air_PwrElement = document.getElementById("Air_Pwr");
+let Air_PwrNode = document.createTextNode("");
+Air_PwrElement.appendChild(Air_PwrNode);
+let Air_SpdElement = document.getElementById("Air_Spd");
+let Air_SpdNode = document.createTextNode("");
+Air_SpdElement.appendChild(Air_SpdNode);
+let Air_AltElement = document.getElementById("Air_Alt");
+let Air_AltNode = document.createTextNode("");
+Air_AltElement.appendChild(Air_AltNode);
+let Air_VSIElement = document.getElementById("Air_VSI");
+let Air_VSINode = document.createTextNode("");
+Air_VSIElement.appendChild(Air_VSINode);
+let Air_AoAElement = document.getElementById("Air_AoA");
+let Air_AoANode = document.createTextNode("");
+Air_AoAElement.appendChild(Air_AoANode);
+//
+let Air_Pwr, Air_Spd, Air_Alt,  Air_VSI, Air_AoA;
+
+//= 3D Objects and Links =======================================================
+	if (GrdFlg == 0) scene.add(Ground);		// for Grids
+	scene.add(air_.Obj);	// for Airplane
+	scene.add(ref_.Grp);	// for Reference
+
+//= MAIN PROGRAM ===============================================================
+
+	loadAll();
+
+//- 0 LOAD =====================================================================
+
+function loadAll() {
+	air_.Obj.rotation.z = Mod360(360-air_.Rot.z)*DegRad;	// Bank
+	air_.Obj.rotation.x = Mod360(air_.Rot.x)*DegRad;		// Vertical
+	// Grid (Render First So in Background)
+	Grd0.MPY = air_.MpP.y;
+	if (GrdFlg) initGrdMap();
+	// Aircraft Object
+	loadAirTxt();									// Aircraft Textures
+	// Numbers and Labels
+	loadNumber();									// Preload Numbers
+	loadLabels();									// Load Labels
+}
+
+//- 1 INIT =====================================================================
+
+function initAll() {
+	makeAirExt();									// Load Aircraft External Shape
+	air_.Obj.add(air_.Ext);							// Link External Model
+	makePlanes();
+	LodFlg = 1;
+}
+
+//- 2 RENDER ===================================================================
+
+function rendAll() {
+	if ((LodFlg) && PawsOn == 0) {
+		moveAirObj();
+		ref_.HzR.rotation.y = -air_.Rot.y*DegRad;	// Horizontal Rotation
+//		ref_.VtP.rotation.x = -air_.PPR.x;			// Keep level with horizon
+		if (GrdFlg) {
+			Grd0.MSZ = air_.MpS.z;					// update Grid Data
+			Grd0.MSX = air_.MpS.x;
+			Grd0.MPY = air_.MpP.y;
+			moveGrdMap();							// Move Grid Map
+		}
+		movePlanes();
+		chngHUDV();
+		controls.update();							// Controls
+	}
+	renderer.render(scene, camera);
+}
+
+//= AIRCRAFT ===================================================================
+
+function loadAirTxt() {
+	// Elevator
+	txtrLoader.load(AirSrc, function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.offset.set(0,0);
+		texture.repeat.set(2,1);
+		texture.needsUpdate = true;
+		AirTxE = texture;
+	});
+	// Rudder
+	txtrLoader.load(AirSrc, function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.offset.set(0,0);
+		texture.repeat.set(1,4);
+		texture.needsUpdate = true;
+		AirTxR = texture;
+	});
+}
+
+//- Make Airplane --------------------------------------------------------------
+
+function makeAirExt() {
+	// Front
+	let color = new THREE.Color("blue");
+	let material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
+	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 10, 60, 3), material);
+	mesh.position.set(0,0,-30);
+	mesh.rotation.set(-90*DegRad,0,0);
+	air_.Ext.add(mesh);
+	// Back
+	mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 10, 90, 3), material);
+	mesh.position.set(0,0,45);
+	mesh.rotation.set(90*DegRad,180*DegRad,0);
+	air_.Ext.add(mesh);
+	// Wing - Front
+	color = new THREE.Color("lightgray");
+	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(200,1,14), material);
+	mesh.position.set(0,0,-3);
+	air_.Ext.add(mesh);
+	// Wing - Back
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(140,1,7), material);
+	mesh.position.set(0,0,7.5);	// = -3 + 14/2 + 7/2
+	air_.Ext.add(mesh);
+	// Aileron Hinge - Left
+	anm_.ALH = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	anm_.ALH.position.set(-100,0,4);		// = -3 + 14/2
+	air_.Ext.add(anm_.ALH);
+	// Aileron Hinge - Right
+	anm_.ARH = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	anm_.ARH.position.set(100,0,4);		// = -3 + 14/2
+	air_.Ext.add(anm_.ARH);
+	// Aileron Left
+	material = new THREE.MeshPhongMaterial({color: color, map: AirTxE, flatShading: true});
+	anm_.AiL = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);	// origin
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(30,1,7), material);
+	mesh.position.set(15,0,3.5);
+	anm_.AiL.add(mesh);
+	// Aileron Right
+	anm_.AiR = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);	// origin
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(30,1,7), material);
+	mesh.position.set(-15,0,3.5);
+	anm_.AiR.add(mesh);
+	anm_.ALH.add(anm_.AiL);
+	anm_.ARH.add(anm_.AiR);
+	// HTail
+	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(50,1,7.5), material);
+	mesh.position.set(0,0,86.75);
+	air_.Ext.add(mesh);
+	// Elevator Hinge
+	color = new THREE.Color("lightgray");
+	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
+	anm_.Hrz = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	anm_.Hrz.position.set(0,0,90.5);
+	air_.Ext.add(anm_.Hrz);
+	// Elevator
+	material = new THREE.MeshPhongMaterial({color: color, map: AirTxE, flatShading: true});
+	anm_.Elv = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(20,1,7.5), material);
+	mesh.position.set(-15,0,3.75);
+	anm_.Elv.add(mesh);
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(20,1,7.5), material);
+	mesh.position.set(15,0,3.75);
+	anm_.Elv.add(mesh);
+	anm_.Hrz.add(anm_.Elv);
+	// VTail
+	color = new THREE.Color("red");
+	material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(1,25,7.5), material);
+	mesh.position.set(0,12.5,86.75);
+	air_.Ext.add(mesh);
+	// Rudder Hinge
+	anm_.Vrt = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	anm_.Vrt.position.set(0,6.25,90.5);
+	air_.Ext.add(anm_.Vrt);
+	// Rudder 
+	anm_.Rud = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1), material);
+	material = new THREE.MeshPhongMaterial({color: color, map: AirTxR, flatShading: true});
+	mesh = new THREE.Mesh(new THREE.BoxGeometry(1,25,7.5), material);
+	mesh.position.set(0,6.25,3.75)
+	anm_.Rud.add(mesh);
+	anm_.Vrt.add(anm_.Rud);
+}
+
+//- Move Aircraft --------------------------------------------------------------
+
+function moveAirObj() {
+	// 1. COMPUTE VECTORS ------------------------------------------------------
+	// Compute Force Vectors in UPS and multiply by FrcAcc to convert to UPT
+	let SpdUPS = air_.Spd*5280/3600;
+	let DLTim2 = DLTime*DLTime;		// Time ^ 2
+	let GrvDLT = GrvUPS*DLTim2;		// Gravity (upt)
+	let FrcAcc = DLTim2/ACMass;		// Convert Force to Acceleration
+	let SpdDLT = SpdUPS*DLTime;
+	// Compute Dynamic Pressure
+	let DynPrs = 0.5*(SpdUPS*SpdUPS)*AirDen;	// Dynamic Pressure (Sea Level)
+	let QSTval = DynPrs * WingAr;		// Common Variable
+	// Compute Max Lift
+	let MaxLft = 1-Math.cos(air_.PPR.x);	// Adjustment
+	MaxLft = MaxLft + GrvMax;			//
+	MaxLft = MaxLft * GrvDLT;			// Maximum G-accel
+	// ACB and ACP
+	let ACP = air_.Rot.x * DegRad;
+	let ACB = air_.Rot.z * DegRad;
+	// c. Compute New Lift (degrees) -------------------------------------------
+	// Add Delay to Pitch
+	CfLDif = InpCfL;
+	// Add Delay to Lift
+	let gal = CfLDif * CfLInG;			// Current input delayed
+	let lag = CfLInC * CfLInH;			// Released from Cumulator
+	CfLInC = CfLInC + gal - lag;		// Change in Cumulator
+	if (Math.abs(CfLInC) < 0.00000000) CfLInC = 0;
+	CfLDif = CfLDif - gal + lag;
+	if (CfLInC) AirCfL = AirCfL + CfLDif;	// If Input, then change AirCfL
+	else {								// Otherwise, if in air, set default AirCfL
+		AirCfL = (Weight * Math.cos(ACP))/(DynPrs * WingAr * Math.abs(Math.cos(ACB)));
+	}
+	if (AirCfL > CfLMax) AirCfL = CfLMax;			// Limit AoA
+	if (AirCfL < -CfLMax) AirCfL = -CfLMax;
+//	if (AirCfL > CfLMax) AirCfL = 0;	// Allow Stall - too quick?
+//	if (AirCfL < -CfLMax) AirCfL = 0;
+//	if (AirCfL > CfLMax) AirCfL = 2*CfLMax-AirCfL;	// Allow Stall - too slow?
+//	if (AirCfL < -CfLMax) AirCfL = -2*CfLMax+AirCfL;
+	// Compute Lift Rotation
+	// Lift = Cl * DynPres * WingArea
+	let CfLftT = AirCfL;
+	let ACLftF = CfLftT * QSTval;		// Lift[ft-lbs] - can be positive or negative
+	let ACLift = ACLftF * FrcAcc;		// Acceleration (DLT)	
+	if (ACLift > 0 && ACLift > MaxLft) ACLift = MaxLft;	// Limit to Max Gs (pos)
+	if (ACLift < 0 && ACLift < -MaxLft) ACLift = -MaxLft;	// Limit to Max Gs (neg)
+	let ACLftD = (ACLift/SpdDLT)*RadDeg;	// Degrees = (ACLift/V)*(180/(PI()) = (ACLift/V)*RadDeg
+	air_.Dif.x = ACLftD;				// Pitch Degrees (before Gravity)
+	// d. Vertical Gravity (degrees) -------------------------------------------
+	let GrvACP = GrvDLT*Math.cos(ACP);	// Vertical Gravity
+	let GrvACD = (GrvACP/SpdDLT)*RadDeg;	// Degrees = (GrvACP/V)*(180/(PI()) = (GrvACP/V)*RadDeg
+	// e. Compute Net Thrust Acceleration --------------------------------------
+	// Add Delay to Power
+	PwrDif = InpPwr;
+	gal = PwrDif * PwrInG;				// Current input delayed
+	lag = PwrInC * PwrInH;				// Released from Cumulator
+	PwrInC = PwrInC + gal - lag;		// Change in Cumulator
+	PwrDif = PwrDif - gal + lag;
+	InpPwr = 0;
+	// Input Engine Power
+	PwrPct = PwrPct + PwrDif;
+	if (PwrPct > 1) PwrPct = 1;
+	if (PwrPct < 0) PwrPct = 0;
+	// Value
+	let EnThrF = JetMax * PwrPct;		// Jet
+	if (JetMax == 0) EnThrF = ThrstK * (PwrMax * PwrPct) / SpdUPS;	// Propeller Force
+	// Drag
+	let DrgCdi = (CfLftT*CfLftT)/(WingAs*WingEf*PieVal);	// Cfi = CLift^2 / (Wing Aspect Ratio * Wing Efficiency * pi)
+	let ACDrIF = DrgCdi*QSTval;			// Induced Drag = ACLftF^2 / (DynPrs * WingSp^2 * WingEf * PI)
+	let DrgCdp = DrgCd0;				// Total Coefficient of Parasitic Drag
+	let ACDrPF = DrgCdp*QSTval;			// Parasitic Drag =  Cd0 * DynPres * WingA
+	let ACDrgF = ACDrIF + ACDrPF; 		// Total Drag Force
+	let ACNetF = EnThrF - ACDrgF;		// Net Thrust Force
+	let ACNetA = ACNetF * FrcAcc;		// Net Thrust Accel
+	let GrvThr = GrvDLT*Math.sin(ACP);	// Gravity opposing Thrust = Grav * sin(ACP)
+	ACNetA = ACNetA-GrvThr;
+	// Compute New Speed
+	SpdDLT = SpdDLT + ACNetA;
+	if (SpdDLT <= 0) SpdDLT = 0.0001;	// Set Minimum Speed to avoid division by zero  211031
+	air_.Spd = SpdDLT * 3600/(5280*DLTime);	// (MPH)
+	// 2. COMPUTE DIRECTION OF FLIGHT ------------------------------------------
+	// Inputs: Change in Bank, air_.Dif.x, and Yaw
+	// This routine uses 2 linked objects to correctly rotate aircraft
+	// Changes to air_.PBY
+	air_.PBY.rotation.set(air_.Dif.x*DegRad,air_.Dif.y*DegRad,air_.Dif.z*DegRad);
+	// Transfer Combined Rotation to air_.Obj
+	air_.PBY.getWorldQuaternion(quaternion);
+	air_.Obj.setRotationFromQuaternion(quaternion);	// Save result in air_.Obj
+	air_.PBY.rotation.set(0,0,0); // Zero Out air_.PBY Rotations (so values not doubled)
+	// Pitch Plane Computations (before Gravity)
+	air_.PPR = euler.setFromQuaternion(quaternion,"YZX");
+	air_.PPR.z = Mod360(360-air_.PPR.z*RadDeg);
+	air_.PPR.x = Mod360(air_.PPR.x*RadDeg);
+	if (air_.PPR.x < 0) air_.PPR.x = 360+air_.PPR.x;
+	// Load Resulting Values into Variables (for display)	
+	air_.Rot.z = Mod360(-air_.Obj.rotation.z*RadDeg);
+	air_.Rot.x = air_.Obj.rotation.x*RadDeg;
+	// Update air_.Obj Heading for Bank
+	let ACH = air_.Rot.y;					// Save old heading
+	air_.Rot.y = Mod360(-air_.Obj.rotation.y*RadDeg);
+	if (air_.Dif.z) air_.Rot.y = ACH;
+	AirHRS = Mod360(air_.Rot.y - ACH);
+	if (AirHRS > 180) AirHRS = 360-AirHRS;
+	air_.Obj.rotation.y = -air_.Rot.y*DegRad;
+	// 3. COMPUTE MAP SPEED ----------------------------------------------------
+	/* Inputs:	SpdDLT, ACNetA, air_.Rot.x, air_.Rot.y, MPosZV, MPosYV, MPosXV */
+	/* Results:	air_.Spd, air_.Rot.x, MSpdZV, MSpdYV, MSpdXV, MPosZV, MPosYV, MPosXV */
+	// b1. Compute PSpd (before gravity)
+	ACP = air_.Rot.x * DegRad;
+	// b2. Adjust ACP for Gravity
+	air_.Rot.x = air_.Rot.x-GrvACD;
+	if (air_.Rot.x < -90) air_.Rot.x = -90;		// Prevents you from pitching back up
+	ACP = air_.Rot.x*DegRad;
+	air_.Obj.rotation.x = ACP;
+	ACH = air_.Rot.y*DegRad;
+	// Map Speed (fps to meters per frame)
+	air_.MpS.y = SpdDLT * Ft2Mtr * Math.sin(ACP);
+	let GS = SpdDLT * Ft2Mtr * Math.cos(ACP);
+	air_.MpS.z = GS * Math.cos(ACH);
+//	air_.MpS.x = GS * Math.sin(ACH);
+	air_.MpS.x = 0;
+	// Map Position
+	air_.MpP.x = air_.MpP.x - air_.MpS.x;
+	air_.MpP.y = air_.MpP.y + air_.MpS.y;
+	air_.MpP.z = air_.MpP.z - air_.MpS.z;
+	// Vectors
+	SpdMul = air_.Spd/SpdMax;
+	let gd = (GrvDLT/SpdDLT)*RadDeg;	// Degrees +/-
+	LftMul = ACLftD/gd;
+	GrvMul = Math.cos(ACP);
+	// Moving Parts
+	anm_.Elv.rotation.x = -3000*CfLDif*DegRad;
+	air_.Ext.rotation.x = 10*AirCfL*DegRad;
+}
+
+//= GRID MAP ===================================================================
+
+function initGrdMap() {
+	init1GrMap(Grd4);
+	init1GrMap(Grd5);
+}
+
+function moveGrdMap() {
+	move1GrMap(Grd4);
+	move1GrMap(Grd5);
+}
+
+//= Init Grid Map ==============================================================
+
+function init1GrMap(Grd) {
+	// Load Variables
+	Grd.RCi = Grd.RCs-1;				// Max Index Value
+	Grd.MZV[Grd.RCi] = 0;				// Z-Values
+	Grd.MXV[Grd.RCi] = 0;				// X-Values
+	Grd.Nor = Grd.RCi;					// Max North Square (updated)
+	Grd.Est = Grd.RCi;					// Max East Square (updated)
+	Grd.Num = Grd.RCs * Grd.RCs;		// Size of array
+	Grd.Ptr[Grd.Num-1] = 0;				// Mesh Pointers
+	if (Grd.Typ > 4) {
+		Grd.NSA = (Grd.RCs-Grd.RCF)/2;	// (27-3=6)
+		Grd.EWA = Grd.NSA;
+	}
+	// Compute Starting Z and X Values
+	let zx = -0.5*(Grd.RCs)*Grd.Siz+0.5*Grd.Siz;
+	for (let i = 0; i < Grd.RCs; i++) {
+		Grd.MZV[i] = zx;
+		Grd.MXV[i] = zx;
+		zx = zx + Grd.Siz;
+	}
+	let geometry;
+	let material = new THREE.LineBasicMaterial({color: "green"});
+	if (Grd.Typ == 4) geometry = new THREE.PlaneGeometry(Grd.Siz, Grd.Siz,2,2);
+	if (Grd.Typ == 5) geometry = new THREE.PlaneGeometry(Grd.Siz, Grd.Siz, 2*Grd4.Stp, 2*Grd4.Stp);
+	ToQuads(geometry);
+	// Set Starting Position of Squares
+	let n = 0;
+	for (let y = 0; y < Grd.RCs; y++) {		// Row
+		for (let x = 0; x < Grd.RCs; x++) {	// Column
+			Grd.Ptr[n] = new THREE.LineSegments(geometry,material);
+			Grd.Ptr[n].material.depthTest = false;
+			Grd.Ptr[n].rotation.x = -90*DegRad;
+			scene.add(Grd.Ptr[n]);
+			Grd.Ptr[n].position.set(Grd.MXV[x],-Grd0.MPY,-Grd.MZV[y]);
+			n++;
+		}
+	}
+}
+
+function ToQuads(g) {
+  let p = g.parameters;
+  let segmentsX = (g.type == "TorusBufferGeometry" ? p.tubularSegments : p.radialSegments) || p.widthSegments || p.thetaSegments || (p.points.length - 1) || 1;
+  let segmentsY = (g.type == "TorusBufferGeometry" ? p.radialSegments : p.tubularSegments) || p.heightSegments || p.phiSegments || p.segments || 1;
+  let indices = [];
+  for (let i = 0; i < segmentsY + 1; i++) {
+    let index11 = 0;
+    let index12 = 0;
+    for (let j = 0; j < segmentsX; j++) {
+      index11 = (segmentsX + 1) * i + j;
+      index12 = index11 + 1;
+      let index21 = index11;
+      let index22 = index11 + (segmentsX + 1);
+      indices.push(index11, index12);
+      if (index22 < ((segmentsX + 1) * (segmentsY + 1) - 1)) {
+        indices.push(index21, index22);
+      }
+    }
+    if ((index12 + segmentsX + 1) <= ((segmentsX + 1) * (segmentsY + 1) - 1)) {
+      indices.push(index12, index12 + segmentsX + 1);
+    }
+  }
+  g.setIndex(indices);
+}
+
+//= Move Grid Map ============================================================
+
+function move1GrMap(Grd) {
+	let j = 0;
+	let v = 0; 
+	let max = 0.5*Grd.RCs*Grd.Siz;
+	let min = -max;
+	// Update Z, X and Y-Values
+	for (let i = 0; i < Grd.RCs; i++) {
+		Grd.MZV[i] = Grd.MZV[i] - Grd0.MSZ;	// Rows
+		Grd.MXV[i] = Grd.MXV[i] - Grd0.MSX;	// Columns
+	}
+	Grd.MYV = Grd0.MPY;					// Altitude
+	// Test North/South
+	if (Grd0.MSZ < 0) {					// If Moving South
+		j = Grd.Nor;
+		if (Grd.MZV[j] >= max) {
+			v = min+(Grd.MZV[j]-max);
+			for (let i = 0; i < Grd.Stp; i++) {
+				Grd.MZV[j] = v;
+				j = j - 1;
+				if (j < 0) j = Grd.RCi;
+				v = v - Grd.Siz;
+			}
+			Grd.Nor = Grd.Nor - Grd.Stp;
+			if (Grd.Nor < 0) Grd.Nor = Grd.Nor + Grd.RCs;
+			if (Grd.Typ == 2) Grd.NSA = Grd.NSA + 1;
+			else Grd5.NSA = Grd5.NSA - 1;
+		}
+	}
+	if (Grd0.MSZ > 0) {					// If Moving North
+		j = Grd.Nor + 1;
+		if (j > Grd.RCi) j = 0;
+		if (Grd.MZV[j] <= min) {
+			v = max-(min-Grd.MZV[j]);
+			for (let i = 0; i < Grd.Stp; i++) {
+				Grd.MZV[j] = v;
+				j = j + 1;
+				if (j > Grd.RCi) j = 0;
+				v = v + Grd.Siz;
+			}
+			Grd.Nor = Grd.Nor + Grd.Stp;
+			if (Grd.Nor > Grd.RCi) Grd.Nor = Grd.Nor - Grd.RCs;
+			if (Grd.Typ == 2) Grd.NSA = Grd.NSA - 1;
+			else Grd5.NSA = Grd5.NSA + 1;
+		}
+	}
+	// Test East/West
+	if (Grd0.MSX < 0) {					// If Moving West
+		j = Grd.Est;
+		if (Grd.MXV[j] >= max) {
+			v = min+(Grd.MXV[j]-max);
+			for (let i = 0; i < Grd.Stp; i++) {
+				Grd.MXV[j] = v;
+				j = j - 1;
+				if (j < 0) j = Grd.RCi;
+				v = v - Grd.Siz;
+			}
+			Grd.Est = Grd.Est - Grd.Stp;
+			if (Grd.Est < 0) Grd.Est = Grd.Est + Grd.RCs;
+			if (Grd.Typ == 2) Grd.EWA = Grd.EWA + 1;
+			else Grd5.EWA = Grd5.EWA - 1;
+		}
+	}
+	if (Grd0.MSX > 0) {						// If Moving East
+		j = Grd.Est + 1;
+		if (j > Grd.RCi) j = 0;	
+		if (Grd.MXV[j] <= min) {
+			v = max-(min-Grd.MXV[j]);
+			for (let i = 0; i < Grd.Stp; i++) {			
+				Grd.MXV[j] = v;
+				j = j + 1;
+				if (j > Grd.RCi) j = 0;
+				v = v + Grd.Siz;
+			}
+			Grd.Est = Grd.Est + Grd.Stp;
+			if (Grd.Est > Grd.RCi) Grd.Est = Grd.Est - Grd.RCs;
+			if (Grd.Typ == 2) Grd.EWA = Grd.EWA - 1;
+			else Grd5.EWA = Grd5.EWA + 1;
+		}
+	}
+	// Set Position
+	let n = 0;
+	for (let r = 0; r < Grd.RCs; r++) {	// Row
+		for (let c = 0; c < Grd.RCs; c++) {	// Col
+			Grd.Ptr[n].position.set(Grd.MXV[c],-Grd.MYV,-Grd.MZV[r]);
+			Grd.Ptr[n].visible = true;	// Default for Outer Grid
+			n = n + 1;
+		}
+	}
+	// Outer Grid Only - Make Cut-Out Area Invisible
+	if (Grd.Typ == 2) {
+		let r = Grd.Nor + 1 + Grd.NSA;			// Get Lower index
+		if (r > Grd.RCi) r = r - Grd.RCs;
+		let c = Grd.Est + 1 + Grd.EWA;			// Get Left Index
+		if (c > Grd.RCi) c = c - Grd.RCs;
+		for (let i = 0; i < Grd.RCF; i++) {
+			n = r * Grd.RCs + c;
+			if (n < 0) n = n + Grd.Num;
+			if (n > Grd.Num) n = n - Grd.Num;
+			let n2 = (r+1) * Grd.RCs - 1;
+			if (n2 > Grd.Num) n2 = n2 - Grd.Num;
+			if (n2 < 0) n2 = n2 + Grd.Num;
+			for (let j = 0; j < Grd.RCF; j++) {
+				Grd.Ptr[n].visible = false;
+				n = n + 1;
+				if (n > n2) n = n - Grd.RCs; 
+				if (n < 0) n = n + Grd.Num;
+				if (n > Grd.Num) n = n - Grd.Num;
+			}
+			r = r + 1;
+			if (r > Grd.RCi) r = r - Grd.RCs;
+		}
+	}
+}
+
+//= NUMBERS, LABELS, PLANES AND VECTORS ========================================
+
+//= Load Numbers and Labels ====================================================
+
+//- Load Numbers ---------------------------------------------------------------
+
+function loadNumber() {
+	let text;
+	for (let n = 0; n < 14; n++) {
+		text = NumTxt[n];
+		loadDigits(n, text, NumGeo);
+	}
+}
+
+function loadDigits(n,text,dest) {
+	fontLoader.load("https://threejs.org/examples/fonts/helvetiker_bold.typeface.json", function (font) {
+		let shape = font.generateShapes(text, ChrWid);
+		let geometry = new THREE.ShapeGeometry(shape,2);	
+		geometry.computeBoundingBox();
+		let xMid = -0.5*(geometry.boundingBox.max.x-geometry.boundingBox.min.x);
+		geometry.translate(xMid,0,0);	
+		dest[n] = geometry;
+	});
+}
+
+//- Load Labels -----------------------------------------------------------------
+
+function loadLabels() {
+	// Horizontal Rotator
+	let color = new THREE.Color("darkgreen");
+	//Text: parent,color,text,pos,rot
+	loadTxtLab(ref_.HzR, color,"Horizontal Plane",new THREE.Vector3(0,0,-70),new THREE.Vector3(90,0,180));
+	// Horizontal Plane
+	//Text:	parent,color,text,pos,rot
+	loadTxtLab(ref_.HzP, color,"N",new THREE.Vector3(0,110,0),new THREE.Vector3(0,0,0),1);
+	loadTxtLab(ref_.HzP, color,"E",new THREE.Vector3(110,0,0),new THREE.Vector3(0,0,270),1);
+	loadTxtLab(ref_.HzP, color,"S",new THREE.Vector3(0,-110,0),new THREE.Vector3(0,0,180),1);
+	loadTxtLab(ref_.HzP, color,"W",new THREE.Vector3(-110,0,0),new THREE.Vector3(0,0,90),1);
+	// Vertical Plane
+	color = new THREE.Color("black");
+	//Text:	parent,color,text,pos,rot
+	loadTxtLab(ref_.VtP,color,"Vertical Plane",new THREE.Vector3(0,90,0),new THREE.Vector3(0,90,0));
+	loadTxtLab(ref_.VtP,color,"+90 deg",new THREE.Vector3(0,110,0),new THREE.Vector3(0,90,0));
+	loadTxtLab(ref_.VtP,color,"-90 deg",new THREE.Vector3(0,-110,0),new THREE.Vector3(0,90,0));
+	// Speed Vector
+	color = new THREE.Color("red");
+	//Text:	parent,color,text,pos,rot
+	loadTxtLab(SpdLab,color,"Speed",new THREE.Vector3(0,8,20),new THREE.Vector3(0,90,0));		// Linked to SpdPtr
+	// Lift Vector
+	color = new THREE.Color("blue");
+	//Text:	parent,color,text,pos,rot
+	loadTxtLab(LftLab,color,"Lift",new THREE.Vector3(0,0,-10),new THREE.Vector3(0,-90,90));	// Linked to LftPtr
+	// Gravity Vector
+	color = new THREE.Color("black");
+	//Text:	parent,color,text,pos,rot
+	loadTxtLab(GrvLab,color,"Gravity",new THREE.Vector3(0,0,-10),new THREE.Vector3(90,90,0));	// Linked to GrvPtr
+}
+
+function loadTxtLab(parent,color,label,pos,rot,flp) {
+	fontLoader.load("https://threejs.org/examples/fonts/helvetiker_bold.typeface.json", function (font) {
+		let material = new THREE.MeshBasicMaterial({color: color});
+		let shape = font.generateShapes(label, ChrWid);
+		let geometry = new THREE.ShapeGeometry(shape,2);	
+		geometry.computeBoundingBox();
+		let xMid = -0.5*(geometry.boundingBox.max.x-geometry.boundingBox.min.x);
+		geometry.translate(xMid,0,0);
+		let meshA = new THREE.Mesh(geometry,material);
+		meshA.position.copy(pos);
+		meshA.rotation.set(rot.x*DegRad,rot.y*DegRad,rot.z*DegRad);
+		parent.add(meshA);
+		let meshB = meshA.clone();
+		meshB.rotation.y = meshB.rotation.y + 180*DegRad;
+		if (flp) {	// used for compass heading only
+			meshB.rotation.z = meshB.rotation.z + 180*DegRad;
+			meshB.position.y = meshB.position.y + 3;
+		}
+		parent.add(meshB);
+	});
+}
+
+//= Make Planes, Vectors and Numbers ===========================================
+
+function makePlanes() {
+	// Make Planes, Labels and Numbers
+	makeHrzRot(new THREE.Color("darkgreen"))
+	makeHrzPln(new THREE.Color("darkgreen"));	// Horizontal Plane	
+	makeVrtPln(new THREE.Color("black"));		// Bank Vertical Plane and Pointer	
+	// Make Vectors, Labels and Numbers
+	makeSpdVct(new THREE.Color("red"));
+	makeLftVct(new THREE.Color("blue"));
+	makeGrvVct(new THREE.Color("black"));
+	// Rotations
+	ref_.HzR.rotation.y = -air_.Rot.y*DegRad;	// Horizontal Rotation
+//	ref_.VtP.rotation.x = -air_.PPR.x;			// Keep level with horizon
+}
+
+// Horizontal Rotator
+function makeHrzRot(color) {
+	color = new THREE.Color("darkgreen");
+	//Numbers:	parent,source,digits,color,pos,rot
+	makeNumber(ref_.HzR,ref_.HNo,3,color,new THREE.Vector3(0,0,-118),new THREE.Vector3(-90,0,0));
+}
+
+function makeHrzPln(color) {
+	let radius = 100
+	let geometry = new THREE.CircleGeometry(100, 64);  
+	let material = new THREE.MeshPhongMaterial({side: THREE.DoubleSide, color: color, transparent: true, opacity: 0.4});
+	let mesh0 = new THREE.Mesh(geometry, material);
+	ref_.HzP.add(mesh0);
+	// Pointer to North
+	ref_.HzP.add(makeArrow(color,new THREE.Vector3(0,105,0),new THREE.Vector3(90,0,0)));
+}
+
+function makeVrtPln(color) {
+// Must deal with right handed coordinate system.  Add 90 to rotation.  Reverse x, not z.
+	// 1/2 Disk Side by Side
+	let radius = 100
+	let positions = [];
+	positions.push(0, 0, 0);
+	for (let i = 90; i < 271; i++) {positions.push(0, radius*Math.cos((i+90)*DegRad),radius*Math.sin((i+90)*DegRad));}
+	positions.push(0, 0, 0);
+	positions.push(0, 0, -100);
+	let geometry = new THREE.BufferGeometry();
+	geometry.setAttribute("position",new THREE.BufferAttribute(new Float32Array(positions),3));
+	let material = new THREE.LineBasicMaterial({color: color});
+	let mesh1 = new THREE.Line(geometry, material);
+	mesh1.position.x = 0.2;
+	let mesh2 = new THREE.Line(geometry, material);
+	mesh2.position.x = -0.2;
+	ref_.VtP.add(mesh1);
+	ref_.VtP.add(mesh2);
+}
+
+//- Make Vectors ---------------------------------------------------------------
+
+//- Speed Vector
+
+function makeSpdVct(color) {
+	SpdMat = new THREE.MeshBasicMaterial({color: color});
+	makeVector2(SpdMat,SpdVct,SpdLen);			// Make Vector Shape
+	air_.PBY.add(SpdVct);			// Aligned with Aircraft
+	// Arrow
+	SpdPtr = makeArrow(color,new THREE.Vector3(0,0,SpdOff-SpdLen-1),new THREE.Vector3(0,0,0));
+	air_.PBY.add(SpdPtr);
+	SpdPtr.add(SpdLab);
+	//Numbers:	parent,source,digits,color,pos,rot
+	makeNumber(air_.PBY,ref_.VNo,3,color,new THREE.Vector3(0,0,-122),new THREE.Vector3(0,90,0));
+}
+
+//- Lift Vector
+
+function makeLftVct(color) {
+	SpdBox.position.z = SpdOff-(SpdLen*SpdMul)-3;	
+	air_.PBY.add(SpdBox);							// Aligned with Aircraft
+	makeVector(color,LftVct,LftLen);			// Make Vector Shape
+	SpdBox.add(LftVct);
+	// Arrow (separate from Vector so doesn't stretch)
+	LftPtr = makeArrow(color,new THREE.Vector3(0,0,0),new THREE.Vector3(90,0,0));
+	LftPtr.position.y = LftLen*LftMul;
+	SpdBox.add(LftPtr);
+	LftPtr.add(LftLab);
+}
+
+//- Gravity Vector
+
+function makeGrvVct(color) {
+	GrvBox.position.z = SpdOff-(SpdLen*SpdMul)-3;
+	ref_.HzR.add(GrvBox);
+	GrvBox.rotation.x = air_.Rot.x*DegRad;
+	makeVector(color,GrvVct,GrvLen);			// Make Vector Shape
+	GrvBox.add(GrvVct);
+	// Arrow (separate from Vector so doesn't stretch)
+	GrvPtr = makeArrow(color,new THREE.Vector3(0,0,0),new THREE.Vector3(-90,0,0));
+	GrvPtr.position.y = GrvLen*GrvMul;
+	GrvBox.add(GrvPtr);
+	GrvPtr.add(GrvLab);
+}
+
+//- Vector Maker
+
+function makeVector(color, Vector, Zlen) {
+	let geometry = new THREE.BoxGeometry(1,1,Zlen); 
+	let material = new THREE.MeshBasicMaterial({color: color});
+	let mesh = new THREE.Mesh(geometry, material);
+	mesh.position.z = -Zlen/2;	// Offset vector
+	Vector.add(mesh);
+}
+
+function makeVector2(material, Vector, Zlen) {
+// Use this where want to change color of vector
+	let geometry = new THREE.BoxGeometry(1,1,Zlen); 
+	let mesh = new THREE.Mesh(geometry, material);
+	mesh.position.z = -Zlen/2;	// Offset vector
+	Vector.add(mesh);
+}
+
+//- Arrow Maker ----------------------------------------------------------------
+
+function makeArrow(color,pos,rot) {
+	let mesh = makeMesh();
+	let geometry = new THREE.ConeGeometry(2,3,4); 
+	let material = new THREE.MeshBasicMaterial({color: color});
+	let mesh1 = new THREE.Mesh(geometry, material);
+	mesh1.rotation.y = 45*DegRad;
+	mesh1.rotation.x = -90*DegRad;		// point outward
+	mesh.add(mesh1);
+	mesh.position.copy(pos);
+	mesh.rotation.x = rot.x*DegRad;
+	return mesh;
+}
+
+//- Make Numbers ---------------------------------------------------------------
+
+function makeNumber(parent,dstnos,len,color,pos,rot) {
+	// Make Ctr
+	let mesh = makeMesh();
+	mesh.position.copy(pos);
+	mesh.rotation.set(rot.x*DegRad,rot.y*DegRad,rot.z*DegRad);	
+	parent.add(mesh);
+	// Numbers
+	pos.x = -len*ChrWid/2;	// use pos
+	pos.y = -ChrWid/2;
+	pos.z = 0.2;
+	let material = new THREE.MeshBasicMaterial({color: color});
+	for (let n = 0; n < len; n++) {
+		dstnos[n] = new THREE.Mesh(NumGeo[10], material);
+		mesh.add(dstnos[n]);
+		dstnos[n].position.copy(pos);
+		dstnos[n].rotation.y = 0;
+		dstnos[n+len] = new THREE.Mesh(NumGeo[10], material);
+		mesh.add(dstnos[n+len]);
+		dstnos[n+len].position.set(-pos.x,pos.y,-pos.z);
+		dstnos[n+len].rotation.y = 180*DegRad;
+		pos.x+=ChrWid;
+	}
+}
+
+//= Move Planes, Vectors and Numbers ===========================================
+
+function movePlanes() {
+	// Vectors
+	moveSpdVct(new THREE.Color("red"));			// Variable Color
+	moveLftVct();
+	moveGrvVct();
+	// Numbers
+//	prntNum3DU(air_.Rot.y, ref_.HNo);			// Heading
+	prntNum2DS(air_.Rot.x, ref_.VNo);			// Pitch
+}
+
+//- Move Vectors ---------------------------------------------------------------
+
+//- Speed Vector
+
+function moveSpdVct(color) {
+	SpdMat.color.set(color);
+	SpdVct.scale.z = SpdMul;
+	SpdPtr.position.z = SpdOff-(SpdLen*SpdMul)-1;
+}
+
+//- Lift Vector
+
+function moveLftVct() {
+	SpdBox.position.z = SpdOff-(SpdLen*SpdMul)-3;
+	LftVct.scale.z = LftMul;
+	LftPtr.position.y = LftLen*LftMul-1;
+	LftLab.rotation.x = 0;
+	if (air_.PPR.x > 90 && air_.PPR.x < 270) {
+		LftLab.rotation.x = 180*DegRad;	// if PPP = 280
+	}
+	if (LftPtr.position.y >= 0) {
+		LftPtr.rotation.x = 90*DegRad;
+	}
+	else {
+		LftPtr.rotation.x = 270*DegRad;	// Point Down
+		LftLab.rotation.x = LftLab.rotation.x + 180*DegRad;
+	}
+}
+
+//- Gravity Vector
+
+function moveGrvVct() {
+	// Gravity (GrvBox Linked to ref_.HzR)
+	let GrvRad = (SpdOff-(SpdLen*SpdMul)-3);	// Length of Speed Vector
+	GrvBox.position.z = Math.cos(air_.Rot.x*DegRad)*GrvRad;
+	GrvBox.position.y = -Math.sin(air_.Rot.x*DegRad)*GrvRad;
+	GrvBox.rotation.z = air_.Rot.z*DegRad;
+	GrvBox.rotation.x = air_.Rot.x*DegRad;
+	GrvVct.scale.z = GrvMul;
+	GrvPtr.position.y = -GrvLen*GrvMul-1;	// GrvPtr linked to GrvBox	
+	if (air_.PPR.x > 90 && air_.PPR.x < 270) {
+		GrvBox.rotation.x = (air_.Rot.x-180)*DegRad;	// if PPP = 280, 
+	}
+}
+
+//- Print Animated Numbers -----------------------------------------------------
+
+// Print 2 Digit Signed Number (+XX)
+// Pitch
+function prntNum2DS(number,dstnos) {
+	let num = Math.round(number);				// whole numbers only
+	//
+	let ref = 11;								// plus
+	if (num < 0) ref = 12;						// minus
+	dstnos[0].geometry = NumGeo[ref];
+	dstnos[3].geometry = NumGeo[ref];
+	//
+	num = Math.abs(num);
+	let bas = Math.floor(num/10);				// 12 => 1
+	dstnos[1].geometry = NumGeo[bas];
+	dstnos[4].geometry = NumGeo[bas];
+	num = Math.floor(num-10*bas);				// 12 - 10 = 2	
+	dstnos[2].geometry = NumGeo[num];
+	dstnos[5].geometry = NumGeo[num];
+}
+
+// Print 3 Digit Unsigned Number (#NN)
+// Heading
+function prntNum3DU(number, dstnos) {
+	let num = Math.round(number);
+	//
+	let bas = Math.floor(num/100);				// 123 = 1
+	let ref = bas;
+	if (ref == 0) ref = 10;						// 0 becomes blank
+	dstnos[0].geometry = NumGeo[ref];
+	dstnos[3].geometry = NumGeo[ref];
+	//
+	num = Math.floor(num-100*bas);				// 123 - 100 = 23
+	bas = Math.floor(num/10);					// 23 => 2
+	dstnos[1].geometry = NumGeo[bas];
+	dstnos[4].geometry = NumGeo[bas];
+	//
+	num = Math.floor(num-10*bas);				// 23 - 20 = 3	
+	dstnos[2].geometry = NumGeo[num];
+	dstnos[5].geometry = NumGeo[num];
+}
+
+//= SUBROUTINES ===============================================================
+
+//=  Convert degrees to 360
+function Mod360(deg) {
+	while (deg < 0) deg = deg+360;				// Make deg a positive number
+	deg = deg % 360;		// Compute remainder of any number divided by 360
+return deg;}
+
+//=  Convert degrees to 360
+function POM180(deg) {
+	if (deg > 180) deg = deg - 360;				// 355 = 355 - 360 = -5
+return deg;}
+
+//= Make Mesh
+function makeMesh() {
+	let geometry = new THREE.BoxGeometry(0.01,0.01,0.01); 
+	let material = new THREE.MeshBasicMaterial({color: 0xffffff}); 
+	let mesh = new THREE.Mesh(geometry, material);
+return mesh;}
+
+//= 5 OUTPUT ===================================================================
+
+//	Change HUD Values
+function chngHUDV() {
+	Air_Pwr = PwrPct*100;						// Throttle
+	Air_PwrNode.nodeValue = Air_Pwr.toFixed(0);
+	Air_Spd = air_.Spd;							// Speed
+	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
+	Air_Alt = air_.MpP.y*Mtr2Ft;				// Altitude
+	Air_AltNode.nodeValue = Air_Alt.toFixed(0);
+	Air_VSI = air_.MpS.y*Mtr2Ft*60/DLTime;		// Vertical Speed
+	if (Air_VSI > 9999) Air_VSI = 9999;
+	if (Air_VSI < -9999) Air_VSI = -9999;
+	Air_VSINode.nodeValue = Air_VSI.toFixed(0);
+	Air_AoA = AirCfL*10;							// Cf Lift
+	Air_AoANode.nodeValue = Air_AoA.toFixed(2);
+}
+
+//= 6 INPUTS ===================================================================
+
+//- Keyboard -------------------------------------------------------------------
+
+// Key Down
+function onDocumentKeyDown(event) {
+	switch (event.keyCode) {
+		case 37: // Left Arrow
+		InpPwr = -air_.Key.z;
+		break;
+		case 38: // Up Arrow
+		InpCfL = -air_.Key.x;
+		break;
+		case 39: // Right Arrow
+		InpPwr = air_.Key.x;
+		break;
+		case 40: // Down Arrow
+		InpCfL = air_.Key.x;
+		break;
+		case 80: // P
+		if (PawsOn) PawsOn = 0;
+		else PawsOn = 1;
+		break;
+//		case 88: // X
+//		air_.Dif.y = 1;
+//		break;
+//		case 90: // Z
+//		air_.Dif.y = -1;
+//		break;
+	}
+}
+
+// Key Up
+function onDocumentKeyUp(event) {
+	switch (event.keyCode) {
+		case 37: // Left Arrow
+		air_.Dif.z = 0;
+		break;
+		case 38: // Up Arrow
+		InpCfL = 0;
+		break;
+		case 39: // Right Arrow
+		air_.Dif.z = 0;
+		break;
+		case 40: // Down Arrow
+		InpCfL = 0;
+		break;
+//		case 88: // X
+//		air_.Dif.y = 0;
+//		break;
+//		case 90: // Z
+//		air_.Dif.y = 0;
+//		break;
+	}
+}
+
+//= WINDOW RESIZE ============================================================
+
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+</script>
+</body>
+</html>
