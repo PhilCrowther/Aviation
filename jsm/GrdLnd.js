@@ -24,6 +24,7 @@ import {
 	LinearFilter,
 	LinearMipMapLinearFilter,
 	Mesh,
+	MeshLambertNodeMaterial,
 	MeshStandardNodeMaterial,
 	PlaneGeometry,
 	RepeatWrapping,
