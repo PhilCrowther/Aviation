@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Jan 2026
+Version dated 24 Jan 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -92,7 +92,7 @@ import {loadAirExt,moveAirExt} from "https://PhilCrowther.github.io/Aviation/jsm
 import {PointerLockControls} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
-import {initGrdMat,GrdMap,
+import {loadGrdMat,initGrdMat,GrdMap,
 		initRoads,moveRoads,
 		loadTreLin,moveTreLin
 	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
@@ -161,7 +161,8 @@ let scene = new THREE.Scene();
 let ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 	scene.add(ambLight);
 //- SunLight
-let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
+//let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
+let sunLight = new THREE.DirectionalLight(sky_.SunCol,4);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = sky_.SunDst*0.75;
@@ -381,6 +382,7 @@ function loadAll() {
 	// Initialize Loading Screen
 	WaitScreen();				// init loading screen
 	loadSkyBox();
+	loadGrdMat(grd_,gen_);
 	loadTreLin(grd_,gen_);
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
