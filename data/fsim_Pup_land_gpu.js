@@ -173,8 +173,8 @@ let grd_ = {
 		Idx: [0],				// Index to Patterns
 		Mat: [0],				// Index to Materials
 		// Texture Modifiers
-		DfT: ["https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.png",
-			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.png"],
+		DfT: ["https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.jpg",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg"],
 		DfM: [0.85,0.85],		// Darken outer grids to match inner grid [transition1G2]
 	}
 
