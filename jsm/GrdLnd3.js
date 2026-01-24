@@ -345,7 +345,7 @@ function initGr1Mat(grd_,gen_) {
 		DatTxt.needsUpdate = true;
 		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({
 //			colorNode: texture(DatTxt),
-			colorNode: texture(DatTxt).mul(texture(grd_.DfM[0])),
+			colorNode: texture(DatTxt).mul(grd_.DfM[0]),
 		});	
 		// Gr6Source = Resized Gr5Data		
 		gen_.contxt.putImageData(gt1_.G1DPtr[n],0,0);
@@ -381,7 +381,7 @@ function initGr2Mat(grd_,gen_) {
 			DatTxt.needsUpdate = true;
 			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({
 //				colorNode: texture(DatTxt),
-				colorNode: texture(DatTxt).mul(texture(grd_.DfM[1])),
+				colorNode: texture(DatTxt).mul(grd_.DfM[1]),
 			});	
 			n++;
 		}
