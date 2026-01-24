@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Jan 2026
+Version dated 24 Jan 2026
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -19,21 +19,15 @@ This moduel contains functions creating a scrolling grid map for Land
 *******************************************************************************/
 
 import {
-	BoxGeometry,
-	CircleGeometry,
 	Color,
 	DataTexture,
-	LatheGeometry,
 	LinearFilter,
 	LinearMipMapLinearFilter,
 	Mesh,
-	MeshBasicNodeMaterial,
-	MeshLambertNodeMaterial,
 	MeshStandardNodeMaterial,
 	PlaneGeometry,
 	RepeatWrapping,
 	RGBAFormat,
-	Vector2,
 } from 'three';
 
 import {color,texture} from 'three/tsl';
@@ -216,6 +210,36 @@ let tre_ = {
 		ObjRot: [],				// Rotation (0 or -90)
 }
 
+
+/*******************************************************************************
+*
+*	LOAD GRID MATERIALS
+*
+*******************************************************************************/
+
+function loadGrdMat(grd_,gen_) {
+	//- Diffuse Texture
+	gen_.txtrLd.load(grd_.DfT[0],function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.needsUpdate = true;
+		grd_.DfT[0] = texture;
+	});
+	//- Diffuse Texture
+	gen_.txtrLd.load(grd_.DfT[1],function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.needsUpdate = true;
+		grd_.DfT[1] = texture;
+	});
+}
+
 /*******************************************************************************
 *
 *	INIT GRID MATERIALS
@@ -270,7 +294,17 @@ function initGr0Mat(grd_,gen_) {
 		DatTxt.repeat.set(GrdMul,GrdMul);
 		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;		
-		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+//		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		if (n < 2) {
+			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
+				colorNode: texture(DatTxt).mul(texture(grd_.DfT[0])),
+			});
+		}
+		else {
+			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
+				colorNode: texture(DatTxt).mul(texture(grd_.DfT[1])),
+			});
+		}
 		// Gr5Source = Resized Gr4Data
 		// Note: Dividing a Repeated Data Can Lead to Odd Results
 		// e.g. If Repeat X10 and then divide by 10, result = Data
@@ -307,7 +341,10 @@ function initGr1Mat(grd_,gen_) {
 		DatTxt.generateMipmaps = true;
 		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;
-		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+		gt1_.G1MPtr[n] = new MeshLambertNodeMaterial({
+//			colorNode: texture(DatTxt),
+			colorNode: texture(DatTxt).mul(grd_.DfM[0]),
+		});	
 		// Gr6Source = Resized Gr5Data		
 		gen_.contxt.putImageData(gt1_.G1DPtr[n],0,0);
 		gen_.contxt.drawImage(gen_.canvas,0,0,dtSize,dtSize,0,0,Gr2Siz,Gr2Siz);
@@ -340,7 +377,10 @@ function initGr2Mat(grd_,gen_) {
 			DatTxt.generateMipmaps = true;
 			DatTxt.anisotropy = gen_.maxAns;
 			DatTxt.needsUpdate = true;
-			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});	
+			gt2_.G2MPtr[n] = new MeshLambertNodeMaterial({
+//				colorNode: texture(DatTxt),
+				colorNode: texture(DatTxt).mul(grd_.DfM[1]),
+			});	
 			n++;
 		}
 	}	
@@ -734,93 +774,6 @@ function loadTreLin(grd_,gen_) {
 	}
 }
 
-//= INIT TREELINE ==============//==============================================
-// Procedurally generated treeline (not used)
-
-function makeTreLin(grd_,gen_) {
-	let points = [
-		new Vector2(4.0,-6.7),	// Bot
-		new Vector2(4.9,-3.0),
-		new Vector2(4.2, 3.0),
-		new Vector2(3,5, 2.0),
-		new Vector2(1.8, 5.8),
-		new Vector2(0.1, 6.0)		// Top
-	];
-	let geotre = new LatheGeometry(points,6);
-	let geotrn = new BoxGeometry(0.9,3.0,0.9);
-	let geoshd = new CircleGeometry(6.0,16);
-	// Make Texture
-	tre_.t0Data = new Uint8Array(4*tre_.t0Size*tre_.t0Size);
-	initTClr(tre_.treclr,tre_.t0Data,1.9);
-	tre_.txttre = new DataTexture(tre_.t0Data,tre_.t0Size,tre_.t0Size);
-	tre_.txttre.format = RGBAFormat;
-	tre_.txttre.magFilter = LinearFilter;
-	tre_.txttre.minFilter = LinearMipMapLinearFilter;
-	tre_.txttre.generateMipmaps = true;
-	tre_.txttre.anisotropy = gen_.maxAns;	// ###
-	tre_.txttre.needsUpdate = true;
-	let mtltre = new MeshLambertNodeMaterial({colorNode: texture(tre_.txttre)});
-	let mtltrn = new MeshLambertNodeMaterial({colorNode: color(0x161005)});
-	let mtlshd = new MeshBasicNodeMaterial({colorNode: color(0x000000),transparent:true,opacity:0.5,depthWrite: false});
-	// Make Prototype Tree
-	let tre0 = new Mesh(geotre,mtltre);
-	let trnk = new Mesh(geotrn,mtltrn);
-	trnk.position.y = -7.9;
-	tre0.add(trnk);
-	let shad = new Mesh(geoshd,mtlshd);
-	shad.position.y = -9.4;
-	shad.rotation.x = -90*DegRad;
-	tre0.add(shad);
-	tre_.t0Tree[0] = tre0.clone();
-	// Make Row of Trees
-	let sx = 15.0;
-	let ry = 13.7;
-	let dy = 13.7;
-	let px = sx;
-	for (let x = 0; x < 10; x++) {
-		let tree = tre0.clone();
-		tree.position.x = px;
-		ry = Mod360(360*Math.random());
-		tree.rotation.y = ry*DegRad;
-		tree.rotation.z = Mod360(2*Math.random()*DegRad);
-		tree.rotation.x = Mod360(2*Math.random()*DegRad);
-		ry = ry+dy;
-		px = px+sx;
-		tre_.t0Tree[0].add(tree);
-	}
-	tre_.t0Tree[0].position.x = 0;
-	tre_.t0Tree[0].position.y = 9.8;
-	for (let n = 1; n < tre_.TreTot; n++) {
-		tre_.t0Tree[n] = tre_.t0Tree[0].clone();
-		gen_.scene.add(tre_.t0Tree[n]);
-		tre_.t0Tree[n].rotation.y = (Math.floor(Math.random()+0.5))*90*DegRad;
-		tre_.t0Tree[n].position.y = 9.8;
-		tre_.t0PosX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
-		tre_.t0PosZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+50*Ft2Mtr;
-	}
-	moveTrees(tre_,grd_,air_,gen_);
-}
-
-function initTClr(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	// Assign colors
-	let idx, i;
-	let end = 4*tre_.t0Size*tre_.t0Size;
-	for (let n = 0; n < end; n+=4) {
-		i = Math.floor(Weight*Math.random());
-		dtData[n  ] = red[i];
-		dtData[n+1] = grn[i];
-		dtData[n+2] = blu[i];
-		dtData[n+3] = 255;
-	}
-}
-
 //= MOVE TREELINE =================//==============================================
 
 function moveTreLin(grd_,gen_,air_) {
@@ -1192,7 +1145,7 @@ return deg;}
 *
 *******************************************************************************/
 
-export {initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,makeTreLin,moveTreLin};
+export {loadGrdMat,initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,moveTreLin};
 
 /*******************************************************************************
 *
@@ -1206,4 +1159,5 @@ export {initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,makeTreLin,moveTreLin};
 251103: Added LoadTreLin
 251125: Use gen_ to Store Loader and Scene Values
 260117: Added shadows to plowed fields.
+260124: Added DifTxt changes to add contrast to ground materials
 */
