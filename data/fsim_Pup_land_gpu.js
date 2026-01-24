@@ -136,7 +136,7 @@ let f2b_ = {
 let sky_ = {
 		// Sun
 		SunCol: "white",		// Sun
-		SunInt: 3,
+		SunInt: 4,				// Use 4 to overcome darkness of DifTxt
 		// Fog
 		FogCol: 0xbab4a6,		// Sky (for Fog only)
 		// SkyBox
