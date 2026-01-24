@@ -4,7 +4,7 @@
 <!--
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Jan 2026
+Version dated 24 Jan 2026
 
 This demo program uses portions of the GrdLnd module.
 
@@ -59,7 +59,7 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
-import {initGrdMat,GrdMap,
+import {loadGrdMat,initGrdMat,GrdMap,
 		initRoads,moveRoads,
 		loadTreLin,moveTreLin
 	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
@@ -304,6 +304,12 @@ let grd_ = {
 		Grx: [],				// Index of Grids (0-2)
 		Idx: [0],				// Index to Patterns
 		Mat: [0],				// Index to Materials
+		// Texture Modifiers
+		DfT: ["https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.png",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.png"],
+//			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G.png"],
+		DfM: [0.85,0.85],		// Darken outer grids to match inner grid [transition1G2]
+//		DfM: [0.725,0.725],		// Darken outer grids to match inner grid transition1G] (not work)
 	}
 // Adjust
 	grd_.SPS = new THREE.Vector3();
@@ -439,6 +445,7 @@ function loadAll() {
 	air_.MapSPS.y = air_.MapPos.y;
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	loadSkyBox();
+	loadGrdMat(grd_,gen_);
 	loadTreLin(grd_,gen_);
 	loadJetExh();
 	if (gen_.StatOn) {			// Load Stats
