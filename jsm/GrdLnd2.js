@@ -222,9 +222,9 @@ let tre_ = {
 *
 *******************************************************************************/
 
-function loadGrdMat() {
+function loadGrdMat(gen_) {
 	//- Diffuse Texture
-	txtrLoader.load(Df0Txt,function(texture) {
+	gen_.txtrLd.load(Df0Txt,function(texture) {
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
 		texture.minFilter = LinearMipMapLinearFilter;
@@ -234,7 +234,7 @@ function loadGrdMat() {
 		Df0Txt = texture;
 	});
 	//- Diffuse Texture
-	txtrLoader.load(Df1Txt,function(texture) {
+	gen_.txtrLd.load(Df1Txt,function(texture) {
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
 		texture.minFilter = LinearMipMapLinearFilter;
