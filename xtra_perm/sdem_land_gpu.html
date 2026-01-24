@@ -21,6 +21,7 @@ This programs shows procedurally generated farmland plus medium quality trees.
 
 <div id="container">
 	<div class="overlay1">
+		<div>Type No..: <span id="Typ_Num"></span></div>
 		<div>Altitude.: <span id="Cam_Alt"></span> ft</div>
 		<div>Heading..: <span id="Cam_Hdg"></span> deg</div>
 	</div>
@@ -170,7 +171,8 @@ let	CamDst, CamLat, CamHdg, CamAlt = 0;
 
 //= Data ========================================================================
 //- Maps ------------------------------------------------------------------------
-let DifTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F.png";
+let Df0Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.jpg";
+let Df1Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg";
 //- Ground Square ---------------------------------------------------------------
 let dqSize = 805;	// size of quarter section in meters = 2640 feet (2 ft per row = 1320 rows)
 let datMax = 6;
@@ -178,16 +180,14 @@ let datMax = 6;
 let dtSize = 1024;		// 8 pixels per row = 128 rows
 let dtArea = dtSize*dtSize;
 let d0Data = new Uint8Array(4*dtArea);	// Dirt
-let d1Data = new Uint8Array(4*dtArea);
-let d2Data = new Uint8Array(4*dtArea);
-let d3Data = new Uint8Array(4*dtArea);
-let d4Data = new Uint8Array(4*dtArea);
-let d5Data = new Uint8Array(4*dtArea);
-let d6Data = new Uint8Array(4*dtArea);
-let d7Data = new Uint8Array(4*dtArea);
-let d8Data = new Uint8Array(4*dtArea);
-let d9Data = new Uint8Array(4*dtArea);
-let dtPtrs = [d0Data,d1Data,d2Data,d3Data,d4Data,d5Data,d6Data,d7Data,d8Data,d9Data];
+let d1Data = new Uint8Array(4*dtArea);	// Pasture
+let d2Data = new Uint8Array(4*dtArea);	// Plowed
+let d3Data = new Uint8Array(4*dtArea);	// Green
+let d4Data = new Uint8Array(4*dtArea);	// Beans
+let d5Data = new Uint8Array(4*dtArea);	// Wheat
+let dtPtrs = [d0Data,d1Data,d2Data,d3Data,d4Data,d5Data];
+//- Data Textures Names ---------------------------------------------------------
+let dtName = ["Dirt","Pasture","Plowed","Green","Beans","Wheat"];
 //- Materials -------------------------------------------------------------------
 let dtMats = [0,0,0,0,0,0,0,0,0,0];
 //- Meshes ----------------------------------------------------------------------
@@ -199,8 +199,8 @@ let blu = [0,0];
 let drtclr = [0xbaa590,0x654321];	// Dirt
 let pstclr = [0x00b000,0x005000];	// Pasture
 let cvrclr = [0x00c000,0x004000];	// Green
-let whtclr = [0xfbf4e5,0xeabb63];	// Wheat
 let bnsclr = [0x00e000,0x006000];	// Beans
+let whtclr = [0xfbf4e5,0xeabb63];	// Wheat
 
 //= TREELINE ===================//==============================================
 let tre_ = {
@@ -225,13 +225,16 @@ let	tr2_ = {
 }
 
 //= HTML OVERLAY TEXT ==========================================================
+let Typ_NumElement = document.getElementById("Typ_Num"); // Type
+let Typ_NumNode = document.createTextNode("");
+	Typ_NumElement.appendChild(Typ_NumNode);
 let Cam_AltElement = document.getElementById("Cam_Alt"); // Altitude
 let Cam_AltNode = document.createTextNode("");
 	Cam_AltElement.appendChild(Cam_AltNode);
 let Cam_HdgElement = document.getElementById("Cam_Hdg"); // Heading
 let Cam_HdgNode = document.createTextNode("");
 	Cam_HdgElement.appendChild(Cam_HdgNode);
-let Cam_Alt,Cam_Hdg;
+let Typ_Num,Cam_Alt,Cam_Hdg;
 
 /********************************************************************************
 *
@@ -297,21 +300,31 @@ function loadSkyBox() {
 *	LAND
 *
 ********************************************************************************/
-// 5280 feet = 1024 pixels
-// 4.65 feet = 1 pixel
+// 5280 feet = 1024 pixels X 10 repss = 10240 pixels
+// 0.515 feet = 1 pixel
 
 //= LOAD ========================================================================
 
 function loadDifTxt() {
 	//- Diffuse Texture
-	txtrLoader.load(DifTxt,function(texture) {
+	txtrLoader.load(Df0Txt,function(texture) {
 		texture.format = THREE.RGBAFormat;
 		texture.magFilter = THREE.LinearFilter;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 		texture.needsUpdate = true;
-		DifTxt = texture;
+		Df0Txt = texture;
+	});
+	//- Diffuse Texture
+	txtrLoader.load(Df1Txt,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.needsUpdate = true;
+		Df1Txt = texture;
 	});
 }
 
@@ -327,7 +340,7 @@ function initCover() {
 
 function initTxtr() {
 	// Dirt Underneath All
-	for (let i = 0; i < 10; i++) {
+	for (let i = 0; i < datMax; i++) {
 		makeDirt(i);
 	}
 	// Add Other Textures
@@ -339,7 +352,7 @@ function initTxtr() {
 	// Init
 	// Make Materials and Meshes
 	let geometry = new THREE.PlaneGeometry(dqSize, dqSize);
-	for (let i = 0; i < 10; i++) {
+	for (let i = 0; i < datMax; i++) {
 		let dtData = dtPtrs[i];
 		let DatTxt = new THREE.DataTexture(dtData, dtSize, dtSize);
 		DatTxt.format = THREE.RGBAFormat;
@@ -347,15 +360,20 @@ function initTxtr() {
 		DatTxt.minFilter = THREE.LinearMipMapLinearFilter;
 		DatTxt.generateMipmaps = true;
 		DatTxt.wrapS = DatTxt.wrapT = THREE.RepeatWrapping;
-		DatTxt.offset.set(0,0);
+		DatTxt.offset.set(1,0);
 		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = gen_.MaxAni;		// ###
+		DatTxt.anisotropy = gen_.MaxAni;
 		DatTxt.needsUpdate = true;
-		dtMats[i] = new THREE.MeshLambertNodeMaterial({
-			colorNode: texture(DatTxt),
-//			colorNode: texture(DatTxt).mul(texture(DifTxt)),
-//			roughnessMap: DifTxt,	// Not a texture
-		});
+		if (i < 2) {
+			dtMats[i] = new THREE.MeshLambertNodeMaterial({
+				colorNode: texture(DatTxt).mul(texture(Df0Txt)),
+			});
+		}
+		else {
+			dtMats[i] = new THREE.MeshLambertNodeMaterial({
+				colorNode: texture(DatTxt).mul(texture(Df1Txt)),
+			});
+		}
 		dtMesh[i] = new THREE.Mesh(geometry,dtMats[i]);
 		dtMesh[i].rotation.x = -90*DegRad;
 		dtMesh[i].receiveShadow = true;
@@ -422,6 +440,7 @@ function makePlow() {
 		blu[i] = Math.floor(clr.b * 255);
 	}
 	makeVrtL(2);
+	makeShad(2);
 }
 
 function makeCovr() {
@@ -435,6 +454,7 @@ function makeCovr() {
 		blu[i] = Math.floor(clr.b * 255);
 	}
 	makeVrtL(3);
+	makeShad(3);
 }
 
 function makeBean() {
@@ -448,6 +468,7 @@ function makeBean() {
 		blu[i] = Math.floor(clr.b * 255);
 	}
 	makeVrtD(4);
+	makeShad(4);
 }
 
 function makeWeat() {
@@ -461,6 +482,7 @@ function makeWeat() {
 		blu[i] = Math.floor(clr.b * 255);
 	}
 	makeVrtL(5);
+	makeShad(5);
 }
 
 function makeVrtL(typ) {
@@ -545,34 +567,22 @@ function makeVrtD(typ) {
 	}
 }
 
-function makeHorz(dtData,clr,x1,y1,x2,y2,spr,spp) {
-	clr = new THREE.Color(clr);
-	let red = Math.floor(clr.r * 255);
-	let grn = Math.floor(clr.g * 255);
-	let blu = Math.floor(clr.b * 255);
-	for (let y = y1; y < y2; y+=spr) {	// Rows
-		for (let x = x1; x < x2; x+=spp) {
-			let idx = (y*dtSize + x) * 4;
-			dtData[idx  ] = red;
-			dtData[idx+1] = grn;
-			dtData[idx+2] = blu;
-			dtData[idx+3] = 255;
-		}
-	}
-}
+//- Make Shadow ----------------------------------------------------------------
 
-function makeVert(dtData,clr,x1,y1,x2,y2,spr,spp) {
-	clr = new THREE.Color(clr);
-	let red = Math.floor(clr.r * 255);
-	let grn = Math.floor(clr.g * 255);
-	let blu = Math.floor(clr.b * 255);
-	for (let x = x1; x < x2; x+=spr) {	// Rows
-		for (let y = y1; y < y2; y+=spp) {
-			let idx = (y*dtSize + x) * 4;
-			dtData[idx  ] = red;
-			dtData[idx+1] = grn;
-			dtData[idx+2] = blu;
-			dtData[idx+3] = 255;
+function makeShad(typ) {
+	let dtData = dtPtrs[typ];
+	let idx;
+	for (let x = 7; x < dtSize; x+=8) {	// Rows
+		for (let y = 0; y < dtSize; y++) {
+			idx = (y*dtSize + x) * 4;
+			dtData[idx  ] = dtData[idx  ] * 0.25;
+			dtData[idx+1] = dtData[idx+1] * 0.25;
+			dtData[idx+2] = dtData[idx+2] * 0.25;
+			//
+			idx = idx+4;
+			dtData[idx  ] = dtData[idx  ] * 0.25;
+			dtData[idx+1] = dtData[idx+1] * 0.25;
+			dtData[idx+2] = dtData[idx+2] * 0.25;
 		}
 	}
 }
@@ -627,7 +637,7 @@ function moveTreLin(tr1_,tr2_) {
 			tr2_.ObjAdr[n].position.x = -10000;
 			tr2_.ObjAdr[n].position.y = -10000;
 			tr2_.ObjAdr[n].position.z = -10000;
-			a = "near";
+//			a = "near";
 		}
 		// Far
 		else {
@@ -639,10 +649,10 @@ function moveTreLin(tr1_,tr2_) {
 			tr2_.ObjAdr[n].position.x = tre_.ObjMpX[n];
 			tr2_.ObjAdr[n].position.y = 0;
 			tr2_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
-			a = "far";
+//			a = "far";
 		}
 	}
-	console.log(Math.round(CamDst),a);
+//	console.log(Math.round(CamDst),a);
 }
 
 /********************************************************************************
@@ -673,6 +683,7 @@ function prntHUDval() {
 	CamDst = controls.getDistance();
 	CamAlt = CamDst*Math.sin(CamLat*DegRad);		
 	//
+	Typ_NumNode.nodeValue = dtName[dtType];
 	Cam_Alt = Mtr2Ft*CamAlt;	// Altitude
 	Cam_AltNode.nodeValue = Cam_Alt.toFixed(0);
 	Cam_Hdg = CamHdg;			// Heading
