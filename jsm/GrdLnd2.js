@@ -46,8 +46,8 @@ let DegRad = Math.PI/180;		// Convert Degrees to Radians
 
 //= GRIDS =======================//=============================================
 //- Materials
-let Df0Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F.png";
-let Df1Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G.png";
+let Df0Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.png";
+let Df1Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.png";
 //= Textures Data ==============//==============================================
 //- All textures are 512X512
 let dqSize = 1024;
