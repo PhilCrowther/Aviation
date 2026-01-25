@@ -63,7 +63,7 @@ let blu = [0,0];
 let GrdDrt = "#1c160e";			// Color of underlying dirt (affects brightness)
 let drtclr = [0x8e6d3d,0x47361e]; // Dirt
 let pstclr = [0x00b000,0x005000]; // Pasture
-let cvrclr = [0x75b24c,0x466b2d]; // Green
+let cvrclr = [0x5d8e3d,0x2e471e]; // Green
 let whtclr = [0xfbf4e5,0xeabb63]; // Wheat
 let bnsclr = [0xacd193,0x5d8e3d]; // Beans
 //	Tones of Dirt Brown Color | #836539 Monochromatic Color
