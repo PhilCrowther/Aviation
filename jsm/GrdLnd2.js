@@ -239,6 +239,16 @@ function loadGrdMat(grd_,gen_) {
 		texture.needsUpdate = true;
 		grd_.DfT[1] = texture;
 	});
+	//- Diffuse Texture
+	gen_.txtrLd.load(grd_.DfT[2],function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.needsUpdate = true;
+		grd_.DfT[2] = texture;
+	});
 }
 
 /*******************************************************************************
