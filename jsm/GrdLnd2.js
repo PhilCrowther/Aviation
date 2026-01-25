@@ -283,8 +283,8 @@ function initGr0Mat(grd_,gen_) {
 			makeShdH(dtData);
 		}
 		if (n == 3) {
-			makeVrtL(cvrclr,dtData,1.9,1.5);	// Bean Line
-			makeShdV(dtData);
+			makeHrzL(cvrclr,dtData,1.9,1.5);	// Bean Line
+			makeShdH(dtData);
 		}
 		if (n == 4) {
 			makeVrtL(whtclr,dtData,1.9,1.5);	// Wheat Line
@@ -311,12 +311,12 @@ function initGr0Mat(grd_,gen_) {
 				colorNode: texture(DatTxt).mul(texture(grd_.DfT[0])),
 			});
 		}
-		if (n > 2) { // Vertical Lines
+		if (n > 3) { // Vertical Lines
 			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
 				colorNode: texture(DatTxt).mul(texture(grd_.DfT[1])),
 			});
 		}
-		if (n == 2) { // Horizontal Lines
+		if (n == 2 || n == 3) { // Horizontal Lines
 			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
 				colorNode: texture(DatTxt).mul(texture(grd_.DfT[2])),
 			});
