@@ -176,7 +176,7 @@ let grd_ = {
 		DfT: ["https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G3.jpg"],
-		DfM: [0.85,0.85],		// Darken outer grids to match inner grid [transition1G2]
+		DfM: [0.75,0.75],		// Darken outer grids to match inner grid [transition1G2]
 	}
 
 //= STATIC OBJECTS =============//==============================================
