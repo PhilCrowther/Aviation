@@ -56,7 +56,7 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 
 //= 1. MAIN VARIABLES ==========//===============================================
 
-let dtType = 3;					// Texture Type (0-9)
+let dtType = 4;					// Texture Type (0-9)
 
 //- CONSTANTS ------------------//-----------------------------------------------
 //	Conversions
@@ -173,6 +173,7 @@ let	CamDst, CamLat, CamHdg, CamAlt = 0;
 //- Maps ------------------------------------------------------------------------
 let Df0Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.jpg";
 let Df1Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg";
+let Df2Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G3.jpg";
 //- Ground Square ---------------------------------------------------------------
 let dqSize = 805;	// size of quarter section in meters = 2640 feet (2 ft per row = 1320 rows)
 let datMax = 6;
@@ -326,6 +327,16 @@ function loadDifTxt() {
 		texture.needsUpdate = true;
 		Df1Txt = texture;
 	});
+	//- Diffuse Texture
+	txtrLoader.load(Df2Txt,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.needsUpdate = true;
+		Df2Txt = texture;
+	});
 }
 
 //= INIT ========================================================================
@@ -369,9 +380,14 @@ function initTxtr() {
 				colorNode: texture(DatTxt).mul(texture(Df0Txt)),
 			});
 		}
-		else {
+		if (i > 3) {
 			dtMats[i] = new THREE.MeshLambertNodeMaterial({
 				colorNode: texture(DatTxt).mul(texture(Df1Txt)),
+			});
+		}
+		if (i == 2 || i == 3) {
+			dtMats[i] = new THREE.MeshLambertNodeMaterial({
+				colorNode: texture(DatTxt).mul(texture(Df2Txt)),
 			});
 		}
 		dtMesh[i] = new THREE.Mesh(geometry,dtMats[i]);
@@ -431,7 +447,6 @@ function makePast(typ) {
 
 function makePlow() {
 // Two colors - one on each side of row
-//	makeDirt();
 	let clr;
 	for (let i = 0; i < 2; i++) {
 		clr = new THREE.Color(drtclr[i]);
@@ -439,13 +454,12 @@ function makePlow() {
 		grn[i] = Math.floor(clr.g * 255);
 		blu[i] = Math.floor(clr.b * 255);
 	}
-	makeVrtL(2);
-	makeShad(2);
+	makeHrzL(2);
+	makeShdH(2);
 }
 
 function makeCovr() {
 // Two colors - one on each side of row
-//	makeDirt();
 	let clr;
 	for (let i = 0; i < 2; i++) {
 		clr = new THREE.Color(cvrclr[i]);
@@ -453,13 +467,12 @@ function makeCovr() {
 		grn[i] = Math.floor(clr.g * 255);
 		blu[i] = Math.floor(clr.b * 255);
 	}
-	makeVrtL(3);
-	makeShad(3);
+	makeHrzL(3);
+	makeShdH(3);
 }
 
 function makeBean() {
 // Two colors - one on each side of row
-//	makeDirt();
 	let clr;
 	for (let i = 0; i < 2; i++) {
 		clr = new THREE.Color(bnsclr[i]);
@@ -468,12 +481,11 @@ function makeBean() {
 		blu[i] = Math.floor(clr.b * 255);
 	}
 	makeVrtD(4);
-	makeShad(4);
+	makeShdV(4);
 }
 
 function makeWeat() {
 // Two colors - one on each side of row
-//	makeDirt();
 	let clr;
 	for (let i = 0; i < 2; i++) {
 		clr = new THREE.Color(whtclr[i]);
@@ -482,7 +494,7 @@ function makeWeat() {
 		blu[i] = Math.floor(clr.b * 255);
 	}
 	makeVrtL(5);
-	makeShad(5);
+	makeShdV(5);
 }
 
 function makeVrtL(typ) {
@@ -515,6 +527,47 @@ function makeVrtL(typ) {
 				dtData[idx+3] = 255;
 			}
 			idx = idx+4;
+			i = Math.floor(1.9*Math.random());
+			if (i == 1) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+		}
+	}
+}
+
+function makeHrzL(typ) {
+	let dtData = dtPtrs[typ];
+	let idx, i;
+	for (let y = 4; y < dtSize; y+=8) {	// Rows
+		for (let x = 0; x < dtSize; x++) {
+			idx = (y*dtSize + x) * 4;
+			i = Math.floor(1.9*Math.random());
+			if (i == 1) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+			idx = idx+4*dtSize;
+			i = Math.floor(1.5*Math.random());
+			if (i == 0) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+			idx = idx+4*dtSize;
+			i = Math.floor(1.5*Math.random());
+			if (i == 0) {
+				dtData[idx  ] = red[i];
+				dtData[idx+1] = grn[i];
+				dtData[idx+2] = blu[i];
+				dtData[idx+3] = 255;
+			}
+			idx = idx+4*dtSize;
 			i = Math.floor(1.9*Math.random());
 			if (i == 1) {
 				dtData[idx  ] = red[i];
@@ -569,7 +622,7 @@ function makeVrtD(typ) {
 
 //- Make Shadow ----------------------------------------------------------------
 
-function makeShad(typ) {
+function makeShdV(typ) {
 	let dtData = dtPtrs[typ];
 	let idx;
 	for (let x = 7; x < dtSize; x+=8) {	// Rows
@@ -580,6 +633,24 @@ function makeShad(typ) {
 			dtData[idx+2] = dtData[idx+2] * 0.25;
 			//
 			idx = idx+4;
+			dtData[idx  ] = dtData[idx  ] * 0.25;
+			dtData[idx+1] = dtData[idx+1] * 0.25;
+			dtData[idx+2] = dtData[idx+2] * 0.25;
+		}
+	}
+}
+
+function makeShdH(typ) {
+	let dtData = dtPtrs[typ];
+	let idx;
+	for (let y = 11; y < dtSize; y+=8) {	// Rows
+		for (let x = 0; x < dtSize; x++) {
+			idx = (y*dtSize + x) * 4;
+			dtData[idx  ] = dtData[idx  ] * 0.25;
+			dtData[idx+1] = dtData[idx+1] * 0.25;
+			dtData[idx+2] = dtData[idx+2] * 0.25;
+			//
+			idx = idx+4*dtSize;
 			dtData[idx  ] = dtData[idx  ] * 0.25;
 			dtData[idx+1] = dtData[idx+1] * 0.25;
 			dtData[idx+2] = dtData[idx+2] * 0.25;
