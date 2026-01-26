@@ -870,7 +870,7 @@ function moveTreLin(grd_,gen_,air_) {
 		x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
 //		if (x > a) x = x - 2*a;
 //		if (x < -a) x = x + 2*a;
-		if (Math.Abs(x) > a) {
+		if (Math.abs(x) > a) {
 			b = 6;
 			if (x > a) b = -6;
 			tre_.ObjMpX[n] = tre_.ObjMpX[n]+b;
@@ -879,7 +879,7 @@ function moveTreLin(grd_,gen_,air_) {
 		z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
 //		if (z > a) z = z - 2*a;
 //		if (z < -a) z = z + 2*a;
-		if (Math.Abs(z) > a) {
+		if (Math.abs(z) > a) {
 			b = 6
 			if (z > a) b = -6
 			tre_.ObjMpZ[n] = tre_.ObjMpZ[n]+b;
