@@ -201,24 +201,14 @@ let rd2_ = {
 	}
 
 //= TREES ======================//==============================================
-let mtr = 804.672
 let tre_ = {
 		ObjNum: 16,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
 				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
 		ObjAdr: [],				// Object Address
-		ObjMpZ: [-6*mtr,-2*mtr,2*mtr,6*mtr,	// Map Address Z
-				 -6*mtr,-2*mtr,2*mtr,6*mtr,
-				 -6*mtr,-2*mtr,2*mtr,6*mtr,
-				 -6*mtr,-2*mtr,2*mtr,6*mtr],
-		ObjMpX: [-6*mtr,-2*mtr,2*mtr,6*mtr,	// Map Address X
-				 -6*mtr,-2*mtr,2*mtr,6*mtr,
-				 -6*mtr,-2*mtr,2*mtr,6*mtr,
-				 -6*mtr,-2*mtr,2*mtr,6*mtr], 
-		ObjRot: [0,90,0,90,					// Rotation (0 or -90)
-				 90,0,90,0,
-				 0,90,0,90,
-				 90,0,90,0],
+		ObjMpZ: [],				// Map Address Z
+		ObjMpX: [],				// Map Address X
+		ObjRot: [],				// Rotation (0 or -90)
 }
 
 
@@ -851,8 +841,10 @@ function loadTreLin(grd_,gen_) {
 		// Assign Random Map Position
 //		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
 //		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
+		tre_.ObjMpX[n] = grd_.Siz*Math.floor(7*(Math.random()-0.5))+10;
+		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(7*(Math.random()-0.5))-10;
 		// Rotation = 0 or -90
-//		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
+		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
 		// Select Object
 		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
 		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
@@ -870,8 +862,8 @@ function loadTreLin(grd_,gen_) {
 
 function moveTreLin(grd_,gen_,air_) {
 	// Convert Distances into Meters to match landscape program
-//	let a = 13.5*grd_.Siz; // this limits trees to small area
-	let a = 5.5*grd_.Siz; // this limits trees to smaller area
+//	let a = 13.5*grd_.Siz;
+	let a = 3.5*grd_.Siz;
 	let x,y,z;
 	for (let n = 0; n < tre_.ObjNum; n++) {
 		// Set Tree Object Position 
