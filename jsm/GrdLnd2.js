@@ -841,8 +841,8 @@ function loadTreLin(grd_,gen_) {
 		// Assign Random Map Position
 //		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
 //		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
-		tre_.ObjMpX[n] = grd_.Siz*Math.floor(7*(Math.random()-0.5))+10;
-		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(7*(Math.random()-0.5))-10;
+		tre_.ObjMpX[n] = grd_.Siz*Math.floor(5*(Math.random()-0.5))+10;
+		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(5*(Math.random()-0.5))-10;
 		// Rotation = 0 or -90
 		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
 		// Select Object
@@ -863,16 +863,28 @@ function loadTreLin(grd_,gen_) {
 function moveTreLin(grd_,gen_,air_) {
 	// Convert Distances into Meters to match landscape program
 //	let a = 13.5*grd_.Siz;
-	let a = 3.5*grd_.Siz;
-	let x,y,z;
+	let a = 5*grd_.Siz;
+	let x,y,z,b;
 	for (let n = 0; n < tre_.ObjNum; n++) {
 		// Set Tree Object Position 
 		x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
-		if (x > a) x = x - 2*a;
-		if (x < -a) x = x + 2*a;
+//		if (x > a) x = x - 2*a;
+//		if (x < -a) x = x + 2*a;
+		if (Math.Abs(x) > a) {
+			b = 6;
+			if (x > a) b = -6;
+			tre_.ObjMpX[n] = tre_.ObjMpX[n]+b;
+			x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
+		}
 		z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
-		if (z > a) z = z - 2*a;
-		if (z < -a) z = z + 2*a;
+//		if (z > a) z = z - 2*a;
+//		if (z < -a) z = z + 2*a;
+		if (Math.Abs(z) > a) {
+			b = 6
+			if (z > a) b = -6
+			tre_.ObjMpZ[n] = tre_.ObjMpZ[n]+b;
+			z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
+		}
 		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
 		tre_.ObjAdr[n].position.set(x,y,z);
 	}
