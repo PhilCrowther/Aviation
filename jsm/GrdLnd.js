@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Jan 2026
+Version dated 25 Jan 2026
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -63,7 +63,7 @@ let blu = [0,0];
 let GrdDrt = "#1c160e";			// Color of underlying dirt (affects brightness)
 let drtclr = [0x8e6d3d,0x47361e]; // Dirt
 let pstclr = [0x00b000,0x005000]; // Pasture
-let cvrclr = [0x5d8e3d,0x2e471e]; // Green
+let cvrclr = [0x75b24c,0x466b2d]; // Green
 let whtclr = [0xfbf4e5,0xeabb63]; // Wheat
 let bnsclr = [0xacd193,0x5d8e3d]; // Beans
 //	Tones of Dirt Brown Color | #836539 Monochromatic Color
@@ -239,16 +239,6 @@ function loadGrdMat(grd_,gen_) {
 		texture.needsUpdate = true;
 		grd_.DfT[1] = texture;
 	});
-	//- Diffuse Texture
-	gen_.txtrLd.load(grd_.DfT[2],function(texture) {
-		texture.format = RGBAFormat;
-		texture.magFilter = LinearFilter;
-		texture.minFilter = LinearMipMapLinearFilter;
-		texture.generateMipmaps = true;
-		texture.wrapS = texture.wrapT = RepeatWrapping;
-		texture.needsUpdate = true;
-		grd_.DfT[2] = texture;
-	});
 }
 
 /*******************************************************************************
@@ -279,20 +269,20 @@ function initGr0Mat(grd_,gen_) {
 		makeClr1(drtclr,dtData,1.6);	// Dirt
 		if (n == 1) makeClr2(pstclr,dtData,4);	// Pasture
 		if (n == 2) {
-			makeHrzL(drtclr,dtData,1.9,1.5);	// Plowed Line
-			makeShdH(dtData);
+			makeVrtL(drtclr,dtData,1.9,1.5);	// Plowed Line
+			makeShad(dtData);
 		}
 		if (n == 3) {
-			makeHrzL(cvrclr,dtData,1.9,1.5);	// Bean Line
-			makeShdH(dtData);
+			makeVrtL(cvrclr,dtData,1.9,1.5);	// Bean Line
+			makeShad(dtData);
 		}
 		if (n == 4) {
 			makeVrtL(whtclr,dtData,1.9,1.5);	// Wheat Line
-			makeShdV(dtData);
+			makeShad(dtData);
 		}
 		if (n == 5) {
 			makeVrtD(bnsclr,dtData,8);	// Bean Dots
-			makeShdV(dtData);
+			makeShad(dtData);
 		}
 		// Make Materials
 		let DatTxt = new DataTexture(dtData, dqSize, dqSize);
@@ -306,19 +296,14 @@ function initGr0Mat(grd_,gen_) {
 		DatTxt.anisotropy = gen_.maxAns;
 		DatTxt.needsUpdate = true;		
 //		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
-		if (n < 2) { // 
+		if (n < 2) {
 			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
 				colorNode: texture(DatTxt).mul(texture(grd_.DfT[0])),
 			});
 		}
-		if (n > 3) { // Vertical Lines
+		else {
 			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
 				colorNode: texture(DatTxt).mul(texture(grd_.DfT[1])),
-			});
-		}
-		if (n == 2 || n == 3) { // Horizontal Lines
-			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
-				colorNode: texture(DatTxt).mul(texture(grd_.DfT[2])),
 			});
 		}
 		// Gr5Source = Resized Gr4Data
@@ -546,57 +531,9 @@ function makeVrtD(dtColr,dtData,Weight) {
 	}
 }
 
-// Make Horizontal Line
-function makeHrzL(dtColr,dtData,Weight1,Weight2) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	let idx, i;
-	for (let y = 4; y < dqSize; y+=8) {	// Rows
-		for (let x = 0; x < dqSize; x++) {
-			idx = (y*dqSize + x) * 4;
-			i = Math.floor(Weight1*Math.random());
-			if (i == 1) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-			idx = idx+4*dqSize;
-			i = Math.floor(Weight2*Math.random());
-			if (i == 0) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-			idx = idx+4*dqSize;
-			i = Math.floor(Weight2*Math.random());
-			if (i == 0) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-			idx = idx+4*dqSize;
-			i = Math.floor(Weight1*Math.random());
-			if (i == 1) {
-				dtData[idx  ] = red[i];
-				dtData[idx+1] = grn[i];
-				dtData[idx+2] = blu[i];
-				dtData[idx+3] = 255;
-			}
-		}
-	}
-}
-
 //- Make Shadow ----------------------------------------------------------------
 
-function makeShdV(dtData) {
+function makeShad(dtData) {
 	let idx;
 	for (let x = 7; x < dqSize; x+=8) {	// Rows
 		for (let y = 0; y < dqSize; y++) {
@@ -606,23 +543,6 @@ function makeShdV(dtData) {
 			dtData[idx+2] = dtData[idx+2] * 0.25;
 			//
 			idx = idx+4;
-			dtData[idx  ] = dtData[idx  ] * 0.25;
-			dtData[idx+1] = dtData[idx+1] * 0.25;
-			dtData[idx+2] = dtData[idx+2] * 0.25;
-		}
-	}
-}
-
-function makeShdH(dtData) {
-	let idx;
-	for (let y = 11; y < dqSize; y+=8) {	// Columns
-		for (let x = 0; x < dqSize; x++) {
-			idx = (y*dqSize + x) * 4;
-			dtData[idx  ] = dtData[idx  ] * 0.25;
-			dtData[idx+1] = dtData[idx+1] * 0.25;
-			dtData[idx+2] = dtData[idx+2] * 0.25;
-			//
-			idx = idx+4*dqSize;
 			dtData[idx  ] = dtData[idx  ] * 0.25;
 			dtData[idx+1] = dtData[idx+1] * 0.25;
 			dtData[idx+2] = dtData[idx+2] * 0.25;
@@ -850,6 +770,7 @@ function loadTreLin(grd_,gen_) {
 			tre_.ObjAdr[n] = gltf.scene;
 			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
 			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
+			tre_.ObjAdr[n].position.y = -100000; // Make invisible
 			gen_.scene.add(tre_.ObjAdr[n]);
 		});
 	}
