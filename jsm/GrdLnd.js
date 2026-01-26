@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Jan 2026
+Version dated 26 Jan 2026
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -202,7 +202,7 @@ let rd2_ = {
 
 //= TREES ======================//==============================================
 let tre_ = {
-		ObjNum: 64,
+		ObjNum: 24,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
 				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
 		ObjAdr: [],				// Object Address
@@ -839,8 +839,8 @@ function move1Road(grd_,gen_,road) {
 function loadTreLin(grd_,gen_) {
 	for (let n = 0; n < tre_.ObjNum; n++) {
 		// Assign Random Map Position
-		tre_.ObjMpX[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))+10;
-		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(27*(Math.random()-0.5))-10;
+		tre_.ObjMpX[n] = grd_.Siz*Math.floor(5*(Math.random()-0.5))+10;
+		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(5*(Math.random()-0.5))-10;
 		// Rotation = 0 or -90
 		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
 		// Select Object
@@ -860,16 +860,24 @@ function loadTreLin(grd_,gen_) {
 
 function moveTreLin(grd_,gen_,air_) {
 	// Convert Distances into Meters to match landscape program
-	let a = 13.5*grd_.Siz;
-	let x,y,z;
+	let a = 4*grd_.Siz;
+	let x,y,z,b;
 	for (let n = 0; n < tre_.ObjNum; n++) {
 		// Set Tree Object Position 
 		x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
-		if (x > a) x = x - 2*a;
-		if (x < -a) x = x + 2*a;
+		if (Math.abs(x) > a) {
+			b = 2*a;
+			if (x > a) b = -b; // Moving west
+			tre_.ObjMpX[n] = tre_.ObjMpX[n]+b;
+			x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
+		}
 		z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
-		if (z > a) z = z - 2*a;
-		if (z < -a) z = z + 2*a;
+		if (Math.abs(z) > a) {
+			b = -2*a;
+			if (z > a) b = -b; // Moving south
+			tre_.ObjMpZ[n] = tre_.ObjMpZ[n]+b;
+			z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
+		}
 		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
 		tre_.ObjAdr[n].position.set(x,y,z);
 	}
@@ -1242,4 +1250,5 @@ export {loadGrdMat,initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,moveTreLin};
 251125: Use gen_ to Store Loader and Scene Values
 260117: Added shadows to plowed fields.
 260124: Added DifTxt changes to add contrast to ground materials
+260125: Reduce areas for trees
 */
