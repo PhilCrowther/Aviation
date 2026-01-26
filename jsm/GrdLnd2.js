@@ -854,8 +854,8 @@ function loadTreLin(grd_,gen_) {
 		// Rotation = 0 or -90
 //		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
 		// Select Object
-//		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
-//		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
+		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
+		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
 		gen_.gltfLd.load(ObjSrc, function (gltf) {
 			tre_.ObjAdr[n] = gltf.scene;
 			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
