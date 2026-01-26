@@ -871,8 +871,8 @@ function moveTreLin(grd_,gen_,air_) {
 //		if (x > a) x = x - 2*a;
 //		if (x < -a) x = x + 2*a;
 		if (Math.abs(x) > a) {
-			b = -5;
-			if (x > a) b = 5;
+			b = 10;
+			if (x > a) b = -10; // Moving west
 			tre_.ObjMpX[n] = tre_.ObjMpX[n]+b;
 			x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
 		}
@@ -880,14 +880,15 @@ function moveTreLin(grd_,gen_,air_) {
 //		if (z > a) z = z - 2*a;
 //		if (z < -a) z = z + 2*a;
 		if (Math.abs(z) > a) {
-			b = -5;
-			if (z > a) b = 5;
+			b = 10;
+			if (z > a) b = -10; // Moving south
 			tre_.ObjMpZ[n] = tre_.ObjMpZ[n]+b;
 			z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
 		}
 		y = -grd_.SPS.y*gen_.AltAdj;	// Objects elevate above ground as we climb to prevent flicker
 		tre_.ObjAdr[n].position.set(x,y,z);
 	}
+	console.log(tre_.ObjAdr[0].position.z);
 }
 
 /*******************************************************************************
