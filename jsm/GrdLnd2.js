@@ -770,7 +770,8 @@ function loadTreLin(grd_,gen_) {
 			tre_.ObjAdr[n] = gltf.scene;
 			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
 			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
-			tre_.ObjAdr[n].position.y = -gen_.AltDif;
+//			tre_.ObjAdr[n].position.y = -gen_.AltDif;
+			tre_.ObjAdr[n].position.y = -100000; // Make invisible
 			gen_.scene.add(tre_.ObjAdr[n]);
 		});
 	}
