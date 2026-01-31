@@ -201,16 +201,42 @@ let rd2_ = {
 	}
 
 //= TREES ======================//==============================================
-let tre_ = {
-		ObjNum: 24,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
-				 "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb"],
+//- TreeLine (EW)
+let tlE_ = {
+		ObjNum: 6,				// Number of TreeLines
+		ObjSub: 4,				// Objects Within Each Treeline
+		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
+		ObjRfX: [-3, 0,-3, 3, 0, 3], // X Address of TreeLine
+		ObjRfZ: [ 3, 3, 0, 0,-3,-3], // Z Address of TreeLine
+		ObjOfX: 50,				// TreeLine Z Offset
+		ObjOfZ: -10,			// TreeLine X Offset
+		// All Objects
 		ObjAdr: [],				// Object Address
 		ObjMpZ: [],				// Map Address Z
 		ObjMpX: [],				// Map Address X
 		ObjRot: [],				// Rotation (0 or -90)
+		ObjOut: 5,				// Number of Grids to Outer Viewing Limit of Object
+		ObjSpX: 175,			// Object X Spacing
+		ObjSpZ: 0,				// Object Z Spacing
 }
-
+//- TreeLine (NS)
+let tlN_ = {
+		ObjNum: 6,				// Number of TreeLines
+		ObjSub: 4,				// Objects Within Each Treeline
+		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb",
+		ObjRfX: [-3, 3, 0, 3,-3, 0], // X Address of TreeLine
+		ObjRfZ: [ 3, 3, 0, 0,-3,-3], // Z Address of TreeLine
+		ObjOfX: 10,			// TreeLine Z Offset
+		ObjOfZ: -50,				// TreeLine X Offset
+		// All Objects
+		ObjAdr: [],				// Object Address
+		ObjMpZ: [],				// Map Address Z
+		ObjMpX: [],				// Map Address X
+		ObjRot: [],				// Rotation (0 or -90)
+		ObjOut: 5,				// Number of Grids to Outer Viewing Limit of Object
+		ObjSpX: 0,				// Object X Spacing
+		ObjSpZ: -175,			// Object Z Spacing
+}
 
 /*******************************************************************************
 *
@@ -837,43 +863,57 @@ function move1Road(grd_,gen_,road) {
 //= LOAD TREELINE ==============//==============================================
 
 function loadTreLin(grd_,gen_) {
-	for (let n = 0; n < tre_.ObjNum; n++) {
-		// Assign Random Map Position
-		tre_.ObjMpX[n] = grd_.Siz*Math.floor(5*(Math.random()-0.5))+10;
-		tre_.ObjMpZ[n] = grd_.Siz*Math.floor(5*(Math.random()-0.5))-10;
-		// Rotation = 0 or -90
-		tre_.ObjRot[n] = (Math.floor(Math.random()+0.5))*-90;
+	loadTreLn1(tlE_,grd_,gen_);
+	loadTreLn1(tlN_,grd_,gen_);
+}
+
+function loadTreLn1(tre_,grd_,gen_) {
+	let s = 0;					// Index to Source
+	for (let n = 0; n < tre_.ObjNum*tre_.ObjSub; n+=tre_.ObjSub) {
+		// Assign Map Position
+		tre_.ObjRfX[s] = grd_.Siz*tre_.ObjRfX[s]+tre_.ObjOfX;
+		tre_.ObjRfZ[s] = grd_.Siz*tre_.ObjRfZ[s]+tre_.ObjOfZ;	
+		for (let i = 0; i < tre_.ObjSub; i++) {
+			tre_.ObjMpX[n+i] = tre_.ObjRfX[s]+i*tre_.ObjSpX;
+			tre_.ObjMpZ[n+i] = tre_.ObjRfZ[s]+i*tre_.ObjSpZ;
+		}
 		// Select Object
-		let ObjSrc = tre_.ObjSrc[0]; // EW (default)
-		if (tre_.ObjRot[n]) ObjSrc = tre_.ObjSrc[1]; // NS
-		gen_.gltfLd.load(ObjSrc, function (gltf) {
-			tre_.ObjAdr[n] = gltf.scene;
-			tre_.ObjAdr[n].position.x = tre_.ObjMpX[n];
-			tre_.ObjAdr[n].position.z = tre_.ObjMpZ[n];
-			tre_.ObjAdr[n].position.y = -100000; // Make invisible
-			gen_.scene.add(tre_.ObjAdr[n]);
-		});
+		for (let i = 0; i < tre_.ObjSub; i++) {
+			gen_.gltfLd.load(tre_.ObjSrc, function (gltf) {
+				tre_.ObjAdr[n+i] = gltf.scene;
+				tre_.ObjAdr[n+i].position.x = tre_.ObjMpX[n+i];
+				tre_.ObjAdr[n+i].position.z = tre_.ObjMpZ[n+i];
+				tre_.ObjAdr[n+i].position.y = -100000; // Make invisible
+				gen_.scene.add(tre_.ObjAdr[n+i]);
+			});
+		}
+		s++;
 	}
 }
 
 //= MOVE TREELINE =================//==============================================
 
 function moveTreLin(grd_,gen_,air_) {
+	moveTreLn1(tlE_,grd_,gen_,air_);
+	moveTreLn1(tlN_,grd_,gen_,air_);
+}
+
+function moveTreLn1(tre_,grd_,gen_,air_) {
 	// Convert Distances into Meters to match landscape program
-	let a = 4*grd_.Siz;
+	let a = tre_.ObjOut*grd_.Siz;
 	let x,y,z,b;
-	for (let n = 0; n < tre_.ObjNum; n++) {
+	for (let n = 0; n < tre_.ObjNum*tre_.ObjSub; n++) {
 		// Set Tree Object Position 
 		x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
 		if (Math.abs(x) > a) {
-			b = 2*a;
+			b = 2*a-grd_.Siz;
 			if (x > a) b = -b; // Moving west
 			tre_.ObjMpX[n] = tre_.ObjMpX[n]+b;
 			x = tre_.ObjMpX[n]-air_.MapPos.x-grd_.Siz/2;
 		}
 		z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
 		if (Math.abs(z) > a) {
-			b = -2*a;
+			b = -2*a+grd_.Siz;
 			if (z > a) b = -b; // Moving south
 			tre_.ObjMpZ[n] = tre_.ObjMpZ[n]+b;
 			z = air_.MapPos.z-tre_.ObjMpZ[n]-grd_.Siz/2;
