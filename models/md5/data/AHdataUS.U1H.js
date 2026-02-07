@@ -23,7 +23,7 @@
 //	Other Unit Values
 	Weight = 9000;						// Aircraft Weight (lbs)
 	FrntAr = 20;						// Frontal Area (ft2)
-	MinAGL = 4.23;						// Minimum Altitude AGL (ft)
+	MinAGL = 5.47;						// Minimum Altitude AGL (ft) [md5]
 //	Other Non-Unit Values
 	CfLMax = 0;							// Maximum Coefficient of Lifr [NA]
 	WingEf = 0;							// Wing Efficiency [NA]
