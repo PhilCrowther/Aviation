@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Jan 2026
+Version dated 12 Feb 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -459,7 +459,7 @@ let mxDorR = 0;					// Main Doors - Right
 let pitprp = 180;				// Main Rotor - Pitch
 let bnkprp = 180;				// Main Rotor - Bank
 let spnprp = 180;				// Main Rotor - Spin
-let spnrtr = 180;				// Tail Rotor - Spin (not used)
+let spnrtr = 180;				// Tail Rotor - Spin
 let doormn = 0;					// Main Doors
 
 //=	SOUNDS =====================//===============================================
@@ -543,8 +543,8 @@ let	A_PitU = 40;				// Pitch up (down arrow)
 let	A_PitD = 38;				// Pitch down (up arrow)
 let	A_BnkL = 37;				// Bank Left (left arrow)
 let	A_BnkR = 39;				// Bank Right (right arrow)
-let	K_PitU = 88;				// Pitch up (w)
-let	K_PitD = 83;				// Pitch down (s)
+let	K_PitD = 87;				// Pitch down (w)
+let	K_PitU = 83;				// Pitch up (s)
 let	K_BnkL = 65;				// Bank Left (a)
 let	K_BnkR = 68;				// Bank Right (d)
 let	K_YawL = 90;				// Yaw Left (z)
@@ -558,7 +558,7 @@ let K_VR45 = 45;				// Right 45 degrees
 let K_VL90 = 34;				// Left 90 degrees
 let K_VR90 = 46;				// Right 90 degrees
 //	Toggle
-let K_Soun = 83;				// Toggle sound (s)
+let K_Soun = 79;				// Toggle sound (o)
 let K_Paws = 80;				// Pause (p)
 let K_Info = 73;				// Info (i)
 
@@ -1395,7 +1395,7 @@ function onInfo1(){
 	On_Info06Node.nodeValue = "Mouse Buttons or Z/X Keys change Yaw";
 	On_Info07Node.nodeValue = "";
 	On_Info08Node.nodeValue = "";
-	On_Info09Node.nodeValue = "S Key toggles sound";
+	On_Info09Node.nodeValue = "O Key toggles sound";
 }
 
 // Info On
@@ -1462,8 +1462,8 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == A_PitD) InpACP = -KeyVal.x;	// Pitch Down
 	if (event.keyCode == A_BnkL) InpACB = -KeyVal.z;	// Bank Left
 	if (event.keyCode == A_BnkR) InpACB = KeyVal.z;		// Bank Right
-	if (event.keyCode == K_PitU) InpACP = KeyVal.x;		// Pitch Up
 	if (event.keyCode == K_PitD) InpACP = -KeyVal.x;	// Pitch Down
+	if (event.keyCode == K_PitU) InpACP = KeyVal.x;		// Pitch Up
 	if (event.keyCode == K_BnkL) InpACB = -KeyVal.z;	// Bank Left
 	if (event.keyCode == K_BnkR) InpACB = KeyVal.z;		// Bank Right
 	if (event.keyCode == K_YawL) InpYaw = -KeyVal.y;	// Yaw Left
@@ -1492,8 +1492,8 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == A_PitD) InpACP = 0;			// Pitch Down
 	if (event.keyCode == A_BnkL) InpACB = 0;			// Bank Left
 	if (event.keyCode == A_BnkR) InpACB = 0;			// Bank Right
-	if (event.keyCode == K_PitU) InpACP = 0;			// Pitch Up
 	if (event.keyCode == K_PitD) InpACP = 0;			// Pitch Down
+	if (event.keyCode == K_PitU) InpACP = 0;			// Pitch Up
 	if (event.keyCode == K_BnkL) InpACB = 0;			// Bank Left
 	if (event.keyCode == K_BnkR) InpACB = 0;			// Bank Right
 	if (event.keyCode == K_YawL) InpYaw = 0;			// Yaw Left
