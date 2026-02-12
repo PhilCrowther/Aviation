@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Feb 2026
+Version dated 11 Feb 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -572,7 +572,7 @@ let	CamPVC = new THREE.Object3D;
 	air_.AirObj.add(CamPVC); 	// Attach CamPVC to AirObj
 //- Camera Inputs (External Camera linked to air_.AirObj; 1 Internal Camera Linked to cam_.PVC)
 let CamNum = 2;
-let CamLLD = [new THREE.Vector3(-10,0,20),
+let CamLLD = [new THREE.Vector3(-10,0,15),
 			  new THREE.Vector3(0,0,0.001)];
 let CamAdj = [180,0];			// 180 = Looking In
 let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
@@ -874,8 +874,11 @@ function loadAirObj() {
 				child.receiveShadow = true;
 			}
 			if (
-				child.name == "int_glass" ||
-				child.name == "int_glass_grn")
+				child.name == "int_glass"		||
+				child.name == "int_glass_grn"	||
+				child.name == "ixt_controls"	||
+				child.name == "ixt_seats1"		||
+				child.name == "ixt_seats2")
 			{
 				child.castShadow = false;
 				child.receiveShadow = false;
