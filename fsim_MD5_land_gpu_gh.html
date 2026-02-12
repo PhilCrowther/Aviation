@@ -131,6 +131,7 @@ let BegSpd = 0;					// Speed (kph)
 let BegRot = new THREE.Euler(0,0,0); // Position (degrees) ### new
 let BegPos = new THREE.Vector3(0,0,0); // Position (meters)
 //- AIRPLANE: Inputs ------------------------------------------------------------
+let PYBmul = new THREE.Vector3(0.1,1,0.1); // Basic airplane values
 let	MosMul = new THREE.Vector3(1,1,1); // Adjustment to PYBmul (default = 1)
 let AltMul = 0.0001;			// Power % Input - Mouse Multiplier
 let AltDif = 0;					// Power % Input - Value
@@ -138,9 +139,8 @@ let AltDif = 0;					// Power % Input - Value
 //- (x = diverted, y = released, z = stored)
 //let PwrMsD = new THREE.Vector3(1-1/30,1/15,0);	// Power
 //let PitMsD = new THREE.Vector3(1-1/30,1/15,0);	// CfL
-let LagBnk = new THREE.Vector3(1-1/30,1/15,0);		// Bank
-//let YawMsD = new THREE.Vector3(1-1/30,1/15,0);	// Yaw
-
+//let BnkMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
+//let YawMsD = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Keys ------------------------------------------------------------------------
 let KeyVal = new THREE.Vector3(0.5,0.4,0.5); // Key Values
 let InpAlt = 0;					// Input Altitude
@@ -419,7 +419,6 @@ let air_ = {
 		MapSPS: new THREE.Vector3(), // MSX, MPY, MSZ (meters)
 		// Variables
 		PwrPct: BegPwr,			// % of Primary Power (0 to 1) (Main and Flight)
-		PYBmul: new THREE.Vector3(0.1,1,0.01), // Airplane Pitch/Yaw/Bank Multiplier
 		// Variables Obtained from Flight
 		GrdZed: 0,				// Ground level (default)
 		GrdFlg: 0,				// Ground Flag (1 = on ground)
@@ -918,27 +917,13 @@ function moveAirObj() {
 	air_.AltDif = AltDif * AltMul + InpAlt;
 	AltDif = 0;					// Reset
 	// Pitch Speed Change
-	air_.RotDif.x = InpMos.y * air_.PYBmul.x;
+	air_.RotDif.x = InpMos.y * PYBmul.x;
 	air_.RotDif.x = PoM360(Mod360(air_.RotDif.x + InpACP));
 	InpMos.y = 0;				// Reset
 	// Bank Speed Change
-//	air_.RotDif.z = InpMos.x * air_.PYBmul.z;
-//	air_.RotDif.z = PoM360(Mod360(air_.RotDif.z + InpACB)); // Inputs are +/-
-//	InpMos.x = 0;				// Reset
-	// Bank .....................................................................
-	let BnkDif = InpMos.x * air_.PYBmul.z;
-//	console.log(BnkDif);
-	let gal = BnkDif * LagBnk.x; // Current input delayed
-	let lag = LagBnk.z * LagBnk.y; // Released from Cumulator
-	LagBnk.z = LagBnk.z + gal - lag; // Change in Cumulator
-	BnkDif = BnkDif - gal + lag;
-	air_.RotDif.z = air_.RotDif.z + BnkDif;	
-	air_.RotDif.z = MaxVal(air_.RotDif.z,air_.BnkMax); // Max values
-	if (air_.RotDif.z == air_.BnkMax && BnkDif < 0) air_.RotDif.z = BnkDif;
-	if (air_.RotDif.z == -air_.BnkMax && BnkDif > 0) air_.RotDif.z = BnkDif;
-	air_.RotDif.z = air_.RotDif.z; // Inputs are +/-
-	air_.AGBank = air_.RotDif.z;
-	InpMos.x = 0;			// Reset	
+	air_.RotDif.z = InpMos.x * PYBmul.z;
+	air_.RotDif.z = PoM360(Mod360(air_.RotDif.z + InpACB)); // Inputs are +/-
+	InpMos.x = 0;				// Reset
 	// Input Yaw
 	air_.RotDif.y = InpYaw;
 	// Compute Rotation and Vectors
@@ -1113,8 +1098,8 @@ function moveFlight() {
 		else if (air_.AirRot.x < -MaxAng) air_.AirRot.x = -MaxAng;
 		// ACBank
 		air_.AirRot.z = Mod360(air_.AirRot.z + air_.RotDif.z);
-//		if (air_.AirRot.z > air_.MaxAng && air_.AirRot.z < 180) air_.AirRot.z = air_.MaxAng;
-//		else if (air_.AirRot.z < (360-air_.MaxAng) && air_.AirRot.z > 180) air_.AirRot.z = (360-air_.MaxAng);
+		if (air_.AirRot.z > air_.MaxAng && air_.AirRot.z < 180) air_.AirRot.z = air_.MaxAng;
+		else if (air_.AirRot.z < (360-air_.MaxAng) && air_.AirRot.z > 180) air_.AirRot.z = (360-air_.MaxAng);
 		// ACYaw
 		air_.AirRot.y = Mod360(air_.AirRot.y + air_.RotDif.y);
 		// Weather-Vane Adjustment
