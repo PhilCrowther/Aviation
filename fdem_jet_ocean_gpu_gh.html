@@ -2,15 +2,15 @@
 <html>
 
 <!--
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Dec 2025
+Version dated 18 Feb 2026
 
 A WebGPU demo of the GrdWtr and Ocean modules.
 -->
 
 <head>
-<title>fdem jet ocean gpu r182</title>
+<title>fdem jet ocean gpu r183</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b1.css">
 </head>
@@ -39,10 +39,10 @@ A WebGPU demo of the GrdWtr and Ocean modules.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
 		}
 	}
 </script>
@@ -53,7 +53,7 @@ import {color,texture,range,positionLocal,uv,mix,normalMap,uniform,
 		rotateUV,				// r168
 		time,					// r170 changed from timerLocal
 } from "three/tsl";
-import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 // Custom Modules
 import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // No detail texture required
@@ -167,6 +167,7 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
+	await renderer.init();		// Allows time for backend to initialize
 //	Depth Buffer
 	renderer.logarithmicDepthBuffer = true;
 //- Inputs

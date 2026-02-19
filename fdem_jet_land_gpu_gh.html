@@ -4,14 +4,14 @@
 <!--
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Jan 2026
+Version dated 18 Feb 2026
 
 This demo program uses portions of the GrdLnd module.
 
 -->
 
 <head>
-<title>fdem jet land gpu r182</title>
+<title>fdem jet land gpu r183</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_map2b1.css">
@@ -41,10 +41,10 @@ This demo program uses portions of the GrdLnd module.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
 		}
 	}
 </script>
@@ -84,9 +84,8 @@ let CamSel = 0;					// Camera Seletion (0 = linked to grid, 1 = linked to Airpla
 let CamLat = -10;				// Camera Direction - Vert (+/- 90)
 let CamLon = 315;				// Camera Direction - Horz (0->360)
 //- Airplane --------------------------------------------------------------------
-let USorSI = "US";				// Starting Units of Measurement (US or SI)
-let BegSpd = 500;				// Aircraft Speed (miles per hour)
-let BegPos = new THREE.Vector3(0,2000,0); // Position (ft)
+let BegSpd = 804.672;			// Aircraft Speed (kph = 500 mph)
+let BegPos = new THREE.Vector3(0,609.6,0); // Position (m = 2000 ft)
 let InpVal = new THREE.Vector3(1,0.1,1); // Rotation Change
 let BnkSpd = 1;					// Bank Speed
 let PitSpd = 1;					// Pitch Speed
@@ -102,11 +101,6 @@ const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
 const Km2Mil = 0.621371;		// Kilometers to Miles
 const Mil2Km = 1.60934;			// Miles to Kilometers
 const MtrMil = 1609.34;			// Meters per Mile
-//- Convert
-if (USorSI = "US") {
-	BegSpd = BegSpd*Mil2Km;
-	BegPos.multiplyScalar(Ft2Mtr);
-}
 
 //- GENERAL VARIABLES ----------//----------------------------------------------
 let gen_ = {
@@ -206,7 +200,7 @@ const renderer = new THREE.WebGPURenderer({antialias: true});	// r168
 	await renderer.init();		// Allows time for backend to initialize
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 //- Clock
-const clock = new THREE.Clock();
+const timer = new THREE.Timer();	// r183
 let oldTim, nowTim, difTim = 0;
 //- Inputs
 	// Key Input
@@ -312,6 +306,44 @@ let grd_ = {
 	}
 // Adjust
 	grd_.SPS = new THREE.Vector3();
+
+//= TREES ======================//==============================================
+//- TreeLine (EW)
+let tlE_ = {
+		ObjNum: 6,				// Number of TreeLines
+		ObjSub: 4,				// Objects Within Each Treeline
+		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treelineEW.glb",
+		ObjRfX: [-3, 0,-3, 3, 0, 3], // X Address of TreeLine
+		ObjRfZ: [ 3, 3, 0, 0,-3,-3], // Z Address of TreeLine
+		ObjOfX: 50,				// TreeLine Z Offset
+		ObjOfZ: -10,			// TreeLine X Offset
+		// All Objects
+		ObjAdr: [],				// Object Address
+		ObjMpZ: [],				// Map Address Z
+		ObjMpX: [],				// Map Address X
+		ObjRot: [],				// Rotation (0 or -90)
+		ObjOut: 5,				// Number of Grids to Outer Viewing Limit of Object
+		ObjSpX: 175,			// Object X Spacing
+		ObjSpZ: 0,				// Object Z Spacing
+}
+//- TreeLine (NS)
+let tlN_ = {
+		ObjNum: 6,				// Number of TreeLines
+		ObjSub: 4,				// Objects Within Each Treeline
+		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/treelineNS.glb",
+		ObjRfX: [-3, 3, 0, 3,-3, 0], // X Address of TreeLine
+		ObjRfZ: [ 3, 3, 0, 0,-3,-3], // Z Address of TreeLine
+		ObjOfX: 10,			// TreeLine Z Offset
+		ObjOfZ: -50,				// TreeLine X Offset
+		// All Objects
+		ObjAdr: [],				// Object Address
+		ObjMpZ: [],				// Map Address Z
+		ObjMpX: [],				// Map Address X
+		ObjRot: [],				// Rotation (0 or -90)
+		ObjOut: 5,				// Number of Grids to Outer Viewing Limit of Object
+		ObjSpX: 0,				// Object X Spacing
+		ObjSpZ: -175,			// Object Z Spacing
+}
 
 //= AIROBJ =====================//============================================
 let air_ = {
@@ -475,7 +507,7 @@ function initAll() {
 function rendAll() {
 	if (gen_.PawsOn == 0 && gen_.LodFlg > 0) {
 		// Update time
-		nowTim = clock.getElapsedTime();
+		nowTim = timer.getElapsed(); // r183
 		difTim = nowTim-oldTim;
 		oldTim = nowTim;
 		// Move Things
