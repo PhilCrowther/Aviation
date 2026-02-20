@@ -4,9 +4,9 @@
 *
 ********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 26 Nov 2025
+Version dated 20 Feb 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -58,7 +58,7 @@ import {
 	Vector3,	
 } from 'three';
 
-import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv} from "three/tsl";
+import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv} from 'three/tsl';
 
 /*******************************************************************************
 *
