@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Jan 2026
+Version dated 18 Feb 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -18,7 +18,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 -->
 
 <head>
-<title>fmod B29 ocean gpu r182</title>
+<title>fmod B29 ocean gpu r183</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_b29.css">
 </head>
@@ -49,10 +49,10 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
 		}
 	}
 </script>
@@ -80,8 +80,8 @@ import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMes
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules -------------------------------------------------------------
 import {Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
-import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js"; // r171
-import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js"; // r173 (uses TimestampQuery)
+import {loadGeoMat,GrdMap} from "https://PhilCrowther.github.io/Aviation/jsm/GrdWtr.js";
+import {Ocean} from "https://PhilCrowther.github.io/Aviation/jsm/Ocean.js";
 
 /********************************************************************************
 *

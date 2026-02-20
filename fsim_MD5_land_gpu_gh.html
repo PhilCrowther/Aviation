@@ -10,13 +10,13 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Feb 2026
+Version dated 19 Feb 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
 
 <head>
-<title>fsim MD5 land gpu r182</title>
+<title>fsim MD5 land gpu r183</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
@@ -65,10 +65,10 @@ A flight simulation of an animated helicopter model over procedural land using W
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
 		}
 	}
 </script>
@@ -86,7 +86,7 @@ A flight simulation of an animated helicopter model over procedural land using W
 import * as THREE from "three";
 import {color,float,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 // Special Modules
 import {loadGrdMat,initGrdMat,GrdMap,
@@ -273,9 +273,6 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 	await renderer.init();		// Allows time for backend to initialize
-//- Clock
-let clock = new THREE.Clock();
-let oldTim, nowTim, difTim = 0;
 //- Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);

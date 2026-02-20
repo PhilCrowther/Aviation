@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Jan 2026
+Version dated 18 Feb 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -18,7 +18,7 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 -->
 
 <head>
-<title>fmod FM2 ocean gpu r182</title>
+<title>fmod FM2 ocean gpu r183</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_fm2.css">
 </head>
@@ -55,10 +55,10 @@ This shows an animated model of an airplane in flight over an animated ocean usi
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
 		}
 	}
 </script>
@@ -82,7 +82,7 @@ import * as THREE from "three";
 import {texture} from 'three/tsl';
 import WebGPU from 'three/addons/capabilities/WebGPU.js';
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules -------------------------------------------------------------
 import {Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
@@ -180,7 +180,8 @@ const sunLight = new THREE.DirectionalLight(SunCol,SunInt);
 	sunLight.shadow.camera.right = 2.5;
 	sunLight.shadow.camera.top = 2.5;
 	sunLight.shadow.camera.bottom = -2.5;
-	sunLight.shadow.bias = -0.0005; // WebGPU
+	sunLight.shadow.bias = -0.0045; // WebGPU OK
+//	sunLight.shadow.normalBias = -0.0045; // NO
 	scene.add(sunLight);
 //- Camera
 let	CamAsp = window.innerWidth/window.innerHeight;

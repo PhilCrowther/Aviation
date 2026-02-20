@@ -9,14 +9,14 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Jan 2026
+Version dated 20 Feb 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
 -->
 
 <head>
-<title>fsim FM2 ocean gpu r182</title>
+<title>fsim FM2 ocean gpu r183</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
@@ -67,10 +67,10 @@ This demo has now been expanded to include a battle scenario which will eventual
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
 		}
 	}
 </script>
@@ -89,6 +89,8 @@ import * as THREE from "three";
 import {color,texture,uniform} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
+import {CSMShadowNode} from "three/addons/csm/CSMShadowNode.js";
+import {CSMHelper} from 'three/addons/csm/CSMHelper.js';
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) ------------------------------------
 import {loadAirExt,loadAirInt,	// Load External Model
@@ -268,6 +270,24 @@ let E3Zero = new THREE.Euler(0,0,0);
 //- Computations
 let SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+//- CSM ------------------------------------------------------------------------
+const params = {
+		orthographic: false,
+		fade: false,
+		shadows: true,
+		maxFar: 1000,
+		mode: 'practical',
+		lightX: 1,
+		lightY: -.5,
+		lightZ: 1,
+		margin: 100,
+		shadowNear: 1,
+		shadowFar: 2000,
+		autoUpdateHelper: true,
+		updateHelper: function () {
+			csmHelper.update();
+		}
+	};
 
 //= STANDARD SETUP =============//==============================================
 // 	Scene
@@ -276,34 +296,41 @@ const scene = new THREE.Scene();
 // 	Light
 const ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 	scene.add(ambLight);
-//- SunLight (External View)
-const sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
-	sunLight.position.copy(SunPos);
-	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = sky_.SunDst*0.75;
-	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
-	sunLight.shadow.mapSize.width = 2048;
-	sunLight.shadow.mapSize.height = 2048;
-	sunLight.shadow.camera.left = -sky_.ShdBLR; // 12
-	sunLight.shadow.camera.right = sky_.ShdBLR+1;
-	sunLight.shadow.camera.top = sky_.ShdBTB; // 4
-	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
-	sunLight.shadow.bias = -0.0001; // r182
-	scene.add(sunLight);
-//- SonLight (Cockpit View Only)
-const sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
-	sonLight.position.copy(SunPos);
-	sonLight.castShadow = true;
-	sonLight.shadow.camera.near = sky_.SunDst*0.9;
-	sonLight.shadow.camera.far = sky_.SunDst+5;  // creates shadow on wing
-	sonLight.shadow.mapSize.width = 4096;
-	sonLight.shadow.mapSize.height = 4096;
-	sonLight.shadow.camera.left = -2.5; // Gets entire wing on deck (but distortion)
-	sonLight.shadow.camera.right = 2.5; // Back of Plane
-	sonLight.shadow.camera.top = 2.5;
-	sonLight.shadow.camera.bottom = -2.5;
-	sonLight.shadow.bias = -0.0005; // r182
-	scene.add(sonLight);
+//- SunLight
+//const sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
+//	sunLight.position.copy(SunPos);
+//	sunLight.castShadow = true;
+//	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+//	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
+//	sunLight.shadow.mapSize.width = 2048;
+//	sunLight.shadow.mapSize.height = 2048;
+//	sunLight.shadow.camera.left = -sky_.ShdBLR; // 12
+//	sunLight.shadow.camera.right = sky_.ShdBLR+1;
+//	sunLight.shadow.camera.top = sky_.ShdBTB; // 4
+//	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
+//	sunLight.shadow.bias = -0.0001; // r182
+//	scene.add(sunLight);
+
+let csmDirectionalLight = new THREE.DirectionalLight(0xffffff, 3.0);
+	csmDirectionalLight.castShadow = true;
+	csmDirectionalLight.shadow.mapSize.width = 2048;
+	csmDirectionalLight.shadow.mapSize.height = 2048;
+	csmDirectionalLight.shadow.camera.near = params.shadowNear;
+	csmDirectionalLight.shadow.camera.far = params.shadowFar;
+	csmDirectionalLight.shadow.camera.top = 1000;
+	csmDirectionalLight.shadow.camera.bottom = -1000;
+	csmDirectionalLight.shadow.camera.left = -1000;
+	csmDirectionalLight.shadow.camera.right = 1000;
+	csmDirectionalLight.shadow.bias = - 0.001;
+let csm = new CSMShadowNode(csmDirectionalLight,{cascades: 4, maxFar: params.maxFar, mode: params.mode});
+	csmDirectionalLight.position.set(params.lightX, params.lightY, params.lightZ).normalize().multiplyScalar(-200);
+	csmDirectionalLight.shadow.shadowNode = csm;
+	scene.add( csmDirectionalLight );
+//
+let csmHelper = new CSMHelper( csm );
+	csmHelper.visible = false;
+	scene.add( csmHelper );
+
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 const camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
@@ -331,8 +358,9 @@ const renderer = new THREE.WebGPURenderer({antialias: true});
 //	renderer.toneMapping = THREE.NeutralToneMapping;	// contrast - dark
 	renderer.toneMappingExposure = 1.0;				// Higher = brighter (default = 1)
 	await renderer.init();		// Allows time for backend to initialize
-// 	Clock
-let	clock = new THREE.Clock();
+// 	Timer
+	let timer = new THREE.Timer();
+//	timer.connect( document ); // use Page Visibility API
 // 	Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);
@@ -706,11 +734,12 @@ function rendAll() {			// r173 added async
 	}
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
 		// Time (fixed for now)
-		tim_.DifTim = clock.getDelta();
+		tim_.DifTim = timer.getDelta();
 		tim_.NowTim = tim_.NowTim + tim_.DifTim;
 		tim_.DLTime = 1/60;			// Seconds per frame
 		tim_.DLTim2 = tim_.DLTime**2;
 		tim_.GrvDLT = GrvMPS*tim_.DLTim2;
+		timer.update();
 		// Black Out/Red Out
 		if (air_.GFmult*10>7.5 || air_.GFmult*10<-5) {
 			f2b_.End = 0.99;
@@ -726,11 +755,11 @@ function rendAll() {			// r173 added async
 		let GrdFlg = air_.GrdFlg;
 		moveAirObj();			// Move aircaft
 		// If Take-Off or Landing, Adjust External Shadows
-		if (!cam_.CamSel) {		// 0 = External View
-			if (GrdFlg && !air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // If Take-Off, Out to 1500 meters
-			if (!GrdFlg && air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // If Landing, Out to Deck Edge
-			sunLight.shadow.camera.updateProjectionMatrix();
-		}
+//		if (!cam_.CamSel) {		// 0 = External View
+//			if (GrdFlg && !air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // If Take-Off, Out to 1500 meters
+//			if (!GrdFlg && air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // If Landing, Out to Deck Edge
+//			sunLight.shadow.camera.updateProjectionMatrix();
+//		}
 		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
@@ -1543,14 +1572,6 @@ function initCamFM2() {
 	camera.rotation.y = cam_.CamAdj*DegRad;
 	//- FM2 Adjustments --------------------------------------------------------
 	if (!cam_.CamSel) {			// 0 = External View
-		// Shadow1
-		sunLight.shadow.camera.near = sky_.SunDst*0.75;
-		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
-		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
-		sunLight.shadow.camera.updateProjectionMatrix();
-		// Shadow2
-		sonLight.visible = false; // Turn Off Cockpit Lighting
-		sonLight.castShadow = false; // and Shadows
 		// Airplane Models
 		mxr_.Adr.visible = true;
 		vxr_.Adr.visible = false;
@@ -1572,14 +1593,6 @@ function initCamFM2() {
 		if (mxr_.THk) mxr_.THk.setTime(anm_.thkpos/anm_.anmfps);
 	}	
 	if (cam_.CamSel) {			// 1 = Internal View
-		// Shadow1
-		sunLight.shadow.camera.near = sky_.SunDst+1; // Avoid Double Shadows
-		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
-		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
-		sunLight.shadow.camera.updateProjectionMatrix();
-		// Shadow2
-		sonLight.visible = true; // Turn on Cockpit Lighting
-		sonLight.castShadow = true; // and Shadows
 		// Airplane Models
 		mxr_.Adr.visible = false;
 		vxr_.Adr.visible = true;
