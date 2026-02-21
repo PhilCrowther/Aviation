@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Feb 2026
+Version dated 21 Feb 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -439,12 +439,15 @@ let air_ = {
 //-	File Path
 let ACPath = "https://PhilCrowther.github.io/Aviation/models/md5/";	// Used to load models and sounds
 //-	Animation Mixers - External Model
-let ACFile = "md5.glb"; // Name of aircraft model file (rotated blender file)
+let ACFile = "md5_bx.glb"; // Name of aircraft model file (rotated blender file)
 //- Aircraft Animations
 let anmfps = 24;				// Blender FPS
-let aoarng = 20;				// AoA range (model)
+let aoarng = 5;					// AoA range (model)
 //	Animation Mixers - External Model
-let mxRtrM = 0;					// Main Rotor - Blades
+let mxRtrB = 0;					// Main Rotor - Blades
+let mxRtrP = 0;					// Main Rotor - Pitch
+let mxRtrK = 0;					// Main Rotor - Bank
+let mxRtrV = 0;					// Main Rotor - Vertical
 let mxRtrT = 0;					// Tail Rotor
 //- All range from 0 to 360 with center at 180
 let pitprp = 180;				// Main Rotor - Pitch
@@ -886,12 +889,30 @@ function loadAirObj() {
 		AirExt.rotation.order = "YXZ";
 //		AirExt.scale.setScalar(Ft2Mtr);
 		// Animations ----------------------------------------------------------
-		// Main Rotor - Blades
-		let clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_mainAction");
-		mxRtrM = new THREE.AnimationMixer(AirExt);
-		let actun = mxRtrM.clipAction(clip);
+		// Main Rotor - Bank
+		let clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_bankAction");
+		mxRtrK = new THREE.AnimationMixer(AirExt);
+		let actun = mxRtrK.clipAction(clip);
 		actun.play();
-		if (mxRtrM) mxRtrM.setTime(spnprp/anmfps);
+		if (mxRtrK) mxRtrK.setTime(bnkprp/anmfps);
+		// Main Rotor - Pitch
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_pitchAction");
+		mxRtrP = new THREE.AnimationMixer(AirExt);
+		actun = mxRtrP.clipAction(clip);
+		actun.play();
+		if (mxRtrP) mxRtrP.setTime(pitprp/anmfps);
+		// Main Rotor - Blades
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_bladesAction");
+		mxRtrB = new THREE.AnimationMixer(AirExt);
+		actun = mxRtrB.clipAction(clip);
+		actun.play();
+		if (mxRtrB) mxRtrB.setTime(spnprp/anmfps);
+		// Main Rotor - Vertical
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_hubAction");
+		mxRtrV = new THREE.AnimationMixer(AirExt);
+		actun = mxRtrV.clipAction(clip);
+		actun.play();
+		if (mxRtrV) mxRtrV.setTime(spnprp/anmfps);	
 		// Tail Rotor
 		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_tailAction");
 		mxRtrT = new THREE.AnimationMixer(AirExt);
@@ -951,6 +972,16 @@ function moveAirObj() {
 	let prpspd = 33;
 	spnprp = spnprp - prpspd;
 	if (spnprp < 0) spnprp = 359; // A complete circle
+	// Main Rotor - Pitch
+	pitprp = 180 + air_.AirRot.x * 179 / 5;
+	if (pitprp > 359) pitprp = 359;
+	if (pitprp < 1) pitprp = 1; 
+	if (mxRtrP) mxRtrP.setTime(pitprp/anmfps);
+	// Main Rotor - Bank
+	bnkprp = 180 + PoM360(air_.AirRot.z) * 179 / 5;
+	if (bnkprp > 359) bnkprp = 359;
+	if (bnkprp < 1) bnkprp = 1; 
+	if (mxRtrK) mxRtrK.setTime(bnkprp/anmfps);
 	//- Aircraft ---------------------------------------------------------------
 	// Rotate Aircraft (order:YXZ)
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad; // Heading
@@ -961,7 +992,8 @@ function moveAirObj() {
 	let BnkDfR = PoM360(air_.AirRot.z);
 	air_.AirObj.rotation.z = Mod360(360 - BnkDfR) * DegRad; // Bank
 	// Main Rotor - Speed
-	if (mxRtrM) mxRtrM.setTime(spnprp/anmfps);
+	if (mxRtrB) mxRtrB.setTime(spnprp/anmfps);
+	if (mxRtrV) mxRtrV.setTime(spnprp/anmfps);
 	// Tail Rotor
 	if (mxRtrT) mxRtrT.setTime(spnprp/anmfps);
 	// View Keys ---------------------------------------------------------------
