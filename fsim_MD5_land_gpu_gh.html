@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Feb 2026
+Version dated 21 Feb 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -197,9 +197,10 @@ let gen_ = {
 		AltAdj:	0.99,			// Raises objects above map as altitude increases
 		AltDif:	0,
 		// Misc
+		MaxAni: 0,				// MaxAnisotropy
+		// Canvas
 		contxt: 0,
 		canvas: 0,
-		MaxAni: 0,
 	}
 
 let tim_ = {
@@ -262,23 +263,28 @@ let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
-let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+let renderer = new THREE.WebGPURenderer({antialias: true});	// r168
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;	
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	renderer.shadowMap.type = THREE.BasicShadowMap;
+	renderer.logarithmicDepthBuffer = true;
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 	await renderer.init();		// Allows time for backend to initialize
+//- Timer
+let	timer = new THREE.Timer();	// r183
+let oldTim, nowTim, difTim = 0;
 //- Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);
 	document.addEventListener("mousewheel", onDocumentMouseWheel, {capture: false, passive: false});
 	document.addEventListener("keydown", onDocumentKeyDown, false);
 	document.addEventListener("keyup", onDocumentKeyUp, false);
+	// Window Resize
 	window.addEventListener("resize", onWindowResize, false);
 //- Loading Manager
 	// Create a loading manager to set RESOURCES_LOADED when appropriate.
@@ -295,7 +301,7 @@ let imagLoader = new THREE.ImageLoader(loadingManager);
 let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
 let gltfLoader = new GLTFLoader(loadingManager);
 let audoLoader = new THREE.AudioLoader();
-// Create Audio Listener
+//- Create Audio Listener
 let	listener = new THREE.AudioListener();
 	camera.add(listener);
 //- Wait Screen
@@ -316,7 +322,8 @@ let boxrot = 0;
 	gen_.audoLd = audoLoader;
 	gen_.listnr = listener;
 
-//= GRIDS ======================//==============================================
+//= GROUND TEXTURES ============//==============================================
+//- Canvas
 let ImgSiz = 1024;
 	gen_.canvas = document.createElement("canvas");
 	gen_.canvas.width = ImgSiz;
@@ -432,12 +439,15 @@ let air_ = {
 //-	File Path
 let ACPath = "https://PhilCrowther.github.io/Aviation/models/md5/";	// Used to load models and sounds
 //-	Animation Mixers - External Model
-let ACFile = "md5.glb"; // Name of aircraft model file (rotated blender file)
+let ACFile = "md5_bx.glb"; // Name of aircraft model file (rotated blender file)
 //- Aircraft Animations
 let anmfps = 24;				// Blender FPS
-let aoarng = 20;				// AoA range (model)
+let aoarng = 5;					// AoA range (model)
 //	Animation Mixers - External Model
-let mxRtrM = 0;					// Main Rotor - Blades
+let mxRtrB = 0;					// Main Rotor - Blades
+let mxRtrP = 0;					// Main Rotor - Pitch
+let mxRtrK = 0;					// Main Rotor - Bank
+let mxRtrV = 0;					// Main Rotor - Vertical
 let mxRtrT = 0;					// Tail Rotor
 //- All range from 0 to 360 with center at 180
 let pitprp = 180;				// Main Rotor - Pitch
@@ -657,8 +667,8 @@ let On_Info09Element = document.getElementById("On_Info09");
 let On_Info09Node = document.createTextNode("");
 	On_Info09Element.appendChild(On_Info09Node);
 
-let Air_Pwr, AC_Hite, AC_Ptch, AC_SpdZ, AC_Bank, AC_SpdX, AC_Head, AC_DFly;
-let On_Paws, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, On_Info07, On_Info08;
+let Air_Pwr,AC_Hite,AC_Ptch,AC_SpdZ,AC_Bank,AC_SpdX,AC_Head,AC_DFly,On_Paws, 
+	On_Info01,On_Info02,On_Info03,On_Info04,On_Info05,On_Info06,On_Info07,On_Info08,On_Info09;
 
 /*******************************************************************************
 *
@@ -879,12 +889,30 @@ function loadAirObj() {
 		AirExt.rotation.order = "YXZ";
 //		AirExt.scale.setScalar(Ft2Mtr);
 		// Animations ----------------------------------------------------------
-		// Main Rotor - Blades
-		let clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_mainAction");
-		mxRtrM = new THREE.AnimationMixer(AirExt);
-		let actun = mxRtrM.clipAction(clip);
+		// Main Rotor - Bank
+		let clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_bankAction");
+		mxRtrK = new THREE.AnimationMixer(AirExt);
+		let actun = mxRtrK.clipAction(clip);
 		actun.play();
-		if (mxRtrM) mxRtrM.setTime(spnprp/anmfps);
+		if (mxRtrK) mxRtrK.setTime(bnkprp/anmfps);
+		// Main Rotor - Pitch
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_pitchAction");
+		mxRtrP = new THREE.AnimationMixer(AirExt);
+		actun = mxRtrP.clipAction(clip);
+		actun.play();
+		if (mxRtrP) mxRtrP.setTime(pitprp/anmfps);
+		// Main Rotor - Blades
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_bladesAction");
+		mxRtrB = new THREE.AnimationMixer(AirExt);
+		actun = mxRtrB.clipAction(clip);
+		actun.play();
+		if (mxRtrB) mxRtrB.setTime(spnprp/anmfps);
+		// Main Rotor - Vertical
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_hubAction");
+		mxRtrV = new THREE.AnimationMixer(AirExt);
+		actun = mxRtrV.clipAction(clip);
+		actun.play();
+		if (mxRtrV) mxRtrV.setTime(spnprp/anmfps);	
 		// Tail Rotor
 		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_tailAction");
 		mxRtrT = new THREE.AnimationMixer(AirExt);
@@ -944,6 +972,16 @@ function moveAirObj() {
 	let prpspd = 33;
 	spnprp = spnprp - prpspd;
 	if (spnprp < 0) spnprp = 359; // A complete circle
+	// Main Rotor - Pitch
+	pitprp = 180 + air_.AirRot.x * 179 / 5;
+	if (pitprp > 359) pitprp = 359;
+	if (pitprp < 1) pitprp = 1; 
+	if (mxRtrP) mxRtrP.setTime(pitprp/anmfps);
+	// Main Rotor - Bank
+	bnkprp = 180 + PoM360(air_.AirRot.z) * 179 / 5;
+	if (bnkprp > 359) bnkprp = 359;
+	if (bnkprp < 1) bnkprp = 1; 
+	if (mxRtrK) mxRtrK.setTime(bnkprp/anmfps);
 	//- Aircraft ---------------------------------------------------------------
 	// Rotate Aircraft (order:YXZ)
 	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad; // Heading
@@ -954,7 +992,8 @@ function moveAirObj() {
 	let BnkDfR = PoM360(air_.AirRot.z);
 	air_.AirObj.rotation.z = Mod360(360 - BnkDfR) * DegRad; // Bank
 	// Main Rotor - Speed
-	if (mxRtrM) mxRtrM.setTime(spnprp/anmfps);
+	if (mxRtrB) mxRtrB.setTime(spnprp/anmfps);
+	if (mxRtrV) mxRtrV.setTime(spnprp/anmfps);
 	// Tail Rotor
 	if (mxRtrT) mxRtrT.setTime(spnprp/anmfps);
 	// View Keys ---------------------------------------------------------------
