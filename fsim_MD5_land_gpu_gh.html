@@ -65,10 +65,10 @@ A flight simulation of an animated helicopter model over procedural land using W
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.183.1/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.1/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.1/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.1/examples/jsm/"
 		}
 	}
 </script>
@@ -434,8 +434,9 @@ let air_ = {
 		DrgCdx: 43.525,			// Coefficient of Drag (x-direction)
 		MdlAlt: 1.65,			// Model Center Height above Ground (meters)
 		// Rotor
-		RtrOld: new THREE.Vector3(), // Old Rotor PitchBank
+		RtrAng: new THREE.Vector3(), // Rotor Pitch/Bank
 		RtrDif: new THREE.Vector3(), // Change in Rotor Pitch/Bank
+		RtrOld: new THREE.Vector3(), // Old Rotor PitchBank
 	}
 	
 //- Load Models and Animations -------------------------------------------------
@@ -939,10 +940,10 @@ function moveAirObj() {
 	// Pitch ...................................................................
 	let PitDif = InpMos.y * air_.PYBmul.x + InpACP;	
 	// Add Delay
-	let gal = PitDif * PitMsD.x; // Current input delayed
-	let lag = PitMsD.z * PitMsD.y; // Released from Cumulator
-	PitMsD.z = PitMsD.z + gal - lag; // Change in Cumulator	
-	PitDif = PitDif - gal + lag;
+//	let gal = PitDif * PitMsD.x; // Current input delayed
+//	let lag = PitMsD.z * PitMsD.y; // Released from Cumulator
+//	PitMsD.z = PitMsD.z + gal - lag; // Change in Cumulator	
+//	PitDif = PitDif - gal + lag;
 	air_.RotDif.x = air_.RotDif.x + PitDif;
 	// Set Max
 	air_.RotDif.x = MaxVal(air_.RotDif.x,air_.RotMax.x); // Max Bank Change values
@@ -954,10 +955,10 @@ function moveAirObj() {
 	// Bank ....................................................................
 	let BnkDif = InpMos.x * air_.PYBmul.z + InpACB;
 	// Add Delay to Mouse Input
-	gal = BnkDif * BnkMsD.x; // Current input delayed
-	lag = BnkMsD.z * BnkMsD.y; // Released from Cumulator
-	BnkMsD.z = BnkMsD.z + gal - lag; // Change in Cumulator
-	BnkDif = BnkDif - gal + lag;
+//	gal = BnkDif * BnkMsD.x; // Current input delayed
+//	lag = BnkMsD.z * BnkMsD.y; // Released from Cumulator
+//	BnkMsD.z = BnkMsD.z + gal - lag; // Change in Cumulator
+//	BnkDif = BnkDif - gal + lag;
 	air_.RotDif.z = air_.RotDif.z + BnkDif;
 	// Set Max
 	air_.RotDif.z = MaxVal(air_.RotDif.z,air_.RotMax.z); // Max Bank Change values
@@ -972,18 +973,23 @@ function moveAirObj() {
 	moveFlight();
 	//- Compute Animations -----------------------------------------------------
 	// Rotors - Speed
-	let prpspd = 33;
-//	spnprp = spnprp - prpspd;
-//	if (spnprp < 0) spnprp = 359; // A complete circle
-	spnprp = Mod360(spnprp - prpspd);
+	spnprp = Mod360(spnprp - 33);
 	// Main Rotor Blades - Pitch
 	pitprp = 180 + air_.AirRot.x * 179 / 5;
-	if (pitprp > 359) pitprp = 359;
-	if (pitprp < 1) pitprp = 1; 
+	if (pitprp > 359) pitprp = 359; // Limit Max
+	if (pitprp < 1) pitprp = 1; // Limit Min
+	air_.RtrAng.x = 5*(pitprp-180)/180;
+	air_.RtrDif.x = air_.RtrAng.x - air_.RtrOld.x;
+	air_.RtrOld.x = air_.RtrAng.x;
+//	air_.RotDif.x = air_.RotDif.x - air_.RtrDif.x;
 	// Main Rotor Blades - Bank
 	bnkprp = 180 + PoM360(air_.AirRot.z) * 179 / 5;
-	if (bnkprp > 359) bnkprp = 359;
-	if (bnkprp < 1) bnkprp = 1; 
+	if (bnkprp > 359) bnkprp = 359; // Limit Max
+	if (bnkprp < 1) bnkprp = 1; // Limit Min
+	air_.RtrAng.z = 5*(bnkprp-180)/180;
+	air_.RtrDif.z = air_.RtrAng.z - air_.RtrOld.z;
+	air_.RtrOld.z = air_.RtrAng.z;
+//	air_.RotDif.z = air_.RotDif.z - air_.RtrDif.z;
 	//- Perform Animations ------------------------------------------------------
 	// Rotors - Speed
 	if (mxRtrB) mxRtrB.setTime(spnprp/anmfps); // Main Rotor Blades
@@ -1090,7 +1096,9 @@ function moveFlight() {
 		let ThrFrc = air_.Weight*air_.ThrMlt*air_.PwrPct;
 		// 3a. Forward Speed (mpf) .............................................
 		// Thrust Force (F/s)
-		let ACPRad = -air_.AirRot.x * DegRad;
+//		let ACPRad = -air_.AirRot.x * DegRad;
+		let ACPRad = (-air_.AirRot.x - air_.RtrAng.x) * DegRad;
+		console.log(air_.AirRot.x,air_.RtrAng.x);
 		let PThrZF = ThrFrc * Math.sin(ACPRad); // Propeller Acceleration - Forward
 		// Drag
 		let DynPrZ = 0.5 * air_.AirDSL * (air_.AirSpd.z ** 2); // Dynamic Pressure (Absolute value)
@@ -1103,7 +1111,9 @@ function moveFlight() {
 		PSpdZS = PSpdZS + PnetZA; // new Speed (mpf)
 		// 3b. Lateral Speed (mpf) .............................................
 		// Thrust Force (F/s)
-		let ACBRad = air_.AirRot.z * DegRad;
+//		let ACBRad = air_.AirRot.z * DegRad;
+		let ACBRad = (air_.AirRot.z + air_.RtrAng.z) * DegRad;
+//		console.log(air_.AirRot.z,air_.RtrAng.z);
 		let PThrXF = ThrFrc * Math.cos(ACPRad) * Math.sin(ACBRad); // Propeller Acceleration - Lateral
 		// Drag
 		let DynPrX = 0.5 * air_.AirDSL * (air_.AirSpd.x ** 2); // Dynamic Pressure
