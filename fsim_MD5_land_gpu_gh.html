@@ -433,6 +433,9 @@ let air_ = {
 		DrgCdz: 1.94,			// Coefficient of Drag (z-direction)
 		DrgCdx: 43.525,			// Coefficient of Drag (x-direction)
 		MdlAlt: 1.65,			// Model Center Height above Ground (meters)
+		// Rotor
+		RtrOld: new THREE.Vector3(), // Old Rotor PitchBank
+		RtrDif: new THREE.Vector3(), // Change in Rotor Pitch/Bank
 	}
 	
 //- Load Models and Animations -------------------------------------------------
@@ -967,35 +970,29 @@ function moveAirObj() {
 	air_.RotDif.y = InpYaw;
 	// Compute Rotation and Vectors
 	moveFlight();
-	//- Animations -------------------------------------------------------------
+	//- Compute Animations -----------------------------------------------------
 	// Rotors - Speed
 	let prpspd = 33;
-	spnprp = spnprp - prpspd;
-	if (spnprp < 0) spnprp = 359; // A complete circle
-	// Main Rotor - Pitch
+//	spnprp = spnprp - prpspd;
+//	if (spnprp < 0) spnprp = 359; // A complete circle
+	spnprp = Mod360(spnprp - prpspd);
+	// Main Rotor Blades - Pitch
 	pitprp = 180 + air_.AirRot.x * 179 / 5;
 	if (pitprp > 359) pitprp = 359;
 	if (pitprp < 1) pitprp = 1; 
-	if (mxRtrP) mxRtrP.setTime(pitprp/anmfps);
-	// Main Rotor - Bank
+	// Main Rotor Blades - Bank
 	bnkprp = 180 + PoM360(air_.AirRot.z) * 179 / 5;
 	if (bnkprp > 359) bnkprp = 359;
 	if (bnkprp < 1) bnkprp = 1; 
+	//- Perform Animations ------------------------------------------------------
+	// Rotors - Speed
+	if (mxRtrB) mxRtrB.setTime(spnprp/anmfps); // Main Rotor Blades
+	if (mxRtrV) mxRtrV.setTime(spnprp/anmfps); // Main Rotor Hub
+	if (mxRtrT) mxRtrT.setTime(spnprp/anmfps); // Tail Rotor
+	// Main Rotor Blades - Pitch
+	if (mxRtrP) mxRtrP.setTime(pitprp/anmfps);
+	// Main Rotor Blades - Bank
 	if (mxRtrK) mxRtrK.setTime(bnkprp/anmfps);
-	//- Aircraft ---------------------------------------------------------------
-	// Rotate Aircraft (order:YXZ)
-	air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad; // Heading
-	// Pitch - exclude first 11 degrees
-	let PitDfR = air_.AirRot.x;
-	air_.AirObj.rotation.x = Mod360(PitDfR) * DegRad; // Pitch
-	// Bank
-	let BnkDfR = PoM360(air_.AirRot.z);
-	air_.AirObj.rotation.z = Mod360(360 - BnkDfR) * DegRad; // Bank
-	// Main Rotor - Speed
-	if (mxRtrB) mxRtrB.setTime(spnprp/anmfps);
-	if (mxRtrV) mxRtrV.setTime(spnprp/anmfps);
-	// Tail Rotor
-	if (mxRtrT) mxRtrT.setTime(spnprp/anmfps);
 	// View Keys ---------------------------------------------------------------
 	if (cam_.pan < 1) {			// Only If Not Panning		
 		// If No Keys Pressed, Set Default View
@@ -1169,8 +1166,8 @@ function moveFlight() {
 			YawAdj = YawAdj * 10;
 			air_.AirRot.y = air_.AirRot.y + YawAdj;
 		}
-		air_.RotDif.y = air_.RotDif.y + YawAdj; // Why not work?
-
+		air_.RotDif.y = air_.RotDif.y + YawAdj;
+		air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad; // Heading
 		// 3. MAPSPD AND MAPPOS ------------------------------------------------
 		// 3a. Compute MSpd (mpf)
 		air_.MapSpd.z = PSpdZS * Math.cos(ACHRad) - PSpdXS * Math.sin(ACHRad);
