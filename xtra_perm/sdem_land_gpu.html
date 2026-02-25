@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Feb 2026
+Version dated 24 Feb 2026
 
 This programs shows procedurally generated farmland plus medium quality trees.
 -->
 
 <head>
-<title>sdem land gpu r183</title>
+<title>sdem land gpu r183.1</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="styles/body2z1.css">
@@ -32,10 +32,10 @@ This programs shows procedurally generated farmland plus medium quality trees.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.183.1/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.1/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.1/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.1/examples/jsm/"
 		}
 	}
 </script>
@@ -45,6 +45,7 @@ import * as THREE from "three";
 import {color,texture,uniform,positionLocal,normalMap} from 'three/tsl';
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -261,6 +262,7 @@ function loadAll() {
 //= 1 INIT ALL =================//===============================================
 
 function initAll() {
+	initSkyBox();
 	initCover();
 	gen_.LodFlg = 1;
 }
@@ -294,6 +296,32 @@ function loadSkyBox() {
 	sky_.envMap.format = THREE.RGBAFormat;
 	sky_.envMap.colorSpace = THREE.SRGBColorSpace; // r152
 	scene.background = sky_.envMap;
+	// LensFlare
+	if (gen_.LnFFlg) {				// LensFlare	
+		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
+		sky_.LF1Txt = txtrLoader.load(sky_.LF1Src);
+	}
+}
+
+//= INIT SKY ===================//===============================================
+	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
+	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
+	// Fog (doesn't work with Normal Material)
+
+function initSkyBox() {
+	scene.fog = new THREE.Fog(sky_.FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
+	// Lensflare
+	if (gen_.LnFFlg) {			// SunFlare		
+		let	spotLight = new THREE.PointLight(0xffffff);
+		scene.add(spotLight);
+		spotLight.position.copy(SunPos).normalize;
+		spotLight.position.multiplyScalar(1000);	
+		let LF = new LensflareMesh();
+			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
+		spotLight.add(LF);
+	}
 }
 
 /********************************************************************************
