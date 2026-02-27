@@ -980,7 +980,7 @@ let cam_ = {
 		MshObj: 0,
 		MshDeg: 0,
 		//- Vertical Lag Adjustment
-		LegFlg: 1,				// 1 = Enable Lag
+		LagFlg: 1,				// 1 = Enable Lag
 		CmAdjX: 0,				// Airborne Pitch Adjustment
 		CmMulX: 35,				// Pitch Adjustment Multiplier
 		CmLagX: 0,				// Transition Offset
