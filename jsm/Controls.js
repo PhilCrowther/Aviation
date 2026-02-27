@@ -4,9 +4,9 @@
 *
 ********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 26 Nov 2025
+Version dated 27 Feb 2026
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -21,6 +21,7 @@ See http://philcrowther.com/Aviation for more details.
 
 import {
 	EventDispatcher,
+	Vector3,
 } from 'three';
 
 /*******************************************************************************
@@ -90,6 +91,34 @@ class PointerLockControls extends EventDispatcher {
 *
 *******************************************************************************/
 
+//= INIT CAMERA VIEW ===========//==============================================
+function initCamera(cam_,air_,key_,gen_,mxr_,vxr_) {
+	//- Select Model -----------------------------------------------------------
+	if (!cam_.CamSel) {			// 0 = External View
+		// Airplane Models
+		mxr_.Adr.visible = true;
+		vxr_.Adr.visible = false;
+	}	
+	if (cam_.CamSel) {			// 1 = Internal View
+		// Airplane Models
+		mxr_.Adr.visible = false;
+		vxr_.Adr.visible = true;	
+	}
+	//- Load New Values --------------------------------------------------------
+	cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]); // cam_.MshRot Lat, Lon, Dst
+	cam_.CamMMD = new Vector3().copy(cam_.SrcMMD[cam_.CamSel]); // In/Out - min,max,spd
+	cam_.CamMMR = new Vector3().copy(cam_.SrcMMR[cam_.CamSel]); // Rotate - min/max Lat/Lon,rspd
+	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
+	cam_.CamAdj = cam_.SrcAdj[cam_.CamSel];	// Load Adjustment
+	cam_.CamFlg = cam_.SrcFlg[cam_.CamSel];	// 1 = Internal
+	cam_.CamLnk = cam_.SrcLnk[cam_.CamSel];	// 1 = Linked to Airplane
+	//- Final Adjustments ------------------------------------------------------
+	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators to new CamPar (AirObj or CamPVC)
+	gen_.camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
+	moveCamera(cam_,air_,key_,gen_);
+}
+
+
 //= MOVE CAMERA VIEW ===========//==============================================
 function moveCamera(cam_,air_,key_,gen_) {
 	gen_.camera.rotation.x = 0;		// Default
@@ -122,7 +151,8 @@ function moveCamera(cam_,air_,key_,gen_) {
 	// View Keys (NumLock)
 	else {						// If Not Orbiting
 		// Default
-		cam_.CamLLD.x = cam_.CamLLD.y = 0;
+//		cam_.CamLLD.x = cam_.CamLLD.y = 0; // 260227
+		cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
 		// Internal View
 		if (cam_.CamFlg) {
 			cam_.CamLLD.y = cam_.VewRot;
@@ -132,7 +162,8 @@ function moveCamera(cam_,air_,key_,gen_) {
 		}
 		// Exterior View
 		else {
-			cam_.CamLLD.x = -15;
+//			cam_.CamLLD.x = -15;
+			cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x; // 260227
 			if (key_.U45flg) cam_.CamLLD.x = 315;
 			if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
 			if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
@@ -152,26 +183,30 @@ function moveCamera(cam_,air_,key_,gen_) {
 	}
 	// In External View, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
-		if (!cam_.OrbFlg && air_.GrdFlg) { // Air to Ground
-			if (!cam_.CmGrdF) {		// if just landed
-				cam_.CmLagX = cam_.CmAdjX; // All landings are smooth
-//				if (cam_.CmLagX > 0.5) cam_.CmLagX = 0.5; // Make extreme landings more jarring
-				cam_.CmGrdF = 1;
+		// Vertical Camera Lag
+		if (!cam_.LagFlg) {
+			if (!cam_.OrbFlg && air_.GrdFlg) { // Air to Ground
+				if (!cam_.CmGrdF) {		// if just landed
+					cam_.CmLagX = cam_.CmAdjX; // All landings are smooth
+//					if (cam_.CmLagX > 0.5) cam_.CmLagX = 0.5; // Make extreme landings more jarring
+					cam_.CmGrdF = 1;
+				}
+				cam_.CmAdjX = cam_.CmLagX;	// From Landing Value to 0
+			}	
+			if (!cam_.OrbFlg && !air_.GrdFlg) { // Ground to Air
+				if (cam_.CmGrdF) {		// if just took off
+					cam_.CmLagX = cam_.CmMulX*air_.RotDif.x;
+					cam_.CmGrdF = 0;
+				}
+				cam_.CmAdjX = (cam_.CmMulX*air_.RotDif.x)-cam_.CmLagX; // From 0 to Take-Off Value
 			}
-			cam_.CmAdjX = cam_.CmLagX;	// From Landing Value to 0
-		}	
-		if (!cam_.OrbFlg && !air_.GrdFlg) { // Ground to Air
-			if (cam_.CmGrdF) {		// if just took off
-				cam_.CmLagX = cam_.CmMulX*air_.RotDif.x;
-				cam_.CmGrdF = 0;
+			if (cam_.CmLagX) {			// Reduce Lag
+				cam_.CmLagX = 0.99*cam_.CmLagX; // Reduction in Adj/AdjOff
+				if (Math.abs(cam_.CmLagX) < 0.1) cam_.CmLagX = 0;
 			}
-			cam_.CmAdjX = (cam_.CmMulX*air_.RotDif.x)-cam_.CmLagX; // From 0 to Take-Off Value
-		}
-		if (cam_.CmLagX) {			// Reduce Lag
-			cam_.CmLagX = 0.99*cam_.CmLagX; // Reduction in Adj/AdjOff
-			if (Math.abs(cam_.CmLagX) < 0.1) cam_.CmLagX = 0;
 		}
 		gen_.camera.rotation.x = cam_.CmAdjX*DegRad; // + = up/airplane down
+		// External Values
 		cam_.MshRot.rotation.x = Mod360(-cam_.CamLLD.x)*DegRad;
 		cam_.MshRot.rotation.y = Mod360(180-cam_.CamLLD.y)*DegRad;
 	}
@@ -201,7 +236,7 @@ return x;}
 *
 *******************************************************************************/
 
-export {PointerLockControls,moveCamera};
+export {PointerLockControls,initCamera,moveCamera};
 
 /*******************************************************************************
 *
@@ -212,4 +247,7 @@ export {PointerLockControls,moveCamera};
 250407:	In Development
 250529: Combined this Controls Module with Camera Module
 251126: Added camera to gen_
+260227: Reload default (rather than fixed) values
+		Added LagFlg to make camera vertical lag optional.
+		Added initCamera
 */
