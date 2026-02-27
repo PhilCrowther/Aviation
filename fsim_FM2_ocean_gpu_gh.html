@@ -213,7 +213,6 @@ TO DO:
 	7. CAMERA VARIABLES				cam_			adj
 	8. OUTPUT VARIABLES				X
 	9. INPUT VARIABLES
-	   Pointer Lock Control			plc_			X
 	   Keys							key_
 
 	PROGRAM
@@ -331,8 +330,9 @@ const renderer = new THREE.WebGPURenderer({antialias: true});
 //	renderer.toneMapping = THREE.NeutralToneMapping;	// contrast - dark
 	renderer.toneMappingExposure = 1.0;				// Higher = brighter (default = 1)
 	await renderer.init();		// Allows time for backend to initialize
-// 	Clock
-let	clock = new THREE.Clock();
+// 	Timer
+	let timer = new THREE.Timer();
+//	timer.connect( document ); // use Page Visibility API
 // 	Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);
@@ -705,12 +705,13 @@ function rendAll() {			// r173 added async
 		loadRadios(gen_);
 	}
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
-		// Time (fixed for now)
-		tim_.DifTim = clock.getDelta();
+		// Time
+		tim_.DifTim = timer.getDelta();
 		tim_.NowTim = tim_.NowTim + tim_.DifTim;
-		tim_.DLTime = 1/60;			// Seconds per frame
+		tim_.DLTime = 1/60;		// Seconds per frame
 		tim_.DLTim2 = tim_.DLTime**2;
 		tim_.GrvDLT = GrvMPS*tim_.DLTim2;
+		timer.update();			// update timer
 		// Black Out/Red Out
 		if (air_.GFmult*10>7.5 || air_.GFmult*10<-5) {
 			f2b_.End = 0.99;
