@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 251126
+*	FSIM FM2 DATA: 260227
 *
 ********************************************************************************
 
@@ -979,11 +979,12 @@ let cam_ = {
 		CamLnk: 0,
 		MshObj: 0,
 		MshDeg: 0,
-		//- Adjust Camera x.rotation
+		//- Vertical Lag Adjustment
+		LegFlg: 1,				// 1 = Enable Lag
 		CmAdjX: 0,				// Airborne Pitch Adjustment
-		CmGrdF: 0,				// Camera Ground Flag (1 = On Ground)
 		CmMulX: 35,				// Pitch Adjustment Multiplier
 		CmLagX: 0,				// Transition Offset
+		CmGrdF: 0,				// Camera Ground Flag (1 = On Ground)
 		// Beginning Head Rotation
 		VewRot: 0,
 		//- Source
