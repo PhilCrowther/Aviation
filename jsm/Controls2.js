@@ -21,6 +21,7 @@ See http://philcrowther.com/Aviation for more details.
 
 import {
 	EventDispatcher,
+	Vector3,
 } from 'three';
 
 /*******************************************************************************
@@ -104,9 +105,9 @@ function initCamera(cam_,air_,key_,gen_,mxr_,vxr_) {
 		vxr_.Adr.visible = true;	
 	}
 	//- Load New Values --------------------------------------------------------
-	cam_.CamLLD = new THREE.Vector3().copy(cam_.SrcLLD[cam_.CamSel]); // cam_.MshRot Lat, Lon, Dst
-	cam_.CamMMD = new THREE.Vector3().copy(cam_.SrcMMD[cam_.CamSel]); // In/Out - min,max,spd
-	cam_.CamMMR = new THREE.Vector3().copy(cam_.SrcMMR[cam_.CamSel]); // Rotate - min/max Lat/Lon,rspd
+	cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]); // cam_.MshRot Lat, Lon, Dst
+	cam_.CamMMD = new Vector3().copy(cam_.SrcMMD[cam_.CamSel]); // In/Out - min,max,spd
+	cam_.CamMMR = new Vector3().copy(cam_.SrcMMR[cam_.CamSel]); // Rotate - min/max Lat/Lon,rspd
 	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
 	cam_.CamAdj = cam_.SrcAdj[cam_.CamSel];	// Load Adjustment
 	cam_.CamFlg = cam_.SrcFlg[cam_.CamSel];	// 1 = Internal
@@ -151,7 +152,7 @@ function moveCamera(cam_,air_,key_,gen_) {
 	else {						// If Not Orbiting
 		// Default
 //		cam_.CamLLD.x = cam_.CamLLD.y = 0; // 260227
-		cam_.CamLLD = new THREE.Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
+		cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
 		// Internal View
 		if (cam_.CamFlg) {
 			cam_.CamLLD.y = cam_.VewRot;
