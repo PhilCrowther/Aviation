@@ -186,7 +186,7 @@ function moveCamera(cam_,air_,key_,gen_) {
 	// In External View, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
 		// Vertical Camera Lag
-		if (!cam_.LagFlg) {
+		if (cam_.LagFlg) {
 			if (!cam_.OrbFlg && air_.GrdFlg) { // Air to Ground
 				if (!cam_.CmGrdF) {		// if just landed
 					cam_.CmLagX = cam_.CmAdjX; // All landings are smooth
