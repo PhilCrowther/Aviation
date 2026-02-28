@@ -50,8 +50,7 @@ INDEX TO VARIABLES
 		Radio Variables				(rad_)
 	7. CAMERA VARIABLES				(cam_)
 	8. OUTPUT VARIABLES
-	9. INPUT VARIABLES
-	   Pointer Lock Control
+	9. INPUT VARIABLES				(key_)
 */
 
 /*******************************************************************************
@@ -1144,11 +1143,3 @@ let key_ = {
 		RBkflg:	0,				// Right Back 45 deg (135 deg)
 		CBkflg:	0,				// Center Back (180 degrees)
 	}
-
-//- POINTER LOCK CONTROL -------//----------------------------------------------
-//	Variables
-let InpMos = 0;					// Mouse Inputs
-let _changeEvent = {type: "change"};
-let _lockEvent = {type: "lock"};
-let _unlockEvent = {type: "unlock"};
-
