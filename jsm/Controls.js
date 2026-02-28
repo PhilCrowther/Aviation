@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Feb 2026
+Version dated 28 Feb 2026
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -120,7 +120,6 @@ function initCamera(cam_,air_,key_,gen_,mxr_,vxr_) {
 	moveCamera(cam_,air_,key_,gen_);
 }
 
-
 //= MOVE CAMERA VIEW ===========//==============================================
 function moveCamera(cam_,air_,key_,gen_) {
 	gen_.camera.rotation.x = 0;		// Default
@@ -153,29 +152,49 @@ function moveCamera(cam_,air_,key_,gen_) {
 	// View Keys (NumLock)
 	else {						// If Not Orbiting
 		// Default
-//		cam_.CamLLD.x = cam_.CamLLD.y = 0; // 260227
 		cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
-		// Internal View
-		if (cam_.CamFlg) {
-			cam_.CamLLD.y = cam_.VewRot;
-			if (key_.D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
-			if (key_.D45flg && cam_.VewRot) cam_.CamLLD.y = 0;
-			if (key_.U45flg) cam_.CamLLD.x = 315; // Down
+		// KeyPad ..............................................................
+		if (key_.KPad) {
+			// Exterior View
+			if (!cam_.CamFlg) {
+				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x; // 260227
+				if (key_.U45flg) cam_.CamLLD.x = 315;
+				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
+				if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
+			}
+			// Internal View
+			else {
+				cam_.CamLLD.y = cam_.VewRot;
+				if (key_.D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
+				if (key_.D45flg && cam_.VewRot) cam_.CamLLD.y = 0;
+				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
+			}
+			if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
+			if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
+			if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
+			if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
+			if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
+			if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
 		}
-		// Exterior View
+		// Alt Keys ............................................................
 		else {
-//			cam_.CamLLD.x = -15;
-			cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x; // 260227
-			if (key_.U45flg) cam_.CamLLD.x = 315;
-			if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
-			if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
-		}
-		if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
-		if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
-		if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-		if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
-		if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-		if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135		
+			// Exterior View
+			if (!cam_.CamFlg) {
+				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x; // 260227
+				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
+			}	
+			// Internal View
+			else {
+				cam_.CamLLD.y = cam_.VewRot;
+				if (key_.D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
+				if (key_.D45flg && cam_.VewRot) cam_.CamLLD.y = 0;
+			}
+			if (cam_.U45flg) cam_.CamLLD.x = 315;	// Look Down 45
+			if (cam_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
+			if (cam_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
+			if (cam_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
+			if (cam_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
+		}	
 	}
 	// Adjust Camera Rotators
 	// In Internal View, the camera is facing out - view matches rotation
