@@ -31,6 +31,9 @@ import {
 *******************************************************************************/
 
 let DegRad = Math.PI/180;		// Convert Degrees to Radians
+let _changeEvent = {type: "change"};
+let _lockEvent = {type: "lock"};
+let _unlockEvent = {type: "unlock"};
 
 /*******************************************************************************
 *
@@ -40,7 +43,7 @@ let DegRad = Math.PI/180;		// Convert Degrees to Radians
 //	Adapted from three.js version
 
 class PointerLockControls extends EventDispatcher {
-	constructor(domElement) {
+	constructor(domElement,InpMos) {
 		super();
 		this.domElement = domElement;
 		this.isLocked = false;
