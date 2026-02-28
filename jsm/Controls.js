@@ -94,7 +94,7 @@ class PointerLockControls extends EventDispatcher {
 *******************************************************************************/
 
 //= INIT CAMERA VIEW ===========//==============================================
-function initCamera(cam_,air_,key_,gen_,mxr_,vxr_) {
+function initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos) {
 	//- Select Model -----------------------------------------------------------
 	if (!cam_.CamSel) {			// 0 = External View
 		// Airplane Models
@@ -117,13 +117,14 @@ function initCamera(cam_,air_,key_,gen_,mxr_,vxr_) {
 	//- Final Adjustments ------------------------------------------------------
 	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators to new CamPar (AirObj or CamPVC)
 	gen_.camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
-	moveCamera(cam_,air_,key_,gen_);
+	moveCamera(cam_,air_,key_,gen_,InpMos);
 }
 
 //= MOVE CAMERA VIEW ===========//==============================================
-function moveCamera(cam_,air_,key_,gen_) {
+function moveCamera(cam_,air_,key_,gen_,InpMos) {
 	gen_.camera.rotation.x = 0;		// Default
-	if (cam_.VewRot) {			// Beginning Head Rotation
+	// Starting Head Rotation
+	if (cam_.VewRot) {
 		// Zero Out When Moving Forward
 		if (!air_.MovFlg) {		// Throttle is trigger
 			cam_.VewRot = 0.95*cam_.VewRot;
