@@ -10,13 +10,13 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 Feb 2026
+Version dated 25 Feb 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
 
 <head>
-<title>fsim MD5 land gpu r183</title>
+<title>fsim MD5 land gpu r183.1</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
@@ -89,10 +89,12 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 // Special Modules
+import {initCamera,moveCamera,	// camera
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls2.js";
 import {loadGrdMat,initGrdMat,GrdMap,
 		initRoads,moveRoads,
 		loadTreLin,moveTreLin
-} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
+	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
 
 //= GENERAL ====================================================================
 
@@ -123,7 +125,8 @@ import {loadGrdMat,initGrdMat,GrdMap,
 *
 *******************************************************************************/
 
-//= INPUTS =====================//==============================================	
+//= INPUTS =====================//==============================================
+let BegCam = 0;					// 0 = External; 1 = Internal (default)
 //- Starting Values ------------------------------------------------------------
 let BegPwr = 0;					// Initial Power Percent
 let BegSpd = 0;					// Speed (kph)
@@ -185,6 +188,7 @@ let gen_ = {
 		render: 0,				// Renderer
 		imagLd: 0,				// Image Loader
 		txtrLd: 0,				// Texture Loader
+		cubeLd: 0,				// Cube Loader
 		gltfLd: 0,				// GLTF Loader
 		//- Display
 		PawsOn:	0,				// Pause
@@ -296,11 +300,11 @@ let RESOURCES_LOADED = false;
 		RESOURCES_LOADED = true;
 		initAll();
 	};
-let txtrLoader = new THREE.TextureLoader(loadingManager);
-let imagLoader = new THREE.ImageLoader(loadingManager);
-let cubeLoader = new THREE.CubeTextureLoader(loadingManager);
-let gltfLoader = new GLTFLoader(loadingManager);
-let audoLoader = new THREE.AudioLoader();
+	gen_.txtrLd = new THREE.TextureLoader(loadingManager);
+	gen_.imagLd = new THREE.ImageLoader(loadingManager);
+	gen_.cubeLd = new THREE.CubeTextureLoader(loadingManager);
+	gen_.gltfLd = new GLTFLoader(loadingManager);
+	gen_.audoLd = new THREE.AudioLoader();
 //- Create Audio Listener
 let	listener = new THREE.AudioListener();
 	camera.add(listener);
@@ -316,10 +320,6 @@ let boxrot = 0;
 	gen_.scene  = scene;
 	gen_.render = renderer;
 	gen_.camera = camera;
-	gen_.txtrLd = txtrLoader;
-	gen_.imagLd = imagLoader;
-	gen_.gltfLd = gltfLoader;
-	gen_.audoLd = audoLoader;
 	gen_.listnr = listener;
 
 //= GROUND TEXTURES ============//==============================================
@@ -441,35 +441,173 @@ let air_ = {
 	
 //- Load Models and Animations -------------------------------------------------
 //-	File Path
-let ACPath = "https://PhilCrowther.github.io/Aviation/models/md5/";	// Used to load models and sounds
-//-	Animation Mixers - External Model
-let ACFile = "md5.glb"; // Name of aircraft model file (rotated blender file)
-//- Aircraft Animations
-let anmfps = 24;				// Blender FPS
-let aoarng = 5;					// AoA range (model)
+let AirSrc = "https://PhilCrowther.github.io/Aviation/models/md5/";	// Used to load models and sounds
+let mxrFNm = "md5.glb"; // Name of airplane model file (rotated blender file)
+let vxrFNm = "md5_int.glb"; // Name of airplane model file (rotated blender file)
+
+//- Aircraft Animations --------------------------------------------------------
+let	anmfps = 24;				// Blender FPS (used by Main Program and all modules (used by Objects.js)
+//	Animation Positions (all range from 0 to 360 with center at 180)
+let anm_ = {
+		pitprp: 180,			// Main Rotor - Pitch
+		bnkprp: 180,			// Main Rotor - Bank
+		spnprp: 180,			// Main Rotor - Spin
+		spnrtr: 180,			// Tail Rotor - Spin
+}
 //	Animation Mixers - External Model
-let mxRtrB = 0;					// Main Rotor - Blades
-let mxRtrP = 0;					// Main Rotor - Pitch
-let mxRtrK = 0;					// Main Rotor - Bank
-let mxRtrV = 0;					// Main Rotor - Vertical
-let mxRtrT = 0;					// Tail Rotor
-//- All range from 0 to 360 with center at 180
-let pitprp = 180;				// Main Rotor - Pitch
-let bnkprp = 180;				// Main Rotor - Bank
-let spnprp = 180;				// Main Rotor - Spin
-let spnrtr = 180;				// Tail Rotor - Spin
+let mxr_ = {
+		// Source
+		Src: AirSrc + mxrFNm,
+		// Address
+		Adr: 0,
+		//
+		RtrB: 0,				// Main Rotor - Blades
+		RtrP: 0,				// Main Rotor - Pitch
+		RtrK: 0,				// Main Rotor - Bank
+		RtrV: 0,				// Main Rotor - Vertical
+		RtrT: 0,				// Tail Rotor
+	}
+//	Animation Mixers - Internal Model
+let vxr_ = {
+		// Source
+		Src: AirSrc + vxrFNm,
+		// Address
+		Adr: 0,
+		//
+		RtrB: 0,				// Main Rotor - Blades
+		RtrP: 0,				// Main Rotor - Pitch
+		RtrK: 0,				// Main Rotor - Bank
+		RtrV: 0,				// Main Rotor - Vertical
+		RtrT: 0,				// Tail Rotor
+	}
 
 //=	SOUNDS =====================//==============================================
 let mys_ = {
 		// General
 		RefDst: 25,				// Reference distance for Positional Audio		
 		// Engine
-		EngSrc: ACPath + "sounds/" + "md5.wav",
+		EngSrc: AirSrc + "sounds/" + "md5.wav",
 		EngSnd: new THREE.PositionalAudio(gen_.listnr),
 		EngMsh: new THREE.Object3D,
 		EngVol: 0.1,			// Volume
 	}
 	air_.AirObj.add(mys_.EngMsh);
+
+//= DEFAULT KEY BINDINGS =======//==============================================
+let key_ = {
+		// WASD
+		PitU: 83,				// Pitch up (s)
+		PitD: 87,				// Pitch down (w)
+		BnkL: 65,				// Bank Left (a)
+		BnkR: 68,				// Bank Right (d)
+		// Arrow Keys (Override WASD)
+		PitU: 40,				// Pitch up (down arrow)
+		PitD: 38,				// Pitch down (up arrow)
+		BnkL: 37,				// Bank Left (left arrow)
+		BnkR: 39,				// Bank Right (right arrow)
+		// Collective and Cyclic
+		AltU: 81,				// Altitude Up (q)
+		AltD: 69,				// Altitude Dn (e)
+		YawL: 90,				// Yaw Left (z)
+		YawR: 88,				// Yaw Right (x)
+		//	View
+		Look:	 16,			// Orbit (shift)
+		// View Keys (Keypad Num Lock)
+		KPad: 0,				// 1 = Using KeyPad
+//		VR45: 105,				// [9] Right 45 deg
+//		VU45: 104,				// [8] View Up 45 deg
+//		VL45: 103,				// [7] Left 45 deg (315 deg)
+//		VR90: 102,				// [6] Right 90 deg
+//		VD45: 101,				// [5] View Down or Back 45 deg
+//		VL90: 100,				// [4] Left 90 deg (270 deg)
+//		VRBk: 99,				// [3] Right Back (135 deg)
+//		VCBk: 98,				// [2] Center Back (180 deg)
+//		VLBk: 97,				// [1] Left Back (225 deg)
+		// Views (Override Keypad)
+		VR45: 45,				// [INS] Right 45 degrees 
+		VU45: 36,				// [HM]  View Up (alone or modifier)
+		VL45: 33,				// [PU]  Left 45 degrees
+		VR90: 46,				// [DEL] Right 90 degrees
+		VD45: 35,				// [END] View Down (alone or modifier)
+		VL90: 34,				// [PD]  Left 90 degrees
+		// Toggle
+		View: 86,				// Toggle Visibility (v)
+		Soun: 79,				// Toggle sound (o)
+		Info: 73,				// Info (i)
+		Paws: 80,				// Pause (p)
+		// Flags
+		U45flg:	0,				// Up 45 deg
+		D45flg:	0,				// Down 45 deg
+		L45flg:	0,				// Left 45 deg (315 deg)
+		R45flg:	0,				// Right 45 deg
+		L90flg:	0,				// Left 90 deg (270 deg)
+		R90flg:	0,				// Right 90 deg
+		LBkflg:	0,				// Left Back 45 deg (225 deg)
+		RBkflg:	0,				// Right Back 45 deg (135 deg)
+		CBkflg:	0,				// Center Back (180 degrees)
+}
+
+//= 7. CAMERA VARIABLES ========//==============================================
+//	Only Two Views: 0 = External; 1 = Internal			
+//- Shared Variables
+let cam_ = {
+		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
+		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
+		// Camera
+		CamLLD: 0, 				// cam_.MshRot Lat, Lon, Dst
+		CamAdj: 0,				// Camera Adjustment (180 = look in)
+		CamMMD: 0,				// In/Out - min,max,spd
+		// Rotator
+		MshRot: 0,				// Camera Rotator
+		CamMMR: 0,				// Rotate - min/max Lat/Lon,rspd
+		// Center of Rotation
+		CamPar: 0,				// Center of Rotation	
+		CamFlg: 0,				// View Flag (0 = External, 1 = Internal)
+		// Linked Airplane
+		CamLnk: 0,
+		MshObj: 0,
+		MshDeg: 0,
+		//- Camera Vertical Lag
+		LagFlg: 0,				// 1 = Enable
+		CmAdjX: 0,				// Airborne Pitch Adjustment
+		CmMulX: 35,				// Pitch Adjustment Multiplier
+		CmLagX: 0,				// Transition Offset
+		CmGrdF: 0,				// Camera Ground Flag (1 = On Ground)
+		// Beginning Head Rotation
+		VewRot: 0,
+		//- Source
+		SrcLLD: [0,0],
+		SrcMMD: [0,0],
+		SrcMMR: [0,0],
+		SrcPar: [0,0],
+		SrcAdj: [180,0],
+		SrcFlg: [0,1],			// 1 = Internal View
+		SrcLnk: [1,1],			// 1 = Linked to Airplane
+	}
+
+//- Create Internal Attach Point
+const CamPVC = new THREE.Object3D;
+	CamPVC.rotation.order = "YXZ";
+	CamPVC.position.set(-0.3674,0.35,-0.6);	// Internal View
+	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
+//- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
+	cam_.SrcLLD = [new THREE.Vector3(-2.5,0,15),new THREE.Vector3(0,0,0.001)];
+	cam_.SrcMMD = [new THREE.Vector3(cam_.SrcLLD[0].z*0.5,cam_.SrcLLD[0].z*2.0,0.1),new THREE.Vector3(0,1,0.001)]; // In/Out - min,max,spd
+	cam_.SrcMMR = [new THREE.Vector3(80,0,0.5),new THREE.Vector3(45,110,0.5)]; // Rotate - min/max Lat/Lon,rspd			   
+	cam_.SrcPar = [air_.AirObj,CamPVC];
+//- Objects --------------------------------------------------------------------
+	cam_.MshRot = new THREE.Object3D;	// Camera Rotator
+	cam_.MshRot.rotation.order = "YXZ";
+	cam_.MshRot.add(camera);	// Attach camera to rotator	
+	cam_.MshObj = new THREE.Object3D;
+	cam_.MshObj.rotation.order = "YXZ";
+	cam_.MshDeg = new THREE.Object3D;
+	cam_.MshDeg.rotation.order = "YXZ";
+	cam_.MshObj.add(cam_.MshDeg);
+//- Adjustments ----------------------------------------------------------------
+	cam_.CamSel = BegCam;
+	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
+	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
 
 //= POINTER LOCK CONTROL =======================================================
 class PointerLockControls extends THREE.EventDispatcher {
@@ -532,88 +670,6 @@ let instructions = document.getElementById("instructions");
 		blocker.style.display = "block";
 		instructions.style.display = "";
 	});
-
-//= DEFAULT KEY BINDINGS =======//==============================================
-let	K_AltU = 81;				// Altitude Up (q)
-let	K_AltD = 69;				// Altitude Dn (e)
-let	A_PitU = 40;				// Pitch up (down arrow)
-let	A_PitD = 38;				// Pitch down (up arrow)
-let	A_BnkL = 37;				// Bank Left (left arrow)
-let	A_BnkR = 39;				// Bank Right (right arrow)
-let	K_PitD = 87;				// Pitch down (w)
-let	K_PitU = 83;				// Pitch up (s)
-let	K_BnkL = 65;				// Bank Left (a)
-let	K_BnkR = 68;				// Bank Right (d)
-let	K_YawL = 90;				// Yaw Left (z)
-let	K_YawR = 88;				// Yaw Right (x)
-//	Views
-let K_Look = 16;				// Pan (shift)
-let K_VU45 = 36;				// View Up (alone or modifier)
-let K_VD45 = 35;				// View Down (alone or modifier)
-let K_VL45 = 33;				// Left 45 degrees
-let K_VR45 = 45;				// Right 45 degrees
-let K_VL90 = 34;				// Left 90 degrees
-let K_VR90 = 46;				// Right 90 degrees
-//	Toggle
-let K_Soun = 79;				// Toggle sound (o)
-let K_Paws = 80;				// Pause (p)
-let K_Info = 73;				// Info (i)
-
-//=	VIEW KEYS ==================//==============================================
-let U45flg = 0;					// Up 45 degrees
-let D45flg = 0;					// Down 45 degrees
-let	L45flg = 0;					// Left 45 degrees
-let R45flg = 0;					// Right 45 degrees
-let L90flg = 0;					// Left 90 degrees
-let R90flg = 0;					// Right 90 degrees
-
-//= CAMERA =====================//==============================================
-//- Create Cockpit Attach Point
-let	CamPVC = new THREE.Object3D;
-	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(0,1.0668,0.762);	// Cockpit view
-	air_.AirObj.add(CamPVC); 	// Attach CamPVC to AirObj
-//- Camera Inputs (External Camera linked to air_.AirObj; 1 Internal Camera Linked to cam_.PVC)
-let CamNum = 2;
-let CamLLD = [new THREE.Vector3(-10,0,15),
-			  new THREE.Vector3(0,0,0.001)];
-let CamAdj = [180,0];			// 180 = Looking In
-let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
-			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
-let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
-			  new THREE.Vector3(45,110,0.5)];
-let CamPar = [air_.AirObj,CamPVC];
-let CamFlg = [0,1];				// 1 = cockpit view
-let CamLnk = [1,1];				// 1 = Linked to Airplane
-//- Shared Variables
-let cam_ = {
-		sel: CamSel,			// View Selector (0 = External, 1 = Internal)
-		num: CamNum,
-		pan: 0,					// Pan Flag (1 = panning)
-		// Camera
-		lld: new THREE.Vector3().copy(CamLLD[CamSel]),	// cam_.rot Lat, Lon, Dst
-		llz: new THREE.Vector3(), // External LLZ
-		adj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
-		mmd: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
-		// Rotator
-		rot: new THREE.Object3D,			// Camera Rotator
-		mmr: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
-		// Center of Rotation
-		par: CamPar[CamSel],	// Center of Rotation	
-		flg: CamFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
-		// Linked Airplane
-		lnk: CamLnk[CamSel],
-		qat: new THREE.Quaternion(),
-		obj: new THREE.Object3D,
-		deg: new THREE.Object3D
-	}
-//- Adjustments
-	camera.rotation.order = "YXZ";
-	cam_.rot.rotation.order = "YXZ";
-	cam_.obj.rotation.order = "YXZ";
-	cam_.deg.rotation.order = "YXZ";
-	cam_.par.add(cam_.rot);			// Attach Rotator
-	cam_.obj.add(cam_.deg);
 
 //= HTML OVERLAY TEXT ==========================================================
 let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
@@ -689,14 +745,15 @@ function loadAll() {
 	loadSkyBox();
 	loadGrdMat(grd_,gen_);	
 	loadTreLin(grd_,gen_);
-	loadObject();
 	loadAirObj();
+	loadObject();
 	// Load stats
 	if (gen_.StatOn) {			// show stats
 		gen_.StatOn = new Stats();
 		document.body.appendChild(gen_.StatOn.dom);
 		gen_.StatOn.domElement.style.cssText = "position:absolute;top:90%;left:95%;";
 	}
+	loadSounds();
 }
 
 //= WAIT SCREEN ================//==============================================
@@ -705,7 +762,7 @@ function WaitScreen() {
 	// Set up the loading screen scene.
 	// It can be treated just like our main scene.
 	let BoxGeo = new THREE.PlaneGeometry(1,1);
-	let BoxTxt = txtrLoader.load("https://PhilCrowther.github.io/Aviation/textures/wait/prop.jpg");
+	let BoxTxt = gen_.txtrLd.load("https://PhilCrowther.github.io/Aviation/textures/wait/prop.jpg");
 	let BoxMat = new THREE.MeshBasicNodeMaterial({colorNode: texture(BoxTxt)});
 	loadingScreen.box = new THREE.Mesh(BoxGeo,BoxMat);
 	loadingScreen.box.rotation.set(Math.PI,0,0);
@@ -728,7 +785,7 @@ function initAll() {
 	moveTreLin(grd_,gen_,air_); // Add TreeLines
 	initObject();				// Stationary Objects
 	// Other
-	initCamera(camera,cam_);	// position camera
+	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos); // position camera
 	PawsText();
 	InfoText();
 	gen_.LodFlg = 1;
@@ -744,8 +801,11 @@ function rendAll() {
 		renderer.render(loadingScreen.scene, loadingScreen.camera);
 		return;					// Stop the function here.
 	}
+	if (controls.isLocked === true && !gen_.LodSnd) {
+		loadSounds();
+	}
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
-		moveCamera(camera,cam_);
+		moveCamera(cam_,air_,key_,gen_,InpMos);
 		// Move AirObj
 		moveAirObj();
 		// Move Objects
@@ -772,7 +832,7 @@ function rendAll() {
 *******************************************************************************/
 
 function loadSkyBox() {
-	let envMap = cubeLoader
+	let envMap = gen_.cubeLd
 		.setPath(sky_.SBxSrc)
 		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
 	envMap.format = THREE.RGBAFormat;
@@ -780,8 +840,8 @@ function loadSkyBox() {
 	scene.background = envMap;
 	// LensFlare
 	if (gen_.LnFFlg) {				// SunFlare	
-		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
-		sky_.LF1Txt = txtrLoader.load(sky_.LF1Src);
+		sky_.LF0Txt = gen_.txtrLd.load(sky_.LF0Src);
+		sky_.LF1Txt = gen_.txtrLd.load(sky_.LF1Src);
 	}
 }
 
@@ -814,17 +874,17 @@ function initSkyBox() {
 function loadObject() {
 	for (let i = 0; i < ObjNum; i++) {		// For Each Object
 		if (ObjTyp[i] == 0) {
-			gltfLoader.load(ObjMdl[i], function (gltf) {
+			gen_.gltfLd.load(ObjMdl[i], function (gltf) {
 				ObjPtr[i] = gltf.scene;
 				ObjPtr[i].scale.setScalar(Ft2Mtr);
 				ObjPtr[i].rotation.order = "ZXY";
 			});
 		}
 		if (ObjTyp[i] == 1) {
-			let texture = txtrLoader.load(ObjTxt[i]);
+			let texture = gen_.txtrLd.load(ObjTxt[i]);
 			texture.anisotropy = gen_.MaxAni;
 			let material = new THREE.MeshLambertMaterial({map: texture, transparent: true});
-			gltfLoader.load(ObjMdl[i], function (gltf) {
+			gen_.gltfLd.load(ObjMdl[i], function (gltf) {
 				gltf.scene.traverse(function (child) {
 				// Note: Blender object must include a UV map
 					if (child.isMesh) {				
@@ -870,10 +930,17 @@ function moveObject() {
 *
 *******************************************************************************/
 
-//- LOAD =======================//==============================================
+//= LOAD AIRPLANE ==============//==============================================
+
 function loadAirObj() {
-	let fname = ACPath + ACFile;
-	gltfLoader.load(fname, function (gltf) {			// The OnLoad function
+	loadAirExt(air_,mxr_,anm_,gen_);
+	loadAirInt(air_,mxr_,anm_,gen_);
+}
+
+//- LOAD EXTERNAL ==============//==============================================
+
+function loadAirExt(air_,mxr_,anm_,gen_) {
+	gen_.gltfLd.load(mxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -889,44 +956,100 @@ function loadAirObj() {
 				child.receiveShadow = false;
 			}
 		});
-		let AirExt = gltf.scene;
-		AirExt.rotation.order = "YXZ";
-//		AirExt.scale.setScalar(Ft2Mtr);
+		mxr_.Adr = gltf.scene;
+		mxr_.Adr.rotation.order = "YXZ";
 		// Animations ----------------------------------------------------------
 		// Main Rotor - Bank
 		let clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_bankAction");
-		mxRtrK = new THREE.AnimationMixer(AirExt);
-		let actun = mxRtrK.clipAction(clip);
+		mxr_.RtrK = new THREE.AnimationMixer(mxr_.Adr);
+		let actun = mxr_.RtrK.clipAction(clip);
 		actun.play();
-		if (mxRtrK) mxRtrK.setTime(bnkprp/anmfps);
+		if (mxr_.RtrK) mxr_.RtrK.setTime(anm_.bnkprp/anmfps);
 		// Main Rotor - Pitch
 		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_pitchAction");
-		mxRtrP = new THREE.AnimationMixer(AirExt);
-		actun = mxRtrP.clipAction(clip);
+		mxr_.RtrP = new THREE.AnimationMixer(mxr_.Adr);
+		actun = mxr_.RtrP.clipAction(clip);
 		actun.play();
-		if (mxRtrP) mxRtrP.setTime(pitprp/anmfps);
+		if (mxr_.RtrP) mxr_.RtrP.setTime(anm_.pitprp/anmfps);
 		// Main Rotor - Blades
 		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_bladesAction");
-		mxRtrB = new THREE.AnimationMixer(AirExt);
-		actun = mxRtrB.clipAction(clip);
+		mxr_.RtrB = new THREE.AnimationMixer(mxr_.Adr);
+		actun = mxr_.RtrB.clipAction(clip);
 		actun.play();
-		if (mxRtrB) mxRtrB.setTime(spnprp/anmfps);
+		if (mxr_.RtrB) mxr_.RtrB.setTime(anm_.spnprp/anmfps);
 		// Main Rotor - Vertical
 		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_hubAction");
-		mxRtrV = new THREE.AnimationMixer(AirExt);
-		actun = mxRtrV.clipAction(clip);
+		mxr_.RtrV = new THREE.AnimationMixer(mxr_.Adr);
+		actun = mxr_.RtrV.clipAction(clip);
 		actun.play();
-		if (mxRtrV) mxRtrV.setTime(spnprp/anmfps);	
+		if (mxr_.RtrV) mxr_.RtrV.setTime(anm_.spnprp/anmfps);	
 		// Tail Rotor
 		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_tailAction");
-		mxRtrT = new THREE.AnimationMixer(AirExt);
-		actun = mxRtrT.clipAction(clip);
+		mxr_.RtrT = new THREE.AnimationMixer(mxr_.Adr);
+		actun = mxr_.RtrT.clipAction(clip);
 		actun.play();
-		if (mxRtrT) mxRtrT.setTime(spnrtr/anmfps);
+		if (mxr_.RtrT) mxr_.RtrT.setTime(anm_.spnrtr/anmfps);
 		//- Save
-		air_.AirObj.add(AirExt);
-		//- Sounds
-		loadSounds();
+		air_.AirObj.add(mxr_.Adr);
+		mxr_.Adr.visible = true;
+	});
+}
+
+//- LOAD INTERNAL ==============//==============================================
+
+function loadAirInt(air_,mxr_,anm_,gen_) {
+	gen_.gltfLd.load(vxr_.Src, function (gltf) {
+		gltf.scene.traverse(function (child) {
+			if (child.isMesh) {
+				child.castShadow = true;
+				child.receiveShadow = true;
+			}
+			if (
+				child.name == "int_glass"		||
+				child.name == "int_glass_grn"	||
+				child.name == "ixt_controls"	||
+				child.name == "ixt_seats2")
+			{
+				child.castShadow = false;
+				child.receiveShadow = false;
+			}
+		});
+		vxr_.Adr = gltf.scene;
+		vxr_.Adr.rotation.order = "YXZ";
+		// Animations ----------------------------------------------------------
+		// Main Rotor - Bank
+		let clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_bankAction");
+		vxr_.RtrK = new THREE.AnimationMixer(vxr_.Adr);
+		let actun = vxr_.RtrK.clipAction(clip);
+		actun.play();
+		if (vxr_.RtrK) vxr_.RtrK.setTime(anm_.bnkprp/anmfps);
+		// Main Rotor - Pitch
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_pitchAction");
+		vxr_.RtrP = new THREE.AnimationMixer(vxr_.Adr);
+		actun = vxr_.RtrP.clipAction(clip);
+		actun.play();
+		if (vxr_.RtrP) vxr_.RtrP.setTime(anm_.pitprp/anmfps);
+		// Main Rotor - Blades
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_bladesAction");
+		vxr_.RtrB = new THREE.AnimationMixer(vxr_.Adr);
+		actun = vxr_.RtrB.clipAction(clip);
+		actun.play();
+		if (vxr_.RtrB) vxr_.RtrB.setTime(anm_.spnprp/anmfps);
+		// Main Rotor - Vertical
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_hubAction");
+		vxr_.RtrV = new THREE.AnimationMixer(vxr_.Adr);
+		actun = vxr_.RtrV.clipAction(clip);
+		actun.play();
+		if (vxr_.RtrV) vxr_.RtrV.setTime(anm_.spnprp/anmfps);	
+		// Tail Rotor
+		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_tailAction");
+		vxr_.RtrT = new THREE.AnimationMixer(vxr_.Adr);
+		actun = vxr_.RtrT.clipAction(clip);
+		actun.play();
+		if (vxr_.RtrT) vxr_.RtrT.setTime(anm_.spnrtr/anmfps);
+		//- Save
+		air_.AirObj.add(vxr_.Adr);
+		vxr_.Adr.visible = false;
 	});
 }
 
@@ -971,85 +1094,73 @@ function moveAirObj() {
 	air_.RotDif.y = InpYaw;
 	// Compute Rotation and Vectors
 	moveFlight();
-	//- Compute Animations -----------------------------------------------------
+	//- Animations --------------------------------------------------------------
+	moveAirCom(air_,anm_);
+	if (!cam_.CamFlg) { 		// External View
+		// Rotors - Speed
+		if (mxr_.RtrB) mxr_.RtrB.setTime(anm_.spnprp/anmfps); // Main Rotor Blades
+		if (mxr_.RtrV) mxr_.RtrV.setTime(anm_.spnprp/anmfps); // Main Rotor Hub
+		if (mxr_.RtrT) mxr_.RtrT.setTime(anm_.spnprp/anmfps); // Tail Rotor
+		// Main Rotor Blades - Pitch
+		if (mxr_.RtrP) mxr_.RtrP.setTime(anm_.pitprp/anmfps);
+		// Main Rotor Blades - Bank
+		if (mxr_.RtrK) mxr_.RtrK.setTime(anm_.bnkprp/anmfps);
+	}
+	if (cam_.CamFlg) { 			// Internal View
+		// Rotors - Speed
+		if (vxr_.RtrB) vxr_.RtrB.setTime(anm_.spnprp/anmfps); // Main Rotor Blades
+		if (vxr_.RtrV) vxr_.RtrV.setTime(anm_.spnprp/anmfps); // Main Rotor Hub
+		if (vxr_.RtrT) vxr_.RtrT.setTime(anm_.spnprp/anmfps); // Tail Rotor
+		// Main Rotor Blades - Pitch
+		if (vxr_.RtrP) vxr_.RtrP.setTime(anm_.pitprp/anmfps);
+		// Main Rotor Blades - Bank
+		if (vxr_.RtrK) vxr_.RtrK.setTime(anm_.bnkprp/anmfps);
+	}
+}
+
+//- MOVE COMMON ANIMATION ------//----------------------------------------------
+
+function moveAirCom(air_,anm_) {
 	// Rotors - Speed
-	spnprp = Mod360(spnprp - 33);
+	anm_.spnprp = Mod360(anm_.spnprp - 33);
 	// Main Rotor Blades - Pitch
-	pitprp = 180 + air_.AirRot.x * 179 / 5;
-	if (pitprp > 359) pitprp = 359; // Limit Max
-	if (pitprp < 1) pitprp = 1; // Limit Min
-	air_.RtrAng.x = 5*(pitprp-180)/180;
+	anm_.pitprp = 180 + air_.AirRot.x * 179 / 5;
+	if (anm_.pitprp > 359) anm_.pitprp = 359; // Limit Max
+	if (anm_.pitprp < 1) anm_.pitprp = 1; // Limit Min
+	air_.RtrAng.x = 5*(anm_.pitprp-180)/180;
 	air_.RtrDif.x = air_.RtrAng.x - air_.RtrOld.x;
 	air_.RtrOld.x = air_.RtrAng.x;
-//	air_.RotDif.x = air_.RotDif.x - air_.RtrDif.x;
+	// Pitch - exclude first 5 degrees
+	let PitDfR = PoM360(air_.RtrAng.x);
+	if (PitDfR > 0) {
+		PitDfR = PitDfR - 5;
+		if (PitDfR < 0) PitDfR = 0;
+	}
+	if (PitDfR < 0) {
+		PitDfR = PitDfR + 5;
+		if (PitDfR > 0) PitDfR = 0;
+	}
+	air_.AirObj.rotation.x = Mod360(air_.AirObj.rotation.x * RadDeg - PitDfR) * DegRad; // Bank
+	
 	// Main Rotor Blades - Bank
-	bnkprp = 180 + PoM360(air_.AirRot.z) * 179 / 5;
-	if (bnkprp > 359) bnkprp = 359; // Limit Max
-	if (bnkprp < 1) bnkprp = 1; // Limit Min
-	air_.RtrAng.z = 5*(bnkprp-180)/180;
+	anm_.bnkprp = 180 + PoM360(air_.AirRot.z) * 179 / 5;
+	if (anm_.bnkprp > 359) anm_.bnkprp = 359; // Limit Max
+	if (anm_.bnkprp < 1) anm_.bnkprp = 1; // Limit Min
+	air_.RtrAng.z = 5*(anm_.bnkprp-180)/180;
 	air_.RtrDif.z = air_.RtrAng.z - air_.RtrOld.z;
 	air_.RtrOld.z = air_.RtrAng.z;
-//	air_.RotDif.z = air_.RotDif.z - air_.RtrDif.z;
-	//- Perform Animations ------------------------------------------------------
-	// Rotors - Speed
-	if (mxRtrB) mxRtrB.setTime(spnprp/anmfps); // Main Rotor Blades
-	if (mxRtrV) mxRtrV.setTime(spnprp/anmfps); // Main Rotor Hub
-	if (mxRtrT) mxRtrT.setTime(spnprp/anmfps); // Tail Rotor
-	// Main Rotor Blades - Pitch
-	if (mxRtrP) mxRtrP.setTime(pitprp/anmfps);
-	// Main Rotor Blades - Bank
-	if (mxRtrK) mxRtrK.setTime(bnkprp/anmfps);
-	// View Keys ---------------------------------------------------------------
-	if (cam_.pan < 1) {			// Only If Not Panning		
-		// If No Keys Pressed, Set Default View
-		if (U45flg+D45flg+L45flg+R45flg+L90flg+R90flg < 1)	{
-			if (cam_.flg) cam_.lld.x = 0;	// Internal view
-			else cam_.lld.x = -12.5;		// External view
-			cam_.lld.y = 0;
-		}
-		// Down 45
-		else if (D45flg) {
-			cam_.lld.x = 0;
-			// Look Back
-			if ((L90flg) && (L90flg) && (R90flg)) cam_.lld.y = 180;
-			// Look Back Left 90 + 45
-			else if (L90flg) cam_.lld.y = 135;
-			// Look Back Right 270 - 45
-			else if (R90flg) cam_.lld.y = 225;
-			// Look Down
-			else {
-				cam_.lld.y = 0;
-				cam_.lld.x = 45;
-			}
-		}
-		// Up 45
-		else if (U45flg) {
-			cam_.lld.x = 315;
-			if (cam_.flg == 0 && (air_.GrdFlg)) cam_.lld.x = 0;
-			// Look Up Left 45
-			if (L45flg) cam_.lld.y = 45;
-			// Look Up Right 45
-			else if (R45flg) cam_.lld.y = 315;
-			// Look Up Left 90
-			else if (L90flg) cam_.lld.y = 90;
-			// Look Up Right 90
-			else if (R90flg) cam_.lld.y = 270;
-			// Look Up
-			else cam_.lld.y = 0;
-		}
-		// Level
-		else {
-			cam_.lld.x = 0;
-			// Look Left 45
-			if (L45flg) cam_.lld.y = 45;
-			// Look Right 45
-			else if (R45flg) cam_.lld.y = 315;
-			// Look Left 90
-			else if (L90flg) cam_.lld.y = 90;
-			// Look Right 90
-			else if (R90flg) cam_.lld.y = 270;
-		}
+		
+	// Bank - exclude first 5 degrees
+	let BnkDfR = PoM360(air_.RtrAng.z);
+	if (BnkDfR > 0) {
+		BnkDfR = BnkDfR - 5;
+		if (BnkDfR < 0) BnkDfR = 0;
 	}
+	if (BnkDfR < 0) {
+		BnkDfR = BnkDfR + 5;
+		if (BnkDfR > 0) BnkDfR = 0;
+	}
+	air_.AirObj.rotation.z = Mod360(air_.AirObj.rotation.z * RadDeg + 360 - BnkDfR) * DegRad; // Bank
 }
 
 /*******************************************************************************
@@ -1083,7 +1194,7 @@ function moveFlight() {
 	let FrcAcc = DLTim2/air_.ACMass;
 	if (air_.GrdFlg && (air_.ThrMlt*air_.PwrPct) > 1) air_.GrdFlg = 0;	// If going to leave ground
 	if (!air_.GrdFlg) {			// Compute Change in mps, convert MapSpd to mpf
-		// 2. Recompute and Load ZXY Airspeed (mpf) - since ACH (which redirects AirSpd.xz) may have changed
+		// 1. Recompute and Load ZXY Airspeed (mpf) - since ACH (which redirects AirSpd.xz) may have changed
 		// Use mps so that DynPrs and Drag is correct
 		let ACHRad = air_.AirRot.y * DegRad;
 		let PSpdZS = air_.MapSpd.z * Math.cos(-ACHRad) - air_.MapSpd.x * Math.sin(-ACHRad);
@@ -1092,13 +1203,11 @@ function moveFlight() {
 		// Convert to mps
 		air_.AirSpd.z = PSpdZS / air_.DLTime; // Convert to mps
 		air_.AirSpd.x = PSpdXS / air_.DLTime;
-		// 3. Speed (mpf) ......................................................
+		// 2. SPEED (mpf) ------------------------------------------------------
 		let ThrFrc = air_.Weight*air_.ThrMlt*air_.PwrPct;
-		// 3a. Forward Speed (mpf) .............................................
+		// 2a. Forward Speed (mpf) .............................................
 		// Thrust Force (F/s)
-//		let ACPRad = -air_.AirRot.x * DegRad;
 		let ACPRad = (-air_.AirRot.x - air_.RtrAng.x) * DegRad;
-		console.log(air_.AirRot.x,air_.RtrAng.x);
 		let PThrZF = ThrFrc * Math.sin(ACPRad); // Propeller Acceleration - Forward
 		// Drag
 		let DynPrZ = 0.5 * air_.AirDSL * (air_.AirSpd.z ** 2); // Dynamic Pressure (Absolute value)
@@ -1109,11 +1218,9 @@ function moveFlight() {
 		let PnetZA = (PnetZF/air_.ACMass); // (mps)
 		PnetZA = PnetZA*DLTime*air_.ThrAdj.z; // (mpf)	
 		PSpdZS = PSpdZS + PnetZA; // new Speed (mpf)
-		// 3b. Lateral Speed (mpf) .............................................
+		// 2b. Lateral Speed (mpf) .............................................
 		// Thrust Force (F/s)
-//		let ACBRad = air_.AirRot.z * DegRad;
 		let ACBRad = (air_.AirRot.z + air_.RtrAng.z) * DegRad;
-//		console.log(air_.AirRot.z,air_.RtrAng.z);
 		let PThrXF = ThrFrc * Math.cos(ACPRad) * Math.sin(ACBRad); // Propeller Acceleration - Lateral
 		// Drag
 		let DynPrX = 0.5 * air_.AirDSL * (air_.AirSpd.x ** 2); // Dynamic Pressure
@@ -1124,16 +1231,16 @@ function moveFlight() {
 		let PnetXA = (PnetXF/air_.ACMass); // (mps)
 		PnetXA = PnetXA*DLTime*air_.ThrAdj.x; // (mpf)
 		PSpdXS = PSpdXS + PnetXA; // new Speed (mpf)
-		// 3c. Vertical Speed (mpf) ............................................
+		// 2c. Vertical Speed (mpf) ............................................
 		// Thrust Force (F/s)
 		let PThrYF = ThrFrc * Math.cos(ACPRad) * Math.cos(ACBRad); // Propeller Acceleration - Vertical
 		let PnetYF = PThrYF; 	// Net Force
+//		console.log(PnetYF);
 		// Acceleration (mpf)
 		let PnetYA = (PnetYF/air_.ACMass) - GrvMPS; // (mps)
 		PnetYA = PnetYA*DLTime*air_.ThrAdj.y; // (mpf)
 		PSpdYS = PSpdYS + PnetYA; // new Speed (mpf)
-
-		// 1. COMPUTE DIRECTION OF FLIGHT --------------------------------------
+		// 3. COMPUTE DIRECTION OF FLIGHT --------------------------------------
 		// Inputs: air_.RotDif
 		// This routine uses 2 linked meshes to correctly rotate aircraft.
 		// Rotate Aircraft (Heading Not Change)
@@ -1157,8 +1264,7 @@ function moveFlight() {
 		// Bank ................................................................
 		air_.OldRot.z = air_.AirObj.rotation.z;
 		air_.AirRot.z = Mod360(-air_.AirObj.rotation.z*RadDeg);
-
-		//- Rotate Helicopter ------------------------------------------------------
+		//- 4. ROTATE HELICOPTER -----------------------------------------------
 		// Weather-Vane Adjustment
 		// At Slow Speed, Helicopter Can Fly Sideways without Chaninge Direction
 		// At Higher Speeds, Helicopter will Point in Direction of Flight
@@ -1178,24 +1284,24 @@ function moveFlight() {
 		}
 		air_.RotDif.y = air_.RotDif.y + YawAdj;
 		air_.AirObj.rotation.y = Mod360(-air_.AirRot.y) * DegRad; // Heading
-		// 3. MAPSPD AND MAPPOS ------------------------------------------------
-		// 3a. Compute MSpd (mpf)
+		// 5. MAPSPD AND MAPPOS ------------------------------------------------
+		// 5a. Compute MSpd (mpf)
 		air_.MapSpd.z = PSpdZS * Math.cos(ACHRad) - PSpdXS * Math.sin(ACHRad);
 		air_.MapSpd.x = PSpdZS * Math.sin(ACHRad) + PSpdXS * Math.cos(ACHRad);
 		air_.MapSpd.y = PSpdYS;
-		// 3b. Compute Map Pos (meters)
+		// 5b. Compute Map Pos (meters)
 		air_.MapPos.z = air_.MapPos.z + air_.MapSpd.z;
 		air_.MapPos.x = air_.MapPos.x + air_.MapSpd.x;
 		air_.MapPos.y = air_.MapPos.y + air_.MapSpd.y;
-		// 3c. Compute MapSPS
+		// 5c. Compute MapSPS
 		air_.MapSPS.x = air_.MapSpd.x; // (mpf)
 		air_.MapSPS.y = air_.MapPos.y; // (meters)
 		air_.MapSPS.z = air_.MapSpd.z; // (mpf)
-		// 3d. For Display Only (mps)
+		// 5d. For Display Only (mps)
 		air_.AirSpd.z = PSpdZS/DLTime;
 		air_.AirSpd.x = PSpdXS/DLTime;
 		air_.AirSpd.y = PSpdYS/DLTime;
-		// 3e. Compute Total Speeds (not used)
+		// 5e. Compute Total Speeds (not used)
 		air_.SpdMPS = TotSpd/DLTime;	// (mps)
 		air_.SpdKPH = air_.SpdMPS*3.6; // (KPH) = *3600/1000
 	}
@@ -1219,7 +1325,13 @@ function landFlight(MinAlt) {
 	// MapSPS
 	air_.MapSPS.x = air_.MapSPS.z = 0;
 	// DirFlt
-	air_.DirFlt = air_.AirRot.y;	
+	air_.DirFlt = air_.AirRot.y;
+	//
+	air_.AirObj.rotation.z = air_.AirObj.rotation.x = 0;	
+	// Main Rotor Blades - Pitch
+	if (mxr_.RtrP) mxr_.RtrP.setTime(180/anmfps);
+	// Main Rotor Blades - Bank
+	if (mxr_.RtrK) mxr_.RtrK.setTime(180/anmfps);
 }
 
 /*******************************************************************************
@@ -1285,68 +1397,6 @@ function playSounds() {
 function stopSounds() {
 	// This leaves SndFlg and GunFlg unchanged.
 	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop();
-}
-
-/*******************************************************************************
-*
-*	7. CAMERA
-*
-*******************************************************************************/
-
-//== INIT CAMERA ===============//==============================================
-
-function initCamera(camera,cam_) {
-	camera.position.z = -cam_.lld.z;
-	camera.rotation.y = cam_.adj*DegRad;
-	cam_.rot.add(camera);		// Attach to rotator
-	// Common Changes
-	cam_.lld.copy(CamLLD[cam_.sel]);		// Restore Saved Values
-	cam_.mmd.copy(CamMMD[cam_.sel]);		// In/Out - min, max, spd
-	cam_.adj = CamAdj[cam_.sel];			// Load Adjustment
-	camera.rotation.y = cam_.adj*DegRad;	// 180 = Looking in
-	cam_.mmr.copy(CamMMR[cam_.sel]);		// Rotation min, max, spd
-	cam_.par = CamPar[cam_.sel]				// Load New Parent
-	cam_.par.add(cam_.rot);					// Attach Rotators
-	cam_.flg = CamFlg[cam_.sel];			// 1 = cockpit
-	cam_.lnk = CamLnk[cam_.sel];			// 1 = Linked to Airplane
-	//
-	moveCamera(camera,cam_);
-
-}
-
-//== MOVE CAMERA ===============//==============================================
-
-function moveCamera(camera,cam_) {
-	// Move Camera In/Out
-	camera.position.z = -cam_.lld.z;
-	// PointerLockControls
-	if (cam_.pan) {
-		cam_.lld.x = cam_.lld.x - InpMos.y * cam_.mmr.z;				// Camera Position (Lat)
-		cam_.lld.x = MaxVal(cam_.lld.x,cam_.mmr.x);
-		cam_.lld.y = Mod360(cam_.lld.y + InpMos.x * cam_.mmr.z);		// Camera Position (Lon)
-		// Internal View
-		if (cam_.flg) {											// Range: 250 to 360/0 to 110
-			if (cam_.lld.y > 180 && cam_.lld.y < (360-cam_.mmr.y)) cam_.lld.y = (360-cam_.mmr.y);
-			if (cam_.lld.y < 180 && cam_.lld.y > cam_.mmr.y) cam_.lld.y = cam_.mmr.y;
-		}
-		// External View
-		else {
-			if (air_.GrdFlg && cam_.lld.x > -12.5) cam_.lld.x = -12.5;
-		}
-		InpMos.x = 0;
-		InpMos.y = 0;
-	}
-	// Adjust Camera Rotators
-	// In internal view, the camera is facing out - view matches rotation
-	if (cam_.flg) {
-		cam_.rot.rotation.x = Mod360(cam_.lld.x)*DegRad;
-		cam_.rot.rotation.y = Mod360(-cam_.lld.y)*DegRad;
-	}
-	// In external view, the camera is facing in and the armature is pointing out:
-	else {
-		cam_.rot.rotation.x = Mod360(-cam_.lld.x+0.5*air_.AirRot.x)*DegRad;
-		cam_.rot.rotation.y = Mod360(180-cam_.lld.y)*DegRad;		
-	}
 }
 
 /*******************************************************************************
@@ -1476,59 +1526,70 @@ function onDocumentMouseWheel(event) {
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == K_AltU) InpAlt = 0.001;		// Altitude Up
-	if (event.keyCode == K_AltD) InpAlt = -0.001;		// Altitude Down
-	if (event.keyCode == A_PitU) InpACP = KeyVal.x;		// Pitch Up
-	if (event.keyCode == A_PitD) InpACP = -KeyVal.x;	// Pitch Down
-	if (event.keyCode == A_BnkL) InpACB = -KeyVal.z;	// Bank Left
-	if (event.keyCode == A_BnkR) InpACB = KeyVal.z;		// Bank Right
-	if (event.keyCode == K_PitD) InpACP = -KeyVal.x;	// Pitch Down
-	if (event.keyCode == K_PitU) InpACP = KeyVal.x;		// Pitch Up
-	if (event.keyCode == K_BnkL) InpACB = -KeyVal.z;	// Bank Left
-	if (event.keyCode == K_BnkR) InpACB = KeyVal.z;		// Bank Right
-	if (event.keyCode == K_YawL) InpYaw = -KeyVal.y;	// Yaw Left
-	if (event.keyCode == K_YawR) InpYaw = KeyVal.y;		// Yaw Right
+	if (event.keyCode == key_.AltU) InpAlt = 0.001;		// Altitude Up
+	if (event.keyCode == key_.AltD) InpAlt = -0.001;	// Altitude Down
+	if (event.keyCode == key_.PitU) InpACP = KeyVal.x;	// Pitch Up
+	if (event.keyCode == key_.PitD) InpACP = -KeyVal.x;	// Pitch Down
+	if (event.keyCode == key_.BnkL) InpACB = -KeyVal.z;	// Bank Left
+	if (event.keyCode == key_.BnkR) InpACB = KeyVal.z;	// Bank Right
+	if (event.keyCode == key_.PitD) InpACP = -KeyVal.x;	// Pitch Down
+	if (event.keyCode == key_.PitU) InpACP = KeyVal.x;	// Pitch Up
+	if (event.keyCode == key_.BnkL) InpACB = -KeyVal.z;	// Bank Left
+	if (event.keyCode == key_.BnkR) InpACB = KeyVal.z;	// Bank Right
+	if (event.keyCode == key_.YawL) InpYaw = -KeyVal.y;	// Yaw Left
+	if (event.keyCode == key_.YawR) InpYaw = KeyVal.y;	// Yaw Right
 	// Views
-	if (event.keyCode == K_VU45) D45flg = 1;			// View - 45 deg up
-	if (event.keyCode == K_VD45) U45flg = 1;			// View - 45 deg down
-	if (event.keyCode == K_VL45) L45flg = 1;			// View - 45 deg left
-	if (event.keyCode == K_VR45) R45flg = 1;			// View - 45 deg right
-	if (event.keyCode == K_VL90) L90flg = 1;			// View - 90 deg left
-	if (event.keyCode == K_VR90) R90flg = 1;			// View - 90 deg right
-	if (event.keyCode == K_Look) cam_.pan = 1;			// Pan View
+	if (event.keyCode == key_.Look) cam_.OrbFlg = 1;	// Orbit View
+	if (event.keyCode == key_.VU45) cam_.D45flg = 1;	// View - 45 deg up
+	if (event.keyCode == key_.VD45) cam_.U45flg = 1;	// View - 45 deg down
+	if (event.keyCode == key_.VL45) cam_.L45flg = 1;	// View - 45 deg left
+	if (event.keyCode == key_.VR45) cam_.R45flg = 1;	// View - 45 deg right
+	if (event.keyCode == key_.VL90) cam_.L90flg = 1;	// View - 90 deg left
+	if (event.keyCode == key_.VR90) cam_.R90flg = 1;	// View - 90 deg right
 	// Toggle
-	if (event.keyCode == K_Paws) toglPaws();			// Toggle Pause
-	if (event.keyCode == K_Info) toglInfo();			// Toggle Information
-	if (event.keyCode == K_Soun) toglSoun();			// Toggle Sound
+	if (event.keyCode == key_.View) toglView();			// Switch View
+	if (event.keyCode == key_.Paws) toglPaws();			// Toggle Pause
+	if (event.keyCode == key_.Info) toglInfo();			// Toggle Information
+	if (event.keyCode == key_.Soun) toglSoun();			// Toggle Sound
 }
 
 //-	Keyboard (Up) --------------------------------------------------------------
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == K_AltU) InpAlt = 0;			// Altitude Up
-	if (event.keyCode == K_AltD) InpAlt = 0;			// Altitude Down
-	if (event.keyCode == A_PitU) InpACP = 0;			// Pitch Up
-	if (event.keyCode == A_PitD) InpACP = 0;			// Pitch Down
-	if (event.keyCode == A_BnkL) InpACB = 0;			// Bank Left
-	if (event.keyCode == A_BnkR) InpACB = 0;			// Bank Right
-	if (event.keyCode == K_PitD) InpACP = 0;			// Pitch Down
-	if (event.keyCode == K_PitU) InpACP = 0;			// Pitch Up
-	if (event.keyCode == K_BnkL) InpACB = 0;			// Bank Left
-	if (event.keyCode == K_BnkR) InpACB = 0;			// Bank Right
-	if (event.keyCode == K_YawL) InpYaw = 0;			// Yaw Left
-	if (event.keyCode == K_YawR) InpYaw = 0;			// Yaw Right
+	if (event.keyCode == key_.AltU) InpAlt = 0;			// Altitude Up
+	if (event.keyCode == key_.AltD) InpAlt = 0;			// Altitude Down
+	if (event.keyCode == key_.PitU) InpACP = 0;			// Pitch Up
+	if (event.keyCode == key_.PitD) InpACP = 0;			// Pitch Down
+	if (event.keyCode == key_.BnkL) InpACB = 0;			// Bank Left
+	if (event.keyCode == key_.BnkR) InpACB = 0;			// Bank Right
+	if (event.keyCode == key_.PitD) InpACP = 0;			// Pitch Down
+	if (event.keyCode == key_.PitU) InpACP = 0;			// Pitch Up
+	if (event.keyCode == key_.BnkL) InpACB = 0;			// Bank Left
+	if (event.keyCode == key_.BnkR) InpACB = 0;			// Bank Right
+	if (event.keyCode == key_.YawL) InpYaw = 0;			// Yaw Left
+	if (event.keyCode == key_.YawR) InpYaw = 0;			// Yaw Right
 	// Views
-	if (event.keyCode == K_VU45) D45flg = 0;			// View - 45 deg up
-	if (event.keyCode == K_VD45) U45flg = 0;			// View - 45 deg down
-	if (event.keyCode == K_VL45) L45flg = 0;			// View - 45 deg left
-	if (event.keyCode == K_VR45) R45flg = 0;			// View - 45 deg right
-	if (event.keyCode == K_VL90) L90flg = 0;			// View - 90 deg left
-	if (event.keyCode == K_VR90) R90flg = 0;			// View - 90 deg right
-	if (event.keyCode == K_Look) cam_.pan = 0;			// Pan View
+	if (event.keyCode == key_.Look) cam_.OrbFlg = 0;	// Orbit View
+	if (event.keyCode == key_.VU45) cam_.D45flg = 0;	// View - 45 deg up
+	if (event.keyCode == key_.VD45) cam_.U45flg = 0;	// View - 45 deg down
+	if (event.keyCode == key_.VL45) cam_.L45flg = 0;	// View - 45 deg left
+	if (event.keyCode == key_.VR45) cam_.R45flg = 0;	// View - 45 deg right
+	if (event.keyCode == key_.VL90) cam_.L90flg = 0;	// View - 90 deg left
+	if (event.keyCode == key_.VR90) cam_.R90flg = 0;	// View - 90 deg right
 }
 
 //- Subroutines ----------------------------------------------------------------
+
+//. Toggle Camera View (2-Way) -//----------------------------------------------
+function toglView() {
+	// Old CamSel
+	cam_.CamPar.remove(cam_.MshRot); // Unlink Old Parent
+	cam_.SrcLLD[cam_.CamSel].copy(cam_.CamLLD);	// Save LLD
+	// New CamSel
+	cam_.CamSel = 1 - cam_.CamSel;
+	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos);
+}
 
 //. Toggle Pause ...............................................................
 function toglPaws() {

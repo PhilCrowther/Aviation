@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Feb 2026
+Version dated 28 Feb 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -96,8 +96,8 @@ import {loadAirExt,loadAirInt,	// Load External Model
 		loadMySong,moveMySong,playMySong,stopMySong,	
 	} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {PointerLockControls,	// three.js modified
-		initCamera,moveCamera,	// camera
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
+		moveCamera,				// camera
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls2.js";
 import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
@@ -721,7 +721,7 @@ function rendAll() {			// r173 added async
 		else {f2b_.End = f2b_.Flr};
 		if (f2b_.End != f2b_.Beg) moveFad2Blk(f2b_); // Fade In/Out
 		// Camera
-		moveCamera(cam_,air_,key_,gen_);
+		moveCamera(cam_,air_,key_,gen_,InpMos);
 		// Move Objects
 		air_.DLTime = tim_.DLTime;
 		let GrdFlg = air_.GrdFlg;
@@ -1598,7 +1598,7 @@ function initCamFM2() {
 	//- Final Adjustments ------------------------------------------------------
 	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators to new CamPar (AirObj or CamPVC)
 	camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
-	moveCamera(cam_,air_,key_,gen_);
+	moveCamera(cam_,air_,key_,gen_,InpMos);
 }
 
 /*******************************************************************************
