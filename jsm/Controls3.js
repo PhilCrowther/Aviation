@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Feb 2026
+Version dated 28 Feb 2026
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -120,7 +120,6 @@ function initCamera(cam_,air_,key_,gen_,mxr_,vxr_) {
 	moveCamera(cam_,air_,key_,gen_);
 }
 
-
 //= MOVE CAMERA VIEW ===========//==============================================
 function moveCamera(cam_,air_,key_,gen_) {
 	gen_.camera.rotation.x = 0;		// Default
@@ -155,7 +154,7 @@ function moveCamera(cam_,air_,key_,gen_) {
 		// Default
 		cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
 		// KeyPad ..............................................................
-		if (cam_.KeyPad) {
+		if (key_.KPad) {
 			// Exterior View
 			if (!cam_.CamFlg) {
 				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x; // 260227
