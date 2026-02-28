@@ -96,8 +96,8 @@ import {loadAirExt,loadAirInt,	// Load External Model
 		loadMySong,moveMySong,playMySong,stopMySong,	
 	} from "https://PhilCrowther.github.io/Aviation/jsm/AnimFM2.js";
 import {PointerLockControls,	// three.js modified
-		moveCamera,				// camera
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls2.js";
+		initCamera,moveCamera,	// camera
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
@@ -1552,9 +1552,6 @@ function initCamFM2() {
 		// Shadow2
 		sonLight.visible = false; // Turn Off Cockpit Lighting
 		sonLight.castShadow = false; // and Shadows
-		// Airplane Models
-		mxr_.Adr.visible = true;
-		vxr_.Adr.visible = false;
 		// Flaps
 		if (mxr_.FlL) mxr_.FlL.setTime(anm_.flppos/anm_.anmfps);
 		if (mxr_.FlR) mxr_.FlR.setTime(anm_.flppos/anm_.anmfps);
@@ -1581,24 +1578,11 @@ function initCamFM2() {
 		// Shadow2
 		sonLight.visible = true; // Turn on Cockpit Lighting
 		sonLight.castShadow = true; // and Shadows
-		// Airplane Models
-		mxr_.Adr.visible = false;
-		vxr_.Adr.visible = true;
 		// Canopy
-		if (mxr_.Cnp) mxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);	
+		if (vxr_.Cnp) vxr_.Cnp.setTime(anm_.canpos/anm_.anmfps);	
 	}
-	//- Load New Values --------------------------------------------------------
-	cam_.CamLLD = new THREE.Vector3().copy(cam_.SrcLLD[cam_.CamSel]); // cam_.MshRot Lat, Lon, Dst
-	cam_.CamMMD = new THREE.Vector3().copy(cam_.SrcMMD[cam_.CamSel]); // In/Out - min,max,spd
-	cam_.CamMMR = new THREE.Vector3().copy(cam_.SrcMMR[cam_.CamSel]); // Rotate - min/max Lat/Lon,rspd
-	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
-	cam_.CamAdj = cam_.SrcAdj[cam_.CamSel];	// Load Adjustment
-	cam_.CamFlg = cam_.SrcFlg[cam_.CamSel];	// 1 = Internal
-	cam_.CamLnk = cam_.SrcLnk[cam_.CamSel];	// 1 = Linked to Airplane
-	//- Final Adjustments ------------------------------------------------------
-	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators to new CamPar (AirObj or CamPVC)
-	camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
-	moveCamera(cam_,air_,key_,gen_,InpMos);
+	//- General Initialization -------------------------------------------------
+	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos);
 }
 
 /*******************************************************************************
