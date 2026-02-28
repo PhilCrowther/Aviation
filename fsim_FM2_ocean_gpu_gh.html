@@ -603,10 +603,10 @@ const CamPVC = new THREE.Object3D;
 
 //= 9. INPUT VARIABLES =========//==============================================
 //- POINTER LOCK CONTROLS ------//----------------------------------------------
-//	Adjustments
-	InpMos = new THREE.Vector2(); // Mouse Inputs
+//-	Variables ..................................................................
+let	InpMos = new THREE.Vector2(); // Mouse Inputs
 //. Setup ......................................................................
-let controls = new PointerLockControls(renderer.domElement);
+let controls = new PointerLockControls(renderer.domElement,InpMos);
 let blocker = document.getElementById("blocker");
 let instructions = document.getElementById("instructions");
 	instructions.addEventListener("click", function () {controls.lock();});
@@ -618,7 +618,7 @@ let instructions = document.getElementById("instructions");
 		blocker.style.display = "block";
 		instructions.style.display = "";
 	});
-//- Other
+//- OTHER
 let ThrFlg = 0;					// On CVE, 1 = Throttle Disabled Until Animation Done
 let AnmFlg = 0;					// On CVE, 1 = Animation Not Complete set
 
