@@ -147,28 +147,29 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 		else {
 			if (air_.GrdFlg && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
 		}
-		InpMos.x = 0;
-		InpMos.y = 0;
+		InpMos.x = InpMos.y = 0;
 	}
 	// View Keys (NumLock)
 	else {						// If Not Orbiting
 		// Default
 		cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
+		// Although these are mostly identical, we need separate routines to interpret KeyPad vs. Other
 		// KeyPad ..............................................................
 		if (key_.KPad) {
 			// Exterior View
 			if (!cam_.CamFlg) {
-				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x; // 260227
-				if (key_.U45flg) cam_.CamLLD.x = 315;
-				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
+				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
+				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
+				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
 				if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
 			}
 			// Internal View
 			else {
 				cam_.CamLLD.y = cam_.VewRot;
-				if (key_.D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
-				if (key_.D45flg && cam_.VewRot) cam_.CamLLD.y = 0;
 				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
+				if (key_.D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
+				if (key_.D45flg && cam_.VewRot) cam_.CamLLD.y = 0; // Limit
+
 			}
 			if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
 			if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
@@ -177,12 +178,12 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
 			if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
 		}
-		// Alt Keys ............................................................
+		// Alt Keys (keys above arrow keys) ....................................
 		else {
 			// Exterior View
 			if (!cam_.CamFlg) {
-				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x; // 260227
-				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
+				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
+				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
 			}	
 			// Internal View
 			else {
@@ -205,7 +206,7 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 	}
 	// In External View, the camera is facing in and the armature is pointing out:
 	if (!cam_.CamFlg) {
-		// Vertical Camera Lag
+		// Vertical Camera Lag (Special Handling)
 		if (cam_.LagFlg) {
 			if (!cam_.OrbFlg && air_.GrdFlg) { // Air to Ground
 				if (!cam_.CmGrdF) {		// if just landed
