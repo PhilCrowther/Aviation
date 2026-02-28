@@ -138,14 +138,14 @@ function moveCamera(cam_,air_,key_,gen_) {
 		cam_.CamLLD.x = cam_.CamLLD.x - InpMos.y * cam_.CamMMR.z; // Camera Position (Lat)
 		cam_.CamLLD.x = MaxVal(cam_.CamLLD.x,cam_.CamMMR.x);
 		cam_.CamLLD.y = Mod360(cam_.CamLLD.y + InpMos.x * cam_.CamMMR.z); // Camera Position (Lon)
+		// External View
+		if (!cam_.CamFlg) {
+			if (air_.GrdFlg && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
+		}
 		// Internal View
-		if (cam_.CamFlg) {		// Range: 250 to 360/0 to 110
+		else {					// Range: 250 to 360/0 to 110
 			if (cam_.CamLLD.y > 180 && cam_.CamLLD.y < (360-cam_.CamMMR.y)) cam_.CamLLD.y = (360-cam_.CamMMR.y);
 			if (cam_.CamLLD.y < 180 && cam_.CamLLD.y > cam_.CamMMR.y) cam_.CamLLD.y = cam_.CamMMR.y;
-		}
-		// External View
-		else {
-			if (air_.GrdFlg && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
 		}
 		InpMos.x = 0;
 		InpMos.y = 0;
@@ -155,7 +155,7 @@ function moveCamera(cam_,air_,key_,gen_) {
 		// Default
 		cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
 		// Exterior View
-		if (cam_.CamFlg) {
+		if (!cam_.CamFlg) {
 			cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x; // 260227
 			if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45;
 			if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
