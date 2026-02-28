@@ -43,7 +43,7 @@ let _unlockEvent = {type: "unlock"};
 //	Adapted from three.js version
 
 class PointerLockControls extends EventDispatcher {
-	constructor(domElement) {
+	constructor(domElement,InpMos) {
 		super();
 		this.domElement = domElement;
 		this.isLocked = false;
