@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Feb 2026
+Version dated 3 Mar 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -901,7 +901,8 @@ function loadAirExt(air_,mxr_,anm_,gen_) {
 				child.name == "int_glass"		||
 				child.name == "int_glass_grn"	||
 				child.name == "ixt_controls"	||
-				child.name == "ixt_seats2")
+				child.name == "ixt_seatsL"		||
+				child.name == "ixt_seatsR")
 			{
 				child.castShadow = false;
 				child.receiveShadow = false;
@@ -1545,7 +1546,7 @@ function toglView() {
 //. Toggle Pause ...............................................................
 function toglPaws() {
 	gen_.PawsOn = 1 - gen_.PawsOn;
-	if (gen_.PawsOn && gen_.SndFlg) {		//On to Off
+	if (gen_.PawsOn && gen_.SndFlg) {	//On to Off
 		stopSounds();
 	}
 	if (!gen_.PawsOn && gen_.SndFlg) {	// Off to On
