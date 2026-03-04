@@ -282,7 +282,7 @@ function loadGrdMat(grd_,gen_) {
 		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.wrapS = texture.wrapT = RepeatWrapping;
-		texture.repeat.set(1,10);
+		texture.repeat.set(1,20);
 		texture.needsUpdate = true;
 		grd_.DfR[0] = texture;
 	});
@@ -293,7 +293,7 @@ function loadGrdMat(grd_,gen_) {
 		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.wrapS = texture.wrapT = RepeatWrapping;
-		texture.repeat.set(10,1);
+		texture.repeat.set(20,1);
 		texture.needsUpdate = true;
 		grd_.DfR[1] = texture;
 	});
@@ -743,10 +743,10 @@ function init1Road(grd_,gen_,road) {
 			zx = zx + road.Siz;
 		}
 		let geometry = new PlaneGeometry(25*Ft2Mtr,road.Siz);	// N/S Road;
-		let DatTxt = road.Txt;
-		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = gen_.maxAns;		// ###
-		DatTxt.needsUpdate = true;
+//		let DatTxt = road.Txt;
+//		DatTxt.repeat.set(10,10);
+//		DatTxt.anisotropy = gen_.maxAns;		// ###
+//		DatTxt.needsUpdate = true;
 //		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		let material = new MeshLambertNodeMaterial({colorNode: texture(grd_.DfR[0])});
 		for (let n = 0; n < road.Num; n++) {	// Source
@@ -764,10 +764,10 @@ function init1Road(grd_,gen_,road) {
 			zx = zx + road.Siz;
 		}
 		let geometry = new PlaneGeometry(road.Siz,25*Ft2Mtr);	// E/W Road;
-		let DatTxt = road.Txt;
-		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = gen_.maxAns;		// ###
-		DatTxt.needsUpdate = true;
+//		let DatTxt = road.Txt;
+//		DatTxt.repeat.set(10,10);
+//		DatTxt.anisotropy = gen_.maxAns;		// ###
+//		DatTxt.needsUpdate = true;
 //		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		let material = new MeshLambertNodeMaterial({colorNode: texture(grd_.DfR[1])});
 		for (let n = 0; n < road.Num; n++) {	// Source
