@@ -275,6 +275,28 @@ function loadGrdMat(grd_,gen_) {
 		texture.needsUpdate = true;
 		grd_.DfT[2] = texture;
 	});
+	//- DirtRoadV - Diffuse Texture
+	gen_.txtrLd.load(grd_.DfR[0],function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.repeat.set(1,20);
+		texture.needsUpdate = true;
+		grd_.DfR[0] = texture;
+	});
+	//- DirtRoadH - Diffuse Texture
+	gen_.txtrLd.load(grd_.DfR[1],function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.repeat.set(20,1);
+		texture.needsUpdate = true;
+		grd_.DfR[1] = texture;
+	});
 }
 
 /*******************************************************************************
@@ -721,11 +743,12 @@ function init1Road(grd_,gen_,road) {
 			zx = zx + road.Siz;
 		}
 		let geometry = new PlaneGeometry(25*Ft2Mtr,road.Siz);	// N/S Road;
-		let DatTxt = road.Txt;
-		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = gen_.maxAns;		// ###
-		DatTxt.needsUpdate = true;
-		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+//		let DatTxt = road.Txt;
+//		DatTxt.repeat.set(10,10);
+//		DatTxt.anisotropy = gen_.maxAns;		// ###
+//		DatTxt.needsUpdate = true;
+//		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		let material = new MeshLambertNodeMaterial({colorNode: texture(grd_.DfR[0])});
 		for (let n = 0; n < road.Num; n++) {	// Source
 			road.Ptr[n] = new Mesh(geometry,material);
 			if (road.Shd == 1) road.Ptr[n].receiveShadow = true;
@@ -741,11 +764,12 @@ function init1Road(grd_,gen_,road) {
 			zx = zx + road.Siz;
 		}
 		let geometry = new PlaneGeometry(road.Siz,25*Ft2Mtr);	// E/W Road;
-		let DatTxt = road.Txt;
-		DatTxt.repeat.set(10,10);
-		DatTxt.anisotropy = gen_.maxAns;		// ###
-		DatTxt.needsUpdate = true;
-		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+//		let DatTxt = road.Txt;
+//		DatTxt.repeat.set(10,10);
+//		DatTxt.anisotropy = gen_.maxAns;		// ###
+//		DatTxt.needsUpdate = true;
+//		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
+		let material = new MeshLambertNodeMaterial({colorNode: texture(grd_.DfR[1])});
 		for (let n = 0; n < road.Num; n++) {	// Source
 			road.Ptr[n] = new Mesh(geometry,material);
 			if (road.Shd == 1) road.Ptr[n].receiveShadow = true;
