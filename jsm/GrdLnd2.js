@@ -284,7 +284,7 @@ function loadGrdMat(grd_,gen_) {
 		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.repeat.set(1,10);
 		texture.needsUpdate = true;
-		grd_.DfT[0] = texture;
+		grd_.DfR[0] = texture;
 	});
 	//- DirtRoadH - Diffuse Texture
 	gen_.txtrLd.load(grd_.DfR[1],function(texture) {
@@ -295,7 +295,7 @@ function loadGrdMat(grd_,gen_) {
 		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.repeat.set(10,1);
 		texture.needsUpdate = true;
-		grd_.DfT[1] = texture;
+		grd_.DfR[1] = texture;
 	});
 }
 
