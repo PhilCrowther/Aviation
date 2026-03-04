@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 Feb 2026
+Version dated 4 Mar 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -230,7 +230,7 @@ let sky_ = {
 		ShdBox: 6,				// Size of shadow box
 		ShdBLR: 6.5,
 		ShdBTB: 4,
-		ShdDst: 1500,			// Shadow Distance (meters)
+		ShdDst: 500,			// Shadow Distance (meters)
 	}
 
 //= SUN VALUES =================//==============================================
@@ -250,8 +250,8 @@ let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = sky_.SunDst*0.75;
 	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
-	sunLight.shadow.mapSize.width = 2048;
-	sunLight.shadow.mapSize.height = 2048;
+	sunLight.shadow.mapSize.width = 4096;
+	sunLight.shadow.mapSize.height = 4096;
 	sunLight.shadow.camera.left = -sky_.ShdBLR;
 	sunLight.shadow.camera.right = sky_.ShdBLR;
 	sunLight.shadow.camera.top = sky_.ShdBTB;
@@ -260,7 +260,7 @@ let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	scene.add(sunLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
-let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
+let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.01,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// r168
@@ -345,6 +345,9 @@ let grd_ = {
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G3.jpg"],
 		DfM: [0.8,0.8],			// Darken outer grids to match inner grid [transition1G2]
+		// Road Textures
+		DfR: ["https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadV.jpg",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadH.jpg"],
 	}
 
 //= OBJECTS ====================//==============================================
@@ -474,7 +477,6 @@ let vxr_ = {
 		RtrP: 0,				// Main Rotor - Pitch
 		RtrK: 0,				// Main Rotor - Bank
 		RtrV: 0,				// Main Rotor - Vertical
-		RtrT: 0,				// Tail Rotor
 	}
 
 //=	SOUNDS =====================//==============================================
@@ -584,7 +586,7 @@ let cam_ = {
 //- Create Internal Attach Point
 const CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(-0.3674,0.35,-0.6);	// Internal View
+	CamPVC.position.set(-0.3674,0.38,-0.6);	// Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
 	cam_.SrcLLD = [new THREE.Vector3(-2.5,0,15),new THREE.Vector3(0,0,0.001)];
@@ -901,7 +903,8 @@ function loadAirExt(air_,mxr_,anm_,gen_) {
 				child.name == "int_glass"		||
 				child.name == "int_glass_grn"	||
 				child.name == "ixt_controls"	||
-				child.name == "ixt_seats2")
+				child.name == "ixt_seatsL"		||
+				child.name == "ixt_seatsR")
 			{
 				child.castShadow = false;
 				child.receiveShadow = false;
@@ -959,7 +962,9 @@ function loadAirInt(air_,mxr_,anm_,gen_) {
 				child.name == "int_glass"		||
 				child.name == "int_glass_grn"	||
 				child.name == "ixt_controls"	||
-				child.name == "ixt_seats2")
+				child.name == "ixt_seatRL"		||
+				child.name == "ixt_seatRR"
+				)
 			{
 				child.castShadow = false;
 				child.receiveShadow = false;
@@ -992,12 +997,6 @@ function loadAirInt(air_,mxr_,anm_,gen_) {
 		actun = vxr_.RtrV.clipAction(clip);
 		actun.play();
 		if (vxr_.RtrV) vxr_.RtrV.setTime(anm_.spnprp/anmfps);	
-		// Tail Rotor
-		clip = THREE.AnimationClip.findByName(gltf.animations, "rotor_tailAction");
-		vxr_.RtrT = new THREE.AnimationMixer(vxr_.Adr);
-		actun = vxr_.RtrT.clipAction(clip);
-		actun.play();
-		if (vxr_.RtrT) vxr_.RtrT.setTime(anm_.spnrtr/anmfps);
 		//- Save
 		air_.AirObj.add(vxr_.Adr);
 		vxr_.Adr.visible = false;
@@ -1061,7 +1060,6 @@ function moveAirObj() {
 		// Rotors - Speed
 		if (vxr_.RtrB) vxr_.RtrB.setTime(anm_.spnprp/anmfps); // Main Rotor Blades
 		if (vxr_.RtrV) vxr_.RtrV.setTime(anm_.spnprp/anmfps); // Main Rotor Hub
-		if (vxr_.RtrT) vxr_.RtrT.setTime(anm_.spnprp/anmfps); // Tail Rotor
 		// Main Rotor Blades - Pitch
 		if (vxr_.RtrP) vxr_.RtrP.setTime(anm_.pitprp/anmfps);
 		// Main Rotor Blades - Bank
