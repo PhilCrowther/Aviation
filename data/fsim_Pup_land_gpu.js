@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM PUP DATA: 260125
+*	FSIM PUP DATA: 260304
 *
 *********************************************************************************
 
@@ -177,6 +177,9 @@ let grd_ = {
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G3.jpg"],
 		DfM: [0.8,0.8],			// Darken outer grids to match inner grid [transition1G2]
+		// Road Textures
+		DfR: ["https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadV.jpg",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadH.jpg"],
 	}
 
 //= STATIC OBJECTS =============//==============================================
