@@ -514,9 +514,9 @@ let gau_ = {
 //		HdgXYZ: new THREE.Vector3(0,0.3,0),			// Model: Ptr Length
 //		HdgPtr: 0,									// Pointer Address
 		// VSI
-//		VSIPos: new THREE.Vector3(1.45,0.5,GauPos), // Model: XYZ Pos
-//		VSIXYZ: new THREE.Vector3(-0.3,0,0),			// Model: Ptr Length
-//		VSIPtr: 0,									// Pointer Address
+		VSIPos: new THREE.Vector3(-0.067,0.0600,GauPos), // Model: XYZ Pos
+		VSIXYZ: new THREE.Vector3(-0.025,0,0),			// Model: Ptr Length
+		VSIPtr: 0,									// Pointer Address
 	}
 
 //=	SOUNDS =====================//==============================================
@@ -1070,8 +1070,8 @@ function loadAirInt(air_,mxr_,anm_,gen_) {
 //		panel.add(gau_.TrnPtr);
 //		gau_.HdgPtr = makeLines(gau_.HdgXYZ,gau_.HdgPos);
 //		panel.add(gau_.HdgPtr);
-//		gau_.VSIPtr = makeLines(gau_.VSIXYZ,gau_.VSIPos);
-//		panel.add(gau_.VSIPtr);
+		gau_.VSIPtr = makeLines(gau_.VSIXYZ,gau_.VSIPos);
+		panel.add(gau_.VSIPtr);
 	});
 }
 
@@ -1241,11 +1241,11 @@ function chngInst() {
 //	let HdgD =-Hdg*DegRad;
 //	gau_.HdgPtr.rotation.set(0,0,HdgD);
 	// 6. VSI
-//	let VSI = air_.MapSpd.y*Mtr2Ft*60/air_.DLTime;	// Vertical Speed (fpm)
-//	if (VSI > 6000) VSI = 6000;
-//	if (VSI < -6000) VSI = -6000;
-//	let VSID = -(VSI*345/12000)*DegRad;
-//	gau_.VSIPtr.rotation.set(0,0,VSID);	
+	let VSI = air_.MapSpd.y*Mtr2Ft*60/air_.DLTime;	// Vertical Speed (fpm)
+	if (VSI > 3000) VSI = 3000;
+	if (VSI < -3000) VSI = -3000;
+	let VSID = -(VSI*180/3000)*DegRad;
+	gau_.VSIPtr.rotation.set(0,0,VSID);	
 }
 
 /*******************************************************************************
