@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 Mar 2026
+Version dated 6 Mar 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -479,6 +479,46 @@ let vxr_ = {
 		RtrV: 0,				// Main Rotor - Vertical
 	}
 
+//- Instruments ----------------//----------------------------------------------
+let AtISrc = "https://PhilCrowther.github.io/Aviation/textures/panels/AtITxt.png";
+let AtITxt;
+//- Panel
+//let panel = new THREE.Mesh(new THREE.BoxGeometry(.01,.01,.01), new THREE.MeshBasicMaterial({color: 0xff0000}));
+	let panel = new THREE.Object3D();
+	panel.position.set(0,0,-1.43);		// Gauge positions relative to panel position
+	air_.AirObj.add(panel);
+//- Pointers
+let GauPos = 0.1;									// Gauge Model - Default Z Position
+let gau_ = {
+		// Speed
+		SpdPos: new THREE.Vector3(-0.226,0.1475,GauPos), // Model: XYZ Pos
+		SpdXYZ: new THREE.Vector3(0,0.025,0),			// Model: Ptr Length
+		SpdPtr: 0,									// Pointer Address
+		// Atitude Indicator
+		AtIPos: new THREE.Vector3(-0.1,0.1,-0.05), // Model: XYZ Pos
+		AtIMsh: 0,
+		// Altitude (Small = 10k)
+		AltPos: new THREE.Vector3(-0.067,0.1475,GauPos), // Model: XYZ Pos
+		AltXYZ: new THREE.Vector3(0,.02,0),			// Model: Ptr Length
+		AltPtr: 0,									// Pointer Address
+		// Altitude (Large = 1k)
+		Al2Pos: new THREE.Vector3(-0.067,0.1475,GauPos), // Model: XYZ Pos
+		Al2XYZ: new THREE.Vector3(0,.025,0),			// Model: Ptr Length
+		Al2Ptr: 0,									// Pointer Address
+		// Turn Coordinator
+//		TrnPos: new THREE.Vector3(-1.45,0.5,GauPos), // Model: XYZ Pos
+//		TrnXYZ: new THREE.Vector3(0,0.3,0),			// Model: Ptr Length
+//		TrnPtr: 0,
+		// Heading
+//		HdgPos: new THREE.Vector3(0,0.5,GauPos), 	// Model: XYZ Pos
+//		HdgXYZ: new THREE.Vector3(0,0.3,0),			// Model: Ptr Length
+//		HdgPtr: 0,									// Pointer Address
+		// VSI
+//		VSIPos: new THREE.Vector3(1.45,0.5,GauPos), // Model: XYZ Pos
+//		VSIXYZ: new THREE.Vector3(-0.3,0,0),			// Model: Ptr Length
+//		VSIPtr: 0,									// Pointer Address
+	}
+
 //=	SOUNDS =====================//==============================================
 let mys_ = {
 		// General
@@ -888,6 +928,14 @@ function moveObject() {
 function loadAirObj() {
 	loadAirExt(air_,mxr_,anm_,gen_);
 	loadAirInt(air_,mxr_,anm_,gen_);
+	// Attitude Indicator
+	gen_.txtrLd.load(AtISrc, function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.needsUpdate = true;
+		AtITxt = texture;
+	});
 }
 
 //- LOAD EXTERNAL ==============//==============================================
@@ -962,8 +1010,8 @@ function loadAirInt(air_,mxr_,anm_,gen_) {
 				child.name == "int_glass"		||
 				child.name == "int_glass_grn"	||
 				child.name == "ixt_controls"	||
-				child.name == "ixt_seatRL"		||
-				child.name == "ixt_seatRR"
+				child.name == "ixt_seatsL"		||
+				child.name == "ixt_seatsR"
 				)
 			{
 				child.castShadow = false;
@@ -1000,7 +1048,45 @@ function loadAirInt(air_,mxr_,anm_,gen_) {
 		//- Save
 		air_.AirObj.add(vxr_.Adr);
 		vxr_.Adr.visible = false;
+		// Attitude Indicator
+		let geoAtI = new THREE.SphereGeometry(0.03,32,16);
+		geoAtI.rotateY(-90*DegRad);
+		geoAtI.rotateX(-12.5*DegRad);
+		let matAtI = new THREE.MeshBasicNodeMaterial({colorNode: texture(AtITxt)});
+//		let matAtI = new THREE.MeshLambertNodeMaterial({colorNode: texture(AtITxt)});
+		gau_.AtIMsh = new THREE.Mesh(geoAtI, matAtI);
+		gau_.AtIMsh.receiveShadow = true;
+		panel.add(gau_.AtIMsh);
+		gau_.AtIMsh.position.copy(gau_.AtIPos);
+		gau_.AtIMsh.rotation.order = "YXZ";
+		// Gauge Pointers
+		gau_.SpdPtr = makeLines(gau_.SpdXYZ,gau_.SpdPos);
+		panel.add(gau_.SpdPtr);
+		gau_.AltPtr = makeLines(gau_.AltXYZ,gau_.AltPos);
+		panel.add(gau_.AltPtr);
+		gau_.Al2Ptr = makeLines(gau_.Al2XYZ,gau_.Al2Pos);
+		panel.add(gau_.Al2Ptr);
+//		gau_.TrnPtr = makeLines(gau_.TrnXYZ,gau_.TrnPos);
+//		panel.add(gau_.TrnPtr);
+//		gau_.HdgPtr = makeLines(gau_.HdgXYZ,gau_.HdgPos);
+//		panel.add(gau_.HdgPtr);
+//		gau_.VSIPtr = makeLines(gau_.VSIXYZ,gau_.VSIPos);
+//		panel.add(gau_.VSIPtr);
 	});
+}
+
+//- MAKE INSTRUMENT POINTERS ------//-------------------------------------------
+
+function makeLines(LinXYZ,LinPos) {
+	let airmat = new THREE.LineBasicNodeMaterial({colorNode: color("white")});
+	let points = [];
+	points.push(new THREE.Vector3(0,0,0));
+	points.push(LinXYZ);
+	let geometry = new THREE.BufferGeometry().setFromPoints(points);
+	let line = new THREE.Line(geometry,airmat);
+	line.receiveShadow = true;
+	line.position.copy(LinPos);
+	return line;
 }
 
 //= INIT =======================//==============================================
@@ -1044,7 +1130,7 @@ function moveAirObj() {
 	air_.RotDif.y = InpYaw;
 	// Compute Rotation and Vectors
 	moveFlight();
-	//- Animations --------------------------------------------------------------
+	//- Animations -------------------------------------------------------------
 	moveAirCom(air_,anm_);
 	if (!cam_.CamFlg) { 		// External View
 		// Rotors - Speed
@@ -1065,6 +1151,8 @@ function moveAirObj() {
 		// Main Rotor Blades - Bank
 		if (vxr_.RtrK) vxr_.RtrK.setTime(anm_.bnkprp/anmfps);
 	}
+	//- Instruments ------------------------------------------------------------
+	if (cam_.CamFlg) chngInst();
 }
 
 //- MOVE COMMON ANIMATION ------//----------------------------------------------
@@ -1110,6 +1198,54 @@ function moveAirCom(air_,anm_) {
 		if (BnkDfR > 0) BnkDfR = 0;
 	}
 	air_.AirObj.rotation.z = Mod360(air_.AirObj.rotation.z * RadDeg + 360 - BnkDfR) * DegRad; // Bank
+}
+
+//- INSTRUMENTS
+function chngInst() {
+	// 1. AirSpeed
+//	let Spd = air_.SpdKPH*Km2Mil;
+	let Spd = air_.SpdKPH*0.539957;		// Convert KPH to Knots
+	// deg = -(d0+(s1-s0)*(d1-d0)/(s1-s0))
+	// 020 kts = -010 deg; deg =      -spd     *10/20 Rate 1
+	// 040 kts = -045 deg; deg = -010-(spd-020)*35/20 Rate 2
+	// 060 kts = -095 deg; deg = -045-(spd-040)*50/20 Rate 3
+	// 080 kts = -147 deg; deg = -095-(spd-060)*52/20
+	// 100 kts = -197 deg; deg = -147-(spd-080)*50/20
+	// 120 kts = -247 deg;					   *50/20
+	// 140 kts = -297 deg;					   *50/20
+	// 160 kts = -347 deg;					   *50/20
+	let SpdD = -Spd*10/20;	// Spd = 0-20
+	if (Spd>40) SpdD = -(45+(Spd-40)*50/20); // Spd = 40-160
+	else if (Spd>20) SpdD = -(10+(Spd-20)*35/20); // Spd = 20-40
+	SpdD = SpdD*DegRad;
+	gau_.SpdPtr.rotation.set(0,0,SpdD)
+	// 2. Attitude Indicator
+	gau_.AtIMsh.rotation.x = air_.AirRot.x * DegRad;
+	gau_.AtIMsh.rotation.z = (air_.AirRot.z+5) * DegRad;
+	gau_.AtIMsh.rotation.y = -21 * DegRad;
+	// 3. Altimeter
+	let Alt = air_.MapPos.y*Mtr2Ft/10000;
+	let AltD = -Mod360(Alt*360)*DegRad;
+	gau_.AltPtr.rotation.set(0,0,AltD);
+	let Al2 = air_.MapPos.y*Mtr2Ft/1000;
+	let Al2D = -Mod360(Al2*360)*DegRad;
+	gau_.Al2Ptr.rotation.set(0,0,Al2D);
+	// 4. Turn Coordinator
+//	let Trn = air_.HdgDif;
+//	if (Trn > 7.5) Trn = 7.5;
+//	if (Trn < -7.5) Trn = -7.5;
+//	let TrnD = -(Trn*1296/180)*DegRad;		// Std Rate = 3 deg/sec
+//	gau_.TrnPtr.rotation.set(0,0,TrnD);		
+	// 5. Heading
+//	let Hdg = air_.AirRot.y;
+//	let HdgD =-Hdg*DegRad;
+//	gau_.HdgPtr.rotation.set(0,0,HdgD);
+	// 6. VSI
+//	let VSI = air_.MapSpd.y*Mtr2Ft*60/air_.DLTime;	// Vertical Speed (fpm)
+//	if (VSI > 6000) VSI = 6000;
+//	if (VSI < -6000) VSI = -6000;
+//	let VSID = -(VSI*345/12000)*DegRad;
+//	gau_.VSIPtr.rotation.set(0,0,VSID);	
 }
 
 /*******************************************************************************
@@ -1217,7 +1353,7 @@ function moveFlight() {
 		// Weather-Vane Adjustment
 		// At Slow Speed, Helicopter Can Fly Sideways without Chaninge Direction
 		// At Higher Speeds, Helicopter will Point in Direction of Flight
-		let TotSpd = Math.sqrt(air_.AirSpd.z*air_.AirSpd.z+air_.AirSpd.x*air_.AirSpd.x);
+		let TotSpd = Math.sqrt(air_.AirSpd.z ** 2 + air_.AirSpd.x ** 2);
 		TotSpd = Math.abs(TotSpd);
 		let YawAdj;
 		if (TotSpd) { // if moving
@@ -1251,7 +1387,7 @@ function moveFlight() {
 		air_.AirSpd.x = PSpdXS/DLTime;
 		air_.AirSpd.y = PSpdYS/DLTime;
 		// 5e. Compute Total Speeds (not used)
-		air_.SpdMPS = TotSpd/DLTime;	// (mps)
+		air_.SpdMPS = TotSpd;			// (mps)
 		air_.SpdKPH = air_.SpdMPS*3.6; // (KPH) = *3600/1000
 	}
 	// Landing Override
@@ -1362,7 +1498,7 @@ function prntHUDval() {
 	AC_HiteNode.nodeValue = AC_Hite.toFixed(0);
 	AC_Ptch = air_.AirRot.x;	// Pitch (deg)
 	AC_PtchNode.nodeValue = AC_Ptch.toFixed(0);
-	AC_SpdZ =  air_.AirSpd.z * 3.6 * Km2Mil; // Speed - Forward (mph)
+	AC_SpdZ =  air_.SpdKPH * Km2Mil; // Speed - Forward (mph)
 	AC_SpdZNode.nodeValue = AC_SpdZ.toFixed(0);
 	AC_Bank = air_.AirRot.z;	// Bank (deg)
 	AC_BankNode.nodeValue = AC_Bank.toFixed(0);
