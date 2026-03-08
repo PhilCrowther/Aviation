@@ -10,9 +10,20 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Mar 2026
+Version dated 8 Mar 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
+
+Creating the MD500 helicopter model proved to be a very time-consuming challenge.
+We started with the detailed Nemeth model created around 2009 for the MS flight 
+simulator.  Probably due to age, converting this model to Blender proved to be a 
+challenge. And the resulting Blender model did not export well to 3JS.  Parts would 
+appear out of order (or not appear at all) and shadows do not display well.  We 
+were eventually able to create a decent external model, but we had significant 
+problems creating the internal model - mostly due to imperfections in the fuselage. 
+Fortunately we found an excellent Blender model of a MD500 fuselage created by SimiHopp.  
+The internal model is the SimiHopp fuselage combined with parts from the Nemeth model.
+
 -->
 
 <head>
