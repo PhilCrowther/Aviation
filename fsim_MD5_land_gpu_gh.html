@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Mar 2026
+Version dated 10 Mar 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 
@@ -30,7 +30,7 @@ The internal model is the SimiHopp fuselage combined with parts from the Nemeth 
 <title>fsim MD5 land gpu r183.1</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2b.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -39,12 +39,10 @@ The internal model is the SimiHopp fuselage combined with parts from the Nemeth 
 	<div class="overlay1">
 		<div>Power%: <span id="Air_Pwr"></span> %</div>
 		<div>Height: <span id="AC_Hite"></span> ft</div>
-		<div>ACPtch: <span id="AC_Ptch"></span> deg</div>
 		<div>SpeedZ: <span id="AC_SpdZ"></span> mph</div>
-		<div>ACBank: <span id="AC_Bank"></span> deg</div>
-		<div>SpeedX: <span id="AC_SpdX"></span> mph</div>	
 		<div>Headng: <span id="AC_Head"></span> deg</div>
-		<div>DirFly: <span id="AC_DFly"></span> deg</div>
+		<div>ACPtch: <span id="AC_Ptch"></span> deg</div>
+		<div>ACBank: <span id="AC_Bank"></span> deg</div>
 	</div>
 	<div class="overlay2">
 		<p>
@@ -261,14 +259,28 @@ let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = sky_.SunDst*0.75;
 	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
-	sunLight.shadow.mapSize.width = 4096;
-	sunLight.shadow.mapSize.height = 4096;
+	sunLight.shadow.mapSize.width = 2048;
+	sunLight.shadow.mapSize.height = 2048;
 	sunLight.shadow.camera.left = -sky_.ShdBLR;
 	sunLight.shadow.camera.right = sky_.ShdBLR;
 	sunLight.shadow.camera.top = sky_.ShdBTB;
 	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
 	sunLight.shadow.bias = -0.0002; // WebGPU (0 flashing; -0.0001 no wheels)
 	scene.add(sunLight);
+//- SonLight (Cockpit View Only)
+const sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
+	sonLight.position.copy(SunPos);
+	sonLight.castShadow = true;
+	sonLight.shadow.camera.near = sky_.SunDst*0.9;
+	sonLight.shadow.camera.far = sky_.SunDst+1;  // creates shadow on wing
+	sonLight.shadow.mapSize.width = 4096;
+	sonLight.shadow.mapSize.height = 4096;
+	sonLight.shadow.camera.left = -2.5; // Gets entire wing on deck (but distortion)
+	sonLight.shadow.camera.right = 2.5; // Back of Plane
+	sonLight.shadow.camera.top = 2.5;
+	sonLight.shadow.camera.bottom = -2.5;
+	sonLight.shadow.bias = -0.0001; // r182
+	scene.add(sonLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.01,100000);
@@ -691,15 +703,9 @@ let AC_SpdZNode = document.createTextNode("");
 let AC_BankElement = document.getElementById("AC_Bank");
 let AC_BankNode = document.createTextNode("");
 	AC_BankElement.appendChild(AC_BankNode);
-let AC_SpdXElement = document.getElementById("AC_SpdX");
-let AC_SpdXNode = document.createTextNode("");
-	AC_SpdXElement.appendChild(AC_SpdXNode);
 let AC_HeadElement = document.getElementById("AC_Head");
 let AC_HeadNode = document.createTextNode("");
 	AC_HeadElement.appendChild(AC_HeadNode);
-let AC_DFlyElement = document.getElementById("AC_DFly");
-let AC_DFlyNode = document.createTextNode("");
-	AC_DFlyElement.appendChild(AC_DFlyNode);
 let On_PawsElement = document.getElementById("On_Paws");
 let On_PawsNode = document.createTextNode("");
 	On_PawsElement.appendChild(On_PawsNode);
@@ -731,7 +737,7 @@ let On_Info09Element = document.getElementById("On_Info09");
 let On_Info09Node = document.createTextNode("");
 	On_Info09Element.appendChild(On_Info09Node);
 
-let Air_Pwr,AC_Hite,AC_Ptch,AC_SpdZ,AC_Bank,AC_SpdX,AC_Head,AC_DFly,On_Paws, 
+let Air_Pwr,AC_Hite,AC_Ptch,AC_SpdZ,AC_Bank,AC_Head,On_Paws, 
 	On_Info01,On_Info02,On_Info03,On_Info04,On_Info05,On_Info06,On_Info07,On_Info08,On_Info09;
 
 /*******************************************************************************
@@ -789,7 +795,8 @@ function initAll() {
 	moveTreLin(grd_,gen_,air_); // Add TreeLines
 	initObject();				// Stationary Objects
 	// Other
-	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos); // position camera
+//	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos); // position camera
+	initCamMD5();
 	PawsText();
 	InfoText();
 	gen_.LodFlg = 1;
@@ -1459,6 +1466,36 @@ return x;}
 *
 *******************************************************************************/
 
+function initCamMD5() {
+	if (!cam_.CamSel) {			// 0 = External View
+		// Shadow1
+		sunLight.shadow.camera.near = sky_.SunDst*0.75;
+		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
+		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
+		sunLight.shadow.camera.updateProjectionMatrix();
+		// Shadow2
+		sonLight.visible = false; // Turn Off Cockpit Lighting
+		sonLight.castShadow = false; // and Shadows
+	}
+	if (cam_.CamSel) {			// 1 = Internal View
+		// Shadow1
+		sunLight.shadow.camera.near = sky_.SunDst+1; // Avoid Double Shadows
+		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
+		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
+		sunLight.shadow.camera.updateProjectionMatrix();
+		// Shadow2
+		sonLight.visible = true; // Turn on Cockpit Lighting
+		sonLight.castShadow = true; // and Shadows
+	}
+	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos);
+}
+
+/*******************************************************************************
+*
+*	6. SOUNDS
+*
+*******************************************************************************/
+
 //= LOAD SOUNDS ================//==============================================
 
 function loadSounds() {
@@ -1513,12 +1550,8 @@ function prntHUDval() {
 	AC_SpdZNode.nodeValue = AC_SpdZ.toFixed(0);
 	AC_Bank = air_.AirRot.z;	// Bank (deg)
 	AC_BankNode.nodeValue = AC_Bank.toFixed(0);
-	AC_SpdX = air_.AirSpd.x * 3.6 * Km2Mil; // Speed - Lateral (mph)
-	AC_SpdXNode.nodeValue = AC_SpdX.toFixed(0);
 	AC_Head = Mod360(Math.round(air_.AirRot.y)); // Heading (deg)
 	AC_HeadNode.nodeValue = AC_Head.toFixed(0);
-	AC_DFly = air_.DirFlt;		// Direction of Flight (deg)
-	AC_DFlyNode.nodeValue = AC_DFly.toFixed(0);
 }
 
 //	Paused On
@@ -1684,7 +1717,8 @@ function toglView() {
 	cam_.SrcLLD[cam_.CamSel].copy(cam_.CamLLD);	// Save LLD
 	// New CamSel
 	cam_.CamSel = 1 - cam_.CamSel;
-	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos);
+//	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos);
+	initCamMD5();
 }
 
 //. Toggle Pause ...............................................................
