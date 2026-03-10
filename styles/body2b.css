@@ -24,8 +24,8 @@ canvas {
 /* Data */
 .overlay1 {
 	position: absolute;
-	top: 2%;
-	left: 20%;
+	top: 20%;
+	left: 2%;
 	width: 220px;
 	height: 110px;
 	color: black;
