@@ -1348,7 +1348,6 @@ function moveFlight() {
 		air_.AirPBY.rotation.z = -air_.RotDif.z*DegRad;	// Change in Bank (due to user imput)
 		air_.AirPBY.rotation.x = air_.RotDif.x*DegRad;	// Change in Pitch (due to user input)
 		air_.AirPBY.rotation.y = -air_.RotDif.y*DegRad;	// Change in Yaw (due to user input)
-		console.log(air_.RotDif.x,air_.RotDif.y,air_.RotDif.z);
 		// Transfer Combined Rotation to AirAxe
 		air_.AirPBY.getWorldQuaternion(quaternion);
 		air_.AirObj.setRotationFromQuaternion(quaternion);
@@ -1645,7 +1644,6 @@ function onDocumentMouseWheel(event) {
 	air_.PwrPct = air_.PwrPct - event.deltaY * 0.0005;
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
 	if (air_.PwrPct > 1) air_.PwrPct = 1;
-//	console.log(air_.PwrPct);
 }
 
 //- KEYBOARD ===================//==============================================
