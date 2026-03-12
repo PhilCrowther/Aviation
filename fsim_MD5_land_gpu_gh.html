@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Mar 2026
+Version dated 12 Mar 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 
@@ -479,11 +479,8 @@ let anm_ = {
 }
 //	Animation Mixers - External Model
 let mxr_ = {
-		// Source
-		Src: AirSrc + mxrFNm,
-		// Address
-		Adr: 0,
-		//
+		Src: AirSrc + mxrFNm,	// Model Address
+		Adr: 0,					// Animajtion Address
 		RtrB: 0,				// Main Rotor - Blades
 		RtrP: 0,				// Main Rotor - Pitch
 		RtrK: 0,				// Main Rotor - Bank
@@ -492,11 +489,8 @@ let mxr_ = {
 	}
 //	Animation Mixers - Internal Model
 let vxr_ = {
-		// Source
-		Src: AirSrc + vxrFNm,
-		// Address
-		Adr: 0,
-		//
+		Src: AirSrc + vxrFNm,	// Model Address
+		Adr: 0,					// Animation Address
 		RtrB: 0,				// Main Rotor - Blades
 		RtrP: 0,				// Main Rotor - Pitch
 		RtrK: 0,				// Main Rotor - Bank
@@ -540,7 +534,14 @@ let gau_ = {
 		// VSI
 		VSIPos: new THREE.Vector3(-0.067,0.0600,GauPos), // Model: XYZ Pos
 		VSIXYZ: new THREE.Vector3(-0.025,0,0),			// Model: Ptr Length
-		VSIPtr: 0,									// Pointer Address
+		VSIPtr: 0,									// Pointer Address		
+	}
+
+//- Compass Add-On -------------//----------------------------------------------
+let cmp_ = {
+		FNm: "https://PhilCrowther.github.io/Aviation/panels/models/compass.glb",
+		Pos: new THREE.Vector3(0,0.381854,-1.44774), // XYZ Pos
+		Adr: 0,					// Animation Address
 	}
 
 //=	SOUNDS =====================//==============================================
@@ -1093,6 +1094,8 @@ function loadAirInt(air_,mxr_,anm_,gen_) {
 //		panel.add(gau_.HdgPtr);
 		gau_.VSIPtr = makeLines(gau_.VSIXYZ,gau_.VSIPos);
 		panel.add(gau_.VSIPtr);
+		// Load and Attach External Objects
+		loadCompass()
 	});
 }
 
@@ -1108,6 +1111,26 @@ function makeLines(LinXYZ,LinPos) {
 	line.receiveShadow = true;
 	line.position.copy(LinPos);
 	return line;
+}
+
+//- COMPASS --------------------//----------------------------------------------
+
+function loadCompass() {
+	gen_.gltfLd.load(cmp_.FNm, function (gltf) {
+		cmp_.Adr = gltf.scene;
+		cmp_.Adr.rotation.order = "YXZ";
+//		cmp_.Adr.position.set(cmp_.Pos);
+		cmp_.Adr.position.z = cmp_.Pos.z;
+		cmp_.Adr.position.y = cmp_.Pos.y;
+		// Animations ----------------------------------------------------------
+		let clip = THREE.AnimationClip.findByName(gltf.animations, "compass_wheelAction");
+		cmp_.Anm = new THREE.AnimationMixer(cmp_.Adr);
+		let actun = cmp_.Anm.clipAction(clip);
+		actun.play();
+		if (cmp_.Anm) cmp_.Anm.setTime(air_.AirRot.y/anmfps);
+		// Attach to Internal Model
+		vxr_.Adr.add(cmp_.Adr);
+	});
 }
 
 //= INIT =======================//==============================================
@@ -1171,6 +1194,8 @@ function moveAirObj() {
 		if (vxr_.RtrP) vxr_.RtrP.setTime(anm_.pitprp/anmfps);
 		// Main Rotor Blades - Bank
 		if (vxr_.RtrK) vxr_.RtrK.setTime(anm_.bnkprp/anmfps);
+		// Compass
+		if (cmp_.Anm) cmp_.Anm.setTime(air_.AirRot.y/anmfps);
 	}
 	//- Instruments ------------------------------------------------------------
 	if (cam_.CamFlg) chngInst();
