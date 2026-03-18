@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Mar 2026
+Version dated 18 Mar 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 
@@ -1323,7 +1323,13 @@ function moveFlight() {
 	DLTime = 1/60;				// Delta Time (1/60 seconds)
 	DLTim2 = DLTime ** 2;
 	let FrcAcc = DLTim2/air_.ACMass;
-	if (air_.GrdFlg && (air_.ThrMlt*air_.PwrPct) > 1) air_.GrdFlg = 0;	// If going to leave ground
+	if (air_.GrdFlg && (air_.ThrMlt*air_.PwrPct) > 1) { 	// If going to leave ground
+		air_.GrdFlg = 0;
+		if (!cam_.CamSel) {
+			sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
+			sunLight.shadow.camera.updateProjectionMatrix();
+		}
+	}
 	if (!air_.GrdFlg) {			// Compute Change in mps, convert MapSpd to mpf
 		// 1. Convert to mps
 		let PSpdZS = air_.AirSpd.z * air_.DLTime;
@@ -1433,8 +1439,10 @@ function moveFlight() {
 	}
 	// Landing Override
 	let MinAlt = air_.GrdZed + air_.MdlAlt; // Minimum Altitude (ASL = GL+AGL)
-	if (air_.MapPos.y <= MinAlt) air_.GrdFlg = 1;
-	if (air_.GrdFlg) landFlight(MinAlt);	
+	if (air_.MapPos.y <= MinAlt) {
+		air_.GrdFlg = 1;
+		landFlight(MinAlt);
+	}
 }
 
 function landFlight(MinAlt) {
@@ -1458,6 +1466,10 @@ function landFlight(MinAlt) {
 	if (mxr_.RtrP) mxr_.RtrP.setTime(180/anmfps);
 	// Main Rotor Blades - Bank
 	if (mxr_.RtrK) mxr_.RtrK.setTime(180/anmfps);
+	if (air_.GrdFlg) {
+		sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
+		sunLight.shadow.camera.updateProjectionMatrix();
+	}
 }
 
 /*******************************************************************************
@@ -1485,7 +1497,7 @@ return x;}
 
 /*******************************************************************************
 *
-*	6. SOUNDS
+*	5. CAMERA
 *
 *******************************************************************************/
 
