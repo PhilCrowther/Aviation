@@ -167,9 +167,6 @@ let ThrAdj = new THREE.Vector3(1/60,1,1/60); // Limits ZX Acceleration/Speed
 //= 1. MAIN VARIABLES ==========//==============================================
 
 //- CONSTANTS ------------------//----------------------------------------------
-//	Time
-let	DLTime = 1/60;				// Delta Time (1/60 seconds)
-let DLTim2 = DLTime*DLTime;		//
 //	Conversions
 let DegRad = Math.PI/180;		// Convert Degrees to Radians
 let RadDeg = 180/Math.PI;		// Convert Radians to Degrees
@@ -214,6 +211,10 @@ let gen_ = {
 
 let tim_ = {
 		DLTime: 1/60,
+		DLTim2: 0,
+		GrvDLT: 0,
+		NowTim: 0,
+		DifTim: 0,
 	}
 
 //= 2. SKY VARIABLES ===========//==============================================
@@ -301,7 +302,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// r168
 	await renderer.init();		// Allows time for backend to initialize
 //- Timer
 let	timer = new THREE.Timer();	// r183
-let oldTim, nowTim, difTim = 0;
+	tim_.nowTim, tim_.difTim = 0;
 //- Inputs
 	document.addEventListener("mousedown", onDocumentMouseDown, false);
 	document.addEventListener("mouseup", onDocumentMouseUp, false);
@@ -341,6 +342,7 @@ let boxrot = 0;
 	gen_.render = renderer;
 	gen_.camera = camera;
 	gen_.listnr = listener;
+
 
 //= GROUND TEXTURES ============//==============================================
 //- Canvas
@@ -417,7 +419,6 @@ let ObjIdx = 0;
 //= MY HELICOPTER ==============//==============================================
 let air_ = {
 		// General Variables
-		DLTime: DLTime,			// Seconds per frame (can vary)
 		AirDSL: AirDen,			// Air Density (varies with altitude)
 		// Helicopter Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: new THREE.Euler().copy(BegRot), // Rotation (in degrees)
@@ -947,7 +948,7 @@ function moveObject() {
 
 function loadAirObj() {
 	loadAirExt(air_,mxr_,anm_,gen_);
-	loadAirInt(air_,mxr_,anm_,gen_);
+	loadAirInt(air_,vxr_,anm_,gen_);
 	// Attitude Indicator
 	gen_.txtrLd.load(AtISrc, function(texture) {
 		texture.format = THREE.RGBAFormat;
@@ -1021,7 +1022,7 @@ function loadAirExt(air_,mxr_,anm_,gen_) {
 
 //- LOAD INTERNAL ==============//==============================================
 
-function loadAirInt(air_,mxr_,anm_,gen_) {
+function loadAirInt(air_,vxr_,anm_,gen_) {
 	gen_.gltfLd.load(vxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {
 			if (child.isMesh) {
@@ -1287,7 +1288,7 @@ function chngInst() {
 //	let HdgD =-Hdg*DegRad;
 //	gau_.HdgPtr.rotation.set(0,0,HdgD);
 	// 6. VSI
-	let VSI = air_.MapSpd.y*Mtr2Ft*60/air_.DLTime;	// Vertical Speed (fpm)
+	let VSI = air_.MapSpd.y*Mtr2Ft*60/tim_.DLTime;	// Vertical Speed (fpm)
 	if (VSI > 3000) VSI = 3000;
 	if (VSI < -3000) VSI = -3000;
 	let VSID = -(VSI*180/3000)*DegRad;
@@ -1320,9 +1321,8 @@ function initFlight() {
 function moveFlight() {
 // Inputs: air_.GrdFlg, GrdZed, air_.MapSpd.z, air_.AirRot.x, air_.AirRot.z
 	// Compute Vectors
-	DLTime = 1/60;				// Delta Time (1/60 seconds)
-	DLTim2 = DLTime ** 2;
-	let FrcAcc = DLTim2/air_.ACMass;
+	tim_.DLTim2 = tim_.DLTime**2;
+	let FrcAcc = tim_.DLTim2/air_.ACMass;
 	if (air_.GrdFlg && (air_.ThrMlt*air_.PwrPct) > 1) { 	// If going to leave ground
 		air_.GrdFlg = 0;
 		if (!cam_.CamSel) {
@@ -1332,9 +1332,9 @@ function moveFlight() {
 	}
 	if (!air_.GrdFlg) {			// Compute Change in mps, convert MapSpd to mpf
 		// 1. Convert to mps
-		let PSpdZS = air_.AirSpd.z * air_.DLTime;
-		let PSpdXS = air_.AirSpd.x * air_.DLTime;
-		let PSpdYS = air_.MapSpd.y * air_.DLTime;
+		let PSpdZS = air_.AirSpd.z * tim_.DLTime;
+		let PSpdXS = air_.AirSpd.x * tim_.DLTime;
+		let PSpdYS = air_.MapSpd.y * tim_.DLTime;
 		// 2. SPEED (mpf) ------------------------------------------------------
 		let ThrFrc = air_.Weight*air_.ThrMlt*air_.PwrPct;
 		// 2a. Forward Speed (mpf) .............................................
@@ -1348,7 +1348,7 @@ function moveFlight() {
 		let PnetZF = PThrZF - PDrgZF; // Net Force
 		// Acceleration (mpf)		
 		let PnetZA = (PnetZF/air_.ACMass); // (mps)
-		PnetZA = PnetZA*DLTime*air_.ThrAdj.z; // (mpf)
+		PnetZA = PnetZA*tim_.DLTime*air_.ThrAdj.z; // (mpf)
 		PSpdZS = PSpdZS + PnetZA; // new Speed (mpf)
 		// 2b. Lateral Speed (mpf) .............................................
 		// Thrust Force (F/s)
@@ -1361,7 +1361,7 @@ function moveFlight() {
 		let PnetXF = PThrXF - PDrgXF; // Net Force
 		// Acceleration (mpf)
 		let PnetXA = (PnetXF/air_.ACMass); // (mps)
-		PnetXA = PnetXA*DLTime*air_.ThrAdj.x; // (mpf)
+		PnetXA = PnetXA*tim_.DLTime*air_.ThrAdj.x; // (mpf)
 		PSpdXS = PSpdXS + PnetXA; // new Speed (mpf)
 		// 2c. Vertical Speed (mpf) ............................................
 		// Thrust Force (F/s)
@@ -1369,7 +1369,7 @@ function moveFlight() {
 		let PnetYF = PThrYF; 	// Net Force
 		// Acceleration (mpf)
 		let PnetYA = (PnetYF/air_.ACMass) - GrvMPS; // (mps)
-		PnetYA = PnetYA*DLTime*air_.ThrAdj.y; // (mpf)
+		PnetYA = PnetYA*tim_.DLTime*air_.ThrAdj.y; // (mpf)
 		PSpdYS = PSpdYS + PnetYA; // new Speed (mpf)
 		// 3. COMPUTE DIRECTION OF FLIGHT --------------------------------------
 		// Inputs: air_.RotDif
@@ -1390,7 +1390,7 @@ function moveFlight() {
 		air_.AirRot.x = PoM360(air_.AirObj.rotation.x*RadDeg);
 		// Heading .............................................................
 		air_.AirRot.y = Mod360(-air_.AirObj.rotation.y*RadDeg);
-		air_.HdgDif = (air_.AirRot.y-air_.OldRot.y)/air_.DLTime; // Change in Heading (display)
+		air_.HdgDif = (air_.AirRot.y-air_.OldRot.y)/tim_.DLTime; // Change in Heading (display)
 		air_.OldRot.y = air_.AirRot.y; // Save old heading	
 		// Bank ................................................................
 		air_.OldRot.z = air_.AirObj.rotation.z;
@@ -1430,9 +1430,9 @@ function moveFlight() {
 		air_.MapSPS.y = air_.MapPos.y; // (meters)
 		air_.MapSPS.z = air_.MapSpd.z; // (mpf)
 		// 5d. For Display Only (mps)
-		air_.AirSpd.z = PSpdZS/DLTime;
-		air_.AirSpd.x = PSpdXS/DLTime;
-		air_.AirSpd.y = PSpdYS/DLTime;
+		air_.AirSpd.z = PSpdZS/tim_.DLTime;
+		air_.AirSpd.x = PSpdXS/tim_.DLTime;
+		air_.AirSpd.y = PSpdYS/tim_.DLTime;
 		// 5e. Compute Total Speeds (not used)
 		air_.SpdMPS = TotSpd;			// (mps)
 		air_.SpdKPH = air_.SpdMPS*3.6; // (KPH) = *3600/1000
