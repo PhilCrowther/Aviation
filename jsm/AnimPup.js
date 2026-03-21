@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Nov 2025
+Version dated 21 Mar 2026
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Pup aircraft model
@@ -119,9 +119,83 @@ function loadAirAnmX(gltf,air_,mxr_,anm_) {
 	if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 }
 
-//= MOVE AIR EXTERNAL ==========//==============================================
+//= LOAD AIR INTERNAL ==========================================================
 
-function moveAirExt(air_,mxr_,anm_) {
+//-	Load Airplane Model --------//----------------------------------------------
+function loadAirInt(air_,vxr_,anm_,gen_) {
+	gen_.gltfLd.load(vxr_.Src, function (gltf) {		// The OnLoad function
+		gltf.scene.traverse(function (child) {	
+			if (child.isMesh) {
+				child.castShadow = true;
+				child.receiveShadow = true;
+			}
+			if (child.name == "propeller") {
+				child.castShadow = false;
+				child.receiveShadow = false;
+				child.renderOrder = 1;
+			}
+		});
+		vxr_.Adr = gltf.scene;
+		vxr_.Adr.rotation.order = "YXZ";
+		vxr_.Adr.scale.setScalar(Ft2Mtr);
+		loadAirAnmV(gltf,air_,vxr_,anm_);
+		//
+		air_.AirPBY.add(vxr_.Adr);
+		// Initialize
+		vxr_.Adr.visible = true;
+	});	
+}
+
+// Load Animations -------------//----------------------------------------------
+function loadAirAnmV(gltf,air_,vxr_,anm_) {		
+	// Animations --------------------------------------------------------------
+	// Propeller
+	let clip = AnimationClip.findByName(gltf.animations, "propellerAction");
+	vxr_.Prp = new AnimationMixer(vxr_.Adr);
+	let actun = vxr_.Prp.clipAction(clip);
+	actun.play();
+	if (vxr_.Prp) vxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
+	// Rudder
+	vxr_.Rdr = new AnimationMixer(vxr_.Adr);
+	clip = AnimationClip.findByName(gltf.animations, "rudderAction");
+	actun = vxr_.Rdr.clipAction(clip);
+	actun.play();
+	if (vxr_.Rdr) vxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
+	// Elevator
+	clip = AnimationClip.findByName(gltf.animations, "elevatorAction");
+	vxr_.Elv = new AnimationMixer(vxr_.Adr);
+	actun = vxr_.Elv.clipAction(clip);
+	actun.play();
+	if (vxr_.Elv) vxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
+	// AileronTL
+	clip = AnimationClip.findByName(gltf.animations, "aileronTLAction");
+	vxr_.ATL = new AnimationMixer(vxr_.Adr);
+	actun = vxr_.ATL .clipAction(clip);
+	actun.play();
+	if (vxr_.ATL) vxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
+	// AileronTR
+	clip = AnimationClip.findByName(gltf.animations, "aileronTRAction");
+	vxr_.ATR = new AnimationMixer(vxr_.Adr);
+	actun = vxr_.ATR.clipAction(clip);
+	actun.play();
+	if (vxr_.ATR) vxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
+	// AileronBL
+	clip = AnimationClip.findByName(gltf.animations, "aileronBLAction");
+	vxr_.ABL = new AnimationMixer(vxr_.Adr);
+	actun = vxr_.ABL .clipAction(clip);
+	actun.play();
+	if (vxr_.ABL) vxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
+	// AileronBR
+	clip = AnimationClip.findByName(gltf.animations, "aileronBRAction");
+	vxr_.ABR = new AnimationMixer(vxr_.Adr);
+	actun = vxr_.ABR.clipAction(clip);
+	actun.play();
+	if (vxr_.ABR) vxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
+}
+
+//= MOVE AIR OBJECT ============//==============================================
+
+function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 	// Animate -----------------------------------------------------------------
 	// Propeller
 	let prpspd =  4 * (air_.PwrPct - 0.6);			// Range = -2.4 to + 1.6
@@ -145,19 +219,36 @@ function moveAirExt(air_,mxr_,anm_) {
 	if (anm_.ailrgt < 151) anm_.ailrgt = 151;		// Range = 00 to 60
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 	// Animations (Display) -----------------------------------------------------
-	// Propeller
-	if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
-	// Rudder
-	if (mxr_.Rdr) mxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
-	// Elevator
-	if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
-	// Ailerons
-	// Left
-	if (mxr_.ATL) mxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
-	if (mxr_.ABL) mxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
-	// Rite
-	if (mxr_.ATR) mxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
-	if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
+	if (!cam_.CamFlg) { 		// External View
+		// Propeller
+		if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
+		// Rudder
+		if (mxr_.Rdr) mxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
+		// Elevator
+		if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
+		// Ailerons
+		// Left
+		if (mxr_.ATL) mxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
+		if (mxr_.ABL) mxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
+		// Rite
+		if (mxr_.ATR) mxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
+		if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
+	}
+	if (cam_.CamFlg) { 		// Internal View
+		// Propeller
+		if (vxr_.Prp) vxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
+		// Rudder
+		if (vxr_.Rdr) vxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
+		// Elevator
+		if (vxr_.Elv) vxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
+		// Ailerons
+		// Left
+		if (vxr_.ATL) vxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
+		if (vxr_.ABL) vxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
+		// Rite
+		if (vxr_.ATR) vxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
+		if (vxr_.ABR) vxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
+	}	
 }
 
 /*******************************************************************************
@@ -166,7 +257,7 @@ function moveAirExt(air_,mxr_,anm_) {
 *
 *******************************************************************************/
 
-export {loadAirExt,moveAirExt};
+export {loadAirExt,loadAirInt,moveAirObj};
 
 /*******************************************************************************
 *
