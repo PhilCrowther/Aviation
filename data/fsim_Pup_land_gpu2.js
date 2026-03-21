@@ -462,14 +462,26 @@ let key_ = {
 		YwRR: 190,				// Yaw Left (.) - keyboard right
 		Brak:  66,				// Brakes (b)
 		Guns:  32,				// Guns (spacebar)
-		//	Views
+		//	View
 		Look:  16,				// Pan (shift)
-		VU45: 104,				// View Up (alone or modifier)
-		VD45: 101,				// View Down (alone or modifier)
-		VL45: 103,				// Left 45 degrees
-		VR45: 105,				// Right 45 degrees
-		VL90: 100,				// Left 90 degrees
-		VR90: 102,				// Right 90 degrees
+		// View Keys (Keypad Num Lock)
+		KPad: 0,				// 1 = Using KeyPad
+//		VR45: 105,				// [9] Right 45 deg
+//		VU45: 104,				// [8] View Up 45 deg
+//		VL45: 103,				// [7] Left 45 deg (315 deg)
+//		VR90: 102,				// [6] Right 90 deg
+//		VD45: 101,				// [5] View Down or Back 45 deg
+//		VL90: 100,				// [4] Left 90 deg (270 deg)
+//		VRBk: 99,				// [3] Right Back (135 deg)
+//		VCBk: 98,				// [2] Center Back (180 deg)
+//		VLBk: 97,				// [1] Left Back (225 deg)
+		// Views (Override Keypad)
+		VR45: 45,				// [INS] Right 45 degrees 
+		VU45: 36,				// [HM]  View Up (alone or modifier)
+		VL45: 33,				// [PU]  Left 45 degrees
+		VR90: 46,				// [DEL] Right 90 degrees
+		VD45: 35,				// [END] View Down (alone or modifier)
+		VL90: 34,				// [PD]  Left 90 degrees
 		//	Toggle
 		Paws:  80,				// Pause (p)
 		View:  86,				// Toggle Visibility (v)
