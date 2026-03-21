@@ -138,7 +138,7 @@ function loadAirInt(air_,vxr_,anm_,gen_) {
 		vxr_.Adr = gltf.scene;
 		vxr_.Adr.rotation.order = "YXZ";
 		vxr_.Adr.scale.setScalar(Ft2Mtr);
-		loadAirAnmX(gltf,air_,vxr_,anm_);
+		loadAirAnmV(gltf,air_,vxr_,anm_);
 		//
 		air_.AirPBY.add(vxr_.Adr);
 		// Initialize
@@ -147,7 +147,7 @@ function loadAirInt(air_,vxr_,anm_,gen_) {
 }
 
 // Load Animations -------------//----------------------------------------------
-function loadAirAnmX(gltf,air_,vxr_,anm_) {		
+function loadAirAnmV(gltf,air_,vxr_,anm_) {		
 	// Animations --------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(gltf.animations, "propellerAction");
