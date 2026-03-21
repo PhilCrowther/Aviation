@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Mar 2026
+Version dated 21 Mar 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -58,7 +58,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_Pup_land_gpu.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_Pup_land_gpu2.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/pup/data/data.js"></script>
 
 <script type="importmap">
@@ -88,8 +88,10 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) -------------------------------------
-import {loadAirExt,moveAirExt} from "https://PhilCrowther.github.io/Aviation/jsm/AnimPup.js";
-import {PointerLockControls} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
+import {loadAirExt,loadAirInt,moveAirObj} from "https://PhilCrowther.github.io/Aviation/jsm/AnimPup2.js";
+import {PointerLockControls,	// three.js modified
+		initCamera,moveCamera,	// camera
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadGrdMat,initGrdMat,GrdMap,
@@ -131,7 +133,8 @@ TO DO:
 ********************************************************************************/
 
 //= INPUTS =====================//===============================================
-//- AIRPLANE: Start -----------------------------------------------------------
+let BegCam = 0;					// 0 = External; 1 = Internal (default)
+//- Starting Values ------------------------------------------------------------
 let BegLoc = 0;					// Starting Location (0 = Base; 1 = Air)
 let CamSel = 0;					// Camera Seletion (0 = External; 1 = Internal)
 let BegTmp = 288.15;			// K = 59F
@@ -161,11 +164,11 @@ let scene = new THREE.Scene();
 let ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 	scene.add(ambLight);
 //- SunLight
-//let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
-let sunLight = new THREE.DirectionalLight(sky_.SunCol,4);
+let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
-	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+//	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+	sunLight.shadow.camera.near = sky_.SunDst+2;
 	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
@@ -175,6 +178,20 @@ let sunLight = new THREE.DirectionalLight(sky_.SunCol,4);
 	sunLight.shadow.camera.bottom = -sky_.ShdBTB;
 	sunLight.shadow.bias = -0.00001; // WebGPU (0 flashing; -0.0001 no wheels)
 	scene.add(sunLight);
+//- SonLight (Cockpit View Only)
+let sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
+	sonLight.position.copy(SunPos);
+	sonLight.castShadow = true;
+	sonLight.shadow.camera.near = sky_.SunDst*0.9;
+	sonLight.shadow.camera.far = sky_.SunDst+1;  // creates shadow on wing
+	sonLight.shadow.mapSize.width = 4096;
+	sonLight.shadow.mapSize.height = 4096;
+	sonLight.shadow.camera.left = -2; // Gets entire wing on deck (but distortion)
+	sonLight.shadow.camera.right = 2; // Back of Plane
+	sonLight.shadow.camera.top = 2;
+	sonLight.shadow.camera.bottom = -2;
+	sonLight.shadow.bias = -0.0005; // r182
+	scene.add(sonLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
@@ -188,10 +205,9 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;	
 	renderer.shadowMap.type = THREE.PCFShadowMap; // r182
+	renderer.logarithmicDepthBuffer = true;
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
-//	Depth Buffer
-	renderer.logarithmicDepthBuffer = true;
 //	Tone Mapping
 	renderer.toneMapping = THREE.NoToneMapping;			// clouded
 //	renderer.toneMapping = THREE.LinearToneMapping;		// brighter?
@@ -300,55 +316,29 @@ let ImgSiz = 1024;
 	mys_.AirMsh = new THREE.Object3D;
 
 //= CAMERA =====================//===============================================
-//- Create Cockpit Attach Point
-let	CamPVC = new THREE.Object3D;
+//- Create Internal Attach Point
+const CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(0,1.0668,0.762); // Cockpit view
+	CamPVC.position.set(0,0.67,0.54); // Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
-let CamNum = 2;
-let CamLLD = [new THREE.Vector3(-10,0,30),
-			  new THREE.Vector3(0,0,0.001)];
-let CamAdj = [180,0];			// 180 = Looking In
-let CamMMD = [new THREE.Vector3(CamLLD[0].z*0.5,CamLLD[0].z*2.0,0.1),	// In/Out - min,max,spd
-			  new THREE.Vector3(0,1,0.001)];	// Cockpit View: Throttle - min,max,spd
-let CamMMR = [new THREE.Vector3(80,0,0.5),	// Rotate - min/max Lat/Lon,rspd
-			  new THREE.Vector3(45,110,0.5)];
-let CamPar = [air_.AirObj,CamPVC];
-let CmIFlg = [0,1];				// 1 = cockpit view
-let CamLnk = [1,1];				// 1 = Linked to Airplane
-//- Shared Variables
-let cam_ = {
-		CamSel: CamSel,			// View Selector (0 = External, 1 = Internal)
-		CamNum: CamNum,
-		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
-		// Camera
-		CamLLD: new THREE.Vector3().copy(CamLLD[CamSel]),	// cam_.MshRot Lat, Lon, Dst
-		CamAdj: CamAdj[CamSel],	// Camera Adjustment (180 = look in)
-		CamMMD: new THREE.Vector3().copy(CamMMD[CamSel]),	// In/Out - min,max,spd
-		// Rotator
-		MshRot: new THREE.Object3D,			// Camera Rotator
-		CamMMR: new THREE.Vector3().copy(CamMMR[CamSel]),	// Rotate - min/max Lat/Lon,rspd
-		// Center of Rotation
-		Parent: CamPar[CamSel],	// Center of Rotation	
-		CamFlg: CmIFlg[CamSel],	// View Flag (0 = External, 1 = Internal)
-		// Linked Airplane
-		CamLnk: CamLnk[CamSel],
-		MshObj: new THREE.Object3D,
-		MshDeg: new THREE.Object3D
-	}
-//- Adjustments
-	camera.rotation.order = "YXZ";
+	cam_.SrcLLD = [new THREE.Vector3(-10,0,30),new THREE.Vector3(0,0,0.001)];
+	cam_.SrcMMD = [new THREE.Vector3(cam_.SrcLLD[0].z*0.5,cam_.SrcLLD[0].z*2.0,0.1),new THREE.Vector3(0,1,0.001)]; // In/Out - min,max,spd
+	cam_.SrcMMR = [new THREE.Vector3(80,0,0.5),new THREE.Vector3(45,110,0.5)]; // Rotate - min/max Lat/Lon,rspd			   
+	cam_.SrcPar = [air_.AirObj,CamPVC];
+//- Objects --------------------------------------------------------------------
+	cam_.MshRot = new THREE.Object3D;	// Camera Rotator
 	cam_.MshRot.rotation.order = "YXZ";
+	cam_.MshRot.add(camera);	// Attach camera to rotator	
+	cam_.MshObj = new THREE.Object3D;
 	cam_.MshObj.rotation.order = "YXZ";
+	cam_.MshDeg = new THREE.Object3D;
 	cam_.MshDeg.rotation.order = "YXZ";
-	cam_.Parent.add(cam_.MshRot); // Attach Rotator
 	cam_.MshObj.add(cam_.MshDeg);
-//- Adjust Camera x.rotation
-let CmAdjX = 0;					// Airborne Pitch Adjustment
-let CmGrdF = 0;					// Camera Ground Flag (1 = On Ground)
-let CmMulX = 15;				// Pitch Adjustment Multiplier
-let CmLagX = 0;					// Transition Offset
+//- Adjustments ----------------------------------------------------------------
+	cam_.CamSel = BegCam;
+	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
+	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
 
 //= 9. INPUT VARIABLES =========//===============================================
 //- POINTER LOCK CONTROLS ------//-----------------------------------------------
@@ -418,7 +408,6 @@ function initAll() {
 	tim_.DLTim2 = tim_.DLTime**2;
 	tim_.GrvDLT = GrvMPS*tim_.DLTim2;
 	initSkyBox();				// load skybox
-	// Objects
 	initAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
 	initGrdMat(grd_,gen_);
@@ -429,7 +418,7 @@ function initAll() {
 	moveTreLin(grd_,gen_,air_); // Add TreeLines
 	initObject();				// Stationary Objects
 	// Other
-	initCamera(camera,cam_);	// position camera
+	initCamPup();				// position camera
 	PawsText();
 	AutoText();
 	InfoText();
@@ -449,9 +438,9 @@ function rendAll() {
 	}
 	if (controls.isLocked === true && !gen_.LodSnd) loadSounds();
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
-		moveCamera(camera,cam_);
+		moveCamera(cam_,air_,key_,gen_,InpMos);
 		// Move Objects
-		moveAirObj();			// Move aircaft
+		moveAirPln();			// Move aircaft
 		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
 		// Move Grids
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
@@ -566,6 +555,7 @@ function moveStatic() {
 
 function loadAirObj() {
 	loadAirExt(air_,mxr_,anm_,gen_);
+	loadAirInt(air_,vxr_,anm_,gen_);
 }
 
 //= INIT AIRPLANE ==============//===============================================
@@ -604,7 +594,7 @@ function initAirObj() {
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
 
-function moveAirObj() {
+function moveAirPln() {
 	// Compute Inputs -----------------------------------------------------------
 	// Power Percent ............................................................
 	// Add Delay
@@ -669,7 +659,7 @@ function moveAirObj() {
 	// Compute Rotation and Vectors ---------------------------------------------
 	flight.update();
 	// Animate ------------------------------------------------------------------	
-	moveAirExt(air_,mxr_,anm_);	// External Only
+	moveAirObj(air_,mxr_,vxr_,anm_,cam_);	// External Only
 	// Bullets
 	moveBullet(myg_,air_,gen_,tim_,0); // Bullets
 }
@@ -782,129 +772,28 @@ function stopSounds() {
 
 //== INIT CAMERA ===============//===============================================
 
-function initCamera(camera,cam_) {
-	camera.position.z = -cam_.CamLLD.z;
-	camera.rotation.y = cam_.CamAdj*DegRad;
-	cam_.MshRot.add(camera);	// Attach to rotator
-	// Common Changes
-	cam_.CamLLD.copy(CamLLD[cam_.CamSel]);	// Restore Saved Values
-	cam_.CamMMD.copy(CamMMD[cam_.CamSel]);	// In/Out - min, max, spd
-	cam_.CamAdj = CamAdj[cam_.CamSel];		// Load Adjustment
-	camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
-	cam_.CamMMR.copy(CamMMR[cam_.CamSel]);	// Rotation min, max, spd
-	cam_.Parent = CamPar[cam_.CamSel]		// Load New Parent
-	cam_.Parent.add(cam_.MshRot);			// Attach Rotators
-	cam_.IntFlg = CmIFlg[cam_.CamSel];		// 1 = cockpit
-	cam_.CamLnk = CamLnk[cam_.CamSel];		// 1 = Linked to Airplane
-	//
-	moveCamera(camera,cam_);
-
-}
-
-//== MOVE CAMERA ===============//===============================================
-
-function moveCamera(camera,cam_) {
-	// Move Camera In/Out
-	camera.position.z = -cam_.CamLLD.z;
-	// PointerLockControls
-	if (cam_.OrbFlg) {
-		cam_.CamLLD.x = cam_.CamLLD.x - InpMos.y * cam_.CamMMR.z; // Camera Position (Lat)
-		cam_.CamLLD.x = MaxVal(cam_.CamLLD.x,cam_.CamMMR.x);
-		cam_.CamLLD.y = Mod360(cam_.CamLLD.y + InpMos.x * cam_.CamMMR.z); // Camera Position (Lon)
-		// Internal View
-		if (cam_.IntFlg) {		// Range: 250 to 360/0 to 110
-			if (cam_.CamLLD.y > 180 && cam_.CamLLD.y < (360-cam_.CamMMR.y)) cam_.CamLLD.y = (360-cam_.CamMMR.y);
-			if (cam_.CamLLD.y < 180 && cam_.CamLLD.y > cam_.CamMMR.y) cam_.CamLLD.y = cam_.CamMMR.y;
-		}
-		// External View
-		else {
-			if (air_.GrdFlg && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
-		}
-		InpMos.x = 0;
-		InpMos.y = 0;
+function initCamPup() {
+	if (!cam_.CamSel) {			// 0 = External View
+		// Shadow1
+		sunLight.shadow.camera.near = sky_.SunDst*0.75;
+		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
+		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
+		sunLight.shadow.camera.updateProjectionMatrix();
+		// Shadow2
+		sonLight.visible = false; // Turn Off Cockpit Lighting
+		sonLight.castShadow = false; // and Shadows
 	}
-	// View Keys ----------------------------------------------------------------
-	if (!cam_.OrbFlg) {			// Only If Not Panning		
-		// If No Keys Pressed, Set Default View
-		if (key_.U45flg+key_.D45flg+key_.L45flg+key_.R45flg+key_.L90flg+key_.R90flg < 1)	{
-			if (cam_.IntFlg) cam_.CamLLD.x = 0; // Internal view
-			else cam_.CamLLD.x = -12.5; // External view
-			cam_.CamLLD.y = 0;
-		}
-		// Down 45
-		else if (key_.D45flg) {
-			cam_.CamLLD.x = 0;
-			// Look Back
-			if ((key_.L90flg) && (key_.L90flg) && (key_.R90flg)) cam_.CamLLD.y = 180;
-			// Look Back Left 90 + 45
-			else if (key_.L90flg) cam_.CamLLD.y = 135;
-			// Look Back Right 270 - 45
-			else if (key_.R90flg) cam_.CamLLD.y = 225;
-			// Look Down
-			else {
-				cam_.CamLLD.y = 0;
-				cam_.CamLLD.x = 45;
-			}
-		}
-		// Up 45
-		else if (key_.U45flg) {
-			cam_.CamLLD.x = 315;
-			if (!cam_.IntFlg && (air_.GrdFlg)) cam_.CamLLD.x = 0;
-			// Look Up Left 45
-			if (key_.L45flg) cam_.CamLLD.y = 45;
-			// Look Up Right 45
-			else if (key_.R45flg) cam_.CamLLD.y = 315;
-			// Look Up Left 90
-			else if (key_.L90flg) cam_.CamLLD.y = 90;
-			// Look Up Right 90
-			else if (key_.R90flg) cam_.CamLLD.y = 270;
-			// Look Up
-			else cam_.CamLLD.y = 0;
-		}
-		// Level
-		else {
-			cam_.CamLLD.x = 0;
-			// Look Left 45
-			if (key_.L45flg) cam_.CamLLD.y = 45;
-			// Look Right 45
-			else if (key_.R45flg) cam_.CamLLD.y = 315;
-			// Look Left 90
-			else if (key_.L90flg) cam_.CamLLD.y = 90;
-			// Look Right 90
-			else if (key_.R90flg) cam_.CamLLD.y = 270;
-		}
-	}	
-	// Adjust Camera Rotators
-	// In internal view, the camera is facing out - view matches rotation
-	if (cam_.IntFlg) {
-		cam_.MshRot.rotation.x = Mod360(cam_.CamLLD.x)*DegRad;
-		cam_.MshRot.rotation.y = Mod360(-cam_.CamLLD.y)*DegRad;
+	if (cam_.CamSel) {			// 1 = Internal View
+		// Shadow1
+		sunLight.shadow.camera.near = sky_.SunDst+1; // Avoid Double Shadows
+		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
+		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
+		sunLight.shadow.camera.updateProjectionMatrix();
+		// Shadow2
+		sonLight.visible = true; // Turn on Cockpit Lighting
+		sonLight.castShadow = true; // and Shadows
 	}
-	// In external view, the camera is facing in and the armature is pointing out:
-	if (!cam_.IntFlg) {
-		if (!cam_.OrbFlg && air_.GrdFlg) { // Air to Ground
-			if (!CmGrdF) {		// if just landed
-				CmLagX = CmAdjX; // All landings are smooth
-//				if (CmLagX > 0.5) CmLagX = 0.5; // Make extreme landings more jarring
-				CmGrdF = 1;
-			}
-			CmAdjX = CmLagX;	// From Landing Value to 0
-		}	
-		if (!cam_.OrbFlg && !air_.GrdFlg) { // Ground to Air
-			if (CmGrdF) {		// if just took off
-				CmLagX = CmMulX*air_.RotDif.x;
-				CmGrdF = 0;
-			}
-			CmAdjX = (CmMulX*air_.RotDif.x)-CmLagX; // From 0 to Take-Off Value
-		}
-		if (CmLagX) {			// Reduce Lag
-			CmLagX = 0.99*CmLagX; // Reduction in Adj/AdjOff
-			if (Math.abs(CmLagX) < 0.1) CmLagX = 0;
-		}
-		camera.rotation.x = CmAdjX*DegRad; // + = up/airplane down
-		cam_.MshRot.rotation.x = Mod360(-cam_.CamLLD.x)*DegRad;
-		cam_.MshRot.rotation.y = Mod360(180-cam_.CamLLD.y)*DegRad;
-	}
+	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos);
 }
 
 /********************************************************************************
@@ -1045,13 +934,13 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = KeyVal.z;	// YawR - keyboard right
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0.01;	// Brakes
 	// Views
-	if (event.keyCode == key_.VU45) key_.D45flg = 1;	// View - 45 deg up
-	if (event.keyCode == key_.VD45) key_.U45flg = 1;	// View - 45 deg down
-	if (event.keyCode == key_.VL45) key_.L45flg = 1;	// View - 45 deg left
-	if (event.keyCode == key_.VR45) key_.R45flg = 1;	// View - 45 deg right
-	if (event.keyCode == key_.VL90) key_.L90flg = 1;	// View - 90 deg left
-	if (event.keyCode == key_.VR90) key_.R90flg = 1;	// View - 90 deg right
-	if (event.keyCode == key_.Look) cam_.OrbFlg = 1;	// Orbit
+	if (event.keyCode == key_.Look) cam_.OrbFlg = 1;	// Orbit View
+	if (event.keyCode == key_.VU45) cam_.D45flg = 1;	// View - 45 deg up
+	if (event.keyCode == key_.VD45) cam_.U45flg = 1;	// View - 45 deg down
+	if (event.keyCode == key_.VL45) cam_.L45flg = 1;	// View - 45 deg left
+	if (event.keyCode == key_.VR45) cam_.R45flg = 1;	// View - 45 deg right
+	if (event.keyCode == key_.VL90) cam_.L90flg = 1;	// View - 90 deg left
+	if (event.keyCode == key_.VR90) cam_.R90flg = 1;	// View - 90 deg right	
 	// Guns
 	if (event.keyCode == key_.Guns) {					// Guns
 		if (!gen_.PawsOn) {
@@ -1063,6 +952,7 @@ function onDocumentKeyDown(event) {
 	}
 	// Toggle
 	if (event.keyCode == key_.Paws) toglPaws();			// Toggle Pause
+	if (event.keyCode == key_.View) toglView();			// Switch View
 	if (event.keyCode == key_.Auto) toglAuto();			// Toggle AutoPilot
 	if (event.keyCode == key_.Info) toglInfo();			// Toggle Information
 	if (event.keyCode == key_.Soun) toglSoun();			// Toggle Sound
@@ -1086,13 +976,13 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = 0;	// YawR - keyboard right
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0;	// Brakes
 	// Views
-	if (event.keyCode == key_.VU45) key_.D45flg = 0;	// View - 45 deg up
-	if (event.keyCode == key_.VD45) key_.U45flg = 0;	// View - 45 deg down
-	if (event.keyCode == key_.VL45) key_.L45flg = 0;	// View - 45 deg left
-	if (event.keyCode == key_.VR45) key_.R45flg = 0;	// View - 45 deg right
-	if (event.keyCode == key_.VL90) key_.L90flg = 0;	// View - 90 deg left
-	if (event.keyCode == key_.VR90) key_.R90flg = 0;	// View - 90 deg right
-	if (event.keyCode == key_.Look) cam_.OrbFlg = 0;	// Orbit
+	if (event.keyCode == key_.Look) cam_.OrbFlg = 0;	// Orbit View
+	if (event.keyCode == key_.VU45) cam_.D45flg = 0;	// View - 45 deg up
+	if (event.keyCode == key_.VD45) cam_.U45flg = 0;	// View - 45 deg down
+	if (event.keyCode == key_.VL45) cam_.L45flg = 0;	// View - 45 deg left
+	if (event.keyCode == key_.VR45) cam_.R45flg = 0;	// View - 45 deg right
+	if (event.keyCode == key_.VL90) cam_.L90flg = 0;	// View - 90 deg left
+	if (event.keyCode == key_.VR90) cam_.R90flg = 0;	// View - 90 deg right
 	// Guns
 	if (event.keyCode == key_.Guns) {					// Guns
 		for (let n = 0; n < myg_.ObjNum; n ++) {
@@ -1108,6 +998,17 @@ function onDocumentKeyUp(event) {
 }
 
 //- Subroutines -----------------------------------------------------------------
+
+//. Toggle Camera View (2-Way) -//----------------------------------------------
+function toglView() {
+	// Old CamSel
+	cam_.CamPar.remove(cam_.MshRot); // Unlink Old Parent
+	cam_.SrcLLD[cam_.CamSel].copy(cam_.CamLLD);	// Save LLD
+	// New CamSel
+	cam_.CamSel = 1 - cam_.CamSel;
+//	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos);
+	initCamPup();
+}
 
 //. Toggle Pause ................................................................
 function toglPaws() {
