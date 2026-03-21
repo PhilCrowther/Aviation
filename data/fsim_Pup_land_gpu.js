@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM PUP DATA: 260304
+*	FSIM PUP DATA: 260321
 *
 *********************************************************************************
 
@@ -176,14 +176,14 @@ let grd_ = {
 		DfT: ["https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G3.jpg"],
-		DfM: [0.8,0.8],			// Darken outer grids to match inner grid [transition1G2]
+		DfM: [0.75,0.75],		// Darken outer grids to match inner grid [transition1G2]
 		// Road Textures
 		DfR: ["https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadV.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadH.jpg"],
 	}
 
 //= STATIC OBJECTS =============//==============================================
-//- Islands --------------------//----------------------------------------------
+//- Mountain -------------------//----------------------------------------------
 let mnt_ = {
 		ObjNum: 1,
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
@@ -278,7 +278,8 @@ let air_ = {
 //-	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/pup/";	// Used to load models and sounds
 //-	Animation Mixers - External Model
-let mxrFNm = "pup_flyt_npa.glb"; // Name of aircraft model file (rotated blender file)
+let mxrFNm = "pup.glb"; // Name of aircraft exterior model file (rotated blender file)
+let vxrFNm = "pup_int.glb"; // Name of airplane interior model file (rotated blender file)
 
 //- Pup Animations -------------------------------------------------------------
 let anmfps = 24;				// Blender FPS (used by Main Program and all modules (used by Objects.js)
@@ -294,6 +295,15 @@ let anm_ = {
 let mxr_ = {
 		// Source
 		Src: AirSrc + mxrFNm,
+		// Address
+		Adr: 0,
+		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
+		Prp:0, Rdr:0, Elv:0, ATL:0, ATR:0, ABL:0, ABR:0,
+	}
+//	Animation Mixers - Internal Model
+let vxr_ = {
+		// Source
+		Src: AirSrc + vxrFNm,	// Model Address
 		// Address
 		Adr: 0,
 		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
@@ -328,6 +338,42 @@ let myg_ = {
 		// HitBox
 		HitTgt: 1,				// Hit Target (1 = enemy airplane)
 		HitDst: 10,				// Hit Radius
+	}
+
+//= CAMERA =====================//===============================================
+let cam_ = {
+		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
+		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
+		// Camera
+		CamLLD: 0, 				// cam_.MshRot Lat, Lon, Dst
+		CamAdj: 0,				// Camera Adjustment (180 = look in)
+		CamMMD: 0,				// In/Out - min,max,spd
+		// Rotator
+		MshRot: 0,				// Camera Rotator
+		CamMMR: 0,				// Rotate - min/max Lat/Lon,rspd
+		// Center of Rotation
+		CamPar: 0,				// Center of Rotation	
+		CamFlg: 0,				// View Flag (0 = External, 1 = Internal)
+		// Linked Airplane
+		CamLnk: 0,
+		MshObj: 0,
+		MshDeg: 0,
+		//- Camera Vertical Lag
+		LagFlg: 0,				// 1 = Enable
+		CmAdjX: 0,				// Airborne Pitch Adjustment
+		CmMulX: 35,				// Pitch Adjustment Multiplier
+		CmLagX: 0,				// Transition Offset
+		CmGrdF: 0,				// Camera Ground Flag (1 = On Ground)
+		// Beginning Head Rotation
+		VewRot: 0,
+		//- Source
+		SrcLLD: [0,0],
+		SrcMMD: [0,0],
+		SrcMMR: [0,0],
+		SrcPar: [0,0],
+		SrcAdj: [180,0],
+		SrcFlg: [0,1],			// 1 = Internal View
+		SrcLnk: [1,1],			// 1 = Linked to Airplane
 	}
 
 //=	MY SOUNDS ==================//==============================================
@@ -416,17 +462,30 @@ let key_ = {
 		YwRR: 190,				// Yaw Left (.) - keyboard right
 		Brak:  66,				// Brakes (b)
 		Guns:  32,				// Guns (spacebar)
-		//	Views
+		//	View
 		Look:  16,				// Pan (shift)
-		VU45: 104,				// View Up (alone or modifier)
-		VD45: 101,				// View Down (alone or modifier)
-		VL45: 103,				// Left 45 degrees
-		VR45: 105,				// Right 45 degrees
-		VL90: 100,				// Left 90 degrees
-		VR90: 102,				// Right 90 degrees
+		// View Keys (Keypad Num Lock)
+		KPad: 0,				// 1 = Using KeyPad
+//		VR45: 105,				// [9] Right 45 deg
+//		VU45: 104,				// [8] View Up 45 deg
+//		VL45: 103,				// [7] Left 45 deg (315 deg)
+//		VR90: 102,				// [6] Right 90 deg
+//		VD45: 101,				// [5] View Down or Back 45 deg
+//		VL90: 100,				// [4] Left 90 deg (270 deg)
+//		VRBk: 99,				// [3] Right Back (135 deg)
+//		VCBk: 98,				// [2] Center Back (180 deg)
+//		VLBk: 97,				// [1] Left Back (225 deg)
+		// Views (Override Keypad)
+		VR45: 45,				// [INS] Right 45 degrees 
+		VU45: 36,				// [HM]  View Up (alone or modifier)
+		VL45: 33,				// [PU]  Left 45 degrees
+		VR90: 46,				// [DEL] Right 90 degrees
+		VD45: 35,				// [END] View Down (alone or modifier)
+		VL90: 34,				// [PD]  Left 90 degrees
 		//	Toggle
-		Soun:  83,				// Toggle sound (s)
 		Paws:  80,				// Pause (p)
+		View:  86,				// Toggle Visibility (v)
+		Soun:  83,				// Toggle sound (s)
 		Auto:  65,				// Autopilot (a)
 		Info:  73,				// Info (i)
 		// Flags
