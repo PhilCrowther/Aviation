@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM PUP DATA: 260321
+*	FSIM PUP DATA: 260323
 *
 *********************************************************************************
 
@@ -297,7 +297,7 @@ let mxr_ = {
 		Src: AirSrc + mxrFNm,
 		// Address
 		Adr: 0,
-		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
+		// Prop,Rudder,Elevator,AilTopLeft, AilTopRite,AilBotLeft,AilBotRight
 		Prp:0, Rdr:0, Elv:0, ATL:0, ATR:0, ABL:0, ABR:0,
 	}
 //	Animation Mixers - Internal Model
@@ -306,8 +306,14 @@ let vxr_ = {
 		Src: AirSrc + vxrFNm,	// Model Address
 		// Address
 		Adr: 0,
-		// Prop, Rudder, Elevator, AileronL, AileronR,  FlapL, FlapR
+		// Prop,Rudder,Elevator,AilTopLeft, AilTopRite,AilBotLeft,AilBotRight
 		Prp:0, Rdr:0, Elv:0, ATL:0, ATR:0, ABL:0, ABR:0,
+		// Compass,
+		Cmp: 0,
+		// ArmL (T), ArmR (PB), HandL (T), HandR (P), HandR (B), 
+		ArL:0, ArR:0, HLT:0, HRP:0, HRB:0,
+		// LegL, LegR, RudderL, RudderR, Head
+		LgL:0, LgR:0, RdL:0, RdR:0, Hed:0,
 	}
 
 //= GUNASG MODULE ==============//==============================================
