@@ -317,6 +317,7 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		// Compass
 		if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
 		// Pilot - Left Hand and Arm
+		anm_.manprs = air_.PwrPct*359;
 		if (vxr_.HLT) vxr_.HLT.setTime(anm_.manprs/anm_.anmfps);
 		if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);
 		// Pilot - Right Hand - Pitch
