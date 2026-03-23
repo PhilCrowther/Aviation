@@ -627,7 +627,7 @@ function moveAirPln() {
 	// Limits
 	if (air_.CfLift > air_.CfLMax) air_.CfLift = air_.CfLMax;
 	if (air_.CfLift < -air_.CfLMax) air_.CfLift = -air_.CfLMax;
-	//anm_.stkpit = InpMos.y;	// Joystick pitch animation (NA)
+	anm_.stkpit = InpMos.y;	// Joystick pitch animation (NA)
 	InpMos.y = 0;				// Reset
 	// Coefficient of Lift - Flaps (NA)	
 	//air_.CfFlap = air_.FlpCfL*(180-anm_.flppos)/180; // CfL - Flaps
@@ -649,7 +649,7 @@ function moveAirPln() {
 		if (air_.RotDif.z == -air_.BnkMax && BnkDif > 0) air_.RotDif.z = BnkDif;
 		air_.RotDif.z = air_.RotDif.z; // Inputs are +/-
 		air_.AGBank = air_.RotDif.z;
-//		anm_.stkbnk = InpMos.x;	// Joystick bank animation
+		anm_.stkbnk = InpMos.x;	// Joystick bank animation
 		InpMos.x = 0;			// Reset
 	}
 	// Input Yaw ................................................................
