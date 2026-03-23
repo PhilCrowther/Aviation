@@ -192,8 +192,8 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	actun.play();
 	if (vxr_.ABR) vxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 	// Compass
-	clip = THREE.AnimationClip.findByName(gltf.animations, "compassAction");
-	vxr_.Cmp = new THREE.AnimationMixer(vxr_.Adr);
+	clip = AnimationClip.findByName(gltf.animations, "compassAction");
+	vxr_.Cmp = new AnimationMixer(vxr_.Adr);
 	actun = vxr_.Cmp.clipAction(clip);
 	actun.play();
 	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
@@ -347,10 +347,22 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 			if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
 		}
 		// Pilot - Head
-		anm_.vchead = Mod360(CamRot.y+180);
+		anm_.vchead = Mod360(cam_.CamLLD.y);
 		if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
 	}	
 }
+
+/*******************************************************************************
+*
+*	SUBROUTINES
+*
+*******************************************************************************/
+
+/* Converts degrees to 360 */
+function Mod360(deg) {
+	while (deg < 0) deg = deg + 360;	// Make deg a positive number
+	deg = deg % 360;					// Compute remainder of any number divided by 360
+return deg;}
 
 /*******************************************************************************
 *
