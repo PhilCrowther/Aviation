@@ -290,6 +290,13 @@ let anm_ = {
 		elvatr: 180,			// Elevator 	degrees = +/- 360
 		aillft: 180,			// AileronL 	degrees = +/- 360
 		ailrgt: 180,			// AileronR 	degrees = +/- 360
+		manprs: 0,				// Manifold Pressure
+		stkpit: 180,			// Joystick pitch
+		stkpcm: 0,				// cumulative
+		stkbnk: 180,			// Joystick bank
+		stkbcm: 0,				// cumulative
+		yawval: 180,			// Slip indicator
+		vchead: 0,				// Pilot head
 	}
 //	Animation Mixers - External Model
 let mxr_ = {
