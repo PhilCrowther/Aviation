@@ -4,9 +4,9 @@
 *
 ********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Nov 2025
+Version dated 23 Mar 2026
 
 @fileoverview
 A three.js class-type module for animating a FM2 aircraft model
@@ -504,7 +504,7 @@ function moveAirInt(air_,vxr_,anm_,CamRot) {
 	// Pointer - Compass Heading
 	anm_.cmphdg = Mod360(-air_.AirRot.y);
 	if (vxr_.PtH) vxr_.PtH.setTime(anm_.cmphdg/anm_.anmfps);
-	// Left Hand and Arm
+	// Pilot - Left Hand and Arm
 	if (vxr_.HLT) vxr_.HLT.setTime(anm_.manprs/anm_.anmfps);
 	if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);
 	// Pilot - Right Hand - Pitch

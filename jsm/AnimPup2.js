@@ -6,7 +6,7 @@
 
 Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 Mar 2026
+Version dated 23 Mar 2026
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Pup aircraft model
@@ -191,6 +191,72 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	actun = vxr_.ABR.clipAction(clip);
 	actun.play();
 	if (vxr_.ABR) vxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
+	// Compass
+	clip = THREE.AnimationClip.findByName(gltf.animations, "compassAction");
+	vxr_.Cmp = new THREE.AnimationMixer(vxr_.Adr);
+	actun = vxr_.Cmp.clipAction(clip);
+	actun.play();
+	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
+	// Pilot - Left Arm
+	clip = AnimationClip.findByName(gltf.animations,"pilot_armLAction");
+	vxr_.ArL = new AnimationMixer(gltf.scene);
+	actun = vxr_.ArL.clipAction(clip);
+	actun.play();
+	if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);
+	// Pilot - Left Hand
+	clip = AnimationClip.findByName(gltf.animations,"pilot_handLAction");
+	vxr_.HLT = new AnimationMixer(gltf.scene);
+	actun = vxr_.HLT.clipAction(clip);
+	actun.play();
+	if (vxr_.HLT) vxr_.HLT.setTime(anm_.manprs/anm_.anmfps);
+	// Pilot - Right Hand - Pitch
+	clip = AnimationClip.findByName(gltf.animations,"pilot_handRPAction");
+	vxr_.HRP = new AnimationMixer(gltf.scene);
+	actun = vxr_.HRP.clipAction(clip);
+	actun.play();
+	if (vxr_.HRP) vxr_.HRP.setTime(anm_.stkpit/anm_.anmfps);
+	// Pilot - Right Hand - Bank
+	clip = AnimationClip.findByName(gltf.animations,"pilot_handRBAction");
+	vxr_.HRB = new AnimationMixer(gltf.scene);
+	actun = vxr_.HRB.clipAction(clip);
+	actun.play();
+	if (vxr_.HRB) vxr_.HRB.setTime(anm_.stkbnk/anm_.anmfps);
+	// Pilot - Right Arm - Bank
+	clip = AnimationClip.findByName(gltf.animations,"pilot_armRAction");
+	vxr_.ArR = new AnimationMixer(gltf.scene);
+	actun = vxr_.ArR.clipAction(clip);
+	actun.play();
+	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbnk/anm_.anmfps);
+	// Pilot - Rudder - Left
+	clip = AnimationClip.findByName(gltf.animations,"pilot_rudderLAction");
+	vxr_.RdL = new AnimationMixer(gltf.scene);
+	actun = vxr_.RdL.clipAction(clip);
+	actun.play();
+	if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
+	// Pilot - Rudder - Right
+	clip = AnimationClip.findByName(gltf.animations,"pilot_rudderRAction");
+	vxr_.RdR = new AnimationMixer(gltf.scene);
+	actun = vxr_.RdR.clipAction(clip);
+	actun.play();
+	if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
+	// Pilot - Leg - Left
+	clip = AnimationClip.findByName(gltf.animations,"pilot_legLAction");
+	vxr_.LgL = new AnimationMixer(gltf.scene);
+	actun = vxr_.LgL.clipAction(clip);
+	actun.play();
+	if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
+	// Pilot - Leg - Right
+	clip = AnimationClip.findByName(gltf.animations,"pilot_legRAction");
+	vxr_.LgR = new AnimationMixer(gltf.scene);
+	actun = vxr_.LgR.clipAction(clip);
+	actun.play();
+	if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
+	// Pilot - Head
+	clip = AnimationClip.findByName(gltf.animations,"pilot_headAction");
+	vxr_.Hed = new AnimationMixer(gltf.scene);
+	actun = vxr_.Hed.clipAction(clip);
+	actun.play();
+	if (vxr_.Hed) vxr_.Hed.setTime(anm_.yawval/anm_.anmfps);
 }
 
 //= MOVE AIR OBJECT ============//==============================================
@@ -248,6 +314,41 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		// Rite
 		if (vxr_.ATR) vxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
 		if (vxr_.ABR) vxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
+		// Compass
+		if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
+		// Pilot - Left Hand and Arm
+		if (vxr_.HLT) vxr_.HLT.setTime(anm_.manprs/anm_.anmfps);
+		if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);
+		// Pilot - Right Hand - Pitch
+		anm_.stkpcm = anm_.stkpcm - anm_.stkpit;
+		if (anm_.stkpcm > 359) anm_.stkpcm = 359;
+		if (anm_.stkpcm < 1) anm_.stkpcm = 1;
+		if (anm_.stkpit == 0) anm_.stkpcm = 0.99*(anm_.stkpcm-180)+180;	// recenter if inactive
+		if (vxr_.HRP) vxr_.HRP.setTime(anm_.stkpcm/anm_.anmfps);
+		// Pilot - Right Hand - Bank
+		anm_.stkbcm = anm_.stkbcm + anm_.stkbnk;
+		if (anm_.stkbcm > 359) anm_.stkbcm = 359;
+		if (anm_.stkbcm < 1) anm_.stkbcm = 1;
+		if (anm_.stkbnk == 0) anm_.stkbnk = 0.99*(anm_.stkbcm-180)+180;	// recenter if inactive
+		if (vxr_.HRB) vxr_.HRB.setTime(anm_.stkbcm/anm_.anmfps);
+		// Pilot - Right Arm - Bank
+		if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps);
+		// Pilot - Rudder (Only Push Down)
+		if (vxr_.RdL) vxr_.RdL.setTime(180/anm_.anmfps);
+		if (vxr_.LgL) vxr_.LgL.setTime(180/anm_.anmfps);
+		if (vxr_.RdR) vxr_.RdR.setTime(180/anm_.anmfps);
+		if (vxr_.LgR) vxr_.LgR.setTime(180/anm_.anmfps);
+		if (anm_.yawval < 180) {
+			if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
+			if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
+		}
+		if (anm_.yawval > 180) {
+			if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
+			if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
+		}
+		// Pilot - Head
+		anm_.vchead = Mod360(CamRot.y+180);
+		if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
 	}	
 }
 
