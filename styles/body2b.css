@@ -37,7 +37,7 @@ canvas {
 /* Toggle */
 .overlay2 {
 	position: absolute;
-	top: 2%;
+	top: 50%;
 	left: 88%;
 	width: 220px;
 	height: 110px;
@@ -51,7 +51,7 @@ canvas {
 .overlay3 {
 	position: absolute;
 	top: 40%;
-	left: 2%;
+	left: 40%;
 	width: 35%;
 	height: 500px;
 	color: black;
