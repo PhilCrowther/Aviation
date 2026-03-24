@@ -19,7 +19,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 <title>fsim Pup land gpu r183.1</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/flight_pup.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2b.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -194,7 +194,7 @@ let sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
 	scene.add(sonLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
-let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.1,100000);
+let camera = new THREE.PerspectiveCamera(50,CamAsp, 0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
