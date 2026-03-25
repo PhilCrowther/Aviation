@@ -143,7 +143,6 @@ let BegTmp = 288.15;			// K = 59F
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Basic airplane values
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-//let Throtl = 0;					// Throttle Setting (0 to 1)
 //- Mouse Delays ...............................................................
 //- (x = diverted, y = released, z = stored)
 let LagPwr = new THREE.Vector3(1-1/30,1/15,0);	// Power
@@ -438,7 +437,6 @@ function rendAll() {
 		renderer.render(loadingScreen.scene,loadingScreen.camera);
 		return;					// Stop the function here.
 	}
-//	if (controls.isLocked === true && !gen_.LodSnd) loadSounds();
 	if (controls.isLocked === true && !gen_.LodSnd) loadSounds(air_,mys_,myg_,gen_);
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
 		moveCamera(cam_,air_,key_,gen_,InpMos);
@@ -452,13 +450,11 @@ function rendAll() {
 		moveTreLin(grd_,gen_,air_); // Move TreeLines	
 		moveObject();			// Move objects
 		// Other
-//		moveSounds();
 		moveSounds(air_,mys_,myg_);
 		prntHUDval();			// change HUD value
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 	}
 	if (controls.isLocked === false && gen_.LodSnd) {
-//		stopSounds();
 		stopSounds(mys_,myg_);
 		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
@@ -912,16 +908,13 @@ function toglView() {
 	cam_.SrcLLD[cam_.CamSel].copy(cam_.CamLLD);	// Save LLD
 	// New CamSel
 	cam_.CamSel = 1 - cam_.CamSel;
-//	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos);
 	initCamPup();
 }
 
 //. Toggle Pause ................................................................
 function toglPaws() {
 	gen_.PawsOn = 1 - gen_.PawsOn;
-//	if ( gen_.PawsOn && gen_.SndFlg) stopSounds(); // Sounds On to Off
 	if ( gen_.PawsOn && gen_.SndFlg) stopSounds(mys_,myg_); // Sounds On to Off
-//	if (!gen_.PawsOn && gen_.SndFlg) playSounds();	// Sounds Off to On
 	if (!gen_.PawsOn && gen_.SndFlg) playSounds(mys_,myg_,gen_); // Sounds Off to On
 	PawsText();
 }
@@ -943,9 +936,7 @@ function toglInfo() {
 function toglSoun() {
 	if (!gen_.PawsOn) {			// If not paused
 		gen_.SndFlg = 1 - gen_.SndFlg;	// Switch flag
-//		if (gen_.SndFlg)  playSounds();	// Off to On
 		if (gen_.SndFlg)  playSounds(mys_,myg_,gen_); // Off to On
-//		if (!gen_.SndFlg) stopSounds();	// On to Off
 		if (!gen_.SndFlg) stopSounds(mys_,myg_); // On to Off
 	}
 }
@@ -969,6 +960,7 @@ function onWindowResize() {
 251031	New Tree Generator
 251031: Move Road Data to GrdLnd
 251125: Added scene, renderer, camera and Loaders to gen_
+260325: Load internal model; Sounds to AnimPup; Throtl removed (use air_.PwrPct)
 */
 
 </script>
