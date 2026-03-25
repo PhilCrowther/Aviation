@@ -254,6 +254,12 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	actun = vxr_.LgR.clipAction(clip);
 	actun.play();
 	if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
+	// Rudder Bar
+	clip = AnimationClip.findByName(gltf.animations,"cocpit_rudderAction");
+	vxr_.Bar = new AnimationMixer(gltf.scene);
+	actun = vxr_.Bar.clipAction(clip);
+	actun.play();
+	if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps);	
 	// Pilot - Head
 	clip = AnimationClip.findByName(gltf.animations,"pilot_headAction");
 	vxr_.Hed = new AnimationMixer(gltf.scene);
