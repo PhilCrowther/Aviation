@@ -4,9 +4,9 @@
 *
 ********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 23 Mar 2026
+Version dated 25 Mar 2026
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Pup aircraft model
@@ -342,7 +342,7 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps);
 		// Pilot - Rudder (Push and Pull)
 		anm_.yawval = 180;	// Default
-		if (anm_.yawval) (
+		if (air_.RotDif.y) (
 			anm_.yawval = air_.RotDif.y;		// Values = +/- 0.1
 			anm_.yawval = (179 * anm_.yawval/0.3)+180;
 		}
