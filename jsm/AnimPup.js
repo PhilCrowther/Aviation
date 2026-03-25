@@ -4,9 +4,9 @@
 *
 ********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 23 Mar 2026
+Version dated 25 Mar 2026
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Pup aircraft model
@@ -21,7 +21,8 @@ See http://philcrowther.com/Aviation for more details.
 
 import {
 	AnimationClip,
-	AnimationMixer
+	AnimationMixer,
+	PositionalAudio,
 } from 'three';
 
 /*******************************************************************************
@@ -251,6 +252,12 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	actun = vxr_.LgR.clipAction(clip);
 	actun.play();
 	if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
+	// Rudder Bar
+	clip = AnimationClip.findByName(gltf.animations,"cockpit_rudderAction");
+	vxr_.Bar = new AnimationMixer(gltf.scene);
+	actun = vxr_.Bar.clipAction(clip);
+	actun.play();
+	if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps);	
 	// Pilot - Head
 	clip = AnimationClip.findByName(gltf.animations,"pilot_headAction");
 	vxr_.Hed = new AnimationMixer(gltf.scene);
@@ -334,24 +341,126 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		if (vxr_.HRB) vxr_.HRB.setTime(anm_.stkbcm/anm_.anmfps);
 		// Pilot - Right Arm - Bank
 		if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps);
-		// Pilot - Rudder (Only Push Down)
-		if (vxr_.RdL) vxr_.RdL.setTime(180/anm_.anmfps);
-		if (vxr_.LgL) vxr_.LgL.setTime(180/anm_.anmfps);
-		if (vxr_.RdR) vxr_.RdR.setTime(180/anm_.anmfps);
-		if (vxr_.LgR) vxr_.LgR.setTime(180/anm_.anmfps);
-		if (anm_.yawval < 180) {
-			if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
-			if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
+		// Pilot - Rudder (Push and Pull)
+		anm_.yawval = 180;	// Default
+		if (air_.RotDif.y) {
+			anm_.yawval = air_.RotDif.y; // air_.RotDif.y = +/- 0.1
+			anm_.yawval = (air_.RotDif.y)*180 + 180; // air_.RotDif.y = +/- 0.1
+//			anm_.yawval = (179 * anm_.yawval/0.3)+180;		
 		}
-		if (anm_.yawval > 180) {
-			if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
-			if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
-		}
-		// Pilot - Head
+		if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
+		if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
+		if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
+		if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
+		if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps); // Rudder Bar
+//		// Pilot - Head
 		anm_.vchead = Mod360(cam_.CamLLD.y);
 		if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
 	}	
 }
+
+/*******************************************************************************
+*
+*	SOUNDS
+*
+*******************************************************************************/
+
+//= LOAD SOUNDS ================================================================
+
+function loadSounds(air_,mys_,myg_,gen_) {
+	// Engine Sounds ............................................................
+	air_.AirObj.add(mys_.AirMsh);
+	mys_.AirMsh.position.z = -5;
+	let RefDst = 25;			// Reference distance for Positional Audio
+	// Engine - Idle
+	mys_.IdlSnd = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(mys_.IdlSrc,function(buffer) {
+		mys_.IdlSnd.setBuffer(buffer);
+		init1Sound(mys_.IdlSnd,RefDst,0,1,1,mys_.AirMsh);		
+	});
+	// Engine
+	mys_.EngSnd = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(mys_.EngSrc,function(buffer) {
+		mys_.EngSnd.setBuffer(buffer);
+		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
+	});
+	// My Guns (Center) .........................................................
+	myg_.SndPtr[0] = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(myg_.SndSrc,function(buffer) {
+		myg_.SndPtr[0].setBuffer(buffer);
+		init1Sound(myg_.SndPtr[0],RefDst,0,1,1,myg_.SndMsh[0]);
+		air_.AirObj.add(myg_.SndMsh[0]);
+	});
+	//- Set Flag
+	gen_.LodSnd = 1;
+}
+
+//- INIT 1 SOUND ---------------//-----------------------------------------------
+
+//- Positional Audio
+function init1Sound(dest,dist,volm,rate,loop,link) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+	link.add(dest);
+}
+
+//- Positional Audio
+function init2Sound(dest,dist,volm,rate,loop) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+}
+
+//- Audio
+function initASound(dest,volm,rate) {
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+}
+
+//= MOVE SOUNDS ================================================================
+
+function moveSounds(air_,mys_,myg_) {
+	// Switch Between Idle and Engine Sounds
+	if (air_.PwrPct < .25 && mys_.EngSnd.isPlaying) {
+		mys_.IdlSnd.play();
+		mys_.EngSnd.stop();
+	}
+	if (air_.PwrPct >= .25 && mys_.IdlSnd.isPlaying) {
+		mys_.IdlSnd.stop();
+		mys_.EngSnd.play();
+	}
+	// Idle Sound
+	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.setVolume(mys_.IdlVol);
+	else {mys_.IdlSnd.setVolume(0);}
+	// My Engine
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.setVolume(mys_.EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
+	else {mys_.EngSnd.setVolume(0);};
+	mys_.EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
+	// My Guns
+	for (let n = 0; n < myg_.ObjNum; n ++) {myg_.SndPtr[n].setVolume(myg_.SndVol);}
+}
+
+//= PLAY SOUNDS ================================================================
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+
+function playSounds(mys_,myg_,gen_) {	
+	if (!mys_.IdlSnd.isPlaying) mys_.IdlSnd.play(); // Idle
+	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play(); // Engine
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();}
+}
+
+//= STOP SOUNDS ================================================================
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+
+function stopSounds(mys_,myg_) {	
+	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.stop(); // Idle
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop(); // Engine
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();}
+}
+
 
 /*******************************************************************************
 *
@@ -371,7 +480,7 @@ return deg;}
 *
 *******************************************************************************/
 
-export {loadAirExt,loadAirInt,moveAirObj};
+export {loadAirExt,loadAirInt,moveAirObj,loadSounds,moveSounds,playSounds,stopSounds};
 
 /*******************************************************************************
 *
@@ -381,5 +490,7 @@ export {loadAirExt,loadAirInt,moveAirObj};
 
 250607:	Create
 251125:	Add Loaders to gen_
+260325: Load and move internal object
+260325: Add sounds.
 
 */
