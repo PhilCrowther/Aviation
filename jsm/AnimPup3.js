@@ -360,6 +360,109 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 
 /*******************************************************************************
 *
+*	SOUNDS
+*
+*******************************************************************************/
+
+//= LOAD SOUNDS ================================================================
+
+function loadSounds(air_,mys_,myg_,gen_) {
+	// Engine Sounds ............................................................
+	air_.AirObj.add(mys_.AirMsh);
+	mys_.AirMsh.position.z = -5;
+	let RefDst = 25;			// Reference distance for Positional Audio
+	// Engine - Idle
+	mys_.IdlSnd = new THREE.PositionalAudio(listener);
+	audoLoader.load(mys_.IdlSrc,function(buffer) {
+		mys_.IdlSnd.setBuffer(buffer);
+		init1Sound(mys_.IdlSnd,RefDst,0,1,1,mys_.AirMsh);		
+	});
+	// Engine
+	mys_.EngSnd = new THREE.PositionalAudio(listener);
+	audoLoader.load(mys_.EngSrc,function(buffer) {
+		mys_.EngSnd.setBuffer(buffer);
+		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
+	});
+	// My Guns (Center) .........................................................
+	myg_.SndPtr[0] = new THREE.PositionalAudio(listener);
+	audoLoader.load(myg_.SndSrc,function(buffer) {
+		myg_.SndPtr[0].setBuffer(buffer);
+		init1Sound(myg_.SndPtr[0],RefDst,0,1,1,myg_.SndMsh[0]);
+		air_.AirObj.add(myg_.SndMsh[0]);
+	});
+	//- Set Flag
+	gen_.LodSnd = 1;
+}
+
+//- INIT 1 SOUND ---------------//-----------------------------------------------
+
+//- Positional Audio
+function init1Sound(dest,dist,volm,rate,loop,link) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+	link.add(dest);
+}
+
+//- Positional Audio
+function init2Sound(dest,dist,volm,rate,loop) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true);
+}
+
+//- Audio
+function initASound(dest,volm,rate) {
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+}
+
+//= MOVE SOUNDS ================================================================
+
+function moveSounds(air_,mys_,myg_) {
+	// Switch Between Idle and Engine Sounds
+	if (Throtl < .25 && mys_.EngSnd.isPlaying) {
+		mys_.IdlSnd.play();
+		mys_.EngSnd.stop();
+	}
+	if (Throtl >= .25 && mys_.IdlSnd.isPlaying) {
+		mys_.IdlSnd.stop();
+		mys_.EngSnd.play();
+	}
+	// Idle Sound
+	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.setVolume(mys_.IdlVol);
+	else {mys_.IdlSnd.setVolume(0);}
+	// My Engine
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.setVolume(mys_.EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
+	else {mys_.EngSnd.setVolume(0);};
+	mys_.EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
+	// My Guns
+	for (let n = 0; n < myg_.ObjNum; n ++) {myg_.SndPtr[n].setVolume(myg_.SndVol);}
+}
+
+//= PLAY SOUNDS ================================================================
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+
+function playSounds(mys_,myg_,gen_) {	
+	if (!mys_.IdlSnd.isPlaying) mys_.IdlSnd.play(); // Idle
+	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play(); // Engine
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();}
+}
+
+//= STOP SOUNDS ================================================================
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+
+function stopSounds(mys_,myg_) {	
+	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.stop(); // Idle
+	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop(); // Engine
+	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();}
+}
+
+
+/*******************************************************************************
+*
 *	SUBROUTINES
 *
 *******************************************************************************/
@@ -376,7 +479,7 @@ return deg;}
 *
 *******************************************************************************/
 
-export {loadAirExt,loadAirInt,moveAirObj};
+export {loadAirExt,loadAirInt,moveAirObj,loadSounds,moveSounds,playSounds,stopSounds};
 
 /*******************************************************************************
 *
@@ -386,5 +489,7 @@ export {loadAirExt,loadAirInt,moveAirObj};
 
 250607:	Create
 251125:	Add Loaders to gen_
+260325: Load and move internal object
+260325: Add sounds.
 
 */
