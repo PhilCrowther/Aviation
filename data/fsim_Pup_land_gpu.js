@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM PUP DATA: 260323
+*	FSIM PUP DATA: 260325
 *
 *********************************************************************************
 
@@ -91,6 +91,7 @@ let gen_ = {
 		audoLd: 0,				// Audio Loader
 		listnr: 0,				// Audio Listener
 		// Flght Controls
+		Throtl: 0,				// Throttle Setting (0 to 1)
 		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
 		PwrDif:	0,				// Power % Input - Value
 		InpBrk:	0,				// Brakes
