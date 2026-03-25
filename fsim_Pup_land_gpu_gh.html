@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Mar 2026
+Version dated 25 Mar 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -88,7 +88,9 @@ import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) -------------------------------------
-import {loadAirExt,loadAirInt,moveAirObj} from "https://PhilCrowther.github.io/Aviation/jsm/AnimPup.js";
+import {loadAirExt,loadAirInt,moveAirObj,
+		loadSounds,moveSounds,playSounds,stopSounds,
+	} from "https://PhilCrowther.github.io/Aviation/jsm/AnimPup.js";
 import {PointerLockControls,	// three.js modified
 		initCamera,moveCamera,	// camera
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
@@ -141,7 +143,7 @@ let BegTmp = 288.15;			// K = 59F
 //- AIRPLANE: Flight -----------------------------------------------------------
 let PYBmul = new THREE.Vector3(0.004,1.0,0.001); // Basic airplane values
 let	MosMul = new THREE.Vector3(1.0,1.0,1.0); // Adjustment to PYBmul (default = 1)
-let Throtl = 0;					// Throttle Setting (0 to 1)
+//let Throtl = 0;					// Throttle Setting (0 to 1)
 //- Mouse Delays ...............................................................
 //- (x = diverted, y = released, z = stored)
 let LagPwr = new THREE.Vector3(1-1/30,1/15,0);	// Power
@@ -436,7 +438,8 @@ function rendAll() {
 		renderer.render(loadingScreen.scene,loadingScreen.camera);
 		return;					// Stop the function here.
 	}
-	if (controls.isLocked === true && !gen_.LodSnd) loadSounds();
+//	if (controls.isLocked === true && !gen_.LodSnd) loadSounds();
+	if (controls.isLocked === true && !gen_.LodSnd) loadSounds(air_,mys_,myg_,gen_);
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
 		moveCamera(cam_,air_,key_,gen_,InpMos);
 		// Move Objects
@@ -449,12 +452,14 @@ function rendAll() {
 		moveTreLin(grd_,gen_,air_); // Move TreeLines	
 		moveObject();			// Move objects
 		// Other
-		moveSounds();
+//		moveSounds();
+		moveSounds(air_,mys_,myg_);
 		prntHUDval();			// change HUD value
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 	}
 	if (controls.isLocked === false && gen_.LodSnd) {
-		stopSounds();
+//		stopSounds();
+		stopSounds(mys_,myg_);
 		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
 	renderer.render(scene,camera);
@@ -666,106 +671,6 @@ function moveAirPln() {
 
 /********************************************************************************
 *
-*	6. SOUNDS
-*
-********************************************************************************/
-
-//= LOAD SOUNDS =================================================================
-
-function loadSounds() {
-	// Engine Sounds ............................................................
-	air_.AirObj.add(mys_.AirMsh);
-	mys_.AirMsh.position.z = -5;
-	let RefDst = 25;			// Reference distance for Positional Audio
-	// Engine - Idle
-	mys_.IdlSnd = new THREE.PositionalAudio(listener);
-	audoLoader.load(mys_.IdlSrc,function(buffer) {
-		mys_.IdlSnd.setBuffer(buffer);
-		init1Sound(mys_.IdlSnd,RefDst,0,1,1,mys_.AirMsh);		
-	});
-	// Engine
-	mys_.EngSnd = new THREE.PositionalAudio(listener);
-	audoLoader.load(mys_.EngSrc,function(buffer) {
-		mys_.EngSnd.setBuffer(buffer);
-		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
-	});
-	// My Guns (Center) .........................................................
-	myg_.SndPtr[0] = new THREE.PositionalAudio(listener);
-	audoLoader.load(myg_.SndSrc,function(buffer) {
-		myg_.SndPtr[0].setBuffer(buffer);
-		init1Sound(myg_.SndPtr[0],RefDst,0,1,1,myg_.SndMsh[0]);
-		air_.AirObj.add(myg_.SndMsh[0]);
-	});
-	//- Set Flag
-	gen_.LodSnd = 1;
-}
-
-//- INIT 1 SOUND ---------------//-----------------------------------------------
-
-//- Positional Audio
-function init1Sound(dest,dist,volm,rate,loop,link) {
-	dest.setRefDistance(dist);	// Position
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-	if (loop) dest.setLoop(true);
-	link.add(dest);
-}
-
-//- Positional Audio
-function init2Sound(dest,dist,volm,rate,loop) {
-	dest.setRefDistance(dist);	// Position
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-	if (loop) dest.setLoop(true);
-}
-
-//- Audio
-function initASound(dest,volm,rate) {
-	dest.setVolume(volm);
-	dest.playbackRate = rate;
-}
-
-//= MOVE SOUNDS =================================================================
-
-function moveSounds() {
-	// Switch Between Idle and Engine Sounds
-	if (Throtl < .25 && mys_.EngSnd.isPlaying) {
-		mys_.IdlSnd.play();
-		mys_.EngSnd.stop();
-	}
-	if (Throtl >= .25 && mys_.IdlSnd.isPlaying) {
-		mys_.IdlSnd.stop();
-		mys_.EngSnd.play();
-	}
-	// Idle Sound
-	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.setVolume(mys_.IdlVol);
-	else {mys_.IdlSnd.setVolume(0);}
-	// My Engine
-	if (mys_.EngSnd.isPlaying) mys_.EngSnd.setVolume(mys_.EngVol + air_.PwrPct * 0.05); // Range = .1 to .2
-	else {mys_.EngSnd.setVolume(0);};
-	mys_.EngSnd.setPlaybackRate(1 + air_.PwrPct * 0.5); // Range = 1 to 1.5
-	// My Guns
-	for (let n = 0; n < myg_.ObjNum; n ++) {myg_.SndPtr[n].setVolume(myg_.SndVol);}
-}
-
-//- Play Sounds -----------------------------------------------------------------
-function playSounds() {
-	// This leaves gen_.SndFlg and gen_.MYGFlg unchanged.
-	if (!mys_.IdlSnd.isPlaying) mys_.IdlSnd.play();
-	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play();
-	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();}
-}
-
-//- Stop Sounds -----------------------------------------------------------------
-function stopSounds() {
-	// This leaves gen_.SndFlg and gen_.MYGFlg unchanged.
-	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.stop();
-	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop();
-	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();}
-}
-
-/********************************************************************************
-*
 *	7. CAMERA
 *
 ********************************************************************************/
@@ -805,7 +710,7 @@ function initCamPup() {
 
 //-	Print HUD Values ------------------------------------------------------------
 function prntHUDval() {
-	Air_Pwr = Throtl;			// Throttle Setting
+	Air_Pwr = air_.PwrPct;			// Throttle Setting
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
 	Air_Spd = air_.SpdKPH*Km2Mil; // Speed
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
@@ -910,9 +815,9 @@ function onDocumentMouseUp(event) {
 function onDocumentMouseWheel(event) {
 	event.preventDefault();
 	gen_.PwrDif = - event.deltaY * gen_.PwrMul;	// Increment = 1%
-	Throtl = Throtl + gen_.PwrDif;
-	if (Throtl > 1) Throtl = 1;
-	if (Throtl < 0) Throtl = 0;
+	air_.PwrPct = air_.PwrPct + gen_.PwrDif;
+	if (air_.PwrPct > 1) air_.PwrPct = 1;
+	if (air_.PwrPct < 0) air_.PwrPct = 0;
 }
 
 //- KEYBOARD ===================//===============================================
@@ -1014,8 +919,10 @@ function toglView() {
 //. Toggle Pause ................................................................
 function toglPaws() {
 	gen_.PawsOn = 1 - gen_.PawsOn;
-	if ( gen_.PawsOn && gen_.SndFlg) stopSounds();	// Sounds On to Off
-	if (!gen_.PawsOn && gen_.SndFlg) playSounds();	// Sounds Off to On
+//	if ( gen_.PawsOn && gen_.SndFlg) stopSounds(); // Sounds On to Off
+	if ( gen_.PawsOn && gen_.SndFlg) stopSounds(mys_,myg_); // Sounds On to Off
+//	if (!gen_.PawsOn && gen_.SndFlg) playSounds();	// Sounds Off to On
+	if (!gen_.PawsOn && gen_.SndFlg) playSounds(mys_,myg_,gen_); // Sounds Off to On
 	PawsText();
 }
 
@@ -1036,8 +943,10 @@ function toglInfo() {
 function toglSoun() {
 	if (!gen_.PawsOn) {			// If not paused
 		gen_.SndFlg = 1 - gen_.SndFlg;	// Switch flag
-		if (gen_.SndFlg)  playSounds();	// Off to On
-		if (!gen_.SndFlg) stopSounds();	// On to Off
+//		if (gen_.SndFlg)  playSounds();	// Off to On
+		if (gen_.SndFlg)  playSounds(mys_,myg_,gen_); // Off to On
+//		if (!gen_.SndFlg) stopSounds();	// On to Off
+		if (!gen_.SndFlg) stopSounds(mys_,myg_); // On to Off
 	}
 }
 
