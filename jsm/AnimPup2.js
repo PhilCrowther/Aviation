@@ -424,11 +424,11 @@ function initASound(dest,volm,rate) {
 
 function moveSounds(air_,mys_,myg_) {
 	// Switch Between Idle and Engine Sounds
-	if (Throtl < .25 && mys_.EngSnd.isPlaying) {
+	if (air_.PwrPct < .25 && mys_.EngSnd.isPlaying) {
 		mys_.IdlSnd.play();
 		mys_.EngSnd.stop();
 	}
-	if (Throtl >= .25 && mys_.IdlSnd.isPlaying) {
+	if (air_.PwrPct >= .25 && mys_.IdlSnd.isPlaying) {
 		mys_.IdlSnd.stop();
 		mys_.EngSnd.play();
 	}
