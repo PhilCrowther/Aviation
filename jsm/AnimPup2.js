@@ -374,19 +374,19 @@ function loadSounds(air_,mys_,myg_,gen_) {
 	let RefDst = 25;			// Reference distance for Positional Audio
 	// Engine - Idle
 	mys_.IdlSnd = new PositionalAudio(gen_.listnr);
-	audoLoader.load(mys_.IdlSrc,function(buffer) {
+	gen_.audoLd.load(mys_.IdlSrc,function(buffer) {
 		mys_.IdlSnd.setBuffer(buffer);
 		init1Sound(mys_.IdlSnd,RefDst,0,1,1,mys_.AirMsh);		
 	});
 	// Engine
 	mys_.EngSnd = new PositionalAudio(gen_.listnr);
-	audoLoader.load(mys_.EngSrc,function(buffer) {
+	gen_.audoLd.load(mys_.EngSrc,function(buffer) {
 		mys_.EngSnd.setBuffer(buffer);
 		init1Sound(mys_.EngSnd,RefDst,0,1,1,mys_.AirMsh);		
 	});
 	// My Guns (Center) .........................................................
 	myg_.SndPtr[0] = new PositionalAudio(gen_.listnr);
-	audoLoader.load(myg_.SndSrc,function(buffer) {
+	gen_.audoLd.load(myg_.SndSrc,function(buffer) {
 		myg_.SndPtr[0].setBuffer(buffer);
 		init1Sound(myg_.SndPtr[0],RefDst,0,1,1,myg_.SndMsh[0]);
 		air_.AirObj.add(myg_.SndMsh[0]);
