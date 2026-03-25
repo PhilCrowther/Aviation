@@ -227,9 +227,6 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	actun = vxr_.ArR.clipAction(clip);
 	actun.play();
 	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbnk/anm_.anmfps);
-	// Pilot - Rudder
-	anm_.yawval = air_.RotDif.y;		// Values = +/- 0.1
-	anm_.yawval = (179 * anm_.yawval/0.3)+180;
 	// Pilot - Rudder - Left
 	clip = AnimationClip.findByName(gltf.animations,"pilot_rudderLAction");
 	vxr_.RdL = new AnimationMixer(gltf.scene);
@@ -344,21 +341,16 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		// Pilot - Right Arm - Bank
 		if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps);
 		// Pilot - Rudder (Push and Pull)
-		anm_.yawval = air_.RotDif.y;		// Values = +/- 0.1
-		anm_.yawval = (179 * anm_.yawval/0.3)+180;
+		anm_.yawval = 180;	// Default
+		if (anm_.yawval) (
+			anm_.yawval = air_.RotDif.y;		// Values = +/- 0.1
+			anm_.yawval = (179 * anm_.yawval/0.3)+180;
+		}
 		if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps); // Rudder Bar
-//		if (anm_.yawval < 180) {
-//			if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
-//			if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
-//		}
-//		if (anm_.yawval > 180) {
-//			if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
-//			if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
-//		}
 //		// Pilot - Head
 		anm_.vchead = Mod360(cam_.CamLLD.y);
 		if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
