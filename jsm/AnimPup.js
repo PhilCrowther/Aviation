@@ -198,6 +198,12 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	actun = vxr_.Cmp.clipAction(clip);
 	actun.play();
 	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
+	// Ball
+	clip = AnimationClip.findByName(gltf.animations, "cockpit_ballAction");
+	vxr_.Bal = new AnimationMixer(vxr_.Adr);
+	actun = vxr_.Bal.clipAction(clip);
+	actun.play();
+	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);	
 	// Pilot - Left Arm
 	clip = AnimationClip.findByName(gltf.animations,"pilot_armLAction");
 	vxr_.ArL = new AnimationMixer(gltf.scene);
@@ -323,6 +329,8 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		if (vxr_.ABR) vxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 		// Compass
 		if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
+		let acb = Mod360(air_.AirRot.z+180);
+		if (vxr_.Bal) vxr_.Bal.setTime(acb/anm_.anmfps);
 		// Pilot - Left Hand and Arm
 		anm_.manprs = air_.PwrPct*359;
 		if (vxr_.HLT) vxr_.HLT.setTime(anm_.manprs/anm_.anmfps);
