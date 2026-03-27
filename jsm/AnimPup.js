@@ -193,7 +193,7 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	actun.play();
 	if (vxr_.ABR) vxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 	// Compass
-	clip = AnimationClip.findByName(gltf.animations, "compassAction");
+	clip = AnimationClip.findByName(gltf.animations, "cockpit_compassAction");
 	vxr_.Cmp = new AnimationMixer(vxr_.Adr);
 	actun = vxr_.Cmp.clipAction(clip);
 	actun.play();
