@@ -299,6 +299,7 @@ let anm_ = {
 		stkbcm: 0,				// cumulative
 		yawval: 180,			// Slip indicator
 		vchead: 0,				// Pilot head
+		gunval: 180,			// Gun value (0 to 360, stop at 180)
 	}
 //	Animation Mixers - External Model
 let mxr_ = {
@@ -317,8 +318,8 @@ let vxr_ = {
 		Adr: 0,
 		// Prop,Rudder,Elevator,AilTopLeft, AilTopRite,AilBotLeft,AilBotRight
 		Prp:0,Rdr:0,Elv:0,ATL:0,ATR:0,ABL:0,ABR:0,
-		// Compass,RudderBar,Ball
-		Cmp: 0,Bar: 0,Bal: 0,
+		// Compass,RudderBar,Ball,Gun
+		Cmp:0,Bar:0,Bal:0,Gun:0,
 		// ArmL (T),ArmR (PB),HandL (T),HandR (P),HandR (B),
 		ArL:0,ArR:0,HLT:0,HRP:0,HRB:0,
 		// LegL,LegR,RudderL,RudderR,Head
