@@ -338,8 +338,8 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		let acb = Mod360(air_.AirRot.z+180);
 		if (vxr_.Bal) vxr_.Bal.setTime(acb/anm_.anmfps);
 		// Guns
-		if (anm_.gunval != 180) anm_.gunval = Mod360(anm_.gunval+1); // Complete cycle
-		if (anm_.gunval == 180 && gen_.MYGFlg) anm_.gunval = Mod360(anm_.gunval+1); // Restart again if guns on
+//		if (anm_.gunval != 180) anm_.gunval = Mod360(anm_.gunval+4); // Complete cycle
+		if (anm_.gunval != 180 || gen_.MYGFlg) anm_.gunval = Mod360(anm_.gunval+4); // Restart again if guns on
 		if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);
 		// Pilot - Left Hand and Arm
 		anm_.manprs = air_.PwrPct*359;
