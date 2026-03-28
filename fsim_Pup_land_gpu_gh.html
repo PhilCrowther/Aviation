@@ -2,15 +2,15 @@
 <html>
 
 <!--
-/********************************************************************************
+/*******************************************************************************
 *
 *	FSIM PUP LAND GPU
 *
-*********************************************************************************
+********************************************************************************
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Mar 2026
+Version dated 28 Mar 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -74,14 +74,14 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 
 <script type="module">
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	PROGRAM
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= LOAD MODULES ================================================================
-//- Basic Modules ---------------------------------------------------------------
+//= LOAD MODULES ===============================================================
+//- Basic Modules --------------------------------------------------------------
 import * as THREE from "three";
 import {color,float,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
@@ -104,7 +104,7 @@ import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
 
-/*= GENERAL ====================//===============================================
+/*= GENERAL ====================//==============================================
 
 This flight simulation demo uses the most advanced version of three.js
 
@@ -128,13 +128,13 @@ TO DO:
 	* Sometimes, need to wiggle plane to take off.
 */
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	VARIABLES
-*
-********************************************************************************/
 
-//= INPUTS =====================//===============================================
+*******************************************************************************/
+
+//= INPUTS =====================//==============================================
 let BegCam = 0;					// 0 = External; 1 = Internal (default)
 //- Starting Values ------------------------------------------------------------
 let BegLoc = 0;					// Starting Location (0 = Base; 1 = Air)
@@ -152,12 +152,12 @@ let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
 let KeyVal = new THREE.Vector3(1,.25,0.25);	// Key Values (Yaw = turn rate in 15 deg bank)
 
-//= SUN VALUES =================//===============================================
+//= SUN VALUES =================//==============================================
 //- New
 let SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
 let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 
-//= STANDARD SETUP =============//===============================================
+//= STANDARD SETUP =============//==============================================
 //- Scene
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
@@ -254,7 +254,7 @@ let loadingScreen = {
 	};
 let boxrot = 0;
 
-//= MODULES - General ==========//==============================================
+//= MODULES - General ==========//=============================================
 	gen_.scene  = scene;
 	gen_.render = renderer;
 	gen_.camera = camera;
@@ -264,7 +264,7 @@ let boxrot = 0;
 	gen_.audoLd = audoLoader;
 	gen_.listnr = listener;
 
-//= GRIDS ======================//===============================================
+//= GRIDS ======================//==============================================
 let ImgSiz = 1024;
 	gen_.canvas = document.createElement("canvas");
 	gen_.canvas.width = ImgSiz;
@@ -273,21 +273,21 @@ let ImgSiz = 1024;
 //- Adjustments
 	grd_.SPS = new THREE.Vector3(); // MSX, MPY, MSZ (meters) (from Flight)
 
-//= 4. OBJECT VARIABLES ========//===============================================
-//= STATIC OBJECTS =============//===============================================
-//- Mountains/Islands ----------//-----------------------------------------------
+//= 4. OBJECT VARIABLES ========//==============================================
+//= STATIC OBJECTS =============//==============================================
+//- Mountains/Islands ----------//----------------------------------------------
 //	Adjustments
 	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
 	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5000)];
 	mnt_.ObjGrp = [new THREE.Object3D]; // Group
 	mnt_.MaxAni = gen_.MaxAni;
-//- Static Objects -------------//-----------------------------------------------
+//- Static Objects -------------//----------------------------------------------
 //	Adjustments
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
 	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,4750)]; // Relative Position
 	fxd_.ObjRef = [mnt_.ObjGrp[0]];
 
-//= 5. MY AIRPLANE VARIABLES ===//===============================================
+//= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
 	air_.AirDat = data_;
 	air_.AirRot = new THREE.Euler();
@@ -305,18 +305,36 @@ let ImgSiz = 1024;
 	air_.InpKey = new THREE.Vector3();
 	air_.OldRot = new THREE.Euler();
 
-//= GUNASG MODULE ==============//===============================================
+//= GUNASG MODULE ==============//==============================================
 //	Adjustments
 	myg_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
 	myg_.SndSrc = AirSrc + "sounds/" + "pup_gun.mp3", // File (my guns)
 	myg_.ObjPos = [new THREE.Vector3(0,0,1)]; // Position of Each Barrel
 	myg_.SndMsh = [new THREE.Object3D,new THREE.Object3D];
 
-//=	MY SOUNDS ==================//===============================================
+//= ANIMATIONS =================//==============================================
+//- Instruments ----------------//----------------------------------------------
+//- Pointers
+let gau_ = {
+		// RPM
+		RPMPos: new THREE.Vector3(-0.436414,1.38799,0.342), // Model: XYZ Pos
+		RPMXYZ: new THREE.Vector3(0,0.13,0), // Model: Ptr Length
+		RPMPtr: 0,				// Pointer Address
+		// Altitude
+		AltPos: new THREE.Vector3(0.462396,1.40157,0.32), // Model: XYZ Pos
+		AltXYZ: new THREE.Vector3(0,.085,0), // Model: Ptr Length
+		AltPtr: 0,				// Pointer Address	
+		// Speed
+		SpdPos: new THREE.Vector3(0.503454,0.902229,0.336), // Model: XYZ Pos
+		SpdXYZ: new THREE.Vector3(0,0.085,0), // Model: Ptr Length
+		SpdPtr: 0,				// Pointer Address	
+	}
+
+//=	MY SOUNDS ==================//==============================================
 //- Adjustments
 	mys_.AirMsh = new THREE.Object3D;
 
-//= CAMERA =====================//===============================================
+//= CAMERA =====================//==============================================
 //- Create Internal Attach Point
 const CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
@@ -336,16 +354,16 @@ const CamPVC = new THREE.Object3D;
 	cam_.MshDeg = new THREE.Object3D;
 	cam_.MshDeg.rotation.order = "YXZ";
 	cam_.MshObj.add(cam_.MshDeg);
-//- Adjustments ----------------------------------------------------------------
+//- Adjustments ---------------------------------------------------------------
 	cam_.CamSel = BegCam;
 	cam_.CamPar = cam_.SrcPar[cam_.CamSel];	// Center of Rotation
 	cam_.CamPar.add(cam_.MshRot); // Attach Rotator
 
-//= 9. INPUT VARIABLES =========//===============================================
-//- POINTER LOCK CONTROLS ------//-----------------------------------------------
+//= 9. INPUT VARIABLES =========//==============================================
+//- POINTER LOCK CONTROLS ------//----------------------------------------------
 //	Adjustments
 	InpMos = new THREE.Vector2(); // Mouse Inputs
-//. Setup .......................................................................
+//. Setup ......................................................................
 let controls = new PointerLockControls(renderer.domElement,InpMos);
 let blocker = document.getElementById("blocker");
 let instructions = document.getElementById("instructions");
@@ -359,15 +377,15 @@ let instructions = document.getElementById("instructions");
 		instructions.style.display = "";
 	});
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	1. MAIN PROGRAM
 *
-********************************************************************************/
+*******************************************************************************/
 
 	loadAll();
 
-//=	LOAD ALL ===================//===============================================
+//=	LOAD ALL ===================//==============================================
 
 function loadAll() {
 	// Initialize Loading Screen
@@ -386,7 +404,7 @@ function loadAll() {
 	}
 }
 
-//- WAIT SCREEN ----------------//-----------------------------------------------
+//- WAIT SCREEN ----------------//----------------------------------------------
 
 function WaitScreen() {
 	// Set up the loading screen scene.
@@ -401,7 +419,7 @@ function WaitScreen() {
 	loadingScreen.scene.add(loadingScreen.box);
 }
 
-//=	INIT ALL ===================//===============================================
+//=	INIT ALL ===================//==============================================
 
 function initAll() {
 	// Time
@@ -427,7 +445,7 @@ function initAll() {
 	gen_.LodFlg = 1;
 }
 
-//= REND ALL ===================//===============================================
+//= REND ALL ===================//==============================================
 
 function rendAll() {
 	// This block runs while resources are loading.
@@ -461,13 +479,13 @@ function rendAll() {
 	renderer.render(scene,camera);
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	2. SKY
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= LOAD SKY ===================//===============================================
+//= LOAD SKY ===================//==============================================
 
 function loadSkyBox() {
 	sky_.envMap = cubeLoader
@@ -483,7 +501,7 @@ function loadSkyBox() {
 	}
 }
 
-//= INIT SKY ===================//===============================================
+//= INIT SKY ===================//==============================================
 	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
 	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
 	// Fog (doesn't work with Normal Material)
@@ -504,32 +522,32 @@ function initSkyBox() {
 	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	4. OBJECTS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= LOAD OBJECTS ================================================================
+//= LOAD OBJECTS ===============================================================
 
 function loadObject() {
 	loadStatic();
 }
 
-//= INIT OBJECTS ================================================================
+//= INIT OBJECTS ===============================================================
 
 
 function initObject() {
 	initStatic();
 }
 
-//= MOVE OBJECTS ================================================================
+//= MOVE OBJECTS ===============================================================
 
 function moveObject() {
 	moveStatic();
 }
 
-//- STATIC OBJECTS -------------//-----------------------------------------------
+//- STATIC OBJECTS -------------//----------------------------------------------
 
 function loadStatic() {
 	loadMountn(mnt_,air_,gen_);
@@ -546,20 +564,20 @@ function moveStatic() {
 	moveFxdObj(fxd_,air_,gen_);
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	5. MY AIRPLANE
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= LOAD AIRPLANE ==============//===============================================
+//= LOAD AIRPLANE ==============//==============================================
 
 function loadAirObj() {
 	loadAirExt(air_,mxr_,anm_,gen_);
 	loadAirInt(air_,vxr_,anm_,gen_);
 }
 
-//= INIT AIRPLANE ==============//===============================================
+//= INIT AIRPLANE ==============//==============================================
 
 // This section initializes starting location and variables before passing to Flight Module
 function initAirObj() {
@@ -589,15 +607,36 @@ function initAirObj() {
 	grd_.SPS.y = air_.MapSPS.y; // Use to initialize objects (if on ground)
 	// Init Bullets
 	initBullet(myg_,gen_);		// Bullets
+	// Gauges
+	gau_.RPMPtr = makeLines(gau_.RPMXYZ,gau_.RPMPos);
+	vxr_.Adr.add(gau_.RPMPtr);
+	gau_.AltPtr = makeLines(gau_.AltXYZ,gau_.AltPos);
+	vxr_.Adr.add(gau_.AltPtr);
+	gau_.SpdPtr = makeLines(gau_.SpdXYZ,gau_.SpdPos);
+	vxr_.Adr.add(gau_.SpdPtr);
 }
 
-//= MMOVE AIRPLANE ==============//===============================================
+//- MAKE INSTRUMENT POINTERS ------//-------------------------------------------
+
+function makeLines(LinXYZ,LinPos) {
+	let airmat = new THREE.LineBasicNodeMaterial({colorNode: color("gray")});
+	let points = [];
+	points.push(new THREE.Vector3(0,0,0));
+	points.push(LinXYZ);
+	let geometry = new THREE.BufferGeometry().setFromPoints(points);
+	let line = new THREE.Line(geometry,airmat);
+	line.receiveShadow = true;
+	line.position.copy(LinPos);
+	return line;
+}
+																			
+//= MOVE AIRPLANE ==============//==============================================
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
 
 function moveAirPln() {
-	// Compute Inputs -----------------------------------------------------------
-	// Power Percent ............................................................
+	// Compute Inputs ----------------------------------------------------------
+	// Power Percent ...........................................................
 	// Add Delay
 	let gal = gen_.PwrDif * LagPwr.x; // Current input delayed
 	let lag = LagPwr.z * LagPwr.y; // Released from Cumulator
@@ -608,7 +647,7 @@ function moveAirPln() {
 	if (air_.PwrPct > 1) air_.PwrPct = 1;
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
 	gen_.PwrDif = 0;			// Reset
-	// Coefficient of Lift ......................................................
+	// Coefficient of Lift .....................................................
 	if (air_.AutoOn) {			// Autopilot
 		air_.CfLDif = air_.InpKey.x;
 		// Add Delay to Lift
@@ -632,7 +671,7 @@ function moveAirPln() {
 	InpMos.y = 0;				// Reset
 	// Coefficient of Lift - Flaps (NA)	
 	//air_.CfFlap = air_.FlpCfL*(180-anm_.flppos)/180; // CfL - Flaps
-	// Bank .....................................................................
+	// Bank ....................................................................
 	if (air_.AutoOn) {
 		air_.RotDif.z = air_.InpKey.z;
 		air_.OldRot.z = air_.OldRot.z + air_.RotDif.z*DegRad;
@@ -653,25 +692,52 @@ function moveAirPln() {
 		anm_.stkbnk = InpMos.x;	// Joystick bank animation
 		InpMos.x = 0;			// Reset
 	}
-	// Input Yaw ................................................................
+	// Input Yaw ...............................................................
 	if (air_.SpdKPH < 1) air_.RotDif.y = 0;	// No Yaw if Speed < 1;
-	// Input Brakes .............................................................
-	air_.BrkVal = gen_.InpBrk;	// Brakes
-	// Compute Rotation and Vectors ---------------------------------------------
+	// Input Brakes ............................................................
+	air_.BrkVal = gen_.InpBrk;	// Brake
+	// Compute Rotation and Vectors --------------------------------------------
 	flight.update();
-	// Animate ------------------------------------------------------------------	
-	moveAirObj(air_,mxr_,vxr_,anm_,cam_);	// External Only
+	// Animate -----------------------------------------------------------------
+	moveAirObj(air_,mxr_,vxr_,anm_,cam_);
 	// Bullets
 	moveBullet(myg_,air_,gen_,tim_,0); // Bullets
+	// Gauges
+	if (cam_.CamSel) { // Internal View Only
+		// RPM
+		let RPM = 0;
+		if (air_.PwrPct >= .25) RPM = (air_.PwrPct-0.25)*16; // .75 PwrPct = 12k RPM;
+		let RPMD = (180-3*90/4.5)-RPM*90/4.5;
+		gau_.RPMPtr.rotation.set(0,0,RPMD*DegRad);
+		// Altitude
+		let Alt = air_.MapPos.y*Mtr2Ft;	// Altitude (feet)
+		let AltD = Mod360(-22.5-Alt*90/4000);
+		gau_.AltPtr.rotation.set(0,0,-AltD*DegRad);
+		// Speed (mph => deg)
+		// 035 => 035 (35/35) = 1.0
+		// 040 => 050 (15/05) = 3.0 (1.25)
+		// 050 => 060 (10/10) = 1.0 (1.2)
+		// 060 => 090 (30/10) = 3.0 (1.5)
+		// 070 => 120 (30/10) = 3.0 (1.7143)
+		// 080 => 145 (25/10) = 2.5 (1.8125)
+		// 090 => 175 (30/10) = 3.0 (1.9444)
+		// 100 => 210 (35/10) = 3.5 (2.1)
+		// 110 => 245 (35/10) = 3.5 (2.2273)
+		// 120 => 285 (40/10) = 4.0 (2.375)
+		// 130 => 330 (45/10) = 4.5 (2.5385)
+		let Spd = air_.SpdKPH*Km2Mil; // Speed (mph)
+		let SpdD = Spd*2; // Rough Estimate
+		gau_.SpdPtr.rotation.set(0,0,-SpdD*DegRad);
+	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	7. CAMERA
 *
-********************************************************************************/
+*******************************************************************************/
 
-//== INIT CAMERA ===============//===============================================
+//== INIT CAMERA ===============//==============================================
 
 function initCamPup() {
 	if (!cam_.CamSel) {			// 0 = External View
@@ -698,13 +764,13 @@ function initCamPup() {
 	initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos);
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	8. OUTPUTS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//-	Print HUD Values ------------------------------------------------------------
+//-	Print HUD Values -----------------------------------------------------------
 function prntHUDval() {
 	Air_Pwr = air_.PwrPct;			// Throttle Setting
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
@@ -718,19 +784,19 @@ function prntHUDval() {
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 }
 
-//-	Pause Text ------------------------------------------------------------------
+//-	Pause Text -----------------------------------------------------------------
 function PawsText(){
 	if (gen_.PawsOn) On_PawsNode.nodeValue = "Paused";
 	else {On_PawsNode.nodeValue = "Pause: Press P";}
 }
 
-//-	Autopilot Text --------------------------------------------------------------
+//-	Autopilot Text -------------------------------------------------------------
 function AutoText(){
 	if (air_.AutoOn) Air_AtPNode.nodeValue = "Autopilot On";
 	else {Air_AtPNode.nodeValue = "AutoP: Press A";}
 }
 
-//- Info Text -------------------------------------------------------------------
+//- Info Text ------------------------------------------------------------------
 function InfoText() {
 	if (!gen_.InfoOn) onInfo0();
 	else if (gen_.InfoOn == 1) onInfo1();
@@ -776,17 +842,17 @@ function onInfo2(){
 	On_Inf8Node.nodeValue = "";
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	9. INPUTS
 *
-********************************************************************************/
+*******************************************************************************/
 // The PointerLockControls creates inputs for mouse movement.
 // This creates inputs for mouse buttons and keys.
 
-//= MOUSE ======================//===============================================
+//= MOUSE ======================//==============================================
 
-//- Mouse Buttons (Down) --------------------------------------------------------
+//- Mouse Buttons (Down) -------------------------------------------------------
 function onDocumentMouseDown(event) {
 	event.preventDefault();
 	if (event.button == 0) {	// Yaw Left
@@ -797,7 +863,7 @@ function onDocumentMouseDown(event) {
 	}
 }
 
-//- Mouse Buttons (Up) ----------------------------------------------------------
+//- Mouse Buttons (Up) ---------------------------------------------------------
 function onDocumentMouseUp(event) {
 	if (event.button == 0) {	// Yaw Left Off
 		air_.RotDif.y = 0;
@@ -807,7 +873,7 @@ function onDocumentMouseUp(event) {
 	}
 }
 
-//- Mousewheel ------------------------------------------------------------------
+//- Mousewheel -----------------------------------------------------------------
 function onDocumentMouseWheel(event) {
 	event.preventDefault();
 	gen_.PwrDif = - event.deltaY * gen_.PwrMul;	// Increment = 1%
@@ -816,9 +882,9 @@ function onDocumentMouseWheel(event) {
 	if (air_.PwrPct < 0) air_.PwrPct = 0;
 }
 
-//- KEYBOARD ===================//===============================================
+//- KEYBOARD ===================//==============================================
 
-//- Keyboard (Down) -------------------------------------------------------------
+//- Keyboard (Down) ------------------------------------------------------------
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
 	// Basic
@@ -860,7 +926,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.Soun) toglSoun();			// Toggle Sound
 }
 
-//-	Keyboard (Up) ---------------------------------------------------------------
+//-	Keyboard (Up) --------------------------------------------------------------
 function onDocumentKeyUp(event) {
 	let keyCode = event.which;
 	// Basic
@@ -899,7 +965,7 @@ function onDocumentKeyUp(event) {
 	}
 }
 
-//- Subroutines -----------------------------------------------------------------
+//- Subroutines ----------------------------------------------------------------
 
 //. Toggle Camera View (2-Way) -//----------------------------------------------
 function toglView() {
@@ -911,7 +977,7 @@ function toglView() {
 	initCamPup();
 }
 
-//. Toggle Pause ................................................................
+//. Toggle Pause ...............................................................
 function toglPaws() {
 	gen_.PawsOn = 1 - gen_.PawsOn;
 	if ( gen_.PawsOn && gen_.SndFlg) stopSounds(mys_,myg_); // Sounds On to Off
@@ -919,20 +985,20 @@ function toglPaws() {
 	PawsText();
 }
 
-//. Toggle AutoPilot ............................................................
+//. Toggle AutoPilot ...........................................................
 function toglAuto() {
 	air_.AutoOn = 1 - air_.AutoOn;
 	AutoText();
 }
 
-//. Toggle Info .................................................................
+//. Toggle Info ................................................................
 function toglInfo() {
 	gen_.InfoOn++
 	if (gen_.InfoOn == 3) gen_.InfoOn = 0;
 	InfoText();
 }
 
-//. Toggle Sound ................................................................
+//. Toggle Sound ...............................................................
 function toglSoun() {
 	if (!gen_.PawsOn) {			// If not paused
 		gen_.SndFlg = 1 - gen_.SndFlg;	// Switch flag
@@ -949,11 +1015,11 @@ function onWindowResize() {
 	renderer.setSize(window.innerWidth,window.innerHeight);
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	CHANGE LOG
 *
-*********************************************************************************
+********************************************************************************
 
 251010	On MouseWheel Input, if Throtl is 0 or 1, don't also set gen_.PwrDif = 0  - prevents thrust from reaching zero
 251011	Replaced renderASync with render
