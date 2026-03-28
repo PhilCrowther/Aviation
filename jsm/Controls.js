@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 Feb 2026
+Version dated 21 Mar 2026
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -40,54 +40,64 @@ let _unlockEvent = {type: "unlock"};
 *	POINTER LOCK CONTROLS
 *
 *******************************************************************************/
-//	Adapted from three.js version
+//	Adapted from three.js r151-r168
 
 class PointerLockControls extends EventDispatcher {
 	constructor(domElement,InpMos) {
 		super();
 		this.domElement = domElement;
+		this.InpMos = InpMos;
 		this.isLocked = false;
-		const scope = this;
-		function onMouseMove(event) {
-			if (scope.isLocked === false) return;
-			const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-			const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;		
-			InpMos.x = movementX;
-			InpMos.y = movementY;
-		}
-		function onPointerlockChange() {
-			if (scope.domElement.ownerDocument.pointerLockElement === scope.domElement) {
-				scope.dispatchEvent(_lockEvent);
-				scope.isLocked = true;
-			} else {
-				scope.dispatchEvent(_unlockEvent);
-				scope.isLocked = false;
-			}
-		}
-		function onPointerlockError() {
-			console.error("PointerLockControls: Unable to use Pointer Lock API");
-		}
-		this.connect = function () {
-			scope.domElement.ownerDocument.addEventListener("mousemove", onMouseMove);
-			scope.domElement.ownerDocument.addEventListener("pointerlockchange", onPointerlockChange);
-			scope.domElement.ownerDocument.addEventListener("pointerlockerror", onPointerlockError);
-		};
-		this.disconnect = function () {
-			scope.domElement.ownerDocument.removeEventListener("mousemove", onMouseMove);
-			scope.domElement.ownerDocument.removeEventListener("pointerlockchange", onPointerlockChange);
-			scope.domElement.ownerDocument.removeEventListener("pointerlockerror", onPointerlockError);
-		};
-		this.dispose = function () {
-			this.disconnect();
-		};
-		this.lock = function () {
-			this.domElement.requestPointerLock();
-		};
-		this.unlock = function () {
-			scope.domElement.ownerDocument.exitPointerLock();
-		};
+		this.pointerSpeed = 1.0;
+		this._onMouseMove = onMouseMove.bind(this);
+		this._onPointerlockChange = onPointerlockChange.bind(this);
+		this._onPointerlockError = onPointerlockError.bind(this);
 		this.connect();
 	}
+	connect() {
+		this.domElement.ownerDocument.addEventListener('mousemove', this._onMouseMove);
+		this.domElement.ownerDocument.addEventListener('pointerlockchange', this._onPointerlockChange);
+		this.domElement.ownerDocument.addEventListener('pointerlockerror', this._onPointerlockError);
+	}
+	disconnect() {
+		this.domElement.ownerDocument.removeEventListener('mousemove', this._onMouseMove);
+		this.domElement.ownerDocument.removeEventListener('pointerlockchange', this._onPointerlockChange);
+		this.domElement.ownerDocument.removeEventListener('pointerlockerror', this._onPointerlockError);
+	}
+	dispose() {
+		this.disconnect();
+	}
+	lock() {
+		this.domElement.requestPointerLock();
+	}
+	unlock() {
+		this.domElement.ownerDocument.exitPointerLock();
+	}
+}
+
+// event listeners
+
+function onMouseMove(event) {
+	if (this.isLocked === false) return;
+	const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+	const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+		this.InpMos.x = movementX;
+		this.InpMos.y = movementY;
+	this.dispatchEvent(_changeEvent);
+}
+
+function onPointerlockChange() {
+	if (this.domElement.ownerDocument.pointerLockElement === this.domElement) {
+		this.dispatchEvent(_lockEvent);
+		this.isLocked = true;
+	} else {
+		this.dispatchEvent(_unlockEvent);
+		this.isLocked = false;
+	}
+}
+
+function onPointerlockError() {
+	console.error('THREE.PointerLockControls: Unable to use Pointer Lock API');
 }
 
 /*******************************************************************************
@@ -165,21 +175,28 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
 				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
 				if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
+				if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
+				if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
+				if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
+				if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
+				if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
+				if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
 			}
 			// Internal View
 			else {
 				cam_.CamLLD.y = cam_.VewRot;
 				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
-				if (key_.D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
-				if (key_.D45flg && cam_.VewRot) cam_.CamLLD.y = 0; // Limit
-
+				else if (key_.D45flg) {
+					cam_.CamLLD.x = 45; // Up
+					if (cam_.VewRot) cam_.CamLLD.y = 0;		// Limit y
+				}
+				else if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
+				else if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
+				else if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
+				else if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
+				else if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
+				else if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
 			}
-			if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
-			if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
-			if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-			if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
-			if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-			if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
 		}
 		// Alt Keys (keys above arrow keys) ....................................
 		else {
@@ -187,18 +204,25 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			if (!cam_.CamFlg) {
 				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
 				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
+				else if (cam_.U45flg) cam_.CamLLD.x = 315;	// Look Down 45
+				else if (cam_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
+				else if (cam_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
+				else if (cam_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
+				else if (cam_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
 			}	
 			// Internal View
 			else {
 				cam_.CamLLD.y = cam_.VewRot;
-				if (key_.D45flg && !cam_.VewRot) cam_.CamLLD.x = 45; // Up
-				if (key_.D45flg && cam_.VewRot) cam_.CamLLD.y = 0;
+				if (key_.D45flg) {
+					cam_.CamLLD.x = 45; // Up
+					if (cam_.VewRot) cam_.CamLLD.y = 0;		// Limit y
+				}
+				else if (cam_.U45flg) cam_.CamLLD.x = 315;	// Look Down 45
+				else if (cam_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
+				else if (cam_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
+				else if (cam_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
+				else if (cam_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
 			}
-			if (cam_.U45flg) cam_.CamLLD.x = 315;	// Look Down 45
-			if (cam_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
-			if (cam_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
-			if (cam_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
-			if (cam_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
 		}	
 	}
 	// Adjust Camera Rotators
