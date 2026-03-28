@@ -20,7 +20,7 @@ See http://philcrowther.com/Aviation for more details.
 *******************************************************************************/
 
 import {
-	EventDispatcher,
+	Controls,
 	Vector3,
 } from 'three';
 
@@ -40,53 +40,60 @@ let _unlockEvent = {type: "unlock"};
 *	POINTER LOCK CONTROLS
 *
 *******************************************************************************/
-//	Adapted from three.js version
+//	Adapted from three.js version r183
 
-class PointerLockControls extends EventDispatcher {
+//= PLC CLASS ==================================================================
+class PointerLockControls extends Controls {
 	constructor(domElement,InpMos) {
-		super();
-		this.domElement = domElement;
+		super(domElement,InpMos);
 		this.isLocked = false;
-		const scope = this;
+		// event listeners
 		function onMouseMove(event) {
-			if (scope.isLocked === false) return;
-			const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-			const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;		
-			InpMos.x = movementX;
-			InpMos.y = movementY;
+			if (this.enabled === false || this.isLocked === false) return;
+			InpMos.x = event.movementX;
+			InpMos.y = event.movementY;
+			this.dispatchEvent(_changeEvent);
 		}
+		this._onMouseMove = onMouseMove.bind(this);
 		function onPointerlockChange() {
-			if (scope.domElement.ownerDocument.pointerLockElement === scope.domElement) {
-				scope.dispatchEvent(_lockEvent);
-				scope.isLocked = true;
+			if (this.domElement.ownerDocument.pointerLockElement === this.domElement) {
+				this.dispatchEvent(_lockEvent);
+				this.isLocked = true;
 			} else {
-				scope.dispatchEvent(_unlockEvent);
-				scope.isLocked = false;
+				this.dispatchEvent(_unlockEvent);
+				this.isLocked = false;
 			}
-		}
+		}		
+		this._onPointerlockChange = onPointerlockChange.bind(this);
 		function onPointerlockError() {
-			console.error("PointerLockControls: Unable to use Pointer Lock API");
+			console.error('THREE.PointerLockControls: Unable to use Pointer Lock API');
 		}
-		this.connect = function () {
-			scope.domElement.ownerDocument.addEventListener("mousemove", onMouseMove);
-			scope.domElement.ownerDocument.addEventListener("pointerlockchange", onPointerlockChange);
-			scope.domElement.ownerDocument.addEventListener("pointerlockerror", onPointerlockError);
-		};
-		this.disconnect = function () {
-			scope.domElement.ownerDocument.removeEventListener("mousemove", onMouseMove);
-			scope.domElement.ownerDocument.removeEventListener("pointerlockchange", onPointerlockChange);
-			scope.domElement.ownerDocument.removeEventListener("pointerlockerror", onPointerlockError);
-		};
-		this.dispose = function () {
-			this.disconnect();
-		};
-		this.lock = function () {
-			this.domElement.requestPointerLock();
-		};
-		this.unlock = function () {
-			scope.domElement.ownerDocument.exitPointerLock();
-		};
-		this.connect();
+		this._onPointerlockError = onPointerlockError.bind(this);
+		if (this.domElement !== null) {
+			this.connect(this.domElement);
+		}
+	}
+	connect(element) {
+		super.connect(element);
+		this.domElement.ownerDocument.addEventListener('mousemove', this._onMouseMove);
+		this.domElement.ownerDocument.addEventListener('pointerlockchange', this._onPointerlockChange);
+		this.domElement.ownerDocument.addEventListener('pointerlockerror', this._onPointerlockError);
+	}
+	disconnect() {
+		this.domElement.ownerDocument.removeEventListener('mousemove', this._onMouseMove);
+		this.domElement.ownerDocument.removeEventListener('pointerlockchange', this._onPointerlockChange);
+		this.domElement.ownerDocument.removeEventListener('pointerlockerror', this._onPointerlockError);
+	}
+	dispose() {
+		this.disconnect();
+	}
+	lock(unadjustedMovement = false) {
+		this.domElement.requestPointerLock({
+			unadjustedMovement
+		});
+	}
+	unlock() {
+		this.domElement.ownerDocument.exitPointerLock();
 	}
 }
 
@@ -178,7 +185,7 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
 				else if (key_.D45flg) {
 					cam_.CamLLD.x = 45; // Up
-					if (cam_.VewRot) cam_.CamLLD.y = 0; // Limit
+					if (cam_.VewRot) cam_.CamLLD.y = 0;		// Limit y
 				}
 				else if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
 				else if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
@@ -205,7 +212,7 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				cam_.CamLLD.y = cam_.VewRot;
 				if (key_.D45flg) {
 					cam_.CamLLD.x = 45; // Up
-					if (cam_.VewRot) cam_.CamLLD.y = 0;
+					if (cam_.VewRot) cam_.CamLLD.y = 0;		// Limit y
 				}
 				else if (cam_.U45flg) cam_.CamLLD.x = 315;	// Look Down 45
 				else if (cam_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
