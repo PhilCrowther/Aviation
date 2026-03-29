@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 Mar 2026
+Version dated 29 Mar 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -168,9 +168,8 @@ let ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	sunLight.position.copy(SunPos);
 	sunLight.castShadow = true;
-//	sunLight.shadow.camera.near = sky_.SunDst*0.75;
-	sunLight.shadow.camera.near = sky_.SunDst+1;
-	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
+	sunLight.shadow.camera.near = sky_.SunDst*0.75;
+	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox; // Out to 1500 meters
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
 	sunLight.shadow.camera.left = -sky_.ShdBLR;
@@ -372,7 +371,7 @@ let instructions = document.getElementById("instructions");
 		instructions.style.display = "none";
 		blocker.style.display = "none";
 	});
-	controls.addEventListener( "unlock", function () {
+	controls.addEventListener("unlock", function () {
 		blocker.style.display = "block";
 		instructions.style.display = "";
 	});
@@ -741,22 +740,11 @@ function moveAirPln() {
 
 function initCamPup() {
 	if (!cam_.CamSel) {			// 0 = External View
-		// Shadow1
-		sunLight.shadow.camera.near = sky_.SunDst*0.75;
-		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
-		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
-		sunLight.shadow.camera.updateProjectionMatrix();
 		// Shadow2
 		sonLight.visible = false; // Turn Off Cockpit Lighting
 		sonLight.castShadow = false; // and Shadows
 	}
 	if (cam_.CamSel) {			// 1 = Internal View
-		// Shadow1
-//		sunLight.shadow.camera.near = sky_.SunDst+2; // Avoid Double Shadows
-		sunLight.shadow.camera.near = sky_.SunDst*0.75;
-		sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdBox+sky_.ShdDst; // Out to 1500 meters
-		if (air_.GrdFlg) sunLight.shadow.camera.far = sky_.SunDst+20; // Out to Deck Edge
-		sunLight.shadow.camera.updateProjectionMatrix();
 		// Shadow2
 		sonLight.visible = true; // Turn on Cockpit Lighting
 		sonLight.castShadow = true; // and Shadows
