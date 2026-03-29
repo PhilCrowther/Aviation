@@ -44,9 +44,7 @@ const _unlockEvent = {type: 'unlock'};
 
 class PointerLockControls extends Controls {
 	constructor(domElement = null,InpMos) {
-//	constructor(domElement,InpMos) {	// ### replaced with r167
 		super(domElement,InpMos);
-//		super();						// ### replaced with r167
 		this.domElement = domElement;	// ### added fromm r167
 		this.InpMos = InpMos;
 		this.isLocked = false;
@@ -54,10 +52,10 @@ class PointerLockControls extends Controls {
 		this._onMouseMove = onMouseMove.bind(this);
 		this._onPointerlockChange = onPointerlockChange.bind(this);
 		this._onPointerlockError = onPointerlockError.bind(this);		
-//		if (this.domElement !== null) {
-//			this.connect();
-//		}
-		this.connect();					// ### replace with r167
+		if (this.domElement !== null) {
+			this.connect();
+		}
+//		this.connect();					// ### replace with r167
 	}		
 	connect() {
 		this.domElement.ownerDocument.addEventListener('mousemove', this._onMouseMove);
