@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 Mar 2026
+Version dated 28 Mar 2026
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -40,7 +40,7 @@ let _unlockEvent = {type: "unlock"};
 *	POINTER LOCK CONTROLS
 *
 *******************************************************************************/
-//	Adapted from three.js r151-r168
+//	Adapted from three.js r151-r167
 
 class PointerLockControls extends EventDispatcher {
 	constructor(domElement,InpMos) {
@@ -48,7 +48,6 @@ class PointerLockControls extends EventDispatcher {
 		this.domElement = domElement;
 		this.InpMos = InpMos;
 		this.isLocked = false;
-		this.pointerSpeed = 1.0;
 		this._onMouseMove = onMouseMove.bind(this);
 		this._onPointerlockChange = onPointerlockChange.bind(this);
 		this._onPointerlockError = onPointerlockError.bind(this);
