@@ -40,10 +40,10 @@ const _unlockEvent = {type: 'unlock'};
 *	POINTER LOCK CONTROLS
 *
 *******************************************************************************/
-//	Adapted from three.js r168 (differnces noted with ###_
+//	Adapted from three.js r168 (change noted with ###)
 
 class PointerLockControls extends Controls {
-	constructor(domElement = null,InpMos) {
+	constructor(domElement=null,InpMos) {
 		super(domElement,InpMos);
 		this.domElement = domElement;	// ### added fromm r167
 		this.InpMos = InpMos;
@@ -52,10 +52,7 @@ class PointerLockControls extends Controls {
 		this._onMouseMove = onMouseMove.bind(this);
 		this._onPointerlockChange = onPointerlockChange.bind(this);
 		this._onPointerlockError = onPointerlockError.bind(this);		
-		if (this.domElement !== null) {
-			this.connect();
-		}
-//		this.connect();					// ### replace with r167
+		if (this.domElement !== null) this.connect(); // ### modified
 	}		
 	connect() {
 		this.domElement.ownerDocument.addEventListener('mousemove', this._onMouseMove);
@@ -78,7 +75,7 @@ class PointerLockControls extends Controls {
 	}
 }
 
-// event listeners
+//- Event Listeners ------------------------------------------------------------
 
 function onMouseMove(event) {
 	if (this.enabled === false || this.isLocked === false) return;
