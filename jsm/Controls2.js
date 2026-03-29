@@ -44,7 +44,8 @@ let _unlockEvent = {type: "unlock"};
 
 class PointerLockControls extends Controls {
 	constructor(domElement=null,InpMos) {
-		super(camera, domElement);
+		super(domElement,InpMos);
+		this.InpMos = InpMos;
 		this.isLocked = false;
 		// event listeners
 		this._onMouseMove = onMouseMove.bind(this);
