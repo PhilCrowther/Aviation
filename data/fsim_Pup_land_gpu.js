@@ -229,14 +229,14 @@ let xac_ = {
 				 XPPath+XP4Nam],
 		ObjTxt: [0,0,0,0],		// Texture Source File (not used)
 		ObjAdr: [0,0,0,0],		// Object Address
-		ObjSiz: [1,1,1,1],		// Scale
+		ObjSiz: [Ft2Mtr,Ft2Mtr,Ft2Mtr,Ft2Mtr], // Scale
 		RndOrd: [0,0,0,0],		// renderOrder (not used)
-		ObjRot: [0,0,0,0],		// Rotation (vector3)
+		ObjRot: [0,0,0,0],		// Rotation (euler3)
 		MapPos: [0,0,0,0],		// meters (vector3)
 		ObjRef: [0,0,0,0],		// 0 = not linked
 		// Speed
 		SpdMPS: [45,45,45,45],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-		MapSpd: [0,0,0,0],		// not used
+		MapSpd: [0,0,0,0],		// not used (vector3)
 		// Basic Animations
 		ObjDst: [0,0,0,0],		// Object distance (meters) used to activate effects
 		MixSpn: [0,0,0,0],		// Animation Mixer - Prop
@@ -250,7 +250,7 @@ let xac_ = {
 				 XPPath + "sounds/fm2.wav",
 				 XPPath + "sounds/fm2.wav"],
 		EngPtr: [0,0,0,0],
-		EngMsh: [0,0,0,0],
+		EngMsh: [0,0,0,0],		// (Object3D)
 		EngVol: [0.1,0.1,0.1,0.1],	// Volume
 		// End Sequence
 		HitCnt: [0,0,0,0],		// Hits Taken
@@ -262,7 +262,7 @@ let xac_ = {
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [0,0,0,0],
 		SndVol: 15,				// Volume
-		SndMsh: [0,0,0,0],
+		SndMsh: [0,0,0,0],		// (Object3D)
 		SndDTm: [0,0,0,0],
 	};
 
