@@ -214,6 +214,58 @@ let fxd_ = {
 		VrtAdj: [-mnt_.VrtAdj[0]] // Vertical Adjustment // ### 250930
 	};
 
+//= MOVING OBJECTS =============//==============================================
+//- Moving Airplanes -----------//----------------------------------------------
+const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
+const XP1Nam = "Dr1_grn.glb";	// Name of airplane model file (rotated blender file)
+const XP2Nam = "Dr1_red.glb";	// Name of airplane model file (rotated blender file)
+const XP3Nam = "Dr1_ylo.glb";	// Name of airplane model file (rotated blender file)
+const XP4Nam = "L21.glb"; // Name of airplane model file (rotated blender file)
+let xac_ = {
+		ObjNum: 4,				// Number of airplanes
+		ObjSrc: [XPPath+XP1Nam, // Model Source file
+				 XPPath+XP2Nam,
+				 XPPath+XP3Nam,
+				 XPPath+XP4Nam],
+		ObjTxt: [0,0,0,0],		// Texture Source File (not used)
+		ObjAdr: [0,0,0,0],		// Object Address
+		ObjSiz: [1,1,1,1],		// Scale
+		RndOrd: [0,0,0,0],		// renderOrder (not used)
+		ObjRot: [0,0,0,0],		// Rotation (vector3)
+		MapPos: [0,0,0,0],		// meters (vector3)
+		ObjRef: [0,0,0,0],		// 0 = not linked
+		// Speed
+		SpdMPS: [45,45,45,45],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+		MapSpd: [0,0,0,0],		// not used
+		// Basic Animations
+		ObjDst: [0,0,0,0],		// Object distance (meters) used to activate effects
+		MixSpn: [0,0,0,0],		// Animation Mixer - Prop
+		MixPit: [0,0,0,0],		// Animation Mixer - Pitch
+		AnmPit: [0,0,0,0],		// Animation
+		MixBnk: [0,0,0,0],		// Animation Mixer - Bank
+		AnmBnk: [0,0,0,0],		// Animation
+		// Engine Sounds
+		EngSrc: [XPPath + "sounds/fm2.wav",
+				 XPPath + "sounds/fm2.wav",
+				 XPPath + "sounds/fm2.wav",
+				 XPPath + "sounds/fm2.wav"],
+		EngPtr: [0,0,0,0],
+		EngMsh: [0,0,0,0],
+		EngVol: [0.1,0.1,0.1,0.1],	// Volume
+		// End Sequence
+		HitCnt: [0,0,0,0],		// Hits Taken
+		HitMax: 5,				// Hits Requred
+		EndSeq: [0,0,0,0],		// End Sequence Running
+		EndTim: 5,				// End Sequence Time (Seconds)
+		// End Sound
+		SndFlg: [0,0,0,0],		// 1 = Start Explosion Sound
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: [0,0,0,0],
+		SndVol: 15,				// Volume
+		SndMsh: [0,0,0,0],
+		SndDTm: [0,0,0,0],
+	};
+
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	flight = 0;
 let air_ = {
