@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM PUP DATA: 260326
+*	FSIM SF1 DATA: 260406
 *
 *********************************************************************************
 
@@ -330,10 +330,10 @@ let air_ = {
 //= MY AIRPLANE ================//==============================================
 //- Load Models and Animations -------------------------------------------------
 //-	File Path
-let AirSrc = "https://PhilCrowther.github.io/Aviation/models/pup/";	// Used to load models and sounds
+let AirSrc = "https://PhilCrowther.github.io/Aviation/models/sf1/";	// Used to load models and sounds
 //-	Animation Mixers - External Model
-let mxrFNm = "pup.glb"; // Name of aircraft exterior model file (rotated blender file)
-let vxrFNm = "pup_int.glb"; // Name of airplane interior model file (rotated blender file)
+let mxrFNm = "sf1.glb"; // Name of aircraft exterior model file (rotated blender file)
+let vxrFNm = "sf1_int.glb"; // Name of airplane interior model file (rotated blender file)
 
 //- Pup Animations -------------------------------------------------------------
 let anmfps = 24;				// Blender FPS (used by Main Program and all modules (used by Objects.js)
