@@ -1,15 +1,15 @@
 /*******************************************************************************
 *
-*	ANIM PUP MODULE
+*	ANIM SF1 MODULE
 *
 ********************************************************************************
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Mar 2026
+Version dated 6 Apr 2026
 
 @fileoverview
-A three.js class-type module for animating a Sopwith Pup aircraft model
+A three.js class-type module for animating a Sopwith Camel aircraft model
 See http://philcrowther.com/Aviation for more details.
 */
 
