@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Apr 2026
+Version dated 7 Apr 2026
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Camel aircraft model
@@ -50,7 +50,7 @@ const Km2Mil = 0.621371;
 
 //-	Load Airplane Model --------//----------------------------------------------
 function loadAirExt(air_,mxr_,anm_,gen_) {
-	gen_.gltfLd.load(mxr_.Src, function (gltf) {		// The OnLoad function
+	gen_.gltfLd.load(mxr_.Src, function (gltf) { // The OnLoad function
 		gltf.scene.traverse(function (child) {	
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -64,8 +64,8 @@ function loadAirExt(air_,mxr_,anm_,gen_) {
 		});
 		mxr_.Adr = gltf.scene;
 		mxr_.Adr.rotation.order = "YXZ";
-		mxr_.Adr.scale.setScalar(Ft2Mtr);
-		loadAirAnmX(gltf,air_,mxr_,anm_);
+//		mxr_.Adr.scale.setScalar(Ft2Mtr); 
+		loadAirAnmX(gltf,air_,mxr_,anm_); // scale = 1
 		//
 		air_.AirPBY.add(mxr_.Adr);
 		// Initialize
@@ -138,7 +138,7 @@ function loadAirInt(air_,vxr_,anm_,gen_) {
 		});
 		vxr_.Adr = gltf.scene;
 		vxr_.Adr.rotation.order = "YXZ";
-		vxr_.Adr.scale.setScalar(Ft2Mtr);
+//		vxr_.Adr.scale.setScalar(Ft2Mtr); // scale = 1
 		loadAirAnmV(gltf,air_,vxr_,anm_);
 		//
 		air_.AirPBY.add(vxr_.Adr);
