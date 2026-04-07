@@ -196,86 +196,86 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	clip = AnimationClip.findByName(gltf.animations, "cockpit_compassAction");
 	vxr_.Cmp = new AnimationMixer(vxr_.Adr);
 	actun = vxr_.Cmp.clipAction(clip);
-	actun.play();
-	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
 	// Ball
 	clip = AnimationClip.findByName(gltf.animations, "cockpit_ballAction");
 	vxr_.Bal = new AnimationMixer(vxr_.Adr);
 	actun = vxr_.Bal.clipAction(clip);
-	actun.play();
-	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
 	// Gun
 	clip = AnimationClip.findByName(gltf.animations, "fuselage_gunAction");
 	vxr_.Gun = new AnimationMixer(vxr_.Adr);
 	actun = vxr_.Gun.clipAction(clip);
-	actun.play();
-	if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);	
+//	actun.play();
+//	if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);	
 	// Pilot - Left Arm
 	clip = AnimationClip.findByName(gltf.animations,"pilot_armLAction");
 	vxr_.ArL = new AnimationMixer(gltf.scene);
 	actun = vxr_.ArL.clipAction(clip);
-	actun.play();
-	if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);
 	// Pilot - Left Hand
 	clip = AnimationClip.findByName(gltf.animations,"pilot_handLAction");
 	vxr_.HLT = new AnimationMixer(gltf.scene);
-	actun = vxr_.HLT.clipAction(clip);
-	actun.play();
+//	actun = vxr_.HLT.clipAction(clip);
+//	actun.play();
 	if (vxr_.HLT) vxr_.HLT.setTime(anm_.manprs/anm_.anmfps);
 	// Pilot - Right Hand - Pitch
 	clip = AnimationClip.findByName(gltf.animations,"pilot_handRPAction");
 	vxr_.HRP = new AnimationMixer(gltf.scene);
 	actun = vxr_.HRP.clipAction(clip);
-	actun.play();
-	if (vxr_.HRP) vxr_.HRP.setTime(anm_.stkpit/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.HRP) vxr_.HRP.setTime(anm_.stkpit/anm_.anmfps);
 	// Pilot - Right Hand - Bank
 	clip = AnimationClip.findByName(gltf.animations,"pilot_handRBAction");
 	vxr_.HRB = new AnimationMixer(gltf.scene);
 	actun = vxr_.HRB.clipAction(clip);
-	actun.play();
-	if (vxr_.HRB) vxr_.HRB.setTime(anm_.stkbnk/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.HRB) vxr_.HRB.setTime(anm_.stkbnk/anm_.anmfps);
 	// Pilot - Right Arm - Bank
 	clip = AnimationClip.findByName(gltf.animations,"pilot_armRAction");
 	vxr_.ArR = new AnimationMixer(gltf.scene);
 	actun = vxr_.ArR.clipAction(clip);
-	actun.play();
-	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbnk/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbnk/anm_.anmfps);
 	// Pilot - Rudder - Left
 	clip = AnimationClip.findByName(gltf.animations,"pilot_rudderLAction");
 	vxr_.RdL = new AnimationMixer(gltf.scene);
 	actun = vxr_.RdL.clipAction(clip);
-	actun.play();
-	if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
 	// Pilot - Rudder - Right
 	clip = AnimationClip.findByName(gltf.animations,"pilot_rudderRAction");
 	vxr_.RdR = new AnimationMixer(gltf.scene);
 	actun = vxr_.RdR.clipAction(clip);
-	actun.play();
-	if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
 	// Pilot - Leg - Left
 	clip = AnimationClip.findByName(gltf.animations,"pilot_legLAction");
 	vxr_.LgL = new AnimationMixer(gltf.scene);
 	actun = vxr_.LgL.clipAction(clip);
-	actun.play();
-	if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
 	// Pilot - Leg - Right
 	clip = AnimationClip.findByName(gltf.animations,"pilot_legRAction");
 	vxr_.LgR = new AnimationMixer(gltf.scene);
 	actun = vxr_.LgR.clipAction(clip);
-	actun.play();
-	if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
 	// Rudder Bar
 	clip = AnimationClip.findByName(gltf.animations,"cockpit_rudderAction");
 	vxr_.Bar = new AnimationMixer(gltf.scene);
 	actun = vxr_.Bar.clipAction(clip);
-	actun.play();
-	if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps);	
+//	actun.play();
+//	if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps);	
 	// Pilot - Head
 	clip = AnimationClip.findByName(gltf.animations,"pilot_headAction");
 	vxr_.Hed = new AnimationMixer(gltf.scene);
 	actun = vxr_.Hed.clipAction(clip);
-	actun.play();
-	if (vxr_.Hed) vxr_.Hed.setTime(anm_.yawval/anm_.anmfps);
+//	actun.play();
+//	if (vxr_.Hed) vxr_.Hed.setTime(anm_.yawval/anm_.anmfps);
 }
 
 //= MOVE AIR OBJECT ============//==============================================
@@ -336,43 +336,42 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		// Compass
 		if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
 		let acb = Mod360(air_.AirRot.z+180);
-		if (vxr_.Bal) vxr_.Bal.setTime(acb/anm_.anmfps);
+//		if (vxr_.Bal) vxr_.Bal.setTime(acb/anm_.anmfps);
 		// Guns
 		if (anm_.gunval != 180 || gen_.MYGFlg) anm_.gunval = Mod360(anm_.gunval+16); // Restart again if guns on
-		if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);
+//		if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);
 		// Pilot - Left Hand and Arm
 		anm_.manprs = air_.PwrPct*359;
 		if (vxr_.HLT) vxr_.HLT.setTime(anm_.manprs/anm_.anmfps);
-		if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);
+//		if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);
 		// Pilot - Right Hand - Pitch
 		anm_.stkpcm = anm_.stkpcm - anm_.stkpit;
 		if (anm_.stkpcm > 359) anm_.stkpcm = 359;
 		if (anm_.stkpcm < 1) anm_.stkpcm = 1;
 		if (anm_.stkpit == 0) anm_.stkpcm = 0.99*(anm_.stkpcm-180)+180;	// recenter if inactive
-		if (vxr_.HRP) vxr_.HRP.setTime(anm_.stkpcm/anm_.anmfps);
+//		if (vxr_.HRP) vxr_.HRP.setTime(anm_.stkpcm/anm_.anmfps);
 		// Pilot - Right Hand - Bank
 		anm_.stkbcm = anm_.stkbcm + anm_.stkbnk;
 		if (anm_.stkbcm > 359) anm_.stkbcm = 359;
 		if (anm_.stkbcm < 1) anm_.stkbcm = 1;
 		if (anm_.stkbnk == 0) anm_.stkbnk = 0.99*(anm_.stkbcm-180)+180;	// recenter if inactive
-		if (vxr_.HRB) vxr_.HRB.setTime(anm_.stkbcm/anm_.anmfps);
+//		if (vxr_.HRB) vxr_.HRB.setTime(anm_.stkbcm/anm_.anmfps);
 		// Pilot - Right Arm - Bank
 		if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps);
 		// Pilot - Rudder (Push and Pull)
 		anm_.yawval = 180;	// Default
 		if (air_.RotDif.y) {
 			anm_.yawval = air_.RotDif.y; // air_.RotDif.y = +/- 0.1
-			anm_.yawval = (air_.RotDif.y)*180 + 180; // air_.RotDif.y = +/- 0.1
-//			anm_.yawval = (179 * anm_.yawval/0.3)+180;		
+			anm_.yawval = (air_.RotDif.y)*180 + 180; // air_.RotDif.y = +/- 0.1	
 		}
-		if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
-		if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
-		if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
-		if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
-		if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps); // Rudder Bar
+//		if (vxr_.RdL) vxr_.RdL.setTime(anm_.yawval/anm_.anmfps);
+//		if (vxr_.LgL) vxr_.LgL.setTime(anm_.yawval/anm_.anmfps);
+//		if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
+//		if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
+//		if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps); // Rudder Bar
 //		// Pilot - Head
 		anm_.vchead = Mod360(cam_.CamLLD.y);
-		if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
+//		if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
 	}	
 }
 
