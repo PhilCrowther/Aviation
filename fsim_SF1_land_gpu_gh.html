@@ -164,7 +164,7 @@ let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
 //- Light
-let ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
+let ambLight = new THREE.AmbientLight(sky_.SunCol,0.5);
 	scene.add(ambLight);
 //- SunLight
 let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
@@ -315,6 +315,8 @@ let ImgSiz = 1024;
 	air_.PYBmul = new THREE.Vector3().copy(PYBmul);
 	air_.InpKey = new THREE.Vector3();
 	air_.OldRot = new THREE.Euler();
+//-
+	air_.GrdZed = -.25;
 
 //= GUNASG MODULE ==============//==============================================
 //	Adjustments
@@ -349,7 +351,7 @@ let gau_ = {
 //- Create Internal Attach Point
 const CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(0,0.72,0.2); // Internal View
+	CamPVC.position.set(0,0.72,0.15); // Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
 	cam_.SrcLLD = [new THREE.Vector3(-10,0,20),new THREE.Vector3(0,0,0.001)];
