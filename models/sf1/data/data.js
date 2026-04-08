@@ -8,7 +8,7 @@ let data_ = {
 		GrvMax: 5,			// Maximum G-Force
 		TrmAdj: 2.5,		// Elevator Trim Adjustment (### - not used)
 		// Gravity
-		ACMass: 550,		// Aircraft Mass (kg)
+		ACMass: 659,		// Maximum Aircraft Mass (kg)
 		// Thrust: Prop
 		PwrMax: 97,			// Prop Maximum Power (kW)
 		PropEf: 0.75,		// Prop Efficiency
@@ -20,9 +20,9 @@ let data_ = {
 		DrgCd0: 0.037,		// Coefficient of Drag
 		// Taildragger Geometry and Speed
 		Ax2CGD: 1.1105,		// Axle to CG distance (m)
-		Ax2CGA: 335.29,		// Axle to CG angle (deg)
+		Ax2CGA: 331.72,		// Axle to CG angle (deg)
 		WheelR: 0.728735,	// Wheel radius (m)
-		TDrAng: 17.5,		// Taildragger Max Angle (deg)
+		TDrAng: 14.5,		// Taildragger Max Angle (deg)
 		TDrSpd: 11.176,		// Speed at which tail lifts (25 mph = 11.18 m/s)
 		// Optional: Flaps
 		FlpCfL: 0,			// Max Flap Cfl (0.2*CfLMax) (shared with main program)
