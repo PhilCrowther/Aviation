@@ -196,8 +196,8 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	clip = AnimationClip.findByName(gltf.animations, "cockpit_compassAction");
 	vxr_.Cmp = new AnimationMixer(vxr_.Adr);
 	actun = vxr_.Cmp.clipAction(clip);
-//	actun.play();
-//	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
+	actun.play();
+	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
 	// Ball
 	clip = AnimationClip.findByName(gltf.animations, "cockpit_ballAction");
 	vxr_.Bal = new AnimationMixer(vxr_.Adr);
