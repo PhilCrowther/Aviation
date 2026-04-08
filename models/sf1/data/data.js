@@ -1,27 +1,27 @@
-﻿// Sopwith Pup
+﻿// Sopwith Camel
 let data_ = {
 		// Lift
-		WingSp: 8.08,		// Wing Span (m)
-		WingAr: 21.46,		// Wing Area (m2)
+		WingSp: 8.53,		// Wing Span (m)
+		WingAr: 21.5,		// Wing Area (m2)
 		WingEf: 0.7,		// Wing Efficiency
 		AngInc: 5,			// Angle of Incidence
 		GrvMax: 5,			// Maximum G-Force
 		TrmAdj: 2.5,		// Elevator Trim Adjustment (### - not used)
 		// Gravity
-		ACMass: 544,		// Aircraft Mass (kg)
+		ACMass: 550,		// Aircraft Mass (kg)
 		// Thrust: Prop
-		PwrMax: 60,			// Prop Maximum Power (kW)
+		PwrMax: 97,			// Prop Maximum Power (kW)
 		PropEf: 0.75,		// Prop Efficiency
 		WEPMax: 0,			// War Emergency Power (kW)
 		// Thrust: Jet
 		JetMax: 0,			// Jet Maximum Thrust (kW)
 		AftMax: 0,			// Jet Afterburner Maximum Thrust (kW)
 		// Drag
-		DrgCd0: 0.03,		// Coefficient of Drag
+		DrgCd0: 0.037,		// Coefficient of Drag
 		// Taildragger Geometry and Speed
-		Ax2CGD: 1.3716,		// Axle to CG distance (m)
+		Ax2CGD: 1.1105,		// Axle to CG distance (m)
 		Ax2CGA: 335.29,		// Axle to CG angle (deg)
-		WheelR: 0.37155,	// Wheel radius (m)
+		WheelR: 0.728735,	// Wheel radius (m)
 		TDrAng: 17.5,		// Taildragger Max Angle (deg)
 		TDrSpd: 11.176,		// Speed at which tail lifts (25 mph = 11.18 m/s)
 		// Optional: Flaps
