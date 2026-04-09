@@ -130,7 +130,7 @@ function loadAirInt(air_,vxr_,anm_,gen_) {
 				child.castShadow = true;
 				child.receiveShadow = true;
 			}
-			if (child.name == "propeller") {
+			if (child.name == "anm_propeller") {
 				child.castShadow = false;
 				child.receiveShadow = false;
 				child.renderOrder = 1;
