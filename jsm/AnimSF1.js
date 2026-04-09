@@ -406,7 +406,19 @@ function loadSounds(air_,mys_,myg_,gen_) {
 		myg_.SndPtr[0].setBuffer(buffer);
 		init1Sound(myg_.SndPtr[0],RefDst,0,1,1,myg_.SndMsh[0]);
 		air_.AirObj.add(myg_.SndMsh[0]);
-	});
+	});	
+	// My Guns (Left and Rite)
+	let xoff = 0.14417;
+	for (let n = 0; n < myg_.ObjNum; n ++) {
+		myg_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(myg_.SndSrc,function(buffer) {
+			myg_.SndPtr[n].setBuffer(buffer);
+			init1Sound(myg_.SndPtr[n],RefDst,0,1,1,myg_.SndMsh[n]);
+			xoff = -xoff;
+			myg_.SndMsh[n].position.x = xoff;
+			air_.AirObj.add(myg_.SndMsh[n]);
+		});
+	}
 	//- Set Flag
 	gen_.LodSnd = 1;
 }
