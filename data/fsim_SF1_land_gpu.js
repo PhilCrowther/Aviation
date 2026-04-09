@@ -397,12 +397,12 @@ let myg_ = {
 		BulMpS: [0],			// Bullet Speed
 		BulTim: [0],			// Bullet Time in Flight
 		// Sound
-		ObjNum: 1,				// Number of Barrels
-		ObjPos: [0],			// Position of Each Barrel
+		ObjNum: 2,				// Number of Barrels
+		ObjPos: [0,0],			// Position of Each Barrel
 		SndSrc: 0,				// File (my guns)
-		SndPtr: [0],			// For Each Gun
+		SndPtr: [0,0],			// For Each Gun
 		SndVol: 0.5,			// Volume
-		SndMsh: [0],			// For Each Gun
+		SndMsh: [0,0],			// For Each Gun
 		// HitBox
 		HitTgt: 1,				// Hit Target (1 = enemy airplane)
 		HitDst: 10,				// Hit Radius
