@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Apr 2026
+Version dated 10 Apr 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -352,7 +352,7 @@ let gau_ = {
 //- Create Internal Attach Point
 const CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(0,0.72,0.15); // Internal View
+	CamPVC.position.set(0,0.67,0.15); // Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
 	cam_.SrcLLD = [new THREE.Vector3(-10,0,20),new THREE.Vector3(0,0,0.001)];
