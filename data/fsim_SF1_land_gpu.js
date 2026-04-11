@@ -452,7 +452,7 @@ let mys_ = {
 		IdlSnd: 0,				// Address
 		IdlVol: 0.5,			// Volume
 		// Engine Sound	
-		EngSrc: AirSrc + "sounds/pup.mp3",
+		EngSrc: AirSrc + "sounds/xrpm2.wav",
 		EngSnd: 0,				// Address
 		EngVol: 0.2,			// Volume
 	}
