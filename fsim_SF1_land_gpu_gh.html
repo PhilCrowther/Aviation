@@ -836,12 +836,12 @@ function initAirObj() {
 	// Init Bullets
 	initBullet(myg_,gen_);		// Bullets
 	// Gauges
-	gau_.RPMPtr = makeLines(gau_.RPMXYZ,gau_.RPMPos);
-	vxr_.Adr.add(gau_.RPMPtr);
-	gau_.AltPtr = makeLines(gau_.AltXYZ,gau_.AltPos);
-	vxr_.Adr.add(gau_.AltPtr);
-	gau_.SpdPtr = makeLines(gau_.SpdXYZ,gau_.SpdPos);
-	vxr_.Adr.add(gau_.SpdPtr);
+//	gau_.RPMPtr = makeLines(gau_.RPMXYZ,gau_.RPMPos);
+//	vxr_.Adr.add(gau_.RPMPtr);
+//	gau_.AltPtr = makeLines(gau_.AltXYZ,gau_.AltPos);
+//	vxr_.Adr.add(gau_.AltPtr);
+//	gau_.SpdPtr = makeLines(gau_.SpdXYZ,gau_.SpdPos); // cause ERR
+//	vxr_.Adr.add(gau_.SpdPtr);
 }
 
 //- MAKE INSTRUMENT POINTERS ------//-------------------------------------------
@@ -857,7 +857,7 @@ function makeLines(LinXYZ,LinPos) {
 	line.position.copy(LinPos);
 	return line;
 }
-																			
+						
 //= MOVE AIRPLANE ==============//==============================================
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
@@ -936,11 +936,11 @@ function moveAirPln() {
 		let RPM = 0;
 		if (air_.PwrPct >= .25) RPM = (air_.PwrPct-0.25)*16; // .75 PwrPct = 12k RPM;
 		let RPMD = (180-3*90/4.5)-RPM*90/4.5;
-		gau_.RPMPtr.rotation.set(0,0,RPMD*DegRad);
+//		gau_.RPMPtr.rotation.set(0,0,RPMD*DegRad);
 		// Altitude
 		let Alt = air_.MapPos.y*Mtr2Ft;	// Altitude (feet)
 		let AltD = Mod360(-22.5-Alt*90/4000);
-		gau_.AltPtr.rotation.set(0,0,-AltD*DegRad);
+//		gau_.AltPtr.rotation.set(0,0,-AltD*DegRad);
 		// Speed (mph => deg)
 		// 035 => 035 (35/35) = 1.0
 		// 040 => 050 (15/05) = 3.0 (1.25)
@@ -955,7 +955,7 @@ function moveAirPln() {
 		// 130 => 330 (45/10) = 4.5 (2.5385)
 		let Spd = air_.SpdKPH*Km2Mil; // Speed (mph)
 		let SpdD = Spd*2; // Rough Estimate
-		gau_.SpdPtr.rotation.set(0,0,-SpdD*DegRad);
+//		gau_.SpdPtr.rotation.set(0,0,-SpdD*DegRad);
 	}
 }
 
