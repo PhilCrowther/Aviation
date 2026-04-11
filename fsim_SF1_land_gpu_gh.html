@@ -329,18 +329,19 @@ let ImgSiz = 1024;
 //= ANIMATIONS =================//==============================================
 //- Instruments ----------------//----------------------------------------------
 //- Pointers
+let GaZ = 0.005;					// distance in front of gauges
 let gau_ = {
 		// RPM
-		RPMPos: new THREE.Vector3(-0.436414,1.38799,0.342), // Model: XYZ Pos
-		RPMXYZ: new THREE.Vector3(0,0.13,0), // Model: Ptr Length
+		RPMPos: new THREE.Vector3(-0.14964,0.37699,-0.388454+GaZ), // Model: XYZ Pos
+		RPMXYZ: new THREE.Vector3(0,0.03,0), // Model: Ptr Length
 		RPMPtr: 0,				// Pointer Address
 		// Altitude
-		AltPos: new THREE.Vector3(0.462396,1.40157,0.32), // Model: XYZ Pos
-		AltXYZ: new THREE.Vector3(0,.085,0), // Model: Ptr Length
+		AltPos: new THREE.Vector3(0.000558,0.271935,-0.417794+GaZ), // Model: XYZ Pos
+		AltXYZ: new THREE.Vector3(0,.03,0), // Model: Ptr Length
 		AltPtr: 0,				// Pointer Address	
 		// Speed
-		SpdPos: new THREE.Vector3(0.503454,0.902229,0.336), // Model: XYZ Pos
-		SpdXYZ: new THREE.Vector3(0,0.085,0), // Model: Ptr Length
+		SpdPos: new THREE.Vector3(0.148111,0.37704,-0.388804+GaZ), // Model: XYZ Pos
+		SpdXYZ: new THREE.Vector3(0,0.03,0), // Model: Ptr Length
 		SpdPtr: 0,				// Pointer Address	
 	}
 
@@ -836,12 +837,12 @@ function initAirObj() {
 	// Init Bullets
 	initBullet(myg_,gen_);		// Bullets
 	// Gauges
-//	gau_.RPMPtr = makeLines(gau_.RPMXYZ,gau_.RPMPos);
-//	vxr_.Adr.add(gau_.RPMPtr);
-//	gau_.AltPtr = makeLines(gau_.AltXYZ,gau_.AltPos);
-//	vxr_.Adr.add(gau_.AltPtr);
-//	gau_.SpdPtr = makeLines(gau_.SpdXYZ,gau_.SpdPos); // cause ERR
-//	vxr_.Adr.add(gau_.SpdPtr);
+	gau_.RPMPtr = makeLines(gau_.RPMXYZ,gau_.RPMPos);
+	vxr_.Adr.add(gau_.RPMPtr);
+	gau_.AltPtr = makeLines(gau_.AltXYZ,gau_.AltPos);
+	vxr_.Adr.add(gau_.AltPtr);
+	gau_.SpdPtr = makeLines(gau_.SpdXYZ,gau_.SpdPos); // cause ERR
+	vxr_.Adr.add(gau_.SpdPtr);
 }
 
 //- MAKE INSTRUMENT POINTERS ------//-------------------------------------------
@@ -857,7 +858,14 @@ function makeLines(LinXYZ,LinPos) {
 	line.position.copy(LinPos);
 	return line;
 }
-						
+
+function makeBoxes(LinXYZ,LinPos) {
+	let line = new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1),new THREE.MeshBasicMaterial({color: 0xff0000}));
+	line.receiveShadow = true;
+	line.position.copy(LinPos);
+	return line;
+}
+					
 //= MOVE AIRPLANE ==============//==============================================
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
@@ -936,26 +944,21 @@ function moveAirPln() {
 		let RPM = 0;
 		if (air_.PwrPct >= .25) RPM = (air_.PwrPct-0.25)*16; // .75 PwrPct = 12k RPM;
 		let RPMD = (180-3*90/4.5)-RPM*90/4.5;
-//		gau_.RPMPtr.rotation.set(0,0,RPMD*DegRad);
+		gau_.RPMPtr.rotation.set(0,0,RPMD*DegRad);
 		// Altitude
 		let Alt = air_.MapPos.y*Mtr2Ft;	// Altitude (feet)
-		let AltD = Mod360(-22.5-Alt*90/4000);
-//		gau_.AltPtr.rotation.set(0,0,-AltD*DegRad);
-		// Speed (mph => deg)
-		// 035 => 035 (35/35) = 1.0
-		// 040 => 050 (15/05) = 3.0 (1.25)
-		// 050 => 060 (10/10) = 1.0 (1.2)
-		// 060 => 090 (30/10) = 3.0 (1.5)
-		// 070 => 120 (30/10) = 3.0 (1.7143)
-		// 080 => 145 (25/10) = 2.5 (1.8125)
-		// 090 => 175 (30/10) = 3.0 (1.9444)
-		// 100 => 210 (35/10) = 3.5 (2.1)
-		// 110 => 245 (35/10) = 3.5 (2.2273)
-		// 120 => 285 (40/10) = 4.0 (2.375)
-		// 130 => 330 (45/10) = 4.5 (2.5385)
+		let AltD = Mod360(355 - Alt*0.0225); // moves 180 deg per 8000 feet
+//		let AltD = Mod360(-22.5-Alt*90/4000);
+		gau_.AltPtr.rotation.set(0,0,-AltD*DegRad);
+		// Speed (mph = deg)
+		// 040 = 045
+		// 060 = 090 (20/45) = 2.25
+		// 100 = 180 (40/90) = 2.25
+		// 140 = 270 (40/90) = 2.25
 		let Spd = air_.SpdKPH*Km2Mil; // Speed (mph)
-		let SpdD = Spd*2; // Rough Estimate
-//		gau_.SpdPtr.rotation.set(0,0,-SpdD*DegRad);
+		let SpdD = 45;			// Miniumum Degrees
+		if (Spd > 40) SpdD = Mod360(45+(Spd-40)*2.25);
+		gau_.SpdPtr.rotation.set(0,0,-SpdD*DegRad);
 	}
 }
 
