@@ -213,10 +213,11 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			// Internal View
 			else {
 				cam_.CamLLD.y = cam_.VewRot;
-				if (key_.D45flg) {
-					cam_.CamLLD.x = 45; // Up
-					if (cam_.VewRot) cam_.CamLLD.y = 0;		// Limit y
-				}
+//				if (key_.D45flg) {
+//					cam_.CamLLD.x = 45; // Up
+//					if (cam_.VewRot) cam_.CamLLD.y = 0;		// Limit y
+//				}
+				if (key_.D45flg) cam_.CamLLD.x = 45;		// Look Up 45
 				else if (cam_.U45flg) cam_.CamLLD.x = 315;	// Look Down 45
 				else if (cam_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
 				else if (cam_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
