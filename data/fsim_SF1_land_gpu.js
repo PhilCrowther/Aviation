@@ -359,8 +359,8 @@ let mxr_ = {
 		Src: AirSrc + mxrFNm,
 		// Address
 		Adr: 0,
-		// Prop,Rudder,Elevator,AilTopLeft, AilTopRite,AilBotLeft,AilBotRight
-		Prp:0,Rdr:0,Elv:0,ATL:0,ATR:0,ABL:0,ABR:0,
+		// Prop,Rudder,Elevator,AilTopLft, AilTopRgt,AilBotLft,AilBotRgt,AilRodLft,AilRodRgt
+		Prp:0,Rdr:0,Elv:0,ATL:0,ATR:0,ABL:0,ABR:0,ARL:0,ARR:0,
 	}
 //	Animation Mixers - Internal Model
 let vxr_ = {
