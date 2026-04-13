@@ -168,7 +168,6 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 		cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
 		// Although these are mostly identical, we need separate routines to interpret KeyPad vs. Other
 		// KeyPad (used by FM2 demo) ...........................................
-		// Uses key_ variable
 		if (key_.KPad) {
 			// Exterior View
 			if (!cam_.CamFlg) {
@@ -200,30 +199,29 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			}
 		}
 		// Alt Keys (keys above arrow keys) ....................................
-		// uses cam_ variable
 		else {
 			// Exterior View
 			if (!cam_.CamFlg) {
 				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
-				if (cam_.U45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
-				else if (cam_.D45flg) cam_.CamLLD.x = 315;	// Look Down 45
-				else if (cam_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
-				else if (cam_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
-				else if (cam_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
-				else if (cam_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
+				if (key_.U45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
+				else if (key_.D45flg) cam_.CamLLD.x = 315;	// Look Down 45
+				else if (key_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
+				else if (key_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
+				else if (key_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
+				else if (key_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
 			}	
 			// Internal View
 			else {
 				cam_.CamLLD.y = cam_.VewRot;
-				if (cam_.D45flg) {
+				if (key_.D45flg) {
 					cam_.CamLLD.x = 45;						// Look Up Up
 					if (cam_.VewRot) cam_.CamLLD.y = 0;		// Limit y
 				}
-				else if (cam_.D45flg) cam_.CamLLD.x = 315;	// Look Down 45
-				else if (cam_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
-				else if (cam_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
-				else if (cam_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
-				else if (cam_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
+				else if (key_.D45flg) cam_.CamLLD.x = 315;	// Look Down 45
+				else if (key_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
+				else if (key_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
+				else if (key_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
+				else if (key_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
 			}
 		}	
 	}
