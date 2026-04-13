@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 29 Mar 2026
+Version dated 12 Apr 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -102,6 +102,8 @@ import {loadGrdMat,initGrdMat,GrdMap,
 	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
 import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
+		loadXACVeh,initXACVeh,	// Moving Airplanes
+		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd, // Object Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
 
 /*= GENERAL ====================//==============================================
@@ -285,6 +287,16 @@ let ImgSiz = 1024;
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
 	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,4750)]; // Relative Position
 	fxd_.ObjRef = [mnt_.ObjGrp[0]];
+//- MOVING VEHICLES ------------//----------------------------------------------
+//. Moving Airplanes ...........//..............................................
+//	Adjustments
+	xac_.ObjNum = 4;			// One at a time
+	xac_.ObjRot = [new THREE.Euler(0,180,-30),new THREE.Euler(0,180,-30),new THREE.Euler(0,180,-30),new THREE.Euler(0,180,-30)]; // Rotation
+	xac_.MapPos = [new THREE.Vector3(100,110,1000),new THREE.Vector3(115,100,1025),new THREE.Vector3(85,100,1025),new THREE.Vector3(100,100,1000)]; // meters
+	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]; // not used
+	xac_.EngMsh = [new THREE.Object3D,new THREE.Object3D,new THREE.Object3D,new THREE.Object3D];
+	xac_.SndMsh = [new THREE.Object3D,new THREE.Object3D,new THREE.Object3D,new THREE.Object3D];
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
@@ -531,6 +543,7 @@ function initSkyBox() {
 
 function loadObject() {
 	loadStatic();
+	loadMoving();
 }
 
 //= INIT OBJECTS ===============================================================
@@ -538,12 +551,14 @@ function loadObject() {
 
 function initObject() {
 	initStatic();
+	initMoving();
 }
 
 //= MOVE OBJECTS ===============================================================
 
 function moveObject() {
 	moveStatic();
+	moveMoving();
 }
 
 //- STATIC OBJECTS -------------//----------------------------------------------
@@ -561,6 +576,217 @@ function initStatic() {
 function moveStatic() {
 	moveMountn(mnt_,air_);
 	moveFxdObj(fxd_,air_,gen_);
+}
+
+
+//- MOVING OBJECTS -------------//----------------------------------------------
+
+function loadMoving() {
+	loadXACVeh(xac_,anm_,gen_); // Airplanes
+}
+
+function initMoving() {
+	initMovPln();				// Airplanes
+}
+
+function moveMoving() {
+	moveMovPln(xac_);			// Airplanes
+}
+
+//- Animated Attachments -------//----------------------------------------------
+
+function moveAnmObj() {moveAnmFlg(flg_,tim_);}
+
+//= MOVING AIRPLANES ===========//==============================================
+
+//- Init Airplane --------------//----------------------------------------------
+function initMovPln() {
+	initXACVeh(xac_,air_,gen_);
+//	initXACBul(xag_,gen_);		// For All Airplanes
+//	initXACSmk(0);				// Friendly Airplane Only	
+//	initXACFyr(1);				// Enemy Airplane Only
+//	initXACExp(1);				// Enemy Airplane Only
+}
+
+//- Move Plane -----------------//----------------------------------------------
+function moveMovPln() {
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		// Rotation
+		if (!xac_.EndSeq[n]) {	// Horizontal Turning Flight
+			let XPHSpd = Math.tan(xac_.ObjRot[n].z*DegRad)*xac_.SpdMPS[n]/GrvMPS;
+			XPHSpd = XPHSpd * tim_.DLTime;
+			xac_.ObjRot[n].y = xac_.ObjRot[n].y + XPHSpd;
+		}
+		else {moveXACEnd(n)}	// If Ending Sequence
+		xac_.ObjAdr[n].rotation.set(xac_.ObjRot[n].x*DegRad,xac_.ObjRot[n].y*DegRad,xac_.ObjRot[n].z*DegRad);
+		//- Map Speed ..........................................................
+		//- Default = Horizontal Only
+		let SpdMPF = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
+		let SpeedY = SpdMPF * Math.sin(xac_.ObjRot[n].x * DegRad);
+		if (!xac_.EndSeq[n]) SpeedY = 0; // avoid rounding errors
+		let GS = -SpdMPF * Math.cos(xac_.ObjRot[n].x * DegRad)
+		let SpeedZ = GS * Math.cos(xac_.ObjRot[n].y * DegRad);
+		let SpeedX = GS * Math.sin(xac_.ObjRot[n].y * DegRad);
+		//. Recompute Map Position .............................................
+		xac_.MapPos[n].x = xac_.MapPos[n].x + SpeedX;
+		xac_.MapPos[n].z = xac_.MapPos[n].z - SpeedZ;
+		xac_.MapPos[n].y = xac_.MapPos[n].y + SpeedY;
+		// Animation - Prop (same as mine)
+		if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
+		//. Compute New Relative Position ......................................
+		let X = xac_.MapPos[n].x-air_.MapPos.x;
+		let Y = xac_.MapPos[n].y-gen_.AltDif;
+		let Z = air_.MapPos.z-xac_.MapPos[n].z;
+		xac_.ObjAdr[n].position.set(X,Y,Z);
+	}
+	// Test Enemy Airplene Only
+	let n = myg_.HitTgt;	
+	// Fire Guns Until End Sequence Starts
+//	if (!xac_.EndSeq[n]) moveXACGun(n); // Stop Firing
+	// If Enough Hits, Start Ending Sequence 
+	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
+		xac_.EndSeq[n] = xac_.EndTim;
+		xac_.HitCnt[n] = 0;		// Reset Hit Counter
+	}
+}
+
+//= XAC GUNS ===================//==============================================
+
+//- Move XAC Guns --------------//----------------------------------------------
+//	Enemy Airplane Only
+function moveXACGun(n) {
+	// Timer
+	xag_.TimFlg[n] = xag_.TimFlg[n] - 1;
+	if (xag_.TimFlg[n] < xag_.TimMin[n]) xag_.TimFlg[n] = xag_.TimMax[n];
+	// Visibility Test
+	xag_.BulFlg[n] = 0;			// Default = Not Visible
+	let MinDst = 500;
+	let X = xag_.XACPos[n].x - air_.MapPos.x;
+	let Y = xag_.XACPos[n].y - gen_.AltDif;
+	let Z = air_.MapPos.z - xag_.XACPos[n].z;
+	if (X < MinDst && Y < MinDst && Z < MinDst) { // If Visible
+		if (xag_.TimFlg > 0) xag_.BulFlg[n] = 1;
+		else {xag_.BulFlg[n] = 0;}
+	}
+	moveXACBul(xag_,air_,gen_,tim_);
+}
+
+//= XAC END SEQUENCE ===========//==============================================
+
+function moveXACEnd(n) {
+	// n = xac number
+	// this sequence called if xac_.EndSeq[n] = 1;
+	// TimRem Starts at 0, So Starts Next Event
+	if (!xat_.TimRem) {			// Start New Actions
+		xat_.SegIdx ++;
+		// Set Timd
+		xat_.TimRem = xat_.SegTim[xat_.SegIdx];
+		// Select Actions
+		if (xat_.SegIdx == 0) begnXACExp(n); // Begin Explosion 1
+		if (xat_.SegIdx == 1) {
+			stopXACExp(n); 		// Stop Explosion 1
+			begnXACFyr(n); 		// Start Smoke and Fire
+		}
+		if (xat_.SegIdx == 2) {
+			begnXACExp(n);		// Begin Explosion 2
+			stopXACFyr(n);		// End Smoke and Fire
+		}
+		if (xat_.SegIdx == 3) {
+			stopXACExp(n);
+			xac_.ObjAdr[n].visible = false; // Airplane gone
+		}
+		if (xat_.SegIdx == 4) playRadSg1(2); // Play Radio Call
+		if (xat_.SegIdx == 5) xac_.EndSeq[n] = 1;
+	}
+	else {						// Continuing Actions
+		if (xat_.SegIdx == 0) contXACExp(n);
+		if (xat_.SegIdx == 1) makeXACSpn(n);
+		if (xat_.SegIdx == 2) contXACExp(n);
+		xat_.TimRem = xat_.TimRem - tim_.DLTime;
+		if (xat_.TimRem < 0) xat_.TimRem = 0;
+	}
+}
+
+//-	Begin Explosion ------------//----------------------------------------------
+function begnXACExp(n) {
+	xae_.ExpSiz = 0.1;			// Start Size
+	xae_.ExpMsh.visible = true;
+	if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play();
+}
+
+//- Continue Explosion ---------//----------------------------------------------
+function contXACExp(n) {
+	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz);
+	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr;
+}
+
+//-	Stop Explosion -------------//----------------------------------------------
+function stopXACExp(n) {
+	xae_.ExpSiz = 0.01;			// End Size
+	xae_.ExpMsh.visible = false;
+	if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();
+}
+
+//-	Begin Smoke and Fire -------//----------------------------------------------
+function begnXACFyr(n) {
+	xaf_.SmkMsh[0].visible = true;
+	xaf_.FyrMsh[0].visible = true;
+}
+
+//-	End Smoke and Fire ---------//----------------------------------------------
+function stopXACFyr(n) {
+	xaf_.SmkMsh[0].visible = false;
+	xaf_.FyrMsh[0].visible = false;
+}
+
+//-	Make Airplane Spin ---------//----------------------------------------------
+function makeXACSpn(n) {
+	xac_.ObjRot[n].z = Mod360(xac_.ObjRot[n].z - 1); // Roll Right
+	if (xac_.ObjRot[n].x > -90) {
+		xac_.ObjRot[n].x = xac_.ObjRot[n].x - 0.1; // Pitch Down
+		if (xac_.ObjRot[n].x < -90) xac_.ObjRot[n].x = -90;
+	}
+}
+
+//- Sphere ---------------------//---------------------------------------------
+//	Used to create flash explosions
+
+function makeSphere(col) {
+	let geometry = new THREE.SphereGeometry(1,32,16);
+	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
+	let mesh = new THREE.Mesh(geometry,material);
+	mesh.visible = false;
+return mesh;}
+
+//= XAC SMOKE ==================//==============================================
+
+//- Init Airplane Explosion ----//----------------------------------------------
+function initXACExp(n) {
+	// Attach Exploding Center
+	xac_.ObjAdr[n].add(xae_.ExpMsh); // Attach to Enemy Airplane
+	xae_.ExpMsh.visible = false;
+}
+
+//- Init Airplane White Smoke --//----------------------------------------------
+function initXACSmk(n) {
+	// Create Emitter
+	xas_.ObjTxt = txt_.ObjTxt[xas_.ObjTxt];
+	initAirSmk(xas_);
+	// Attach to Friendly Airplane
+	xac_.ObjAdr[n].add(xas_.SmkMsh[0]);
+}
+
+//- Init Airplane Black Smoke --//----------------------------------------------
+function initXACFyr(n) {
+	// Create Emitter
+	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt];
+	initAirFyr(xaf_);
+	// Attach to Enemy Airplane
+	xac_.ObjAdr[n].add(xaf_.SmkMsh[0]);
+	xac_.ObjAdr[n].add(xaf_.FyrMsh[0]);
+	// Turn Off
+	xaf_.SmkMsh[0].visible = false;
+	xaf_.FyrMsh[0].visible = false;
 }
 
 /*******************************************************************************
@@ -891,8 +1117,8 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0.01;	// Brakes
 	// Views
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 1;	// Orbit View
-	if (event.keyCode == key_.VU45) cam_.D45flg = 1;	// View - 45 deg up
-	if (event.keyCode == key_.VD45) cam_.U45flg = 1;	// View - 45 deg down
+	if (event.keyCode == key_.VU45) cam_.U45flg = 1;	// View - 45 deg up
+	if (event.keyCode == key_.VD45) cam_.D45flg = 1;	// View - 45 deg down
 	if (event.keyCode == key_.VL45) cam_.L45flg = 1;	// View - 45 deg left
 	if (event.keyCode == key_.VR45) cam_.R45flg = 1;	// View - 45 deg right
 	if (event.keyCode == key_.VL90) cam_.L90flg = 1;	// View - 90 deg left
@@ -933,8 +1159,8 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0;	// Brakes
 	// Views
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 0;	// Orbit View
-	if (event.keyCode == key_.VU45) cam_.D45flg = 0;	// View - 45 deg up
-	if (event.keyCode == key_.VD45) cam_.U45flg = 0;	// View - 45 deg down
+	if (event.keyCode == key_.VU45) cam_.U45flg = 0;	// View - 45 deg up
+	if (event.keyCode == key_.VD45) cam_.D45flg = 0;	// View - 45 deg down
 	if (event.keyCode == key_.VL45) cam_.L45flg = 0;	// View - 45 deg left
 	if (event.keyCode == key_.VR45) cam_.R45flg = 0;	// View - 45 deg right
 	if (event.keyCode == key_.VL90) cam_.L90flg = 0;	// View - 90 deg left
