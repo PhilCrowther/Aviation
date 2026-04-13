@@ -226,8 +226,8 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	clip = AnimationClip.findByName(gltf.animations,"cockpit_ballAction");
 	vxr_.Bal = new AnimationMixer(vxr_.Adr);
 	actun = vxr_.Bal.clipAction(clip);
-//	actun.play();
-//	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
+	actun.play();
+	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
 	// Gun
 	clip = AnimationClip.findByName(gltf.animations,"fuselage_gunAction");
 	vxr_.Gun = new AnimationMixer(vxr_.Adr);
@@ -363,8 +363,9 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		if (vxr_.ARR) vxr_.ARR.setTime(anm_.ailrgt/anm_.anmfps); // Aileron Rod
 		// Compass
 		if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
+		// Ball
 		let acb = Mod360(air_.AirRot.z+180);
-//		if (vxr_.Bal) vxr_.Bal.setTime(acb/anm_.anmfps);
+		if (vxr_.Bal) vxr_.Bal.setTime(acb/anm_.anmfps);
 		// Guns
 		if (anm_.gunval != 180 || gen_.MYGFlg) anm_.gunval = Mod360(anm_.gunval+16); // Restart again if guns on
 //		if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);
