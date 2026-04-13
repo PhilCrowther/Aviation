@@ -19,7 +19,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 <title>fsim SF1 land gpu r183.1</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/fsim_pup.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/fsim_mid.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -377,7 +377,7 @@ const CamPVC = new THREE.Object3D;
 //= 9. INPUT VARIABLES =========//==============================================
 //- POINTER LOCK CONTROLS ------//----------------------------------------------
 //	Adjustments
-	InpMos = new THREE.Vector2(); // Mouse Inputs
+let	InpMos = new THREE.Vector2(); // Mouse Inputs
 //. Setup ......................................................................
 let controls = new PointerLockControls(renderer.domElement,InpMos);
 let blocker = document.getElementById("blocker");
@@ -422,8 +422,7 @@ function loadAll() {
 //- WAIT SCREEN ----------------//----------------------------------------------
 
 function WaitScreen() {
-	// Set up the loading screen scene.
-	// It can be treated just like our main scene.
+	// Set up the loading screen scene - it can be treated just like our main scene.
 	let BoxGeo = new THREE.PlaneGeometry(1,1);
 	let BoxTxt = txtrLoader.load("https://PhilCrowther.github.io/Aviation/textures/wait/prop.jpg");
 	let BoxMat = new THREE.MeshBasicNodeMaterial({colorNode: texture(BoxTxt)});

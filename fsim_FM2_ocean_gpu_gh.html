@@ -19,7 +19,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 <title>fsim FM2 ocean gpu r183.1</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/body2a.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/fsim_top.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -574,13 +574,13 @@ let	AARYDf = [0,0];				// Y-Rotation Adjustment
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
 //	Adjustments
-	mys_.AirMsh = new THREE.Object3D;	// For Engine and Prop
+	mys_.AirMsh = new THREE.Object3D; // For Engine and Prop
 
 //= 7. CAMERA VARIABLES ========//==============================================
 //- Create Internal Attach Point
 const CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(0,1.0668,0.762);	// Internal View
+	CamPVC.position.set(0,1.0668,0.762); // Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
 	cam_.SrcLLD = [new THREE.Vector3(-10,0,30),new THREE.Vector3(0,0,0.001)];
@@ -588,7 +588,7 @@ const CamPVC = new THREE.Object3D;
 	cam_.SrcMMR = [new THREE.Vector3(80,0,0.5),new THREE.Vector3(45,110,0.5)]; // Rotate - min/max Lat/Lon,rspd			   
 	cam_.SrcPar = [air_.AirObj,CamPVC];
 //- Objects --------------------------------------------------------------------
-	cam_.MshRot = new THREE.Object3D;	// Camera Rotator
+	cam_.MshRot = new THREE.Object3D; // Camera Rotator
 	cam_.MshRot.rotation.order = "YXZ";
 	cam_.MshRot.add(camera);	// Attach camera to rotator	
 	cam_.MshObj = new THREE.Object3D;
@@ -614,7 +614,7 @@ let instructions = document.getElementById("instructions");
 		instructions.style.display = "none";
 		blocker.style.display = "none";
 	});
-	controls.addEventListener( "unlock", function () {
+	controls.addEventListener("unlock", function () {
 		blocker.style.display = "block";
 		instructions.style.display = "";
 	});
@@ -692,7 +692,7 @@ function initAll() {
 
 //= REND ALL ===================//==============================================
 
-function rendAll() {			// r173 added async
+function rendAll() {
 	// This block runs while resources are loading.
 	if(RESOURCES_LOADED == false){
 		boxrot = Mod360(boxrot - 3);
