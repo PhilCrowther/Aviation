@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 Mar 2026
+Version dated 12 Apr 2026
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -167,7 +167,7 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 		// Default
 		cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
 		// Although these are mostly identical, we need separate routines to interpret KeyPad vs. Other
-		// KeyPad ..............................................................
+		// KeyPad (used by FM2 demo) ...........................................
 		if (key_.KPad) {
 			// Exterior View
 			if (!cam_.CamFlg) {
@@ -203,8 +203,8 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			// Exterior View
 			if (!cam_.CamFlg) {
 				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
-				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
-				else if (cam_.U45flg) cam_.CamLLD.x = 315;	// Look Down 45
+				if (key_.U45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
+				else if (cam_.D45flg) cam_.CamLLD.x = 315;	// Look Down 45
 				else if (cam_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
 				else if (cam_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
 				else if (cam_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
