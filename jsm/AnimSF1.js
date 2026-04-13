@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Apr 2026
+Version dated 13 Apr 2026
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Camel aircraft model
@@ -232,8 +232,8 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	clip = AnimationClip.findByName(gltf.animations,"fuselage_gunAction");
 	vxr_.Gun = new AnimationMixer(vxr_.Adr);
 	actun = vxr_.Gun.clipAction(clip);
-//	actun.play();
-//	if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);	
+	actun.play();
+	if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);	
 	// Pilot - Left Arm
 	clip = AnimationClip.findByName(gltf.animations,"pilot_armLAction");
 	vxr_.ArL = new AnimationMixer(gltf.scene);
@@ -368,7 +368,7 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		if (vxr_.Bal) vxr_.Bal.setTime(acb/anm_.anmfps);
 		// Guns
 		if (anm_.gunval != 180 || gen_.MYGFlg) anm_.gunval = Mod360(anm_.gunval+16); // Restart again if guns on
-//		if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);
+		if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);
 		// Pilot - Left Hand and Arm
 		anm_.manprs = air_.PwrPct*359;
 		if (vxr_.HLT) vxr_.HLT.setTime(anm_.manprs/anm_.anmfps);
