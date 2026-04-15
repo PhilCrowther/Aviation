@@ -162,7 +162,7 @@ function initBullet(myg_,gen_) {
 			line = new Line(BltGeo,BulMtL); // Lite Color
 			line.rotation.set(90*DegRad,0,0);
 			line.position.copy(myg_.ObjPos[j]);
-			line.poosition.x = line.poosition.x + loff
+			line.position.x = line.position.x + loff
 			myg_.BulPtr[i].add(line);
 			line = new Line(BltGeo,BulMtD); // Dark Color
 			line.rotation.set(90*DegRad,0,0);
