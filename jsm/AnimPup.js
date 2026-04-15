@@ -137,7 +137,6 @@ function loadAirInt(air_,vxr_,anm_,gen_) {
 		});
 		vxr_.Adr = gltf.scene;
 		vxr_.Adr.rotation.order = "YXZ";
-		vxr_.Adr.scale.setScalar(Ft2Mtr);
 		loadAirAnmV(gltf,air_,vxr_,anm_);
 		//
 		air_.AirPBY.add(vxr_.Adr);
