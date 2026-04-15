@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Apr 2026
+Version dated 15 Apr 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -104,7 +104,7 @@ import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
 		loadXACVeh,initXACVeh,	// Moving Airplanes
 		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd, // Object Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects2.js";
 
 /*= GENERAL ====================//==============================================
 
@@ -328,16 +328,16 @@ let ImgSiz = 1024;
 //- Pointers
 let gau_ = {
 		// RPM
-		RPMPos: new THREE.Vector3(-0.436414,1.38799,0.342), // Model: XYZ Pos
-		RPMXYZ: new THREE.Vector3(0,0.13,0), // Model: Ptr Length
+		RPMPos: new THREE.Vector3(-0.133019,0.423059,0.104767+0.001), // Model: XYZ Pos
+		RPMXYZ: new THREE.Vector3(0,0.039624,0), // Model: Ptr Length
 		RPMPtr: 0,				// Pointer Address
 		// Altitude
-		AltPos: new THREE.Vector3(0.462396,1.40157,0.32), // Model: XYZ Pos
-		AltXYZ: new THREE.Vector3(0,.085,0), // Model: Ptr Length
+		AltPos: new THREE.Vector3(0.140938,0.426333,0.101144+0.001), // Model: XYZ Pos
+		AltXYZ: new THREE.Vector3(0,0.0259,0), // Model: Ptr Length
 		AltPtr: 0,				// Pointer Address	
 		// Speed
-		SpdPos: new THREE.Vector3(0.503454,0.902229,0.336), // Model: XYZ Pos
-		SpdXYZ: new THREE.Vector3(0,0.085,0), // Model: Ptr Length
+		SpdPos: new THREE.Vector3(0.153453,0.274123,0.101571+0.001), // Model: XYZ Pos
+		SpdXYZ: new THREE.Vector3(0,0.0259,0), // Model: Ptr Length
 		SpdPtr: 0,				// Pointer Address	
 	}
 
@@ -854,7 +854,15 @@ function makeLines(LinXYZ,LinPos) {
 	line.position.copy(LinPos);
 	return line;
 }
-																			
+
+function makeLinesX(LinXYZ,LinPos) {
+	let geometry = new THREE.BoxGeometry(.05,.05,.05);
+	let material = new THREE.MeshBasicMaterial({color: 0xff0000});
+	let cube = new THREE.Mesh(geometry, material);
+	cube.position.copy(LinPos);
+	return cube;
+}
+																		
 //= MOVE AIRPLANE ==============//==============================================
 // This section processes Input before passing to Flight Module
 // And manages Views and Animations
