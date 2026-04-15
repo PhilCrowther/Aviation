@@ -144,7 +144,8 @@ function moveFad2Blk(f2b_) {
 
 function initBullet(myg_,gen_) {
 	// Line	
-	let line = 0
+	let line = 0;
+	let lite = 0;
 	let points = [];
 		points.push(new Vector3(0,0,-10));
 		points.push(new Vector3(0,0,10));
