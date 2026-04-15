@@ -159,7 +159,8 @@ function initBullet(myg_,gen_) {
 			lite = new PointLight(0xffffff,0.5,1000); // color, intensity, max visible distance (0 = unlimited)
 			lite.add(line);		// Add mesh			
 			lite.position.copy(myg_.ObjPos[j]);
-			myg_.BulPtr[i].add(lite);
+//			myg_.BulPtr[i].add(lite);
+			myg_.BulPtr[i] = lite;
 		}
 		//
 		gen_.scene.add(myg_.BulPtr[i]);
