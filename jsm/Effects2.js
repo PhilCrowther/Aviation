@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 Feb 2026
+Version dated 15 Apr 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -155,7 +155,7 @@ function initBullet(myg_,gen_) {
 		//	Create Bullet Meshes 		
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
 			line = new Line(BltGeo,BulMtL); // Lite Color
-			lite = new THREE.PointLight(0xffffff,0.5,1000); // color, intensity, max visible distance (0 = unlimited)
+			lite = new PointLight(0xffffff,0.5,1000); // color, intensity, max visible distance (0 = unlimited)
 			lite.add(line);		// Add mesh			
 			lite.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(lite);
