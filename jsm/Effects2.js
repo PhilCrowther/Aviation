@@ -149,7 +149,7 @@ function initBullet(myg_,gen_) {
 //		points.push(new Vector3(0,0,-10));
 //		points.push(new Vector3(0,0,10));
 //	let BltGeo = new BufferGeometry().setFromPoints(points);
-	let BltGeo = new CylinderGeometry(0.01,0.01,1,16); // RadT,RadB,Height,RadSegs
+	let BltGeo = new CylinderGeometry(0.05,0.05,1,16); // RadT,RadB,Height,RadSegs
 	let BulMtL = new LineBasicNodeMaterial({colorNode: color("white")});
 	let BulMtD = new LineBasicNodeMaterial({colorNode: color("black")});
 	for (let i = 0; i < myg_.BulNum; i ++) {
