@@ -3,9 +3,9 @@
 *	OBJECTS MODULE
 *
 *********************************************************************************
-Copyright 2022-2025, Phil Crowther
+Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Dec 2025
+Version dated 15 Apr 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -671,4 +671,5 @@ export {loadMountn,initMountn,moveMountn,
 251019	Added Object Sounds
 251125	Added scene, Loaders and listener to gen_
 251227	Disable ship shadows for now
+260415	Eliminate Pitch and Bank animation for Aircraft
 */
