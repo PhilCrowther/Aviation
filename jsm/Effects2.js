@@ -45,13 +45,13 @@ import {
 	AdditiveBlending,
 	BackSide,
 	BufferGeometry,
+	CylinderGeometry,
 	Line,
 	LineBasicNodeMaterial,
 	MeshBasicNodeMaterial,
 	Mesh,
 	Object3D,
 	PlaneGeometry,
-	PointLight,
 	SphereGeometry,
 	Spherical,
 	Sprite,
@@ -144,23 +144,24 @@ function moveFad2Blk(f2b_) {
 
 function initBullet(myg_,gen_) {
 	// Line	
-	let line = 0;
-	let lite = 0;
-	let points = [];
-		points.push(new Vector3(0,0,-10));
-		points.push(new Vector3(0,0,10));
-	let BltGeo = new BufferGeometry().setFromPoints(points);
-	let BulMtL = new LineBasicNodeMaterial({colorNode: color(myg_.BulClr.x)});
-	let BulMtD = new LineBasicNodeMaterial({colorNode: color(myg_.BulClr.y)});
+	let line = 0
+//	let points = [];
+//		points.push(new Vector3(0,0,-10));
+//		points.push(new Vector3(0,0,10));
+//	let BltGeo = new BufferGeometry().setFromPoints(points);
+	let BltGeo = new CylinderGeometry(0.01,0.01,1,16); // RadT,RadB,Height,RadSegs
+	let BulMtL = new LineBasicNodeMaterial({colorNode: color("white")});
+	let BulMtD = new LineBasicNodeMaterial({colorNode: color("black")});
 	for (let i = 0; i < myg_.BulNum; i ++) {
-		//	Create Bullet Meshes 		
+		//	Create Bullet Meshes 
+		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
 			line = new Line(BltGeo,BulMtL); // Lite Color
-			lite = new PointLight(0xffffff,0.5,1000); // color, intensity, max visible distance (0 = unlimited)
-			lite.add(line);		// Add mesh			
-			lite.position.copy(myg_.ObjPos[j]);
-//			myg_.BulPtr[i].add(lite);
-			myg_.BulPtr[i] = lite;
+			line.position.copy(myg_.ObjPos[j]);
+			myg_.BulPtr[i].add(line);
+			line = new Line(BltGeo,BulMtD); // Dark Color
+			line.position.copy(myg_.ObjPos[j]);
+			myg_.BulPtr[i].add(line);
 		}
 		//
 		gen_.scene.add(myg_.BulPtr[i]);
