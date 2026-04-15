@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Mar 2026
+Version dated 15 Apr 2026
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Pup aircraft model
@@ -50,7 +50,7 @@ const Km2Mil = 0.621371;
 
 //-	Load Airplane Model --------//----------------------------------------------
 function loadAirExt(air_,mxr_,anm_,gen_) {
-	gen_.gltfLd.load(mxr_.Src, function (gltf) {		// The OnLoad function
+	gen_.gltfLd.load(mxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {	
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -64,7 +64,6 @@ function loadAirExt(air_,mxr_,anm_,gen_) {
 		});
 		mxr_.Adr = gltf.scene;
 		mxr_.Adr.rotation.order = "YXZ";
-		mxr_.Adr.scale.setScalar(Ft2Mtr);
 		loadAirAnmX(gltf,air_,mxr_,anm_);
 		//
 		air_.AirPBY.add(mxr_.Adr);
@@ -124,7 +123,7 @@ function loadAirAnmX(gltf,air_,mxr_,anm_) {
 
 //-	Load Airplane Model --------//----------------------------------------------
 function loadAirInt(air_,vxr_,anm_,gen_) {
-	gen_.gltfLd.load(vxr_.Src, function (gltf) {		// The OnLoad function
+	gen_.gltfLd.load(vxr_.Src, function (gltf) {
 		gltf.scene.traverse(function (child) {	
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -509,5 +508,6 @@ export {loadAirExt,loadAirInt,moveAirObj,loadSounds,moveSounds,playSounds,stopSo
 251125:	Add Loaders to gen_
 260325: Load and move internal object
 260325: Add sounds.
+260415: Scale = 1.
 
 */
