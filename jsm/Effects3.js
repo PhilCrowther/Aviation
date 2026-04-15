@@ -145,6 +145,7 @@ function moveFad2Blk(f2b_) {
 function initBullet(myg_,gen_) {
 	// Line	
 	let line = 0
+	let loff = -0.05
 //	let points = [];
 //		points.push(new Vector3(0,0,-10));
 //		points.push(new Vector3(0,0,10));
@@ -161,11 +162,13 @@ function initBullet(myg_,gen_) {
 			line = new Line(BltGeo,BulMtL); // Lite Color
 			line.rotation.set(90*DegRad,0,0);
 			line.position.copy(myg_.ObjPos[j]);
+			line.poosition.x = line.poosition.x + loff
 			myg_.BulPtr[i].add(line);
 			line = new Line(BltGeo,BulMtD); // Dark Color
 			line.rotation.set(90*DegRad,0,0);
 			line.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(line);
+			loff = -loff;
 		}
 		//
 		gen_.scene.add(myg_.BulPtr[i]);
