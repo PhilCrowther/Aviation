@@ -149,9 +149,11 @@ function initBullet(myg_,gen_) {
 //		points.push(new Vector3(0,0,-10));
 //		points.push(new Vector3(0,0,10));
 //	let BltGeo = new BufferGeometry().setFromPoints(points);
+//	let BulMtL = new LineBasicNodeMaterial({colorNode: color("red")});
+//	let BulMtD = new LineBasicNodeMaterial({colorNode: color("red")});
 	let BltGeo = new CylinderGeometry(0.05,0.05,1,16); // RadT,RadB,Height,RadSegs
-	let BulMtL = new LineBasicNodeMaterial({colorNode: color("red")});
-	let BulMtD = new LineBasicNodeMaterial({colorNode: color("red")});
+	let BulMtL = new MeshBasicNodeMaterial({colorNode: color("red")});
+	let BulMtD = new MeshBasicNodeMaterial({colorNode: color("darkred")});
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
