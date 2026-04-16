@@ -145,11 +145,11 @@ function initBullet(myg_,gen_) {
 	// Line	
 	let mesh = 0;
 	let BulTxt = gen_.txtrLd.load("https://PhilCrowther.github.io/Aviation/textures/fx/bullet_white.png");
-	let BulMat = new SpriteNodeMaterial(
+	let BulMat = new SpriteNodeMaterial({
 		colorNode: texture(BulTxt),
 		transparent: true,
 		opacityNode: 0,
-	);
+	});
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
