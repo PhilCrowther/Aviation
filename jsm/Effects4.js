@@ -146,7 +146,7 @@ function initBullet(myg_,gen_) {
 	let mesh = 0;
 	let BulTxt = gen_.txtrLd.load("https://PhilCrowther.github.io/Aviation/textures/fx/bullet_white.png");
 	let BulMat = new SpriteNodeMaterial(
-		colorNode(texture(BulTxt)),
+		colorNode: texture(BulTxt),
 		transparent: true,
 		opacityNode: 0,
 	);
