@@ -308,7 +308,7 @@ let xac_ = {
 				 XPPath+XP2Nam],
 		ObjTxt: [0,0],			// Texture Source File (not used)
 		ObjAdr: [0,0],			// Object Address
-		ObjSiz: [Ft2Mtr,Ft2Mtr], // Scale
+		ObjSiz: [Ft2Mtr,1], // Scale
 		RndOrd: [0,0],			// renderOrder (not used)
 		ObjRot: [0,0],			// Rotation
 		MapPos: [0,0],			// meters
