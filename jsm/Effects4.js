@@ -149,7 +149,7 @@ function initBullet(myg_,gen_) {
 		colorNode(texture(BulTxt)),
 		transparent: true,
 		opacityNode: 0,
-	}
+	);
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
