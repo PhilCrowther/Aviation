@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 16 Apr 2026
+Version dated 15 Apr 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -45,6 +45,7 @@ import {
 	AdditiveBlending,
 	BackSide,
 	BufferGeometry,
+	CylinderGeometry,
 	Line,
 	LineBasicNodeMaterial,
 	MeshBasicNodeMaterial,
@@ -143,20 +144,31 @@ function moveFad2Blk(f2b_) {
 
 function initBullet(myg_,gen_) {
 	// Line	
-	let mesh = 0;
-	let BulMat = new SpriteNodeMaterial();
-	let BulTxt = txtrLoader.load("https://PhilCrowther.github.io/Aviation/textures/fx/bullet_white.png");
-	BulMat.colorNode = texture(BulTxt);
-	BulMat.transparent = true;
-	BulMat.opacity = 1.0;
+	let line = 0
+	let loff = -0.05
+//	let points = [];
+//		points.push(new Vector3(0,0,-10));
+//		points.push(new Vector3(0,0,10));
+//	let BltGeo = new BufferGeometry().setFromPoints(points);
+//	let BulMtL = new LineBasicNodeMaterial({colorNode: color("red")});
+//	let BulMtD = new LineBasicNodeMaterial({colorNode: color("red")});
+	let BltGeo = new CylinderGeometry(0.05,0.05,1,16); // RadT,RadB,Height,RadSegs
+	let BulMtL = new MeshBasicNodeMaterial({colorNode: color("red")});
+	let BulMtD = new MeshBasicNodeMaterial({colorNode: color("darkred")});
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
-			mesh = new Sprite(BulMat);
-			mesh.scale.set(0.25,0.25,0.25);
-			mesh.position.copy(myg_.ObjPos[j]);
-			myg_.BulPtr[i].add(mesh);
+			line = new Line(BltGeo,BulMtL); // Lite Color
+			line.rotation.set(90*DegRad,0,0);
+			line.position.copy(myg_.ObjPos[j]);
+			line.position.x = line.position.x + loff
+			myg_.BulPtr[i].add(line);
+			line = new Line(BltGeo,BulMtD); // Dark Color
+			line.rotation.set(90*DegRad,0,0);
+			line.position.copy(myg_.ObjPos[j]);
+			myg_.BulPtr[i].add(line);
+			loff = -loff;
 		}
 		//
 		gen_.scene.add(myg_.BulPtr[i]);
