@@ -301,7 +301,7 @@ let fxd_ = {
 //- Moving Airplanes -----------//----------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
-const XP2Nam = "A6M_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
+const XP2Nam = "a6m_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
 let xac_ = {
 		ObjNum: 2,				// Number of airplanes
 		ObjSrc: [XPPath+XP1Nam, // Model Source file
