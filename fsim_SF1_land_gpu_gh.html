@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Apr 2026
+Version dated 15 Apr 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -104,7 +104,7 @@ import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
 		loadXACVeh,initXACVeh,	// Moving Airplanes
 		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd, // Object Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects2.js";
 
 /*= GENERAL ====================//==============================================
 
@@ -320,7 +320,7 @@ let ImgSiz = 1024;
 
 //= GUNASG MODULE ==============//==============================================
 //	Adjustments
-	myg_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
+	myg_.BulClr = new THREE.Vector2("red","black"); // Red
 	myg_.SndSrc = AirSrc + "sounds/" + "pup_gun.mp3", // File (my guns)
 	myg_.ObjNum = 2,			// Number of Barrels
 	myg_.ObjPos = [new THREE.Vector3(-0.14417,0.53409,1.25834),new THREE.Vector3(0.14417,0.53409,1.25834)]; // Position of Each Barrel
