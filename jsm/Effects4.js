@@ -165,7 +165,7 @@ function initBullet(myg_,gen_) {
 		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
 			mesh = new Sprite(BulMat);
-			mesh.scale.set(0.25,0.25,0.25);
+			mesh.scale.set(0.1,0.1,0.1);
 			mesh.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(mesh);
 		}
