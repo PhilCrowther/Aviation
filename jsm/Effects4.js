@@ -69,6 +69,17 @@ import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv} from 'th
 //= CONSTANTS ==================//==============================================
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
+let BulTxt = 0;
+
+/*******************************************************************************
+*
+*	LOAD EFFECTS
+*
+*******************************************************************************/
+
+function loadEffect() {
+	BulTxt = gen_.txtrLd.load("https://PhilCrowther.github.io/Aviation/textures/fx/bullet_white.png");
+}
 
 /*******************************************************************************
 *
@@ -144,7 +155,6 @@ function moveFad2Blk(f2b_) {
 function initBullet(myg_,gen_) {
 	// Line	
 	let mesh = 0;
-	let BulTxt = gen_.txtrLd.load("https://PhilCrowther.github.io/Aviation/textures/fx/bullet_white.png");
 	let BulMat = new SpriteNodeMaterial({
 		colorNode: texture(BulTxt),
 		transparent: true,
@@ -910,7 +920,8 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {initFad2Blk,moveFad2Blk,
+export {loadEffect,
+		initFad2Blk,moveFad2Blk,
 		initBullet,moveBullet,
 		initXACBul,moveXACBul,
 		initAAAGun,moveAAAGun,
