@@ -3,9 +3,9 @@
 *	OBJECTS MODULE
 *
 *********************************************************************************
-Copyright 2022-2025, Phil Crowther
+Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Dec 2025
+Version dated 15 Apr 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -229,18 +229,6 @@ function loadXACVeh(xac_,anm_,gen_) {
 			let actun = xac_.MixSpn[n].clipAction(clip);
 			actun.play();
 			if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
-			// Bank
-			clip = AnimationClip.findByName(gltf.animations, "AC_BankAction");
-			xac_.MixBnk[n] = new AnimationMixer(xac_.ObjAdr[n]);
-			actun = xac_.MixBnk[n].clipAction(clip);
-			actun.play();
-			if (xac_.MixBnk[n]) xac_.MixBnk[n].setTime(xac_.AnmBnk[n]/anm_.anmfps);
-			// Pitch
-			clip = AnimationClip.findByName(gltf.animations, "AC_PtchAction");
-			xac_.MixPit[n] = new AnimationMixer(xac_.ObjAdr[n]);
-			actun = xac_.MixPit[n].clipAction(clip);
-			actun.play();
-			if (xac_.MixPit[n]) xac_.MixPit[n].setTime(xac_.AnmPit[n]/anm_.anmfps);
 			// Rotation
 			xac_.ObjAdr[n].rotation.order = "YXZ"; // Heading, Pitch, Bank
 			xac_.ObjAdr[n].rotation.y = xac_.ObjRot[n].y*DegRad;
@@ -683,4 +671,5 @@ export {loadMountn,initMountn,moveMountn,
 251019	Added Object Sounds
 251125	Added scene, Loaders and listener to gen_
 251227	Disable ship shadows for now
+260415	Eliminate Pitch and Bank animation for Aircraft
 */
