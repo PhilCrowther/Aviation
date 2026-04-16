@@ -143,9 +143,10 @@ function moveFad2Blk(f2b_) {
 
 function initBullet(myg_,gen_) {
 	// Line	
-	let mesh = 0	
+	let mesh = 0;
 	let BulMat = new SpriteNodeMaterial();
-	BulMat.colorNode = texture("https://PhilCrowther.github.io/Aviation/textures/fx/bullet_white.png");
+	let BulTxt = txtrLoader.load("https://PhilCrowther.github.io/Aviation/textures/fx/bullet_white.png");
+	BulMat.colorNode = texture(BulTxt);
 	BulMat.transparent = true;
 	BulMat.opacity = 1.0;
 	for (let i = 0; i < myg_.BulNum; i ++) {
@@ -153,7 +154,7 @@ function initBullet(myg_,gen_) {
 		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
 			mesh = new Sprite(BulMat);
-			mesh.scale.set(1,1,1);
+			mesh.scale.set(0.25,0.25,0.25);
 			mesh.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(mesh);
 		}
