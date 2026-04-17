@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 16 Apr 2026
+Version dated 17 Apr 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -856,8 +856,7 @@ function moveACanimX() {
 function moveACanimA() {
 	// Propellers
 	let prpspd =  4 * (PwrPct - 0.6); // Range = -2.4 to + 1.6
-	anm_.spnprp = anm_.spnprp - prpspd;
-	if (anm_.spnprp < 0) anm_.spnprp = 359; // A complete circle
+	anm_.spnprp = Mod360(anm_.spnprp + prpspd);
 	// Ailerons
 	let ailbnk = air_.RotDif.z;
 	// Left
