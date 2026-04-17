@@ -434,7 +434,7 @@ const ACPath = "https://PhilCrowther.github.io/Aviation/models/b29/"; // Used to
 let anmfps = 24;				// Blender FPS
 let aoarng = 20;				// AoA range (model)
 //-	External Model and Mixers
-const ACFile = "b29_flyt_6bg_npa.glb"; // Name of aircraft model file (rotated blender file)
+const ACFile = "b29_flyt_6bg.glb"; // Name of aircraft model file (rotated blender file)
 let mxr_ = {
 		Src: ACPath + ACFile,	// File Name
 		GLT: 0,					// GLTF scene
@@ -708,7 +708,7 @@ function loadAirExt() {
 		mxr_.GLT = gltf;
 		mxr_.Adr = gltf.scene;
 		mxr_.Adr.rotation.order = "YXZ";
-		mxr_.Adr.scale.setScalar(Ft2Mtr);
+//		mxr_.Adr.scale.setScalar(Ft2Mtr);
 		//
 		loadACanimX();
 		//		
@@ -861,11 +861,11 @@ function moveACanimA() {
 	// Ailerons
 	let ailbnk = air_.RotDif.z;
 	// Left
-	anm_.aillft = 180+ailbnk*30;
+	anm_.aillft = 180-ailbnk*30;
 	if (anm_.aillft < 151) anm_.aillft = 151; // Range = 00 to 60
 	else if (anm_.aillft > 209) anm_.aillft = 209;
 	// Right
-	anm_.ailrgt = 180-ailbnk*30;
+	anm_.ailrgt = 180+ailbnk*30;
 	if (anm_.ailrgt < 151) anm_.ailrgt = 151; // Range = 00 to 60
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 }
