@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260411
+*	FSIM SF1 DATA: 260418
 *
 *********************************************************************************
 
@@ -217,10 +217,10 @@ let fxd_ = {
 //= MOVING OBJECTS =============//==============================================
 //- Moving Airplanes -----------//----------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-const XP1Nam = "Dr1_grn.glb";	// Name of airplane model file (rotated blender file)
-const XP2Nam = "Dr1_red.glb";	// Name of airplane model file (rotated blender file)
-const XP3Nam = "Dr1_ylo.glb";	// Name of airplane model file (rotated blender file)
-const XP4Nam = "L21.glb"; // Name of airplane model file (rotated blender file)
+const XP1Nam = "xac_dr1_grn.glb";	// Name of airplane model file (animated prop only)
+const XP2Nam = "xac_dr1_red.glb";	// Name of airplane model file (animated prop only)
+const XP3Nam = "xac_dr1_ylo.glb";	// Name of airplane model file (animated prop only)
+const XP4Nam = "xac_l21.glb";	// Name of airplane model file (animated props only)
 let xac_ = {
 		ObjNum: 4,				// Number of airplanes
 		ObjSrc: [XPPath+XP1Nam, // Model Source file
