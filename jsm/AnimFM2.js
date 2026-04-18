@@ -68,7 +68,7 @@ function loadAirExt(air_,mxr_,anm_,gen_) {
 		});
 		mxr_.Adr = gltf.scene;
 		mxr_.Adr.rotation.order = "YXZ";
-		mxr_.Adr.scale.setScalar(Ft2Mtr);
+//		mxr_.Adr.scale.setScalar(Ft2Mtr);
 		loadAirAnmX(gltf,air_,mxr_,anm_);
 		air_.AirPBY.add(mxr_.Adr);
 		// Initialize
@@ -215,7 +215,7 @@ function loadAirInt(air_,vxr_,anm_,gen_) {
 		});
 		vxr_.Adr = gltf.scene;
 		vxr_.Adr.rotation.order = "YXZ";
-		vxr_.Adr.scale.setScalar(Ft2Mtr);
+//		vxr_.Adr.scale.setScalar(Ft2Mtr);
 		loadAirAnmI(gltf,vxr_,anm_);
 		air_.AirPBY.add(vxr_.Adr);	
 		// Initialize
