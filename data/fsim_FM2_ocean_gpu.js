@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260417
+*	FSIM FM2 DATA: 260418
 *
 ********************************************************************************
 
@@ -300,8 +300,8 @@ let fxd_ = {
 //= MOVING OBJECTS =============//==============================================
 //- Moving Airplanes -----------//----------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-const XP1Nam = "fm2_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
-const XP2Nam = "a6m_flyt_xp.glb"; // Name of airplane model file (rotated blender file)
+const XP1Nam = "xac_fm2.glb";	// Name of airplane model file (rotated blender file)
+const XP2Nam = "xac_a6m.glb";	// Name of airplane model file (rotated blender file)
 let xac_ = {
 		ObjNum: 2,				// Number of airplanes
 		ObjSrc: [XPPath+XP1Nam, // Model Source file
