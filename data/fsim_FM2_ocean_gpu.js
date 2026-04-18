@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260416
+*	FSIM FM2 DATA: 260417
 *
 ********************************************************************************
 
@@ -642,8 +642,8 @@ let air_ = {
 //- Load Models and Animations -//----------------------------------------------
 //	File Paths
 const AirSrc = "https://PhilCrowther.github.io/Aviation/models/fm2/"; // Used to load models and sounds
-const mxrFNm = "fm2_flyt_caf_npa.glb"; // Name of airplane model file (rotated blender file)
-const vxrFNm = "fm2_flyt_vcp_npa.glb"; // Name of airplane model file (rotated blender file)
+const mxrFNm = "fm2_vc27.glb";	// Name of airplane model file (rotated blender file)
+const vxrFNm = "fm2_int.glb";	// Name of airplane model file (rotated blender file)
 
 //- FM2 Animations -------------------------------------------------------------
 let	anmfps = 24;				// Blender FPS (used by Main Program and all modules (used by Objects.js)
