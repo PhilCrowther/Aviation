@@ -163,7 +163,7 @@ let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
 //- Scene
 let scene = new THREE.Scene();
 	scene.background = new THREE.Color("black");
-//- Light
+//- Ambient Light (necessary to illiminate instruments and to soften shadows)
 let ambLight = new THREE.AmbientLight(sky_.SunCol,0.5);
 	scene.add(ambLight);
 //- SunLight
@@ -196,7 +196,7 @@ let sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
 	scene.add(sonLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
-let camera = new THREE.PerspectiveCamera(50,CamAsp, 0.1,100000);
+let camera = new THREE.PerspectiveCamera(45,CamAsp,0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
@@ -208,6 +208,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.receiveShadow = true;	
 	renderer.shadowMap.type = THREE.PCFShadowMap; // r182
 	renderer.logarithmicDepthBuffer = true;
+//	renderer.reversedDepthBuffer = true; // needs more!!!
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Tone Mapping
@@ -353,7 +354,7 @@ let gau_ = {
 //- Create Internal Attach Point
 const CamPVC = new THREE.Object3D;
 	CamPVC.rotation.order = "YXZ";
-	CamPVC.position.set(0,0.68,0.1); // Internal View
+	CamPVC.position.set(0,0.68,0.11); // Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
 	cam_.SrcLLD = [new THREE.Vector3(-10,0,20),new THREE.Vector3(0,0,0.001)];
