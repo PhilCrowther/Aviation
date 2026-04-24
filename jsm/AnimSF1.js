@@ -314,7 +314,7 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 	// Animate -----------------------------------------------------------------
 	// Propeller
 	let prpspd =  4 * (air_.PwrPct - 0.6);			// Range = -2.4 to + 1.6
-	anm_.spnprp = Mod360(anm_.spnprp - prpspd);
+	anm_.spnprp = Mod360(anm_.spnprp + prpspd);
 	// Rudder
 	anm_.rudder = 180 + air_.RotDif.y * 100;
 	// Elevator
@@ -334,7 +334,7 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 	// Spinner
 	let spnspd = 1;									// Fixed speed for now
-	anm_.spnspn = Mod360(anm_.spnspn - spnspd);	
+	anm_.spnspn = Mod360(anm_.spnspn + spnspd);	
 	// Animations (Display) -----------------------------------------------------
 	if (!cam_.CamFlg) { 		// External View
 		// Propeller
