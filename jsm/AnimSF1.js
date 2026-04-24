@@ -302,7 +302,7 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.yawval/anm_.anmfps);
 	// Spinner
 	clip = AnimationClip.findByName(gltf.animations,"spinnerAction");
-	vxr_.Spn = new AnimationMixer(vxr_.Adr);
+	vxr_.Spn = new AnimationMixer(gltf.scene);
 	actun = vxr_.Spn.clipAction(clip);
 	actun.play();
 	if (vxr_.Spn) vxr_.Spn.setTime(anm_.spnspn/anm_.anmfps);
