@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260418
+*	FSIM SF1 DATA: 260423
 *
 *********************************************************************************
 
@@ -352,6 +352,7 @@ let anm_ = {
 		yawval: 180,			// Slip indicator
 		vchead: 0,				// Pilot head
 		gunval: 180,			// Gun value (0 to 360, stop at 180)
+		spnspn: 180,			// Spinner
 	}
 //	Animation Mixers - External Model
 let mxr_ = {
@@ -376,6 +377,8 @@ let vxr_ = {
 		ArL:0,ArR:0,HLT:0,HRP:0,HRB:0,
 		// LegLft,LegRgt,RudLft,RudRgt,Head
 		LgL:0,LgR:0,RdL:0,RdR:0,Hed:0,
+		// Spinner
+		Spn:0,
 	}
 
 //= GUNASG MODULE ==============//==============================================
