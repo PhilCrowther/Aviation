@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Apr 2026
+Version dated 23 Apr 2026
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Camel aircraft model
@@ -300,6 +300,12 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	actun = vxr_.Hed.clipAction(clip);
 	actun.play();
 	if (vxr_.Hed) vxr_.Hed.setTime(anm_.yawval/anm_.anmfps);
+	// Spinner
+	let clip = AnimationClip.findByName(gltf.animations,"propellerAction");
+	vxr_.Spn = new AnimationMixer(vxr_.Adr);
+	let actun = vxr_.Prp.clipAction(clip);
+	actun.play();
+	if (vxr_.Spn) vxr_.Spn.setTime(anm_.spnspn/anm_.anmfps);
 }
 
 //= MOVE AIR OBJECT ============//==============================================
@@ -308,8 +314,7 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 	// Animate -----------------------------------------------------------------
 	// Propeller
 	let prpspd =  4 * (air_.PwrPct - 0.6);			// Range = -2.4 to + 1.6
-	anm_.spnprp = anm_.spnprp - prpspd;
-	if (anm_.spnprp < 0) anm_.spnprp = 359;			// A complete circle
+	anm_.spnprp = Mod360(anm_.spnprp - prpspd);
 	// Rudder
 	anm_.rudder = 180 + air_.RotDif.y * 100;
 	// Elevator
@@ -327,6 +332,9 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 	anm_.ailrgt = 180 - ailbnk * 30;
 	if (anm_.ailrgt < 151) anm_.ailrgt = 151;		// Range = 00 to 60
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
+	// Spinner
+	let spnspd = 2;									// Fixed speed for now
+	anm_.spnspn = Mod360(anm_.spnspn - spnspd);	
 	// Animations (Display) -----------------------------------------------------
 	if (!cam_.CamFlg) { 		// External View
 		// Propeller
@@ -398,9 +406,11 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		if (vxr_.RdR) vxr_.RdR.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.LgR) vxr_.LgR.setTime(anm_.yawval/anm_.anmfps);
 		if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps); // Rudder Bar
-//		// Pilot - Head
+		// Pilot - Head
 		anm_.vchead = Mod360(cam_.CamLLD.y);
 		if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
+		// Spinner
+		if (vxr_.Spn) vxr_.Spn.setTime(anm_.spnspn/anm_.anmfps);
 	}	
 }
 
