@@ -78,55 +78,55 @@ function loadAirAnmX(gltf,air_,mxr_,anm_) {
 	// Animations --------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(gltf.animations,"propellerAction");
-	mxr_.Prp = new AnimationMixer(mxr_.Adr);
+	mxr_.Prp = new AnimationMixer(gltf.scene);
 	let actun = mxr_.Prp.clipAction(clip);
 	actun.play();
 	if (mxr_.Prp) mxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
 	// Rudder
-	mxr_.Rdr = new AnimationMixer(mxr_.Adr);
+	mxr_.Rdr = new AnimationMixer(gltf.scene);
 	clip = AnimationClip.findByName(gltf.animations,"rudderAction");
 	actun = mxr_.Rdr.clipAction(clip);
 	actun.play();
 	if (mxr_.Rdr) mxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
 	// Elevator
 	clip = AnimationClip.findByName(gltf.animations,"elevatorAction");
-	mxr_.Elv = new AnimationMixer(mxr_.Adr);
+	mxr_.Elv = new AnimationMixer(gltf.scene);
 	actun = mxr_.Elv.clipAction(clip);
 	actun.play();
 	if (mxr_.Elv) mxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
 	// AileronTL
 	clip = AnimationClip.findByName(gltf.animations,"aileronTLAction");
-	mxr_.ATL = new AnimationMixer(mxr_.Adr);
+	mxr_.ATL = new AnimationMixer(gltf.scene);
 	actun = mxr_.ATL .clipAction(clip);
 	actun.play();
 	if (mxr_.ATL) mxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
 	// AileronTR
 	clip = AnimationClip.findByName(gltf.animations,"aileronTRAction");
-	mxr_.ATR = new AnimationMixer(mxr_.Adr);
+	mxr_.ATR = new AnimationMixer(gltf.scene);
 	actun = mxr_.ATR.clipAction(clip);
 	actun.play();
 	if (mxr_.ATR) mxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
 	// AileronBL
 	clip = AnimationClip.findByName(gltf.animations,"aileronBLAction");
-	mxr_.ABL = new AnimationMixer(mxr_.Adr);
+	mxr_.ABL = new AnimationMixer(gltf.scene);
 	actun = mxr_.ABL .clipAction(clip);
 	actun.play();
 	if (mxr_.ABL) mxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
 	// AileronBR
 	clip = AnimationClip.findByName(gltf.animations,"aileronBRAction");
-	mxr_.ABR = new AnimationMixer(mxr_.Adr);
+	mxr_.ABR = new AnimationMixer(gltf.scene);
 	actun = mxr_.ABR.clipAction(clip);
 	actun.play();
 	if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 	// AileronL
 	clip = AnimationClip.findByName(gltf.animations,"aileronLAction");
-	mxr_.ARL = new AnimationMixer(mxr_.Adr);
+	mxr_.ARL = new AnimationMixer(gltf.scene);
 	actun = mxr_.ARL.clipAction(clip);
 	actun.play();
 	if (mxr_.ARL) mxr_.ARL.setTime(anm_.aillft/anm_.anmfps);
 	// AileronR
 	clip = AnimationClip.findByName(gltf.animations,"aileronRAction");
-	mxr_.ARR = new AnimationMixer(mxr_.Adr);
+	mxr_.ARR = new AnimationMixer(gltf.scene);
 	actun = mxr_.ARR.clipAction(clip);
 	actun.play();
 	if (mxr_.ARR) mxr_.ARR.setTime(anm_.ailrgt/anm_.anmfps);
@@ -164,73 +164,73 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	// Animations --------------------------------------------------------------
 	// Propeller
 	let clip = AnimationClip.findByName(gltf.animations,"propellerAction");
-	vxr_.Prp = new AnimationMixer(vxr_.Adr);
+	vxr_.Prp = new AnimationMixer(gltf.scene);
 	let actun = vxr_.Prp.clipAction(clip);
 	actun.play();
 	if (vxr_.Prp) vxr_.Prp.setTime(anm_.spnprp/anm_.anmfps);
 	// Rudder
-	vxr_.Rdr = new AnimationMixer(vxr_.Adr);
+	vxr_.Rdr = new AnimationMixer(gltf.scene);
 	clip = AnimationClip.findByName(gltf.animations,"rudderAction");
 	actun = vxr_.Rdr.clipAction(clip);
 	actun.play();
 	if (vxr_.Rdr) vxr_.Rdr.setTime(anm_.rudder/anm_.anmfps);
 	// Elevator
 	clip = AnimationClip.findByName(gltf.animations,"elevatorAction");
-	vxr_.Elv = new AnimationMixer(vxr_.Adr);
+	vxr_.Elv = new AnimationMixer(gltf.scene);
 	actun = vxr_.Elv.clipAction(clip);
 	actun.play();
 	if (vxr_.Elv) vxr_.Elv.setTime(anm_.elvatr/anm_.anmfps);
 	// AileronTL
 	clip = AnimationClip.findByName(gltf.animations,"aileronTLAction");
-	vxr_.ATL = new AnimationMixer(vxr_.Adr);
+	vxr_.ATL = new AnimationMixer(gltf.scene);
 	actun = vxr_.ATL .clipAction(clip);
 	actun.play();
 	if (vxr_.ATL) vxr_.ATL.setTime(anm_.aillft/anm_.anmfps);
 	// AileronTR
 	clip = AnimationClip.findByName(gltf.animations,"aileronTRAction");
-	vxr_.ATR = new AnimationMixer(vxr_.Adr);
+	vxr_.ATR = new AnimationMixer(gltf.scene);
 	actun = vxr_.ATR.clipAction(clip);
 	actun.play();
 	if (vxr_.ATR) vxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
 	// AileronBL
 	clip = AnimationClip.findByName(gltf.animations,"aileronBLAction");
-	vxr_.ABL = new AnimationMixer(vxr_.Adr);
+	vxr_.ABL = new AnimationMixer(gltf.scene);
 	actun = vxr_.ABL .clipAction(clip);
 	actun.play();
 	if (vxr_.ABL) vxr_.ABL.setTime(anm_.aillft/anm_.anmfps);
 	// AileronBR
 	clip = AnimationClip.findByName(gltf.animations,"aileronBRAction");
-	vxr_.ABR = new AnimationMixer(vxr_.Adr);
+	vxr_.ABR = new AnimationMixer(gltf.scene);
 	actun = vxr_.ABR.clipAction(clip);
 	actun.play();
 	if (vxr_.ABR) vxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 	// AileronL
 	clip = AnimationClip.findByName(gltf.animations,"aileronLAction");
-	vxr_.ARL = new AnimationMixer(vxr_.Adr);
+	vxr_.ARL = new AnimationMixer(gltf.scene);
 	actun = vxr_.ARL.clipAction(clip);
 	actun.play();
 	if (vxr_.ARL) vxr_.ARL.setTime(anm_.aillft/anm_.anmfps);
 	// AileronR
 	clip = AnimationClip.findByName(gltf.animations,"aileronRAction");
-	vxr_.ARR = new AnimationMixer(vxr_.Adr);
+	vxr_.ARR = new AnimationMixer(gltf.scene);
 	actun = vxr_.ARR.clipAction(clip);
 	actun.play();
 	if (vxr_.ARR) vxr_.ARR.setTime(anm_.ailrgt/anm_.anmfps);
 	// Compass
 	clip = AnimationClip.findByName(gltf.animations,"cockpit_compassAction");
-	vxr_.Cmp = new AnimationMixer(vxr_.Adr);
+	vxr_.Cmp = new AnimationMixer(gltf.scene);
 	actun = vxr_.Cmp.clipAction(clip);
 	actun.play();
 	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
 	// Ball
 	clip = AnimationClip.findByName(gltf.animations,"cockpit_ballAction");
-	vxr_.Bal = new AnimationMixer(vxr_.Adr);
+	vxr_.Bal = new AnimationMixer(gltf.scene);
 	actun = vxr_.Bal.clipAction(clip);
 	actun.play();
 	if (vxr_.Cmp) vxr_.Cmp.setTime(air_.AirRot.y/anm_.anmfps);
 	// Gun
 	clip = AnimationClip.findByName(gltf.animations,"fuselage_gunAction");
-	vxr_.Gun = new AnimationMixer(vxr_.Adr);
+	vxr_.Gun = new AnimationMixer(gltf.scene);
 	actun = vxr_.Gun.clipAction(clip);
 	actun.play();
 	if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);	
@@ -333,7 +333,7 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 	if (anm_.ailrgt < 151) anm_.ailrgt = 151;		// Range = 00 to 60
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 	// Spinner
-	let spnspd = 2;									// Fixed speed for now
+	let spnspd = 1;									// Fixed speed for now
 	anm_.spnspn = Mod360(anm_.spnspn - spnspd);	
 	// Animations (Display) -----------------------------------------------------
 	if (!cam_.CamFlg) { 		// External View
