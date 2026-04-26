@@ -233,7 +233,19 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	vxr_.Gun = new AnimationMixer(gltf.scene);
 	actun = vxr_.Gun.clipAction(clip);
 	actun.play();
-	if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);	
+	if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);
+	// Pitch (was Pilot - Left Arm)
+	clip = AnimationClip.findByName(gltf.animations,"arm_PitchAction");
+	vxr_.ArL = new AnimationMixer(gltf.scene);
+	actun = vxr_.ArL.clipAction(clip);
+	actun.play();
+	if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);	
+	// Bank (was Pilot - Right Arm - Bank)
+	clip = AnimationClip.findByName(gltf.animations,"arm_BankAction");
+	vxr_.ArR = new AnimationMixer(gltf.scene);
+	actun = vxr_.ArR.clipAction(clip);
+	actun.play();
+	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbnk/anm_.anmfps);
 	// Control Throttle (was Pilot - Left Hand)
 	clip = AnimationClip.findByName(gltf.animations,"control_throttleAction");
 	vxr_.HLT = new AnimationMixer(gltf.scene);
@@ -364,6 +376,9 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 			anm_.yawval = (air_.RotDif.y)*180 + 180; // air_.RotDif.y = +/- 0.1	
 		}
 		if (vxr_.Bar) vxr_.Bar.setTime(anm_.yawval/anm_.anmfps); // Rudder Bar
+		// Pilot
+		if (vxr_.ArL) vxr_.ArL.setTime(anm_.stkpcm/anm_.anmfps); // Pitch
+		if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps); // Bank
 		// Pilot Head
 		anm_.vchead = Mod360(cam_.CamLLD.y);
 		if (vxr_.Hed) vxr_.Hed.setTime(anm_.vchead/anm_.anmfps);
