@@ -239,13 +239,13 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	vxr_.ArL = new AnimationMixer(gltf.scene);
 	actun = vxr_.ArL.clipAction(clip);
 	actun.play();
-	if (vxr_.ArL) vxr_.ArL.setTime(anm_.manprs/anm_.anmfps);	
+	if (vxr_.ArL) vxr_.ArL.setTime(anm_.stkpcm/anm_.anmfps);	
 	// Bank (was Pilot - Right Arm - Bank)
 	clip = AnimationClip.findByName(gltf.animations,"arm_BankAction");
 	vxr_.ArR = new AnimationMixer(gltf.scene);
 	actun = vxr_.ArR.clipAction(clip);
 	actun.play();
-	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbnk/anm_.anmfps);
+	if (vxr_.ArR) vxr_.ArR.setTime(anm_.stkbcm/anm_.anmfps);
 	// Control Throttle (was Pilot - Left Hand)
 	clip = AnimationClip.findByName(gltf.animations,"control_throttleAction");
 	vxr_.HLT = new AnimationMixer(gltf.scene);
