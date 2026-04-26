@@ -235,13 +235,13 @@ function loadAirAnmV(gltf,air_,vxr_,anm_) {
 	actun.play();
 	if (vxr_.Gun) vxr_.Gun.setTime(anm_.gunval/anm_.anmfps);
 	// Pitch (was Pilot - Left Arm)
-	clip = AnimationClip.findByName(gltf.animations,"arm_PitchAction");
+	clip = AnimationClip.findByName(gltf.animations,"arm_pitchAction");
 	vxr_.ArL = new AnimationMixer(gltf.scene);
 	actun = vxr_.ArL.clipAction(clip);
 	actun.play();
 	if (vxr_.ArL) vxr_.ArL.setTime(anm_.stkpcm/anm_.anmfps);	
 	// Bank (was Pilot - Right Arm - Bank)
-	clip = AnimationClip.findByName(gltf.animations,"arm_BankAction");
+	clip = AnimationClip.findByName(gltf.animations,"arm_bankAction");
 	vxr_.ArR = new AnimationMixer(gltf.scene);
 	actun = vxr_.ArR.clipAction(clip);
 	actun.play();
