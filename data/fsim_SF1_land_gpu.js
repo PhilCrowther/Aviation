@@ -184,6 +184,15 @@ let grd_ = {
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadH.jpg"],
 	}
 
+//= SHARED TEXTURES ============//==============================================
+let txt_ = {
+		ObjNum: 3,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
+		ObjTxt: [],
+	};
+
 //= STATIC OBJECTS =============//==============================================
 //- Mountain -------------------//----------------------------------------------
 let mnt_ = {
