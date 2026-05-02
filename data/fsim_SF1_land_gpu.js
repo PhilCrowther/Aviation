@@ -411,6 +411,72 @@ let myg_ = {
 		HitDst: 10,				// Hit Radius
 	}
 
+//- Fixed Guns -----------------//----------------------------------------------
+//	Same variable used for Ship Guns
+let aaf_ = {
+		ObjNum: 2,
+		// Parent (use this instead of link because bullets not attached)
+		XSHRot: [0,0],			//
+		XSHPos: [0,0],			//
+		// Gun Object
+		GunPtr: [0,0],			// Gun Object (makMsh)
+		GunRot: [0,0],			// Gun Rotation (Euler - degrees)
+		GunPos: [0,0],			// Map Position (Vector3)
+		// Bullet Data
+		AAAFlg: [1,1],			// 1 = Gun Firing
+		AAASpd: 850,			// Muzzle Velocity (mps)
+		AAADLT: 4.0,			// Max Bullet Time in Flight
+		AAANum: 16,				// Number of Tracers
+		AAASpc: 1,				// Bullet Spacing (4*BulDLT/BulNum)
+		AAASp2: [1,1],			// Bullet Spacing - time remaining
+		// Bullet Colors and Opacity
+		AAACol: 0,				// Green-Blue (Vector2)
+		AAAOpa: 0.5,			// Opacity
+		// Bullets for each gun
+		AAAPtr: [[],[]],		// Bullet Objects
+		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
+		AAATim: [[],[]],		// Bullet Time in flight
+		// Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke
+		SmkMap: 2,				// Shared Texture Reference Number
+		SmkMat: [0,0],			// Smoke Material
+		SmkPtr: [0,0],			// Smoke Sprite
+		SmkRot: [0,165],		// Z-rotation of smoke
+		SmkMpP: [0,0],			 // Map Position (Vector3)
+		SmkDMx: [12,11],		// Delay between Smoke events (secs)
+		SmkDTm: [0,6],			// Delay Counter
+		SmkOpR:	0.005,			// Opacity Reduction per Frame
+		// Smoke Sounds
+		SndFlg: [1,1],			// 1 = Start Explosion Sound
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: [0,0],
+		SndVol: 15,				// Volume
+		SndMsh: [0,0],			// makMsh()
+		SndDTm: [0,0],
+		// Explosion
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
+		// Timer (not used)
+		TimMax: [0,1000],		// Time On (frames)
+		TimMin: [0,0],			// Time Off (frames)
+		TimFlg: [0,1000],		// Timer (pos = On, neg = Off)		
+	};
+
+//=	MY SOUNDS ==================//==============================================
+let mys_ = {
+		AirMsh:	0,				// For Engine and Prop
+		// Engine Sound - Idle
+		IdlSrc: AirSrc + "sounds/xrpm1.wav",
+		IdlSnd: 0,				// Address
+		IdlVol: 0.5,			// Volume
+		// Engine Sound	
+		EngSrc: AirSrc + "sounds/xrpm2.wav",
+		EngSnd: 0,				// Address
+		EngVol: 0.5,			// Volume
+	}
+
 //= CAMERA =====================//===============================================
 let cam_ = {
 		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
@@ -445,19 +511,6 @@ let cam_ = {
 		SrcAdj: [180,0],
 		SrcFlg: [0,1],			// 1 = Internal View
 		SrcLnk: [1,1],			// 1 = Linked to Airplane
-	}
-
-//=	MY SOUNDS ==================//==============================================
-let mys_ = {
-		AirMsh:	0,				// For Engine and Prop
-		// Engine Sound - Idle
-		IdlSrc: AirSrc + "sounds/xrpm1.wav",
-		IdlSnd: 0,				// Address
-		IdlVol: 0.5,			// Volume
-		// Engine Sound	
-		EngSrc: AirSrc + "sounds/xrpm2.wav",
-		EngSnd: 0,				// Address
-		EngVol: 0.5,			// Volume
 	}
 
 //= 8. OUTPUT VARIABLES ========//==============================================
