@@ -4,9 +4,9 @@
 *
 ********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Oct 2025
+Version dated 2 May 2026
 
 @fileoverview
 A three.js class-type module for Flight Simulation
@@ -202,7 +202,10 @@ update() {
 	// Compute Aircraft Pitch Adjustment
 	// this.air_.ACPAdj is an adjustment to ACPtch that allows the aircraft to pitch relative to the direction of flight
 	// to match pitch required to produce specified lift; or, if on ground, to pitch around main wheel axis
-	this.air_.ACPAdj = (this.air_.CfLift*10)-this.dat_.AngInc; // Default (1.3 = 13)
+	// Compute ACPAdj only if Airplane is not a taildragger or (if a taildragger) Speed is greater than TDmin [###260502]
+	if (this.dat_.TDrAng == 0 || this.air_.SpdKPH > this.dat_.TDrSpd) {
+		this.air_.ACPAdj = (this.air_.CfLift*10)-this.dat_.AngInc; // Default (1.3 = 13)
+	}
 	// 2. GRDFLG ADJUSTMENTS ---------------------------------------------------
 	// Adjust for 3 alternatives: (1) Leaving Ground; (2) Hitting Ground; and (3) On Ground
 	// Determine if Leaving Ground
@@ -234,21 +237,25 @@ update() {
 		this.air_.RotDif.x = 0;
 		this.air_.RotDif.z = 0;
 		// ACPAdj Taildragger-Related Adjustments
-		if (this.dat_.TDrAng) {
-			// Can't Pitch more than TDrAng
-			if (this.air_.ACPAdj > this.dat_.TDrAng) this.air_.ACPAdj = this.dat_.TDrAng;	
-			// If less than Full Tail-Lift Speed, ACPAdj determined by Speed
-			if (this.air_.SpdKPH < this.dat_.TDrSpd) {  // Tail Slowly Raises and Falls
-				let MaxAng = this.dat_.TDrAng-(this.dat_.TDrAng*this.air_.SpdKPH/this.dat_.TDrSpd);
-				if (this.air_.ACPAdj < MaxAng) this.air_.ACPAdj = MaxAng; // Prevent tail from popping up
+		if (this.dat_.TDrAng) { // If Airplane is Taildragger [###260502]
+			if (this.air_.SpdKPH < this.dat_.TDrSpd) {  // If Tail in Free Zone
+			// If less than Full Tail-Lift Speed and Speeding Up
+				if (ACTrst > 0) {	// If accelerating
+					air_.ACPAdj = air_.ACPAdj - 0.001;  // Reduces starting ACPAdj
+					let MaxAng = this.dat_.TDrAng-(this.dat_.TDrAng*this.air_.SpdKPH/this.dat_.TDrSpd); // Max Tail Up Allowed	
+					if (this.air_.ACPAdj > MaxAng) this.air_.ACPAdj = MaxAng; // Prevent tail from popping up
+				}
+				if (ACTrst < 0) {	// If decelerating
+					air_.ACPAdj = air_.ACPAdj + 0.05;
+					// Limit Pitch Back to TDrAng
+					if (this.air_.ACPAdj > this.dat_.TDrAng) this.air_.ACPAdj = this.dat_.TDrAng;				
+				}
 			}
-			// Override: If Speed  < 1 KPH, Tail all the way down:
-			if (this.air_.SpdKPH < 1 || this.air_.MovFlg > 0) {
-				this.air_.ACPAdj = this.dat_.TDrAng;
-			}
+			// If Speed  < 1 KPH or Landed on Carrier, Pitch All the Way Back
+			if (this.air_.SpdKPH < 1 || this.air_.MovFlg) this.air_.ACPAdj = this.dat_.TDrAng;
 		}
 		// Other ACPAdj-Related Adjustments
-		if (this. air_.ACPAdj < 0) this. air_.ACPAdj = 0; // Never negative while on ground
+		if (this. air_.ACPAdj < 0) this. air_.ACPAdj = 0; // Never nose over while on ground
 		this.air_.CfLift = (this.air_.ACPAdj+this.dat_.AngInc)/10;	// Set startng this.air_.CfLift (ignore AirRot.x)
 		// Preliminary Adjustments to Computation of Map Speed (Prevents Runaway Airplane Powered by Gravity)
 		ACThrG = ACTrst-this.air_.BrkVal; // Elim Gravity and Reduce thrust by brakes (if any)
@@ -424,6 +431,7 @@ export {Flight, Mod360, PoM360, MaxVal};
 250531: Rename Flight4a as Flight
 250603:	Eliminate makmsh (replaced with Object3D)
 250804: Simplify Map Speed Comps
+260502: Make change in taildragger angle at low speed less abrupt
 
 FUTURE PLANNED REVISIONS (make as part of version change) ======================
 ______:	Combine air_.ShpPit/Bnk into ShpRot
