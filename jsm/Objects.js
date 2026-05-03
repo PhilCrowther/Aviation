@@ -553,7 +553,7 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,gen_) {
 	// The Next 3 Sounds Are All the Same (for now)
 	//
 	// XP End Explosion
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
+	for (let n = 0; n < xac_.ObjNum; n ++) {	// ### fixed 260503
 		xac_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xac_.SndSrc,function(buffer) {
 			xac_.SndPtr[n].setBuffer(buffer);
@@ -595,7 +595,7 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 
 function moveObjSnd(xac_,xag_,xsg_,aaf_) {
 	//- XAC ....................................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Endinge
+	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Engine
 	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);} // Gun
 	//-	Explosions ..............................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.SndPtr[n].setVolume(xac_.SndVol);} // XAC
