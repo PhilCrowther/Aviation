@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260423
+*	FSIM SF1 DATA: 260503
 *
 *********************************************************************************
 
@@ -273,6 +273,84 @@ let xac_ = {
 		SndVol: 15,				// Volume
 		SndMsh: [0,0,0,0],		// (Object3D)
 		SndDTm: [0,0,0,0],
+	};
+
+//- Airplane Smoke Trail .......//..............................................
+let xas_ = {
+		// Shared Values
+		ObjNum: 1,				// Number of Smoke Trails
+		ObjTxt: 0,				// Shared Texture Reference Number
+		ObjSiz: 800,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+	};
+
+//- Airplane Flame Trail .......//..............................................
+let xaf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: 0,				// Texture
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+	};
+
+//= AIRPLANE END SEQUENCE ======//==============================================
+let xat_ = {
+		// Segments:
+		// 0 = 1st Explosion
+		// 1 = Spinning and Burning
+		// 2 = 2nd Explosion
+		// 3 = Delay
+		// 4 = Radio Call
+		SegTim: [0.05,5,0.1,2,2],		
+		SegIdx: -1,				// Start at -1 so can increment at beginning
+		TimRem: 0,
+	}
+
+//= AIRPLANE EXPLOSION =========//==============================================
+let xae_ = {
+		ExpSiz: 0,				// Explosion Size
+		ExpLif: 0,				// Remaining Life
+		ExpMsh: 0,				// Mesh
+	};
+
+//= SMOKE MODULE ===============//==============================================
+//- Vertical Smoke -------------//----------------------------------------------
+let grs_ = {
+		ObjNum: 1,				// Number of Smokes
+		// Shared Values		
+		ObjTxt: 1,				// Shared Texture Reference Number
+		ObjSiz: 4000,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+		// Rotaton and Position
+		ObjRot: [0],			// Rotation (not used)
+		MapPos: [0], 			// Map Position
+		ObjRef: [0],			// Parent Object
+	};
+//- Ground Fire ----------------//----------------------------------------------
+let grf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: 0,				// Texture
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+		// Rotation and Position
+		ObjRot: [0],			// Rotation
+		MapPos: [0],			// Map Position
+		ObjRef: [0],			// Parent Object
 	};
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
