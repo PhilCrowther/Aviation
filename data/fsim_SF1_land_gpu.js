@@ -500,35 +500,35 @@ let myg_ = {
 
 //- Moving Airplanes -----------//----------------------------------------------
 let xag_ = {
-		ObjNum: 2,
+		ObjNum: 4,
 		// Parent (use this instead of link because bullets not attached)
-		XACRot: [0,0],
-		XACPos: [0,0],
+		XACRot: [0,0,0,0],
+		XACPos: [0,0,0,0],
 		// Gun Object (Fixed Firing Forward)
 		// GunPtr = Airplane Object
-		GunPtr: [0,0],			// Not Used Yet
-		GunRot: [0,0],			// Gun Rotation (Euler degrees)
-		GunPos: [0,0],			// Map Position (Vector3)
+		GunPtr: [0,0,0,0],		// Not Used Yet
+		GunRot: [0,0,0,0],		// Gun Rotation (Euler degrees)
+		GunPos: [0,0,0,0],		// Map Position (Vector3)
 		// Bullet Data
-		BulFlg: [0,1],			// 1 = Guns Firing	
+		BulFlg: [0,0,0,0],			// 1 = Guns Firing	
 		BulSpd: 887,			// Muzzle Velocity (mps)
 		BulDLT: 0.5,			// Max Bullet Time in Flight
 		BulNum: 16,				// Number of Tracers
 		BulSpc: 0.125,			// Bullet Spacing (4*BulDLT/BulNum)
-		BulSp2: [0.125,0.125],	// Bullet Spacing - time remaining
+		BulSp2: [0.125,0.125,0.125,0.125],	// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
 		BulClr: 0,				// Red (Vector2)
 		BulOpa: 0.8,
 		// Bullets for each gun
-		BulPtr: [[],[]],		// Bullet Objects
-		BulMpS: [[0],[0]],		// Bullet Map Speed (V3)
-		BulMpP: [[0],[0]],		// Bullet Map Position (V3)
-		BulTim: [[],[]],		// Bullet Time in Flight
+		BulPtr: [[0],[0],[0],[0]],	// Bullet Objects
+		BulMpS: [[0],[0],[0],[0]],	// Bullet Map Speed (V3)
+		BulMpP: [[0],[0],[0],[0]],	// Bullet Map Position (V3)
+		BulTim: [[0],[0],[0],[0]],	// Bullet Time in Flight
 		// Gun Sounds
-		SndSrc: [0,0],			// File (my guns)
-		SndPtr: [0,0],
-		SndVol: [0.5,0.5],		// Volume
-		SndMsh: [0,0],			// (makMsh)
+		SndSrc: [0,0,0,0],			// File (my guns)
+		SndPtr: [0,0,0,0],
+		SndVol: [0.5,0.5,0.5,0.5],	// Volume
+		SndMsh: [0,0,0,0],			// (makMsh)
 		// Timer
 		TimMax: [0,120],		// Time On (frames)
 		TimMin: [0,-600],		// Time Off (frames)
