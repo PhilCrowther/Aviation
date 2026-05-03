@@ -190,7 +190,7 @@ let txt_ = {
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
 				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
 				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
-		ObjTxt: [],
+		ObjTxt: [0,0,0],
 	};
 
 //= STATIC OBJECTS =============//==============================================
