@@ -512,49 +512,49 @@ let xsg_ = {
 //	Same variable used for Ship Guns
 let aaf_ = {
 		ObjNum: 2,
-		// Parent (use this instead of link because bullets not attached)	
-		XSHRot: [],				//
-		XSHPos: [],				//
+		// Parent (use this instead of link because bullets not attached)
+		XSHRot: [],				// Euler
+		XSHPos: [],				// Vector3
 		// Gun Object
-		GunPtr: [],				// Gun Object (makMsh)
-		GunRot: [],				// Gun Rotation (Euler - degrees)
+		GunPtr: [],				// Gun Object (Object3D)
+		GunRot: [],				// Gun Rotation - degrees (Euler)
 		GunPos: [],				// Map Position (Vector3)
 		// Bullet Data
-		AAAFlg: [],				// 1 = Gun Firing
+		AAAFlg: [1,1],			// 1 = Gun Firing
 		AAASpd: 850,			// Muzzle Velocity (mps)
-		AAADLT: 4.0,			// Max Bullet Time in Flight (seconds)
+		AAADLT: 4.0,			// Max Bullet Time in Flight
 		AAANum: 16,				// Number of Tracers
 		AAASpc: 1,				// Bullet Spacing (4*BulDLT/BulNum)
 		AAASp2: [1,1],			// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
 		AAACol: 0,				// Green-Blue (Vector2)
 		AAAOpa: 0.5,			// Opacity
-		// Bullets for each gun (computed)
+		// Bullets for each gun
 		AAAPtr: [[],[]],		// Bullet Objects
-		AAAMpS: [[],[]],		// Bullet Map Speed (V3)
-		AAAMpP: [[],[]],		// Bullet Map Position (V3)	
+		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
+		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
 		AAATim: [[],[]],		// Bullet Time in flight
 		// Smoke
-		SmkFlg: [],				// 1 = Start Smoke
+		SmkFlg: [0,0],			// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
-		SmkMat: [],				// Smoke Material
-		SmkPtr: [],				// Smoke Sprite
+		SmkMat: [0,0],			// Smoke Material
+		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
 		SmkMpP: [],				// Map Position (Vector3)
-		SmkDMx: [12,11],		// Delay between Smoke events (secs)
+		SmkDMx: [12,11],		// Delay between Smoke events - seconds
 		SmkDTm: [0,6],			// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
 		SndFlg: [1,1],			// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [],
+		SndPtr: [0,0],
 		SndVol: 15,				// Volume
-		SndMsh: [],				// makMsh()
-		SndDTm: [],
+		SndMsh: [],				// (Object3D)
+		SndDTm: [0,0],
 		// Explosion
-		ExpPtr: [],				// Pointer to Exploding Center
-		ExpSiz: [],				// Expanding Size
-		ExpLif: [],				// Life of Explosion (seconds)
+		ExpPtr: [0,0],			// Pointer to Exploding Center
+		ExpSiz: [0,0],			// Expanding Size
+		ExpLif: [0,0],			// Life of Explosion (seconds)
 		// Timer (not used)
 		TimMax: [0,1000],		// Time On (frames)
 		TimMin: [0,0],			// Time Off (frames)
