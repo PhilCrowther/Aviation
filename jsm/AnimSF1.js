@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 23 Apr 2026
+Version dated 3 May 2026
 
 @fileoverview
 A three.js class-type module for animating a Sopwith Camel aircraft model
@@ -422,7 +422,7 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 
 //= LOAD SOUNDS ================================================================
 
-function loadSounds(air_,mys_,myg_,gen_) {
+function loadMySong(air_,mys_,myg_,gen_) {
 	// Engine Sounds ............................................................
 	air_.AirObj.add(mys_.AirMsh);
 	mys_.AirMsh.position.z = -5;
@@ -489,7 +489,7 @@ function initASound(dest,volm,rate) {
 
 //= MOVE SOUNDS ================================================================
 
-function moveSounds(air_,mys_,myg_) {
+function moveMySong(air_,mys_,myg_) {
 	// Switch Between Idle and Engine Sounds
 	if (air_.PwrPct < .25 && mys_.EngSnd.isPlaying) {
 		mys_.IdlSnd.play();
@@ -513,7 +513,7 @@ function moveSounds(air_,mys_,myg_) {
 //= PLAY SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
-function playSounds(mys_,myg_,gen_) {	
+function playMySong(mys_,myg_,gen_) {	
 	if (!mys_.IdlSnd.isPlaying) mys_.IdlSnd.play(); // Idle
 	if (!mys_.EngSnd.isPlaying) mys_.EngSnd.play(); // Engine
 	for (let n = 0; n < myg_.ObjNum; n ++) {if (gen_.MYGFlg && !myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].play();}
@@ -522,7 +522,7 @@ function playSounds(mys_,myg_,gen_) {
 //= STOP SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
-function stopSounds(mys_,myg_) {	
+function stopMySong(mys_,myg_) {	
 	if (mys_.IdlSnd.isPlaying) mys_.IdlSnd.stop(); // Idle
 	if (mys_.EngSnd.isPlaying) mys_.EngSnd.stop(); // Engine
 	for (let n = 0; n < myg_.ObjNum; n ++) {if (myg_.SndPtr[n].isPlaying) myg_.SndPtr[n].stop();}
@@ -547,7 +547,7 @@ return deg;}
 *
 *******************************************************************************/
 
-export {loadAirExt,loadAirInt,moveAirObj,loadSounds,moveSounds,playSounds,stopSounds};
+export {loadAirExt,loadAirInt,moveAirObj,loadMySong,moveMySong,playMySong,stopMySong};
 
 /*******************************************************************************
 *
@@ -559,5 +559,6 @@ export {loadAirExt,loadAirInt,moveAirObj,loadSounds,moveSounds,playSounds,stopSo
 251125:	Add Loaders to gen_
 260325: Load and move internal object
 260325: Add sounds.
+260503: Change Sounds to Mysong (same as FM2)
 
 */
