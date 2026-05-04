@@ -45,6 +45,7 @@ import {
 	AdditiveBlending,
 	BackSide,
 	BufferGeometry,
+	Euler,
 	Line,
 	LineBasicNodeMaterial,
 	MeshBasicNodeMaterial,
@@ -436,14 +437,14 @@ function moveAAAGun(aag_,air_,gen_,tim_) {
 function initAAGuns(aag_,air_,gen_) {
 	//- Standard Values
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		aag_.XSHRot[n] = new THREE.Euler();
-		aag_.XSHPos[n] = new THREE.Vector3();
-		aag_.GunPtr[n] = new THREE.Object3D();
+		aag_.XSHRot[n] = new Euler();
+		aag_.XSHPos[n] = new Vector3();
+		aag_.GunPtr[n] = new Object3D();
 		aag_.AAAFlg[n] = 1;			// Gun Firing
 		aag_.AAASp2[n] = 1;			// Bullet Spacing - time remaining
 		aag_.SmkFlg[n] = 0;
-		aag_.SmkMpP[n] = new THREE.Vector3();
-		aag_.SndMsh[n] = new THREE.Object3D();
+		aag_.SmkMpP[n] = new Vector3();
+		aag_.SndMsh[n] = new Object3D();
 		aag_.SndFlg[n] = 1;
 		aag_.SndDTm[n] = 0;
 	}
