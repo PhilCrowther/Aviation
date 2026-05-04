@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 May 2026
+Version dated 4 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -501,15 +501,14 @@ function initAAGuns(aag_,air_,gen_) {
 		aag_.SmkMat[n].colorNode = color(0xffffff);
 		aag_.SmkMat[n].colorNode = texture(aag_.SmkMap);
 		aag_.SmkMat[n].transparent = true;
-		aag_.SmkMat[n].opacity = 1.0;
-//		aag_.SmkMat[n].depthTest = false;	// Same as volcano
+//		aag_.SmkMat[n].opacity = 1.0;
+		aag_.SmkMat[n].opacity = 0.0;		// prevent black square from appears in front of aircraft [260504]
 		aag_.SmkMat[n].depthWrite = false;
 		//	Smoke Sprite
 		aag_.SmkPtr[n] = new Sprite(aag_.SmkMat[n]);
 		aag_.SmkPtr[n].scale.set(100,100,100);	
 		gen_.scene.add(aag_.SmkPtr[n]);
 		aag_.SmkPtr[n].visible = false;		// hide it
-		aag_.SmkPtr[n].position.y = -1000;	// really hide it
 	} // end of n
 }
 
@@ -933,4 +932,5 @@ export {initFad2Blk,moveFad2Blk,
 251010:	Replace MakMsh with Object3D
 		Allow position and rotation of wak_
 251126:	Add scene to gen_
+260504:	Initialized aag_ opacity to "0", not "1" - prevents sprite from appearing in front of my airplane
 */
