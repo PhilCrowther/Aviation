@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 22 Apr 2026
+Version dated 4 May 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -89,12 +89,17 @@ import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) -------------------------------------
 import {loadAirExt,loadAirInt,moveAirObj,
-		loadSounds,moveSounds,playSounds,stopSounds,
+		loadMySong,moveMySong,playMySong,stopMySong,
 	} from "https://PhilCrowther.github.io/Aviation/jsm/AnimSF1.js";
 import {PointerLockControls,	// three.js modified
 		initCamera,moveCamera,	// camera
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
-import {initBullet,moveBullet} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+import {initBullet,moveBullet,	// My Airplane Bullets
+		initXACBul,moveXACBul,	// Other Airplane Bullets
+		initAAAGun,moveAAAGun,	// Fixed Guns
+		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
+		initAirSmk,initAirFyr,	// Air Smoke and Fire
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadGrdMat,initGrdMat,GrdMap,
 		initRoads,moveRoads,
@@ -281,7 +286,7 @@ let ImgSiz = 1024;
 //	Adjustments
 	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
 	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5000)];
-	mnt_.ObjGrp = [new THREE.Object3D]; // Group
+	mnt_.ObjGrp = [new THREE.Object3D()]; // Group
 	mnt_.MaxAni = gen_.MaxAni;
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
@@ -296,16 +301,16 @@ let ImgSiz = 1024;
 	xac_.MapPos = [new THREE.Vector3(100,110,1000),new THREE.Vector3(115,100,1025),new THREE.Vector3(85,100,1025),new THREE.Vector3(100,100,1000)]; // meters
 	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
 	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]; // not used
-	xac_.EngMsh = [new THREE.Object3D,new THREE.Object3D,new THREE.Object3D,new THREE.Object3D];
-	xac_.SndMsh = [new THREE.Object3D,new THREE.Object3D,new THREE.Object3D,new THREE.Object3D];
+	xac_.EngMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Engine Sound
+	xac_.SndMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Final Explosion Sound
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
 	air_.AirDat = data_;
 	air_.AirRot = new THREE.Euler();
-	air_.AirObj = new THREE.Object3D;
+	air_.AirObj = new THREE.Object3D();
 	air_.AirObj.rotation.order = "YXZ";
-	air_.AirPBY = new THREE.Object3D;
+	air_.AirPBY = new THREE.Object3D();
 	air_.AirPBY.rotation.order = "YXZ";
 	air_.AirObj.add(air_.AirPBY); // PBY includes air_.ACPadj
 	scene.add(air_.AirObj);		// Airplane
@@ -316,16 +321,8 @@ let ImgSiz = 1024;
 	air_.PYBmul = new THREE.Vector3().copy(PYBmul);
 	air_.InpKey = new THREE.Vector3();
 	air_.OldRot = new THREE.Euler();
-//-
+//- Adjustment
 	air_.GrdZed = -.25;
-
-//= GUNASG MODULE ==============//==============================================
-//	Adjustments
-	myg_.BulClr = new THREE.Vector2("red","black"); // Red
-	myg_.SndSrc = AirSrc + "sounds/" + "pup_gun.mp3", // File (my guns)
-	myg_.ObjNum = 2,			// Number of Barrels
-	myg_.ObjPos = [new THREE.Vector3(-0.14417,0.53409,1.25834),new THREE.Vector3(0.14417,0.53409,1.25834)]; // Position of Each Barrel
-	myg_.SndMsh = [new THREE.Object3D,new THREE.Object3D];
 
 //= ANIMATIONS =================//==============================================
 //- Instruments ----------------//----------------------------------------------
@@ -346,13 +343,56 @@ let gau_ = {
 		SpdPtr: 0,				// Pointer Address	
 	}
 
+//= GUNASG MODULE ==============//==============================================
+//- My Guns --------------------------------------------------------------------
+//	Adjustments
+	myg_.BulClr = new THREE.Vector2("red","black"); // Red
+	myg_.SndSrc = AirSrc + "sounds/" + "pup_gun.mp3", // File (my guns)
+	myg_.ObjNum = 2,			// Number of Barrels
+	myg_.ObjPos = [new THREE.Vector3(-0.14417,0.53409,1.25834),new THREE.Vector3(0.14417,0.53409,1.25834)]; // Position of Each Barrel
+	myg_.SndMsh = [new THREE.Object3D(),new THREE.Object3D()];
+//- Moving Airplanes -----------//----------------------------------------------
+//	General Format Adjustments
+//for (let n = 0; n < aaf_.ObjNum; n ++) {
+//	xag_.GunRot[n] = new THREE.Euler();  // Gun Rotation (degrees)
+//	xag_.GunPos[n] = new THREE.Vector3();
+//	xag_.SndMsh[n] = new THREE.Object3D();
+//}
+//	Specific Adjustments
+//	xag_.XACRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]];
+//	xag_.XACPos = [xsh_.MapPos[1],xsh_.MapPos[1]];
+//	xag_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
+//	xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
+//				   XPPath + "sounds/" + "fm2_gun.mp3",
+//				   XPPath + "sounds/" + "fm2_gun.mp3",
+//				   XPPath + "sounds/" + "fm2_gun.mp3"];
+//- Fixed Guns -----------------//----------------------------------------------
+//	General Format Adjustments
+for (let n = 0; n < aaf_.ObjNum; n ++) {
+	aaf_.XSHRot[n] = new THREE.Euler();
+	aaf_.XSHPos[n] = new THREE.Vector3();
+	aaf_.GunPtr[n] = new THREE.Object3D();
+	aaf_.SmkMpP[n] = new THREE.Vector3();
+	aaf_.SndMsh[n] = new THREE.Object3D();
+}
+//	Specific Adjustments
+	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
+	aaf_.GunPos = [new THREE.Vector3(-100,5,1000),new THREE.Vector3(100,5,1000)]; // Map Position
+	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
+//	Gun Y-Rotation
+let	AARYBg = [90,0];			// Starting Y-Rotation
+let	AARYDf = [0,0];				// Y-Rotation Adjustment
+//	Temp ###
+	aaf_.AAADLT= 0.5,			// Max Bullet Time in Flight
+//	aaf_.SmkDTm = [12,6];		// Not work
+
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
-	mys_.AirMsh = new THREE.Object3D;
+	mys_.AirMsh = new THREE.Object3D();
 
 //= CAMERA =====================//==============================================
 //- Create Internal Attach Point
-const CamPVC = new THREE.Object3D;
+const CamPVC = new THREE.Object3D();
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,0.7,0.125); // Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
@@ -362,12 +402,12 @@ const CamPVC = new THREE.Object3D;
 	cam_.SrcMMR = [new THREE.Vector3(80,0,0.5),new THREE.Vector3(45,110,0.5)]; // Rotate - min/max Lat/Lon,rspd			   
 	cam_.SrcPar = [air_.AirObj,CamPVC];
 //- Objects --------------------------------------------------------------------
-	cam_.MshRot = new THREE.Object3D;	// Camera Rotator
+	cam_.MshRot = new THREE.Object3D();	// Camera Rotator
 	cam_.MshRot.rotation.order = "YXZ";
 	cam_.MshRot.add(camera);	// Attach camera to rotator	
-	cam_.MshObj = new THREE.Object3D;
+	cam_.MshObj = new THREE.Object3D();
 	cam_.MshObj.rotation.order = "YXZ";
-	cam_.MshDeg = new THREE.Object3D;
+	cam_.MshDeg = new THREE.Object3D();
 	cam_.MshDeg.rotation.order = "YXZ";
 	cam_.MshObj.add(cam_.MshDeg);
 //- Adjustments ---------------------------------------------------------------
@@ -470,7 +510,7 @@ function rendAll() {
 		renderer.render(loadingScreen.scene,loadingScreen.camera);
 		return;					// Stop the function here.
 	}
-	if (controls.isLocked === true && !gen_.LodSnd) loadSounds(air_,mys_,myg_,gen_);
+	if (controls.isLocked === true && !gen_.LodSnd) loadSounds();
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
 		moveCamera(cam_,air_,key_,gen_,InpMos);
 		// Move Objects
@@ -483,12 +523,12 @@ function rendAll() {
 		moveTreLin(grd_,gen_,air_); // Move TreeLines	
 		moveObject();			// Move objects
 		// Other
-		moveSounds(air_,mys_,myg_);
+		moveSounds();
 		prntHUDval();			// change HUD value
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
 	}
 	if (controls.isLocked === false && gen_.LodSnd) {
-		stopSounds(mys_,myg_);
+		stopSounds();
 		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
 	renderer.render(scene,camera);
@@ -546,6 +586,7 @@ function initSkyBox() {
 //= LOAD OBJECTS ===============================================================
 
 function loadObject() {
+	loadShared();				// For FX (### Creates Shadow on Screen)
 	loadStatic();
 	loadMoving();
 }
@@ -556,6 +597,7 @@ function loadObject() {
 function initObject() {
 	initStatic();
 	initMoving();
+	initAAAGun(aaf_,txt_,air_,gen_);
 }
 
 //= MOVE OBJECTS ===============================================================
@@ -563,7 +605,17 @@ function initObject() {
 function moveObject() {
 	moveStatic();
 	moveMoving();
+	moveFxdGun();				// Perform Targeting
 }
+
+//- SHARED TEXTURES ------------//----------------------------------------------
+function loadShared() {
+	if (txt_.ObjNum) {
+		for (let n = 0; n < txt_.ObjNum; n++) {
+			txt_.ObjTxt[n] = txtrLoader.load(txt_.ObjSrc[n]);
+		}
+	}
+};
 
 //- STATIC OBJECTS -------------//----------------------------------------------
 
@@ -600,6 +652,20 @@ function moveMoving() {
 //- Animated Attachments -------//----------------------------------------------
 
 function moveAnmObj() {moveAnmFlg(flg_,tim_);}
+
+//- AAA Guns -------------------//----------------------------------------------
+
+function moveFxdGun() {
+	if (aaf_.ObjNum) {
+		for (let n = 0; n < aaf_.ObjNum; n ++) {
+			// Targeting - Adjust Gun Longitude
+			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
+			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
+			// Continuous Fire
+		}
+		moveAAAGun(aaf_,air_,gen_,tim_);
+	}
+}
 
 //= MOVING AIRPLANES ===========//==============================================
 
@@ -644,14 +710,14 @@ function moveMovPln() {
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 	}
 	// Test Enemy Airplene Only
-	let n = myg_.HitTgt;	
+//	let n = myg_.HitTgt;	
 	// Fire Guns Until End Sequence Starts
 //	if (!xac_.EndSeq[n]) moveXACGun(n); // Stop Firing
 	// If Enough Hits, Start Ending Sequence 
-	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
-		xac_.EndSeq[n] = xac_.EndTim;
-		xac_.HitCnt[n] = 0;		// Reset Hit Counter
-	}
+//	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
+//		xac_.EndSeq[n] = xac_.EndTim;
+//		xac_.HitCnt[n] = 0;		// Reset Hit Counter
+//	}
 }
 
 //= XAC GUNS ===================//==============================================
@@ -960,6 +1026,45 @@ function moveAirPln() {
 		if (Spd > 40) SpdD = Mod360(45+(Spd-40)*2.25);
 		gau_.SpdPtr.rotation.set(0,0,-SpdD*DegRad);
 	}
+}
+
+/*******************************************************************************
+*
+*	6. SOUNDS
+*
+*******************************************************************************/
+
+//= LOAD SOUNDS ================//==============================================
+
+function loadSounds() {
+	loadMySong(air_,mys_,myg_,gen_); // My Airplane Sounds
+	loadObjSnd(xac_,xag_,xsg_,aaf_,gen_); // Object Sounds 
+	gen_.LodSnd = 1;			//- Set Flag
+}
+
+//= MOVE SOUNDS ================//==============================================
+
+function moveSounds() {
+//	mys_.IdlFlg = 0;			// Default = Not Idling
+//	if (Throtl < .25) mys_.IdlFlg = 1; // If Idling
+	moveMySong(air_,mys_,myg_);	// My Airplane
+	moveObjSnd(xac_,xag_,xsg_,aaf_); // Objects
+}
+
+//= PLAY SOUNDS ================================================================
+
+function playSounds() {
+// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+	playMySong(mys_,myg_,gen_); // My Airplane
+	playObjSnd(xac_,xag_);		// Objects
+}
+
+//= STOP SOUNDS ================================================================
+
+function stopSounds() {
+// This leaves gen_.SndFlg = 0 and gen_.MYGFlg unchanged.
+	stopMySong(mys_,myg_);		// My Airplane
+	stopObjSnd(xac_,xag_,xsg_,aaf_); // Objects
 }
 
 /*******************************************************************************
