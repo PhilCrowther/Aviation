@@ -58,7 +58,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_SF1_land_gpu.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_SF1_land_gpu2.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/sf1/data/data.js"></script>
 
 <script type="importmap">
@@ -99,7 +99,7 @@ import {initBullet,moveBullet,	// My Airplane Bullets
 		initAAAGun,moveAAAGun,	// Fixed Guns
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initAirSmk,initAirFyr,	// Air Smoke and Fire
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects2.js"; // ### Use until update FM2 ocean
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadGrdMat,initGrdMat,GrdMap,
 		initRoads,moveRoads,
@@ -367,24 +367,37 @@ let gau_ = {
 //				   XPPath + "sounds/" + "fm2_gun.mp3",
 //				   XPPath + "sounds/" + "fm2_gun.mp3"];
 //- Fixed Guns -----------------//----------------------------------------------
+	aaf_.ObjNum = 2;
+	// Bullet Data
+	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
+	aaf_.AAADLT= 0.5;			// Max Bullet Time in Flight
+	aaf_.AAANum = 16;			// Number of Tracers
+	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
 //	General Format Adjustments
-for (let n = 0; n < aaf_.ObjNum; n ++) {
-	aaf_.XSHRot[n] = new THREE.Euler();
-	aaf_.XSHPos[n] = new THREE.Vector3();
-	aaf_.GunPtr[n] = new THREE.Object3D();
-	aaf_.SmkMpP[n] = new THREE.Vector3();
-	aaf_.SndMsh[n] = new THREE.Object3D();
-}
+//for (let n = 0; n < aaf_.ObjNum; n ++) {
+//	aaf_.XSHRot[n] = new THREE.Euler();
+//	aaf_.XSHPos[n] = new THREE.Vector3();
+//	aaf_.GunPtr[n] = new THREE.Object3D();
+//	aaf_.AAAFlg[n] = 1;			// Gun Firing
+//	aaf_.AAASp2[n] = 1;			// Bullet Spacing - time remaining
+//	aaf_.SmkFlg[n] = 0;
+//	aaf_.SmkMpP[n] = new THREE.Vector3();
+//	aaf_.SndMsh[n] = new THREE.Object3D();
+//	aaf_.SndFlg[n] = 1;
+//	aaf_.SndDTm[n] = 0;
+//}
 //	Specific Adjustments
-	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
-	aaf_.GunPos = [new THREE.Vector3(-100,5,1000),new THREE.Vector3(100,5,1000)]; // Map Position
+	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(45,90,0)]; // Gun Rotation (degrees)
+	aaf_.GunPos = [new THREE.Vector3(100,5,1100),new THREE.Vector3(100,5,1000)]; // Map Position
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
+	aaf_.SmkRot = [0,165];
+	aaf_.SmkDMx = [12,11];
+	aaf_.SmkDTm = [0,6];
 //	Gun Y-Rotation
-let	AARYBg = [90,0];			// Starting Y-Rotation
+let	AARYBg = [90,90];			// Starting Y-Rotation
 let	AARYDf = [0,0];				// Y-Rotation Adjustment
 //	Temp ###
-	aaf_.AAADLT= 0.5,			// Max Bullet Time in Flight
-//	aaf_.SmkDTm = [12,6];		// Not work
+
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
