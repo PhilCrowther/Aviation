@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260503
+*	FSIM SF1 DATA: 260504
 *
 *********************************************************************************
 
@@ -540,7 +540,7 @@ let aaf_ = {
 		SmkMat: [0,0],			// Smoke Material
 		SmkPtr: [0,0],			// Smoke Sprite
 		SmkRot: [0,165],		// Z-rotation of smoke
-		SmkMpP: [0,0],			 // Map Position (Vector3)
+		SmkMpP: [0,0],			// Map Position (Vector3)
 		SmkDMx: [12,11],		// Delay between Smoke events (secs)
 		SmkDTm: [0,6],			// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
