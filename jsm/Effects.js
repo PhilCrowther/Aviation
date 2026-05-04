@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 Feb 2026
+Version dated 3 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -508,7 +508,8 @@ function initAAGuns(aag_,air_,gen_) {
 		aag_.SmkPtr[n] = new Sprite(aag_.SmkMat[n]);
 		aag_.SmkPtr[n].scale.set(100,100,100);	
 		gen_.scene.add(aag_.SmkPtr[n]);
-		aag_.SmkPtr[n].visible = false;
+		aag_.SmkPtr[n].visible = false;		// hide it
+		aag_.SmkPtr[n].position.y = -1000;	// really hide it
 	} // end of n
 }
 
