@@ -529,11 +529,11 @@ let aaf_ = {
 		// Bullet Colors and Opacity
 		AAACol: 0,				// Green-Blue (Vector2)
 		AAAOpa: 0.5,			// Opacity
-		// Bullets for each gun
-		AAAPtr: [[],[]],		// Bullet Objects
-		AAAMpS: [[],[]],		// Bullet Map Speed (Vector3)
-		AAAMpP: [[],[]],		// Bullet Map Position (Vector3)	
-		AAATim: [[],[]],		// Bullet Time in flight
+		// Bullets for each gun (max 10 guns)
+		AAAPtr: [[],[],[],[],[],[],[],[],[],[]], // Bullet Objects
+		AAAMpS: [[],[],[],[],[],[],[],[],[],[]], // Bullet Map Speed (Vector3)
+		AAAMpP: [[],[],[],[],[],[],[],[],[],[]], // Bullet Map Position (Vector3)	
+		AAATim: [[],[],[],[],[],[],[],[],[],[]], // Bullet Time in flight
 		// Smoke
 		SmkFlg: [],				// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
