@@ -536,9 +536,10 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 	let AAASV3 = new Vector3();
 	let	AAASpT = aag_.AAASpd * tim_.DLTime;
 	for (let n = 0; n < aag_.ObjNum; n ++) {
-		// Combined Rotation and Map Position of Parent plus Gun
+		// Combined Rotation and Map Position of Ship plus Gun
 		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]); // Use XSHRot since bullets not linked
 		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]); // Use XSHPos since bullets not linked
+		MapRot.y = Mod360(-MapRot.y);
 		// Update Gun Object Rotation (for show only)
 		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
 		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
