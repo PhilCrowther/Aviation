@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 16 Apr 2026
+Version dated 4 May 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -530,7 +530,7 @@ let boxrot = 0;
 	myg_.SndMsh = [new THREE.Object3D,new THREE.Object3D];
 //- Moving Airplanes -----------//----------------------------------------------
 //	General Format Adjustments
-for (let n = 0; n < aaf_.ObjNum; n ++) {
+for (let n = 0; n < xag_.ObjNum; n ++) {
 	xag_.GunRot[n] = new THREE.Euler();  // Gun Rotation (degrees)
 	xag_.GunPos[n] = new THREE.Vector3();
 	xag_.SndMsh[n] = new THREE.Object3D;
@@ -555,18 +555,19 @@ for (let n = 0; n < xsg_.ObjNum; n ++) {
 	xsg_.GunPos = [new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0)]; // Map Position
 	xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red	
 //- Fixed Guns -----------------//----------------------------------------------
-//	General Format Adjustments
-for (let n = 0; n < aaf_.ObjNum; n ++) {
-	aaf_.XSHRot[n] = new THREE.Euler();
-	aaf_.XSHPos[n] = new THREE.Vector3();
-	aaf_.GunPtr[n] = new THREE.Object3D;
-	aaf_.SmkMpP[n] = new THREE.Vector3();
-	aaf_.SndMsh[n] = new THREE.Object3D;
-}
+	aaf_.ObjNum = 2;
+	// Bullet Data
+	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
+	aaf_.AAADLT= 0.5;			// Max Bullet Time in Flight
+	aaf_.AAANum = 16;			// Number of Tracers
+	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
 //	Specific Adjustments
 	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
 	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
+	aaf_.SmkRot = [0,165];
+	aaf_.SmkDMx = [12,11];
+	aaf_.SmkDTm = [0,6];
 //	Gun Y-Rotation
 let	AARYBg = [90,0];			// Starting Y-Rotation
 let	AARYDf = [0,0];				// Y-Rotation Adjustment		
