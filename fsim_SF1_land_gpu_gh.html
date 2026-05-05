@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 May 2026
+Version dated 5 May 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -367,22 +367,28 @@ let gau_ = {
 //				   XPPath + "sounds/" + "fm2_gun.mp3",
 //				   XPPath + "sounds/" + "fm2_gun.mp3"];
 //- Fixed Guns -----------------//----------------------------------------------
-	aaf_.ObjNum = 2;
+	aaf_.ObjNum = 4;
 	// Bullet Data
 	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
 	aaf_.AAADLT= 0.5;			// Max Bullet Time in Flight
 	aaf_.AAANum = 16;			// Number of Tracers
 	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
-//	Specific Adjustments
-	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(45,90,0)]; // Gun Rotation (degrees)
-	aaf_.GunPos = [new THREE.Vector3(100,5,1100),new THREE.Vector3(100,5,1000)]; // Map Position
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
-	aaf_.SmkRot = [0,165];
-	aaf_.SmkDMx = [12,11];
-	aaf_.SmkDTm = [0,6];
+//	Specific Adjustments
+	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(45,90,0), // Gun Rotation (degrees)
+				   new THREE.Euler(45,90,0),new THREE.Euler(45,90,0)];
+	aaf_.GunPos = [new THREE.Vector3(100,5,1100),new THREE.Vector3(100,5,1000), // Map Position
+				   new THREE.Vector3(100,5,900),new THREE.Vector3(100,5,800)];
+	aaf_.AAAPtr = [[],[],[],[]]; // Bullet Objects
+	aaf_.AAAMpS = [[],[],[],[]]; // Bullet Map Speed (Vector3)
+	aaf_.AAAMpP = [[],[],[],[]]; // Bullet Map Position (Vector3)	
+	aaf_.AAATim = [[],[],[],[]]; // Bullet Time in flight
+	aaf_.SmkRot = [0,165,0,165];
+	aaf_.SmkDMx = [12,11,12,11];
+	aaf_.SmkDTm = [0,6,0,6];
 //	Gun Y-Rotation
-let	AARYBg = [90,90];			// Starting Y-Rotation
-let	AARYDf = [0,0];				// Y-Rotation Adjustment
+let	AARYBg = [90,90,90,90];		// Starting Y-Rotation
+let	AARYDf = [0,0,0,0];			// Y-Rotation Adjustment
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
