@@ -375,19 +375,19 @@ let gau_ = {
 	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
 //	Specific Adjustments
-	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(45,90,0), // Gun Rotation (degrees)
-				   new THREE.Euler(45,90,0),new THREE.Euler(45,90,0)];
-	aaf_.GunPos = [new THREE.Vector3(100,5,1100),new THREE.Vector3(100,5,1000), // Map Position
-				   new THREE.Vector3(100,5,900),new THREE.Vector3(100,5,800)];
+	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(45,180,0), // Gun Rotation (degrees)
+				   new THREE.Euler(45,45,0),new THREE.Euler(45,315,0)];
+	aaf_.GunPos = [new THREE.Vector3(-1207,5,1207),new THREE.Vector3(402,5,1207), // Map Position
+				   new THREE.Vector3(-1207,5,402),new THREE.Vector3(402,5,402)];
 	aaf_.AAAPtr = [[],[],[],[]]; // Bullet Objects
 	aaf_.AAAMpS = [[],[],[],[]]; // Bullet Map Speed (Vector3)
 	aaf_.AAAMpP = [[],[],[],[]]; // Bullet Map Position (Vector3)	
 	aaf_.AAATim = [[],[],[],[]]; // Bullet Time in flight
-	aaf_.SmkRot = [0,165,0,165];
-	aaf_.SmkDMx = [12,11,12,11];
-	aaf_.SmkDTm = [0,6,0,6];
+	aaf_.SmkRot = [0,165,330,210]; // Z-rotation of smoke
+	aaf_.SmkDMx = [12,11,12,11]; // Delay between Smoke events - seconds
+	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
 //	Gun Y-Rotation
-let	AARYBg = [90,90,90,90];		// Starting Y-Rotation
+let	AARYBg = [90,180,45,315];	// Starting Y-Rotation
 let	AARYDf = [0,0,0,0];			// Y-Rotation Adjustment
 
 //=	MY SOUNDS ==================//==============================================
