@@ -527,16 +527,16 @@ let aaf_ = {
 		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) (e.g. 1)
 		AAASp2: [],				// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
-		AAACol: 0,				// Green-Blue (Vector2)
-		AAAOpa: 0.5,			// Opacity
-		// Bullets for each gun (max 10 guns)
-		AAAPtr: [[],[],[],[],[],[],[],[],[],[]], // Bullet Objects
-		AAAMpS: [[],[],[],[],[],[],[],[],[],[]], // Bullet Map Speed (Vector3)
-		AAAMpP: [[],[],[],[],[],[],[],[],[],[]], // Bullet Map Position (Vector3)	
-		AAATim: [[],[],[],[],[],[],[],[],[],[]], // Bullet Time in flight
+		AAACol: 0,				// Colors (Vector2)
+		AAAOpa: 0.5,			// Starting Opacity
+		// Bullets for each gun (array with sub-array defined in main program)
+		AAAPtr: 0,				// Bullet Objects
+		AAAMpS: 0,				// Bullet Map Speed (Vector3)
+		AAAMpP: 0,				// Bullet Map Position (Vector3)	
+		AAATim: 0,				// Bullet Time in flight
 		// Smoke
 		SmkFlg: [],				// 1 = Start Smoke
-		SmkMap: 2,				// Shared Texture Reference Number
+		SmkMap: 2,				// Shared Texture Reference Number - default
 		SmkMat: [],				// Smoke Material
 		SmkPtr: [],				// Smoke Sprite
 		SmkRot: [],				// Z-rotation of smoke
@@ -548,7 +548,7 @@ let aaf_ = {
 		SndFlg: [],				// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [],
-		SndVol: 15,				// Volume
+		SndVol: 15,				// Volume - default
 		SndMsh: [],				// (Object3D)
 		SndDTm: [],
 		// Explosion
