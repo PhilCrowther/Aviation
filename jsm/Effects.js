@@ -947,4 +947,5 @@ export {initFad2Blk,moveFad2Blk,
 		Allow position and rotation of wak_
 251126:	Add scene to gen_
 260504:	Initialized aag_ opacity to "0", not "1" - prevents sprite from appearing in front of my airplane
+260504: Initialize most aag_ values to allow easier expansion of number of AA guns
 */
