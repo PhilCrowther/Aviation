@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260506
+*	FSIM FM2 DATA: 260418
 *
 ********************************************************************************
 
@@ -862,6 +862,7 @@ let aaf_ = {
 		// Bullet Data
 		AAAFlg: [1,1],			// 1 = Gun Firing
 		AAASpd: 850,			// Muzzle Velocity (mps)
+		AAADLT: 4.0,			// Max Bullet Time in Flight
 		AAANum: 16,				// Number of Tracers
 		AAASpc: 1,				// Bullet Spacing (4*BulDLT/BulNum)
 		AAASp2: [1,1],			// Bullet Spacing - time remaining
@@ -873,7 +874,6 @@ let aaf_ = {
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
 		AAATim: [[],[]],		// Bullet Time in flight
-		BulMax: [],				// Max = seconds (0-10) or meters (>10)
 		// Smoke
 		SmkFlg: [0,0],			// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
