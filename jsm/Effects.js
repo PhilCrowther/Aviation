@@ -572,20 +572,13 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 				// End Smoke When Bullet0 Begins
 				if (!i) aag_.SmkPtr[n].visible = false;
 			}
+			// Stop Bullets (use Max Altitude or Max Time)
+			aag_.AAATim[n][i] = aag_.AAATim[n][i] + tim_.DLTime; // Time in Flight
+			if (aag_.BulMax[n] > 10) {	// If Altitude Limit
+				if (aag_.AAAPtr[n][i].position.y > aag_.BulMax[n]) stopBullet(n,i);
+			}
+			else if (aag_.AAATim[n][i] > aag_.BulMax[n]) stopBullet(n,i);
 			// Continue Bullets
-
-			// Stop (use Max Altitude or Max Time)
-			if (aag_.MaxAlt[n]) {	// If Altitude Limit
-				if (aag_.AAAPtr[n][i].position.y > aag_.MaxAlt[n]) stopBullet(n,i);
-			}
-			else {					// If Time Limit
-				aag_.AAATim[n][i] = aag_.AAATim[n][i] + tim_.DLTime;
-				if (aag_.AAATim[n][i] > aag_.MaxTim[n]) {
-					aag_.AAATim[n][i] = 0;
-					stopBullet(n,i);
-				}
-			}
-			// Continue
 			else {
 				// Speed lost due to Drag (approx)
 				aag_.AAAMpS[n][i].multiplyScalar(.995);
@@ -618,6 +611,7 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 }
 
 function stopBullet(n,i) {
+	aag_.AAATim[n][i] = 0;
 	aag_.AAAPtr[n][i].visible = false;	
 	// Start Smoke When Designated Bullet Stops
 	if (!aag_.SmkDTm[n]) { // Smoke Delay = 0
