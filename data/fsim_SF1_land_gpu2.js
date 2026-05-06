@@ -521,14 +521,14 @@ let aaf_ = {
 		GunPos: [],				// Map Position (Vector3)
 		// Bullet Data
 		AAAFlg: [],				// 1 = Gun Firing
-		AAASpd: 0,				// Muzzle Velocity - mps (e.g. 850)
+		AAASpd: 0,				// Muzzle Velocity (mps) e.g. 850
 		AAANum: 0,				// Number of Tracers (e.g. 16)
 		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) (e.g. 1)
 		AAASp2: [],				// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
-		AAACol: 0,				// Colors (Vector2)
+		AAACol: 0,				// Green-Blue (Vector2)
 		AAAOpa: 0.5,			// Starting Opacity
-		// Bullets for each gun (array with sub-array defined in main program)
+		// Bullets for each gun
 		AAAPtr: 0,				// Bullet Objects
 		AAAMpS: 0,				// Bullet Map Speed (Vector3)
 		AAAMpP: 0,				// Bullet Map Position (Vector3)	
@@ -541,7 +541,7 @@ let aaf_ = {
 		SmkPtr: [],				// Smoke Sprite
 		SmkRot: [],				// Z-rotation of smoke
 		SmkMpP: [],				// Map Position (Vector3)
-		SmkDMx: [],				// Delay between Smoke events - seconds
+		SmkDMx: [],				// Delay between Smoke events (secs)
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
@@ -558,6 +558,7 @@ let aaf_ = {
 	};
 
 //=	MY SOUNDS ==================//==============================================
+//- My Engine Sounds -----------//----------------------------------------------
 let mys_ = {
 		AirMsh:	0,				// For Engine and Prop
 		// Engine Sound - Idle
