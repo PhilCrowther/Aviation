@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 May 2026
+Version dated 6 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -576,8 +576,8 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 			aag_.AAATim[n][i] = aag_.AAATim[n][i] + tim_.DLTime;
 			// Stop
 			if (
-				(aag_.AAADLT < 10 && aag_.AAATim[n][i] > aag_.AAADLT) ||	// Time Limit
-				(aag_.AAADLT > 10 && aag_.AAAMpP[n][i].y > aag_.AAADLT)		// Altitude Limit
+				(aag_.AAADLT < 10 && aag_.AAATim[n][i] > aag_.AAADLT) ||	// Time Limit (1 to 9 secs)
+				(aag_.AAADLT > 10 && aag_.AAAMpP[n][i].y > aag_.AAADLT)		// Altitude Limit (> 10  meters)
 			){
 				aag_.AAATim[n][i] = 0;
 				aag_.AAAPtr[n][i].visible = false;	
@@ -952,4 +952,5 @@ export {initFad2Blk,moveFad2Blk,
 251126:	Add scene to gen_
 260504:	Initialized aag_ opacity to "0", not "1" - prevents sprite from appearing in front of my airplane
 260504: Initialize most aag_ values to allow easier expansion of number of AA guns
+260506: Allow Bullet Life to be limited by Altitude instead of Time.  Time values are 1 to < 10 secs.  Altitude values are > 10 meters.
 */
