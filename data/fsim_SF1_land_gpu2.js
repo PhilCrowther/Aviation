@@ -511,23 +511,20 @@ let xsg_ = {
 //- Fixed Guns -----------------//----------------------------------------------
 //	Same variable used for Ship Guns
 let aaf_ = {
-		ObjNum: 2,
-		// Parent (use this instead of link because bullets not attached)
-		XSHRot: [],				// Euler
-		XSHPos: [],				// Vector3
+		ObjNum: 2,				// Number of Guns
 		// Gun Object
 		GunPtr: [],				// Gun Object (Object3D)
 		GunRot: [],				// Gun Rotation - degrees (Euler)
-		GunPos: [],				// Map Position (Vector3)
+		GunPos: [],				// Relative Map Position (Vector3)
 		// Bullet Data
 		AAAFlg: [],				// 1 = Gun Firing
 		AAASpd: 0,				// Muzzle Velocity (mps) e.g. 850
-		AAANum: 0,				// Number of Tracers (e.g. 16)
-		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) (e.g. 1)
+		AAANum: 0,				// Number of Tracers - e.g. 16
+		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) e.g. 1
 		AAASp2: [],				// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
-		AAACol: 0,				// Green-Blue (Vector2)
-		AAAOpa: 0.5,			// Starting Opacity
+		AAACol: 0,				// Colors (Vector2)
+		AAAOpa: 0.5,			// Opacity
 		// Bullets for each gun
 		AAAPtr: 0,				// Bullet Objects
 		AAAMpS: 0,				// Bullet Map Speed (Vector3)
@@ -541,7 +538,7 @@ let aaf_ = {
 		SmkPtr: [],				// Smoke Sprite
 		SmkRot: [],				// Z-rotation of smoke
 		SmkMpP: [],				// Map Position (Vector3)
-		SmkDMx: [],				// Delay between Smoke events (secs)
+		SmkDMx: [],				// Delay between Smoke events - sec
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
@@ -551,10 +548,17 @@ let aaf_ = {
 		SndVol: 15,				// Volume - default
 		SndMsh: [],				// (Object3D)
 		SndDTm: [],
-		// Explosion
+		// Exploding Center
 		ExpPtr: [],				// Pointer to Exploding Center
 		ExpSiz: [],				// Expanding Size
-		ExpLif: [],				// Life of Explosion (seconds)	
+		ExpLif: [],				// Life of Explosion - sec
+		// Timer (Used by Ship) 
+		TimMax: [0,1200,0],		// Time On (frames)
+		TimMin: [0,-1200,0],	// Time Off (frames)
+		TimFlg: [0,1200,0],		// Timer (pos = On, neg = Off)
+		// Ship Info (use this instead of link because bullets not attached)
+		XSHRot: [],				// Parent Ship Rotation
+		XSHPos: [],				// Parent Ship Position
 	};
 
 //=	MY SOUNDS ==================//==============================================

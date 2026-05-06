@@ -798,76 +798,72 @@ let xag_ = {
 //	Same variable used for Fixed Guns
 let xsg_ = {
 		ObjNum: 3,				// Number of guns
-		// Parent (use this instead of link because bullets not attached)
-		XSHRot: [0,0,0],		// Fletcher
-		XSHPos: [0,0,0],
 		// Gun Object
-		GunPtr: [0,0,0],		// Gun Object (makMsh)
-		GunRot: [0,0,0],		// Gun Rotation (Euler - degrees)
-		GunPos: [0,0,0],		// Relative Map Position (Vector3) [used by Mesh]
+		GunPtr: [],				// Gun Object (Object3D)
+		GunRot: [],				// Gun Rotation - degrees (Euler)
+		GunPos: [],				// Relative Map Position (Vector3)
 		// Bullet Data
-		AAAFlg: [0,0,0],		// 1 = Guns Firing
-		AAASpd: 850,			// Muzzle Velocity (mps)
-		AAANum: 16,				// Number of Tracers
-		AAASpc: 1,				// Bullet Spacing (4*BulDLT/BulNum)
-		AAASp2: [1,1,1],		// Bullet Spacing - time remaining	 
+		AAAFlg: [],				// 1 = Gun Firing
+		AAASpd: 0,				// Muzzle Velocity (mps) e.g. 850
+		AAANum: 0,				// Number of Tracers - e.g. 16
+		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) e.g. 1
+		AAASp2: [],				// Bullet Spacing - time remaining	 
 		// Bullet Colors and Opacity
-		AAACol: 0,				// Red (Vector2)
-		AAAOpa: 0.4,			// Opacity
+		AAACol: 0,				// Colors (Vector2)
+		AAAOpa: 0.5,			// Opacity
 		// Bullets for each gun		
 		AAAPtr: 0,				// Bullet Objects
-		AAAMpS: 0,				// Bullet Map Speed (V3)
-		AAAMpP: 0,				// Bullet Map Position (V3)
+		AAAMpS: 0,				// Bullet Map Speed (Vector3)
+		AAAMpP: 0,				// Bullet Map Position (Vector3)
 		AAATim: 0,				// Bullet Time in Flight
 		BulMax: [], 			// Max Altitude (meters)
 		// Smoke
 		SmkFlg: [],				// 1 = Start Smoke
-		SmkMap: 2,				// Shared Texture Reference Number
+		SmkMap: 2,				// Shared Texture Reference Number - default
 		SmkMat: [],				// Smoke Material
 		SmkPtr: [],				// Smoke Sprite
 		SmkRot: [],				// Z-rotation of smoke
 		SmkMpP: [],				// Map Position (Vector3)
-		SmkDMx: [],				// Delay between Smoke events (secs)
+		SmkDMx: [],				// Delay between Smoke events - sec
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
-		SndFlg: [],				// 1 = Explosion
+		SndFlg: [],				// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [],
-		SndVol: 15,				// Volume
-		SndMsh: [],				// Sound Mesh (makMsh())
+		SndVol: 15,				// Volume - default
+		SndMsh: [],				// (Object3D)
 		SndDTm: [],
 		// Exploding Center
 		ExpPtr: [],				// Pointer to Exploding Center
 		ExpSiz: [],				// Expanding Size
-		ExpLif: [],				// Life of Explosion (seconds)
-		// Timer
+		ExpLif: [],				// Life of Explosion - sec
+		// Timer (Used by Ship)
 		TimMax: [0,1200,0],		// Time On (frames)
 		TimMin: [0,-1200,0],	// Time Off (frames)
 		TimFlg: [0,1200,0],		// Timer (pos = On, neg = Off)
+		// Ship Only (use this instead of link because bullets not attached)
+		XSHRot: [],				// Parent Ship Rotation
+		XSHPos: [],				// Parent Ship Position
 	};
-
 
 //- Fixed Guns -----------------//----------------------------------------------
 //	Same variable used for Ship Guns
 let aaf_ = {
-		ObjNum: 2,
-		// Parent (use this instead of link because bullets not attached)
-		XSHRot: [],				// Euler
-		XSHPos: [],				// Vector3
+		ObjNum: 2,				// Number of Guns
 		// Gun Object
 		GunPtr: [],				// Gun Object (Object3D)
 		GunRot: [],				// Gun Rotation - degrees (Euler)
-		GunPos: [],				// Map Position (Vector3)
+		GunPos: [],				// Relative Map Position (Vector3)
 		// Bullet Data
 		AAAFlg: [],				// 1 = Gun Firing
 		AAASpd: 0,				// Muzzle Velocity (mps) e.g. 850
-		AAANum: 0,				// Number of Tracers (e.g. 16)
-		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) (e.g. 1)
+		AAANum: 0,				// Number of Tracers - e.g. 16
+		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) e.g. 1
 		AAASp2: [],				// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
-		AAACol: 0,				// Green-Blue (Vector2)
-		AAAOpa: 0.5,			// Starting Opacity
+		AAACol: 0,				// Colors (Vector2)
+		AAAOpa: 0.5,			// Opacity
 		// Bullets for each gun
 		AAAPtr: 0,				// Bullet Objects
 		AAAMpS: 0,				// Bullet Map Speed (Vector3)
@@ -881,7 +877,7 @@ let aaf_ = {
 		SmkPtr: [],				// Smoke Sprite
 		SmkRot: [],				// Z-rotation of smoke
 		SmkMpP: [],				// Map Position (Vector3)
-		SmkDMx: [],				// Delay between Smoke events (secs)
+		SmkDMx: [],				// Delay between Smoke events - sec
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
@@ -891,14 +887,17 @@ let aaf_ = {
 		SndVol: 15,				// Volume - default
 		SndMsh: [],				// (Object3D)
 		SndDTm: [],
-		// Explosion
+		// Exploding Center
 		ExpPtr: [],				// Pointer to Exploding Center
 		ExpSiz: [],				// Expanding Size
-		ExpLif: [],				// Life of Explosion (seconds)
-		// Timer 
+		ExpLif: [],				// Life of Explosion - sec
+		// Timer (Used by Ship) 
 		TimMax: [0,1200,0],		// Time On (frames)
 		TimMin: [0,-1200,0],	// Time Off (frames)
 		TimFlg: [0,1200,0],		// Timer (pos = On, neg = Off)
+		// Ship Info (use this instead of link because bullets not attached)
+		XSHRot: [],				// Parent Ship Rotation
+		XSHPos: [],				// Parent Ship Position
 	};
 
 //- 6. SOUND VARIABLES =========//==============================================
