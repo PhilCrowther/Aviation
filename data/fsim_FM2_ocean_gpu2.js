@@ -872,8 +872,8 @@ let aaf_ = {
 		AAAPtr: [[],[]],		// Bullet Objects
 		AAAMpS: [[0],[0]],		// Bullet Map Speed (V3)
 		AAAMpP: [[0],[0]],		// Bullet Map Position (V3)	
-		AAATim: [[],[]],		// Bullet Time in flight
-		BulMax: [],				// Max = seconds (0-10) or meters (>10)
+		AAATim: 0,				// Bullet Time in flight
+		BulMax: [],				// Max Altitude (meters)
 		// Smoke
 		SmkFlg: [0,0],			// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
