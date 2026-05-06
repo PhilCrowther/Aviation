@@ -353,7 +353,7 @@ let gau_ = {
 	myg_.SndMsh = [new THREE.Object3D(),new THREE.Object3D()];
 //- Moving Airplanes -----------//----------------------------------------------
 //	General Format Adjustments
-//for (let n = 0; n < xag_.ObjNum; n ++) {
+//for (let n = 0; n < aaf_.ObjNum; n ++) {
 //	xag_.GunRot[n] = new THREE.Euler();  // Gun Rotation (degrees)
 //	xag_.GunPos[n] = new THREE.Vector3();
 //	xag_.SndMsh[n] = new THREE.Object3D();
@@ -369,9 +369,10 @@ let gau_ = {
 //- Fixed Guns -----------------//----------------------------------------------
 	aaf_.ObjNum = 4;
 	// Bullet Data
-	aaf_.AAASpd = 650;			// Muzzle Velocity - mps (WWI: 550 to 760+)
+	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
+	aaf_.AAADLT= 0.5;			// Max Bullet Time in Flight
 	aaf_.AAANum = 16;			// Number of Tracers
-	aaf_.AAASpc = 1;			// Bullet Spacing (4*MaxTim/BulNum)
+	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
 //	Specific Adjustments
 	aaf_.GunRot = [new THREE.Euler(45,90,0),new THREE.Euler(45,180,0), // Gun Rotation (degrees)
@@ -382,7 +383,6 @@ let gau_ = {
 	aaf_.AAAMpS = [[],[],[],[]]; // Bullet Map Speed (Vector3)
 	aaf_.AAAMpP = [[],[],[],[]]; // Bullet Map Position (Vector3)	
 	aaf_.AAATim = [[],[],[],[]]; // Bullet Time in flight
-	aaf_.BulMax = [500,500,500,500]; // Max = seconds (0-10) or meters (>10)
 	aaf_.SmkRot = [0,165,330,210]; // Z-rotation of smoke
 	aaf_.SmkDMx = [12,11,12,11]; // Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
