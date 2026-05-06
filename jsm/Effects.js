@@ -573,19 +573,16 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 				if (!i) aag_.SmkPtr[n].visible = false;
 			}
 			// Continue Bullets
-			aag_.AAATim[n][i] = aag_.AAATim[n][i] + tim_.DLTime;
-			// Stop
-			if (aag_.AAATim[n][i] > aag_.AAADLT) {
-				aag_.AAATim[n][i] = 0;
-				aag_.AAAPtr[n][i].visible = false;	
-				// Start Smoke When Designated Bullet Stops
-				if (!aag_.SmkDTm[n]) { // Smoke Delay = 0
-					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
-					aag_.SmkPtr[n].visible = true;
-					aag_.SmkMat[n].opacity = 1.0;
-					aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
-					aag_.SmkDTm[n] = aag_.SmkDMx[n]; // Reset Delay Timer
-					aag_.SmkFlg[n] = 1 // Smoke Flag On (Used to Start Sound)
+
+			// Stop (use Max Altitude or Max Time)
+			if (aag_.MaxAlt[n]) {	// If Altitude Limit
+				if (aag_.AAAPtr[n][i].position.y > aag_.MaxAlt[n]) stopBullet(n,i);
+			}
+			else {					// If Time Limit
+				aag_.AAATim[n][i] = aag_.AAATim[n][i] + tim_.DLTime;
+				if (aag_.AAATim[n][i] > aag_.MaxTim[n]) {
+					aag_.AAATim[n][i] = 0;
+					stopBullet(n,i);
 				}
 			}
 			// Continue
@@ -618,6 +615,19 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 		if (aag_.SmkDTm[n] > 0) aag_.SmkDTm[n] = aag_.SmkDTm[n] - tim_.DLTime;
 		if (aag_.SmkDTm[n] < 0) aag_.SmkDTm[n] = 0;
 	} // end of n
+}
+
+function stopBullet(n,i) {
+	aag_.AAAPtr[n][i].visible = false;	
+	// Start Smoke When Designated Bullet Stops
+	if (!aag_.SmkDTm[n]) { // Smoke Delay = 0
+		aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
+		aag_.SmkPtr[n].visible = true;
+		aag_.SmkMat[n].opacity = 1.0;
+		aag_.SmkRot[n] = Mod360(aag_.SmkRot[n] + 163); // Change appearance
+		aag_.SmkDTm[n] = aag_.SmkDMx[n]; // Reset Delay Timer
+		aag_.SmkFlg[n] = 1 // Smoke Flag On (Used to Start Sound)
+	}
 }
 
 /*******************************************************************************
