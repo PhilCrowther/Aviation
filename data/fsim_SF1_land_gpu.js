@@ -533,8 +533,7 @@ let aaf_ = {
 		AAAMpS: 0,				// Bullet Map Speed (Vector3)
 		AAAMpP: 0,				// Bullet Map Position (Vector3)	
 		AAATim: 0,				// Bullet Time in flight
-		MaxTim: [],				// Max Time for Bullets in Each Gun
-		MaxAlt: [],				// Max Alt for Bullets in Each Gun
+		BulMax: [],				// Max = seconds (0-10) or meters (>10)
 		// Smoke
 		SmkFlg: [],				// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number - default
