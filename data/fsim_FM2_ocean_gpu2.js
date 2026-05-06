@@ -815,35 +815,35 @@ let xsg_ = {
 		AAACol: 0,				// Red (Vector2)
 		AAAOpa: 0.4,			// Opacity
 		// Bullets for each gun		
-		AAAPtr: [[],[],[]],		// Bullet Objects
-		AAAMpS: [[0],[0],[0]],	// Bullet Map Speed (V3)
-		AAAMpP: [[0],[0],[0]],	// Bullet Map Position (V3)
-		AAATim: [[],[],[]],		// Bullet Time in Flight
-		BulMax: [1000,1000,1000], // Max Altitude (meters)
+		AAAPtr: 0,				// Bullet Objects
+		AAAMpS: 0,				// Bullet Map Speed (V3)
+		AAAMpP: 0,				// Bullet Map Position (V3)
+		AAATim: 0,				// Bullet Time in Flight
+		BulMax: [], 			// Max Altitude (meters)
 		// Smoke
-		SmkFlg: [0,0,0],		// 1 = Start Smoke
+		SmkFlg: [],				// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
-		SmkMat: [0,0,0],		// Smoke Material
-		SmkPtr: [0,0,0],		// Smoke Sprite
-		SmkRot: [0,165,0],		// Z-rotation of smoke
-		SmkMpP: [0,0,0],		// Map Position (Vector3)
-		SmkDMx: [12,14,12],		// Delay between Smoke events (secs)
-		SmkDTm: [0,7,0],		// Delay Counter
+		SmkMat: [],				// Smoke Material
+		SmkPtr: [],				// Smoke Sprite
+		SmkRot: [],				// Z-rotation of smoke
+		SmkMpP: [],				// Map Position (Vector3)
+		SmkDMx: [],				// Delay between Smoke events (secs)
+		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
-		SndFlg: [0,1,0],		// 1 = Explosion
+		SndFlg: [],				// 1 = Explosion
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [0,0,0],
+		SndPtr: [],
 		SndVol: 15,				// Volume
-		SndMsh: [0,0,0],		// Sound Mesh (makMsh())
-		SndDTm: [0,0,0],
+		SndMsh: [],				// Sound Mesh (makMsh())
+		SndDTm: [],
 		// Exploding Center
-		ExpPtr: [0,0,0],		// Pointer to Exploding Center
-		ExpSiz: [0,0,0],		// Expanding Size
-		ExpLif: [0,0,0],		// Life of Explosion (seconds)
+		ExpPtr: [],				// Pointer to Exploding Center
+		ExpSiz: [],				// Expanding Size
+		ExpLif: [],				// Life of Explosion (seconds)
 		// Timer
 		TimMax: [0,1200,0],		// Time On (frames)
-		TimMin: [0,-1200,0],		// Time Off (frames)
+		TimMin: [0,-1200,0],	// Time Off (frames)
 		TimFlg: [0,1200,0],		// Timer (pos = On, neg = Off)
 	};
 
@@ -894,7 +894,11 @@ let aaf_ = {
 		// Explosion
 		ExpPtr: [],				// Pointer to Exploding Center
 		ExpSiz: [],				// Expanding Size
-		ExpLif: [],				// Life of Explosion (seconds)	
+		ExpLif: [],				// Life of Explosion (seconds)
+		// Timer 
+		TimMax: [0,1200,0],		// Time On (frames)
+		TimMin: [0,-1200,0],	// Time Off (frames)
+		TimFlg: [0,1200,0],		// Timer (pos = On, neg = Off)
 	};
 
 //- 6. SOUND VARIABLES =========//==============================================
