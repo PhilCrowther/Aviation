@@ -575,7 +575,10 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 			// Continue Bullets
 			aag_.AAATim[n][i] = aag_.AAATim[n][i] + tim_.DLTime;
 			// Stop
-			if (aag_.AAATim[n][i] > aag_.AAADLT) {
+			if (
+				(aag_.AAADLT < 10 && aag_.AAATim[n][i] > aag_.AAADLT) ||	// Time Limit
+				(aag_.AAADLT > 10 && aag_.AAAMpP[n][i].y > aag_.AAADLT)		// Altitude Limit
+			){
 				aag_.AAATim[n][i] = 0;
 				aag_.AAAPtr[n][i].visible = false;	
 				// Start Smoke When Designated Bullet Stops
