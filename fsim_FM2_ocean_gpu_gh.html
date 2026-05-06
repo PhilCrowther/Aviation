@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 5 May 2026
+Version dated 6 May 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -558,7 +558,6 @@ for (let n = 0; n < xsg_.ObjNum; n ++) {
 	aaf_.ObjNum = 2;
 	// Bullet Data
 	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
-	aaf_.AAADLT = 4.0;			// Max Bullet Time in Flight
 	aaf_.AAANum = 16;			// Number of Tracers
 	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
@@ -569,6 +568,8 @@ for (let n = 0; n < xsg_.ObjNum; n ++) {
 	aaf_.AAAMpS = [[],[]];		// Bullet Map Speed (Vector3)
 	aaf_.AAAMpP = [[],[]];		// Bullet Map Position (Vector3)	
 	aaf_.AAATim = [[],[]];		// Bullet Time in flight
+	aaf_.MaxAlt = [0,0];		// Max Altitude Limit (0 = no limit)
+	aaf_.MaxTim = [4,4];		// Max Time Limit (default)
 	aaf_.SmkRot = [0,165];		// Z-rotation of smoke
 	aaf_.SmkDMx = [12,11];		// Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6];		// Delay Counter
