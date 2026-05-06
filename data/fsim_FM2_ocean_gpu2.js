@@ -808,7 +808,6 @@ let xsg_ = {
 		// Bullet Data
 		AAAFlg: [0,0,0],		// 1 = Guns Firing
 		AAASpd: 850,			// Muzzle Velocity (mps)
-		AAADLT: 4.0,			// Max Bullet Time in Flight
 		AAANum: 16,				// Number of Tracers
 		AAASpc: 1,				// Bullet Spacing (4*BulDLT/BulNum)
 		AAASp2: [1,1,1],		// Bullet Spacing - time remaining	 
@@ -820,6 +819,7 @@ let xsg_ = {
 		AAAMpS: [[0],[0],[0]],	// Bullet Map Speed (V3)
 		AAAMpP: [[0],[0],[0]],	// Bullet Map Position (V3)
 		AAATim: [[],[],[]],		// Bullet Time in Flight
+		BulMax: [1000,1000,1000], // Max Altitude (meters)
 		// Smoke
 		SmkFlg: [0,0,0],		// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
