@@ -572,10 +572,10 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 				// End Smoke When Bullet0 Begins
 				if (!i) aag_.SmkPtr[n].visible = false;
 			}
-			// Stop Bullets (use Max Altitude or Max Time)
+			// End Bullets (use Max Altitude or Max Time)
 			aag_.AAATim[n][i] = aag_.AAATim[n][i] + tim_.DLTime; // Time in Flight
 			if (aag_.BulMax[n] > 10) {	// If Altitude Limit
-				if (aag_.AAAPtr[n][i].position.y > aag_.BulMax[n]) stopBullet(n,i);
+				if (aag_.AAAMpP[n][i].y > aag_.BulMax[n]) stopBullet(n,i);
 			}
 			else if (aag_.AAATim[n][i] > aag_.BulMax[n]) stopBullet(n,i);
 			// Continue Bullets
