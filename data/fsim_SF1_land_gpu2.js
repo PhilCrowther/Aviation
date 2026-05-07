@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260504
+*	FSIM SF1 DATA: 260507
 *
 *********************************************************************************
 
@@ -511,14 +511,16 @@ let xsg_ = {
 //- Fixed Guns -----------------//----------------------------------------------
 //	Same variable used for Ship Guns
 let aaf_ = {
-		ObjNum: 2,
+		ObjNum: 0,				// Number of Guns in Battery
 		// Parent (use this instead of link because bullets not attached)
-		XSHRot: [],				// Euler
-		XSHPos: [],				// Vector3
+		XSHPos: 0,				// Optional: Common Parent Position (Vector3)
+		XSHRot: 0,				// Optional: Common Parent Rotation (Euler)
 		// Gun Object
 		GunPtr: [],				// Gun Object (Object3D)
-		GunRot: [],				// Gun Rotation - degrees (Euler)
 		GunPos: [],				// Map Position (Vector3)
+		GunRot: [],				// Gun Rotation - degrees (Euler)
+		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
+		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
 		// Bullet Data
 		AAAFlg: [],				// 1 = Gun Firing
 		AAASpd: 0,				// Muzzle Velocity - mps (e.g. 850)
@@ -528,7 +530,7 @@ let aaf_ = {
 		AAASp2: [],				// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
 		AAACol: 0,				// Colors (Vector2)
-		AAAOpa: 0.5,			// Starting Opacity
+		AAAOpa: 0,				// Opacity (Vector2)
 		// Bullets for each gun (array with sub-array defined in main program)
 		AAAPtr: 0,				// Bullet Objects
 		AAAMpS: 0,				// Bullet Map Speed (Vector3)
