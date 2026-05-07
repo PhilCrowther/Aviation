@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 May 2026
+Version dated 7 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -469,12 +469,12 @@ function initAAGuns(aag_,air_,gen_) {
 	let AAAMtL = new LineBasicNodeMaterial();
 		AAAMtL.colorNode = color(aag_.AAACol.x);
 		AAAMtL.transparent = true;
-		AAAMtL.opacityNode = aag_.AAAOpa;
+		AAAMtL.opacityNode = aag_.AAAOpa.x;
 		AAAMtL.depthWrite = false;
 	let AAAMtD = new LineBasicNodeMaterial();
 		AAAMtD.colorNode = color(aag_.AAACol.y);
 		AAAMtD.transparent = true;
-		AAAMtD.opacityNode = aag_.AAAOpa;
+		AAAMtD.opacityNode = aag_.AAAOpa.y;
 		AAAMtD.depthWrite = false;
 	//- For Each Gun
 	for (let n = 0; n < aag_.ObjNum; n ++) {
@@ -953,4 +953,5 @@ export {initFad2Blk,moveFad2Blk,
 260504:	Initialized aag_ opacity to "0", not "1" - prevents sprite from appearing in front of my airplane
 260504: Initialize most aag_ values to allow easier expansion of number of AA guns
 260506: Allow Bullet Life to be limited by Altitude instead of Time.  Time values are 1 to < 10 secs.  Altitude values are > 10 meters.
+260607: Allow different opacity for head and tail of AAA bullet.
 */
