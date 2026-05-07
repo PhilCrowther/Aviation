@@ -376,7 +376,7 @@ let gau_ = {
 	aaf_.AAANum = 16;			// Number of Tracers
 	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
-	aaf_.AAAOpa = 0.75;
+	aaf_.AAAOpa = new THREE.Vector2(0.9,0.5);
 	//	Specific Adjustments
 	aaf_.GunRot = [new THREE.Euler(45,350,0),new THREE.Euler(20,270,0), // Gun Rotation (degrees)
 				   new THREE.Euler(45,340,0),new THREE.Euler(20,290,0)];
@@ -391,7 +391,8 @@ let gau_ = {
 	aaf_.SmkDMx = [12,11,12,11]; // Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
 	// Additional Variables
-let AAALonOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y,aaf_.GunRot[2].y,aaf_.GunRot[3].y]	
+let GunTar = xac_.MapPos[0];	// Common Target
+let LonOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y,aaf_.GunRot[2].y,aaf_.GunRot[3].y]	
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -664,21 +665,24 @@ function moveAnmObj() {moveAnmFlg(flg_,tim_);}
 
 function moveFxdGun() {
 	if (aaf_.ObjNum) {
-		let DifX,DifY,DifZ,DifH,LnDf;
-		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			// Targeting - Adjust Gun Longitude		
-			DifX = xac_.MapPos[0].x - aaf_.GunPos[n].x;
-			DifY = xac_.MapPos[0].y - aaf_.GunPos[n].y;
-			DifZ = xac_.MapPos[0].z - aaf_.GunPos[n].z;
-			DifH = Math.sqrt(DifX**2+DifZ**2);
-			// Longitude (add lead based on past rotation)
-			aaf_.GunRot[n].y = Mod360(Math.atan2(DifX,DifZ)*RadDeg);
-			LnDf = (5/tim_.DLTime)*(aaf_.GunRot[n].y - AAALonOld[n]); // Lead X factor for flight time
-			AAALonOld[n] = aaf_.GunRot[n].y; // Save Old
-			aaf_.GunRot[n].y = Mod360(aaf_.GunRot[n].y + LnDf);
-			// Latitude
-			aaf_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
-			if 	(aaf_.GunRot[n].x < 10 || aaf_.GunRot[n].x > 90) aaf_.GunRot[n].x = 10;
+		if (GunTar) {
+			let DifX,DifY,DifZ,DifH,LonL;
+			let Trgt = new THREE.Vector3().copy(GunTar);
+			for (let n = 0; n < aaf_.ObjNum; n ++) {
+				// Targeting - Adjust Gun Longitude		
+				DifX = Trgt.x - aaf_.GunPos[n].x;
+				DifY = Trgt.y - aaf_.GunPos[n].y;
+				DifZ = Trgt.z - aaf_.GunPos[n].z;
+				DifH = Math.sqrt(DifX**2+DifZ**2);
+				// Longitude (add lead based on past rotation)
+				aaf_.GunRot[n].y = Mod360(Math.atan2(DifX,DifZ)*RadDeg);
+				LonL = (5/tim_.DLTime)*(aaf_.GunRot[n].y - LonOld[n]); // Lead X factor for flight time
+				LonOld[n] = aaf_.GunRot[n].y; // Save Old
+				aaf_.GunRot[n].y = Mod360(aaf_.GunRot[n].y + LonL);
+				// Latitude
+				aaf_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
+				if 	(aaf_.GunRot[n].x < 10 || aaf_.GunRot[n].x > 90) aaf_.GunRot[n].x = 10;
+			}
 		}
 		moveAAAGun(aaf_,air_,gen_,tim_);
 		// Debug
