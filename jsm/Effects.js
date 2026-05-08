@@ -437,15 +437,13 @@ function moveAAAGun(aag_,air_,gen_,tim_) {
 function initAAGuns(aag_,air_,gen_) {
 	//- Standard Values
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		aag_.XSHRot[n] = new Euler();
-		aag_.XSHPos[n] = new Vector3();
 		aag_.GunPtr[n] = new Object3D();
-		aag_.AAAFlg[n] = 1;			// Gun Firing
-		aag_.AAASp2[n] = 1;			// Bullet Spacing - time remaining
+		aag_.AAAFlg[n] = 1;		// Gun Firing
+		aag_.AAASp2[n] = 1;		// Bullet Spacing - time remaining
 		aag_.SmkFlg[n] = 0;
 		aag_.SmkMpP[n] = new Vector3();
 		aag_.SndMsh[n] = new Object3D();
-		aag_.SndFlg[n] = 1;
+		aag_.SndFlg[n] = 1;		// 1 = Sound Active
 		aag_.SndDTm[n] = 0;
 	}
 	//- Combined Rotation and Map Position of Parent plus Gun
@@ -478,18 +476,20 @@ function initAAGuns(aag_,air_,gen_) {
 		AAAMtD.depthWrite = false;
 	//- For Each Gun
 	for (let n = 0; n < aag_.ObjNum; n ++) {
-		// Combined Rotation and Map Position of Parent plus Gun
-		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]); // Use XSHRot since bullets not linked
-		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]); // Use XSHPos since bullets not linked
-		//	Gun Object Rotation (for show only)
-		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
-		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
-		//	Combined Map Position of Parent plus Gun
-		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]);
+		MapPos.copy(aag_.GunPos[n]);
+		MapRot.copy(aag_.GunRot[n]);
+		if (aag_.ParPos) {		// Add Parent since bullets not linked
+			MapPos.add(aag_.ParPos);
+			MapRot.add(aag_.ParRot);
+		}
 		// Compute Gun Relative Position (for show only)
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aag_.GunPtr[n].position.y = MapPos.y-gen_.AltDif;
 		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+		//	Combined Gun Rotation (for show only)
+		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
+		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
+		//		
 		gen_.scene.add(aag_.GunPtr[n]);
 		//	Load Bullets
 		for (let i = 0; i < aag_.AAANum; i ++) {
@@ -532,21 +532,23 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 	//- Combined Rotation and Map Position of Parent plus Gun
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
-	//
 	let AAASV3 = new Vector3();
 	let	AAASpT = aag_.AAASpd * tim_.DLTime;
 	for (let n = 0; n < aag_.ObjNum; n ++) {
-		// Combined Rotation and Map Position of Ship plus Gun
-		MapRot.copy(aag_.XSHRot[n]).add(aag_.GunRot[n]); // Use XSHRot since bullets not linked
-		MapPos.copy(aag_.XSHPos[n]).add(aag_.GunPos[n]); // Use XSHPos since bullets not linked
+		MapPos.copy(aag_.GunPos[n]);
+		MapRot.copy(aag_.GunRot[n]);
+		if (aag_.ParPos) {		// Add Parent since bullets not linked
+			MapPos.add(aag_.ParPos);
+			MapRot.add(aag_.ParRot);
+		}
 		MapRot.y = Mod360(-MapRot.y);
-		// Update Gun Object Rotation (for show only)
-		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
-		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
 		// Compute Gun Relative Position (for show only)
 		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aag_.GunPtr[n].position.y = MapPos.y-gen_.AltDif;
 		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+		// Update Gun Object Rotation (for show only)
+		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
+		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
 		// Smoke Flag Default
 		aag_.SmkFlg[n] = 0;
 		// For Each Bullet String	
