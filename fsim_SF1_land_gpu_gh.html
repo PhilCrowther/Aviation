@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 May 2026
+Version dated 8 May 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -368,6 +368,8 @@ let gau_ = {
 //				   XPPath + "sounds/" + "fm2_gun.mp3"];
 //- Fixed Guns -----------------//----------------------------------------------
 	aaf_.ObjNum = 4;
+	// Gun Data
+	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3) [260507]
 	// Bullet Data
 	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
 	aaf_.AAADLT = 300;			// Max Bullet Altitude - meters
@@ -380,16 +382,14 @@ let gau_ = {
 				   new THREE.Euler(45,340,0),new THREE.Euler(20,290,0)];
 	aaf_.GunPos = [new THREE.Vector3(-1207,1,1207),new THREE.Vector3(402,1,1207), // Map Position
 				   new THREE.Vector3(-1207,1,402),new THREE.Vector3(402,1,402)];
+	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y,aaf_.GunRot[2].y,aaf_.GunRot[3].y],	// Targeting: Gun Old Rotation [260508]
 	aaf_.AAAPtr = [[],[],[],[]]; // Bullet Objects
 	aaf_.AAAMpS = [[],[],[],[]]; // Bullet Map Speed (Vector3)
 	aaf_.AAAMpP = [[],[],[],[]]; // Bullet Map Position (Vector3)	
 	aaf_.AAATim = [[],[],[],[]]; // Bullet Time in flight
 	aaf_.SmkRot = [0,165,330,210]; // Z-rotation of smoke
 	aaf_.SmkDMx = [12,11,12,11]; // Delay between Smoke events - seconds
-	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
-	// Additional Variables
-let GunTar = xac_.MapPos[0];	// Common Target
-let LonOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y,aaf_.GunRot[2].y,aaf_.GunRot[3].y]	
+	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter	
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -661,39 +661,7 @@ function moveAnmObj() {moveAnmFlg(flg_,tim_);}
 //- AAA Guns -------------------//----------------------------------------------
 
 function moveFxdGun() {
-	if (aaf_.ObjNum) {
-		if (GunTar) {
-			let DifX,DifY,DifZ,DifH,LonL;
-			let Trgt = new THREE.Vector3().copy(GunTar);
-			for (let n = 0; n < aaf_.ObjNum; n ++) {
-				// Targeting - Adjust Gun Longitude		
-				DifX = Trgt.x - aaf_.GunPos[n].x;
-				DifY = Trgt.y - aaf_.GunPos[n].y;
-				DifZ = Trgt.z - aaf_.GunPos[n].z;
-				DifH = Math.sqrt(DifX**2+DifZ**2);
-				// Longitude (add lead based on past rotation)
-				aaf_.GunRot[n].y = Mod360(Math.atan2(DifX,DifZ)*RadDeg);
-				LonL = (5/tim_.DLTime)*(aaf_.GunRot[n].y - LonOld[n]); // Lead X factor for flight time
-				LonOld[n] = aaf_.GunRot[n].y; // Save Old
-				aaf_.GunRot[n].y = Mod360(aaf_.GunRot[n].y + LonL);
-				// Latitude
-				aaf_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
-				if 	(aaf_.GunRot[n].x < 10 || aaf_.GunRot[n].x > 90) aaf_.GunRot[n].x = 10;
-			}
-		}
-		moveAAAGun(aaf_,air_,gen_,tim_);
-		// Debug
-//		let i = 0;
-//		DifX = xac_.MapPos[0].x - aaf_.GunPos[i].x;
-//		DifY = xac_.MapPos[0].y - aaf_.GunPos[i].y;
-//		DifZ = xac_.MapPos[0].z - aaf_.GunPos[i].z;
-//		DifH = Math.sqrt(DifX**2+DifZ**2);
-//		let hdg = Mod360(Math.atan2(DifX,DifZ)*RadDeg);
-//		let pit = Mod360(Math.atan2(DifY,DifH)*RadDeg);		
-//		console.log(Math.round(xac_.MapPos[0].x),Math.round(aaf_.GunPos[i].x),Math.round(DifX));
-//		console.log(Math.round(xac_.MapPos[0].z),Math.round(aaf_.GunPos[i].z),Math.round(DifZ));
-//		console.log(Math.round(DifX),Math.round(DifZ),Math.round(aaf_.GunRot[i].y));
-	}
+	if (aaf_.ObjNum) moveAAAGun(aaf_,air_,gen_,tim_);
 }
 
 //= MOVING AIRPLANES ===========//==============================================
