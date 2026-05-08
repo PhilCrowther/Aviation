@@ -513,12 +513,14 @@ let xsg_ = {
 let aaf_ = {
 		ObjNum: 2,
 		// Parent (use this instead of link because bullets not attached)
-		XSHRot: [],				// Euler
-		XSHPos: [],				// Vector3
+		ParPos: 0,				// Optional: Common Parent Position (Vector3)
+		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
 		// Gun Object
 		GunPtr: [],				// Gun Object (Object3D)
 		GunRot: [],				// Gun Rotation - degrees (Euler)
 		GunPos: [],				// Map Position (Vector3)
+		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
+		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
 		// Bullet Data
 		AAAFlg: [],				// 1 = Gun Firing
 		AAASpd: 0,				// Muzzle Velocity - mps (e.g. 850)
