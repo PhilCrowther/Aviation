@@ -799,8 +799,8 @@ let xag_ = {
 let xsg_ = {
 		ObjNum: 0,				// Number of guns
 		// Parent (use this instead of link because bullets not attached)
-		XSHPos: 0,				// Optional: Common Parent Position (Vector3)
-		XSHRot: 0,				// Optional: Common Parent Rotation (Euler)
+		ParPos: 0,				// Optional: Common Parent Position (Vector3)
+		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
 		// Gun Object
 		GunPtr: [],				// Gun Object (makMsh)
 		GunRot: [],				// Gun Rotation (Euler - degrees)
@@ -855,8 +855,8 @@ let xsg_ = {
 let aaf_ = {
 		ObjNum: 0,				// Number of Guns in Battery
 		// Parent (use this instead of link because bullets not attached)
-		XSHPos: 0,				// Optional: Common Parent Rotation (Euler)
-		XSHRot: 0,				// Optional: Common Parent Position (Vector3)
+		ParPos: 0,				// Optional: Common Parent Rotation (Euler)
+		ParRot: 0,				// Optional: Common Parent Position (Vector3)
 		// Gun Object
 		GunPtr: [],				// Gun Object (makMsh)
 		GunPos: [],				// Map Position (Vector3)
