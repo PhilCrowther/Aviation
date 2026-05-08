@@ -226,10 +226,10 @@ let fxd_ = {
 //= MOVING OBJECTS =============//==============================================
 //- Moving Airplanes -----------//----------------------------------------------
 const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-const XP1Nam = "xac_dr1_grn.glb";	// Name of airplane model file (animated prop only)
-const XP2Nam = "xac_dr1_red.glb";	// Name of airplane model file (animated prop only)
-const XP3Nam = "xac_dr1_ylo.glb";	// Name of airplane model file (animated prop only)
-const XP4Nam = "xac_l21.glb";	// Name of airplane model file (animated props only)
+const XP1Nam = "xac_l21.glb";	// Name of airplane model file (animated props only)
+const XP2Nam = "xac_dr1_grn.glb";	// Name of airplane model file (animated prop only)
+const XP3Nam = "xac_dr1_red.glb";	// Name of airplane model file (animated prop only)
+const XP4Nam = "xac_dr1_ylo.glb";	// Name of airplane model file (animated prop only)
 let xac_ = {
 		ObjNum: 4,				// Number of airplanes
 		ObjSrc: [XPPath+XP1Nam, // Model Source file
@@ -517,8 +517,8 @@ let aaf_ = {
 		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
 		// Gun Object
 		GunPtr: [],				// Gun Object (Object3D)
-		GunRot: [],				// Gun Rotation - degrees (Euler)
 		GunPos: [],				// Map Position (Vector3)
+		GunRot: [],				// Gun Rotation - degrees (Euler)
 		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
 		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
 		// Bullet Data
