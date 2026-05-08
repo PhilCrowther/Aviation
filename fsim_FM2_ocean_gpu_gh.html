@@ -542,18 +542,28 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
 				   XPPath + "sounds/" + "fm2_gun.mp3"];
 //- Moving Ships ---------------//----------------------------------------------
-//	General Format Adjustments
-for (let n = 0; n < xsg_.ObjNum; n ++) {
-	xsg_.GunPtr[n] = new THREE.Object3D();
-	xsg_.SmkMpP[n] = new THREE.Vector3();
-	xsg_.SndMsh[n] = new THREE.Object3D();
-}
+	xsg_.ObjNum = 1;
+	// Parent
+	xsg_.ParPos = xsh_.MapPos[1], // Fletcher
+	xsg_.ParRot = xsh_.ObjRot[1],
+	// Bullet Data
+	xsg_.AAASpd = 850;			// Muzzle Velocity - mps
+	xsg_.AAADLT = 4.0;			// Max Bullet Time in Flight
+	xsg_.AAANum = 16;			// Number of Tracers
+	xsg_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
+	xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red
+	xsg_.AAAOpa = new THREE.Vector2(0.9,0.5);
 //	Specific Adjustments
-	xsg_.XSHRot = [xsh_.ObjRot[1],xsh_.ObjRot[1],xsh_.ObjRot[1]], // Fletcher
-	xsg_.XSHPos = [xsh_.MapPos[1],xsh_.MapPos[1],xsh_.MapPos[1]],
-	xsg_.GunRot = [new THREE.Euler(0,0,0),new THREE.Euler(60,315,0),new THREE.Euler(0,0,0)]; // Gun Rotation (degrees)
-	xsg_.GunPos = [new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0)]; // Map Position
-	xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red	
+	xsg_.GunPos = [new THREE.Vector3(0,0,0)]; // Map Position
+	xsg_.GunRot = [new THREE.Euler(0,0,0)]; // Gun Rotation (degrees)
+	xsg_.AAAPtr = [[]];			// Bullet Objects
+	xsg_.AAAMpS = [[]];			// Bullet Map Speed (Vector3)
+	xsg_.AAAMpP = [[]];			// Bullet Map Position (Vector3)	
+	xsg_.AAATim = [[]];			// Bullet Time in flight
+	xsg_.SmkRot = [0];			// Z-rotation of smoke
+	xsg_.SmkDMx = [12];			// Delay between Smoke events - seconds
+	xsg_.SmkDTm = [0];			// Delay Counter
+
 //- Fixed Guns -----------------//----------------------------------------------
 	aaf_.ObjNum = 2;
 	// Bullet Data
@@ -561,7 +571,7 @@ for (let n = 0; n < xsg_.ObjNum; n ++) {
 	aaf_.AAADLT = 4.0;			// Max Bullet Time in Flight
 	aaf_.AAANum = 16;			// Number of Tracers
 	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
-	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
+	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Red
 	aaf_.AAAOpa = new THREE.Vector2(0.9,0.5);
 //	Specific Adjustments
 	aaf_.GunRot = [new THREE.Euler(45,270,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
@@ -573,7 +583,7 @@ for (let n = 0; n < xsg_.ObjNum; n ++) {
 	aaf_.SmkRot = [0,165];		// Z-rotation of smoke
 	aaf_.SmkDMx = [12,11];		// Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6];		// Delay Counter
-//	Gun Y-Rotation
+//	Targeting Variables
 let	AARYBg = [270,0];			// Starting Y-Rotation
 let	AARYDf = [0,0];				// Y-Rotation Adjustment		
 
