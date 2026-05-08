@@ -436,7 +436,7 @@ function moveAAAGun(aag_,air_,gen_,tim_) {
 
 function initAAGuns(aag_,air_,gen_) {
 	//- Standard Values
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
+	for (let n = 0; n < aag_.ObjNum; n ++) {
 		aag_.GunPtr[n] = new Object3D();
 		aag_.AAAFlg[n] = 1;		// Gun Firing
 		aag_.AAASp2[n] = 1;		// Bullet Spacing - time remaining
@@ -549,6 +549,26 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 		// Update Gun Object Rotation (for show only)
 		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
 		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
+		// Targeting
+		if (aag_.GunTar) {
+			let DifX,DifY,DifZ,DifH,LonL;
+			let Trgt = new Vector3().copy(aag_.GunTar);
+			for (let n = 0; n < aag_.ObjNum; n ++) {
+				// Targeting - Adjust Gun Longitude		
+				DifX = Trgt.x - aag_.GunPos[n].x;
+				DifY = Trgt.y - aag_.GunPos[n].y;
+				DifZ = Trgt.z - aag_.GunPos[n].z;
+				DifH = Math.sqrt(DifX**2+DifZ**2);
+				// Longitude (add lead based on past rotation)
+				aag_.GunRot[n].y = Mod360(Math.atan2(DifX,DifZ)*RadDeg);
+				LonL = (5/tim_.DLTime)*(aag_.GunRot[n].y - aag_.GunOld[n]); // Lead X factor for flight time
+				aag_.GunOld[n] = aag_.GunRot[n].y; // Save Old
+				aag_.GunRot[n].y = Mod360(aag_.GunRot[n].y + LonL);
+				// Latitude
+				aag_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
+				if 	(aag_.GunRot[n].x < 10 || aag_.GunRot[n].x > 90) aag_.GunRot[n].x = 10;
+			}
+		}
 		// Smoke Flag Default
 		aag_.SmkFlg[n] = 0;
 		// For Each Bullet String	
@@ -955,5 +975,7 @@ export {initFad2Blk,moveFad2Blk,
 260504:	Initialized aag_ opacity to "0", not "1" - prevents sprite from appearing in front of my airplane
 260504: Initialize most aag_ values to allow easier expansion of number of AA guns
 260506: Allow Bullet Life to be limited by Altitude instead of Time.  Time values are 1 to < 10 secs.  Altitude values are > 10 meters.
-260607: Allow different opacity for head and tail of AAA bullet.
+260507: Allow different opacity for head and tail of AAA bullet.
+260508: Each AAA "battery" can have only one parent. Renamed from XSH to Par since parent is not necessarily a ship.
+		Added AAA targeting.  Computes lead based on past change in heading.  But does not account for change in rotation of parent (if any)
 */
