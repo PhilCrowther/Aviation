@@ -513,8 +513,8 @@ let xsg_ = {
 let aaf_ = {
 		ObjNum: 2,
 		// Parent (use this instead of link because bullets not attached)
-		XSHPos: 0,				// Optional: Common Parent Position (Vector3)
 		XSHRot: 0,				// Optional: Common Parent Rotation (Euler)
+		XSHPos: 0,				// Optional: Common Parent Position (Vector3)
 		// Gun Object
 		GunPtr: [],				// Gun Object (Object3D)
 		GunRot: [],				// Gun Rotation - degrees (Euler)
