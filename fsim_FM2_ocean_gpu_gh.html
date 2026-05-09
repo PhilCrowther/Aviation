@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 May 2026
+Version dated 9 May 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -546,6 +546,11 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	// Parent
 	xsg_.ParPos = xsh_.MapPos[1], // Fletcher
 	xsg_.ParRot = xsh_.ObjRot[1],
+	// Gun Data
+	xsg_.GunPos = [new THREE.Vector3(0,0,0)]; // Map Position
+	xsg_.GunRot = [new THREE.Euler(0,0,0)]; // Gun Rotation (degrees)
+	// Optional: Targeting [N/A]
+	// Optional: Gun Object [N/A]	
 	// Bullet Data
 	xsg_.AAASpd = 850;			// Muzzle Velocity - mps
 	xsg_.AAADLT = 4.0;			// Max Bullet Time in Flight
@@ -554,8 +559,6 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	xsg_.AAACol = new THREE.Vector2(0xff80ff,0x804080); // Red
 	xsg_.AAAOpa = new THREE.Vector2(0.9,0.5);
 //	Specific Adjustments
-	xsg_.GunPos = [new THREE.Vector3(0,0,0)]; // Map Position
-	xsg_.GunRot = [new THREE.Euler(0,0,0)]; // Gun Rotation (degrees)
 	xsg_.AAAPtr = [[]];			// Bullet Objects
 	xsg_.AAAMpS = [[]];			// Bullet Map Speed (Vector3)
 	xsg_.AAAMpP = [[]];			// Bullet Map Position (Vector3)	
@@ -566,6 +569,11 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 
 //- Fixed Guns -----------------//----------------------------------------------
 	aaf_.ObjNum = 2;
+	// Gun Data
+	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
+	aaf_.GunRot = [new THREE.Euler(45,270,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
+	// Optional: Targeting [N/A]
+	// Optional: Gun Object [N/A]
 	// Bullet Data
 	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
 	aaf_.AAADLT = 4.0;			// Max Bullet Time in Flight
@@ -574,8 +582,6 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Red
 	aaf_.AAAOpa = new THREE.Vector2(0.9,0.5);
 //	Specific Adjustments
-	aaf_.GunRot = [new THREE.Euler(45,270,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
-	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
 	aaf_.AAAPtr = [[],[]];		// Bullet Objects
 	aaf_.AAAMpS = [[],[]];		// Bullet Map Speed (Vector3)
 	aaf_.AAAMpP = [[],[]];		// Bullet Map Position (Vector3)	
@@ -583,7 +589,7 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	aaf_.SmkRot = [0,165];		// Z-rotation of smoke
 	aaf_.SmkDMx = [12,11];		// Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6];		// Delay Counter
-//	Targeting Variables
+//	Custom Targeting Variables
 let	AARYBg = [270,0];			// Starting Y-Rotation
 let	AARYDf = [0,0];				// Y-Rotation Adjustment		
 

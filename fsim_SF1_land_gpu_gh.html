@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 May 2026
+Version dated 9 May 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -96,7 +96,7 @@ import {PointerLockControls,	// three.js modified
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
 import {initBullet,moveBullet,	// My Airplane Bullets
 		initXACBul,moveXACBul,	// Other Airplane Bullets
-		initAAAGun,moveAAAGun,	// Fixed Guns
+		loadAAAGun,initAAAGun,moveAAAGun,	// Fixed Guns
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initAirSmk,initAirFyr,	// Air Smoke and Fire
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
@@ -293,22 +293,13 @@ let ImgSiz = 1024;
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
 	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,4750)]; // Relative Position
 	fxd_.ObjRef = [mnt_.ObjGrp[0]];
-//- Fixed Guns
-let fxg_ = {
-		ObjNum: 4,
-		ObjSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/gunAA_crew.glb",
-		ObjAdr: [0,0,0,0],
-		ActLon: [0,0,0,0],
-		ActLat: [0,0,0,0],
-		AnmLon: [0,0,0,0],
-		AnmLat: [0,0,0,0],		
-	}
+
 //- MOVING VEHICLES ------------//----------------------------------------------
 //. Moving Airplanes ...........//..............................................
 //	Adjustments
 	xac_.ObjNum = 4;			// One at a time
 	xac_.ObjRot = [new THREE.Euler(0,180,-30),new THREE.Euler(0,180,-30),new THREE.Euler(0,180,-30),new THREE.Euler(0,180,-30)]; // Rotation
-	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,1025),new THREE.Vector3(115,330,1050),new THREE.Vector3(85,330,1050)]; // meters
+	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
 	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
 	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]; // not used
 	xac_.EngMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Engine Sound
@@ -376,33 +367,42 @@ let gau_ = {
 //				   XPPath + "sounds/" + "fm2_gun.mp3",
 //				   XPPath + "sounds/" + "fm2_gun.mp3",
 //				   XPPath + "sounds/" + "fm2_gun.mp3"];
-//- Fixed Guns -----------------//----------------------------------------------
-let aaf_YA = 3.0;				// Vertical Offset for Bullets - Blender value = 2.88
-let aaf_XZ = 15;				// Horizontal Offset for Guns
-	//
-	aaf_.ObjNum = 4;
+//- Fixed Gun Battery ----------//----------------------------------------------
+//- Variables
+let AAFOff = 3.0;				// Bullet Start Height Above Ground - Blender value = 2.88
+let AAFHrz = 15;				// Horizontal Inset for Guns
+//- Ajdustments
+	aaf_.ObjNum = 4;			// Number of Guns in Battery
 	// Gun Data
-	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3) [260507]
-	// Bullet Data
+	aaf_.GunPos = [new THREE.Vector3(-1207+AAFHrz,AAFOff,1207-AAFHrz),new THREE.Vector3(402-AAFHrz,AAFOff,1207-AAFHrz), // Map Position
+				   new THREE.Vector3(-1207+AAFHrz,AAFOff, 402+AAFHrz),new THREE.Vector3(402-AAFHrz,AAFOff, 402+AAFHrz)];
+	aaf_.GunRot = [new THREE.Euler(45,350,0),new THREE.Euler(20,270,0), // Gun Rotation (degrees)
+				   new THREE.Euler(45,340,0),new THREE.Euler(20,290,0)];
+	// Optional: Targeting
+	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3)
+	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y,aaf_.GunRot[2].y,aaf_.GunRot[3].y],	// Targeting: Gun Old Rotation [260508]
+	// Optional: Gun Object
+	aaf_.GunSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/gunAA_crew.glb";
+	aaf_.ActLon = [0,0,0,0];	// Gun Object Animations
+	aaf_.ActLat = [0,0,0,0];
+	aaf_.AnmLon = [0,0,0,0];
+	aaf_.AnmLat = [0,0,0,0];
+	aaf_.GunAdj = -AAFOff;
+	// Bullets - General Data 
 	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
 	aaf_.AAADLT = 300;			// Max Bullet Altitude - meters
 	aaf_.AAANum = 1;			// Number of Tracers
-	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
+	aaf_.AAASpc = 7.5;			// Bullet Spacing (4*BulDLT/BulNum)
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
 	aaf_.AAAOpa = new THREE.Vector2(0.9,0.5);
-	//	Specific Adjustments
-	aaf_.GunRot = [new THREE.Euler(45,350,0),new THREE.Euler(20,270,0), // Gun Rotation (degrees)
-				   new THREE.Euler(45,340,0),new THREE.Euler(20,290,0)];
-	aaf_.GunPos = [new THREE.Vector3(-1207+aaf_XZ,aaf_YA,1207-aaf_XZ),new THREE.Vector3(402-aaf_XZ,aaf_YA,1207-aaf_XZ), // Map Position
-				   new THREE.Vector3(-1207+aaf_XZ,aaf_YA, 402+aaf_XZ),new THREE.Vector3(402-aaf_XZ,aaf_YA, 402+aaf_XZ)];
-	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y,aaf_.GunRot[2].y,aaf_.GunRot[3].y],	// Targeting: Gun Old Rotation [260508]
+	// Bullets - Detailed Data
 	aaf_.AAAPtr = [[],[],[],[]]; // Bullet Objects
 	aaf_.AAAMpS = [[],[],[],[]]; // Bullet Map Speed (Vector3)
 	aaf_.AAAMpP = [[],[],[],[]]; // Bullet Map Position (Vector3)	
 	aaf_.AAATim = [[],[],[],[]]; // Bullet Time in flight
 	aaf_.SmkRot = [0,165,330,210]; // Z-rotation of smoke
 	aaf_.SmkDMx = [6,6,6,6]; // Delay between Smoke events - seconds
-	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter	
+	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -607,36 +607,7 @@ function loadObject() {
 	loadShared();				// For FX (### Creates Shadow on Screen)
 	loadStatic();
 	loadMoving();
-	loadGunAAA(fxg_,gen_)
-}
-
-function loadGunAAA(fxg_,gen_) {
-	for (let n = 0; n < fxg_.ObjNum; n ++) {
-		gen_.gltfLd.load(fxg_.ObjSrc, function (gltf) { // The OnLoad function
-			fxg_.ObjAdr[n] = gltf.scene;
-			fxg_.ObjAdr[n].rotation.order = "YXZ";
-			// Temporary Position (since aaf value not initialized yet)
-//			fxg_.ObjAdr[n].position.x = aaf_.GunPtr[n].position.x
-//			fxg_.ObjAdr[n].position.y = aaf_.GunPtr[n].position.z-aaf_YA;
-//			fxg_.ObjAdr[n].position.z = aaf_.GunPtr[n].position.z
-			fxg_.ObjAdr[n].position.y = -1000;
-			// Loasd Animations
-			// Rotator
-			let clip = THREE.AnimationClip.findByName(gltf.animations,"rotatorAction");
-			fxg_.ActLon[n] = new THREE.AnimationMixer(gltf.scene);
-			let actun = fxg_.ActLon[n].clipAction(clip);
-			actun.play();
-			if (fxg_.ActLon[n]) fxg_.ActLon[n].setTime(fxg_.AnmLon[n]/anm_.anmfps);
-			// Barrel
-			clip = THREE.AnimationClip.findByName(gltf.animations,"barrelAction");
-			fxg_.ActLat[n] = new THREE.AnimationMixer(gltf.scene);
-			actun = fxg_.ActLat[n].clipAction(clip);
-			actun.play();
-			if (fxg_.ActLat[n]) fxg_.ActLat[n].setTime(fxg_.AnmLat[n]/anm_.anmfps);
-			// Initialize
-			gen_.scene.add(fxg_.ObjAdr[n]);
-		});	
-	}
+	loadAAAGun(aaf_,gen_)
 }
 
 //= INIT OBJECTS ===============================================================
@@ -654,21 +625,7 @@ function moveObject() {
 	moveStatic();
 	moveMoving();
 	moveFxdGun();				// Perform Targeting
-	moveGunAAA(fxg_,aaf_,air_,gen_);
-}
-
-function moveGunAAA(fxg_,aaf_,air_,gen_) {
-	for (let n = 0; n < fxg_.ObjNum; n ++) {
-		// Position
-		fxg_.ObjAdr[n].position.x = aaf_.GunPtr[n].position.x
-		fxg_.ObjAdr[n].position.y = aaf_.GunPtr[n].position.y-aaf_YA;
-		fxg_.ObjAdr[n].position.z = aaf_.GunPtr[n].position.z
-		// Animations
-		fxg_.AnmLon[n] = aaf_.GunRot[n].y;
-		fxg_.AnmLat[n] = aaf_.GunRot[n].x;
-		if (fxg_.ActLon[n]) fxg_.ActLon[n].setTime(fxg_.AnmLon[n]/anm_.anmfps);
-		if (fxg_.ActLat[n]) fxg_.ActLat[n].setTime(fxg_.AnmLat[n]/anm_.anmfps);
-	}
+	moveAAAGun(aaf_,air_,gen_,tim_);
 }
 
 //- SHARED TEXTURES ------------//----------------------------------------------
