@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 May 2026
+Version dated 9 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -43,6 +43,8 @@ sound delay may be superfluous.
 
 import {
 	AdditiveBlending,
+	AnimationClip,
+	AnimationMixer,
 	BackSide,
 	BufferGeometry,
 	Euler,
@@ -70,6 +72,7 @@ import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv} from 'th
 //= CONSTANTS ==================//==============================================
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const animfps = 24;
 
 /*******************************************************************************
 *
@@ -364,6 +367,33 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 *
 *******************************************************************************/
 
+//= LOAD AA GUNS ===============//==============================================
+
+function loadAAAGun(aag_,gen_) {
+	for (let n = 0; n < aag_.ObjNum; n ++) {
+		gen_.gltfLd.load(aag_.GunSrc, function (gltf) { // The OnLoad function
+			aag_.GunPtr[n] = gltf.scene;
+			aag_.GunPtr[n].rotation.order = "YXZ";
+			// Loasd Animations
+			// Rotator
+			let clip = AnimationClip.findByName(gltf.animations,"rotatorAction");
+			aag_.ActLon[n] = new AnimationMixer(gltf.scene);
+			let actun = aag_.ActLon[n].clipAction(clip);
+			actun.play();
+			if (aag_.ActLon[n]) aag_.ActLon[n].setTime(aag_.AnmLon[n]/anmfps);
+			// Barrel
+			clip = AnimationClip.findByName(gltf.animations,"barrelAction");
+			aag_.ActLat[n] = new AnimationMixer(gltf.scene);
+			actun = aag_.ActLat[n].clipAction(clip);
+			actun.play();
+			if (aag_.ActLat[n]) aag_.ActLat[n].setTime(aag_.AnmLat[n]/anmfps);
+			// Initialize
+			aag_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
+			gen_.scene.add(aag_.GunPtr[n]);
+		});	
+	}
+}
+
 //= INIT AAA GUN ===============//==============================================
 
 function initAAAGun(aag_,txt_,air_,gen_) {
@@ -437,7 +467,6 @@ function moveAAAGun(aag_,air_,gen_,tim_) {
 function initAAGuns(aag_,air_,gen_) {
 	//- Standard Values
 	for (let n = 0; n < aag_.ObjNum; n ++) {
-		aag_.GunPtr[n] = new Object3D();
 		aag_.AAAFlg[n] = 1;		// Gun Firing
 		aag_.AAASp2[n] = 1;		// Bullet Spacing - time remaining
 		aag_.SmkFlg[n] = 0;
@@ -482,15 +511,17 @@ function initAAGuns(aag_,air_,gen_) {
 			MapPos.add(aag_.ParPos);
 			MapRot.add(aag_.ParRot);
 		}
-		// Compute Gun Relative Position (for show only)
-		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
-		aag_.GunPtr[n].position.y = MapPos.y-gen_.AltDif;
-		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-		//	Combined Gun Rotation (for show only)
-		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
-		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
-		//		
-		gen_.scene.add(aag_.GunPtr[n]);
+		// Optional: Gun Object
+		if (aag_.GunPtr[0]) {
+			aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
+			aag_.GunPtr[n].position.y = (MapPos.y+aag_.GunAdj)-gen_.AltDif;
+			aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+			//	Animations
+			aag_.AnmLon[n] = aag_.GunRot[n].y;
+			aag_.AnmLat[n] = aag_.GunRot[n].x;
+			if (aag_.ActLon[n]) aag_.ActLon[n].setTime(aag_.AnmLon[n]/anmfps);
+			if (aag_.ActLat[n]) aag_.ActLat[n].setTime(aag_.AnmLat[n]/anmfps);
+		}		
 		//	Load Bullets
 		for (let i = 0; i < aag_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
@@ -530,8 +561,8 @@ function initAAGuns(aag_,air_,gen_) {
 
 function moveAAGuns(aag_,air_,gen_,tim_) {
 	//- Combined Rotation and Map Position of Parent plus Gun
-	let MapRot = new Vector3();
 	let MapPos = new Vector3();
+	let MapRot = new Vector3();
 	let AAASV3 = new Vector3();
 	let	AAASpT = aag_.AAASpd * tim_.DLTime;
 	for (let n = 0; n < aag_.ObjNum; n ++) {
@@ -542,13 +573,17 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 			MapRot.add(aag_.ParRot);
 		}
 		MapRot.y = Mod360(-MapRot.y);
-		// Compute Gun Relative Position (for show only)
-		aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
-		aag_.GunPtr[n].position.y = MapPos.y-gen_.AltDif;
-		aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-		// Update Gun Object Rotation (for show only)
-		aag_.GunPtr[n].rotation.x = MapRot.x*DegRad; // Latitude
-		aag_.GunPtr[n].rotation.y = MapRot.y*DegRad; // Longitude
+		// Optional: Gun Object
+		if (aag_.GunPtr[0]) {
+			aag_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
+			aag_.GunPtr[n].position.y = (MapPos.y+aag_.GunAdj)-gen_.AltDif;
+			aag_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+			//	Animations
+			aag_.AnmLon[n] = aag_.GunRot[n].y;
+			aag_.AnmLat[n] = aag_.GunRot[n].x;
+			if (aag_.ActLon[n]) aag_.ActLon[n].setTime(aag_.AnmLon[n]/anmfps);
+			if (aag_.ActLat[n]) aag_.ActLat[n].setTime(aag_.AnmLat[n]/anmfps);
+		}
 		// Targeting
 		if (aag_.GunTar) {
 			let DifX,DifY,DifZ,DifH,LonL;
@@ -955,7 +990,7 @@ return mesh;}
 export {initFad2Blk,moveFad2Blk,
 		initBullet,moveBullet,
 		initXACBul,moveXACBul,
-		initAAAGun,moveAAAGun,
+		loadAAAGun,initAAAGun,moveAAAGun,
 		initGrdSmk,initGrdFyr,
 		initAirSmk,initAirFyr,
 		initXSHWak,moveXSHWak,
@@ -978,4 +1013,5 @@ export {initFad2Blk,moveFad2Blk,
 260507: Allow different opacity for head and tail of AAA bullet.
 260508: Each AAA "battery" can have only one parent. Renamed from XSH to Par since parent is not necessarily a ship.
 		Added AAA targeting.  Computes lead based on past change in heading.  But does not account for change in rotation of parent (if any)
+260509:	Optional: Load and Move Gun Object
 */
