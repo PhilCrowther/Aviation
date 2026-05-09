@@ -520,7 +520,7 @@ let aaf_ = {
 		GunRot: [],				// Gun Rotation - degrees (Euler)
 		// Optional: Gun Object
 		GunSrc: 0,				// Source of Gun Object File
-		GunPtr: 0,				// Destination of Gun Object
+		GunPtr: [0],			// Destination of Gun Object ([0] = No Object)
 		ActLon: 0,				// Gun Object Animations
 		ActLat: 0,
 		AnmLon: 0,
@@ -536,7 +536,6 @@ let aaf_ = {
 		AAANum: 0,				// Number of Tracers (e.g. 16)
 		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) (e.g. 1)
 		AAASp2: [],				// Bullet Spacing - time remaining
-
 		// Bullet Colors and Opacity
 		AAACol: 0,				// Colors (Vector2)
 		AAAOpa: 0.5,			// Starting Opacity
