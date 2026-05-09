@@ -515,9 +515,9 @@ let aaf_ = {
 		// Parent (use this instead of link because bullets not attached)
 		ParPos: 0,				// Optional: Common Parent Position (Vector3)
 		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
-		// Gun Data
+		// Gun Data 
 		GunPos: [],				// Map Position (Vector3)
-		GunRot: [],				// Gun Rotation - degrees (Euler)		
+		GunRot: [],				// Gun Rotation - degrees (Euler)
 		// Optional: Gun Object
 		GunSrc: 0,				// Source of Gun Object File
 		GunPtr: 0,				// Destination of Gun Object
@@ -525,6 +525,7 @@ let aaf_ = {
 		ActLat: 0,
 		AnmLon: 0,
 		AnmLat: 0,
+		GunAdj: 0,				// Gun Height Adjustment
 		// Optional: Targeting
 		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
 		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
@@ -535,6 +536,7 @@ let aaf_ = {
 		AAANum: 0,				// Number of Tracers (e.g. 16)
 		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) (e.g. 1)
 		AAASp2: [],				// Bullet Spacing - time remaining
+
 		// Bullet Colors and Opacity
 		AAACol: 0,				// Colors (Vector2)
 		AAAOpa: 0.5,			// Starting Opacity
