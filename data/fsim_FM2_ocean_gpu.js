@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260507
+*	FSIM FM2 DATA: 260509
 *
 ********************************************************************************
 
@@ -801,10 +801,18 @@ let xsg_ = {
 		// Parent (use this instead of link because bullets not attached)
 		ParPos: 0,				// Optional: Common Parent Position (Vector3)
 		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
-		// Gun Object
-		GunPtr: [],				// Gun Object (makMsh)
-		GunRot: [],				// Gun Rotation (Euler - degrees)
-		GunPos: [],				// Relative Map Position (Vector3) [used by Mesh]
+		// Gun Data 
+		GunPos: [],				// Map Position (Vector3)
+		GunRot: [],				// Gun Rotation - degrees (Euler)
+		// Optional: Gun Object
+		GunSrc: 0,				// Source of Gun Object File
+		GunPtr: [0],			// Destination of Gun Object ([0] = No Object)
+		ActLon: 0,				// Gun Object Animations
+		ActLat: 0,
+		AnmLon: 0,
+		AnmLat: 0,
+		GunAdj: 0,				// Gun Height Adjustment
+		// Optional: Targeting
 		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
 		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
 		// Bullet Data
@@ -857,10 +865,18 @@ let aaf_ = {
 		// Parent (use this instead of link because bullets not attached)
 		ParPos: 0,				// Optional: Common Parent Rotation (Euler)
 		ParRot: 0,				// Optional: Common Parent Position (Vector3)
-		// Gun Object
-		GunPtr: [],				// Gun Object (makMsh)
+		// Gun Data 
 		GunPos: [],				// Map Position (Vector3)
-		GunRot: [],				// Gun Rotation (Euler - degrees)
+		GunRot: [],				// Gun Rotation - degrees (Euler)
+		// Optional: Gun Object
+		GunSrc: 0,				// Source of Gun Object File
+		GunPtr: [0],			// Destination of Gun Object ([0] = No Object)
+		ActLon: 0,				// Gun Object Animations
+		ActLat: 0,
+		AnmLon: 0,
+		AnmLat: 0,
+		GunAdj: 0,				// Gun Height Adjustment
+		// Optional: Targeting
 		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
 		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
 		// Bullet Data

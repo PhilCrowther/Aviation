@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260504
+*	FSIM SF1 DATA: 260509
 *
 *********************************************************************************
 
@@ -515,10 +515,18 @@ let aaf_ = {
 		// Parent (use this instead of link because bullets not attached)
 		ParPos: 0,				// Optional: Common Parent Position (Vector3)
 		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
-		// Gun Object
-		GunPtr: [],				// Gun Object (Object3D)
+		// Gun Data 
 		GunPos: [],				// Map Position (Vector3)
 		GunRot: [],				// Gun Rotation - degrees (Euler)
+		// Optional: Gun Object
+		GunSrc: 0,				// Source of Gun Object File
+		GunPtr: [0],			// Destination of Gun Object ([0] = No Object)
+		ActLon: 0,				// Gun Object Animations
+		ActLat: 0,
+		AnmLon: 0,
+		AnmLat: 0,
+		GunAdj: 0,				// Gun Height Adjustment
+		// Optional: Targeting
 		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
 		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
 		// Bullet Data
