@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 May 2026
+Version dated 13 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -639,7 +639,7 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 				aag_.AAATim[n][i] = 0;
 				aag_.AAAPtr[n][i].visible = false;	
 				// Start Smoke When Designated Bullet Stops
-				if (!aag_.SmkDTm[n]) { // Smoke Delay = 0
+				if (!aag_.SmkDTm[n] && aag_.AAAFlg[n]) { // Smoke Delay = 0 and still firing [### 260513]
 					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
 					aag_.SmkPtr[n].visible = true;
 					aag_.SmkMat[n].opacity = 1.0;
@@ -1014,4 +1014,5 @@ export {initFad2Blk,moveFad2Blk,
 260508: Each AAA "battery" can have only one parent. Renamed from XSH to Par since parent is not necessarily a ship.
 		Added AAA targeting.  Computes lead based on past change in heading.  But does not account for change in rotation of parent (if any)
 260509:	Optional: Load and Move Gun Object
+260513: Seeting AAAFlg[n] = 0 will stop explosions.
 */
