@@ -639,7 +639,7 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 				aag_.AAATim[n][i] = 0;
 				aag_.AAAPtr[n][i].visible = false;	
 				// Start Smoke When Designated Bullet Stops
-				if (!aag_.SmkDTm[n]) { // Smoke Delay = 0
+				if (!aag_.SmkDTm[n] && aag_.AAAFlg[n]) { // Smoke Delay = 0 and still firing
 					aag_.SmkMpP[n].copy(aag_.AAAMpP[n][i]); // Bullet0 MapPos
 					aag_.SmkPtr[n].visible = true;
 					aag_.SmkMat[n].opacity = 1.0;
