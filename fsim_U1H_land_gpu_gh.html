@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Apr 2026
+Version dated 18 May 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -85,10 +85,10 @@ A flight simulation of an animated helicopter model over procedural land using W
 import * as THREE from "three";
 import {texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {LensflareMesh,LensflareElement } from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 //-	Custom Modules
-import {loadGrdMat,initGrdMat,GrdMap,
+import {loadSkyBox,initSkyBox,
+		loadGrdMat,initGrdMat,GrdMap,
 		initRoads,moveRoads,
 		loadTreLin,moveTreLin
 } from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
@@ -179,6 +179,7 @@ let gen_ = {
 		render: 0,				// Renderer
 		imagLd: 0,				// Image Loader
 		txtrLd: 0,				// Texture Loader
+		cubeLd: 0,				// Cube Loader
 		gltfLd: 0,				// GLTF Loader
 		//- Display
 		PawsOn:	0,				// Pause
@@ -224,11 +225,13 @@ let sky_ = {
 		ShdBLR: 6.5,
 		ShdBTB: 4,
 		ShdDst: 1500,			// Shadow Distance (meters)
+		// Computations
+		SunSph: 0,
+		SunPos: 0,
 	}
-
-//= SUN VALUES =================//===============================================
-let SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
-let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+//- Computations
+	sky_.SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
+	sky_.SunPos = new THREE.Vector3().setFromSpherical(sky_.SunSph);
 
 //= STANDARD SETUP =============//===============================================
 //- Display
@@ -239,7 +242,7 @@ let ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 	scene.add(ambLight);
 //- SunLight
 let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
-	sunLight.position.copy(SunPos);
+	sunLight.position.copy(sky_.SunPos);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = sky_.SunDst*0.75;
 	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox;
@@ -310,6 +313,7 @@ let boxrot = 0;
 	gen_.camera = camera;
 	gen_.txtrLd = txtrLoader;
 	gen_.imagLd = imagLoader;
+	gen_.cubeLd = cubeLoader;
 	gen_.gltfLd = gltfLoader;
 	gen_.audoLd = audoLoader;
 	gen_.listnr = listener;
@@ -686,7 +690,7 @@ let On_Paws, On_Info01, On_Info02, On_Info03, On_Info04, On_Info05, On_Info06, O
 
 function loadAll() {
 	WaitScreen();				// init loading screen
-	loadSkyBox();
+	loadSkyBox(sky_,gen_);		// load SkyBox materials
 	loadGrdMat(grd_,gen_);	
 	loadTreLin(grd_,gen_);
 	loadObject();
@@ -717,7 +721,7 @@ function WaitScreen() {
 //= 1 INITIALIZE ================//===============================================
 
 function initAll() {
-	initSkyBox();				// load skybox
+	initSkyBox(sky_,gen_);		// init SkyBox
 	initAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	initGrdMat(grd_,gen_);
@@ -763,45 +767,6 @@ function rendAll() {
 		gen_.SndFlg = 0;
 	}
 	renderer.render(scene,camera);
-}
-
-/********************************************************************************
-*
-*	2. SKY
-*
-********************************************************************************/
-
-function loadSkyBox() {
-	let envMap = cubeLoader
-		.setPath(sky_.SBxSrc)
-		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
-	envMap.format = THREE.RGBAFormat;
-	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
-	scene.background = envMap;
-	// LensFlare
-	if (gen_.LnFFlg) {				// SunFlare	
-		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
-		sky_.LF1Txt = txtrLoader.load(sky_.LF1Src);
-	}
-}
-
-function initSkyBox() {
-	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
-	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
-	// Fog (doesn't work with Normal Material)
-	scene.fog = new THREE.Fog(sky_.FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
-	// Lensflare
-	if (gen_.LnFFlg) {				// SunFlare		
-		let	spotLight = new THREE.PointLight(0xffffff);
-		scene.add(spotLight);
-		spotLight.position.copy(SunPos).normalize;
-		spotLight.position.multiplyScalar(1000);	
-		let LF = new LensflareMesh();
-			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
-			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
-			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
-		spotLight.add(LF);
-	}
 }
 
 /********************************************************************************

@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 16 Apr 2026
+Version dated 18 May 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 
@@ -96,13 +96,13 @@ The internal model is the SimiHopp fuselage combined with parts from the Nemeth 
 import * as THREE from "three";
 import {color,float,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 // Special Modules
 import {PointerLockControls,	// three.js modified
 		initCamera,moveCamera,	// camera
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
-import {loadGrdMat,initGrdMat,GrdMap,
+import {loadSkyBox,initSkyBox,
+		loadGrdMat,initGrdMat,GrdMap,
 		initRoads,moveRoads,
 		loadTreLin,moveTreLin
 	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
@@ -241,11 +241,13 @@ let sky_ = {
 		ShdBLR: 6.5,
 		ShdBTB: 4,
 		ShdDst: 500,			// Shadow Distance (meters)
+		// Computations
+		SunSph: 0,
+		SunPos: 0,
 	}
-
-//= SUN VALUES =================//==============================================
-let SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
-let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+//- Computations
+	sky_.SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
+	sky_.SunPos = new THREE.Vector3().setFromSpherical(sky_.SunSph);
 
 //= STANDARD SETUP =============//==============================================
 //- Scene
@@ -256,7 +258,7 @@ let ambLight = new THREE.AmbientLight(sky_.SunCol,0.2);
 	scene.add(ambLight);
 //- SunLight
 let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
-	sunLight.position.copy(SunPos);
+	sunLight.position.copy(sky_.SunPos);
 	sunLight.castShadow = true;
 //	sunLight.shadow.camera.near = sky_.SunDst*0.75;
 	sunLight.shadow.camera.near = sky_.SunDst+2;
@@ -271,7 +273,7 @@ let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	scene.add(sunLight);
 //- SonLight (Cockpit View Only)
 let sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
-	sonLight.position.copy(SunPos);
+	sonLight.position.copy(sky_.SunPos);
 	sonLight.castShadow = true;
 	sonLight.shadow.camera.near = sky_.SunDst*0.9;
 	sonLight.shadow.camera.far = sky_.SunDst+1;  // creates shadow on wing
@@ -327,8 +329,8 @@ let RESOURCES_LOADED = false;
 	gen_.gltfLd = new GLTFLoader(loadingManager);
 	gen_.audoLd = new THREE.AudioLoader();
 //- Create Audio Listener
-let	listener = new THREE.AudioListener();
-	camera.add(listener);
+	gen_.listnr = new THREE.AudioListener();
+	camera.add(gen_.listnr);
 //- Wait Screen
 let loadingScreen = {
 	scene: new THREE.Scene(),
@@ -341,8 +343,6 @@ let boxrot = 0;
 	gen_.scene  = scene;
 	gen_.render = renderer;
 	gen_.camera = camera;
-	gen_.listnr = listener;
-
 
 //= GROUND TEXTURES ============//==============================================
 //- Canvas
@@ -755,7 +755,7 @@ let Air_Pwr,AC_Hite,AC_Ptch,AC_SpdZ,AC_Bank,AC_Head,On_Paws,
 
 function loadAll() {
 	WaitScreen();				// init loading screen
-	loadSkyBox();
+	loadSkyBox(sky_,gen_);		// load SkyBox materials
 	loadGrdMat(grd_,gen_);	
 	loadTreLin(grd_,gen_);
 	loadAirObj();
@@ -787,7 +787,7 @@ function WaitScreen() {
 //= 1 INITIALIZE ================//==============================================
 
 function initAll() {
-	initSkyBox();				// load skybox
+	initSkyBox(sky_,gen_);		// init SkyBox
 	initAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 	initGrdMat(grd_,gen_);
@@ -837,45 +837,6 @@ function rendAll() {
 		gen_.SndFlg = 0;
 	}
 	renderer.render(scene,camera);
-}
-
-/*******************************************************************************
-*
-*	2. SKY
-*
-*******************************************************************************/
-
-function loadSkyBox() {
-	let envMap = gen_.cubeLd
-		.setPath(sky_.SBxSrc)
-		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
-	envMap.format = THREE.RGBAFormat;
-	envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
-	scene.background = envMap;
-	// LensFlare
-	if (gen_.LnFFlg) {				// SunFlare	
-		sky_.LF0Txt = gen_.txtrLd.load(sky_.LF0Src);
-		sky_.LF1Txt = gen_.txtrLd.load(sky_.LF1Src);
-	}
-}
-
-function initSkyBox() {
-	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
-	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
-	// Fog (doesn't work with Normal Material)
-	scene.fog = new THREE.Fog(sky_.FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
-	// Lensflare
-	if (gen_.LnFFlg) {				// SunFlare		
-		let	spotLight = new THREE.PointLight(0xffffff);
-		scene.add(spotLight);
-		spotLight.position.copy(SunPos).normalize;
-		spotLight.position.multiplyScalar(1000);	
-		let LF = new LensflareMesh();
-			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
-			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
-			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
-		spotLight.add(LF);
-	}
 }
 
 /*******************************************************************************
