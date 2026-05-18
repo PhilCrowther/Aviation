@@ -85,6 +85,7 @@ let gen_ = {
 		camera: 0,				// Camera
 		imagLd: 0,				// Image Loader
 		txtrLd: 0,				// Texture Loader
+		cubeLd: 0,				// Cube Loader
 		gltfLd: 0,				// GLTF Loader
 		audoLd: 0,				// Audio Loader
 		listnr: 0,				// Audio Listener
