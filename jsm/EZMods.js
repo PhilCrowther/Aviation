@@ -22,7 +22,6 @@ This module contains functions for the EZ flight program, including functions fo
 import {
 	Color,
 	Fog,
-	LensflareMesh,
 	LineBasicNodeMaterial,
 	LineSegments,
 	PlaneGeometry,
