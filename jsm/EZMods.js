@@ -98,7 +98,7 @@ function moveGrdMap(GrdSPS,scene) {
 
 //= INIT GRID MAP ==============================================================
 
-function init1GrMap(GrdSPS,Grd,scene) {
+function init1GrMap(GrdSPS,scene,Grd) {
 	// Load Variables
 	Grd.RCi = Grd.RCs-1;				// Max Index Value
 	Grd.MZV[Grd.RCi] = 0;				// Z-Values
@@ -163,7 +163,7 @@ function ToQuads(g) {
 
 //= MOVE GRID MAP ============================================================
 
-function move1GrMap(GrdSPS,Grd) {
+function move1GrMap(GrdSPS,scene,Grd) {
 	let j = 0;
 	let v = 0; 
 	let max = 0.5*Grd.RCs*Grd.Siz;
