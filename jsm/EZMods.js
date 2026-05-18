@@ -52,6 +52,7 @@ let DegRad = Math.PI/180;		// Convert Degrees to Radians
 *******************************************************************************/
 
 //= LOAD SKY ===================//==============================================
+//	Note: The SkyBox files should be jpg files with the names specified below:
 
 function loadSkyBox(sky_,gen_) {
 	sky_.envMap = gen_.cubeLd

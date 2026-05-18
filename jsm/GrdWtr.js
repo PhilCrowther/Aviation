@@ -4,9 +4,9 @@
 *
 ********************************************************************************
 
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Nov 2025
+Version dated 18 May 2026
 
 @fileoverview
 This version of the GrdMap module is designed to work with your main program 
@@ -77,7 +77,51 @@ import {DataTexture,
 		RepeatWrapping,
 		RGBAFormat,
 	} from 'three';
+
 import {color,texture,normalMap,positionLocal} from 'three/tsl';
+
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
+
+/*******************************************************************************
+*
+*	SKY
+*
+*******************************************************************************/
+
+//= LOAD SKY ===================//==============================================
+//	Note: The SkyBox files should be jpg files with the names specified below:
+
+function loadSkyBox(sky_,gen_) {
+	sky_.envMap = gen_.cubeLd
+		.setPath(sky_.SBxSrc)
+		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
+	sky_.envMap.format = RGBAFormat;
+	sky_.envMap.colorSpace = SRGBColorSpace;
+	gen_.scene.background = sky_.envMap;
+	// LensFlare
+	if (gen_.LnFFlg) {			// SunFlare	
+		sky_.LF0Txt = gen_.txtrLd.load(sky_.LF0Src);
+		sky_.LF1Txt = gen_.txtrLd.load(sky_.LF1Src);
+	}
+}
+
+//= INIT SKY ===================//==============================================
+
+function initSkyBox(sky_,gen_) {
+	gen_.scene.fog = new Fog(sky_.FogCol,0.25,95000);	// less than camera distance, sky colored fog
+	// Lensflare
+	if (gen_.LnFFlg) {			// SunFlare		
+		let	spotLight = new PointLight(0xffffff);
+		gen_.scene.add(spotLight);
+		spotLight.position.copy(sky_.SunPos).normalize;
+		spotLight.position.multiplyScalar(1000);	
+		let LF = new LensflareMesh();
+			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
+		spotLight.add(LF);
+	}
+}
 
 /*******************************************************************************
 *
@@ -484,7 +528,7 @@ _move1GrMap(grx_,grd_) {
 *
 *******************************************************************************/
 
-export {loadGeoMat,GrdMap};
+export {loadSkyBox,initSkyBox,loadGeoMat,GrdMap};
 
 /*******************************************************************************
 *
@@ -506,4 +550,5 @@ export {loadGeoMat,GrdMap};
 250909: v2	For use with Ocean2 (compute shaders) due to increases res, no detail required
 251124:		Changed context source to gen_.contxt
 251125:		Add scene and Loaders to gen_
+260518:		Add SkyBox routines.
 */

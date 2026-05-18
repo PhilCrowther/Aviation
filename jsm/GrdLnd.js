@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 26 Jan 2026
+Version dated 18 May 2026
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -33,6 +33,8 @@ import {
 
 import {color,texture} from 'three/tsl';
 
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
+
 /*******************************************************************************
 *
 *	CONSTANTS
@@ -43,7 +45,53 @@ import {color,texture} from 'three/tsl';
 let Ft2Mtr = 0.3048;			// Convert Feet to Meters
 let DegRad = Math.PI/180;		// Convert Degrees to Radians
 
-//= GRIDS =======================//=============================================
+/*******************************************************************************
+*
+*	SKY
+*
+*******************************************************************************/
+
+//= LOAD SKY ===================//==============================================
+//	Note: The SkyBox files should be jpg files with the names specified below:
+
+function loadSkyBox(sky_,gen_) {
+	sky_.envMap = gen_.cubeLd
+		.setPath(sky_.SBxSrc)
+		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
+	sky_.envMap.format = RGBAFormat;
+	sky_.envMap.colorSpace = SRGBColorSpace;
+	gen_.scene.background = sky_.envMap;
+	// LensFlare
+	if (gen_.LnFFlg) {			// SunFlare	
+		sky_.LF0Txt = gen_.txtrLd.load(sky_.LF0Src);
+		sky_.LF1Txt = gen_.txtrLd.load(sky_.LF1Src);
+	}
+}
+
+//= INIT SKY ===================//==============================================
+
+function initSkyBox(sky_,gen_) {
+	gen_.scene.fog = new Fog(sky_.FogCol,0.25,95000);	// less than camera distance, sky colored fog
+	// Lensflare
+	if (gen_.LnFFlg) {			// SunFlare		
+		let	spotLight = new PointLight(0xffffff);
+		gen_.scene.add(spotLight);
+		spotLight.position.copy(sky_.SunPos).normalize;
+		spotLight.position.multiplyScalar(1000);	
+		let LF = new LensflareMesh();
+			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
+		spotLight.add(LF);
+	}
+}
+
+/*******************************************************************************
+*
+*	GRID DATA
+*
+*******************************************************************************/
+
 //= Textures Data ==============//==============================================
 //- All textures are 512X512
 let dqSize = 1024;
@@ -1299,7 +1347,7 @@ return deg;}
 *
 *******************************************************************************/
 
-export {loadGrdMat,initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,moveTreLin};
+export {loadSkyBox,initSkyBox,loadGrdMat,initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,moveTreLin};
 
 /*******************************************************************************
 *
@@ -1315,4 +1363,6 @@ export {loadGrdMat,initGrdMat,GrdMap,initRoads,moveRoads,loadTreLin,moveTreLin};
 260117: Added shadows to plowed fields.
 260124: Added DifTxt changes to add contrast to ground materials
 260125: Reduce areas for trees
+260304:	Add textures for roads
+260518: Add SkyBox routines
 */
