@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 May 2026
+Version dated 18 May 2026
 
 @fileoverview
 This module contains functions for the EZ flight program, including functions for:
@@ -21,9 +21,13 @@ This module contains functions for the EZ flight program, including functions fo
 
 import {
 	Color,
+	Fog,
 	LineBasicNodeMaterial,
 	LineSegments,
 	PlaneGeometry,
+	PointLight,
+	RGBAFormat,
+	SRGBColorSpace,
 } from 'three';
 
 import {color} from 'three/tsl';
@@ -38,7 +42,54 @@ import {color} from 'three/tsl';
 let Ft2Mtr = 0.3048;			// Convert Feet to Meters
 let DegRad = Math.PI/180;		// Convert Degrees to Radians
 
-//= GROUND SQUARES =============//==============================================
+
+/*******************************************************************************
+*
+*	SKY
+*
+*******************************************************************************/
+
+//= LOAD SKY ===================//==============================================
+
+function loadSkyBox(sky_,gen_) {
+	sky_.envMap = gen_.cubeLd
+		.setPath(sky_.SBxSrc)
+		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
+	sky_.envMap.format = RGBAFormat;
+	sky_.envMap.colorSpace = SRGBColorSpace;
+	gen_.scene.background = sky_.envMap;
+	// LensFlare
+	if (gen_.LnFFlg) {			// SunFlare	
+		sky_.LF0Txt = gen_.txtrLd.load(sky_.LF0Src);
+		sky_.LF1Txt = gen_.txtrLd.load(sky_.LF1Src);
+	}
+}
+
+//= INIT SKY ===================//==============================================
+
+function initSkyBox(sky_,gen_) {
+	gen_.scene.fog = new Fog(sky_.FogCol,0.25,95000);	// less than camera distance, sky colored fog
+	// Lensflare
+	if (gen_.LnFFlg) {			// SunFlare		
+		let	spotLight = new PointLight(0xffffff);
+		gen_.scene.add(spotLight);
+		spotLight.position.copy(sky_.SunPos).normalize;
+		spotLight.position.multiplyScalar(1000);	
+		let LF = new LensflareMesh();
+			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
+			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
+		spotLight.add(LF);
+	}
+}
+
+/*******************************************************************************
+*
+*	GRID MAP
+*
+*******************************************************************************/
+
+//= VARIABLES ==================//==============================================
 // Layer 1 constains smaller higher definition squares
 // Layer 2 contains larger lower definition squares (3X size of Layer 1 squares)
 //- All Grids ------------------------------------------------------------------
@@ -80,25 +131,21 @@ let Grd5 = {
 		Mat: 0					// Match Material of Outer and Inner Blocks
 	}
 
-/*******************************************************************************
-*
-*	GRID MAP
-*
-*******************************************************************************/
+//= PROGRAMS ===================//==============================================
 
-function initGrdMap(GrdSPS,scene) {
-	init1GrMap(GrdSPS,scene,Grd4);
-	init1GrMap(GrdSPS,scene,Grd5);
+function initGrdMap(GrdSPS,gen_) {
+	init1GrMap(GrdSPS,gen_,Grd4);
+	init1GrMap(GrdSPS,gen_,Grd5);
 }
 
-function moveGrdMap(GrdSPS,scene) {
-	move1GrMap(GrdSPS,scene,Grd4);
-	move1GrMap(GrdSPS,scene,Grd5);
+function moveGrdMap(GrdSPS) {
+	move1GrMap(GrdSPS,Grd4);
+	move1GrMap(GrdSPS,Grd5);
 }
 
 //= INIT GRID MAP ==============================================================
 
-function init1GrMap(GrdSPS,scene,Grd) {
+function init1GrMap(GrdSPS,gen_,Grd) {
 	// Load Variables
 	Grd.RCi = Grd.RCs-1;				// Max Index Value
 	Grd.MZV[Grd.RCi] = 0;				// Z-Values
@@ -129,7 +176,7 @@ function init1GrMap(GrdSPS,scene,Grd) {
 		for (let x = 0; x < Grd.RCs; x++) {	// Column
 			Grd.Ptr[n] = new LineSegments(geometry,airmat);
 			Grd.Ptr[n].rotation.x = -90*DegRad;
-			scene.add(Grd.Ptr[n]);
+			gen_.scene.add(Grd.Ptr[n]);
 			Grd.Ptr[n].position.set(Grd.MXV[x],-GrdSPS.y,-Grd.MZV[y]);
 			n++;
 		}
@@ -163,7 +210,7 @@ function ToQuads(g) {
 
 //= MOVE GRID MAP ============================================================
 
-function move1GrMap(GrdSPS,scene,Grd) {
+function move1GrMap(GrdSPS,Grd) {
 	let j = 0;
 	let v = 0; 
 	let max = 0.5*Grd.RCs*Grd.Siz;
@@ -283,7 +330,7 @@ function move1GrMap(GrdSPS,scene,Grd) {
 *
 *******************************************************************************/
 
-export {initGrdMap,moveGrdMap};
+export {loadSkyBox,initSkyBox,initGrdMap,moveGrdMap};
 
 /*******************************************************************************
 *
