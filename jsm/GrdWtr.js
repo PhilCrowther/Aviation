@@ -69,15 +69,17 @@ grd_ = {
 *******************************************************************************/
 
 import {DataTexture,
-		Fog,
-		LinearFilter,
-		LinearMipMapLinearFilter,
-		Mesh,
-		MeshStandardNodeMaterial,
-		PlaneGeometry,
-		RepeatWrapping,
-		RGBAFormat,
-	} from 'three';
+	Fog,
+	LinearFilter,
+	LinearMipMapLinearFilter,
+	Mesh,
+	MeshStandardNodeMaterial,
+	PlaneGeometry,
+	PointLight,
+	RepeatWrapping,
+	RGBAFormat,
+	SRGBColorSpace,
+} from 'three';
 
 import {color,texture,normalMap,positionLocal} from 'three/tsl';
 

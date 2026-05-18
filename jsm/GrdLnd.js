@@ -28,8 +28,10 @@ import {
 	MeshLambertNodeMaterial,
 	MeshStandardNodeMaterial,
 	PlaneGeometry,
+	PointLight,
 	RepeatWrapping,
 	RGBAFormat,
+	SRGBColorSpace,
 } from 'three';
 
 import {color,texture} from 'three/tsl';
