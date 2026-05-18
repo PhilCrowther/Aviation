@@ -143,8 +143,8 @@ let sky_ = {
 		SBxSrc: "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
 		envMap: 0,				// For this SkyBox
 		// Sun (position in SkyBox)
-		SunLat: 23,				// Direction - Vert (+/- 90) deg
-		SunLon: 312,			// Direction - Horz (0->360) deg
+		SunLat: 23,				// Sun Latitude  (Elevation) - Vertical (+/- 90) deg
+		SunLon: 312,			// Sun Longitude (Azimuth) - Horizontal (0->360) deg
 		// Lensflare
 		LF0Src: "https://PhilCrowther.github.io/Aviation/textures/fx/lensflare1.png",
 		LF1Src: "https://PhilCrowther.github.io/Aviation/textures/fx/lensflare3.png",
@@ -156,6 +156,9 @@ let sky_ = {
 		ShdBLR: 12,
 		ShdBTB: 4,
 		ShdDst: 1500,			// Shadow Distance (meters)
+		// Computed
+		SunSph: 0,
+		SunPos: 0,
 	}
 
 //= 3. OCEAN GRID VARIABLES ====//==============================================
