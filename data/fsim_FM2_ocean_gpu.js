@@ -184,7 +184,7 @@ let grd_ = {
 		// Normal Map
 		Nrm: 0,					// Grid 0-1 Normal Map (from Ocean)
 		NMS: 0,					// Grid 0-1 Normal Map Scale (from Ocean)
-		N2S: "https://threejs.org/examples/textures/waternormals.jpg", // Size = 1024x1024
+		N2S: "https://PhilCrowther.github.io/Aviation/textures/ocean/waternormals.jpg", // Size = 1024x1024
 		NM2: 0,					// Grid 2 Normal Map
 		// Indices
 		Col: 0,
