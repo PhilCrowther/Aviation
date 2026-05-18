@@ -33,6 +33,8 @@ import {
 
 import {color} from 'three/tsl';
 
+import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
+
 /*******************************************************************************
 *
 *	CONSTANTS
