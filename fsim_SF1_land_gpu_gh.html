@@ -85,7 +85,6 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 import * as THREE from "three";
 import {color,float,texture} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) -------------------------------------
 import {loadAirExt,loadAirInt,moveAirObj,
@@ -101,7 +100,8 @@ import {initBullet,moveBullet,	// My Airplane Bullets
 		initAirSmk,initAirFyr,	// Air Smoke and Fire
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
-import {loadGrdMat,initGrdMat,GrdMap,
+import {loadSkyBox,initSkyBox,
+		loadGrdMat,initGrdMat,GrdMap,
 		initRoads,moveRoads,
 		loadTreLin,moveTreLin
 	} from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js";
@@ -160,9 +160,14 @@ let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 let KeyVal = new THREE.Vector3(1,.25,0.25);	// Key Values (Yaw = turn rate in 15 deg bank)
 
 //= SUN VALUES =================//==============================================
-//- New
-let SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
-let	SunPos = new THREE.Vector3().setFromSpherical(SunSph);
+//- Source (Default)
+	// Note: The SkyBox files must have these names: px.jpg, nx.jpg, py.jpg, ny.jpg, pz.jpg, nz.jpg
+	sky_.SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
+	sky_.SunLat = 23,			// Sun Latitude  (Elevation) - Vertical (+/- 90) deg - varies with source
+	sky_.SunLon = 312,			// Sun Longitude (Azimuth) - Horizontal (0->360) deg - varies with source
+//- Computations
+	sky_.SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
+	sky_.SunPos = new THREE.Vector3().setFromSpherical(sky_.SunSph);
 
 //= STANDARD SETUP =============//==============================================
 //- Scene
@@ -173,7 +178,7 @@ let ambLight = new THREE.AmbientLight(sky_.SunCol,0.5);
 	scene.add(ambLight);
 //- SunLight
 let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
-	sunLight.position.copy(SunPos);
+	sunLight.position.copy(sky_.SunPos);
 	sunLight.castShadow = true;
 	sunLight.shadow.camera.near = sky_.SunDst*0.75;
 	sunLight.shadow.camera.far = sky_.SunDst+sky_.ShdDst+sky_.ShdBox; // Out to 1500 meters
@@ -187,7 +192,7 @@ let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
 	scene.add(sunLight);
 //- SonLight (Cockpit View Only)
 let sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
-	sonLight.position.copy(SunPos);
+	sonLight.position.copy(sky_.SunPos);
 	sonLight.castShadow = true;
 	sonLight.shadow.camera.near = sky_.SunDst*0.9;
 	sonLight.shadow.camera.far = sky_.SunDst+1;  // creates shadow on wing
@@ -267,6 +272,7 @@ let boxrot = 0;
 	gen_.camera = camera;
 	gen_.txtrLd = txtrLoader;
 	gen_.imagLd = imagLoader;
+	gen_.cubeLd = cubeLoader;
 	gen_.gltfLd = gltfLoader;
 	gen_.audoLd = audoLoader;
 	gen_.listnr = listener;
@@ -368,6 +374,7 @@ let gau_ = {
 //				   XPPath + "sounds/" + "fm2_gun.mp3",
 //				   XPPath + "sounds/" + "fm2_gun.mp3"];
 //- Fixed Gun Battery ----------//----------------------------------------------
+//  QF 13 pounder 9 cwt
 //- Variables
 let AAFOff = 3.0;				// Bullet Start Height Above Ground - Blender value = 2.88
 let AAFHrz = 15;				// Horizontal Inset for Guns
@@ -389,7 +396,7 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	aaf_.AnmLat = [0,0,0,0];
 	aaf_.GunAdj = -AAFOff;
 	// Bullets - General Data 
-	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
+	aaf_.AAASpd = 655;			// Muzzle Velocity - mps
 	aaf_.AAADLT = 300;			// Max Bullet Altitude - meters
 	aaf_.AAANum = 1;			// Number of Tracers
 	aaf_.AAASpc = 7.5;			// Bullet Spacing (4*BulDLT/BulNum)
@@ -464,7 +471,7 @@ let instructions = document.getElementById("instructions");
 function loadAll() {
 	// Initialize Loading Screen
 	WaitScreen();				// init loading screen
-	loadSkyBox();
+	loadSkyBox(sky_,gen_);		// load SkyBox materials
 	loadGrdMat(grd_,gen_);
 	loadTreLin(grd_,gen_);
 	loadAirObj();
@@ -499,7 +506,7 @@ function initAll() {
 	tim_.DLTime = 1/60;			// Seconds per frame (default)
 	tim_.DLTim2 = tim_.DLTime**2;
 	tim_.GrvDLT = GrvMPS*tim_.DLTim2;
-	initSkyBox();				// load skybox
+	initSkyBox(sky_,gen_);		// init SkyBox
 	initAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
 	initGrdMat(grd_,gen_);
@@ -550,49 +557,6 @@ function rendAll() {
 		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
 	renderer.render(scene,camera);
-}
-
-/*******************************************************************************
-*
-*	2. SKY
-*
-*******************************************************************************/
-
-//= LOAD SKY ===================//==============================================
-
-function loadSkyBox() {
-	sky_.envMap = cubeLoader
-		.setPath(sky_.SBxSrc)
-		.load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
-	sky_.envMap.format = THREE.RGBAFormat;
-	sky_.envMap.colorSpace = THREE.SRGBColorSpace; // ### r152
-	scene.background = sky_.envMap;
-	// LensFlare
-	if (gen_.LnFFlg) {			// SunFlare	
-		sky_.LF0Txt = txtrLoader.load(sky_.LF0Src);
-		sky_.LF1Txt = txtrLoader.load(sky_.LF1Src);
-	}
-}
-
-//= INIT SKY ===================//==============================================
-	// Scrolling Map Max Distance = 81,000 units (81,000 meters = 50.33 miles)
-	// (=.5 * (27 outer squares * 3 inner per outer * 2000 inner square size))
-	// Fog (doesn't work with Normal Material)
-
-function initSkyBox() {
-	scene.fog = new THREE.Fog(sky_.FogCol, 0.25, 95000);	// less than camera distance, sky colored fog
-	// Lensflare
-	if (gen_.LnFFlg) {			// SunFlare		
-		let	spotLight = new THREE.PointLight(0xffffff);
-		scene.add(spotLight);
-		spotLight.position.copy(SunPos).normalize;
-		spotLight.position.multiplyScalar(1000);	
-		let LF = new LensflareMesh();
-			LF.addElement(new LensflareElement(sky_.LF0Txt,256,0));
-			LF.addElement(new LensflareElement(sky_.LF1Txt,32,0.2));
-			LF.addElement(new LensflareElement(sky_.LF1Txt,256,0.9));
-		spotLight.add(LF);
-	}
 }
 
 /*******************************************************************************
