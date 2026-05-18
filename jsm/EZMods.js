@@ -42,10 +42,6 @@ let DegRad = Math.PI/180;		// Convert Degrees to Radians
 // Layer 2 contains larger lower definition squares (3X size of Layer 1 squares)
 //- All Grids ------------------------------------------------------------------
 let GrdSiz = 1609.33;			// Grid Size 1 Mile (1609.33m)
-// Used to Position Map
-let Grd0 = {
-		SPS: new THREE.Vector3().copy(BegPos), // Map XSpd, YPos, ZSpd
-	}
 //= Grid 4 ---------------------------------------------------------------------
 let Grd4 = {
 		Typ: 4,					// Type of Grid - Inner or Outer
