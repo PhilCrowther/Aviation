@@ -86,19 +86,19 @@ let Grd5 = {
 *
 *******************************************************************************/
 
-function initGrdMap(GrdSPS) {
-	init1GrMap(GrdSPS,Grd4);
-	init1GrMap(GrdSPS,Grd5);
+function initGrdMap(GrdSPS,scene) {
+	init1GrMap(GrdSPS,scene,Grd4);
+	init1GrMap(GrdSPS,scene,Grd5);
 }
 
-function moveGrdMap(GrdSPS) {
-	move1GrMap(GrdSPS,Grd4);
-	move1GrMap(GrdSPS,Grd5);
+function moveGrdMap(GrdSPS,scene) {
+	move1GrMap(GrdSPS,scene,Grd4);
+	move1GrMap(GrdSPS,scene,Grd5);
 }
 
 //= INIT GRID MAP ==============================================================
 
-function init1GrMap(GrdSPS,Grd) {
+function init1GrMap(GrdSPS,Grd,scene) {
 	// Load Variables
 	Grd.RCi = Grd.RCs-1;				// Max Index Value
 	Grd.MZV[Grd.RCi] = 0;				// Z-Values
