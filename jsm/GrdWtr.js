@@ -69,6 +69,7 @@ grd_ = {
 *******************************************************************************/
 
 import {DataTexture,
+		Fog,
 		LinearFilter,
 		LinearMipMapLinearFilter,
 		Mesh,

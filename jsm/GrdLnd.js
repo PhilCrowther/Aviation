@@ -21,6 +21,7 @@ This moduel contains functions creating a scrolling grid map for Land
 import {
 	Color,
 	DataTexture,
+	Fog,
 	LinearFilter,
 	LinearMipMapLinearFilter,
 	Mesh,
