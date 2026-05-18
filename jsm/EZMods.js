@@ -6,10 +6,11 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 26 Jan 2026
+Version dated 17 May 2026
 
 @fileoverview
-This moduel contains functions creating a scrolling grid map for Land
+This module contains functions for the EZ flight program, including functions for:
+- creating a basic scrolling grid map
 */
 
 /*******************************************************************************
@@ -95,9 +96,9 @@ function moveGrdMap(GrdSPS) {
 	move1GrMap(GrdSPS,Grd5);
 }
 
-//= Init Grid Map ==============================================================
+//= INIT GRID MAP ==============================================================
 
-function init1GrMap(Grd) {
+function init1GrMap(GrdSPS,Grd) {
 	// Load Variables
 	Grd.RCi = Grd.RCs-1;				// Max Index Value
 	Grd.MZV[Grd.RCi] = 0;				// Z-Values
@@ -160,9 +161,9 @@ function ToQuads(g) {
   g.setIndex(indices);
 }
 
-//= Move Grid Map ============================================================
+//= MOVE GRID MAP ============================================================
 
-function move1GrMap(Grd) {
+function move1GrMap(GrdSPS,Grd) {
 	let j = 0;
 	let v = 0; 
 	let max = 0.5*Grd.RCs*Grd.Siz;
