@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 15 Apr 2026
+Version dated 20 May 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -244,7 +244,7 @@ function initXACVeh(xac_,air_,gen_) {
 		// Compute Relative Position
 		// (cause Objects to elevate above water as we climb to prevent flicker)
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
-		let Y = xac_.MapPos[n].y-gen_.AltDif;
+		let Y = xac_.MapPos[n].y-air_.MapPos.y; // No reason to adjust for altitude
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 		gen_.scene.add(xac_.ObjAdr[n]);
@@ -553,7 +553,7 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,gen_) {
 	// The Next 3 Sounds Are All the Same (for now)
 	//
 	// XP End Explosion
-	for (let n = 0; n < xac_.ObjNum; n ++) {	// ### fixed 260503
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		xac_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xac_.SndSrc,function(buffer) {
 			xac_.SndPtr[n].setBuffer(buffer);
@@ -595,7 +595,7 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 
 function moveObjSnd(xac_,xag_,xsg_,aaf_) {
 	//- XAC ....................................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Engine
+	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Endinge
 	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);} // Gun
 	//-	Explosions ..............................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.SndPtr[n].setVolume(xac_.SndVol);} // XAC
@@ -672,4 +672,5 @@ export {loadMountn,initMountn,moveMountn,
 251125	Added scene, Loaders and listener to gen_
 251227	Disable ship shadows for now
 260415	Eliminate Pitch and Bank animation for Aircraft
+260520: Eliminate altitude adjustment for other aircraft
 */
