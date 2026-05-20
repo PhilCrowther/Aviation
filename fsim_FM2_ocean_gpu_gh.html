@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 May 2026
+Version dated 20 May 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -665,7 +665,7 @@ function loadAll() {
 	loadSkyBox(sky_,gen_);		// load SkyBox materials
 	loadGeoMat(grd_,gen_);
 	loadAirObj();
-	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
+	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything (except aircraft)
 	loadObject();				// load objects
 	// Load stats
 	if (gen_.StatOn) {			// show stats
@@ -702,7 +702,7 @@ function initAll() {
 	initSkyBox(sky_,gen_);		// init SkyBox
 	// Objects
 	initAirObj();
-	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
+	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything (except aircraft)
 	initObject();				// Determine relative XZ location of all objects
 	// Grid
 	waves = new Ocean(wav_);	// Init Ocean
@@ -1032,7 +1032,7 @@ function moveMovPln() {
 		if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
 		//. Compute New Relative Position ......................................
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
-		let Y = xac_.MapPos[n].y-gen_.AltDif;
+		let Y = xac_.MapPos[n].y-air_.MapPos.y;	// No altitude adjustment required
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.ObjAdr[n].position.set(X,Y,Z);
 	}
