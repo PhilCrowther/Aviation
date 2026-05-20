@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 May 2026
+Version dated 20 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -353,7 +353,7 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 				xag_.BulMpP[n][i].z = xag_.BulMpP[n][i].z + xag_.BulMpS[n][i].z;
 				// Relative Position
 				xag_.BulPtr[n][i].position.x = xag_.BulMpP[n][i].x - air_.MapPos.x;
-				xag_.BulPtr[n][i].position.y = xag_.BulMpP[n][i].y - gen_.AltDif;
+				xag_.BulPtr[n][i].position.y = xag_.BulMpP[n][i].y - air_.MapPos.y; // No altitude adjustment
 				xag_.BulPtr[n][i].position.z = air_.MapPos.z - xag_.BulMpP[n][i].z;
 			}
 		} // end i
@@ -658,14 +658,14 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 				aag_.AAAMpP[n][i].z = aag_.AAAMpP[n][i].z + aag_.AAAMpS[n][i].z;
 				// Relative Position
 				aag_.AAAPtr[n][i].position.x = aag_.AAAMpP[n][i].x - air_.MapPos.x;
-				aag_.AAAPtr[n][i].position.y = aag_.AAAMpP[n][i].y - gen_.AltDif;
+				aag_.AAAPtr[n][i].position.y = aag_.AAAMpP[n][i].y - air_.MapPos.y;
 				aag_.AAAPtr[n][i].position.z = air_.MapPos.z - aag_.AAAMpP[n][i].z;
 			}
 		} // end of i
 		// Smoke Relative Position
 		if (aag_.SmkPtr[n].visible = true) {
 			aag_.SmkPtr[n].position.x = aag_.SmkMpP[n].x - air_.MapPos.x;
-			aag_.SmkPtr[n].position.y = aag_.SmkMpP[n].y - gen_.AltDif;
+			aag_.SmkPtr[n].position.y = aag_.SmkMpP[n].y - air_.MapPos.y;
 			aag_.SmkPtr[n].position.z = air_.MapPos.z - aag_.SmkMpP[n].z;
 			aag_.SmkMat[n].rotation = Mod360((air_.AirRot.z + aag_.SmkRot[n])) * DegRad;
 			// Reduce Opacity
@@ -1015,4 +1015,5 @@ export {initFad2Blk,moveFad2Blk,
 		Added AAA targeting.  Computes lead based on past change in heading.  But does not account for change in rotation of parent (if any)
 260509:	Optional: Load and Move Gun Object
 260513: Seeting AAAFlg[n] = 0 will stop explosions.
+260520:	Eliminate altitude adjustment (AltDif) for bullets (xac and aag).
 */
