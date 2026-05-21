@@ -686,9 +686,15 @@ let AC2_InXNode = document.createTextNode("");
 let AC2_OfXElement = document.getElementById("AC2_OfX");
 let AC2_OfXNode = document.createTextNode("");
 	AC2_OfXElement.appendChild(AC2_OfXNode);
+let AC2_OfXElement = document.getElementById("AC2_OfX");
+let AC2_OfXNode = document.createTextNode("");
+	AC2_OfXElement.appendChild(AC2_OfXNode);
+let AC2_BMxElement = document.getElementById("AC2_BMx");
+let AC2_BMxNode = document.createTextNode("");
+	AC2_BMxElement.appendChild(AC2_BMxNode);
 //
 let AC2_Alt,AC2_Spd,AC2_Hdg,AC2_Trn,AC2_Rad,AC2_Pit,AC2_AoA,AC2_Bnk;
-let AC2_InY,AC2_OfY,AC2_InX,AC2_OfX;
+let AC2_InY,AC2_OfY,AC2_InX,AC2_OfX,AC2_BMx;
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
 let On_PawsElement = document.getElementById("On_Paws");
