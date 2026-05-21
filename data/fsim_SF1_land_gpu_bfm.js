@@ -622,7 +622,7 @@ let cam_ = {
 
 //= 8. OUTPUT VARIABLES ========//==============================================
 
-//- Air1
+//- Air1 -----------------------------------------------------------------------
 let AC1_AltElement = document.getElementById("AC1_Alt");
 let AC1_AltNode = document.createTextNode("");
 	AC1_AltElement.appendChild(AC1_AltNode);
@@ -649,7 +649,8 @@ let AC1_AoANode = document.createTextNode("");
 	AC1_AoAElement.appendChild(AC1_AoANode);
 //
 let AC1_Alt,AC1_Spd,AC1_Hdg,AC1_Trn,AC1_Rad,AC1_Pit,AC1_AoA,AC1_Bnk;
-//- Air2
+
+//- Air2 -----------------------------------------------------------------------
 let AC2_AltElement = document.getElementById("AC2_Alt");
 let AC2_AltNode = document.createTextNode("");
 	AC2_AltElement.appendChild(AC2_AltNode);
@@ -686,12 +687,15 @@ let AC2_InXNode = document.createTextNode("");
 let AC2_OfXElement = document.getElementById("AC2_OfX");
 let AC2_OfXNode = document.createTextNode("");
 	AC2_OfXElement.appendChild(AC2_OfXNode);
+let AC2_ManElement = document.getElementById("AC2_Man");
+let AC2_ManNode = document.createTextNode("");
+	AC2_ManElement.appendChild(AC2_ManNode);
 let AC2_BMxElement = document.getElementById("AC2_BMx");
 let AC2_BMxNode = document.createTextNode("");
 	AC2_BMxElement.appendChild(AC2_BMxNode);
 //
 let AC2_Alt,AC2_Spd,AC2_Hdg,AC2_Trn,AC2_Rad,AC2_Pit,AC2_AoA,AC2_Bnk;
-let AC2_InY,AC2_OfY,AC2_InX,AC2_OfX,AC2_BMx;
+let AC2_InY,AC2_OfY,AC2_InX,AC2_OfX,AC2_Man,AC2_BMx;
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
 let On_PawsElement = document.getElementById("On_Paws");
