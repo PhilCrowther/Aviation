@@ -622,7 +622,14 @@ let cam_ = {
 
 //= 8. OUTPUT VARIABLES ========//==============================================
 
-//- Air1 -----------------------------------------------------------------------
+//- Air1 Only ------------------------------------------------------------------
+let Air_PwrElement = document.getElementById("Air_Pwr");
+let Air_PwrNode = document.createTextNode("");
+	Air_PwrElement.appendChild(Air_PwrNode);
+//
+let Air_Pwr;
+
+//- Air1 Common ----------------------------------------------------------------
 let AC1_AltElement = document.getElementById("AC1_Alt");
 let AC1_AltNode = document.createTextNode("");
 	AC1_AltElement.appendChild(AC1_AltNode);
@@ -648,9 +655,9 @@ let AC1_AoAElement = document.getElementById("AC1_AoA");
 let AC1_AoANode = document.createTextNode("");
 	AC1_AoAElement.appendChild(AC1_AoANode);
 //
-let AC1_Alt,AC1_Spd,AC1_Hdg,AC1_Trn,AC1_Rad,AC1_Pit,AC1_AoA,AC1_Bnk;
+let AC1_Alt,AC1_Spd,AC1_Hdg,AC1_Bnk,AC1_Trn,AC1_Rad,AC1_Pit,AC1_AoA;
 
-//- Air2 -----------------------------------------------------------------------
+//- Air2 Common ----------------------------------------------------------------
 let AC2_AltElement = document.getElementById("AC2_Alt");
 let AC2_AltNode = document.createTextNode("");
 	AC2_AltElement.appendChild(AC2_AltNode);
@@ -675,6 +682,10 @@ let AC2_PitNode = document.createTextNode("");
 let AC2_AoAElement = document.getElementById("AC2_AoA");
 let AC2_AoANode = document.createTextNode("");
 	AC2_AoAElement.appendChild(AC2_AoANode);
+//
+let AC2_Alt,AC2_Spd,AC2_Hdg,AC2_Bnk,AC2_Trn,AC2_Rad,AC2_Pit,AC2_AoA;
+
+//- Air2 Only ------------------------------------------------------------------
 let AC2_InYElement = document.getElementById("AC2_InY");
 let AC2_InYNode = document.createTextNode("");
 	AC2_InYElement.appendChild(AC2_InYNode);
@@ -694,17 +705,16 @@ let AC2_BMxElement = document.getElementById("AC2_BMx");
 let AC2_BMxNode = document.createTextNode("");
 	AC2_BMxElement.appendChild(AC2_BMxNode);
 //
-let AC2_Alt,AC2_Spd,AC2_Hdg,AC2_Trn,AC2_Rad,AC2_Pit,AC2_AoA,AC2_Bnk;
 let AC2_InY,AC2_OfY,AC2_InX,AC2_OfX,AC2_Man,AC2_BMx;
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
-let On_PawsElement = document.getElementById("On_Paws");
+let On_PawsElement = document.getElementById("On_Paws"); // Pause
 let On_PawsNode = document.createTextNode("");
 	On_PawsElement.appendChild(On_PawsNode);
-let Air_AtPElement = document.getElementById("Air_AtP");	// Autopilot
+let Air_AtPElement = document.getElementById("Air_AtP"); // Autopilot
 let Air_AtPNode = document.createTextNode("");
 	Air_AtPElement.appendChild(Air_AtPNode);
-let On_Inf0Element = document.getElementById("On_Inf0");
+let On_Inf0Element = document.getElementById("On_Inf0"); // Info
 let On_Inf0Node = document.createTextNode("");
 	On_Inf0Element.appendChild(On_Inf0Node);
 let On_Inf1Element = document.getElementById("On_Inf1");
@@ -732,8 +742,8 @@ let On_Inf8Element = document.getElementById("On_Inf8");
 let On_Inf8Node = document.createTextNode("");
 	On_Inf8Element.appendChild(On_Inf8Node);
 //
-let Air_Pwr, Air_Spd, Air_Hdg, Air_Alt, Air_CfL;
-let On_Paws, On_Inf0, On_Inf1, On_Inf2, On_Inf3, On_Inf4, On_Inf5, On_Inf6, On_Inf7, On_Inf8;
+let On_Paws, Air_AtP;
+let On_Inf0, On_Inf1, On_Inf2, On_Inf3, On_Inf4, On_Inf5, On_Inf6, On_Inf7, On_Inf8;
 
 //= 9. INPUT VARIABLES =========//==============================================
 
