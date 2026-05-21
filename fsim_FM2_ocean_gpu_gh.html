@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 May 2026
+Version dated 21 May 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -266,9 +266,9 @@ let E3Zero = new THREE.Euler(0,0,0);
 //= SUN VALUES =================//==============================================
 //- Source (Default)
 	// Note: The SkyBox files must have these names: px.jpg, nx.jpg, py.jpg, ny.jpg, pz.jpg, nz.jpg
-	sky_.SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
-	sky_.SunLat = 23,			// Sun Latitude  (Elevation) - Vertical (+/- 90) deg - varies with source
-	sky_.SunLon = 312,			// Sun Longitude (Azimuth) - Horizontal (0->360) deg - varies with source
+	sky_.SBxSrc = "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/";
+	sky_.SunLat = 23;			// Sun Latitude  (Elevation) - Vertical (+/- 90) deg - varies with source
+	sky_.SunLon = 312;			// Sun Longitude (Azimuth) - Horizontal (0->360) deg - varies with source
 //- Computations
 	sky_.SunSph = new THREE.Spherical(sky_.SunDst,(90-sky_.SunLat)*DegRad,Mod360(180-sky_.SunLon)*DegRad);
 	sky_.SunPos = new THREE.Vector3().setFromSpherical(sky_.SunSph);
