@@ -226,9 +226,9 @@ function testHitBox(myg_,xac_) {
 		// Check All Bullets for Hit
 		for (let i = 0; i < myg_.BulNum; i ++) {
 			// Hitting Target?
-			if (Math.abs(xac_.ObjAdr[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
-				if (Math.abs(xac_.ObjAdr[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
-					if (Math.abs(xac_.ObjAdr[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
+			if (Math.abs(xac_.AirObj[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
+				if (Math.abs(xac_.AirObj[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
+					if (Math.abs(xac_.AirObj[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
 						xac_.HitCnt[n]++;
 					}
 				}
@@ -1014,4 +1014,5 @@ export {initFad2Blk,moveFad2Blk,
 260509:	Optional: Load and Move Gun Object
 260513: Seeting AAAFlg[n] = 0 will stop explosions.
 260520:	Eliminate altitude adjustment (AltDif) for bullets (xac and aag).
+260521: Changed air_.ObjAdr to air_.AirObj
 */
