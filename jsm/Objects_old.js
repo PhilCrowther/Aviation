@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 May 2026
+Version dated 20 May 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -220,18 +220,18 @@ function moveAnmFlg(flg_,tim_) {
 function loadXACVeh(xac_,anm_,gen_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		gen_.gltfLd.load(xac_.ObjSrc[n], function (gltf) {
-			xac_.AirObj[n] = gltf.scene;
+			xac_.ObjAdr[n] = gltf.scene;
 			// Convert from feet to meters
-			xac_.AirObj[n].scale.setScalar(xac_.ObjSiz[n]);
+			xac_.ObjAdr[n].scale.setScalar(xac_.ObjSiz[n]);
 			// Propeller
 			let clip = AnimationClip.findByName(gltf.animations, "propellerAction");
-			xac_.MixSpn[n] = new AnimationMixer(xac_.AirObj[n]);
+			xac_.MixSpn[n] = new AnimationMixer(xac_.ObjAdr[n]);
 			let actun = xac_.MixSpn[n].clipAction(clip);
 			actun.play();
 			if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
 			// Rotation
-			xac_.AirObj[n].rotation.order = "YXZ"; // Heading, Pitch, Bank
-			xac_.AirObj[n].rotation.y = xac_.AirRot[n].y*DegRad;
+			xac_.ObjAdr[n].rotation.order = "YXZ"; // Heading, Pitch, Bank
+			xac_.ObjAdr[n].rotation.y = xac_.ObjRot[n].y*DegRad;
 		});
 	}
 
@@ -246,8 +246,8 @@ function initXACVeh(xac_,air_,gen_) {
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
 		let Y = xac_.MapPos[n].y-air_.MapPos.y;
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
-		xac_.AirObj[n].position.set(X,Y,Z);
-		gen_.scene.add(xac_.AirObj[n]);
+		xac_.ObjAdr[n].position.set(X,Y,Z);
+		gen_.scene.add(xac_.ObjAdr[n]);
 	};
 };
 
@@ -538,7 +538,7 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,gen_) {
 		gen_.audoLd.load(xac_.EngSrc[n],function(buffer) {
 			xac_.EngPtr[n].setBuffer(buffer);
 			init1Sound(xac_.EngPtr[n],RefDst,0,1.3,1,xac_.EngMsh[n]);
-			xac_.AirObj[n].add(xac_.EngMsh[n]);
+			xac_.ObjAdr[n].add(xac_.EngMsh[n]);
 		});
 	}
 	// XP Guns
@@ -547,7 +547,7 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,gen_) {
 		gen_.audoLd.load(xag_.SndSrc[n],function(buffer) {
 			xag_.SndPtr[n].setBuffer(buffer);
 			init1Sound(xag_.SndPtr[n],RefDst,0,1.3,1,xag_.SndMsh[n]);
-			xac_.AirObj[n].add(xag_.SndMsh[n]);
+			xac_.ObjAdr[n].add(xag_.SndMsh[n]);
 		});
 	}
 	// The Next 3 Sounds Are All the Same (for now)
@@ -558,7 +558,7 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,gen_) {
 		gen_.audoLd.load(xac_.SndSrc,function(buffer) {
 			xac_.SndPtr[n].setBuffer(buffer);
 			init1Sound(xac_.SndPtr[n],RefDst,0,1,0,xac_.SndMsh[n]);
-			xac_.AirObj[n].add(xac_.SndMsh[n]);
+			xac_.ObjAdr[n].add(xac_.SndMsh[n]);
 		});
 	}
 	// Load AAA Sounds ..........................................................
@@ -673,5 +673,4 @@ export {loadMountn,initMountn,moveMountn,
 251227	Disable ship shadows for now
 260415	Eliminate Pitch and Bank animation for Aircraft
 260520: Eliminate Altitude Adjustment (AltDif) for other Aircraft (xac)
-260521: Change xac_.ObjAdr to xac_.AirObj
 */
