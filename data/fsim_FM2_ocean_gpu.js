@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260518
+*	FSIM FM2 DATA: 260522
 *
 ********************************************************************************
 
@@ -308,18 +308,25 @@ const XP1Nam = "xac_fm2.glb";	// Name of airplane model file (rotated blender fi
 const XP2Nam = "xac_a6m.glb";	// Name of airplane model file (rotated blender file)
 let xac_ = {
 		ObjNum: 2,				// Number of airplanes
-		ObjSrc: [XPPath+XP1Nam, // Model Source file
-				 XPPath+XP2Nam],
+		Parent: [0,0],			// 0 = not linked
+		ObjSrc: [XPPath+XP1Nam,XPPath+XP2Nam], // Model Source file
 		ObjTxt: [0,0],			// Texture Source File (not used)
-		ObjAdr: [0,0],			// Object Address
 		ObjSiz: [1,1],			// Scale (1 = metric; Ft2Mtr = US)
 		RndOrd: [0,0],			// renderOrder (not used)
+		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		ObjRot: [0,0],			// Rotation
-		MapPos: [0,0],			// meters
-		ObjRef: [0,0],			// 0 = not linked
+		AirObj: [0,0],			// Object Address
+		AirPBY: [0,0],			// Changes in radians
+		// Changes to Airplane Pitch Bank and Yaw
+		RotDif: [0,0],			// Change
 		// Speed
-		SpdMPS: [91.5,91,5],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-		MapSpd: [0,0],			// not used
+		SpdKPH: [0,0],			// Speed in KPH (e.g. 329 kph = 205 mph)
+		SpdMPS: [91.5,91,5],	// Speed (mtr/sec) (e.g. 329 kph = 91.5 ms)
+		SpdMPF: [0,0],			// Speed - meters per frame
+		// Airplane Map Speed and Position
+		MapSpd: [0,0],			// meters/sec
+		MapPos: [0,0],			// meters
+		MapSPS: [0,0], 			// MSX, MPY, MSZ (meters)
 		// Basic Animations
 		ObjDst: [0,0],			// Object distance (meters) used to activate effects
 		MixSpn: [0,0],			// Animation Mixer - Prop
