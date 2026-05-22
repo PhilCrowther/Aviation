@@ -231,7 +231,7 @@ function loadXACVeh(xac_,anm_,gen_) {
 			if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
 			// Rotation
 			xac_.AirObj[n].rotation.order = "YXZ"; // Heading, Pitch, Bank
-			xac_.AirObj[n].rotation.y = xac_.ObjRot[n].y*DegRad;
+			xac_.AirObj[n].rotation.y = xac_.AirRot[n].y*DegRad;
 		});
 	}
 
