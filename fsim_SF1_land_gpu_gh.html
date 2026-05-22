@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 May 2026
+Version dated 22 May 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -304,13 +304,13 @@ let ImgSiz = 1024;
 //. Moving Airplanes ...........//..............................................
 //	Adjustments
 	xac_.ObjNum = 4;			// One at a time
-	xac_.EngMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Engine Sound
-	xac_.SndMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Final Explosion Sound
 	xac_.AirRot = [new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5)]; // Rotation
 	xac_.RotDif = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
 	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
 	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
 	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
+	xac_.EngMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Engine Sound
+	xac_.SndMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Final Explosion Sound
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
@@ -660,9 +660,9 @@ function moveMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		// Rotation
 		if (!xac_.EndSeq[n]) {	// Horizontal Turning Flight
-			xac_.RotDif.y = RadDeg*Math.tan(xac_.AirRot[n].z*DegRad)*GrvMPS/xac_.SpdMPS[n];
-			xac_.RotDif.y = xac_.RotDif.y * tim_.DLTime;
-			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif.y);
+			xac_.RotDif[n].y = RadDeg*Math.tan(xac_.AirRot[n].z*DegRad)*GrvMPS/xac_.SpdMPS[n];
+			xac_.RotDif[n].y = xac_.RotDif[n].y * tim_.DLTime;
+			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif[n].y);
 		}
 		else {moveXACEnd(n)}	// If Ending Sequence
 		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
@@ -672,12 +672,12 @@ function moveMovPln() {
 		//- Default = Horizontal Only
 		xac_.MapSpd[n].y = xac_.SpdMPF * Math.sin(xac_.AirRot[n].x * DegRad);
 		if (!xac_.EndSeq[n]) xac_.MapSpd[n].y = 0; // avoid rounding errors
-		let GS = -xac_.SpdMPF[n] * Math.cos(xac_.AirRot[n].x * DegRad)
+		let GS = xac_.SpdMPF[n] * Math.cos(xac_.AirRot[n].x * DegRad)
 		xac_.MapSpd[n].z = GS * Math.cos(xac_.AirRot[n].y * DegRad);
-		xac_.MapSpd[n].x = -GS * Math.sin(xac_.AirRot[n].y * DegRad);
+		xac_.MapSpd[n].x = GS * Math.sin(xac_.AirRot[n].y * DegRad);
 		//. Recompute Map Position .............................................
 		xac_.MapPos[n].x = xac_.MapPos[n].x + xac_.MapSpd[n].x;
-		xac_.MapPos[n].z = xac_.MapPos[n].z - xac_.MapSpd[n].z;
+		xac_.MapPos[n].z = xac_.MapPos[n].z + xac_.MapSpd[n].z;
 		xac_.MapPos[n].y = xac_.MapPos[n].y + xac_.MapSpd[n].y;
 		// Animation - Prop (same as mine)
 		if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
