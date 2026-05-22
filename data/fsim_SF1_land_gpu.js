@@ -236,20 +236,25 @@ const XP3Nam = "xac_dr1_red.glb";	// Name of airplane model file (animated prop 
 const XP4Nam = "xac_dr1_ylo.glb";	// Name of airplane model file (animated prop only)
 let xac_ = {
 		ObjNum: 4,				// Number of airplanes
-		ObjSrc: [XPPath+XP1Nam, // Model Source file
-				 XPPath+XP2Nam,
-				 XPPath+XP3Nam,
-				 XPPath+XP4Nam],
-		ObjTxt: [0,0,0,0],		// Texture Source File (not used)
-		ObjAdr: [0,0,0,0],		// Object Address
+		Parent: [0,0,0,0],		// 0 = not linked
+		ObjSrc: [XPPath+XP1Nam,XPPath+XP2Nam,XPPath+XP3Nam,XPPath+XP4Nam], // Model Source file
 		ObjSiz: [Ft2Mtr,Ft2Mtr,Ft2Mtr,Ft2Mtr], // Scale
+		ObjTxt: [0,0,0,0],		// Texture Source File (not used)
 		RndOrd: [0,0,0,0],		// renderOrder (not used)
-		ObjRot: [0,0,0,0],		// Rotation (euler3)
-		MapPos: [0,0,0,0],		// meters (vector3)
-		ObjRef: [0,0,0,0],		// 0 = not linked
-		// Speed
+		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
+		AirRot: [0,0,0,0],		// Rotation (euler3)
+		AirPBY: [0,0,0,0],		// Changes in radians
+		AirObj: [0,0,0,0],		// Object Address
+		// Changes to Airplane Pitch Bank and Yaw
+		RotDif: [0,0,0,0],		// Change
+		// Airplane Speed
+		SpdKPH: [0,0,0,0],		// Speed in KPH
 		SpdMPS: [45,45,45,45],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-		MapSpd: [0,0,0,0],		// not used (vector3)
+		SpdMPF: [0,0,0,0],		// Speed - meters per frame
+		// Airplane Map Speed and Position
+		MapSpd: [0,0,0,0], 		// Map Speed (meters)
+		MapPos: [0,0,0,0], 		// Map Position (meters)
+		MapSPS: [0,0,0,0], 		// MSX, MPY, MSZ (meters)
 		// Basic Animations
 		ObjDst: [0,0,0,0],		// Object distance (meters) used to activate effects
 		MixSpn: [0,0,0,0],		// Animation Mixer - Prop
@@ -258,10 +263,7 @@ let xac_ = {
 		MixBnk: [0,0,0,0],		// Animation Mixer - Bank
 		AnmBnk: [0,0,0,0],		// Animation
 		// Engine Sounds
-		EngSrc: [XPPath + "sounds/fm2.wav",
-				 XPPath + "sounds/fm2.wav",
-				 XPPath + "sounds/fm2.wav",
-				 XPPath + "sounds/fm2.wav"],
+		EngSrc: [XPPath + "sounds/fm2.wav",XPPath + "sounds/fm2.wav",XPPath + "sounds/fm2.wav",XPPath + "sounds/fm2.wav"],
 		EngPtr: [0,0,0,0],
 		EngMsh: [0,0,0,0],		// (Object3D)
 		EngVol: [0.1,0.1,0.1,0.1],	// Volume
