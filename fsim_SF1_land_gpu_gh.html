@@ -304,12 +304,13 @@ let ImgSiz = 1024;
 //. Moving Airplanes ...........//..............................................
 //	Adjustments
 	xac_.ObjNum = 4;			// One at a time
-	xac_.ObjRot = [new THREE.Euler(0,180,-30),new THREE.Euler(0,180,-30),new THREE.Euler(0,180,-30),new THREE.Euler(0,180,-30)]; // Rotation
-	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
-	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]; // not used
 	xac_.EngMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Engine Sound
 	xac_.SndMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Final Explosion Sound
+	xac_.AirRot = [new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5)]; // Rotation
+	xac_.RotDif = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
+	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
+	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
@@ -659,31 +660,32 @@ function moveMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		// Rotation
 		if (!xac_.EndSeq[n]) {	// Horizontal Turning Flight
-			let XPHSpd = Math.tan(xac_.ObjRot[n].z*DegRad)*xac_.SpdMPS[n]/GrvMPS;
-			XPHSpd = XPHSpd * tim_.DLTime;
-			xac_.ObjRot[n].y = xac_.ObjRot[n].y + XPHSpd;
+			xac_.RotDif.y = RadDeg*Math.tan(xac_.AirRot[n].z*DegRad)*GrvMPS/xac_.SpdMPS[n];
+			xac_.RotDif.y = xac_.RotDif.y * tim_.DLTime;
+			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif.y);
 		}
 		else {moveXACEnd(n)}	// If Ending Sequence
-		xac_.ObjAdr[n].rotation.set(xac_.ObjRot[n].x*DegRad,xac_.ObjRot[n].y*DegRad,xac_.ObjRot[n].z*DegRad);
+		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
+		//- Speed ..............................................................
+		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
 		//- Map Speed ..........................................................
 		//- Default = Horizontal Only
-		let SpdMPF = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
-		let SpeedY = SpdMPF * Math.sin(xac_.ObjRot[n].x * DegRad);
-		if (!xac_.EndSeq[n]) SpeedY = 0; // avoid rounding errors
-		let GS = -SpdMPF * Math.cos(xac_.ObjRot[n].x * DegRad)
-		let SpeedZ = GS * Math.cos(xac_.ObjRot[n].y * DegRad);
-		let SpeedX = GS * Math.sin(xac_.ObjRot[n].y * DegRad);
+		xac_.MapSpd[n].y = xac_.SpdMPF * Math.sin(xac_.AirRot[n].x * DegRad);
+		if (!xac_.EndSeq[n]) xac_.MapSpd[n].y = 0; // avoid rounding errors
+		let GS = -xac_.SpdMPF[n] * Math.cos(xac_.AirRot[n].x * DegRad)
+		xac_.MapSpd[n].z = GS * Math.cos(xac_.AirRot[n].y * DegRad);
+		xac_.MapSpd[n].x = -GS * Math.sin(xac_.AirRot[n].y * DegRad);
 		//. Recompute Map Position .............................................
-		xac_.MapPos[n].x = xac_.MapPos[n].x + SpeedX;
-		xac_.MapPos[n].z = xac_.MapPos[n].z - SpeedZ;
-		xac_.MapPos[n].y = xac_.MapPos[n].y + SpeedY;
+		xac_.MapPos[n].x = xac_.MapPos[n].x + xac_.MapSpd[n].x;
+		xac_.MapPos[n].z = xac_.MapPos[n].z - xac_.MapSpd[n].z;
+		xac_.MapPos[n].y = xac_.MapPos[n].y + xac_.MapSpd[n].y;
 		// Animation - Prop (same as mine)
 		if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
 		//. Compute New Relative Position ......................................
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
 		let Y = xac_.MapPos[n].y-air_.MapPos.y;	// No altitude adjustment
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
-		xac_.ObjAdr[n].position.set(X,Y,Z);
+		xac_.AirObj[n].position.set(X,Y,Z);
 	}
 	// Test Enemy Airplene Only
 //	let n = myg_.HitTgt;	
@@ -739,7 +741,7 @@ function moveXACEnd(n) {
 		}
 		if (xat_.SegIdx == 3) {
 			stopXACExp(n);
-			xac_.ObjAdr[n].visible = false; // Airplane gone
+			xac_.AirObj[n].visible = false; // Airplane gone
 		}
 		if (xat_.SegIdx == 4) playRadSg1(2); // Play Radio Call
 		if (xat_.SegIdx == 5) xac_.EndSeq[n] = 1;
@@ -787,10 +789,10 @@ function stopXACFyr(n) {
 
 //-	Make Airplane Spin ---------//----------------------------------------------
 function makeXACSpn(n) {
-	xac_.ObjRot[n].z = Mod360(xac_.ObjRot[n].z - 1); // Roll Right
-	if (xac_.ObjRot[n].x > -90) {
-		xac_.ObjRot[n].x = xac_.ObjRot[n].x - 0.1; // Pitch Down
-		if (xac_.ObjRot[n].x < -90) xac_.ObjRot[n].x = -90;
+	xac_.AirRot[n].z = Mod360(xac_.AirRot[n].z - 1); // Roll Right
+	if (xac_.AirRot[n].x > -90) {
+		xac_.AirRot[n].x = xac_.AirRot[n].x - 0.1; // Pitch Down
+		if (xac_.AirRot[n].x < -90) xac_.AirRot[n].x = -90;
 	}
 }
 
@@ -809,7 +811,7 @@ return mesh;}
 //- Init Airplane Explosion ----//----------------------------------------------
 function initXACExp(n) {
 	// Attach Exploding Center
-	xac_.ObjAdr[n].add(xae_.ExpMsh); // Attach to Enemy Airplane
+	xac_.AirObj[n].add(xae_.ExpMsh); // Attach to Enemy Airplane
 	xae_.ExpMsh.visible = false;
 }
 
@@ -819,7 +821,7 @@ function initXACSmk(n) {
 	xas_.ObjTxt = txt_.ObjTxt[xas_.ObjTxt];
 	initAirSmk(xas_);
 	// Attach to Friendly Airplane
-	xac_.ObjAdr[n].add(xas_.SmkMsh[0]);
+	xac_.AirObj[n].add(xas_.SmkMsh[0]);
 }
 
 //- Init Airplane Black Smoke --//----------------------------------------------
@@ -828,8 +830,8 @@ function initXACFyr(n) {
 	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt];
 	initAirFyr(xaf_);
 	// Attach to Enemy Airplane
-	xac_.ObjAdr[n].add(xaf_.SmkMsh[0]);
-	xac_.ObjAdr[n].add(xaf_.FyrMsh[0]);
+	xac_.AirObj[n].add(xaf_.SmkMsh[0]);
+	xac_.AirObj9[n].add(xaf_.FyrMsh[0]);
 	// Turn Off
 	xaf_.SmkMsh[0].visible = false;
 	xaf_.FyrMsh[0].visible = false;
