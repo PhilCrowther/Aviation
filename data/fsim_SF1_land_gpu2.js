@@ -248,9 +248,9 @@ let xac_ = {
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: [0,0,0,0],		// Change
 		// Airplane Speed
-		SpdKPH: [0,0,0,0]		// Speed in KPH
+		SpdKPH: [0,0,0,0],		// Speed in KPH
 		SpdMPS: [45,45,45,45],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-		SpdMPF: [0,0,0,0]		// Speed - meters per frame
+		SpdMPF: [0,0,0,0],		// Speed - meters per frame
 		// Airplane Map Speed and Position
 		MapSpd: [0,0,0,0], 		// Map Speed (meters)
 		MapPos: [0,0,0,0], 		// Map Position (meters)
