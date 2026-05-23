@@ -303,10 +303,10 @@ let ImgSiz = 1024;
 //- MOVING VEHICLES ------------//----------------------------------------------
 //. Moving Airplanes ...........//..............................................
 //	Adjustments
-	xac_.ObjNum = 4;			// One at a time
+	xac_.ObjNum = 4;
 	xac_.AirRot = [new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5)]; // Rotation
 	xac_.RotDif = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
-	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (30 ms = 108 kph = 67 mph)
 	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
 	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
 	xac_.EngMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Engine Sound
@@ -631,7 +631,7 @@ function initMoving() {
 }
 
 function moveMoving() {
-	moveMovPln(xac_);			// Airplanes
+	moveMovPln();				// Airplanes
 }
 
 //- Animated Attachments -------//----------------------------------------------
