@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260522
+*	FSIM FM2 DATA: 260523
 *
 ********************************************************************************
 
@@ -335,8 +335,7 @@ let xac_ = {
 		MixBnk: [0,0],			// Animation Mixer - Bank
 		AnmBnk: [0,0],			// Animation
 		// Engine Sounds
-		EngSrc: [XPPath + "sounds/fm2.wav",
-				 XPPath + "sounds/fm2.wav"],
+		EngSrc: [XPPath + "sounds/fm2.wav",XPPath + "sounds/fm2.wav"],
 		EngPtr: [0,0],
 		EngMsh: [0,0],
 		EngVol: [0.1,0.1],		// Volume

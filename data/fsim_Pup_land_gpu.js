@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM PUP DATA: 260522
+*	FSIM PUP DATA: 260523
 *
 *********************************************************************************
 
@@ -229,13 +229,13 @@ let xac_ = {
 		ObjNum: 4,				// Number of airplanes
 		Parent: [0,0,0,0],		// 0 = not linked
 		ObjSrc: [XPPath+XP1Nam,XPPath+XP2Nam,XPPath+XP3Nam,XPPath+XP4Nam], // Model Source file
-		ObjSiz: [Ft2Mtr,Ft2Mtr,Ft2Mtr,Ft2Mtr], // Scale
 		ObjTxt: [0,0,0,0],		// Texture Source File (not used)
+		ObjSiz: [Ft2Mtr,Ft2Mtr,Ft2Mtr,Ft2Mtr], // Scale
 		RndOrd: [0,0,0,0],		// renderOrder (not used)
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		AirRot: [0,0,0,0],		// Rotation (euler3)
-		AirPBY: [0,0,0,0],		// Changes in radians
 		AirObj: [0,0,0,0],		// Object Address
+		AirPBY: [0,0,0,0],		// Changes in radians
 		// Changes to Airplane Pitch Bank and Yaw
 		RotDif: [0,0,0,0],		// Change
 		// Airplane Speed
