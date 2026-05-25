@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 22 May 2026
+Version dated 25 May 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -653,13 +653,31 @@ function initMovPln() {
 //	initXACSmk(0);				// Friendly Airplane Only	
 //	initXACFyr(1);				// Enemy Airplane Only
 //	initXACExp(1);				// Enemy Airplane Only
+//	Init BFM
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		bfm_.BFMflg[n] = 0;
+		bfm_.MapDif[n] = new THREE.Vector3();
+		bfm_.VecHrz[n] = 0;
+		bfm_.PosAbs[n] = new THREE.Vector3();
+		bfm_.PosOff[n] = new THREE.Vector3();
+		bfm_.RotOff[n] = new THREE.Vector3();
+		bfm_.ManTyp[n] = 0;
+		bfm_.BnkMax[n] = 0;
+	}
 }
 
 //- Move Plane -----------------//----------------------------------------------
 function moveMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		// Rotation
-		if (!xac_.EndSeq[n]) {	// Horizontal Turning Flight
+		if (!xac_.EndSeq[n]) {
+			// Bank
+			xac_.AirRot[n].z = Mod360(xac_.AirRot[n].z + xac_.RotDif[n].z);
+			let BnkPoM = PoM360(xac_.AirRot[n].z);
+			if (bfm_.BnkMax[n]) {
+				if (BnkPoM > 0 && bfm_.BnkMax[n] > 0 && BnkPoM >  bfm_.BnkMax[n]) xac_.AirRot[n].z = bfm_.BnkMax[n];
+				if (BnkPoM < 0 && bfm_.BnkMax[n] < 0 && BnkPoM <  bfm_.BnkMax[n]) xac_.AirRot[n].z = bfm_.BnkMax[n];
+			}
+			// Horizontal Turning Flight
 			xac_.RotDif[n].y = RadDeg*Math.tan(xac_.AirRot[n].z*DegRad)*GrvMPS/xac_.SpdMPS[n];
 			xac_.RotDif[n].y = xac_.RotDif[n].y * tim_.DLTime;
 			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif[n].y);
@@ -670,8 +688,8 @@ function moveMovPln() {
 		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
 		//- Map Speed ..........................................................
 		//- Default = Horizontal Only
-		xac_.MapSpd[n].y = xac_.SpdMPF * Math.sin(xac_.AirRot[n].x * DegRad);
 		if (!xac_.EndSeq[n]) xac_.MapSpd[n].y = 0; // avoid rounding errors
+		if (bfm_.BFMflg[n]) xac_.MapSpd[n].y = xac_.SpdMPF[n] * Math.sin(xac_.AirRot[n].x * DegRad);
 		let GS = xac_.SpdMPF[n] * Math.cos(xac_.AirRot[n].x * DegRad)
 		xac_.MapSpd[n].z = GS * Math.cos(xac_.AirRot[n].y * DegRad);
 		xac_.MapSpd[n].x = GS * Math.sin(xac_.AirRot[n].y * DegRad);
@@ -686,6 +704,8 @@ function moveMovPln() {
 		let Y = xac_.MapPos[n].y-air_.MapPos.y;	// No altitude adjustment
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.AirObj[n].position.set(X,Y,Z);
+		//. BFM
+		if (n == 1) BFM(n);
 	}
 	// Test Enemy Airplene Only
 //	let n = myg_.HitTgt;	
@@ -696,6 +716,80 @@ function moveMovPln() {
 //		xac_.EndSeq[n] = xac_.EndTim;
 //		xac_.HitCnt[n] = 0;		// Reset Hit Counter
 //	}
+}
+
+//= BFM ========================//==============================================
+
+function BFM(n) {
+	let BnkDif,BnkRot;
+	// Distances	
+	bfm_.MapDif[n].x = xac_.AirObj[n].position.x;
+	bfm_.MapDif[n].y = xac_.AirObj[n].position.y;
+	bfm_.MapDif[n].z = xac_.AirObj[n].position.z;
+	bfm_.VecHrz[n] = Math.sqrt(bfm_.MapDif[n].x**2+bfm_.MapDif[n].z**2); // Horizontal Vector
+	if (air_.MapPos.y*Mtr2Ft > 800) {
+		bfm_.BFMflg[n] = 1; // Start Engagement
+		for (let n = 0; n < aaf_.ObjNum; n ++) {	// Stop AAA
+			aaf_.AAAFlg[n] = 0;
+			xac_.SpdMPS[n] = 50;
+		}
+	}
+	// Longitude and Latitude
+	bfm_.PosAbs[n].y = Mod360(-Math.atan2(bfm_.MapDif[n].x,bfm_.MapDif[n].z)*RadDeg); // Map Direction to My Plane from His
+	bfm_.PosOff[n].y = PoM360( Mod360(bfm_.PosAbs[n].y - xac_.AirRot[n].y)); // Relative Direction to My Plane from His
+	bfm_.PosAbs[n].x = Mod360(Math.atan2(bfm_.MapDif[n].y,bfm_.VecHrz[n])*RadDeg); // Latitude
+	bfm_.PosOff[n].x = PoM360( Mod360(bfm_.PosAbs[n].x - xac_.AirRot[n].x)); // Relative Latitude
+	bfm_.RotOff[n].y = PoM360(xac_.AirRot[n].y - air_.AirRot.y + 180);
+	BnkRot = PoM360(xac_.AirRot[n].z);
+	if (bfm_.BFMflg[n]) {
+		xac_.AirRot[n].x = -PoM360(bfm_.PosAbs[n].x);
+		// Continue Fixed Maneuvers
+		if (bfm_.ManTyp[n] == 1) BFM_01(n);
+		if (bfm_.ManTyp[n] == 2) BFM_02(n);
+		if (bfm_.ManTyp[n] == 3) BFM_03(n);
+		// Start Maneuver
+		else if (!bfm_.ManTyp[n]) {
+			if (bfm_.PosOff[n].y < -bfm_.PosCut) {  // If Enemy Behind Left, Right Turn 180
+				bfm_.ManTyp[n] = 1;
+				xac_.RotDif[n].z = -1;		// Bank Left
+				BFM_01(n);
+			}
+			if (bfm_.PosOff[n].y > bfm_.PosCut) {	// If Enemy Behind Right Left Turn 180
+				bfm_.ManTyp[n] = 2;
+				xac_.RotDif[n].z = 1;		// Bank Right
+
+				BFM_02(n);
+			}
+			if (bfm_.PosOff[n].y >= -bfm_.PosCut && bfm_.PosOff[n].y <= bfm_.PosCut) {  // If Enemy Ahead, Head-On	
+				bfm_.ManTyp[n] = 3;
+				BFM_03(n);
+			}
+		}
+	}
+}
+
+// 1. = Left Turn 180 Until Almost Centered on Tarbet
+function BFM_01(n) {
+	bfm_.BnkMax[n] = -BnkMax;
+	if (bfm_.PosOff[n].y > -60) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/60; // Start un-banking
+	//	Don't release until reach cut-off
+	if (bfm_.PosOff[n].y >= -bfm_.PosCut) bfm_.ManTyp[n] = 0;
+}
+
+// 2. = Right Turn 180 Until Almost Centered on Target
+function BFM_02(n) {
+	bfm_.BnkMax[n] = BnkMax;
+	if (bfm_.PosOff[n].y < 60) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/60; // Start un-banking
+	//	Don't release until reach cut-off
+	if (bfm_.PosOff[n].y <= bfm_.PosCut) bfm_.ManTyp[n] = 0;
+}
+
+// 3. = Towards Target
+function BFM_03(n) {
+	xac_.RotDif[n].z = BnkMax*bfm_.PosOff[n].y/bfm_.PosCut; // Negative value to close gap
+	if (xac_.RotDif[n].z > 0 && bfm_.PosOff[n].y > 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/90;
+	if (xac_.RotDif[n].z < 0 && bfm_.PosOff[n].y < 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/90;
+	if (bfm_.PosOff[n].y < -bfm_.PosCut || bfm_.PosOff[n].y > bfm_.PosCut) bfm_.ManTyp[n] = 0;	
 }
 
 //= XAC GUNS ===================//==============================================
