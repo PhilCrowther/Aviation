@@ -281,6 +281,22 @@ let xac_ = {
 		SndDTm: [0,0,0,0],
 	};
 
+//. BFM ........................//..............................................
+let BnkMax = 75;
+let bfm_ = {
+		BFMflg: [0],			//
+		PosCut: 30,				// Cut-Off for Change from Max Turn to Intercept
+		// xac
+		MapDif: [0],			// Difference in Map Position (XYZ)
+		VecHrz: [0],			// Horizontal Vector
+		PosAbs: [0],			// Absolute Direction of Target
+		PosOff: [0],			// Intercept Angle (Pitch,Yaw,Bank)
+		RotOff: [0],			// Off-Angle (Pitch,Yaw,Bank)
+		// Maneuvers
+		ManTyp: [0],			// Type of Maneuver (1 = left turn, 2 = right turn, 3 = intercept)
+		BnkMax:	[0],			// Maximum Bank (+/-) - computed
+	}
+
 //- Airplane Smoke Trail .......//..............................................
 let xas_ = {
 		// Shared Values
