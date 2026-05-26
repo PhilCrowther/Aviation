@@ -2,7 +2,8 @@
 let data_ = {
 		// Lift
 		WingSp: 11.58,		// Wing Span (m)
-		WingAr: 24.15,		// Wing Area (m2)
+		WingSq: 24.15,		// Wing Area (m2)
+		WingAR: 5.56,		// Wing Aspect Ratio (WingAr/WingSp for one wing)
 		WingEf: 0.75,		// Wing Efficiency
 		AngInc: 5,			// Angle of Incidence
 		GrvMax: 8,			// Maximum G-Force
