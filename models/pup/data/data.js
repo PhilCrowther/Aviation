@@ -1,8 +1,9 @@
 ﻿// Sopwith Pup
 let data_ = {
 		// Lift
-		WingSp: 8.08,		// Wing Span (m)
-		WingAr: 21.46,		// Wing Area (m2)
+		WingSp: 8.08,		// Wing Span (m) each wing
+		WingSq: 21.46,		// Wing Area (m2) both wings
+		WingAR: 5.53,		// Wing Aspect Ratio (WingAr/WingSp for one wing)
 		WingEf: 0.7,		// Wing Efficiency
 		AngInc: 5,			// Angle of Incidence
 		GrvMax: 5,			// Maximum G-Force
