@@ -302,13 +302,13 @@ let ImgSiz = 1024;
 
 //= MOVING AIRPLANES ===========//==============================================
 //- Airplane File Addresses (animated prop only)
-let XPPth1 = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
+let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
 let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_red.glb","xac_dr1_grn.glb"];
 //- Initialize
 	xac_.ObjNum = 4;
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		xac_.Parent[n] = 0;		// 0 = not linked
-		xac_.ObjSrc[n] = XPPth1+XPFNam[n];	// Model Source file
+		xac_.ObjSrc[n] = XPPath+XPFNam[n];	// Model Source file
 		xac_.ObjTxt[n] = 0;		// Texture Source File (not used)
 		xac_.ObjSiz[n] = Ft2Mtr,	// Scale
 		xac_.RndOrd[n] = 0;		// renderOrder (not used)
