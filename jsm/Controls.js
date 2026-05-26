@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Apr 2026
+Version dated 25 May 2026
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -204,7 +204,11 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			if (!cam_.CamFlg) {
 				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
 				if (key_.U45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
-				else if (key_.D45flg) cam_.CamLLD.x = 315;	// Look Down 45
+//				else if (key_.D45flg) cam_.CamLLD.x = 315;	// Look Down 45
+				else if (key_.D45flg) {
+					cam_.CamLLD.x = 45;						// Look Up 45
+					cam_.CamLLD.y = 180;					// Look Back
+				}
 				else if (key_.L45flg) cam_.CamLLD.y = 45;	// Look Left 45
 				else if (key_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
 				else if (key_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
@@ -300,4 +304,5 @@ export {PointerLockControls,initCamera,moveCamera};
 260227: Reload default (rather than fixed) values
 		Added LagFlg to make camera vertical lag optional.
 		Added initCamera
+260527:	In external view, look down = look back and up
 */
