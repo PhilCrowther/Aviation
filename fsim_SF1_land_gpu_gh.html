@@ -300,17 +300,54 @@ let ImgSiz = 1024;
 	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,4750)]; // Relative Position
 	fxd_.ObjRef = [mnt_.ObjGrp[0]];
 
-//- MOVING VEHICLES ------------//----------------------------------------------
-//. Moving Airplanes ...........//..............................................
-//	Adjustments
+//= MOVING AIRPLANES ===========//==============================================
+//- Airplane File Addresses (animated prop only)
+let XPPth1 = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
+let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_red.glb","xac_dr1_grn.glb"];
+//- Initialize
 	xac_.ObjNum = 4;
+	for (let n = 0; n < xac_.ObjNum; n ++) {
+		xac_.Parent[n] = 0;		// 0 = not linked
+		xac_.ObjSrc[n] = XPPth1+XPFNam[n];	// Model Source file
+		xac_.ObjTxt[n] = 0;		// Texture Source File (not used)
+		xac_.ObjSiz[n] = Ft2Mtr,	// Scale
+		xac_.RndOrd[n] = 0;		// renderOrder (not used)
+		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
+		xac_.AirObj[n] = 0;		// Object Address
+		xac_.AirPBY[n] = 0;		// Changes in radians
+		// Changes to Airplane Pitch Bank and Yaw
+		xac_.RotDif[n] = new THREE.Vector3();	// Rotation Change - computed
+		// Airplane Speed
+		xac_.SpdKPH[n] = 0;		// Speed in KPH - computed
+		xac_.SpdMPF[n] = 0;		// Speed - meters per frame - computed
+		// Airplane Map Speed and Position
+		xac_.MapSpd[n] = new THREE.Vector3(); 	// Map Speed (meters) - computed
+		xac_.MapSPS[n] = new THREE.Vector3(); 	// MSX, MPY, MSZ (meters) - computed
+		// Basic Animations
+		xac_.ObjDst[n] = 0;		// Object distance (meters) used to activate effects
+		xac_.MixSpn[n] = 0;		// Animation Mixer - Prop
+		xac_.MixPit[n] = 0;		// Animation Mixer - Pitch
+		xac_.AnmPit[n] = 0;		// Animation
+		xac_.MixBnk[n] = 0;		// Animation Mixer - Bank
+		xac_.AnmBnk[n] = 0;		// Animation
+		// Engine Sounds
+		xac_.EngSrc[n] = XPPath + "sounds/fm2.wav";
+		xac_.EngPtr[n] = 0;
+		xac_.EngMsh[n] = new THREE.Object3D();	// (Object3D)
+		xac_.EngVol[n] = 0.2;	// Default Volume
+		// End Sequence
+		xac_.HitCnt[n] = 0;		// Hits Taken
+		xac_.EndSeq[n] = 0;		// End Sequence Running
+		// End Sound
+		xac_.SndFlg[n] = 0;		// 1 = Start Explosion Sound
+		xac_.SndPtr[n] = 0;
+		xac_.SndMsh[n] = new THREE.Object3D();		// Final Explosion Sound
+		xac_.SndDTm[n] = 0;
+	}
+//	Adjustments
 	xac_.AirRot = [new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5)]; // Rotation
-	xac_.RotDif = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
 	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (30 ms = 108 kph = 67 mph)
-	xac_.MapSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
 	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
-	xac_.EngMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Engine Sound
-	xac_.SndMsh = [new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D(),new THREE.Object3D()]; // Final Explosion Sound
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
