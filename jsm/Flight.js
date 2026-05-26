@@ -41,7 +41,6 @@ constructor(air_) {
 	this.SmallV = .0000001;		// Small value added to prevent errors
 	this.ACDrGF = 0.08;			// Rolling Drag s/b firm turf (.02 concrete, .06 soft turf)
 	//- Computed Constants (Vary by Aircraft)
-	this.WingAs = 0;			// Wing Aspect Ratio
 	this.FrcAcc = 0;			// Convert Force to Acceleration
 	this.ThrstK = 0;			// Thrust Constant
 	//- Air Density and IAS Computations ---------------------------------------
@@ -61,7 +60,7 @@ constructor(air_) {
 	this.FrcAcc = DLTim2/this.air_.ACMass; 		// Convert Force to Acceleration
 	// Constants
 	if (this.dat_.JetMax == 0) this.ThrstK = 1000*this.dat_.PropEf;	// (SI units)
-	this.WingAs = this.dat_.WingSp**2/this.dat_.WingAr; // Wing Aspect Ratio
+	this.dat_.WingAR = this.dat_.WingSp**2/this.dat_.WingSq; // Wing Aspect Ratio
 	let ACPMax = this.air_.CfLMax*10;			// Max aircraft pitch adjustment (+/- 15)
 	let ACPInc = ACPMax-this.dat_.AngInc;		// Net max aircraft pitch adjustment (10)
 	// If Starting on Ground ---------------------------------------------------
@@ -87,11 +86,11 @@ constructor(air_) {
 		// Compute Vectors
 		// If Starting in Flight, Compute Starting this.air_.CfLift and Power for Level Flight and Given Bank
 		// Coefficient of Lift for Level Flight
-//		this.air_.CfLift = this.air_.Weight/(DynPrs*this.dat_.WingAr*Math.cos(this.air_.AirRot.z*this.DegRad));		
-		this.air_.CfLift = this.air_.Weight/(DynPrs*this.dat_.WingAr*Math.abs(Math.cos(this.air_.AirRot.z*this.DegRad)));	// USE ABS?		
+//		this.air_.CfLift = this.air_.Weight/(DynPrs*this.dat_.WingSq*Math.cos(this.air_.AirRot.z*this.DegRad));		
+		this.air_.CfLift = this.air_.Weight/(DynPrs*this.dat_.WingSq*Math.abs(Math.cos(this.air_.AirRot.z*this.DegRad)));	// USE ABS?		
 		if (this.air_.CfLift > this.air_.CfLMax) this.air_.CfLift = this.air_.CfLMax;
 		// Power Setting for Level Flight
-		let QSTval = DynPrs*this.dat_.WingAr;
+		let QSTval = DynPrs*this.dat_.WingSq;
 		let CfLftT = this.air_.CfLift+this.air_.CfFlap;
 		let ACLftF =  CfLftT*QSTval;			// Lift[ft-lbs] - can be positive or negative
 		// Thrust (Default = Prop)
@@ -101,7 +100,7 @@ constructor(air_) {
 		}
 		if (this.dat_.JetMax) EnThrF = this.dat_.JetMax*this.air_.PwrPct+this.dat_.AftMax*this.air_.SupPct;	// Jet
 		// Drag
-		let DrgCdi = (CfLftT*CfLftT)/(this.WingAs*this.dat_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
+		let DrgCdi = (CfLftT*CfLftT)/(this.dat_.WingAR*this.dat_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
 		let ACDrIF = DrgCdi*QSTval;				// Induced Drag = ACLftF^2/(DynPrs*WingSp^2*this.dat_.WingEf*PI)
 		let CfDF = this.air_.FlpPct*this.dat_.DrgCdf; // Coefficient of Parasitic Drag - Flaps
 		let CfDG = this.air_.LngPct*this.dat_.DrgCdg; // Coefficient of Parasitic Drag - Landing Gear
@@ -143,13 +142,13 @@ update() {
 	// Compute Dynamic Pressure
 	let DynPrs = (this.air_.SpdMPS**2)*this.air_.AirDSL/2;	// Dynamic Pressure
 	let ACPrad = this.air_.AirRot.x*this.DegRad;
-	let QSTval = DynPrs*this.dat_.WingAr;
+	let QSTval = DynPrs*this.dat_.WingSq;
 	// Compute Max Lift
 	let LftMax = this.dat_.GrvMax*GrvDLT; // Maximum G-accel
 	LftMax = (LftMax + this.dat_.GrvMax)*GrvDLT; // AutoPilot
 	// Compute Max Bank (### ATP)
 	let GrvMaxF = this.dat_.GrvMax*this.air_.Weight; // Max G-Force 
-	let LftMaxF = this.air_.CfLMax*DynPrs*this.dat_.WingAr;	// Max Lift at this Speed
+	let LftMaxF = this.air_.CfLMax*DynPrs*this.dat_.WingSq;	// Max Lift at this Speed
 	if (LftMaxF > GrvMaxF) LftMaxF = GrvMaxF;	// Limit Max Lift to Max G-Force
 	this.air_.MaxBnk = Math.acos(this.air_.Weight/LftMaxF)*this.RadDeg;	// Max Bank Angle for Max Lift
 	// a. COMPUTE LIFT ROTATION //..............................................
@@ -157,7 +156,7 @@ update() {
 	let CfLftT = this.air_.CfLift+this.air_.CfFlap;	// Default
 	if (this.air_.AutoOn) {
 		let LftReq = Math.abs(Math.cos(this.air_.AirObj.rotation.x)*this.air_.Weight);
-		this.air_.CfLift = LftReq/(DynPrs*this.dat_.WingAr*Math.abs(Math.cos(this.air_.AirObj.rotation.z)));
+		this.air_.CfLift = LftReq/(DynPrs*this.dat_.WingSq*Math.abs(Math.cos(this.air_.AirObj.rotation.z)));
 		this.air_.CfLift = this.air_.CfLift+this.air_.CfLDif;
 		CfLftT = this.air_.CfLift;
 	}
@@ -185,7 +184,7 @@ update() {
 	}
 	if (this.dat_.JetMax) EnThrF = this.dat_.JetMax*this.air_.PwrPct+this.dat_.AftMax*this.air_.SupPct;	// Jet
 	// Drag
-	let DrgCdi = (CfLftT*CfLftT)/(this.WingAs*this.dat_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
+	let DrgCdi = (CfLftT*CfLftT)/(this.dat_.WingAR*this.dat_.WingEf*Math.PI);	// Cfi = CLift^2/(Wing Aspect Ratio*Wing Efficiency*pi)
 	let ACDrIF = DrgCdi*QSTval;	// Induced Drag = ACLftF^2/(DynPrs*WingSp^2*this.dat_.WingEf*PI)
 	let CfDF = this.air_.FlpPct*this.dat_.DrgCdf; // Coefficient of Parasitic Drag - Flaps
 	let CfDG = this.air_.LngPct*this.dat_.DrgCdg; // Coefficient of Parasitic Drag - Landing Gear
@@ -432,6 +431,8 @@ export {Flight, Mod360, PoM360, MaxVal};
 250603:	Eliminate makmsh (replaced with Object3D)
 250804: Simplify Map Speed Comps
 260502: Make change in taildragger angle at low speed less abrupt
+260526:	WingAR included in data (computation does not work for biplanes)
+		Change dat_.WingAr to dat_.WingSq and WingAs to dat_.WingAR
 
 FUTURE PLANNED REVISIONS (make as part of version change) ======================
 ______:	Combine air_.ShpPit/Bnk into ShpRot
