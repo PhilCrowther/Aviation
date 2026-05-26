@@ -348,6 +348,8 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_red.glb","xac_dr1_grn.glb
 	xac_.AirRot = [new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5)]; // Rotation
 	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (30 ms = 108 kph = 67 mph)
 	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
+//- BFM
+	BnkMax = 60;
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
@@ -722,6 +724,34 @@ function moveMovPln() {
 		else {moveXACEnd(n)}	// If Ending Sequence
 		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
 		//- Speed ..............................................................
+		if (bfm_.BFMflg[n]) {
+			//- Air Data
+			let AirGrv = 9.80665;	// Gravity (m/s2)
+			let AirDSL = 1.225;		// Sea level density
+			//- SF1 Data
+			let ACMass = 659;		// Aircraft Mass (grams)
+			let ACWght = 6462;		// Aircraft Weight (Newtons)
+			let WngSqr = 21.5;		// Wing Area (m2)
+			let WngEff = 0.7;		// Wing Efficiency
+			let WngAsp = 4.11;		// Wing Aspect Ratio
+			let CfDrgP = 0.04;		// Coefficientr of Drag - Parasitic
+			let ThrMax = 97;		// Thrust (kw) 97kw = 130hp
+			let PrpEff = 0.75;		// Prop Efficiency
+			//- Comps
+			let DLTim2 = tim_.DLTime**2;
+			let DynPrs = (xac_.SpdMPS[n]**2)*AirDSL/2; // At 47.5mps = 1382
+			let LftReq = Math.abs(Math.cos(xac_.AirObj[n].rotation.x)*ACWght); // At 0 bank = 6462
+			let CfLift = LftReq/(DynPrs*WngSqr*Math.abs(Math.cos(xac_.AirObj[n].rotation.z)));
+			let CfDrgI = (CfLift**2)/(Math.PI*WngEff*WngAsp);
+			let DrgInd = CfDrgI*DynPrs*WngSqr;
+			let DrgPar = CfDrgP*DynPrs*WngSqr;
+			let ThrReq = (DrgInd+DrgPar)/(1000*PrpEff/xac_.SpdMPS[n]);
+			console.log(ThrReq);
+			if (ThrReq > ThrMax) ThrReq = ThrMax;
+			let ThrNet = ThrReq - DrgInd - DrgPar;
+			let ThrAcc = (ThrNet/ACMass)*DLTim2;
+			xac_.SpdMPS[n] = xac_.SpdMPS[n] + ThrAcc;
+		}		
 		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
 		//- Map Speed ..........................................................
 		//- Default = Horizontal Only
