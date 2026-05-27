@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 May 2026
+Version dated 27 May 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -398,21 +398,23 @@ let gau_ = {
 	myg_.ObjNum = 2,			// Number of Barrels
 	myg_.ObjPos = [new THREE.Vector3(-0.14417,0.53409,1.25834),new THREE.Vector3(0.14417,0.53409,1.25834)]; // Position of Each Barrel
 	myg_.SndMsh = [new THREE.Object3D(),new THREE.Object3D()];
+	myg_.HitTgt = 1;
 //- Moving Airplanes -----------//----------------------------------------------
 //	General Format Adjustments
-//for (let n = 0; n < aaf_.ObjNum; n ++) {
-//	xag_.GunRot[n] = new THREE.Euler();  // Gun Rotation (degrees)
-//	xag_.GunPos[n] = new THREE.Vector3();
-//	xag_.SndMsh[n] = new THREE.Object3D();
-//}
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		xag_.GunRot[n] = new THREE.Euler();  // Gun Rotation (degrees)
+		xag_.GunPos[n] = new THREE.Vector3();
+		xag_.SndMsh[n] = new THREE.Object3D();
+	}
 //	Specific Adjustments
-//	xag_.XACRot = [xsh_.ObjRot[1],xsh_.ObjRot[1]];
-//	xag_.XACPos = [xsh_.MapPos[1],xsh_.MapPos[1]];
-//	xag_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
-//	xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
-//				   XPPath + "sounds/" + "fm2_gun.mp3",
-//				   XPPath + "sounds/" + "fm2_gun.mp3",
-//				   XPPath + "sounds/" + "fm2_gun.mp3"];
+	xag_.XACRot = [xac_.AirRot[1],xac_.AirRot[1],xac_.AirRot[1],xac_.AirRot[1]];
+	xag_.XACPos = [xac_.MapPos[1],xac_.MapPos[1],xac_.MapPos[1],xac_.MapPos[1]];
+	xag_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
+	xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
+				   XPPath + "sounds/" + "fm2_gun.mp3",
+				   XPPath + "sounds/" + "fm2_gun.mp3",
+				   XPPath + "sounds/" + "fm2_gun.mp3"];
+
 //- Fixed Gun Battery ----------//----------------------------------------------
 //  QF 13 pounder 9 cwt
 //- Variables
@@ -450,6 +452,9 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	aaf_.SmkRot = [0,165,330,210]; // Z-rotation of smoke
 	aaf_.SmkDMx = [6,6,6,6]; // Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
+
+//= AIRPLANE EXPLOSION =========//==============================================
+	xae_.ExpMsh = makeSphere("yellow");
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -688,10 +693,10 @@ function moveFxdGun() {
 //- Init Airplane --------------//----------------------------------------------
 function initMovPln() {
 	initXACVeh(xac_,air_,gen_);
-//	initXACBul(xag_,gen_);		// For All Airplanes
-//	initXACSmk(0);				// Friendly Airplane Only	
-//	initXACFyr(1);				// Enemy Airplane Only
-//	initXACExp(1);				// Enemy Airplane Only
+	initXACBul(xag_,gen_);		// For All Airplanes
+	initXACSmk(0);				// Friendly Airplane Only	
+	initXACFyr(1);				// Enemy Airplane Only
+	initXACExp(1);				// Enemy Airplane Only
 //	Init BFM
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		bfm_.BFMflg[n] = 0;
@@ -746,7 +751,7 @@ function moveMovPln() {
 			let DrgInd = CfDrgI*DynPrs*WngSqr;
 			let DrgPar = CfDrgP*DynPrs*WngSqr;
 			let ThrReq = (DrgInd+DrgPar)/(1000*PrpEff/xac_.SpdMPS[n]);
-			console.log(ThrReq);
+//			console.log(ThrReq);
 			if (ThrReq > ThrMax) ThrReq = ThrMax;
 			let ThrNet = ThrReq - DrgInd - DrgPar;
 			let ThrAcc = (ThrNet/ACMass)*DLTim2;
@@ -775,14 +780,15 @@ function moveMovPln() {
 		if (n == 1) BFM(n);
 	}
 	// Test Enemy Airplene Only
-//	let n = myg_.HitTgt;	
+	let n = myg_.HitTgt;
 	// Fire Guns Until End Sequence Starts
 //	if (!xac_.EndSeq[n]) moveXACGun(n); // Stop Firing
-	// If Enough Hits, Start Ending Sequence 
-//	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
-//		xac_.EndSeq[n] = xac_.EndTim;
-//		xac_.HitCnt[n] = 0;		// Reset Hit Counter
-//	}
+	// If Enough Hits, Start Ending Sequence
+	console.log(xac_.HitCnt[n]);
+	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
+		xac_.EndSeq[n] = xac_.EndTim;
+		xac_.HitCnt[n] = 0;		// Reset Hit Counter
+	}
 }
 
 //= BFM ========================//==============================================
@@ -865,7 +871,7 @@ function BFM_03(n) {
 //	Enemy Airplane Only
 function moveXACGun(n) {
 	// Timer
-	xag_.TimFlg[n] = xag_.TimFlg[n] - 1;
+	xag_.TimFlg[n] = xag_.TimFlg[n] -1;
 	if (xag_.TimFlg[n] < xag_.TimMin[n]) xag_.TimFlg[n] = xag_.TimMax[n];
 	// Visibility Test
 	xag_.BulFlg[n] = 0;			// Default = Not Visible
@@ -992,7 +998,7 @@ function initXACFyr(n) {
 	initAirFyr(xaf_);
 	// Attach to Enemy Airplane
 	xac_.AirObj[n].add(xaf_.SmkMsh[0]);
-	xac_.AirObj9[n].add(xaf_.FyrMsh[0]);
+	xac_.AirObj[n].add(xaf_.FyrMsh[0]);
 	// Turn Off
 	xaf_.SmkMsh[0].visible = false;
 	xaf_.FyrMsh[0].visible = false;
@@ -1142,7 +1148,7 @@ function moveAirPln() {
 	// Animate -----------------------------------------------------------------
 	moveAirObj(air_,mxr_,vxr_,anm_,cam_);
 	// Bullets
-	moveBullet(myg_,air_,gen_,tim_,0); // Bullets
+	moveBullet(myg_,air_,gen_,tim_,xac_); // Bullets
 	// Gauges
 	if (cam_.CamSel) { // Internal View Only
 		// RPM
