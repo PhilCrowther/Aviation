@@ -221,8 +221,8 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 //= HITBOX =====================//==============================================
 
 function testHitBox(myg_,xac_) {
+	let n = myg_.HitTgt;		// Only 1 enemy airplane for now
 	if (n <= xac_.ObjNum) {		// Error Catcher
-		let n = myg_.HitTgt;		// Only 1 enemy airplane for now
 		if (!xac_.EndSeq[n]) {		// Only if Not Already in Sequence
 			// Check All Bullets for Hit
 			for (let i = 0; i < myg_.BulNum; i ++) {
