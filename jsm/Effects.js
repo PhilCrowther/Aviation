@@ -215,21 +215,23 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 		}
 	} // end i
 	// If Enemy Target, Are We Hitting It?
-	if (xac_) testHitBox(myg_,xac_)
+	if (myg_.HitTgt) testHitBox(myg_,xac_)
 }
 
 //= HITBOX =====================//==============================================
 
 function testHitBox(myg_,xac_) {
-	let n = myg_.HitTgt;		// Only 1 enemy airplane for now
-	if (!xac_.EndSeq[n]) {		// Only if Not Already in Sequence
-		// Check All Bullets for Hit
-		for (let i = 0; i < myg_.BulNum; i ++) {
-			// Hitting Target?
-			if (Math.abs(xac_.AirObj[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
-				if (Math.abs(xac_.AirObj[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
-					if (Math.abs(xac_.AirObj[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
-						xac_.HitCnt[n]++;
+	if (n <= xac_.ObjNum) {		// Error Catcher
+		let n = myg_.HitTgt;		// Only 1 enemy airplane for now
+		if (!xac_.EndSeq[n]) {		// Only if Not Already in Sequence
+			// Check All Bullets for Hit
+			for (let i = 0; i < myg_.BulNum; i ++) {
+				// Hitting Target?
+				if (Math.abs(xac_.AirObj[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
+					if (Math.abs(xac_.AirObj[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
+						if (Math.abs(xac_.AirObj[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
+							xac_.HitCnt[n]++;
+						}
 					}
 				}
 			}
