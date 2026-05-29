@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 May 2026
+Version dated 29 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1017,4 +1017,5 @@ export {initFad2Blk,moveFad2Blk,
 260513: Seeting AAAFlg[n] = 0 will stop explosions.
 260520:	Eliminate altitude adjustment (AltDif) for bullets (xac and aag).
 260521: Changed air_.ObjAdr to air_.AirObj
+260529: Add error check to HitTarget routine
 */

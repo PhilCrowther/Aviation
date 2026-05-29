@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 May 2026
+Version dated 29 May 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -124,7 +124,7 @@ function loadFxdObj(fxd_,gen_) {
 			fxd_.ObjAdr[i].scale.setScalar(fxd_.ObjSiz[i]);
 			fxd_.ObjAdr[i].rotation.copy(fxd_.ObjRot[i]);
 			fxd_.ObjAdr[i].position.copy(fxd_.MapPos[i]);
-			fxd_.ObjRef[i].add(fxd_.ObjAdr[i]);
+			if (fxd_.ObjRef[i]) fxd_.ObjRef[i].add(fxd_.ObjAdr[i]); // If attached
 		});
 	}
 }
@@ -674,4 +674,5 @@ export {loadMountn,initMountn,moveMountn,
 260415	Eliminate Pitch and Bank animation for Aircraft
 260520: Eliminate Altitude Adjustment (AltDif) for other Aircraft (xac)
 260521: Change xac_.ObjAdr to xac_.AirObj
+260529: Only attach fxd to other object if !ref
 */
