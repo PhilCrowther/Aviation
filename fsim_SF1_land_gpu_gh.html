@@ -8,9 +8,13 @@
 *
 ********************************************************************************
 
+ISSUES:
+* Airplanes cycle and burn, but locks when myg_.HitTrg after last plane shot down
+* Burning starts late
+
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 May 2026
+Version dated 30 May 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -290,10 +294,11 @@ let ImgSiz = 1024;
 //= STATIC OBJECTS =============//==============================================
 //- Mountains/Islands ----------//----------------------------------------------
 //	Adjustments
-	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
-	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5000)];
-	mnt_.ObjGrp = [new THREE.Object3D()]; // Group
-	mnt_.MaxAni = gen_.MaxAni;
+	mnt_.ObjNum = 0;
+//	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
+//	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5000)];
+//	mnt_.ObjGrp = [new THREE.Object3D()]; // Group
+//	mnt_.MaxAni = gen_.MaxAni;
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
@@ -345,7 +350,7 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_red.glb","xac_dr1_grn.glb
 		xac_.SndDTm[n] = 0;
 	}
 //	Adjustments
-	xac_.AirRot = [new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5),new THREE.Euler(0,180,5)]; // Rotation
+	xac_.AirRot = [new THREE.Euler(0,135,10),new THREE.Euler(0,135,10),new THREE.Euler(0,135,10),new THREE.Euler(0,135,10)]; // Rotation
 	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (30 ms = 108 kph = 67 mph)
 	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
 //- BFM
@@ -401,19 +406,19 @@ let gau_ = {
 	myg_.HitTgt = 1;
 //- Moving Airplanes -----------//----------------------------------------------
 //	General Format Adjustments
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
+	for (let n = 0; n < xag_.ObjNum; n ++) {
 		xag_.GunRot[n] = new THREE.Euler();  // Gun Rotation (degrees)
 		xag_.GunPos[n] = new THREE.Vector3();
 		xag_.SndMsh[n] = new THREE.Object3D();
 	}
 //	Specific Adjustments
-	xag_.XACRot = [xac_.AirRot[1],xac_.AirRot[1],xac_.AirRot[1],xac_.AirRot[1]];
-	xag_.XACPos = [xac_.MapPos[1],xac_.MapPos[1],xac_.MapPos[1],xac_.MapPos[1]];
+	xag_.XACRot = [xac_.AirRot[0],xac_.AirRot[1],xac_.AirRot[2],xac_.AirRot[3]];
+	xag_.XACPos = [xac_.MapPos[0],xac_.MapPos[1],xac_.MapPos[2],xac_.MapPos[3]];
 	xag_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
-	xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
-				   XPPath + "sounds/" + "fm2_gun.mp3",
-				   XPPath + "sounds/" + "fm2_gun.mp3",
-				   XPPath + "sounds/" + "fm2_gun.mp3"];
+	xag_.SndSrc = [XPPath + "sounds/" + "pup_gun.mp3", // File (my guns)
+				   XPPath + "sounds/" + "pup_gun.mp3",
+				   XPPath + "sounds/" + "pup_gun.mp3",
+				   XPPath + "sounds/" + "pup_gun.mp3"];
 
 //- Fixed Gun Battery ----------//----------------------------------------------
 //  QF 13 pounder 9 cwt
@@ -452,9 +457,6 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	aaf_.SmkRot = [0,165,330,210]; // Z-rotation of smoke
 	aaf_.SmkDMx = [6,6,6,6]; // Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
-
-//= AIRPLANE EXPLOSION =========//==============================================
-	xae_.ExpMsh = makeSphere("yellow");
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -694,9 +696,9 @@ function moveFxdGun() {
 function initMovPln() {
 	initXACVeh(xac_,air_,gen_);
 	initXACBul(xag_,gen_);		// For All Airplanes
-	initXACSmk(0);				// Friendly Airplane Only	
-	initXACFyr(1);				// Enemy Airplane Only
-	initXACExp(1);				// Enemy Airplane Only
+//	initXACSmk();				// Friendly Airplane Only	
+	initXACFyr();				// Enemy Airplane Only
+	initXACExp();				// Enemy Airplane Only
 //	Init BFM
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		bfm_.BFMflg[n] = 0;
@@ -751,7 +753,6 @@ function moveMovPln() {
 			let DrgInd = CfDrgI*DynPrs*WngSqr;
 			let DrgPar = CfDrgP*DynPrs*WngSqr;
 			let ThrReq = (DrgInd+DrgPar)/(1000*PrpEff/xac_.SpdMPS[n]);
-//			console.log(ThrReq);
 			if (ThrReq > ThrMax) ThrReq = ThrMax;
 			let ThrNet = ThrReq - DrgInd - DrgPar;
 			let ThrAcc = (ThrNet/ACMass)*DLTim2;
@@ -777,17 +778,7 @@ function moveMovPln() {
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.AirObj[n].position.set(X,Y,Z);
 		//. BFM
-		if (n == 1) BFM(n);
-	}
-	// Test Enemy Airplene Only
-	let n = myg_.HitTgt;
-	// Fire Guns Until End Sequence Starts
-//	if (!xac_.EndSeq[n]) moveXACGun(n); // Stop Firing
-	// If Enough Hits, Start Ending Sequence
-	console.log(xac_.HitCnt[n]);
-	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
-		xac_.EndSeq[n] = xac_.EndTim;
-		xac_.HitCnt[n] = 0;		// Reset Hit Counter
+		if (n == myg_.HitTgt && n > 0) BFM(n); // Not for plane 0
 	}
 }
 
@@ -839,6 +830,16 @@ function BFM(n) {
 			}
 		}
 	}
+	// Fire Guns Until End Sequence Starts
+//	if (!xac_.EndSeq[n]) moveXACGun(n); // Keep Firing Until End
+	// If Enough Hits, Start Ending Sequence
+	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
+		xac_.EndSeq[n] = xac_.EndTim;
+		xac_.HitCnt[n] = 0;		// Reset Hit Counter
+		xat_.SegIdx = -1;
+//		BnkMax = BnkMax+5;
+//		if (BnkMax > 70) BnkMax = 70;
+	}
 }
 
 // 1. = Left Turn 180 Until Almost Centered on Tarbet
@@ -886,7 +887,45 @@ function moveXACGun(n) {
 	moveXACBul(xag_,air_,gen_,tim_);
 }
 
-//= XAC END SEQUENCE ===========//==============================================
+/*******************************************************************************
+*
+*	XAC END SEQUENCE
+*
+*******************************************************************************/
+
+//= INITIALIZE ELEMENTS ========//==============================================
+
+//- Init Airplane Explosion ----//----------------------------------------------
+function initXACExp() {
+	xae_.ExpMsh = makeSphere("yellow");
+	xae_.ExpMsh.visible = false;
+}
+
+//- Init Airplane White Smoke --//----------------------------------------------
+function initXACSmk() {
+	xas_.ObjTxt = txt_.ObjTxt[xas_.ObjTxt]; // Assign Texture
+	initAirSmk(xas_);			// Create Emitter
+	xas_.SmkMsh[0].visible = false;
+}
+
+//- Init Airplane Black Smoke --//----------------------------------------------
+function initXACFyr() {
+	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt]; // Assign Texture
+	initAirFyr(xaf_);			// Create Emitter
+	xaf_.SmkMsh[0].visible = false; // Turn Off Smoke
+	xaf_.FyrMsh[0].visible = false; // Turn Off Fire
+}
+
+//- Sphere ---------------------//---------------------------------------------
+//	Used to create flash explosions
+function makeSphere(col) {
+	let geometry = new THREE.SphereGeometry(1,32,16);
+	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
+	let mesh = new THREE.Mesh(geometry,material);
+	mesh.visible = false;
+return mesh;}
+
+//= MOVE ENDING SEQUENCE =======//==============================================
 
 function moveXACEnd(n) {
 	// n = xac number
@@ -897,26 +936,30 @@ function moveXACEnd(n) {
 		// Set Timd
 		xat_.TimRem = xat_.SegTim[xat_.SegIdx];
 		// Select Actions
-		if (xat_.SegIdx == 0) begnXACExp(n); // Begin Explosion 1
+		if (xat_.SegIdx == 0) {
+			begnXACExp(n); 		// Begin Explosion 1
+		}
 		if (xat_.SegIdx == 1) {
 			stopXACExp(n); 		// Stop Explosion 1
 			begnXACFyr(n); 		// Start Smoke and Fire
 		}
 		if (xat_.SegIdx == 2) {
 			begnXACExp(n);		// Begin Explosion 2
-			stopXACFyr(n);		// End Smoke and Fire
+			stopXACFyr();		// End Smoke and Fire
 		}
 		if (xat_.SegIdx == 3) {
 			stopXACExp(n);
 			xac_.AirObj[n].visible = false; // Airplane gone
+			xac_.EndSeq[n] = 0;
+			// Next Plane
+			myg_.HitTgt = myg_.HitTgt+1;
+			if (myg_.HitTgt > (xac_.ObjNum-1)) myg_.HitTgt = 0;
 		}
-		if (xat_.SegIdx == 4) playRadSg1(2); // Play Radio Call
-		if (xat_.SegIdx == 5) xac_.EndSeq[n] = 1;
 	}
 	else {						// Continuing Actions
-		if (xat_.SegIdx == 0) contXACExp(n);
+		if (xat_.SegIdx == 0) contXACExp();
 		if (xat_.SegIdx == 1) makeXACSpn(n);
-		if (xat_.SegIdx == 2) contXACExp(n);
+		if (xat_.SegIdx == 2) contXACExp();
 		xat_.TimRem = xat_.TimRem - tim_.DLTime;
 		if (xat_.TimRem < 0) xat_.TimRem = 0;
 	}
@@ -924,13 +967,14 @@ function moveXACEnd(n) {
 
 //-	Begin Explosion ------------//----------------------------------------------
 function begnXACExp(n) {
+	xac_.AirObj[n].add(xae_.ExpMsh); // Attach to Enemy Airplane
 	xae_.ExpSiz = 0.1;			// Start Size
 	xae_.ExpMsh.visible = true;
 	if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play();
 }
 
 //- Continue Explosion ---------//----------------------------------------------
-function contXACExp(n) {
+function contXACExp() {
 	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz);
 	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr;
 }
@@ -944,12 +988,16 @@ function stopXACExp(n) {
 
 //-	Begin Smoke and Fire -------//----------------------------------------------
 function begnXACFyr(n) {
+	// Smoke
+	xac_.AirObj[n].add(xaf_.SmkMsh[0]);
 	xaf_.SmkMsh[0].visible = true;
+	// Fire
+	xac_.AirObj[n].add(xaf_.FyrMsh[0]);
 	xaf_.FyrMsh[0].visible = true;
 }
 
 //-	End Smoke and Fire ---------//----------------------------------------------
-function stopXACFyr(n) {
+function stopXACFyr() {
 	xaf_.SmkMsh[0].visible = false;
 	xaf_.FyrMsh[0].visible = false;
 }
@@ -961,47 +1009,6 @@ function makeXACSpn(n) {
 		xac_.AirRot[n].x = xac_.AirRot[n].x - 0.1; // Pitch Down
 		if (xac_.AirRot[n].x < -90) xac_.AirRot[n].x = -90;
 	}
-}
-
-//- Sphere ---------------------//---------------------------------------------
-//	Used to create flash explosions
-
-function makeSphere(col) {
-	let geometry = new THREE.SphereGeometry(1,32,16);
-	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
-	let mesh = new THREE.Mesh(geometry,material);
-	mesh.visible = false;
-return mesh;}
-
-//= XAC SMOKE ==================//==============================================
-
-//- Init Airplane Explosion ----//----------------------------------------------
-function initXACExp(n) {
-	// Attach Exploding Center
-	xac_.AirObj[n].add(xae_.ExpMsh); // Attach to Enemy Airplane
-	xae_.ExpMsh.visible = false;
-}
-
-//- Init Airplane White Smoke --//----------------------------------------------
-function initXACSmk(n) {
-	// Create Emitter
-	xas_.ObjTxt = txt_.ObjTxt[xas_.ObjTxt];
-	initAirSmk(xas_);
-	// Attach to Friendly Airplane
-	xac_.AirObj[n].add(xas_.SmkMsh[0]);
-}
-
-//- Init Airplane Black Smoke --//----------------------------------------------
-function initXACFyr(n) {
-	// Create Emitter
-	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt];
-	initAirFyr(xaf_);
-	// Attach to Enemy Airplane
-	xac_.AirObj[n].add(xaf_.SmkMsh[0]);
-	xac_.AirObj[n].add(xaf_.FyrMsh[0]);
-	// Turn Off
-	xaf_.SmkMsh[0].visible = false;
-	xaf_.FyrMsh[0].visible = false;
 }
 
 /*******************************************************************************
@@ -1499,6 +1506,7 @@ function onWindowResize() {
 260325: Load internal model; Sounds to AnimPup; Throtl removed (use air_.PwrPct)
 2604--: Added enemy planes.
 260507: Added 4 directed AAA guns.
+260525: Air combat!
 */
 
 </script>
