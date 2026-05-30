@@ -8,10 +8,6 @@
 *
 ********************************************************************************
 
-ISSUES:
-* Airplanes cycle and burn, but locks when myg_.HitTrg after last plane shot down
-* Burning starts late
-
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 Version dated 30 May 2026
@@ -932,8 +928,7 @@ function moveXACEnd(n) {
 	// TimRem Starts at 0, So Starts Next Event
 	if (!xat_.TimRem) {			// Start New Actions
 		xat_.SegIdx ++;
-		// Set Timd
-		xat_.TimRem = xat_.SegTim[xat_.SegIdx];
+		xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
 		// Select Actions
 		if (xat_.SegIdx == 0) {
 			begnXACExp(n); 		// Begin Explosion 1
@@ -947,8 +942,8 @@ function moveXACEnd(n) {
 			stopXACFyr();		// End Smoke and Fire
 		}
 		if (xat_.SegIdx == 3) {
-			stopXACExp(n);
-			xac_.AirObj[n].visible = false; // Airplane gone
+			stopXACExp(n);		// Stop Explosion 2
+			xac_.AirObj[n].visible = false; // Make Airplane Invisible
 			xac_.EndSeq[n] = 0;
 			// Next Plane
 			myg_.HitTgt = myg_.HitTgt+1;
@@ -966,38 +961,38 @@ function moveXACEnd(n) {
 
 //-	Begin Explosion ------------//----------------------------------------------
 function begnXACExp(n) {
-	xac_.AirObj[n].add(xae_.ExpMsh); // Attach to Enemy Airplane
-	xae_.ExpSiz = 0.1;			// Start Size
-	xae_.ExpMsh.visible = true;
-	if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play();
+	xac_.AirObj[n].add(xae_.ExpMsh); // Attach to Airplane
+	xae_.ExpSiz = 0.1;			// Starting Size
+	xae_.ExpMsh.visible = true;	// Make Visible
+	if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play(); // Start Sound
 }
 
 //- Continue Explosion ---------//----------------------------------------------
 function contXACExp() {
-	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz);
-	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr;
+	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz); // New Size
+	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr; // Make Bigger
 }
 
 //-	Stop Explosion -------------//----------------------------------------------
 function stopXACExp(n) {
-	xae_.ExpSiz = 0.01;			// End Size
-	xae_.ExpMsh.visible = false;
-	if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();
+	xae_.ExpSiz = 0.01;			// Ending Size
+	xae_.ExpMsh.visible = false; // Make Invisible
+	if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop(); // Stop Sound
 }
 
 //-	Begin Smoke and Fire -------//----------------------------------------------
 function begnXACFyr(n) {
 	// Smoke
-	xac_.AirObj[n].add(xaf_.SmkMsh[0]);
-	xaf_.SmkMsh[0].visible = true;
+	xac_.AirObj[n].add(xaf_.SmkMsh[0]); // Attach to Airplane
+	xaf_.SmkMsh[0].visible = true;		// Make Visible
 	// Fire
-	xac_.AirObj[n].add(xaf_.FyrMsh[0]);
-	xaf_.FyrMsh[0].visible = true;
+	xac_.AirObj[n].add(xaf_.FyrMsh[0]);	// Attach to Airplane
+	xaf_.FyrMsh[0].visible = true;		// Make Visible
 }
 
 //-	End Smoke and Fire ---------//----------------------------------------------
 function stopXACFyr() {
-	xaf_.SmkMsh[0].visible = false;
+	xaf_.SmkMsh[0].visible = false; // Make Invisible
 	xaf_.FyrMsh[0].visible = false;
 }
 
