@@ -294,21 +294,20 @@ let ImgSiz = 1024;
 //= STATIC OBJECTS =============//==============================================
 //- Mountains/Islands ----------//----------------------------------------------
 //	Adjustments
-	mnt_.ObjNum = 0;
-//	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
-//	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5000)];
-//	mnt_.ObjGrp = [new THREE.Object3D()]; // Group
-//	mnt_.MaxAni = gen_.MaxAni;
+	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
+	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5250)];
+	mnt_.ObjGrp = [new THREE.Object3D()]; // Group
+	mnt_.MaxAni = gen_.MaxAni;
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
-	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,4750)]; // Relative Position
+	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,5000)]; // Relative Position
 	fxd_.ObjRef = [mnt_.ObjGrp[0]];
 
 //= MOVING AIRPLANES ===========//==============================================
 //- Airplane File Addresses (animated prop only)
 let XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_red.glb","xac_dr1_grn.glb"];
+let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb"];
 //- Initialize
 	xac_.ObjNum = 4;
 	for (let n = 0; n < xac_.ObjNum; n ++) {
@@ -428,10 +427,10 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 //- Ajdustments
 	aaf_.ObjNum = 4;			// Number of Guns in Battery
 	// Gun Data
-	aaf_.GunPos = [new THREE.Vector3(-1207+AAFHrz,AAFOff,1207-AAFHrz),new THREE.Vector3(402-AAFHrz,AAFOff,1207-AAFHrz), // Map Position
-				   new THREE.Vector3(-1207+AAFHrz,AAFOff, 402+AAFHrz),new THREE.Vector3(402-AAFHrz,AAFOff, 402+AAFHrz)];
-	aaf_.GunRot = [new THREE.Euler(45,350,0),new THREE.Euler(20,270,0), // Gun Rotation (degrees)
-				   new THREE.Euler(45,340,0),new THREE.Euler(20,290,0)];
+	aaf_.GunPos = [new THREE.Vector3(-402+AAFHrz,AAFOff, 402-AAFHrz),new THREE.Vector3(402-AAFHrz,AAFOff, 402-AAFHrz), // Map Position
+				   new THREE.Vector3(-402+AAFHrz,AAFOff,-402+AAFHrz),new THREE.Vector3(402-AAFHrz,AAFOff,-402+AAFHrz)];
+	aaf_.GunRot = [new THREE.Euler(45,0,0),new THREE.Euler(45,0,0), // Gun Rotation (degrees)
+				   new THREE.Euler(20,0,0),new THREE.Euler(20,0,0)];
 	// Optional: Targeting
 	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3)
 	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y,aaf_.GunRot[2].y,aaf_.GunRot[3].y],	// Targeting: Gun Old Rotation [260508]
