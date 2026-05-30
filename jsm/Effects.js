@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 29 May 2026
+Version dated 20 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -215,23 +215,21 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 		}
 	} // end i
 	// If Enemy Target, Are We Hitting It?
-	if (myg_.HitTgt) testHitBox(myg_,xac_)
+	if (xac_) testHitBox(myg_,xac_)
 }
 
 //= HITBOX =====================//==============================================
 
 function testHitBox(myg_,xac_) {
 	let n = myg_.HitTgt;		// Only 1 enemy airplane for now
-	if (n <= xac_.ObjNum) {		// Error Catcher
-		if (!xac_.EndSeq[n]) {		// Only if Not Already in Sequence
-			// Check All Bullets for Hit
-			for (let i = 0; i < myg_.BulNum; i ++) {
-				// Hitting Target?
-				if (Math.abs(xac_.AirObj[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
-					if (Math.abs(xac_.AirObj[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
-						if (Math.abs(xac_.AirObj[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
-							xac_.HitCnt[n]++;
-						}
+	if (!xac_.EndSeq[n]) {		// Only if Not Already in Sequence
+		// Check All Bullets for Hit
+		for (let i = 0; i < myg_.BulNum; i ++) {
+			// Hitting Target?
+			if (Math.abs(xac_.AirObj[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
+				if (Math.abs(xac_.AirObj[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
+					if (Math.abs(xac_.AirObj[n].position.z - myg_.BulPtr[i].position.z) < myg_.HitDst) {
+						xac_.HitCnt[n]++;
 					}
 				}
 			}
@@ -1017,5 +1015,4 @@ export {initFad2Blk,moveFad2Blk,
 260513: Seeting AAAFlg[n] = 0 will stop explosions.
 260520:	Eliminate altitude adjustment (AltDif) for bullets (xac and aag).
 260521: Changed air_.ObjAdr to air_.AirObj
-260529: Add error check to HitTarget routine
 */
