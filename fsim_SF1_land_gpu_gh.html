@@ -398,7 +398,7 @@ let gau_ = {
 	myg_.ObjNum = 2,			// Number of Barrels
 	myg_.ObjPos = [new THREE.Vector3(-0.14417,0.53409,1.25834),new THREE.Vector3(0.14417,0.53409,1.25834)]; // Position of Each Barrel
 	myg_.SndMsh = [new THREE.Object3D(),new THREE.Object3D()];
-	myg_.HitTgt = 1;
+	myg_.HitTgt = 2;			// Aircraft number (not Object Number)
 //- Moving Airplanes -----------//----------------------------------------------
 //	General Format Adjustments
 	for (let n = 0; n < xag_.ObjNum; n ++) {
@@ -773,7 +773,7 @@ function moveMovPln() {
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.AirObj[n].position.set(X,Y,Z);
 		//. BFM
-		if (n == myg_.HitTgt && n > 0) BFM(n); // Not for plane 0
+		if (n == (myg_.HitTgt-1)) BFM(n);
 	}
 }
 
@@ -947,7 +947,7 @@ function moveXACEnd(n) {
 			xac_.EndSeq[n] = 0;
 			// Next Plane
 			myg_.HitTgt = myg_.HitTgt+1;
-			if (myg_.HitTgt > (xac_.ObjNum-1)) myg_.HitTgt = 0;
+			if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
 		}
 	}
 	else {						// Continuing Actions
