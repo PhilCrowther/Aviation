@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260525
+*	FSIM SF1 DATA: 260530
 *
 *********************************************************************************
 
@@ -322,9 +322,7 @@ let xat_ = {
 		// 0 = 1st Explosion
 		// 1 = Spinning and Burning
 		// 2 = 2nd Explosion
-		// 3 = Delay
-		// 4 = Radio Call
-		SegTim: [0.05,5,0.1,2,2],		
+		SegTim: [0.05,5,0.1],		
 		SegIdx: -1,				// Start at -1 so can increment at beginning
 		TimRem: 0,
 	}
