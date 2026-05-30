@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 May 2026
+Version dated 30 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -215,14 +215,14 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 		}
 	} // end i
 	// If Enemy Target, Are We Hitting It?
-	if (xac_) testHitBox(myg_,xac_)
+	if (myg_.HitTgt) testHitBox(myg_,xac_);
 }
 
 //= HITBOX =====================//==============================================
 
 function testHitBox(myg_,xac_) {
-	let n = myg_.HitTgt;		// Only 1 enemy airplane for now
-	if (!xac_.EndSeq[n]) {		// Only if Not Already in Sequence
+	let n = myg_.HitTgt-1;		// Convert to Object Number
+	if (!xac_.EndSeq[n]) {		// Only Object if Not Already in End Sequence
 		// Check All Bullets for Hit
 		for (let i = 0; i < myg_.BulNum; i ++) {
 			// Hitting Target?
@@ -1015,4 +1015,5 @@ export {initFad2Blk,moveFad2Blk,
 260513: Seeting AAAFlg[n] = 0 will stop explosions.
 260520:	Eliminate altitude adjustment (AltDif) for bullets (xac and aag).
 260521: Changed air_.ObjAdr to air_.AirObj
+260530: Have HitTgt refer to xac aircraft number, rather than object number. So can shoot at airplane object number 0.
 */
