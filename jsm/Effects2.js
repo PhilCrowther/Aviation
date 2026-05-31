@@ -49,7 +49,6 @@ import {
 	BufferGeometry,
 	Euler,
 	Line,
-	LineGeometry,
 	LineBasicNodeMaterial,
 	MeshBasicNodeMaterial,
 	Mesh,
@@ -63,6 +62,7 @@ import {
 } from 'three';
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
+import {LineGeometry} from "three/addons/lines/webgpu/LineGeometry.js";
 
 import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv} from 'three/tsl';
 
