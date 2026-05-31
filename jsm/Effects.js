@@ -157,10 +157,20 @@ function initBullet(myg_,gen_) {
 		0, 0, -10,
 		0, 0,  10
 	]);
-//	let BulMtL = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.x)});
-//	let BulMtD = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.y)});
-	let BulMtL = new Line2NodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.x)});
-	let BulMtD = new Line2NodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.y)});
+	let BulMtL = new Line2NodeMaterial({
+		color: myg_.BulClr.x,
+		linewidth: 2,
+//		vertexColors: true,
+//		dashed: false,
+//		alphaToCoverage: true,
+	});
+	let BulMtD = new Line2NodeMaterial({
+		color: myg_.BulClr.y,
+		linewidth: 2,
+//		vertexColors: true,
+//		dashed: false,
+//		alphaToCoverage: true,
+	});
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
