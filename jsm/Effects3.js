@@ -61,7 +61,7 @@ import {
 	Vector3,	
 } from 'three';
 
-import {Line2} from "three/addons/lines/webgpu/Line2.js";
+import {LineGeometry,Line2} from "three/addons/lines/webgpu/Line2.js";
 
 import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv} from 'three/tsl';
 
