@@ -212,10 +212,9 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 			myg_.BulPtr[i].position.x = myg_.BulPtr[i].position.x - myg_.BulMpS[i].x;
 			myg_.BulPtr[i].position.y = myg_.BulPtr[i].position.y + myg_.BulMpS[i].y - tim_.GrvDLT; // Bullet drop
 			myg_.BulPtr[i].position.z = myg_.BulPtr[i].position.z - myg_.BulMpS[i].z;
+			if (myg_.HitTgt) testHitBox(myg_,xac_); // If Enemy Target, Are We Hitting It?
 		}
-	} // end i
-	// If Enemy Target, Are We Hitting It?
-	if (myg_.HitTgt) testHitBox(myg_,xac_);
+	}
 }
 
 //= HITBOX =====================//==============================================
