@@ -50,6 +50,7 @@ import {
 	Euler,
 	Line,
 	LineBasicNodeMaterial,
+	Line2NodeMaterial,
 	MeshBasicNodeMaterial,
 	Mesh,
 	Object3D,
@@ -61,7 +62,10 @@ import {
 	Vector3,	
 } from 'three';
 
-import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv} from 'three/tsl';
+import {Line2} from "three/addons/lines/webgpu/Line2.js";
+import {LineGeometry} from "three/addons/lines/LineGeometry.js";
+
+import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 'three/tsl';
 
 /*******************************************************************************
 *
@@ -148,20 +152,23 @@ function moveFad2Blk(f2b_) {
 function initBullet(myg_,gen_) {
 	// Line	
 	let line = 0
-	let points = [];
-		points.push(new Vector3(0,0,-10));
-		points.push(new Vector3(0,0,10));
-	let BltGeo = new BufferGeometry().setFromPoints(points);
-	let BulMtL = new LineBasicNodeMaterial({colorNode: color(myg_.BulClr.x)});
-	let BulMtD = new LineBasicNodeMaterial({colorNode: color(myg_.BulClr.y)});
+	let BltGeo = new LineGeometry();
+	BltGeo.setPositions([
+		0, 0, -10,
+		0, 0,  10
+	]);
+//	let BulMtL = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.x)});
+//	let BulMtD = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.y)});
+	let BulMtL = new Line2NodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.x)});
+	let BulMtD = new Line2NodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.y)});
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
-			line = new Line(BltGeo,BulMtL); // Lite Color
+			line = new Line2(BltGeo,BulMtL); // Lite Color
 			line.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(line);
-			line = new Line(BltGeo,BulMtD); // Dark Color
+			line = new Line2(BltGeo,BulMtD); // Dark Color
 			line.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(line);
 		}
