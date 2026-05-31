@@ -62,6 +62,7 @@ import {
 } from 'three';
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
+import {LineGeometry} from "three/addons/lines/LineGeometry.js";
 
 import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv} from 'three/tsl';
 
@@ -150,23 +151,14 @@ function moveFad2Blk(f2b_) {
 function initBullet(myg_,gen_) {
 	// Line	
 	let line = 0
-//	let points = [];
-//		points.push(new Vector3(0,0,-10));
-//		points.push(new Vector3(0,0,10));
-//	let BltGeo = new BufferGeometry().setFromPoints(points);
-//	let BltGeo = new LineGeometry();
-//	BltGeo.setPositions([
-//		-10,  0, 0,
-//		  0, 10, 0,
-//		 10,  0, 0
-//	]);
-	let points = [];
-		points.push(new Vector3(-10, 0,0));
-		points.push(new Vector3(  0,10,0));
-		points.push(new Vector3( 10, 0,0));
-	let BltGeo = new BufferGeometry().setFromPoints(points);
-	let BulMtL = new LineBasicNodeMaterial({linewidth: 5, colorNode: color(myg_.BulClr.x)});
-	let BulMtD = new LineBasicNodeMaterial({linewidth: 5, colorNode: color(myg_.BulClr.y)});
+	let BltGeo = new LineGeometry();
+	BltGeo.setPositions([
+		-10,  0, 0,
+		  0, 10, 0,
+		 10,  0, 0
+	]);
+	let BulMtL = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.x)});
+	let BulMtD = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.y)});
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
