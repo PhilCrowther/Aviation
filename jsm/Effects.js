@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 May 2026
+Version dated 31 May 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -153,24 +153,9 @@ function initBullet(myg_,gen_) {
 	// Line	
 	let line = 0
 	let BltGeo = new LineGeometry();
-	BltGeo.setPositions([
-		0, 0, -10,
-		0, 0,  10
-	]);
-	let BulMtL = new Line2NodeMaterial({
-		color: myg_.BulClr.x,
-		linewidth: 2,
-//		vertexColors: true,
-//		dashed: false,
-//		alphaToCoverage: true,
-	});
-	let BulMtD = new Line2NodeMaterial({
-		color: myg_.BulClr.y,
-		linewidth: 2,
-//		vertexColors: true,
-//		dashed: false,
-//		alphaToCoverage: true,
-	});
+	BltGeo.setPositions([0,0,-10, 0,0,10]);
+	let BulMtL = new Line2NodeMaterial({color: myg_.BulClr.x,linewidth: 2});
+	let BulMtD = new Line2NodeMaterial({color: myg_.BulClr.y,linewidth: 2});
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
