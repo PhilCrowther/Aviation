@@ -49,6 +49,7 @@ import {
 	BufferGeometry,
 	Euler,
 	Line,
+	LineGeometry,
 	LineBasicNodeMaterial,
 	MeshBasicNodeMaterial,
 	Mesh,
@@ -150,10 +151,16 @@ function moveFad2Blk(f2b_) {
 function initBullet(myg_,gen_) {
 	// Line	
 	let line = 0
-	let points = [];
-		points.push(new Vector3(0,0,-10));
-		points.push(new Vector3(0,0,10));
-	let BltGeo = new BufferGeometry().setFromPoints(points);
+//	let points = [];
+//		points.push(new Vector3(0,0,-10));
+//		points.push(new Vector3(0,0,10));
+//	let BltGeo = new BufferGeometry().setFromPoints(points);
+	let BltGeo = new LineGeometry();
+	BltGeo.setPositions([
+		-10,  0, 0,
+		  0, 10, 0,
+		 10,  0, 0
+	]);
 	let BulMtL = new LineBasicNodeMaterial({linewidth: 5, colorNode: color(myg_.BulClr.x)});
 	let BulMtD = new LineBasicNodeMaterial({linewidth: 5, colorNode: color(myg_.BulClr.y)});
 	for (let i = 0; i < myg_.BulNum; i ++) {
