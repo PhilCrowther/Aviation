@@ -50,6 +50,7 @@ import {
 	Euler,
 	Line,
 	LineBasicNodeMaterial,
+	Line2NodeMaterial,
 	MeshBasicNodeMaterial,
 	Mesh,
 	Object3D,
@@ -64,7 +65,7 @@ import {
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
 
-import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv} from 'three/tsl';
+import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 'three/tsl';
 
 /*******************************************************************************
 *
@@ -153,13 +154,13 @@ function initBullet(myg_,gen_) {
 	let line = 0
 	let BltGeo = new LineGeometry();
 	BltGeo.setPositions([
-		2, 0, -2,
-		0, 2, -2,
-		2, 0,  2,
-		0, 2,  2
+		0, 0, -10,
+		0, 0,  10
 	]);
-	let BulMtL = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.x)});
-	let BulMtD = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.y)});
+//	let BulMtL = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.x)});
+//	let BulMtD = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.y)});
+	let BulMtL = new Line2NodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.x)});
+	let BulMtD = new Line2NodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.y)});
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
