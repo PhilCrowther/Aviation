@@ -153,9 +153,8 @@ function initBullet(myg_,gen_) {
 	let line = 0
 	let BltGeo = new LineGeometry();
 	BltGeo.setPositions([
-		0, 0, -2,
-		0, 2,  0,
-		0, 0,  2
+		0, 0, -10,
+		0, 0,  10
 	]);
 	let BulMtL = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.x)});
 	let BulMtD = new LineBasicNodeMaterial({linewidth: 2, colorNode: color(myg_.BulClr.y)});
