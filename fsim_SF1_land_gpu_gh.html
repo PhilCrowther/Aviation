@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 May 2026
+Version dated 31 May 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -393,7 +393,7 @@ let gau_ = {
 //= GUNASG MODULE ==============//==============================================
 //- My Guns --------------------------------------------------------------------
 //	Adjustments
-	myg_.BulClr = new THREE.Vector2("red","black"); // Red
+	myg_.BulClr = new THREE.Vector2("white","white"); // White
 	myg_.SndSrc = AirSrc + "sounds/" + "pup_gun.mp3", // File (my guns)
 	myg_.ObjNum = 2,			// Number of Barrels
 	myg_.ObjPos = [new THREE.Vector3(-0.14417,0.53409,1.25834),new THREE.Vector3(0.14417,0.53409,1.25834)]; // Position of Each Barrel
@@ -618,7 +618,6 @@ function loadObject() {
 
 //= INIT OBJECTS ===============================================================
 
-
 function initObject() {
 	initStatic();
 	initMoving();
@@ -659,7 +658,6 @@ function moveStatic() {
 	moveMountn(mnt_,air_);
 	moveFxdObj(fxd_,air_,gen_);
 }
-
 
 //- MOVING OBJECTS -------------//----------------------------------------------
 
