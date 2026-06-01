@@ -229,56 +229,51 @@ let fxd_ = {
 
 //= MOVING OBJECTS =============//==============================================
 //- Moving Airplanes -----------//----------------------------------------------
-const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-const XP1Nam = "xac_l21.glb";	// Name of airplane model file (animated props only)
-const XP2Nam = "xac_dr1_grn.glb";	// Name of airplane model file (animated prop only)
-const XP3Nam = "xac_dr1_red.glb";	// Name of airplane model file (animated prop only)
-const XP4Nam = "xac_dr1_ylo.glb";	// Name of airplane model file (animated prop only)
 let xac_ = {
-		ObjNum: 4,				// Number of airplanes
-		Parent: [0,0,0,0],		// 0 = not linked
-		ObjSrc: [XPPath+XP1Nam,XPPath+XP2Nam,XPPath+XP3Nam,XPPath+XP4Nam], // Model Source file
-		ObjTxt: [0,0,0,0],		// Texture Source File (not used)
-		ObjSiz: [Ft2Mtr,Ft2Mtr,Ft2Mtr,Ft2Mtr], // Scale
-		RndOrd: [0,0,0,0],		// renderOrder (not used)
+		ObjNum: 0,				// Number of airplanes
+		Parent: [0],			// 0 = not linked
+		ObjSrc: [0], 			// Model Source file
+		ObjTxt: [0],			// Texture Source File (not used)
+		ObjSiz: [0], 			// Scale
+		RndOrd: [0],			// renderOrder (not used)
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
-		AirRot: [0,0,0,0],		// Rotation (euler3)
-		AirObj: [0,0,0,0],		// Object Address
-		AirPBY: [0,0,0,0],		// Changes in radians
+		AirRot: [0],			// Rotation (euler3)
+		AirObj: [0],			// Object Address
+		AirPBY: [0],			// Changes in radians
 		// Changes to Airplane Pitch Bank and Yaw
-		RotDif: [0,0,0,0],		// Change
+		RotDif: [0],			// Change
 		// Airplane Speed
-		SpdKPH: [0,0,0,0],		// Speed in KPH
-		SpdMPS: [45,45,45,45],	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-		SpdMPF: [0,0,0,0],		// Speed - meters per frame
+		SpdKPH: [0],			// Speed in KPH
+		SpdMPS: [0],			// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+		SpdMPF: [0],			// Speed - meters per frame
 		// Airplane Map Speed and Position
-		MapSpd: [0,0,0,0], 		// Map Speed (meters)
-		MapPos: [0,0,0,0], 		// Map Position (meters)
-		MapSPS: [0,0,0,0], 		// MSX, MPY, MSZ (meters)
+		MapSpd: [0], 			// Map Speed (meters)
+		MapPos: [0], 			// Map Position (meters)
+		MapSPS: [0], 			// MSX, MPY, MSZ (meters)
 		// Basic Animations
-		ObjDst: [0,0,0,0],		// Object distance (meters) used to activate effects
-		MixSpn: [0,0,0,0],		// Animation Mixer - Prop
-		MixPit: [0,0,0,0],		// Animation Mixer - Pitch
-		AnmPit: [0,0,0,0],		// Animation
-		MixBnk: [0,0,0,0],		// Animation Mixer - Bank
-		AnmBnk: [0,0,0,0],		// Animation
+		ObjDst: [0],			// Object distance (meters) used to activate effects
+		MixSpn: [0],			// Animation Mixer - Prop
+		MixPit: [0],			// Animation Mixer - Pitch
+		AnmPit: [0],			// Animation
+		MixBnk: [0],			// Animation Mixer - Bank
+		AnmBnk: [0],			// Animation
 		// Engine Sounds
-		EngSrc: [XPPath + "sounds/fm2.wav",XPPath + "sounds/fm2.wav",XPPath + "sounds/fm2.wav",XPPath + "sounds/fm2.wav"],
-		EngPtr: [0,0,0,0],
-		EngMsh: [0,0,0,0],		// (Object3D)
-		EngVol: [0.1,0.1,0.1,0.1],	// Volume
+		EngSrc: [0],			// Engine Sound Source
+		EngPtr: [0],			// Engine Object Address
+		EngMsh: [0],			// Engine Sound Address (Object3D)
+		EngVol: [0],			// Volume
 		// End Sequence
-		HitCnt: [0,0,0,0],		// Hits Taken
+		HitCnt: [0],			// Hits Taken
 		HitMax: 5,				// Hits Requred
-		EndSeq: [0,0,0,0],		// End Sequence Running
+		EndSeq: [0],			// End Sequence Running
 		EndTim: 5,				// End Sequence Time (Seconds)
 		// End Sound
-		SndFlg: [0,0,0,0],		// 1 = Start Explosion Sound
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [0,0,0,0],
+		SndFlg: [0],			// 1 = Start Explosion Sound
+		SndSrc: 0,
+		SndPtr: [0],
 		SndVol: 15,				// Volume
-		SndMsh: [0,0,0,0],		// (Object3D)
-		SndDTm: [0,0,0,0],
+		SndMsh: [0],		// (Object3D)
+		SndDTm: [0],
 	};
 
 //. BFM ........................//..............................................
