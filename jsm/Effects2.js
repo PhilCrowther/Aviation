@@ -165,11 +165,11 @@ function initBullet(myg_,gen_) {
 			myg_.BulPtr[i].add(line);
 			line = new Line2(BltGeo,BulMtD); // Dark Color - Left
 			line.position.copy(myg_.ObjPos[j]);
-			line.position.x = -0.6;
+			line.position.x = -0.01;
 			myg_.BulPtr[i].add(line);
 			line = new Line2(BltGeo,BulMtD); // Dark Color - Right
 			line.position.copy(myg_.ObjPos[j]);
-			line.position.x = 0.6;
+			line.position.x = 0.01;
 			myg_.BulPtr[i].add(line);
 		}
 		//
