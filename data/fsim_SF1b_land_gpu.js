@@ -522,7 +522,39 @@ let myg_ = {
 
 //- Moving Airplanes -----------//----------------------------------------------
 let xag_ = {
-		ObjNum: 0,				// For now
+		ObjNum: 1,
+		// Parent (use this instead of link because bullets not attached)
+		XACRot: [0],
+		XACPos: [0],
+		// Gun Object (Fixed Firing Forward)
+		// GunPtr = Airplane Object
+		GunPtr: [0],			// Not Used Yet
+		GunRot: [0],			// Gun Rotation (Euler degrees)
+		GunPos: [0],			// Map Position (Vector3)
+		// Bullet Data
+		BulFlg: [0],			// 1 = Guns Firing	
+		BulSpd: 887,			// Muzzle Velocity (mps)
+		BulDLT: 0.5,			// Max Bullet Time in Flight
+		BulNum: 16,				// Number of Tracers
+		BulSpc: 0.125,			// Bullet Spacing (4*BulDLT/BulNum)
+		BulSp2: [0.125],		// Bullet Spacing - time remaining
+		// Bullet Colors and Opacity
+		BulClr: 0,				// Red (Vector2)
+		BulOpa: 0.8,
+		// Bullets for each gun
+		BulPtr: [[]],			// Bullet Objects
+		BulMpS: [[0]],			// Bullet Map Speed (V3)
+		BulMpP: [[0]],			// Bullet Map Position (V3)
+		BulTim: [[]],			// Bullet Time in Flight
+		// Gun Sounds
+		SndSrc: [0],			// File (my guns)
+		SndPtr: [0],
+		SndVol: [0.5],			// Volume
+		SndMsh: [0],			// (makMsh)
+		// Timer
+		TimMax: [120],			// Time On (frames)
+		TimMin: [-600],			// Time Off (frames)
+		TimFlg: [120],			// Timer (pos = On, neg = Off)
 	};
 
 //- Moving Ships ---------------//----------------------------------------------
