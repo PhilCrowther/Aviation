@@ -152,6 +152,7 @@ function moveFad2Blk(f2b_) {
 function initBullet(myg_,gen_) {
 	// Line	
 	let line = 0
+	let xd = 0.001;
 	let BltGeo = new LineGeometry();
 	BltGeo.setPositions([0,0,-10, 0,0,10]);
 	let BulMtL = new Line2NodeMaterial({color: myg_.BulClr.x,linewidth: 2});
@@ -165,11 +166,11 @@ function initBullet(myg_,gen_) {
 			myg_.BulPtr[i].add(line);
 			line = new Line2(BltGeo,BulMtD); // Dark Color - Left
 			line.position.copy(myg_.ObjPos[j]);
-			line.position.x = -0.6;
+			line.position.x = -xd;
 			myg_.BulPtr[i].add(line);
 			line = new Line2(BltGeo,BulMtD); // Dark Color - Right
 			line.position.copy(myg_.ObjPos[j]);
-			line.position.x = 0.6;
+			line.position.x = xd;
 			myg_.BulPtr[i].add(line);
 		}
 		//
