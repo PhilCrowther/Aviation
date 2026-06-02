@@ -261,31 +261,13 @@ function initXACBul(xag_,gen_) {
 	let line = 0
 	//- Front Line
 	let lnF = 6;
-//	let point0 = [];
-//		point0.push(new Vector3(0,0,-lnF));
-//		point0.push(new Vector3(0,0,lnF));
-//	let BulGeL = new BufferGeometry().setFromPoints(point0);	
 	let BulGeL = new LineGeometry();
 	BulGeL.setPositions([0,0,-lnF, 0,0,lnF]);	
 	//- Back Line
 	let lnB = 6;
-//	let point1 = [];
-//		point1.push(new Vector3(0,0,-lnB));
-//		point1.push(new Vector3(0,0,lnB));
-//	let BulGeD = new BufferGeometry().setFromPoints(point1);
 	let BulGeD = new LineGeometry();
 	BulGeD.setPositions([0,0,-lnB, 0,0,lnB]);	
-//	let BulMtL = new LineBasicNodeMaterial();
-//		BulMtL.colorNode = color(xag_.BulClr.x);
-//		BulMtL.transparent = true;
-//		BulMtL.opacityNode = xag_.AAAOpa;
-//		BulMtL.depthWrite = false;
 	let BulMtL = new Line2NodeMaterial({color: xag_.BulClr.x,linewidth: 2});
-//	let BulMtD = new LineBasicNodeMaterial();
-//		BulMtD.colorNode = color(xag_.BulClr.y);
-//		BulMtD.transparent = true;
-//		BulMtD.opacityNode = xag_.AAAOpa;
-//		BulMtD.depthWrite = false;
 	let BulMtD = new Line2NodeMaterial({color: xag_.BulClr.y,linewidth: 2});
 	let xp = 0.1;
 	// For Each Gun
@@ -340,9 +322,10 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 				// Initial Map Position
 				xag_.BulMpP[n][i].copy(xag_.XACPos[n]); // Use XACPos instead of link
 				// Set Initial Speed
-				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(-xag_.XACRot[n].y)*DegRad);
-				BulSV3 = new Vector3().setFromSpherical(BulSV3);
-				xag_.BulMpS[n][i].copy(BulSV3);
+//				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(-xag_.XACRot[n].y)*DegRad);
+//				BulSV3 = new Vector3().setFromSpherical(BulSV3);
+//				xag_.BulMpS[n][i].copy(BulSV3);
+				BulSV3 = xag_.XACRot[n].normalize.multiplyScalar(BulSpT)
 				//
 				xag_.BulTim[n][i] = tim_.DLTime;
 				xag_.BulSp2[n] = xag_.BulSpc;
