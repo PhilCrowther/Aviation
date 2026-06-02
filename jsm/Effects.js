@@ -185,7 +185,7 @@ function initBullet(myg_,gen_) {
 //	If no enemy target, xac_ = 0
 
 function moveBullet(myg_,air_,gen_,tim_,xac_) {
-	let BulSV3 = new Vector3();
+//	let BulSV3 = new Vector3();
 	let	BulSpT = myg_.BulSpd * tim_.DLTime;
 	myg_.BulSp2 = myg_.BulSp2 - tim_.DLTime;
 	if (myg_.BulSp2 < 0) myg_.BulSp2 = 0;
@@ -197,7 +197,7 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 			//	Set Initial Rotation
 			myg_.BulPtr[i].rotation.copy(air_.AirObj.rotation);
 			//	Set Initial Speed
-			BulSV3 = new Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
+			let BulSV3 = new Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
 			BulSV3 = new Vector3().setFromSpherical(BulSV3);
 			myg_.BulMpS[i].copy(BulSV3);
 			//
@@ -308,7 +308,7 @@ function initXACBul(xag_,gen_) {
 //= MOVE XAC BULLETS ===========//==============================================
 
 function moveXACBul(xag_,air_,gen_,tim_) {
-	let BulSV3 = new Vector3();
+//	let BulSV3 = new Vector3();
 	let	BulSpT = xag_.BulSpd * tim_.DLTime;
 	for (let n = 0; n < xag_.ObjNum; n ++) {
 		xag_.BulSp2[n] = xag_.BulSp2[n] - tim_.DLTime;
@@ -322,13 +322,9 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 				// Initial Map Position
 				xag_.BulMpP[n][i].copy(xag_.XACPos[n]); // Use XACPos instead of link
 				// Set Initial Speed
-//				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(-xag_.XACRot[n].y)*DegRad);
-//				BulSV3 = new Vector3().setFromSpherical(BulSV3);
-//				xag_.BulMpS[n][i].copy(BulSV3);
-				BulSV3 = xag_.XACRot[n].normalize;
-				BulSV3.x = BulSV3.x * BulSpT;
-				BulSV3.y = BulSV3.y * BulSpT;
-				BulSV3.z = BulSV3.z * BulSpT;
+				let BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(-xag_.XACRot[n].y)*DegRad);
+				BulSV3 = new Vector3().setFromSpherical(BulSV3);
+				xag_.BulMpS[n][i].copy(BulSV3);
 				//
 				xag_.BulTim[n][i] = tim_.DLTime;
 				xag_.BulSp2[n] = xag_.BulSpc;
@@ -560,7 +556,7 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 	//- Combined Rotation and Map Position of Parent plus Gun
 	let MapPos = new Vector3();
 	let MapRot = new Vector3();
-	let AAASV3 = new Vector3();
+//	let AAASV3 = new Vector3();
 	let	AAASpT = aag_.AAASpd * tim_.DLTime;
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		MapPos.copy(aag_.GunPos[n]);
@@ -616,9 +612,9 @@ function moveAAGuns(aag_,air_,gen_,tim_) {
 				// Initial Map Position
 				aag_.AAAMpP[n][i].copy(MapPos);
 				// Set Initial Speed
-				AAASV3 = new Spherical(AAASpT,(90-MapRot.x)*DegRad,Mod360(-MapRot.y)*DegRad);
+				let AAASV3 = new Spherical(AAASpT,(90-MapRot.x)*DegRad,Mod360(-MapRot.y)*DegRad);
 				AAASV3 = new Vector3().setFromSpherical(AAASV3);
-				aag_.AAAMpS[n][i] = AAASV3;
+				aag_.AAAMpS[n][i].copy(AAASV3);
 				//
 				aag_.AAATim[n][i] = tim_.DLTime; // First jump
 				aag_.AAASp2[n] = aag_.AAASpc; // restart delay
