@@ -325,7 +325,10 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 //				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(-xag_.XACRot[n].y)*DegRad);
 //				BulSV3 = new Vector3().setFromSpherical(BulSV3);
 //				xag_.BulMpS[n][i].copy(BulSV3);
-				BulSV3 = xag_.XACRot[n].normalize.multiplyScalar(BulSpT)
+				BulSV3 = xag_.XACRot[n].normalize;
+				BulSV3.x = BulSV3.x * BulSpT;
+				BulSV3.y = BulSV3.y * BulSpT;
+				BulSV3.z = BulSV3.z * BulSpT;
 				//
 				xag_.BulTim[n][i] = tim_.DLTime;
 				xag_.BulSp2[n] = xag_.BulSpc;
