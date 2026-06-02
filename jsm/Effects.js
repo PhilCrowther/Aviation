@@ -265,16 +265,16 @@ function initXACBul(xag_,gen_) {
 //		point0.push(new Vector3(0,0,-lnF));
 //		point0.push(new Vector3(0,0,lnF));
 //	let BulGeL = new BufferGeometry().setFromPoints(point0);	
-	let BltGeL = new LineGeometry();
-	BltGeL.setPositions([0,0,-lnF, 0,0,lnF]);	
+	let BulGeL = new LineGeometry();
+	BulGeL.setPositions([0,0,-lnF, 0,0,lnF]);	
 	//- Back Line
 	let lnB = 6;
 //	let point1 = [];
 //		point1.push(new Vector3(0,0,-lnB));
 //		point1.push(new Vector3(0,0,lnB));
 //	let BulGeD = new BufferGeometry().setFromPoints(point1);
-	let BltGeD = new LineGeometry();
-	BltGeD.setPositions([0,0,-lnB, 0,0,lnB]);	
+	let BulGeD = new LineGeometry();
+	BulGeD.setPositions([0,0,-lnB, 0,0,lnB]);	
 //	let BulMtL = new LineBasicNodeMaterial();
 //		BulMtL.colorNode = color(xag_.BulClr.x);
 //		BulMtL.transparent = true;
