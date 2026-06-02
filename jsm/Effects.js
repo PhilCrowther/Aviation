@@ -200,6 +200,7 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 			let BulSV3 = new Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
 			BulSV3 = new Vector3().setFromSpherical(BulSV3);
 			myg_.BulMpS[i].copy(BulSV3);
+			myg_.BulMpS[i].x = -myg_.BulMpS[i].x;
 			//
 			myg_.BulTim[i] = tim_.DLTime;
 			myg_.BulSp2 = myg_.BulSpc;
