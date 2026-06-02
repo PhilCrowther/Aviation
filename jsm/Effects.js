@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 1 Jun 2026
+Version dated 2 Jun 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -260,7 +260,7 @@ function testHitBox(myg_,xac_) {
 function initXACBul(xag_,gen_) {
 	let line = 0
 	//- Front Line
-	let lnF = 6;
+	let lnF = 6;	
 	let BulGeL = new LineGeometry();
 	BulGeL.setPositions([0,0,-lnF, 0,0,lnF]);	
 	//- Back Line
