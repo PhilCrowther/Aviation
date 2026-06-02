@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 May 2026
+Version dated 1 Jun 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -261,27 +261,15 @@ function initXACBul(xag_,gen_) {
 	let line = 0
 	//- Front Line
 	let lnF = 6;
-	let point0 = [];
-		point0.push(new Vector3(0,0,-lnF));
-		point0.push(new Vector3(0,0,lnF));
-	let BulGeL = new BufferGeometry().setFromPoints(point0);
+	let BulGeL = new LineGeometry();
+	BulGeL.setPositions([0,0,-lnF, 0,0,lnF]);	
 	//- Back Line
 	let lnB = 6;
-	let point1 = [];
-		point1.push(new Vector3(0,0,-lnB));
-		point1.push(new Vector3(0,0,lnB));
-	let BulGeD = new BufferGeometry().setFromPoints(point1);	
-	let BulMtL = new LineBasicNodeMaterial();
-		BulMtL.colorNode = color(xag_.BulClr.x);
-		BulMtL.transparent = true;
-		BulMtL.opacityNode = xag_.AAAOpa;
-		BulMtL.depthWrite = false;
-	let BulMtD = new LineBasicNodeMaterial();
-		BulMtD.colorNode = color(xag_.BulClr.y);
-		BulMtD.transparent = true;
-		BulMtD.opacityNode = xag_.AAAOpa;
-		BulMtD.depthWrite = false;
-	let xp = 2;
+	let BulGeD = new LineGeometry();
+	BulGeD.setPositions([0,0,-lnB, 0,0,lnB]);	
+	let BulMtL = new Line2NodeMaterial({color: xag_.BulClr.x,linewidth: 2});
+	let BulMtD = new Line2NodeMaterial({color: xag_.BulClr.y,linewidth: 2});
+	let xp = 0.1;
 	// For Each Gun
 	for (let n = 0; n < xag_.ObjNum; n ++) {
 		// Load Bullets
@@ -289,20 +277,20 @@ function initXACBul(xag_,gen_) {
 			//	Create Bull Meshes - Double Line 2 Colors
 			xag_.BulPtr[n][i] = new Object3D();
 			//	Left
-			line = new Line(BulGeL,BulMtL); // Lite Color
+			line = new Line2(BulGeL,BulMtL); // Lite Color
 			line.position.z = -lnF;
 			line.position.x = -xp;
 			xag_.BulPtr[n][i].add(line);
-			line = new Line(BulGeD,BulMtD); // Dark Color
+			line = new Line2(BulGeD,BulMtD); // Dark Color
 			line.position.z = lnB;
 			line.position.x = -xp;
 			xag_.BulPtr[n][i].add(line);
 			//	Rite
-			line = new Line(BulGeL,BulMtL); // Lite Color
+			line = new Line2(BulGeL,BulMtL); // Lite Color
 			line.position.z = -lnF;
 			line.position.x = xp;
 			xag_.BulPtr[n][i].add(line);
-			line = new Line(BulGeD,BulMtD); // Dark Color
+			line = new Line2(BulGeD,BulMtD); // Dark Color
 			line.position.z = lnB;
 			line.position.x = xp;
 			xag_.BulPtr[n][i].add(line);
