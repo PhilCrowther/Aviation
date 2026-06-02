@@ -287,7 +287,7 @@ function initXACBul(xag_,gen_) {
 //		BulMtD.opacityNode = xag_.AAAOpa;
 //		BulMtD.depthWrite = false;
 	let BulMtD = new Line2NodeMaterial({color: xag_.BulClr.y,linewidth: 2});
-	let xp = 2;
+	let xp = 0.1;
 	// For Each Gun
 	for (let n = 0; n < xag_.ObjNum; n ++) {
 		// Load Bullets
