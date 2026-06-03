@@ -393,8 +393,8 @@ let gau_ = {
 //= GUNASG MODULE ==============//==============================================
 //- My Guns --------------------------------------------------------------------
 //	Adjustments
-	myg_.BulClr = new THREE.Vector2("white","white"); // White
-	myg_.SndSrc = AirSrc + "sounds/" + "pup_gun.mp3", // File (my guns)
+	myg_.BulClr = new THREE.Vector2("white","gray"); // White
+	myg_.SndSrc = AirSrc + "sounds/pup_gun.mp3", // File (my guns)
 	myg_.ObjNum = 2,			// Number of Barrels
 	myg_.ObjPos = [new THREE.Vector3(-0.14417,0.53409,1.25834),new THREE.Vector3(0.14417,0.53409,1.25834)]; // Position of Each Barrel
 	myg_.SndMsh = [new THREE.Object3D(),new THREE.Object3D()];
@@ -410,10 +410,10 @@ let gau_ = {
 	xag_.XACRot = [xac_.AirRot[0],xac_.AirRot[1],xac_.AirRot[2],xac_.AirRot[3]];
 	xag_.XACPos = [xac_.MapPos[0],xac_.MapPos[1],xac_.MapPos[2],xac_.MapPos[3]];
 	xag_.BulClr = new THREE.Vector2(0xff80ff,0x804080); // Red
-	xag_.SndSrc = [XPPath + "sounds/" + "pup_gun.mp3", // File (my guns)
-				   XPPath + "sounds/" + "pup_gun.mp3",
-				   XPPath + "sounds/" + "pup_gun.mp3",
-				   XPPath + "sounds/" + "pup_gun.mp3"];
+	xag_.SndSrc = [XPPath + "sounds/pup_gun.mp3", // File (my guns)
+				   XPPath + "sounds/pup_gun.mp3",
+				   XPPath + "sounds/pup_gun.mp3",
+				   XPPath + "sounds/pup_gun.mp3"];
 
 //- Fixed Gun Battery ----------//----------------------------------------------
 //  QF 13 pounder 9 cwt
@@ -824,7 +824,7 @@ function BFM(n) {
 		}
 	}
 	// Fire Guns Until End Sequence Starts
-//	if (!xac_.EndSeq[n]) moveXACGun(n); // Keep Firing Until End
+	if (!xac_.EndSeq[n]) moveXACGun(n); // Keep Firing Until End
 	// If Enough Hits, Start Ending Sequence
 	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
 		xac_.EndSeq[n] = xac_.EndTim;
@@ -859,24 +859,26 @@ function BFM_03(n) {
 	if (bfm_.PosOff[n].y < -bfm_.PosCut || bfm_.PosOff[n].y > bfm_.PosCut) bfm_.ManTyp[n] = 0;	
 }
 
-//= XAC GUNS ===================//==============================================
+/*******************************************************************************
+*
+*	XAC GUNS
+*
+*******************************************************************************/
 
-//- Move XAC Guns --------------//----------------------------------------------
+//= MOVE XAC GUNS ==============//==============================================
 //	Enemy Airplane Only
 function moveXACGun(n) {
-	// Timer
-	xag_.TimFlg[n] = xag_.TimFlg[n] -1;
-	if (xag_.TimFlg[n] < xag_.TimMin[n]) xag_.TimFlg[n] = xag_.TimMax[n];
+	xag_.XACRot[n].copy(xac_.AirRot[n]);
+	xag_.TimFlg[n] = 1;
 	// Visibility Test
 	xag_.BulFlg[n] = 0;			// Default = Not Visible
 	let MinDst = 500;
-	let X = xag_.XACPos[n].x - air_.MapPos.x;
-	let Y = xag_.XACPos[n].y - gen_.AltDif;
-	let Z = air_.MapPos.z - xag_.XACPos[n].z;
-	if (X < MinDst && Y < MinDst && Z < MinDst) { // If Visible
-		if (xag_.TimFlg > 0) xag_.BulFlg[n] = 1;
-		else {xag_.BulFlg[n] = 0;}
-	}
+	let X = Math.abs(bfm_.MapDif[n].x);
+	let Y = Math.abs(bfm_.MapDif[n].y);
+	let Z = Math.abs(bfm_.MapDif[n].z);
+	if (X < MinDst && Y < MinDst && Z < MinDst && 
+		Math.abs(bfm_.PosOff[n].y) < 2 && Math.abs(bfm_.PosOff[n].x) < 1
+	) xag_.BulFlg[n] = 1;
 	moveXACBul(xag_,air_,gen_,tim_);
 }
 
