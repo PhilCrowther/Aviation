@@ -318,11 +318,11 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 			if (!xag_.BulTim[n][i] && !xag_.BulSp2[n] && xag_.BulFlg[n]) {		
 				// Set Initial Rotation
 				xag_.BulPtr[n][i].rotation.x = xag_.XACRot[n].x*DegRad; // Latitude
-				xag_.BulPtr[n][i].rotation.y = xag_.XACRot[n].y*DegRad; // Longitude
+				xag_.BulPtr[n][i].rotation.y = -xag_.XACRot[n].y*DegRad; // Longitude
 				// Initial Map Position
 				xag_.BulMpP[n][i].copy(xag_.XACPos[n]); // Use XACPos instead of link
 				// Set Initial Speed
-				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(-xag_.XACRot[n].y)*DegRad);
+				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(xag_.XACRot[n].y)*DegRad);
 				BulSV3 = new Vector3().setFromSpherical(BulSV3);
 				xag_.BulMpS[n][i].copy(BulSV3);
 				//
