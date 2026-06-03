@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 May 2026
+Version dated 2 Jun 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -948,6 +948,8 @@ function moveXACEnd(n) {
 			// Next Plane
 			myg_.HitTgt = myg_.HitTgt+1;
 			if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
+			BnkMax = BnkMax + 10;
+			if (BnkMax > 85) BnkMax = 85;
 		}
 	}
 	else {						// Continuing Actions
