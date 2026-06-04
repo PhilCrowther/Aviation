@@ -220,18 +220,18 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 			myg_.BulPtr[i].position.x = myg_.BulPtr[i].position.x - myg_.BulMpS[i].x;
 			myg_.BulPtr[i].position.y = myg_.BulPtr[i].position.y + myg_.BulMpS[i].y - tim_.GrvDLT; // Bullet drop
 			myg_.BulPtr[i].position.z = myg_.BulPtr[i].position.z - myg_.BulMpS[i].z;
-			if (myg_.HitTgt) testHitBox(myg_,xac_); // If Enemy Target, Are We Hitting It?
+			if (myg_.HitTgt) testHitBox(i,myg_,xac_); // If Enemy Target, Are We Hitting It?
 		}
 	}
 }
 
 //= HITBOX =====================//==============================================
 
-function testHitBox(myg_,xac_) {
+function testHitBox(i,myg_,xac_) {
 	let n = myg_.HitTgt-1;		// Convert to Object Number
 	if (!xac_.EndSeq[n]) {		// Only Object if Not Already in End Sequence
 		// Check All Bullets for Hit
-		for (let i = 0; i < myg_.BulNum; i ++) {
+//		for (let i = 0; i < myg_.BulNum; i ++) {
 			// Hitting Target?
 			if (Math.abs(xac_.AirObj[n].position.x - myg_.BulPtr[i].position.x) < myg_.HitDst) {
 				if (Math.abs(xac_.AirObj[n].position.y - myg_.BulPtr[i].position.y) < myg_.HitDst) {
@@ -240,7 +240,7 @@ function testHitBox(myg_,xac_) {
 					}
 				}
 			}
-		}
+//		}
 	}
 }
 
