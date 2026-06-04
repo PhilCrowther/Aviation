@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Jun 2026
+Version dated 3 Jun 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -876,9 +876,13 @@ function moveXACGun(n) {
 	let X = Math.abs(bfm_.MapDif[n].x);
 	let Y = Math.abs(bfm_.MapDif[n].y);
 	let Z = Math.abs(bfm_.MapDif[n].z);
-	if (X < MinDst && Y < MinDst && Z < MinDst && 
-		Math.abs(bfm_.PosOff[n].y) < 2 && Math.abs(bfm_.PosOff[n].x) < 1
-	) xag_.BulFlg[n] = 1;
+	if (X < MinDst && Y < MinDst && Z < MinDst && Math.abs(bfm_.PosOff[n].y) < 2 && Math.abs(bfm_.PosOff[n].x) < 1) {
+		xag_.BulFlg[n] = 1;
+		if (gen_.SndFlg && !xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();
+	}
+	else {
+		if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();
+	}
 	moveXACBul(xag_,air_,gen_,tim_);
 }
 
@@ -948,8 +952,10 @@ function moveXACEnd(n) {
 			// Next Plane
 			myg_.HitTgt = myg_.HitTgt+1;
 			if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
-			BnkMax = BnkMax + 10;
-			if (BnkMax > 85) BnkMax = 85;
+			BnkMax = BnkMax + 5;
+			if (BnkMax > 75) BnkMax = 75;
+			myg_.HitRad = myg_.HitRad - 3;
+			if (myg_.HitRad < 1) myg_.HitRad = 1;
 		}
 	}
 	else {						// Continuing Actions
