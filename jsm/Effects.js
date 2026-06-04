@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Jun 2026
+Version dated 4 Jun 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -322,7 +322,7 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 				// Initial Map Position
 				xag_.BulMpP[n][i].copy(xag_.XACPos[n]); // Use XACPos instead of link
 				// Set Initial Speed
-				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(xag_.XACRot[n].y)*DegRad);
+				BulSV3 = new Spherical(BulSpT,(90-xag_.XACRot[n].x)*DegRad,Mod360(xag_.XACRot[n].y)*DegRad); //### fixed 260603
 				BulSV3 = new Vector3().setFromSpherical(BulSV3);
 				xag_.BulMpS[n][i].copy(BulSV3);
 				//
@@ -1011,4 +1011,6 @@ export {initFad2Blk,moveFad2Blk,
 260520:	Eliminate altitude adjustment (AltDif) for bullets (xac and aag).
 260521: Changed air_.ObjAdr to air_.AirObj
 260530: Have HitTgt refer to xac aircraft number, rather than object number. So can shoot at airplane object number 0.
+260603: Fix bullet direciton by changing -xag_.XACRot[n].y to xag_.XACRot[n].y.
+260604: Only run one bullet at a time through HitBox.
 */
