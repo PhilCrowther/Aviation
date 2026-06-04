@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Jun 2026
+Version dated 4 Jun 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -683,13 +683,19 @@ function moveFxdGun() {
 	if (aaf_.ObjNum) moveAAAGun(aaf_,air_,gen_,tim_);
 }
 
-//= MOVING AIRPLANES ===========//==============================================
+/*******************************************************************************
+*
+*	XAC AIRPLANES
+*
+*******************************************************************************/
+// 	Note: Y and Z rotate anticlockwise
 
-//- Init Airplane --------------//----------------------------------------------
+//= INIT AIRPLANES =============//==============================================
+
 function initMovPln() {
-	initXACVeh(xac_,air_,gen_);
-	initXACBul(xag_,gen_);		// For All Airplanes
-//	initXACSmk();				// Friendly Airplane Only	
+	initXACVeh(xac_,air_,gen_);	// For All Airplanes
+	initXACBul(xag_,gen_);		// Bullets
+//	initXACSmk();				// Light Smoke Trail	
 	initXACFyr();				// Enemy Airplane Only
 	initXACExp();				// Enemy Airplane Only
 //	Init BFM
@@ -705,7 +711,8 @@ function initMovPln() {
 	}
 }
 
-//- Move Plane -----------------//----------------------------------------------
+//= MOVE AIRPLANES =============//==============================================
+
 function moveMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		if (!xac_.EndSeq[n]) {
@@ -776,6 +783,7 @@ function moveMovPln() {
 }
 
 //= BFM ========================//==============================================
+//	For selected airplanes only
 
 function BFM(n) {
 	let BnkDif,BnkRot;
@@ -871,16 +879,16 @@ function moveXACGun(n) {
 	xag_.XACRot[n].copy(xac_.AirRot[n]);
 	xag_.TimFlg[n] = 1;
 	// Visibility Test
-	xag_.BulFlg[n] = 0;			// Default = Not Visible
 	let MinDst = 500;
 	let X = Math.abs(bfm_.MapDif[n].x);
 	let Y = Math.abs(bfm_.MapDif[n].y);
 	let Z = Math.abs(bfm_.MapDif[n].z);
 	if (X < MinDst && Y < MinDst && Z < MinDst && Math.abs(bfm_.PosOff[n].y) < 2 && Math.abs(bfm_.PosOff[n].x) < 1) {
-		xag_.BulFlg[n] = 1;
+		xag_.BulFlg[n] = 1;		// Start new bullets
 		if (gen_.SndFlg && !xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();
 	}
 	else {
+		xag_.BulFlg[n] = 0;		// No new bullets
 		if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();
 	}
 	moveXACBul(xag_,air_,gen_,tim_);
