@@ -166,11 +166,11 @@ function initBullet(myg_,gen_) {
 			myg_.BulPtr[i].add(line);
 			line = new Line2(BltGeo,BulMtD); // Dark Color - Left
 			line.position.copy(myg_.ObjPos[j]);
-			line.position.x = -xd;
+			line.position.x = line.position.x-xd;
 			myg_.BulPtr[i].add(line);
 			line = new Line2(BltGeo,BulMtD); // Dark Color - Right
 			line.position.copy(myg_.ObjPos[j]);
-			line.position.x = xd;
+			line.position.x = line.position.x+xd;
 			myg_.BulPtr[i].add(line);
 		}
 		//
@@ -1013,4 +1013,5 @@ export {initFad2Blk,moveFad2Blk,
 260530: Have HitTgt refer to xac aircraft number, rather than object number. So can shoot at airplane object number 0.
 260603: Fix bullet direciton by changing -xag_.XACRot[n].y to xag_.XACRot[n].y.
 260604: Only run one bullet at a time through HitBox.
+260605: myg dark colors adjacent to light colors
 */
