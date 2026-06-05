@@ -329,7 +329,7 @@ update() {
 	this.air_.AirObj.rotation.x = this.air_.AirRot.x*this.DegRad;
 	// c. Compute Map Speed	
 	this.air_.MapSpd = new Spherical(this.air_.SpdMPF,(90-this.air_.AirRot.x)*DegRad,Mod360(this.air_.AirRot.y)*DegRad);
-	this.air_.MapSpd = new Vector3().setFromSpherical(this.air_.MapSpd);
+	this.air_.MapSpd.setFromSpherical(this.air_.MapSpd);
 	// d. Compute Map Position
 	this.air_.MapPos.z = this.air_.MapPos.z+this.air_.MapSpd.z;
 	this.air_.MapPos.y = this.air_.MapPos.y+this.air_.MapSpd.y;
