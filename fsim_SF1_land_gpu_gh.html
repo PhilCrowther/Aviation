@@ -761,11 +761,13 @@ function moveMovPln() {
 		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
 		//- Map Speed ..........................................................
 		//- Default = Horizontal Only
-		if (!xac_.EndSeq[n]) xac_.MapSpd[n].y = 0; // avoid rounding errors
-		if (bfm_.BFMflg[n]) xac_.MapSpd[n].y = xac_.SpdMPF[n] * Math.sin(xac_.AirRot[n].x * DegRad);
-		let GS = xac_.SpdMPF[n] * Math.cos(xac_.AirRot[n].x * DegRad)
-		xac_.MapSpd[n].z = GS * Math.cos(xac_.AirRot[n].y * DegRad);
-		xac_.MapSpd[n].x = GS * Math.sin(xac_.AirRot[n].y * DegRad);
+//		if (!xac_.EndSeq[n]) xac_.MapSpd[n].y = 0; // avoid rounding errors
+//		if (bfm_.BFMflg[n]) xac_.MapSpd[n].y = xac_.SpdMPF[n] * Math.sin(xac_.AirRot[n].x * DegRad);
+//		let GS = xac_.SpdMPF[n] * Math.cos(xac_.AirRot[n].x * DegRad)
+//		xac_.MapSpd[n].z = GS * Math.cos(xac_.AirRot[n].y * DegRad);
+//		xac_.MapSpd[n].x = GS * Math.sin(xac_.AirRot[n].y * DegRad);
+		xac_.MapSpd[n] = new THREE.Spherical(xac_.SpdMPF[n],(90-xac_.AirRot[n].x)*DegRad,Mod360(xac_.AirRot[n].y)*DegRad);
+		xac_.MapSpd[n] = new THREE.Vector3().setFromSpherical(xac_.MapSpd[n]);
 		//. Recompute Map Position .............................................
 		xac_.MapPos[n].x = xac_.MapPos[n].x + xac_.MapSpd[n].x;
 		xac_.MapPos[n].z = xac_.MapPos[n].z + xac_.MapSpd[n].z;
