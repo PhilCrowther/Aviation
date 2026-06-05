@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 26 May 2026
+Version dated 5 Jun 2026
 
 @fileoverview
 A three.js class-type module for Flight Simulation
@@ -428,6 +428,7 @@ export {Flight, Mod360, PoM360, MaxVal};
 260502: Make change in taildragger angle at low speed less abrupt
 260526:	WingAR included in data (computation does not work for biplanes)
 		Change dat_.WingAr to dat_.WingSq and WingAs to dat_.WingAR
+260605: Compute MapSpd using spherical function
 
 FUTURE PLANNED REVISIONS (make as part of version change) ======================
 ______:	Combine air_.ShpPit/Bnk into ShpRot
