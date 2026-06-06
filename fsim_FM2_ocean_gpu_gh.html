@@ -510,12 +510,15 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	flg_.ObjRef = [xsh_.ObjGrp[0]]; // Parent Object
 //- Ship Wake ------------------//----------------------------------------------
 //	Adjustments
-	wak_.ObjNum = 3;			// Number of Wakes = Number of Ships
-	wak_.ObjSiz = [4000,4000,4000];
-	wak_.RndOrd = [1,1,1];
-	wak_.ObjRot = [new THREE.Euler(),new THREE.Euler(),new THREE.Euler()]; // Rotation (degrees) [not used]
-	wak_.ObjPos = [new THREE.Vector3(0,-5,0),new THREE.Vector3(0,-5,0),new THREE.Vector3(0,-5,0)]; // Offset Position
-	wak_.ObjRef = [xsh_.ObjGrp[0],xsh_.ObjGrp[1],xsh_.ObjGrp[2]]; // Parent Object
+	wak_.ObjNum = xsh_.ObjNum;	// Number of Wakes = Number of Ships
+	for (let n = 0; n < wak_.ObjNum; n ++) {
+		wak_.ObjTxt[n] = 0;		// Shared Texture Reference Number
+		wak_.ObjSiz[n] = 4000;	// Size
+		wak_.RndOrd[n] = 1;		// Drawing Order
+		wak_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
+		wak_.ObjPos[n] = new THREE.Vector3(0,-5,0); // Offset Position
+		wak_.ObjRef[n] = xsh_.ObjGrp[n]; // Parent Object
+	}
 //- Ship Smoke (destroyer only) ------------------------------------------------
 //	Adjustments
 	xss_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation (degrees) [not used]
