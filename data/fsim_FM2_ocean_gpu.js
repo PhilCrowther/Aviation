@@ -301,56 +301,52 @@ let fxd_ = {
 		VrtAdj: [0],			// Vertical Adjustment
 	};
 
-//= MOVING OBJECTS =============//==============================================
-//- Moving Airplanes -----------//----------------------------------------------
-const XPPath = "https://PhilCrowther.github.io/Aviation/models/vehicles/";
-const XP1Nam = "xac_fm2.glb";	// Name of airplane model file (rotated blender file)
-const XP2Nam = "xac_a6m.glb";	// Name of airplane model file (rotated blender file)
+//= MOVING AIRPLANES ===========//==============================================
 let xac_ = {
-		ObjNum: 2,				// Number of airplanes
-		Parent: [0,0],			// 0 = not linked
-		ObjSrc: [XPPath+XP1Nam,XPPath+XP2Nam], // Model Source file
-		ObjTxt: [0,0],			// Texture Source File (not used)
-		ObjSiz: [1,1],			// Scale (1 = metric; Ft2Mtr = US)
-		RndOrd: [0,0],			// renderOrder (not used)
+		ObjNum: 0,				// Number of airplanes
+		Parent: [0],			// 0 = not linked
+		ObjSrc: [0], 			// Model Source file
+		ObjTxt: [0],			// Texture Source File (not used)
+		ObjSiz: [0], 			// Scale
+		RndOrd: [0],			// renderOrder (not used)
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
-		ObjRot: [0,0],			// Rotation
-		AirObj: [0,0],			// Object Address
-		AirPBY: [0,0],			// Changes in radians
+		AirRot: [0],			// Rotation (euler3)
+		AirObj: [0],			// Object Address
+		AirPBY: [0],			// Changes in radians
 		// Changes to Airplane Pitch Bank and Yaw
-		RotDif: [0,0],			// Change
-		// Speed
-		SpdKPH: [0,0],			// Speed in KPH (e.g. 329 kph = 205 mph)
-		SpdMPS: [91.5,91,5],	// Speed (mtr/sec) (e.g. 329 kph = 91.5 ms)
-		SpdMPF: [0,0],			// Speed - meters per frame
+		RotDif: [0],			// Change
+		// Airplane Speed
+		SpdKPH: [0],			// Speed in KPH
+		SpdMPS: [0],			// Speed (mtr/sec)
+		SpdMPF: [0],			// Speed - meters per frame
 		// Airplane Map Speed and Position
-		MapSpd: [0,0],			// meters/sec
-		MapPos: [0,0],			// meters
-		MapSPS: [0,0], 			// MSX, MPY, MSZ (meters)
+		MapSpd: [0], 			// Map Speed (meters)
+		MapPos: [0], 			// Map Position (meters)
+		MapSPS: [0], 			// MSX, MPY, MSZ (meters)
 		// Basic Animations
-		ObjDst: [0,0],			// Object distance (meters) used to activate effects
-		MixSpn: [0,0],			// Animation Mixer - Prop
-		MixPit: [0,0],			// Animation Mixer - Pitch
-		AnmPit: [0,0],			// Animation
-		MixBnk: [0,0],			// Animation Mixer - Bank
-		AnmBnk: [0,0],			// Animation
+		ObjDst: [0],			// Object distance (meters) used to activate effects
+		MixSpn: [0],			// Animation Mixer - Prop
+		MixPit: [0],			// Animation Mixer - Pitch
+		AnmPit: [0],			// Animation
+		MixBnk: [0],			// Animation Mixer - Bank
+		AnmBnk: [0],			// Animation
 		// Engine Sounds
-		EngSrc: [XPPath + "sounds/fm2.wav",XPPath + "sounds/fm2.wav"],
-		EngPtr: [0,0],
-		EngMsh: [0,0],
-		EngVol: [0.1,0.1],		// Volume
+		EngSrc: [0],			// Engine Sound Source
+		EngPtr: [0],			// Engine Object Address
+		EngMsh: [0],			// Engine Sound Address (Object3D)
+		EngVol: [0],			// Volume
 		// End Sequence
-		HitCnt: [0,0],			// Hits Taken
+		HitCnt: [0],			// Hits Taken
 		HitMax: 5,				// Hits Requred
-		EndSeq: [0,0],			// End Sequence Running
+		EndSeq: [0],			// End Sequence Running
 		EndTim: 5,				// End Sequence Time (Seconds)
 		// End Sound
-		SndFlg: [0,0],			// 1 = Start Explosion Sound
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [0,0],
+		SndFlg: [0],			// 1 = Start Explosion Sound
+		SndSrc: 0,
+		SndPtr: [0],
 		SndVol: 15,				// Volume
-		SndMsh: [0,0],
-		SndDTm: [0,0],
+		SndMsh: [0],		// (Object3D)
+		SndDTm: [0],
 	};
 
 //. BFM ........................//..............................................
@@ -394,28 +390,26 @@ let xaf_ = {
 		FyrMsh: [0],			// Mesh
 	};
 
-//. Moving Ships ---------------//----------------------------------------------
+//= MOVING SHIPS ===============//==============================================
 let xsh_ = {
-		ObjNum: 3,				// Number of ships
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/models/vehicles/CVE_noflag_gun.glb",
-				 "https://PhilCrowther.github.io/Aviation/models/vehicles/fletcher.glb",
-				 "https://PhilCrowther.github.io/Aviation/models/vehicles/liberty.glb"], // Source File
-		ObjTxt: [0,0,0],		// Texture Source File (not used)
-		ObjAdr: [0,0,0],		// Object Address
-		ObjSiz: [Ft2Mtr,Ft2Mtr,1], // Scale		 
-		RndOrd: [0,0,0],		// renderOrder (not used)
-		ObjRot: [0,0,0],		// Object Rotation
-		MapPos: [0,0,0],		// Object Map Position (meters) [used by Mesh]
-		ObjGrp: [0,0,0],		// Group
+		ObjNum: 0,				// Number of ships
+		ObjSrc: [0], 			// Source File
+		ObjTxt: [0],			// Texture Source File (not used)
+		ObjAdr: [0],			// Object Address
+		ObjSiz: [0], 			// Scale		 
+		RndOrd: [0],			// renderOrder (not used)
+		ObjRot: [0],			// Object Rotation
+		ObjGrp: [0],			// Group
 		// Speed
-		SpdMPS: [9,11,9],		// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
-		MapSpd: [0,0,0],		// Object Map Speed (mtr/sec) used by airplane if landed
+		SpdMPS: [0],			// Speed (mtr/sec) (9 ms = 34 kph = 20 mph) [top speed = 21 mph]
+		MapSpd: [0],			// Object Map Speed (mtr/sec) used by airplane if landed
+		MapPos: [0],			// Object Map Position (meters) [used by Mesh]
 		// Animations
-		ObjDst: [0,0,0],		// Object distance (meters) used to activate effects
-		MixRdr: [0,0,0],		// Animation Mixer - Radar
-		AnmRdr: [0,0,0],		// Animation
-		ShpPit: [0,0,0],		// Ship Pitch
-		ShpLok: [0,0,0],		// Deck Lock
+		ObjDst: [0],			// Object distance (meters) used to activate effects
+		MixRdr: [0],			// Animation Mixer - Radar
+		AnmRdr: [0],			// Animation
+		ShpPit: [0],			// Ship Pitch
+		ShpLok: [0],			// Deck Lock
 	};
 
 //= ANIMATED FLAGS =============//==============================================
