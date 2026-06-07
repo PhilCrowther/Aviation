@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260523
+*	FSIM FM2 DATA: 260607
 *
 ********************************************************************************
 
@@ -345,7 +345,7 @@ let xac_ = {
 		SndSrc: 0,
 		SndPtr: [0],
 		SndVol: 15,				// Volume
-		SndMsh: [0],		// (Object3D)
+		SndMsh: [0],			// (Object3D)
 		SndDTm: [0],
 	};
 
@@ -363,6 +363,8 @@ let bfm_ = {
 		// Maneuvers
 		ManTyp: [0],			// Type of Maneuver (1 = left turn, 2 = right turn, 3 = intercept)
 		BnkMax:	[0],			// Maximum Bank (+/-) - computed
+		// Target
+		Target: [0],			// If BFMflg set: Target (0 = my plane, 1 = xac[0], etc) ###260606
 	}
 
 //- Airplane Smoke Trail .......//..............................................
@@ -1034,6 +1036,8 @@ let cam_ = {
 		SrcAdj: [180,0],
 		SrcFlg: [0,1],			// 1 = Internal View
 		SrcLnk: [1,1],			// 1 = Linked to Airplane
+		//- Object
+		ObjNum: 0,				// Object holding camera (0 = air_.AirPBY, 1 = xac_.AirObj[0], 2 = xac_.AirObj[1], etc ###260607
 	}
 
 //= 8. OUTPUT VARIABLES ========//==============================================
@@ -1057,6 +1061,9 @@ let Air_CfLNode = document.createTextNode("");
 let Air_GFmElement = document.getElementById("Air_GFm"); // GFmult
 let Air_GFmNode = document.createTextNode("");
 	Air_GFmElement.appendChild(Air_GFmNode);
+let Air_TgtElement = document.getElementById("Air_Tgt"); // Target Direction ###260606
+let Air_TgtNode = document.createTextNode("");
+	Air_TgtElement.appendChild(Air_TgtNode);
 let On_PawsElement = document.getElementById("On_Paws"); // Pause
 let On_PawsNode = document.createTextNode("");
 	On_PawsElement.appendChild(On_PawsNode);
@@ -1094,7 +1101,7 @@ let On_Inf9Element = document.getElementById("On_Inf9");
 let On_Inf9Node = document.createTextNode("");
 	On_Inf9Element.appendChild(On_Inf9Node);
 //
-let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL,Air_GFm;
+let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL,Air_GFm,Air_Tgt;
 let On_Paws,Air_AtP;
 let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
@@ -1167,6 +1174,7 @@ let key_ = {
 		VLBk:	97,				// [1] Left Back (225 deg)
 		//	Toggle
 		View:	86,				// Toggle Visibility (v)
+		Next:	78,				// Camera to Next Object (n) ###260607
 		Soun:	83,				// Toggle sound (s)
 		Paws:	80,				// Pause (p)
 		Auto:	65,				// Autopilot (a)
