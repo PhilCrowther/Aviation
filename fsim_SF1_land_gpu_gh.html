@@ -29,8 +29,12 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 		<div>Throttle: <span id="Air_Pwr"></span></div>
 		<div>AirSpeed: <span id="Air_Spd"></span> mph</div>
 		<div>Altitude: <span id="Air_Alt"></span> ft</div>
-		<div>Heading : <span id="Air_Hdg"></span> deg</div>
+		<br>
+		<div>Bank....: <span id="Air_Bnk"></span> deg</div>	
+		<div>Heading.: <span id="Air_Hdg"></span> deg</div>
+		<br>
 		<div>CoefLift: <span id="Air_CfL"></span></div>
+		<div>GForce..: <span id="Air_GFm"></span></div>
 	</div>
 	<div class="overlay2">
 		<div><span id="On_Paws"></span></div>
@@ -46,6 +50,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 		<div><span id="On_Inf6"></span></div>
 		<div><span id="On_Inf7"></span></div>
 		<div><span id="On_Inf8"></span></div>
+		<div><span id="On_Inf9"></span></div>
 	</div>
 </div>
 
@@ -310,7 +315,7 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb
 		xac_.Parent[n] = 0;		// 0 = not linked
 		xac_.ObjSrc[n] = XPPath+XPFNam[n];	// Model Source file
 		xac_.ObjTxt[n] = 0;		// Texture Source File (not used)
-		xac_.ObjSiz[n] = Ft2Mtr,	// Scale
+		xac_.ObjSiz[n] = 1,		// Scale
 		xac_.RndOrd[n] = 0;		// renderOrder (not used)
 		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
 		xac_.AirObj[n] = 0;		// Object Address
@@ -341,7 +346,7 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb
 		// End Sound
 		xac_.SndFlg[n] = 0;		// 1 = Start Explosion Sound
 		xac_.SndPtr[n] = 0;
-		xac_.SndMsh[n] = new THREE.Object3D();		// Final Explosion Sound
+		xac_.SndMsh[n] = new THREE.Object3D();	// Final Explosion Sound
 		xac_.SndDTm[n] = 0;
 	}
 //	Adjustments
@@ -760,12 +765,6 @@ function moveMovPln() {
 		}		
 		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
 		//- Map Speed ..........................................................
-		//- Default = Horizontal Only
-//		if (!xac_.EndSeq[n]) xac_.MapSpd[n].y = 0; // avoid rounding errors
-//		if (bfm_.BFMflg[n]) xac_.MapSpd[n].y = xac_.SpdMPF[n] * Math.sin(xac_.AirRot[n].x * DegRad);
-//		let GS = xac_.SpdMPF[n] * Math.cos(xac_.AirRot[n].x * DegRad)
-//		xac_.MapSpd[n].z = GS * Math.cos(xac_.AirRot[n].y * DegRad);
-//		xac_.MapSpd[n].x = GS * Math.sin(xac_.AirRot[n].y * DegRad);
 		xac_.MapSpd[n] = new THREE.Spherical(xac_.SpdMPF[n],(90-xac_.AirRot[n].x)*DegRad,Mod360(xac_.AirRot[n].y)*DegRad);
 		xac_.MapSpd[n] = new THREE.Vector3().setFromSpherical(xac_.MapSpd[n]);
 		//. Recompute Map Position .............................................
@@ -840,8 +839,6 @@ function BFM(n) {
 		xac_.EndSeq[n] = xac_.EndTim;
 		xac_.HitCnt[n] = 0;		// Reset Hit Counter
 		xat_.SegIdx = -1;
-//		BnkMax = BnkMax+5;
-//		if (BnkMax > 70) BnkMax = 70;
 	}
 }
 
@@ -1261,15 +1258,17 @@ function initCamPup() {
 
 //-	Print HUD Values -----------------------------------------------------------
 function prntHUDval() {
-	Air_Pwr = air_.PwrPct;			// Throttle Setting
+	Air_Pwr = air_.PwrPct;						// Throttle %
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
-	Air_Spd = air_.SpdKPH*Km2Mil; // Speed
+	Air_Spd = air_.SpdKPH*Km2Mil;				// Speed
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
-	Air_Alt = air_.MapPos.y*Mtr2Ft;	// Altitude
+	Air_Alt = air_.MapPos.y*Mtr2Ft;				// Altitude
 	Air_AltNode.nodeValue = Air_Alt.toFixed(0);
-	Air_Hdg = air_.AirRot.y;	// Heading
+	Air_Bnk = Mod360(air_.AirRot.z);			// Bank
+	Air_BnkNode.nodeValue = Air_Bnk.toFixed(0);
+	Air_Hdg = Mod360(air_.AirRot.y);			// Heading
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
-	Air_CfL = air_.CfLift;		// Cf Lift
+	Air_CfL = air_.CfLift;						// Cf Lift
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 }
 
@@ -1303,6 +1302,7 @@ function onInfo0(){
 	On_Inf6Node.nodeValue = "";
 	On_Inf7Node.nodeValue = "";
 	On_Inf8Node.nodeValue = "";
+	On_Inf9Node.nodeValue = "";
 }
 
 //	Info On - Page1
@@ -1316,6 +1316,7 @@ function onInfo1(){
 	On_Inf6Node.nodeValue = "Press S to toggle sound";
 	On_Inf7Node.nodeValue = "Spacebar fires guns";
 	On_Inf8Node.nodeValue = "";
+	On_Inf9Node.nodeValue = "";
 }
 
 //	Info On - Page2
@@ -1329,6 +1330,7 @@ function onInfo2(){
 	On_Inf6Node.nodeValue = "Press all 3 keys to look back";
 	On_Inf7Node.nodeValue = "";
 	On_Inf8Node.nodeValue = "";
+	On_Inf9Node.nodeValue = "";
 }
 
 /*******************************************************************************
@@ -1410,6 +1412,7 @@ function onDocumentKeyDown(event) {
 	// Toggle
 	if (event.keyCode == key_.Paws) toglPaws();			// Toggle Pause
 	if (event.keyCode == key_.View) toglView();			// Switch View
+	if (event.keyCode == key_.Next) toglNext();		// Toggle Camera to Next Object ###260607
 	if (event.keyCode == key_.Auto) toglAuto();			// Toggle AutoPilot
 	if (event.keyCode == key_.Info) toglInfo();			// Toggle Information
 	if (event.keyCode == key_.Soun) toglSoun();			// Toggle Sound
@@ -1456,6 +1459,14 @@ function onDocumentKeyUp(event) {
 
 //- Subroutines ----------------------------------------------------------------
 
+//. Toggle Pause ...............................................................
+function toglPaws() {
+	gen_.PawsOn = 1 - gen_.PawsOn;
+	if ( gen_.PawsOn && gen_.SndFlg) stopSounds(mys_,myg_); // Sounds On to Off
+	if (!gen_.PawsOn && gen_.SndFlg) playSounds(mys_,myg_,gen_); // Sounds Off to On
+	PawsText();
+}
+
 //. Toggle Camera View (2-Way) -//----------------------------------------------
 function toglView() {
 	// Old CamSel
@@ -1466,25 +1477,24 @@ function toglView() {
 	initCamPup();
 }
 
-//. Toggle Pause ...............................................................
-function toglPaws() {
-	gen_.PawsOn = 1 - gen_.PawsOn;
-	if ( gen_.PawsOn && gen_.SndFlg) stopSounds(mys_,myg_); // Sounds On to Off
-	if (!gen_.PawsOn && gen_.SndFlg) playSounds(mys_,myg_,gen_); // Sounds Off to On
-	PawsText();
+//- Toggle Camera to Next Parent -----------------------------------------------
+function toglNext() {
+	if(cam_.CamSel) toglView(); // External View Only
+	// Next Object
+	cam_.Parent++;
+	if (cam_.Parent > xac_.ObjNum) cam_.Parent = 0;
+	// Select
+	if (!cam_.Parent) {
+		air_.AirPBY.add(cam_.MshRot);
+		initCamPup();
+	}
+	if ( cam_.Parent) xac_.AirObj[cam_.Parent-1].add(cam_.MshRot);
 }
 
 //. Toggle AutoPilot ...........................................................
 function toglAuto() {
 	air_.AutoOn = 1 - air_.AutoOn;
 	AutoText();
-}
-
-//. Toggle Info ................................................................
-function toglInfo() {
-	gen_.InfoOn++
-	if (gen_.InfoOn == 3) gen_.InfoOn = 0;
-	InfoText();
 }
 
 //. Toggle Sound ...............................................................
@@ -1494,6 +1504,13 @@ function toglSoun() {
 		if (gen_.SndFlg)  playSounds(mys_,myg_,gen_); // Off to On
 		if (!gen_.SndFlg) stopSounds(mys_,myg_); // On to Off
 	}
+}
+
+//. Toggle Info ................................................................
+function toglInfo() {
+	gen_.InfoOn++
+	if (gen_.InfoOn == 3) gen_.InfoOn = 0;
+	InfoText();
 }
 
 //= WINDOW RESIZE ==============//==============================================
