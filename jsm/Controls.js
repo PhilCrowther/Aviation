@@ -156,9 +156,9 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			if (cam_.CamLLD.y > 180 && cam_.CamLLD.y < (360-cam_.CamMMR.y)) cam_.CamLLD.y = (360-cam_.CamMMR.y);
 			if (cam_.CamLLD.y < 180 && cam_.CamLLD.y > cam_.CamMMR.y) cam_.CamLLD.y = cam_.CamMMR.y;
 		}
-		// External View
+		// External View (Only if Camera Connected to My Airplane)
 		else {
-			if (air_.GrdFlg && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
+			if (air_.GrdFlg && !cam_.Parent && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
 		}
 		InpMos.x = InpMos.y = 0;
 	}
@@ -173,7 +173,7 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			if (!cam_.CamFlg) {
 				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
 				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
-				if (key_.D45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
+				if (key_.D45flg && (air_.MapPos.y>50 || !cam_.Parent)) cam_.CamLLD.x = 45; // Up
 				if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
 				if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
 				if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
