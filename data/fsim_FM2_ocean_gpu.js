@@ -283,8 +283,8 @@ let mnt_ = {
 		ObjRot: [0,0],			// Rotation
 		MapPos: [0,0],			// Absolute Position
 		ObjGrp: [0,0],			// Group
-		AltMul: [1,1],			// Altitude Adjustment // ### variable added 250929
-		VrtAdj: [-2,-15]		// Vertical Adjustment // ### variable added 250930
+		AltMul: [1,1],			// Altitude Adjustment
+		VrtAdj: [-2,-15]		// Vertical Adjustment
 	};
 //- Static Objects -------------//----------------------------------------------
 //- 0 = Hangar;
@@ -1040,6 +1040,7 @@ let cam_ = {
 	}
 
 //= 8. OUTPUT VARIABLES ========//==============================================
+//- Note: Must be Listed in HTML Header
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
 let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
@@ -1051,9 +1052,9 @@ let Air_SpdNode = document.createTextNode("");
 let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
 let Air_AltNode = document.createTextNode("");
 	Air_AltElement.appendChild(Air_AltNode);
-//let Air_BnkElement = document.getElementById("Air_Bnk"); // Bank
-//let Air_BnkNode = document.createTextNode("");
-//	Air_BnkElement.appendChild(Air_BnkNode);
+let Air_BnkElement = document.getElementById("Air_Bnk"); // Bank ###260608
+let Air_BnkNode = document.createTextNode("");
+	Air_BnkElement.appendChild(Air_BnkNode);
 let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
 let Air_HdgNode = document.createTextNode("");
 	Air_HdgElement.appendChild(Air_HdgNode);
