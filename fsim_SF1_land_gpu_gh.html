@@ -764,6 +764,7 @@ function moveMovPln() {
 			xac_.SpdMPS[n] = xac_.SpdMPS[n] + ThrAcc;
 		}		
 		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
+		xac_.SpdKPH[n] = xac_.SpdMPS[n] * 3.6;
 		//- Map Speed ..........................................................
 		xac_.MapSpd[n] = new THREE.Spherical(xac_.SpdMPF[n],(90-xac_.AirRot[n].x)*DegRad,Mod360(xac_.AirRot[n].y)*DegRad);
 		xac_.MapSpd[n] = new THREE.Vector3().setFromSpherical(xac_.MapSpd[n]);
@@ -1258,17 +1259,29 @@ function initCamPup() {
 
 //-	Print HUD Values -----------------------------------------------------------
 function prntHUDval() {
-	Air_Pwr = air_.PwrPct;						// Throttle %
+	// Throttle Setting
+	Air_Pwr = air_.PwrPct;
+	if (cam_.Parent) Air_Pwr = 0;
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
-	Air_Spd = air_.SpdKPH*Km2Mil;				// Speed
+	//	Speed
+	Air_Spd = air_.SpdKPH*Km2Mil;
+	if (cam_.Parent) Air_Spd = xac_.SpdKPH[cam_.Parent-1]*Km2Mil;
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
-	Air_Alt = air_.MapPos.y*Mtr2Ft;				// Altitude
+	//	Altitude
+	Air_Alt = air_.MapPos.y*Mtr2Ft;
+	if (cam_.Parent) Air_Alt = xac_.MapPos[cam_.Parent-1].y*Mtr2Ft;
 	Air_AltNode.nodeValue = Air_Alt.toFixed(0);
-	Air_Bnk = Mod360(air_.AirRot.z);			// Bank
+	//	Bank
+	Air_Bnk = Mod360(air_.AirRot.z);
+	if (cam_.Parent) Air_Bnk = xac_.AirRot[cam_.Parent-1].z;
 	Air_BnkNode.nodeValue = Air_Bnk.toFixed(0);
-	Air_Hdg = Mod360(air_.AirRot.y);			// Heading
+	//	Heading
+	Air_Hdg = Mod360(air_.AirRot.y);
+	if (cam_.Parent) Air_Bnk = xac_.AirRot[cam_.Parent-1].y;
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
-	Air_CfL = air_.CfLift;						// Cf Lift
+	//	CfLift
+	Air_CfL = air_.CfLift;
+	if (cam_.Parent) Air_CfL = 0;
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 }
 
