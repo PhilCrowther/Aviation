@@ -209,8 +209,8 @@ let mnt_ = {
 		ObjRot: [0],			// Rotation
 		MapPos: [0],			// Absolute Position
 		ObjGrp: [0],			// Group
-		AltMul: [0.99],			// Altitude Adjustment // ### 250929
-		VrtAdj: [-25]			// Vertical Adjustment // ### 250930
+		AltMul: [0.99],			// Altitude Adjustment
+		VrtAdj: [-25]			// Vertical Adjustment
 	};
 //- Static Objects -------------//----------------------------------------------
 //- 0 = Hangar;
@@ -677,7 +677,7 @@ let Air_SpdNode = document.createTextNode("");
 let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
 let Air_AltNode = document.createTextNode("");
 	Air_AltElement.appendChild(Air_AltNode);
-let Air_BnkElement = document.getElementById("Air_Bnk"); // Bank
+let Air_BnkElement = document.getElementById("Air_Bnk"); // Bank ### 260607
 let Air_BnkNode = document.createTextNode("");
 	Air_BnkElement.appendChild(Air_BnkNode);
 let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
