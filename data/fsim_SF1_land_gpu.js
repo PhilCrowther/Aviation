@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260602
+*	FSIM SF1 DATA: 260608
 *
 *********************************************************************************
 
@@ -209,8 +209,8 @@ let mnt_ = {
 		ObjRot: [0],			// Rotation
 		MapPos: [0],			// Absolute Position
 		ObjGrp: [0],			// Group
-		AltMul: [0.99],			// Altitude Adjustment // ### 250929
-		VrtAdj: [-25]			// Vertical Adjustment // ### 250930
+		AltMul: [0.99],			// Altitude Adjustment
+		VrtAdj: [-25]			// Vertical Adjustment
 	};
 //- Static Objects -------------//----------------------------------------------
 //- 0 = Hangar;
@@ -224,7 +224,7 @@ let fxd_ = {
 		ObjRot: [0],			// Rotation
 		MapPos: [0],			// Relative Position
 		ObjRef: [0],			// Parent
-		VrtAdj: [-mnt_.VrtAdj[0]] // Vertical Adjustment // ### 250930
+		VrtAdj: [-mnt_.VrtAdj[0]] // Vertical Adjustment
 	};
 
 //= MOVING AIRPLANES ===========//==============================================
@@ -271,7 +271,7 @@ let xac_ = {
 		SndSrc: 0,
 		SndPtr: [0],
 		SndVol: 15,				// Volume
-		SndMsh: [0],		// (Object3D)
+		SndMsh: [0],			// (Object3D)
 		SndDTm: [0],
 	};
 
@@ -289,6 +289,8 @@ let bfm_ = {
 		// Maneuvers
 		ManTyp: [0],			// Type of Maneuver (1 = left turn, 2 = right turn, 3 = intercept)
 		BnkMax:	[0],			// Maximum Bank (+/-) - computed
+		// Target
+		Target: [0],			// If BFMflg set: Target (0 = my plane, 1 = xac[0], etc) ###260606
 	}
 
 //- Airplane Smoke Trail .......//..............................................
@@ -630,6 +632,7 @@ let mys_ = {
 let cam_ = {
 		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
 		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
+		Parent: 0,				// Object holding camera (0 = air_.AirPBY, 1 = xac_.AirObj[0], etc ###260607
 		// Camera
 		CamLLD: 0, 				// cam_.MshRot Lat, Lon, Dst
 		CamAdj: 0,				// Camera Adjustment (180 = look in)
@@ -659,34 +662,41 @@ let cam_ = {
 		SrcPar: [0,0],
 		SrcAdj: [180,0],
 		SrcFlg: [0,1],			// 1 = Internal View
-		SrcLnk: [1,1],			// 1 = Linked to Airplane
+		SrcLnk: [1,1],			// 1 = Linked to Airplane	
 	}
 
 //= 8. OUTPUT VARIABLES ========//==============================================
+//- Note: Must be Listed in HTML Header
 
 //- HTML OVERLAY TEXT ----------//----------------------------------------------
-let Air_PwrElement = document.getElementById("Air_Pwr");
+let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
 let Air_PwrNode = document.createTextNode("");
 	Air_PwrElement.appendChild(Air_PwrNode);
-let Air_SpdElement = document.getElementById("Air_Spd");
+let Air_SpdElement = document.getElementById("Air_Spd"); // Speed
 let Air_SpdNode = document.createTextNode("");
 	Air_SpdElement.appendChild(Air_SpdNode);
-let Air_HdgElement = document.getElementById("Air_Hdg");
-let Air_HdgNode = document.createTextNode("");
-	Air_HdgElement.appendChild(Air_HdgNode);
-let Air_AltElement = document.getElementById("Air_Alt");
+let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
 let Air_AltNode = document.createTextNode("");
 	Air_AltElement.appendChild(Air_AltNode);
-let Air_CfLElement = document.getElementById("Air_CfL");
+let Air_BnkElement = document.getElementById("Air_Bnk"); // Bank ###260608
+let Air_BnkNode = document.createTextNode("");
+	Air_BnkElement.appendChild(Air_BnkNode);
+let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
+let Air_HdgNode = document.createTextNode("");
+	Air_HdgElement.appendChild(Air_HdgNode);
+let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
 let Air_CfLNode = document.createTextNode("");
-	Air_CfLElement.appendChild(Air_CfLNode);
-let On_PawsElement = document.getElementById("On_Paws");
+	Air_CfLElement.appendChild(Air_CfLNode);		
+let Air_GFmElement = document.getElementById("Air_GFm"); // GFmult
+let Air_GFmNode = document.createTextNode("");
+	Air_GFmElement.appendChild(Air_GFmNode);
+let On_PawsElement = document.getElementById("On_Paws"); // Pause
 let On_PawsNode = document.createTextNode("");
 	On_PawsElement.appendChild(On_PawsNode);
-let Air_AtPElement = document.getElementById("Air_AtP");	// Autopilot
+let Air_AtPElement = document.getElementById("Air_AtP"); // Autopilot
 let Air_AtPNode = document.createTextNode("");
 	Air_AtPElement.appendChild(Air_AtPNode);
-let On_Inf0Element = document.getElementById("On_Inf0");
+let On_Inf0Element = document.getElementById("On_Inf0"); // Info
 let On_Inf0Node = document.createTextNode("");
 	On_Inf0Element.appendChild(On_Inf0Node);
 let On_Inf1Element = document.getElementById("On_Inf1");
@@ -713,66 +723,64 @@ let On_Inf7Node = document.createTextNode("");
 let On_Inf8Element = document.getElementById("On_Inf8");
 let On_Inf8Node = document.createTextNode("");
 	On_Inf8Element.appendChild(On_Inf8Node);
+let On_Inf9Element = document.getElementById("On_Inf9");
+let On_Inf9Node = document.createTextNode("");
+	On_Inf9Element.appendChild(On_Inf9Node);
 //
-let Air_Pwr, Air_Spd, Air_Hdg, Air_Alt, Air_CfL;
-let On_Paws, On_Inf0, On_Inf1, On_Inf2, On_Inf3, On_Inf4, On_Inf5, On_Inf6, On_Inf7, On_Inf8;
+let Air_Pwr,Air_Spd,Air_Alt,Air_Bnk,Air_Hdg,Air_CfL,Air_GFm;
+let On_Paws,Air_AtP;
+let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
 //= 9. INPUT VARIABLES =========//==============================================
 
 //- DEFAULT KEY BINDINGS -------//----------------------------------------------
 let key_ = {
-		PwLU:  87,				// Power Up (w) - keyboard left
-		PwLD:  81,				// Power Down (q) - keyboard left
-		PwRU: 187,				// Power Up (=) - keyboard right
-		PwRD: 189,				// Power Down (-) - keyboard right
-		BnkL:  37,				// Bank Left (left arrow) - autopilot only
-		BnkR:  39,				// Bank Right (right arrow) - autopilot only
-		PitU:  40,				// Pitch up (down arrow) - autopilot only
-		PitD:  38,				// Pitch down (up arrow) - autopilot only
-		YwLL:  90,				// Yaw Left (z) - keyboard left
-		YwLR:  88,				// Yaw Left (x) - keyboard left
-		YwRL: 188,				// Yaw Left (,) - keyboard right
-		YwRR: 190,				// Yaw Left (.) - keyboard right
-		Brak:  66,				// Brakes (b)
-		Guns:  32,				// Guns (spacebar)
+		PwLU:	87,				// Power Up (w) - keyboard left
+		PwLD:	81,				// Power Down (q) - keyboard left
+		PwRU:	187,			// Power Up (=) - keyboard right
+		PwRD:	189,			// Power Down (-) - keyboard right
+		BnkL:	37,				// Bank Left (left arrow) - autopilot only
+		BnkR:	39,				// Bank Right (right arrow) - autopilot only
+		PitU:	40,				// Pitch up (down arrow) - autopilot only
+		PitD:	38,				// Pitch down (up arrow) - autopilot only
+		YwLL:	90,				// Yaw Left (z) - keyboard left
+		YwLR:	88,				// Yaw Left (x) - keyboard left
+		YwRL:	188,			// Yaw Left (,) - keyboard right
+		YwRR:	190,			// Yaw Left (.) - keyboard right
+		Brak:	66,				// Brakes (b)
+		Guns:	32,				// Guns (spacebar)
 		//	View
-		Look:  16,				// Pan (shift)
+		Look:	16,				// Pan (shift)
 		// View Keys (Keypad Num Lock)
-		KPad: 0,				// 1 = Using KeyPad
-//		VR45: 105,				// [9] Right 45 deg
-//		VU45: 104,				// [8] View Up 45 deg
-//		VL45: 103,				// [7] Left 45 deg (315 deg)
-//		VR90: 102,				// [6] Right 90 deg
-//		VD45: 101,				// [5] View Down or Back 45 deg
-//		VL90: 100,				// [4] Left 90 deg (270 deg)
-//		VRBk: 99,				// [3] Right Back (135 deg)
-//		VCBk: 98,				// [2] Center Back (180 deg)
-//		VLBk: 97,				// [1] Left Back (225 deg)
+		KPad:	0,				// 1 = Using KeyPad
+//		VR45:	105,			// [9] Right 45 deg
+//		VU45:	104,			// [8] View Up 45 deg
+//		VL45:	103,			// [7] Left 45 deg (315 deg)
+//		VR90:	102,			// [6] Right 90 deg
+//		VD45:	101,			// [5] View Down or Back 45 deg
+//		VL90:	100,			// [4] Left 90 deg (270 deg)
+//		VRBk:	99,				// [3] Right Back (135 deg)
+//		VCBk:	98,				// [2] Center Back (180 deg)
+//		VLBk:	97,				// [1] Left Back (225 deg)
 		// Views (Override Keypad)
-		VR45: 45,				// [INS] Right 45 degrees 
-		VU45: 36,				// [HM]  View Up (alone or modifier)
-		VL45: 33,				// [PU]  Left 45 degrees
-		VR90: 46,				// [DEL] Right 90 degrees
-		VD45: 35,				// [END] View Down (alone or modifier)
-		VL90: 34,				// [PD]  Left 90 degrees
+		VR45:	45,				// [INS] Right 45 degrees 
+		VU45:	36,				// [HM]  View Up (alone or modifier)
+		VL45:	33,				// [PU]  Left 45 degrees
+		VR90:	46,				// [DEL] Right 90 degrees
+		VD45:	35,				// [END] View Down (alone or modifier)
+		VL90:	34,				// [PD]  Left 90 degrees
 		//	Toggle
-		Paws:  80,				// Pause (p)
-		View:  86,				// Toggle Visibility (v)
-		Soun:  83,				// Toggle sound (s)
-		Auto:  65,				// Autopilot (a)
-		Info:  73,				// Info (i)
+		Paws:	80,				// Pause (p)
+		View:	86,				// Toggle Visibility (v)
+		Next:	78,				// Camera to Next Object (n) ###260607
+		Soun:	83,				// Toggle sound (s)
+		Auto:	65,				// Autopilot (a)
+		Info:	73,				// Info (i)
 		// Flags
-		U45flg: 0,				// Up 45 degrees
-		D45flg: 0,				// Down 45 degrees
-		L45flg: 0,				// Left 45 degrees
-		R45flg: 0,				// Right 45 degrees
-		L90flg: 0,				// Left 90 degrees
-		R90flg: 0,				// Right 90 degrees
+		U45flg:	0,				// Up 45 degrees
+		D45flg:	0,				// Down 45 degrees
+		L45flg:	0,				// Left 45 degrees
+		R45flg:	0,				// Right 45 degrees
+		L90flg:	0,				// Left 90 degrees
+		R90flg:	0,				// Right 90 degrees
 };
-
-//- POINTER LOCK CONTROL -------//----------------------------------------------
-//	Variables
-let InpMos = 0;					// Mouse Inputs
-let _changeEvent = {type: "change"};
-let _lockEvent = {type: "lock"};
-let _unlockEvent = {type: "unlock"};
