@@ -677,9 +677,9 @@ let Air_SpdNode = document.createTextNode("");
 let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
 let Air_AltNode = document.createTextNode("");
 	Air_AltElement.appendChild(Air_AltNode);
-let Air_BnkElement = document.getElementById("Air_Bnk"); // Bank ### 260607
-let Air_BnkNode = document.createTextNode("");
-	Air_BnkElement.appendChild(Air_BnkNode);
+//let Air_BnkElement = document.getElementById("Air_Bnk"); // Bank ###260608
+//let Air_BnkNode = document.createTextNode("");
+//	Air_BnkElement.appendChild(Air_BnkNode);
 let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
 let Air_HdgNode = document.createTextNode("");
 	Air_HdgElement.appendChild(Air_HdgNode);
@@ -688,7 +688,7 @@ let Air_TgtNode = document.createTextNode("");
 	Air_TgtElement.appendChild(Air_TgtNode);
 let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
 let Air_CfLNode = document.createTextNode("");
-	Air_CfLElement.appendChild(Air_CfLNode);
+	Air_CfLElement.appendChild(Air_CfLNode);		
 let Air_GFmElement = document.getElementById("Air_GFm"); // GFmult
 let Air_GFmNode = document.createTextNode("");
 	Air_GFmElement.appendChild(Air_GFmNode);
