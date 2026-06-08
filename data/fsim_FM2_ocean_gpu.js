@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260523
+*	FSIM FM2 DATA: 260608
 *
 ********************************************************************************
 
@@ -345,7 +345,7 @@ let xac_ = {
 		SndSrc: 0,
 		SndPtr: [0],
 		SndVol: 15,				// Volume
-		SndMsh: [0],		// (Object3D)
+		SndMsh: [0],			// (Object3D)
 		SndDTm: [0],
 	};
 
@@ -363,6 +363,8 @@ let bfm_ = {
 		// Maneuvers
 		ManTyp: [0],			// Type of Maneuver (1 = left turn, 2 = right turn, 3 = intercept)
 		BnkMax:	[0],			// Maximum Bank (+/-) - computed
+		// Target
+		Target: [0],			// If BFMflg set: Target (0 = my plane, 1 = xac[0], etc) ###260606
 	}
 
 //- Airplane Smoke Trail .......//..............................................
@@ -489,16 +491,16 @@ let grf_ = {
 
 //- Ship Wake ------------------//----------------------------------------------
 let wak_ = {
-		ObjNum: xsh_.ObjNum,	// Number of Wakes
-		ObjSrc: [0,0,0],		// Not Used
-		ObjTxt: [0,0,0],		// Shared Texture Reference Number
-		ObjMat: [0,0,0],		// Material
-		ObjAdr: [0,0,0],		// Emitter Address
-		ObjSiz: [4000,4000,4000], // Scale
-		RndOrd: [1,1,1],		// renderOrder
-		ObjRot: [0,0,0],		// Rotation (not used)
-		ObjPos: [0,0,0],		// Map Position
-		ObjRef: [0,0,0],		// Parent Object
+		ObjNum: 0,				// Number of Wakes
+		ObjSrc: [0],			// Not Used
+		ObjTxt: [0],			// Shared Texture Reference Number
+		ObjMat: [0],			// Material
+		ObjAdr: [0],			// Emitter Address
+		ObjSiz: [0], 			// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [0],			// Rotation (not used)
+		ObjPos: [0],			// Map Position
+		ObjRef: [0],			// Parent Object
 	};
 
 //- Ship Smoke (destroyer only) ------------------------------------------------
@@ -1004,6 +1006,7 @@ let	rad_ = {
 let cam_ = {
 		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
 		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
+		Parent: 0,				// Object holding camera (0 = air_.AirPBY, 1 = xac_.AirObj[0], etc ###260607
 		// Camera
 		CamLLD: 0, 				// cam_.MshRot Lat, Lon, Dst
 		CamAdj: 0,				// Camera Adjustment (180 = look in)
@@ -1048,9 +1051,15 @@ let Air_SpdNode = document.createTextNode("");
 let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
 let Air_AltNode = document.createTextNode("");
 	Air_AltElement.appendChild(Air_AltNode);
+//let Air_BnkElement = document.getElementById("Air_Bnk"); // Bank
+//let Air_BnkNode = document.createTextNode("");
+//	Air_BnkElement.appendChild(Air_BnkNode);
 let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
 let Air_HdgNode = document.createTextNode("");
 	Air_HdgElement.appendChild(Air_HdgNode);
+let Air_TgtElement = document.getElementById("Air_Tgt"); // Target Direction ###260606
+let Air_TgtNode = document.createTextNode("");
+	Air_TgtElement.appendChild(Air_TgtNode);
 let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
 let Air_CfLNode = document.createTextNode("");
 	Air_CfLElement.appendChild(Air_CfLNode);		
@@ -1094,7 +1103,7 @@ let On_Inf9Element = document.getElementById("On_Inf9");
 let On_Inf9Node = document.createTextNode("");
 	On_Inf9Element.appendChild(On_Inf9Node);
 //
-let Air_Pwr,Air_Spd,Air_Hdg,Air_Alt,Air_CfL,Air_GFm;
+let Air_Pwr,Air_Spd,Air_Alt,Air_Bnk,Air_Hdg,Air_Tgt,Air_CfL,Air_GFm;
 let On_Paws,Air_AtP;
 let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
@@ -1166,9 +1175,10 @@ let key_ = {
 		VCBk:	98,				// [2] Center Back (180 deg)
 		VLBk:	97,				// [1] Left Back (225 deg)
 		//	Toggle
-		View:	86,				// Toggle Visibility (v)
-		Soun:	83,				// Toggle sound (s)
 		Paws:	80,				// Pause (p)
+		View:	86,				// Toggle Visibility (v)
+		Next:	78,				// Camera to Next Object (n) ###260607
+		Soun:	83,				// Toggle sound (s)
 		Auto:	65,				// Autopilot (a)
 		Info:	73,				// Info (i)
 //		RSet:	82,				// Reset (r)
