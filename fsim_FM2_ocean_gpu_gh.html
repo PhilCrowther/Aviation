@@ -32,10 +32,11 @@ This demo has now been expanded to include a battle scenario which will eventual
 		<br>
 		<div>Bank....: <span id="Air_Bnk"></span> deg</div>
 		<div>Heading.: <span id="Air_Hdg"></span> deg</div>
-		<div>TgtDir..: <span id="Air_Tgt"></span></div>
+		<div>TgtDir..: <span id="Air_Tgt"></span> deg</div>
+		<div>TgtDst..: <span id="Air_Dst"></span> ft</div>
 		<br>
 		<div>CfLift..: <span id="Air_CfL"></span></div>
-		<div>GForce..: <span id="Air_GFm"></span></div>
+		<div>GForce..: <span id="Air_GFm"></span> Gs</div>
 	</div>
 	<div class="overlay2">
 		<div><span id="On_Paws"></span></div>
@@ -475,9 +476,9 @@ let XPFNam = ["xac_fm2.glb","xac_a6m.glb"];
 //	Adjustments
 	xac_.AirRot = [new THREE.Euler(0,355,-45),new THREE.Euler(0,0,-45)];  // Rotation
 	xac_.SpdMPS = [91.5,91,5];	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-	xac_.MapPos = [new THREE.Vector3(176,1524,5390),new THREE.Vector3(180,1524,5250)]; // meters
+	xac_.MapPos = [new THREE.Vector3(180,1524,5251),new THREE.Vector3(180,1524,5250)]; // meters
 //- BFM
-	BnkMax = 60;
+	BnkMax = 75;
 	bfm_.BFMflg = [0,1];		// Zero is maneuvering
 	bfm_.Target = [0,1];		// Target is FM2
 
@@ -1085,17 +1086,16 @@ function initMovPln() {
 		bfm_.ManTyp[n] = 0;
 		bfm_.BnkMax[n] = 0;
 	}
-	
+	// Draw Red Sphere Around xac 0
 //	let Sphere0 = makeSphere("red");
 //	Sphere0.scale.setScalar(25);
 //	Sphere0.visible = true;
 //	xac_.AirObj[0].add(Sphere0);
-	
+	// Draw Pink Sphere Around xac 1
 //	let Sphere1 = makeSphere("orange");
 //	Sphere1.scale.setScalar(20);
 //	Sphere1.visible = true;
 //	xac_.AirObj[1].add(Sphere1);
-
 }
 
 //= MOVE AIRPLANES =============//==============================================
@@ -1119,6 +1119,7 @@ function moveMovPln() {
 		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
 		//- Speed ..............................................................
 		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
+		xac_.SpdKPH[n] = xac_.SpdMPS[n] * 3.6;
 		//- Map Speed ..........................................................
 		xac_.MapSpd[n] = new THREE.Spherical(xac_.SpdMPF[n],(90-xac_.AirRot[n].x)*DegRad,Mod360(xac_.AirRot[n].y)*DegRad);
 		xac_.MapSpd[n] = new THREE.Vector3().setFromSpherical(xac_.MapSpd[n]);
@@ -1138,7 +1139,6 @@ function moveMovPln() {
 		//. HitTgt
 		if (!xac_.EndSeq[n] && n == (myg_.HitTgt-1)) HitTgt(n);
 	}
-//	console.log(Math.round(xac_.MapPos[1].x),Math.round(xac_.MapPos[1].z));
 }
 
 //= BFM ========================//==============================================
@@ -1155,8 +1155,6 @@ function BFM(n) {
 	// Longitude and Latitude
 	bfm_.PosAbs[n].y = Mod360(Math.atan2(bfm_.MapDif[n].x,bfm_.MapDif[n].z)*RadDeg); // Map Direction to My Plane from His
 	bfm_.PosOff[n].y = PoM360( Mod360(bfm_.PosAbs[n].y - xac_.AirRot[n].y)); // Relative Direction to My Plane from His
-//	console.log(bfm_.PosOff[n].y);
-//	console.log(bfm_.BnkMax[n]);
 	bfm_.PosAbs[n].x = Mod360(Math.atan2(bfm_.MapDif[n].y,bfm_.VecHrz[n])*RadDeg); // Latitude
 	bfm_.PosOff[n].x = PoM360( Mod360(bfm_.PosAbs[n].x - xac_.AirRot[n].x)); // Relative Latitude
 	bfm_.RotOff[n].y = PoM360(xac_.AirRot[n].y - air_.AirRot.y + 180);
@@ -1191,7 +1189,6 @@ function BFM(n) {
 		xac_.HitCnt[n] = 0;		// Reset Hit Counter
 		xat_.SegIdx = -1;
 	}
-//	console.log(bfm_.BnkMax[n])
 }
 
 // 1. = Left Turn 180 Until Almost Centered on Tarbet
@@ -1785,31 +1782,46 @@ function initCamFM2() {
 function prntHUDval() {
 	// Throttle Setting
 	Air_Pwr = Throtl;
+	if (cam_.Parent) Air_Pwr = 0;
 	Air_PwrNode.nodeValue = Air_Pwr.toFixed(2);
 	//	Speed
 	Air_Spd = air_.SpdKPH*Km2Mil;
+	if (cam_.Parent) Air_Spd = xac_.SpdKPH[cam_.Parent-1]*Km2Mil;
 	Air_SpdNode.nodeValue = Air_Spd.toFixed(0);
 	//	Altitude
 	Air_Alt = air_.MapPos.y*Mtr2Ft;
+	if (cam_.Parent) Air_Alt = xac_.MapPos[cam_.Parent-1].y*Mtr2Ft;
 	Air_AltNode.nodeValue = Air_Alt.toFixed(0);
 	//	Bank
 	Air_Bnk = Mod360(air_.AirRot.z);
+	if (cam_.Parent) Air_Bnk = xac_.AirRot[cam_.Parent-1].z;
 	Air_BnkNode.nodeValue = Air_Bnk.toFixed(0);
 	//	Heading
 	Air_Hdg = Mod360(air_.AirRot.y);
+	if (cam_.Parent) Air_Bnk = xac_.AirRot[cam_.Parent-1].y;
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
 	//	Relative Direction to Target
-	let n = myg_.HitTgt-1; 
-	let x = xac_.AirObj[n].position.x;
-	let z = -xac_.AirObj[n].position.z;
-	Air_Tgt = Mod360(Math.atan2(x,z)*RadDeg);
-	Air_Tgt = PoM360( Mod360(Air_Tgt - air_.AirRot.y));
+	let n,x,z = 0
+	if (!cam_.Parent) {
+		n = myg_.HitTgt-1; 
+		x = xac_.AirObj[n].position.x;
+		z = -xac_.AirObj[n].position.z;
+		Air_Tgt = Mod360(Math.atan2(x,z)*RadDeg);
+		Air_Tgt = PoM360( Mod360(Air_Tgt - air_.AirRot.y));
+	}
+	if (cam_.Parent) Air_Tgt = bfm_.PosOff[cam_.Parent-1].y;
 	Air_TgtNode.nodeValue = Air_Tgt.toFixed(0);
+	//	Horiztonal Distance to Target
+	Air_Dst = Math.sqrt(x**2+z**2)*Mtr2Ft; // Horizontal Vector
+	if (cam_.Parent) Air_Dst = bfm_.VecHrz[cam_.Parent-1]*Mtr2Ft;
+	Air_DstNode.nodeValue = Air_Dst.toFixed(0);
 	//	Cf Lift
 	Air_CfL = air_.CfLift;
+	if (cam_.Parent) Air_CfL = 0;
 	Air_CfLNode.nodeValue = Air_CfL.toFixed(4);
 	//	G-Force Multiplier
 	Air_GFm = air_.GFmult*10;
+	if (cam_.Parent) Air_GFm = 0;
 	Air_GFmNode.nodeValue = Air_GFm.toFixed(2);
 }
 
