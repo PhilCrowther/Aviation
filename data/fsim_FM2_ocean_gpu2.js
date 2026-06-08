@@ -1107,7 +1107,7 @@ let On_Inf9Element = document.getElementById("On_Inf9");
 let On_Inf9Node = document.createTextNode("");
 	On_Inf9Element.appendChild(On_Inf9Node);
 //
-let Air_Pwr,Air_Spd,Air_Alt,Air_Bnk,Air_Hdg,Air_Tgt,Air_CfL,Air_GFm;
+let Air_Pwr,Air_Spd,Air_Alt,Air_Bnk,Air_Hdg,Air_Tgt,Air_Dst,Air_CfL,Air_GFm;
 let On_Paws,Air_AtP;
 let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
