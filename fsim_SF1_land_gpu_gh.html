@@ -398,7 +398,7 @@ let gau_ = {
 //= GUNASG MODULE ==============//==============================================
 //- My Guns --------------------------------------------------------------------
 //	Adjustments
-	myg_.BulClr = new THREE.Vector2("white","gray"); // White
+	myg_.BulClr = new THREE.Vector2("red","red"); // All Red
 	myg_.SndSrc = AirSrc + "sounds/pup_gun.mp3", // File (my guns)
 	myg_.ObjNum = 2,			// Number of Barrels
 	myg_.ObjPos = [new THREE.Vector3(-0.14417,0.53409,1.25834),new THREE.Vector3(0.14417,0.53409,1.25834)]; // Position of Each Barrel
@@ -1425,10 +1425,10 @@ function onDocumentKeyDown(event) {
 	// Toggle
 	if (event.keyCode == key_.Paws) toglPaws();			// Toggle Pause
 	if (event.keyCode == key_.View) toglView();			// Switch View
-	if (event.keyCode == key_.Next) toglNext();		// Toggle Camera to Next Object ###260607
+	if (event.keyCode == key_.Next) toglNext();			// Toggle Camera to Next Object ###260607
 	if (event.keyCode == key_.Auto) toglAuto();			// Toggle AutoPilot
-	if (event.keyCode == key_.Info) toglInfo();			// Toggle Information
 	if (event.keyCode == key_.Soun) toglSoun();			// Toggle Sound
+	if (event.keyCode == key_.Info) toglInfo();			// Toggle Information
 }
 
 //-	Keyboard (Up) --------------------------------------------------------------
