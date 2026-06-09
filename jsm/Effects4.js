@@ -67,6 +67,7 @@ import {
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
+import {WireFrameGeometry2} from "three/addons/lines/WireFrameGeometry2.js";
 
 import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 'three/tsl';
 
@@ -187,19 +188,20 @@ function initBulletX(myg_,gen_) {
 function initBullet(myg_,gen_) {
 	let line = 0;
 	let BltCyl = new CylinderGeometry(0.1,0.1,1,3); // RadiusTop,RadiusBot,Height,RadialSeg
-	let BltGeo = new WireframeGeometry(BltCyl);
+	let BltGeo = new WireframeGeometry2(BltCyl);
+	let BulMtL = = new LineMaterial({color: myg_.BulClr.x,linewidth: 2, dashed: false});
+	let BulMtD = = new LineMaterial({color: myg_.BulClr.y,linewidth: 2, dashed: false});
 	let ClrFlg = 0;
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
-			line = new LineSegments(BltGeo);
+			if (!ClrFlg) line = new Wireframe(BltGeo,BulMtL);
+			if (ClrFlg) line = new Wireframe(BltGeo,BulMtD);
 			line.position.copy(myg_.ObjPos[j]);
-			if (!ClrFlg) line.material.color = myg_.BulClr.x;
-			if (ClrFlg) line.material.color = myg_.BulClr.y;
 			myg_.BulPtr[i].add(line);
 		}
-		ClrFlg = 1 - ClrFlg;	
+		ClrFlg = 1 - ClrFlg;
 		gen_.scene.add(myg_.BulPtr[i]);
 		myg_.BulPtr[i].roartion.x = -90*DegRad;
 		myg_.BulPtr[i].visible = false;
