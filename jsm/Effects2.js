@@ -187,24 +187,19 @@ function initBulletX(myg_,gen_) {
 function initBullet(myg_,gen_) {
 	let line = 0;
 	let BltCyl = new CylinderGeometry(0.1,0.1,1,3); // RadiusTop,RadiusBot,Height,RadialSeg
-	BltCyl.rotationX = 90*DegRad;
 	let BltGeo = new WireframeGeometry(BltCyl);
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
-			line = new LineSegments(BltGeo);
-//			line.material.depthWrite = false;
-//			line.material.opacity = 0.25;
-//			line.material.transparent = true;		
+			line = new LineSegments(BltGeo);	
 			line.position.copy(myg_.ObjPos[j]);
 			myg_.BulPtr[i].add(line);
 		}
-		//
 		gen_.scene.add(myg_.BulPtr[i]);
+		myg_.BulPtr[i].roartion.x = -90*DegRad;
 		myg_.BulPtr[i].visible = false;
-		//	Initialize Speed and Position
-		myg_.BulMpS[i] = new Vector3();
+		myg_.BulMpS[i] = new Vector3();	// Initialize Speed and Position
 	}
 }
 
