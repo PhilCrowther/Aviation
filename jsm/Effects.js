@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Jun 2026
+Version dated 9 Jun 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -153,7 +153,7 @@ function initBullet(myg_,gen_) {
 	// Line	
 	let line = 0
 	let BltGeo = new LineGeometry();
-	BltGeo.setPositions([0,0,-BulLen/2, 0,0,BulLen/2]);
+	BltGeo.setPositions([0,0,-myg_.BulLen/2, 0,0,myg_.BulLen/2]);
 	let BulMtL = new Line2NodeMaterial({color: myg_.BulClr.x,linewidth: myg_.BulWid});
 	let BulMtD = new Line2NodeMaterial({color: myg_.BulClr.y,linewidth: myg_.BulWid});
 	let ClrFlg = 0;
