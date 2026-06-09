@@ -47,9 +47,11 @@ import {
 	AnimationMixer,
 	BackSide,
 	BufferGeometry,
+	CylinderGeometry,
 	Euler,
 	Line,
 	LineBasicNodeMaterial,
+	LineSegments,
 	Line2NodeMaterial,
 	MeshBasicNodeMaterial,
 	Mesh,
@@ -64,6 +66,8 @@ import {
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
+import {WireframeGeometry2} from "three/addons/lines/WireframeGeometry2.js";
+import {Wireframe} from "three/addons/lines/webgpu/Wireframe.js";
 
 import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 'three/tsl';
 
@@ -148,36 +152,31 @@ function moveFad2Blk(f2b_) {
 
 //= INIT MY BULLETS ============//==============================================
 //	xp = distance left and right (FM2 = 2). If zero, single bullet
+//	Source: https://threejs.org/examples/?q=line#webgpu_lines_fat_wireframe
 
 function initBullet(myg_,gen_) {
-	// Line	
-	let line = 0
-	let xd = 0.001;
-	let BltGeo = new LineGeometry();
-	BltGeo.setPositions([0,0,-10, 0,0,10]);
-	let BulMtL = new Line2NodeMaterial({color: myg_.BulClr.x,linewidth: 2});
-	let BulMtD = new Line2NodeMaterial({color: myg_.BulClr.y,linewidth: 2});
+	let line = 0;
+	let BltCyl = new CylinderGeometry(0.05,0.05,10,8); // RadiusTop,RadiusBot,Height,RadialSeg
+	let BltGeo = new WireframeGeometry2(BltCyl);
+	let BulMtL = new Line2NodeMaterial({color:myg_.BulClr.x,linewidth:5,dashed:false});
+	let BulMtD = new Line2NodeMaterial({color:myg_.BulClr.y,linewidth:5,dashed:false});
+	let ClrFlg = 0;
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
-			line = new Line2(BltGeo,BulMtL); // Lite Color
+			if (!ClrFlg) line = new Wireframe(BltGeo,BulMtL);
+			if ( ClrFlg) line = new Wireframe(BltGeo,BulMtD);
+			line.computeLineDistances();
 			line.position.copy(myg_.ObjPos[j]);
-			myg_.BulPtr[i].add(line);
-			line = new Line2(BltGeo,BulMtD); // Dark Color - Left
-			line.position.copy(myg_.ObjPos[j]);
-			line.position.x = line.position.x-xd;
-			myg_.BulPtr[i].add(line);
-			line = new Line2(BltGeo,BulMtD); // Dark Color - Right
-			line.position.copy(myg_.ObjPos[j]);
-			line.position.x = line.position.x+xd;
+			line.rotation.x = -90*DegRad;
 			myg_.BulPtr[i].add(line);
 		}
-		//
+		ClrFlg = 1 - ClrFlg;
 		gen_.scene.add(myg_.BulPtr[i]);
+//		myg_.BulPtr[i].rotation.x = -90*DegRad;
 		myg_.BulPtr[i].visible = false;
-		//	Initialize Speed and Position
-		myg_.BulMpS[i] = new Vector3();
+		myg_.BulMpS[i] = new Vector3();	// Initialize Speed and Position
 	}
 }
 
