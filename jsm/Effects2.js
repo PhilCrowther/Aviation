@@ -47,7 +47,7 @@ import {
 	AnimationMixer,
 	BackSide,
 	BufferGeometry,
-	Cylinder,
+	CylinderGeometry,
 	Euler,
 	Line,
 	LineBasicNodeMaterial,
@@ -186,7 +186,7 @@ function initBulletX(myg_,gen_) {
 
 function initBullet(myg_,gen_) {
 	let line = 0;
-	let BltCyl = new Cylinder(0.1,0.1,1,3); // RadiusTop,RadiusBot,Height,RadialSeg
+	let BltCyl = new CylinderGeometry(0.1,0.1,1,3); // RadiusTop,RadiusBot,Height,RadialSeg
 	BltCyl.rotation.x = 90*DegRad;
 	let BltWFG = new WireframeGeometry(BltCyl);
 	for (let i = 0; i < myg_.BulNum; i ++) {
