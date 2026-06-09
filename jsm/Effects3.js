@@ -154,7 +154,7 @@ function moveFad2Blk(f2b_) {
 
 function initBullet(myg_,gen_) {
 	let line = 0;
-	let BltCyl = new CylinderGeometry(0.1,0.1,1,3); // RadiusTop,RadiusBot,Height,RadialSeg
+	let BltCyl = new CylinderGeometry(0.05,0.05,1,8); // RadiusTop,RadiusBot,Height,RadialSeg
 	let BltGeo = new WireframeGeometry(BltCyl);
 	let ClrFlg = 0;
 	for (let i = 0; i < myg_.BulNum; i ++) {
