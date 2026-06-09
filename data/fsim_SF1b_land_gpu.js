@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260525
+*	FSIM SF1 DATA: 260608
 *
 *********************************************************************************
 
@@ -290,6 +290,8 @@ let bfm_ = {
 		// Maneuvers
 		ManTyp: [0],			// Type of Maneuver (1 = left turn, 2 = right turn, 3 = intercept)
 		BnkMax:	[0],			// Maximum Bank (+/-) - computed
+		// Target
+		Target: [0],			// If BFMflg set: Target (0 = my plane, 1 = xac[0], etc) ###260606
 	}
 
 //- Airplane Smoke Trail .......//..............................................
@@ -633,6 +635,7 @@ let mys_ = {
 let cam_ = {
 		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
 		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
+		Parent: 0,				// Object holding camera (0 = air_.AirPBY, 1 = xac_.AirObj[0], etc ###260607
 		// Camera
 		CamLLD: 0, 				// cam_.MshRot Lat, Lon, Dst
 		CamAdj: 0,				// Camera Adjustment (180 = look in)
@@ -831,6 +834,7 @@ let key_ = {
 		//	Toggle
 		Paws:  80,				// Pause (p)
 		View:  86,				// Toggle Visibility (v)
+		Next:	78,				// Camera to Next Object (n) ###260607
 		Soun:  83,				// Toggle sound (s)
 		Auto:  65,				// Autopilot (a)
 		Info:  73,				// Info (i)
@@ -842,10 +846,3 @@ let key_ = {
 		L90flg: 0,				// Left 90 degrees
 		R90flg: 0,				// Right 90 degrees
 };
-
-//- POINTER LOCK CONTROL -------//----------------------------------------------
-//	Variables
-let InpMos = 0;					// Mouse Inputs
-let _changeEvent = {type: "change"};
-let _lockEvent = {type: "lock"};
-let _unlockEvent = {type: "unlock"};
