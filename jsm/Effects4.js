@@ -61,13 +61,13 @@ import {
 	Spherical,
 	Sprite,
 	SpriteNodeMaterial,
-	Vector3,
-	WireframeGeometry,	
+	Vector3,	
 } from 'three';
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
-import {WireFrameGeometry2} from "three/addons/lines/WireFrameGeometry2.js";
+import {WireframeGeometry2} from "three/addons/lines/WireframeGeometry2.js";
+import {Wireframe} from "three/addons/lines/Wireframe.js";
 
 import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 'three/tsl';
 
@@ -197,13 +197,14 @@ function initBullet(myg_,gen_) {
 		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
 			if (!ClrFlg) line = new Wireframe(BltGeo,BulMtL);
-			if (ClrFlg) line = new Wireframe(BltGeo,BulMtD);
+			if ( ClrFlg) line = new Wireframe(BltGeo,BulMtD);
 			line.position.copy(myg_.ObjPos[j]);
+			line.rotation.x = -90*DegRad;
 			myg_.BulPtr[i].add(line);
 		}
 		ClrFlg = 1 - ClrFlg;
 		gen_.scene.add(myg_.BulPtr[i]);
-		myg_.BulPtr[i].rotation.x = -90*DegRad;
+//		myg_.BulPtr[i].rotation.x = -90*DegRad;
 		myg_.BulPtr[i].visible = false;
 		myg_.BulMpS[i] = new Vector3();	// Initialize Speed and Position
 	}
