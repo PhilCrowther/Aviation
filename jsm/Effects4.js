@@ -156,7 +156,7 @@ function moveFad2Blk(f2b_) {
 
 function initBullet(myg_,gen_) {
 	let line = 0;
-	let BltCyl = new CylinderGeometry(0.1,0.1,1,3); // RadiusTop,RadiusBot,Height,RadialSeg
+	let BltCyl = new CylinderGeometry(0.1,0.1,10,3); // RadiusTop,RadiusBot,Height,RadialSeg
 	let BltGeo = new WireframeGeometry2(BltCyl);
 	let BulMtL = new Line2NodeMaterial({color:myg_.BulClr.x,linewidth:5,dashed:false});
 	let BulMtD = new Line2NodeMaterial({color:myg_.BulClr.y,linewidth:5,dashed:false});

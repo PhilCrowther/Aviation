@@ -151,10 +151,11 @@ function moveFad2Blk(f2b_) {
 
 //= INIT MY BULLETS ============//==============================================
 //	xp = distance left and right (FM2 = 2). If zero, single bullet
+//	Source: https://threejs.org/docs/#WireframeGeometry
 
 function initBullet(myg_,gen_) {
 	let line = 0;
-	let BltCyl = new CylinderGeometry(0.05,0.05,1,8); // RadiusTop,RadiusBot,Height,RadialSeg
+	let BltCyl = new CylinderGeometry(0.05,0.05,10,8); // RadiusTop,RadiusBot,Height,RadialSeg
 	let BltGeo = new WireframeGeometry(BltCyl);
 	let ClrFlg = 0;
 	for (let i = 0; i < myg_.BulNum; i ++) {
