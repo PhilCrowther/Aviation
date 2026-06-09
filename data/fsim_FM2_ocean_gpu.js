@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260608
+*	FSIM FM2 DATA: 260609
 *
 ********************************************************************************
 
@@ -757,8 +757,11 @@ let myg_ = {
 		BulNum: 16,				// Number of Tracers
 		BulSpc: 0.125,			// Bullet Spacing (4*BulDLT/BulNum)
 		BulSp2: 0.125,			// Bullet Spacing - time remaining
+		// Appearance
+		BulClr: 0,				// Tracer Colors X2 (Vector2) Alternating
+		BulLen: 10,				// Tracer Length (meters)
+		BulWid: 5,				// Tracer Width - Line2
 		// Object
-		BulClr: 0,				// Red (Vector2)
 		BulPtr: [0],			// Bullet Objects
 		BulMpS: [0],			// Bullet Speed
 		BulTim: [0],			// Bullet Time in Flight
