@@ -51,6 +51,7 @@ import {
 	Euler,
 	Line,
 	LineBasicNodeMaterial,
+	LineSegments,
 	Line2NodeMaterial,
 	MeshBasicNodeMaterial,
 	Mesh,
@@ -185,14 +186,14 @@ function initBulletX(myg_,gen_) {
 
 function initBullet(myg_,gen_) {
 	let line = 0;
-	let BltCyl = new THREE.Cylinder({0.1,0.1,1,3});	// RadiusTop,RadiusBot,Height,RadialSeg
+	let BltCyl = new Cylinder({0.1,0.1,1,3}); // RadiusTop,RadiusBot,Height,RadialSeg
 	BltCyl.rotation.x = 90*DegRad;
 	let BltWFG = new WireframeGeometry(BltCyl);
 	for (let i = 0; i < myg_.BulNum; i ++) {
 		//	Create Bullet Meshes 
 		myg_.BulPtr[i] = new Object3D();
 		for (let j = 0; j < myg_.ObjNum; j ++) { // For Each Barrel
-			line = new THREE.LineSegments(BltGeo);
+			line = new LineSegments(BltGeo);
 //			line.material.depthWrite = false;
 //			line.material.opacity = 0.25;
 //			line.material.transparent = true;		
