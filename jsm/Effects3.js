@@ -164,7 +164,7 @@ function initBullet(myg_,gen_) {
 			line = new LineSegments(BltGeo);
 			line.position.copy(myg_.ObjPos[j]);
 			if (!ClrFlg) line.material.color = myg_.BulClr.x;
-			if (ClrFlg) line.material.color = myg_.BulClr.y;
+			if ( ClrFlg) line.material.color = myg_.BulClr.y;
 			line.rotation.x = -90*DegRad;
 			myg_.BulPtr[i].add(line);
 		}
