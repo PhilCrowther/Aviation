@@ -201,7 +201,7 @@ function initBullet(myg_,gen_) {
 		}
 		ClrFlg = 1 - ClrFlg;	
 		gen_.scene.add(myg_.BulPtr[i]);
-		myg_.BulPtr[i].roartion.x = -90*DegRad;
+		myg_.BulPtr[i].rotation.x = -90*DegRad;
 		myg_.BulPtr[i].visible = false;
 		myg_.BulMpS[i] = new Vector3();	// Initialize Speed and Position
 	}
