@@ -188,6 +188,7 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 			myg_.BulPtr[i].position.set(0,0,0);
 			//	Set Initial Rotation
 			myg_.BulPtr[i].rotation.copy(air_.AirObj.rotation);
+			myg_.BulPtr[i].rotation.x = myg_.BulPtr[i].rotation.x + air_.ACPAdj*DegRad
 			//	Set Initial Speed
 			BulSV3 = new Spherical(BulSpT,(90-air_.AirRot.x-air_.ACPAdj)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
 			BulSV3 = new Vector3().setFromSpherical(BulSV3);
