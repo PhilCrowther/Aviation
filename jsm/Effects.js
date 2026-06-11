@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Jun 2026
+Version dated 11 Jun 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -189,7 +189,7 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 			//	Set Initial Rotation
 			myg_.BulPtr[i].rotation.copy(air_.AirObj.rotation);
 			//	Set Initial Speed
-			BulSV3 = new Spherical(BulSpT,(90-air_.AirRot.x)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
+			BulSV3 = new Spherical(BulSpT,(90-air_.AirRot.x-air_.ACPAdj)*DegRad,Mod360(-air_.AirRot.y)*DegRad);
 			BulSV3 = new Vector3().setFromSpherical(BulSV3);
 			myg_.BulMpS[i].copy(BulSV3);
 			//
@@ -1006,4 +1006,5 @@ export {initFad2Blk,moveFad2Blk,
 260603: Fix bullet direciton by changing -xag_.XACRot[n].y to xag_.XACRot[n].y.
 260604: Only run one bullet at a time through HitBox.
 260605: myg dark colors adjacent to light colors
+260611: Bullet starting direction affected by air_.ACPAdj
 */
