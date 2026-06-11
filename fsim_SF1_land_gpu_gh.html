@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Jun 2026
+Version dated 11 Jun 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -211,7 +211,7 @@ let sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
 	scene.add(sonLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
-let camera = new THREE.PerspectiveCamera(45,CamAsp,0.1,100000);
+let camera = new THREE.PerspectiveCamera(65,CamAsp,0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
