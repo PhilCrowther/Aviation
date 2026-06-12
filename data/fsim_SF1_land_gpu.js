@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260609
+*	FSIM SF1 DATA: 260612
 *
 *********************************************************************************
 
@@ -292,49 +292,6 @@ let bfm_ = {
 		// Target
 		Target: [0],			// If BFMflg set: Target (0 = my plane, 1 = xac[0], etc) ###260606
 	}
-
-//- Airplane Smoke Trail .......//..............................................
-let xas_ = {
-		// Shared Values
-		ObjNum: 1,				// Number of Smoke Trails
-		ObjTxt: 0,				// Shared Texture Reference Number
-		ObjSiz: 800,			// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Emitter Address
-	};
-
-//- Airplane Flame Trail .......//..............................................
-let xaf_ = {
-		ObjNum: 1,				// Number of Smoke Trails
-		// Shared Values
-		ObjTxt: 0,				// Texture
-		ObjSiz: 40,				// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Mesh
-		// Fire
-		FyrMat: [0],			// Material
-		FyrMsh: [0],			// Mesh
-	};
-
-//= AIRPLANE END SEQUENCE ======//==============================================
-let xat_ = {
-		// Segments:
-		// 0 = 1st Explosion
-		// 1 = Spinning and Burning
-		// 2 = 2nd Explosion
-		SegTim: [0.05,5,0.1],		
-		SegIdx: -1,				// Start at -1 so can increment at beginning
-		TimRem: 0,
-	}
-
-//= AIRPLANE EXPLOSION =========//==============================================
-let xae_ = {
-		ExpSiz: 0,				// Explosion Size
-		ExpLif: 0,				// Remaining Life
-		ExpMsh: 0,				// Mesh
-	};
 
 //= SMOKE MODULE ===============//==============================================
 //- Vertical Smoke -------------//----------------------------------------------
