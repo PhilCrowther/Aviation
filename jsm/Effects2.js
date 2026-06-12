@@ -355,7 +355,7 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 
 //= INIT ENDING SEQUENCE =======//==============================================
 
-function initXACSeg(xae_,xas_,xaf_,txt_) {
+function initEndSeq(xae_,xas_,xaf_,txt_) {
 	initXACExp(xas_);
 	initXACFyr(xaf_,txt_);
 	initXACSmk(xas_,txt_);
@@ -385,7 +385,7 @@ function initXACSmk(xas_,txt_) {
 
 //= MOVE ENDING SEQUENCE =======//==============================================
 
-function moveXACEnd(n,xat_,xae_,xaf_,xac_,myg_,tim_) {
+function moveEndSeq(n,xat_,xae_,xaf_,xac_,myg_,tim_) {
 	// n = xac number
 	// this sequence called if xac_.EndSeq[n] = 1;
 	// TimRem Starts at 0, So Starts Next Event
