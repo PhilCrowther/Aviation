@@ -476,35 +476,35 @@ let myg_ = {
 
 //- Moving Airplanes -----------//----------------------------------------------
 let xag_ = {
-		ObjNum: 4,
+		ObjNum: 0,
 		// Parent (use this instead of link because bullets not attached)
-		XACRot: [0,0,0,0],
-		XACPos: [0,0,0,0],
+		XACRot: [0],
+		XACPos: [0],
 		// Gun Object (Fixed Firing Forward)
 		// GunPtr = Airplane Object
-		GunPtr: [0,0,0,0],		// Not Used Yet
-		GunRot: [0,0,0,0],		// Gun Rotation (Euler degrees)
-		GunPos: [0,0,0,0],		// Map Position (Vector3)
+		GunPtr: [0],			// Not Used Yet
+		GunRot: [0],			// Gun Rotation (Euler degrees)
+		GunPos: [0],			// Map Position (Vector3)
 		// Bullet Data
-		BulFlg: [0,0,0,0],		// 1 = Guns Firing	
+		BulFlg: [0],			// 1 = Guns Firing	
 		BulSpd: 887,			// Muzzle Velocity (mps)
 		BulDLT: 0.5,			// Max Bullet Time in Flight
 		BulNum: 16,				// Number of Tracers
 		BulSpc: 0.125,			// Bullet Spacing (4*BulDLT/BulNum)
-		BulSp2: [0.125,0.125,0.125,0.125],	// Bullet Spacing - time remaining
+		BulSp2: [0],			// Bullet Spacing - time remaining
 		// Bullet Colors and Opacity
-		BulClr: 0,				// Red (Vector2)
-		BulOpa: 0.8,
+		BulClr: 0,				// Color (Vector2)
+		BulOpa: 0.8,			// Opacity
 		// Bullets for each gun
-		BulPtr: [[],[],[],[]],	// Bullet Objects
-		BulMpS: [[0],[0],[0],[0]],	// Bullet Map Speed (V3)
-		BulMpP: [[0],[0],[0],[0]],	// Bullet Map Position (V3)
-		BulTim: [[],[],[],[]],	// Bullet Time in Flight
+		BulPtr: [0],			// Bullet Objects
+		BulMpS: [0],			// Bullet Map Speed (V3)
+		BulMpP: [0],			// Bullet Map Position (V3)
+		BulTim: [0],			// Bullet Time in Flight
 		// Gun Sounds
-		SndSrc: [0,0,0,0],		// File (my guns)
-		SndPtr: [0,0,0,0],
-		SndVol: [0.5,0.5,0.5,0.5],	// Volume
-		SndMsh: [0,0,0,0],		// (makMsh)
+		SndSrc: [0],			// File (my guns)
+		SndPtr: [0],
+		SndVol: [0],			// Sound Volume
+		SndMsh: [0],			// Object3D)
 		// Timer
 		TimMax: [0,120,120,120],	// Time On (frames)
 		TimMin: [0,-600,-600,-600],	// Time Off (frames)
@@ -519,13 +519,13 @@ let xsg_ = {
 //- Fixed Guns -----------------//----------------------------------------------
 //	Same variable used for Ship Guns
 let aaf_ = {
-		ObjNum: 2,
+		ObjNum: 0,
 		// Parent (use this instead of link because bullets not attached)
 		ParPos: 0,				// Optional: Common Parent Position (Vector3)
 		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
 		// Gun Data 
-		GunPos: [],				// Map Position (Vector3)
-		GunRot: [],				// Gun Rotation - degrees (Euler)
+		GunPos: [0],			// Map Position (Vector3)
+		GunRot: [0],			// Gun Rotation - degrees (Euler)
 		// Optional: Gun Object
 		GunSrc: 0,				// Source of Gun Object File
 		GunPtr: [0],			// Destination of Gun Object ([0] = No Object)
@@ -538,7 +538,7 @@ let aaf_ = {
 		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
 		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
 		// Bullet Data
-		AAAFlg: [],				// 1 = Gun Firing
+		AAAFlg: [0],			// 1 = Gun Firing
 		AAASpd: 0,				// Muzzle Velocity - mps (e.g. 850)
 		AAADLT: 0,				// Max Bullet Time in Flight (e.g. 4.0)
 		AAANum: 0,				// Number of Tracers (e.g. 16)
@@ -553,26 +553,26 @@ let aaf_ = {
 		AAAMpP: 0,				// Bullet Map Position (Vector3)	
 		AAATim: 0,				// Bullet Time in flight
 		// Smoke
-		SmkFlg: [],				// 1 = Start Smoke
+		SmkFlg: [0],			// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number - default
-		SmkMat: [],				// Smoke Material
-		SmkPtr: [],				// Smoke Sprite
-		SmkRot: [],				// Z-rotation of smoke
-		SmkMpP: [],				// Map Position (Vector3)
-		SmkDMx: [],				// Delay between Smoke events - seconds
-		SmkDTm: [],				// Delay Counter
+		SmkMat: [0],			// Smoke Material
+		SmkPtr: [0],			// Smoke Sprite
+		SmkRot: [0],			// Z-rotation of smoke
+		SmkMpP: [0],			// Map Position (Vector3)
+		SmkDMx: [0],			// Delay between Smoke events - seconds
+		SmkDTm: [0],			// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		// Smoke Sounds
-		SndFlg: [],				// 1 = Start Explosion Sound
+		SndFlg: [0],			// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [],
+		SndPtr: [0],
 		SndVol: 15,				// Volume - default
-		SndMsh: [],				// (Object3D)
-		SndDTm: [],
+		SndMsh: [0],			// (Object3D)
+		SndDTm: [0],
 		// Explosion
-		ExpPtr: [],				// Pointer to Exploding Center
-		ExpSiz: [],				// Expanding Size
-		ExpLif: [],				// Life of Explosion (seconds)	
+		ExpPtr: [0],			// Pointer to Exploding Center
+		ExpSiz: [0],			// Expanding Size
+		ExpLif: [0],			// Life of Explosion (seconds)	
 	};
 
 //=	MY SOUNDS ==================//==============================================
