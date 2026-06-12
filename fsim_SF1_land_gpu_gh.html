@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Jun 2026
+Version dated 12 Jun 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -98,11 +98,11 @@ import {loadAirExt,loadAirInt,moveAirObj,
 import {PointerLockControls,	// three.js modified
 		initCamera,moveCamera,	// camera
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
-import {initBullet,moveBullet,	// My Airplane Bullets
-		initXACBul,moveXACBul,	// Other Airplane Bullets
-		loadAAAGun,initAAAGun,moveAAAGun,	// Fixed Guns
+import {initBullet,moveBullet,	// Guns - My Airplane
+		initXACBul,moveXACBul,	// Guns - Other Airplane
+		loadAAAGun,initAAAGun,moveAAAGun,	// Guns - AA
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
-		initAirSmk,initAirFyr,	// Air Smoke and Fire
+		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
@@ -700,9 +700,6 @@ function moveFxdGun() {
 function initMovPln() {
 	initXACVeh(xac_,air_,gen_);	// For All Airplanes
 	initXACBul(xag_,gen_);		// Bullets
-//	initXACSmk();				// Light Smoke Trail	
-	initXACFyr();				// Enemy Airplane Only
-	initXACExp();				// Enemy Airplane Only
 //	Init BFM
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		bfm_.BFMflg[n] = 0;
@@ -714,6 +711,7 @@ function initMovPln() {
 		bfm_.ManTyp[n] = 0;
 		bfm_.BnkMax[n] = 0;
 	}
+	initEndSeq(txt_);
 }
 
 //= MOVE AIRPLANES =============//==============================================
@@ -733,7 +731,7 @@ function moveMovPln() {
 			xac_.RotDif[n].y = xac_.RotDif[n].y * tim_.DLTime;
 			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif[n].y);
 		}
-		else {moveXACEnd(n)}	// If Ending Sequence
+		else {moveEndSeq(n,xac_,myg_,tim_)}	// If Ending Sequence
 		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
 		//- Speed ..............................................................
 		if (bfm_.BFMflg[n]) {
@@ -892,133 +890,6 @@ function moveXACGun(n) {
 		if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();
 	}
 	moveXACBul(xag_,air_,gen_,tim_);
-}
-
-/*******************************************************************************
-*
-*	XAC END SEQUENCE
-*
-*******************************************************************************/
-
-//= INITIALIZE ELEMENTS ========//==============================================
-
-//- Init Airplane Explosion ----//----------------------------------------------
-function initXACExp() {
-	xae_.ExpMsh = makeSphere("yellow");
-	xae_.ExpMsh.visible = false;
-}
-
-//- Init Airplane White Smoke --//----------------------------------------------
-function initXACSmk() {
-	xas_.ObjTxt = txt_.ObjTxt[xas_.ObjTxt]; // Assign Texture
-	initAirSmk(xas_);			// Create Emitter
-	xas_.SmkMsh[0].visible = false;
-}
-
-//- Init Airplane Black Smoke --//----------------------------------------------
-function initXACFyr() {
-	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt]; // Assign Texture
-	initAirFyr(xaf_);			// Create Emitter
-	xaf_.SmkMsh[0].visible = false; // Turn Off Smoke
-	xaf_.FyrMsh[0].visible = false; // Turn Off Fire
-}
-
-//- Sphere ---------------------//---------------------------------------------
-//	Used to create flash explosions
-function makeSphere(col) {
-	let geometry = new THREE.SphereGeometry(1,32,16);
-	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
-	let mesh = new THREE.Mesh(geometry,material);
-	mesh.visible = false;
-return mesh;}
-
-//= MOVE ENDING SEQUENCE =======//==============================================
-
-function moveXACEnd(n) {
-	// n = xac number
-	// this sequence called if xac_.EndSeq[n] = 1;
-	// TimRem Starts at 0, So Starts Next Event
-	if (!xat_.TimRem) {			// Start New Actions
-		xat_.SegIdx ++;
-		xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
-		// Select Actions
-		if (xat_.SegIdx == 0) {
-			begnXACExp(n); 		// Begin Explosion 1
-		}
-		if (xat_.SegIdx == 1) {
-			stopXACExp(n); 		// Stop Explosion 1
-			begnXACFyr(n); 		// Start Smoke and Fire
-		}
-		if (xat_.SegIdx == 2) {
-			begnXACExp(n);		// Begin Explosion 2
-			stopXACFyr();		// End Smoke and Fire
-		}
-		if (xat_.SegIdx == 3) {
-			stopXACExp(n);		// Stop Explosion 2
-			xac_.AirObj[n].visible = false; // Make Airplane Invisible
-			xac_.EndSeq[n] = 0;
-			// Next Plane
-			myg_.HitTgt = myg_.HitTgt+1;
-			if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
-			BnkMax = BnkMax + 5;
-			if (BnkMax > 75) BnkMax = 75;
-			myg_.HitRad = myg_.HitRad - 3;
-			if (myg_.HitRad < 1) myg_.HitRad = 1;
-		}
-	}
-	else {						// Continuing Actions
-		if (xat_.SegIdx == 0) contXACExp();
-		if (xat_.SegIdx == 1) makeXACSpn(n);
-		if (xat_.SegIdx == 2) contXACExp();
-		xat_.TimRem = xat_.TimRem - tim_.DLTime;
-		if (xat_.TimRem < 0) xat_.TimRem = 0;
-	}
-}
-
-//-	Begin Explosion ------------//----------------------------------------------
-function begnXACExp(n) {
-	xac_.AirObj[n].add(xae_.ExpMsh); // Attach to Airplane
-	xae_.ExpSiz = 0.1;			// Starting Size
-	xae_.ExpMsh.visible = true;	// Make Visible
-	if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play(); // Start Sound
-}
-
-//- Continue Explosion ---------//----------------------------------------------
-function contXACExp() {
-	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz); // New Size
-	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr; // Make Bigger
-}
-
-//-	Stop Explosion -------------//----------------------------------------------
-function stopXACExp(n) {
-	xae_.ExpSiz = 0.01;			// Ending Size
-	xae_.ExpMsh.visible = false; // Make Invisible
-	if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop(); // Stop Sound
-}
-
-//-	Begin Smoke and Fire -------//----------------------------------------------
-function begnXACFyr(n) {
-	// Smoke
-	xac_.AirObj[n].add(xaf_.SmkMsh[0]); // Attach to Airplane
-	xaf_.SmkMsh[0].visible = true;		// Make Visible
-	// Fire
-	xac_.AirObj[n].add(xaf_.FyrMsh[0]);	// Attach to Airplane
-	xaf_.FyrMsh[0].visible = true;		// Make Visible
-}
-
-//-	End Smoke and Fire ---------//----------------------------------------------
-function stopXACFyr() {
-	xaf_.SmkMsh[0].visible = false; // Make Invisible
-	xaf_.FyrMsh[0].visible = false;
-}
-
-//-	Make Airplane Spin ---------//----------------------------------------------
-function makeXACSpn(n) {
-	xac_.AirRot[n].z = Mod360(xac_.AirRot[n].z - 1); // Roll Right
-	if (xac_.AirRot[n].x > -90) {
-		xac_.AirRot[n].x = xac_.AirRot[n].x - 0.1; // Pitch Down
-		if (xac_.AirRot[n].x < -90) xac_.AirRot[n].x = -90;
-	}
 }
 
 /*******************************************************************************
