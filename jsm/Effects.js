@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Jun 2026
+Version dated 12 Jun 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -77,6 +77,51 @@ import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 't
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const animfps = 24;
+
+//- Airplane Smoke Trail .......//..............................................
+let xas_ = {
+		// Shared Values
+		ObjNum: 1,				// Number of Smoke Trails
+		ObjTxt: 0,				// Shared Texture Reference Number
+		ObjSiz: 800,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+	};
+
+//- Airplane Flame Trail .......//..............................................
+let xaf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: 0,				// Texture
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+	};
+
+//= AIRPLANE END SEQUENCE ======//==============================================
+let xat_ = {
+		// Segments:
+		// 0 = 1st Explosion
+		// 1 = Spinning and Burning
+		// 2 = 2nd Explosion
+		// 3 = Delay
+		// 4 = Radio Call
+		SegTim: [0.05,5,0.1,2,2],		
+		SegIdx: -1,				// Start at -1 so can increment at beginning
+		TimRem: 0,
+	}
+
+//= AIRPLANE EXPLOSION =========//==============================================
+let xae_ = {
+		ExpSiz: 0,				// Explosion Size
+		ExpLif: 0,				// Remaining Life
+		ExpMsh: 0,				// Mesh
+	};
 
 /*******************************************************************************
 *
@@ -349,6 +394,127 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 
 /*******************************************************************************
 *
+*	XAC END SEQUENCE
+*
+*******************************************************************************/
+
+//= INIT ENDING SEQUENCE =======//==============================================
+
+function initEndSeq(txt_) {
+	initXACExp();
+	initXACFyr(txt_);
+	initXACSmk(txt_);
+}
+
+//- Init Airplane Explosion ----//----------------------------------------------
+function initXACExp() {
+	xae_.ExpMsh = makeSphere("yellow");
+	xae_.ExpMsh.visible = false;
+}
+
+//- Init Airplane Black Smoke --//----------------------------------------------
+function initXACFyr(txt_) {
+	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt]; // Assign Texture
+	initAirFyr(xaf_);			// Create Emitter
+	xaf_.SmkMsh[0].visible = false; // Turn Off Smoke
+	xaf_.FyrMsh[0].visible = false; // Turn Off Fire
+}
+
+//- Init Airplane White Smoke --//----------------------------------------------
+//-	To show damage
+function initXACSmk(txt_) {
+	xas_.ObjTxt = txt_.ObjTxt[xas_.ObjTxt]; // Assign Texture
+	initAirSmk();			// Create Emitter
+	xas_.SmkMsh[0].visible = false;
+}
+
+//= MOVE ENDING SEQUENCE =======//==============================================
+
+function moveEndSeq(n,xac_,myg_,tim_) {
+	// n = xac number
+	// this sequence called if xac_.EndSeq[n] = 1;
+	// TimRem Starts at 0, So Starts Next Event
+	if (!xat_.TimRem) {			// Start New Actions
+		xat_.SegIdx ++;
+		xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
+		// Select Actions
+		if (xat_.SegIdx == 0) {
+			begnXACExp(n,xac_); // Begin Explosion 1
+		}
+		if (xat_.SegIdx == 1) {
+			stopXACExp(n,xac_); // Stop Explosion 1
+			begnXACFyr(n,xac_); // Start Smoke and Fire
+		}
+		if (xat_.SegIdx == 2) {
+			begnXACExp(n,xac_);	// Begin Explosion 2
+			stopXACFyr();		// End Smoke and Fire
+		}
+		if (xat_.SegIdx == 3) {
+			stopXACExp(n,xac_);	// Stop Explosion 2
+			xac_.AirObj[n].visible = false; // Make Airplane Invisible
+			xac_.EndSeq[n] = 0;
+			// Next Plane
+			myg_.HitTgt = myg_.HitTgt+1;
+			if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
+		}
+	}
+	else {						// Continuing Actions
+		if (xat_.SegIdx == 0) contXACExp();
+		if (xat_.SegIdx == 1) makeXACSpn(n,xac_);
+		if (xat_.SegIdx == 2) contXACExp();
+		xat_.TimRem = xat_.TimRem - tim_.DLTime;
+		if (xat_.TimRem < 0) xat_.TimRem = 0;
+	}
+}
+
+//-	Begin Explosion ------------//----------------------------------------------
+function begnXACExp(n,xac_) {
+	xac_.AirObj[n].add(xae_.ExpMsh); // Attach to Airplane
+	xae_.ExpSiz = 0.1;			// Starting Size
+	xae_.ExpMsh.visible = true;	// Make Visible
+	if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play(); // Start Sound
+}
+
+//- Continue Explosion ---------//----------------------------------------------
+function contXACExp() {
+	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz); // New Size
+	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr; // Make Bigger
+}
+
+//-	Stop Explosion -------------//----------------------------------------------
+function stopXACExp(n,xac_) {
+	xae_.ExpSiz = 0.01;			// Ending Size
+	xae_.ExpMsh.visible = false; // Make Invisible
+	if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop(); // Stop Sound
+}
+
+//-	Begin Smoke and Fire -------//----------------------------------------------
+function begnXACFyr(n,xac_) {
+	// Smoke
+	xac_.AirObj[n].add(xaf_.SmkMsh[0]); // Attach to Airplane
+	xaf_.SmkMsh[0].visible = true;		// Make Visible
+	// Fire
+	xac_.AirObj[n].add(xaf_.FyrMsh[0]);	// Attach to Airplane
+	xaf_.FyrMsh[0].visible = true;		// Make Visible
+}
+
+//-	End Smoke and Fire ---------//----------------------------------------------
+function stopXACFyr() {
+	xaf_.SmkMsh[0].visible = false; // Make Invisible
+	xaf_.FyrMsh[0].visible = false;
+}
+
+//-	Make Airplane Spin ---------//----------------------------------------------
+function makeXACSpn(n,xac_) {
+	xac_.AirRot[n].z = Mod360(xac_.AirRot[n].z - 1); // Roll Right
+	if (xac_.AirRot[n].x > -90) {
+		xac_.AirRot[n].x = xac_.AirRot[n].x - 0.1; // Pitch Down
+		if (xac_.AirRot[n].x < -90) xac_.AirRot[n].x = -90;
+	}
+}
+
+/*******************************************************************************
+*
 *	AA GUNS - FIXED AND SHIP
 *
 *******************************************************************************/
@@ -388,7 +554,7 @@ function initAAAGun(aag_,txt_,air_,gen_) {
 		initAAGuns(aag_,air_,gen_);
 		// Create Exploding Center
 		for (let n = 0; n < aag_.ObjNum; n ++) {
-			aag_.ExpPtr[n] = makeSphere();
+			aag_.ExpPtr[n] = makeSphere("crimson");
 			aag_.SmkPtr[n].add(aag_.ExpPtr[n]);
 		}
 	}
@@ -765,7 +931,7 @@ function initGrdFyr(grf_) {
 
 //= INITIALIZE AIRPLANE SMOKE ==================================================
 
-function initAirSmk(xas_) {
+function initAirSmk() {
 	for (let n = 0; n < xas_.ObjNum; n ++) {
 		let lifeRange = range(0.1,1);
 		let offsetRange = range(new Vector3(0,3,0), new Vector3(0,5,0));
@@ -952,17 +1118,17 @@ function initXSHSmk(xss_,txt_) {
 *
 *******************************************************************************/
 
-//- Converts degrees to 360 ----//----------------------------------------------
+//= CONVERTS DEGREES TO 360 ====//==============================================
 function Mod360(deg) {
 	while (deg < 0) deg = deg + 360; // Make deg a positive number
 	deg = deg % 360;				 // Compute remainder of any number divided by 360
 return deg;}
 
-//- Sphere ---------------------//---------------------------------------------
+//= SPHERE =====================//==============================================
 //	Used to create flash explosions
-function makeSphere() {
+function makeSphere(col) {
 	let geometry = new SphereGeometry(1,32,16);
-	let	material = new MeshBasicNodeMaterial({colorNode:color("crimson"),transparent:true,opacity:1});
+	let	material = new MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
 	let mesh = new Mesh(geometry,material);
 	mesh.visible = false;
 return mesh;}
@@ -973,14 +1139,14 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {initFad2Blk,moveFad2Blk,
-		initBullet,moveBullet,
-		initXACBul,moveXACBul,
-		loadAAAGun,initAAAGun,moveAAAGun,
-		initGrdSmk,initGrdFyr,
-		initAirSmk,initAirFyr,
-		initXSHWak,moveXSHWak,
-		initXSHSmk,	
+export {initFad2Blk,moveFad2Blk,			// Fade2Black
+		initBullet,moveBullet,				// Guns - My Airplane
+		initXACBul,moveXACBul,				// Guns - Other Airplane
+		loadAAAGun,initAAAGun,moveAAAGun,	// AA Guns
+		initGrdSmk,initGrdFyr,				// Ground Smoke and Fire
+		initEndSeq,moveEndSeq,				// Ending Sequence
+		initXSHWak,moveXSHWak,				// Ship Wake
+		initXSHSmk,							// Ship Smoked
 		};
 
 /*******************************************************************************
@@ -1008,4 +1174,5 @@ export {initFad2Blk,moveFad2Blk,
 260604: Only run one bullet at a time through HitBox.
 260605: myg dark colors adjacent to light colors
 260611: Bullet starting direction affected by air_.ACPAdj
+260612: Add Ending Sequence
 */
