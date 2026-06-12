@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Jun 2026
+Version dated 12 Jun 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1082,9 +1082,9 @@ return deg;}
 //= SPHERE =====================//==============================================
 //	Used to create flash explosions
 function makeSphere(col) {
-	let geometry = new THREE.SphereGeometry(1,32,16);
-	let	material = new THREE.MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
-	let mesh = new THREE.Mesh(geometry,material);
+	let geometry = new SphereGeometry(1,32,16);
+	let	material = new MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
+	let mesh = new Mesh(geometry,material);
 	mesh.visible = false;
 return mesh;}
 
