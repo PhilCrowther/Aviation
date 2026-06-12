@@ -459,9 +459,9 @@ function moveEndSeq(n,xac_,myg_,tim_) {
 		if (xat_.SegIdx == 1) makeXACSpn(n,xac_);
 		if (xat_.SegIdx == 2) contXACExp();
 		xat_.TimRem = xat_.TimRem - tim_.DLTime;
-		if (xat_.TimRem < 0) xat_.TimRem = 0;
+		if (xat_.TimRem < 0) xat_.TimRem = 0;	// If Done
 	}
-return xat_.SegIdx;}			// Returns "9" if End of Sequence
+return xat_.SegIdx;}			// Returns "-1" if End of Sequence
 
 //-	Begin Explosion ------------//----------------------------------------------
 function begnXACExp(n,xac_) {
