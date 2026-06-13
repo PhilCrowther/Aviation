@@ -263,9 +263,8 @@ let xac_ = {
 		EngVol: [0],			// Volume
 		// End Sequence
 		HitCnt: [0],			// Hits Taken
-		HitMax: 5,				// Hits Requred
-		EndSeq: [0],			// End Sequence Running
-		EndTim: 5,				// End Sequence Time (Seconds)
+		HitMax: 5,				// Hits Required
+		EndSeq: [0],			// End Sequence Flag
 		// End Sound
 		SndFlg: [0],			// 1 = Start Explosion Sound
 		SndSrc: 0,
