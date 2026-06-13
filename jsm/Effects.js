@@ -103,19 +103,6 @@ let xaf_ = {
 		FyrMsh: [0],			// Mesh
 	};
 
-//= AIRPLANE END SEQUENCE ======//==============================================
-let xat_ = {
-		// Segments:
-		// 0 = 1st Explosion
-		// 1 = Spinning and Burning
-		// 2 = 2nd Explosion
-		// 3 = Delay
-		// 4 = Radio Call
-		SegTim: [0.05,5,0.1,2,2],		
-		SegIdx: -1,				// Start at -1 so can increment at beginning
-		TimRem: 0,
-	}
-
 //= AIRPLANE EXPLOSION =========//==============================================
 let xae_ = {
 		ExpSiz: 0,				// Explosion Size
@@ -430,42 +417,52 @@ function initXACSmk(txt_) {
 
 //= MOVE ENDING SEQUENCE =======//==============================================
 
+let xat_ = {
+		// Segments:
+		// 0 = 1st Explosion
+		// 1 = Spinning and Burning
+		// 2 = 2nd Explosion
+		SegTim: [0.05,5,0.1],	// Explosion#1,Flames,	
+		SegIdx: -1,				// Start at -1 so can increment at beginning
+		TimRem: 0,
+	}
+
 function moveEndSeq(n,xac_,myg_,tim_) {
 	// n = xac number
 	// this sequence called if xac_.EndSeq[n] = 1;
 	// TimRem Starts at 0, So Starts Next Event
-	if (!xat_.TimRem) {			// Start New Actions
+	if (!xat_.TimRem) {			// Start New Actions (if Countdown = 0)
 		xat_.SegIdx ++;
-		xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
+
 		// Select Actions
 		if (xat_.SegIdx == 0) {
 			begnXACExp(n,xac_); // Begin Explosion 1
+			xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
 		}
 		if (xat_.SegIdx == 1) {
 			stopXACExp(n,xac_); // Stop Explosion 1
 			begnXACFyr(n,xac_); // Start Smoke and Fire
+			xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
 		}
 		if (xat_.SegIdx == 2) {
-			begnXACExp(n,xac_);	// Begin Explosion 2
 			stopXACFyr();		// End Smoke and Fire
+			begnXACExp(n,xac_);	// Begin Explosion 2
+			xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
 		}
 		if (xat_.SegIdx == 3) {
 			stopXACExp(n,xac_);	// Stop Explosion 2
-			xac_.AirObj[n].visible = false; // Make Airplane Invisible
-			xac_.EndSeq[n] = 0;
-			// Next Plane
-			myg_.HitTgt = myg_.HitTgt+1;
-			if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
+			xac_.EndSeq[n] = 0; // Flag Reset
+			xat_.SegIdx = -1;	// Reset SegIdx
 		}
 	}
-	else {						// Continuing Actions
+	else {						// Continuing Actions (if Still Counting Down)
 		if (xat_.SegIdx == 0) contXACExp();
 		if (xat_.SegIdx == 1) makeXACSpn(n,xac_);
 		if (xat_.SegIdx == 2) contXACExp();
 		xat_.TimRem = xat_.TimRem - tim_.DLTime;
-		if (xat_.TimRem < 0) xat_.TimRem = 0;
+		if (xat_.TimRem < 0) xat_.TimRem = 0;	// If Done
 	}
-}
+return xat_.SegIdx;}			// Returns "-1" if End of Sequence
 
 //-	Begin Explosion ------------//----------------------------------------------
 function begnXACExp(n,xac_) {
