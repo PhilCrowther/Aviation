@@ -1113,7 +1113,13 @@ function moveMovPln() {
 			xac_.RotDif[n].y = xac_.RotDif[n].y * tim_.DLTime;
 			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif[n].y);
 		}
-		else {moveEndSeq(n,xac_,myg_,tim_)}	// If Ending Sequence
+		else {				// If Ending Sequence
+			let SegIdx = moveEndSeq(n,xac_,myg_,tim_); // Execute Ending Sequence
+			if (SegIdx == -1) {		// If Sequence Over, Do Something
+				// Hide Old Airplane
+				xac_.AirObj[n].visible = false; // Make Airplane Invisible
+				// Need to add pause and radio call from other FM2
+			}
 		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
 		//- Speed ..............................................................
 		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
@@ -1221,7 +1227,7 @@ function HitTgt(n) {
 	if (!xac_.EndSeq[n]) moveXACGun(n); // Stop Firing
 	// If Enough Hits, Start Ending Sequence 
 	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
-		xac_.EndSeq[n] = xac_.EndTim;
+		xac_.EndSeq[n] = 1;		// Set Flag to Start Ending Sequence
 		xac_.HitCnt[n] = 0;		// Reset Hit Counter
 	}
 }
