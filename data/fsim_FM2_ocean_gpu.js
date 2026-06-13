@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260609
+*	FSIM FM2 DATA: 260612
 *
 ********************************************************************************
 
@@ -27,12 +27,9 @@ INDEX TO VARIABLES
 			Moving Airplanes		(xac_)
 			Moving Ships			(xsh_)
 		ANIMATED FLAG				(flg_)
-		AIRPLANE EXPLOSION			(xae_)
 	    SMOKE MODULE
 	    	Volcano Smoke			(grs_)
 	    	Ground Fire				(grf_)
-	    	Airplane Smoke Trail	(xas_)
-	    	Airplane Fire Trail		(xaf_)
 	    	Ship Wakes				(wak_)
 		MYPEOPLE					(myp_)
 		MYCREW						(myc_)
@@ -338,8 +335,7 @@ let xac_ = {
 		// End Sequence
 		HitCnt: [0],			// Hits Taken
 		HitMax: 5,				// Hits Requred
-		EndSeq: [0],			// End Sequence Running
-		EndTim: 5,				// End Sequence Time (Seconds)
+		EndSeq: [0],			// End Sequence Flag
 		// End Sound
 		SndFlg: [0],			// 1 = Start Explosion Sound
 		SndSrc: 0,
@@ -366,31 +362,6 @@ let bfm_ = {
 		// Target
 		Target: [0],			// If BFMflg set: Target (0 = my plane, 1 = xac[0], etc) ###260606
 	}
-
-//- Airplane Smoke Trail .......//..............................................
-let xas_ = {
-		// Shared Values
-		ObjNum: 1,				// Number of Smoke Trails
-		ObjTxt: 0,				// Shared Texture Reference Number
-		ObjSiz: 800,			// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Emitter Address
-	};
-
-//- Airplane Flame Trail .......//..............................................
-let xaf_ = {
-		ObjNum: 1,				// Number of Smoke Trails
-		// Shared Values
-		ObjTxt: 0,				// Texture
-		ObjSiz: 40,				// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Mesh
-		// Fire
-		FyrMat: [0],			// Material
-		FyrMsh: [0],			// Mesh
-	};
 
 //= MOVING SHIPS ===============//==============================================
 let xsh_ = {
@@ -434,26 +405,6 @@ let	flg_ = {
 		// Animation
 		ObjDst: [152.4],		// Visibility Distance from Parent (meters)
 		ObjAdj: [0]
-	};
-
-//= AIRPLANE END SEQUENCE ======//==============================================
-let xat_ = {
-		// Segments:
-		// 0 = 1st Explosion
-		// 1 = Spinning and Burning
-		// 2 = 2nd Explosion
-		// 3 = Delay
-		// 4 = Radio Call
-		SegTim: [0.05,5,0.1,2,2],		
-		SegIdx: -1,				// Start at -1 so can increment at beginning
-		TimRem: 0,
-	}
-
-//= AIRPLANE EXPLOSION =========//==============================================
-let xae_ = {
-		ExpSiz: 0,				// Explosion Size
-		ExpLif: 0,				// Remaining Life
-		ExpMsh: 0,				// Mesh
 	};
 
 //= SMOKE MODULE ===============//==============================================
