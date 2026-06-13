@@ -140,6 +140,14 @@ TO DO:
 	* Sometimes, need to wiggle plane to take off.
 */
 
+/*= AIR COMBAT LOGIC ===========//==============================================
+
+*	Making airplane a target (myg_.HitTgt) will cause that airplane (n = myg_.HitTgt - 1) 
+	starts Hit Counter and activates BFM for that airplane
+*	When xac_.HitCnt[n] exceed HitMax (xac_.HitMax), End Sequence Flag (xac_EndSeq[n]) is set
+*	When End Sequence is done (Seq99Idx = -1), you can select a new target
+*/
+
 /*******************************************************************************
 *
 *	VARIABLES
@@ -211,7 +219,7 @@ let sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
 	scene.add(sonLight);
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
-let camera = new THREE.PerspectiveCamera(65,CamAsp,0.1,100000);
+let camera = new THREE.PerspectiveCamera(60,CamAsp,0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
 let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
@@ -731,7 +739,16 @@ function moveMovPln() {
 			xac_.RotDif[n].y = xac_.RotDif[n].y * tim_.DLTime;
 			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif[n].y);
 		}
-		else {moveEndSeq(n,xac_,myg_,tim_)}	// If Ending Sequence
+		else {				// If Ending Sequence
+			let SegIdx = moveEndSeq(n,xac_,myg_,tim_); // Execute Ending Sequence
+			if (SegIdx == -1) {		// If Sequence Over, Do Something
+				// Hide Old Airplane
+				xac_.AirObj[n].visible = false; // Make Airplane Invisible
+				// Next Airplane is Target
+				myg_.HitTgt = myg_.HitTgt+1;
+				if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
+			}
+		}
 		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
 		//- Speed ..............................................................
 		if (bfm_.BFMflg[n]) {
@@ -831,13 +848,12 @@ function BFM(n) {
 			}
 		}
 	}
-	// Fire Guns Until End Sequence Starts
+	// Can Fire Guns (if Not in Ending Sequence)
 	if (!xac_.EndSeq[n]) moveXACGun(n); // Keep Firing Until End
 	// If Enough Hits, Start Ending Sequence
 	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
-		xac_.EndSeq[n] = xac_.EndTim;
+		xac_.EndSeq[n] = 1;		// Set Flag to Start Ending Sequence
 		xac_.HitCnt[n] = 0;		// Reset Hit Counter
-		xat_.SegIdx = -1;
 	}
 }
 
