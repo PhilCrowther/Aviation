@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Jun 2026
+Version dated 14 Jun 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -236,6 +236,8 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 		if (myg_.BulTim[i] > myg_.BulDLT) {
 			myg_.BulTim[i] = 0;
 			myg_.BulPtr[i].visible = false;
+			myg_.BulPtr[i].position.set(0,0,0); // Reset Position
+			myg_.BulMpS[i].set(0,0,0); // Reset Speed
 		}
 		// Continue Bullet
 		else {
@@ -245,7 +247,7 @@ function moveBullet(myg_,air_,gen_,tim_,xac_) {
 			myg_.BulPtr[i].position.x = myg_.BulPtr[i].position.x - myg_.BulMpS[i].x;
 			myg_.BulPtr[i].position.y = myg_.BulPtr[i].position.y + myg_.BulMpS[i].y - tim_.GrvDLT; // Bullet drop
 			myg_.BulPtr[i].position.z = myg_.BulPtr[i].position.z - myg_.BulMpS[i].z;
-			if (myg_.HitTgt) testHitBox(i,myg_,xac_); // If Enemy Target, Are We Hitting It?
+			if (myg_.HitTgt && (myg_.BulMpS[i].x || myg_.BulMpS[i].z)) testHitBox(i,myg_,xac_); // If Enemy Target and Bullet Moving, Are We Hitting It?
 		}
 	}
 }
@@ -1172,4 +1174,5 @@ export {initFad2Blk,moveFad2Blk,			// Fade2Black
 260605: myg dark colors adjacent to light colors
 260611: Bullet starting direction affected by air_.ACPAdj
 260612: Add Ending Sequence
+260614: Text Bullets for Hits Only if Moving
 */
