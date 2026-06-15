@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Jun 2026
+Version dated 15 Jun 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -362,6 +362,7 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb
 	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (30 ms = 108 kph = 67 mph)
 	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
 //- BFM
+	bfm_.PosCut = 15;
 	BnkMax = 60;
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
@@ -860,7 +861,6 @@ function BFM(n) {
 // 1. = Left Turn 180 Until Almost Centered on Tarbet
 function BFM_01(n) {
 	bfm_.BnkMax[n] = -BnkMax;
-	if (bfm_.PosOff[n].y > -60) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/60; // Start un-banking
 	//	Don't release until reach cut-off
 	if (bfm_.PosOff[n].y >= -bfm_.PosCut) bfm_.ManTyp[n] = 0;
 }
@@ -868,7 +868,6 @@ function BFM_01(n) {
 // 2. = Right Turn 180 Until Almost Centered on Target
 function BFM_02(n) {
 	bfm_.BnkMax[n] = BnkMax;
-	if (bfm_.PosOff[n].y < 60) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/60; // Start un-banking
 	//	Don't release until reach cut-off
 	if (bfm_.PosOff[n].y <= bfm_.PosCut) bfm_.ManTyp[n] = 0;
 }
@@ -876,8 +875,8 @@ function BFM_02(n) {
 // 3. = Towards Target
 function BFM_03(n) {
 	xac_.RotDif[n].z = BnkMax*bfm_.PosOff[n].y/bfm_.PosCut; // Negative value to close gap
-	if (xac_.RotDif[n].z > 0 && bfm_.PosOff[n].y > 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/90;
-	if (xac_.RotDif[n].z < 0 && bfm_.PosOff[n].y < 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/90;
+	if (xac_.RotDif[n].z > 0 && bfm_.PosOff[n].y > 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/bfm_.PosCut;
+	if (xac_.RotDif[n].z < 0 && bfm_.PosOff[n].y < 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/bfm_.PosCut;
 	if (bfm_.PosOff[n].y < -bfm_.PosCut || bfm_.PosOff[n].y > bfm_.PosCut) bfm_.ManTyp[n] = 0;	
 }
 
