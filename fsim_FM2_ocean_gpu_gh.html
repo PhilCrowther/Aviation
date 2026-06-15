@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Jun 2026
+Version dated 15 Jun 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -474,11 +474,12 @@ let XPFNam = ["xac_fm2.glb","xac_a6m.glb"];
 		xac_.SndDTm[n] = 0;
 	}
 //	Adjustments
-	xac_.AirRot = [new THREE.Euler(0,355,-45),new THREE.Euler(0,0,-45)];  // Rotation
-	xac_.SpdMPS = [91.5,91,5];	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
-	xac_.MapPos = [new THREE.Vector3(180,1524,5251),new THREE.Vector3(180,1524,5250)]; // meters
+	xac_.AirRot = [new THREE.Euler(0,0,-45),new THREE.Euler(0,0,-45)];  // Rotation
+	xac_.SpdMPS = [91.5,91.5];	// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+	xac_.MapPos = [new THREE.Vector3(180,1524,5260),new THREE.Vector3(180,1524,5250)]; // meters
 //- BFM
 	BnkMax = 75;
+	bfm_.PosCut = 15;
 	bfm_.BFMflg = [0,1];		// Zero is maneuvering
 	bfm_.Target = [0,1];		// Target is FM2
 
@@ -1120,6 +1121,7 @@ function moveMovPln() {
 				xac_.AirObj[n].visible = false; // Make Airplane Invisible
 				// Need to add pause and radio call from other FM2
 			}
+		}
 		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
 		//- Speed ..............................................................
 		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
@@ -1198,7 +1200,7 @@ function BFM(n) {
 // 1. = Left Turn 180 Until Almost Centered on Tarbet
 function BFM_01(n) {
 	bfm_.BnkMax[n] = -BnkMax;
-	if (bfm_.PosOff[n].y > -60) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/60; // Start un-banking
+//	if (bfm_.PosOff[n].y > -60) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/60; // Start un-banking
 	//	Don't release until reach cut-off
 	if (bfm_.PosOff[n].y >= -bfm_.PosCut) bfm_.ManTyp[n] = 0;
 }
@@ -1206,7 +1208,7 @@ function BFM_01(n) {
 // 2. = Right Turn 180 Until Almost Centered on Target
 function BFM_02(n) {
 	bfm_.BnkMax[n] = BnkMax;
-	if (bfm_.PosOff[n].y < 60) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/60; // Start un-banking
+//	if (bfm_.PosOff[n].y < 60) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/60; // Start un-banking
 	//	Don't release until reach cut-off
 	if (bfm_.PosOff[n].y <= bfm_.PosCut) bfm_.ManTyp[n] = 0;
 }
@@ -1214,8 +1216,8 @@ function BFM_02(n) {
 // 3. = Towards Target
 function BFM_03(n) {
 	xac_.RotDif[n].z = BnkMax*bfm_.PosOff[n].y/bfm_.PosCut; // Negative value to close gap
-	if (xac_.RotDif[n].z > 0 && bfm_.PosOff[n].y > 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/90;
-	if (xac_.RotDif[n].z < 0 && bfm_.PosOff[n].y < 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/90;
+	if (xac_.RotDif[n].z > 0 && bfm_.PosOff[n].y > 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/bfm_.PosCut;
+	if (xac_.RotDif[n].z < 0 && bfm_.PosOff[n].y < 0) bfm_.BnkMax[n] = BnkMax*bfm_.PosOff[n].y/bfm_.PosCut;
 	if (bfm_.PosOff[n].y < -bfm_.PosCut || bfm_.PosOff[n].y > bfm_.PosCut) bfm_.ManTyp[n] = 0;	
 }
 
@@ -1662,8 +1664,8 @@ function prntHUDval() {
 	if (cam_.Parent) Air_Alt = xac_.MapPos[cam_.Parent-1].y*Mtr2Ft;
 	Air_AltNode.nodeValue = Air_Alt.toFixed(0);
 	//	Bank
-	Air_Bnk = Mod360(air_.AirRot.z);
-	if (cam_.Parent) Air_Bnk = xac_.AirRot[cam_.Parent-1].z;
+	Air_Bnk = PoM360(Mod360(air_.AirRot.z));
+	if (cam_.Parent) Air_Bnk = PoM360(Mod360(xac_.AirRot[cam_.Parent-1].z));
 	Air_BnkNode.nodeValue = Air_Bnk.toFixed(0);
 	//	Heading
 	Air_Hdg = Mod360(air_.AirRot.y);
