@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260612
+*	FSIM FM2 DATA: 260617
 *
 ********************************************************************************
 
@@ -275,7 +275,7 @@ let mnt_ = {
 		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/homebase.jpg",
 				 "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.jpg"],
 		ObjAdr: [],
-		ObjSiz: [MtrMil,1.5*MtrMil], // Scale
+		ObjSiz: [0,0], // Scale
 		RndOrd: [0,0],			// renderOrder (not used)
 		ObjRot: [0,0],			// Rotation
 		MapPos: [0,0],			// Absolute Position

@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260612
+*	FSIM SF1 DATA: 260617
 *
 *********************************************************************************
 
@@ -204,7 +204,7 @@ let mnt_ = {
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
 		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.jpg"],
 		ObjAdr: [],
-		ObjSiz: [3.75*MtrMil], // Scale
+		ObjSiz: [0], 			// Scale (Vector3)
 		RndOrd: [0],			// renderOrder (not used)
 		ObjRot: [0],			// Rotation
 		MapPos: [0],			// Absolute Position
