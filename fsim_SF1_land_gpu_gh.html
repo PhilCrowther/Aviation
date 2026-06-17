@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 15 Jun 2026
+Version dated 17 Jun 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -302,11 +302,14 @@ let ImgSiz = 1024;
 //= 4. OBJECT VARIABLES ========//==============================================
 //= STATIC OBJECTS =============//==============================================
 //- Mountains/Islands ----------//----------------------------------------------
+let mntSiz = 3.75*MtrMil
 //	Adjustments
 	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
 	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5250)];
 	mnt_.ObjGrp = [new THREE.Object3D()]; // Group
 	mnt_.MaxAni = gen_.MaxAni;
+	mnt_.ObjSiz = [new THREE.Vector3(mntSiz,mntSiz/2,mntSiz)], // Scale
+
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
 	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
