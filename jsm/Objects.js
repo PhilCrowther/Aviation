@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 29 May 2026
+Version dated 17 Jun 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -80,7 +80,8 @@ function loadMountn(mnt_,air_,gen_) {
 					}
 				});
 				mnt_.ObjAdr[i] = gltf.scene;
-				mnt_.ObjAdr[i].scale.setScalar(mnt_.ObjSiz[i]);
+//				mnt_.ObjAdr[i].scale.setScalar(mnt_.ObjSiz[i]);
+				mnt_.ObjAdr[i].scale.copy(mnt_.ObjSiz[i]);
 				mnt_.ObjAdr[i].rotation.copy(mnt_.ObjRot[i]);
 				mnt_.ObjGrp[i].add(mnt_.ObjAdr[i]);
 			});
@@ -675,4 +676,5 @@ export {loadMountn,initMountn,moveMountn,
 260520: Eliminate Altitude Adjustment (AltDif) for other Aircraft (xac)
 260521: Change xac_.ObjAdr to xac_.AirObj
 260529: Only attach fxd to other object if !ref
+260617:	Mountain/Island scale is now a Vector3 value, allowing adjustment of height
 */
