@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 May 2026
+Version dated 18 June 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
@@ -92,6 +92,9 @@ import {loadSkyBox,initSkyBox,
 		initRoads,moveRoads,
 		loadTreLin,moveTreLin
 } from "https://PhilCrowther.github.io/Aviation/jsm/GrdLnd.js"; // r171
+import {loadMountn,initMountn,moveMountn, // Mountains/Islands
+		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
 
 //= GENERAL ====================================================================
 
@@ -349,45 +352,35 @@ let grd_ = {
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadH.jpg"],
 	}
 
-//= OBJECTS ====================//===============================================
-//- Distances in Meters
-let ObjNum = 2;					// number of objects
-let ObjTyp = [0];				// Object Type
-	ObjTyp[ObjNum - 1] = 0;
-let ObjNam = [0];				// Object Name
-	ObjNam[ObjNum - 1] = 0;
-let ObjMdl = [0];				// Model source
-	ObjMdl[ObjNum - 1] = 0;
-let ObjTxt = [0];				// Model texture
-	ObjTxt[ObjNum - 1] = 0;
-let ObjMPX = [0];				// Ground X Value
-	ObjMPX[ObjNum - 1] = 0;
-let ObjMPY = [0];				// Ground Y Value
-	ObjMPY[ObjNum - 1] = 0;
-let ObjMPZ = [0];				// Ground Y Value
-	ObjMPZ[ObjNum - 1] = 0;
-let ObjPtr = [0];				// Object Address
-	ObjPtr[ObjNum - 1] = 0;
-// Index (allow for expanding list of objects)
-let ObjIdx = 0;
-//- Hangars
-	ObjTyp[ObjIdx] = 0;			// 0 = No separate texture
-	ObjNam[ObjIdx] = "hangar";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb";
-	ObjTxt[ObjIdx] = 0; 	
-	ObjMPX[ObjIdx] = 1000;		// [m]
-	ObjMPY[ObjIdx] = Ft2Mtr;	// [m] 1 ft
-	ObjMPZ[ObjIdx] = 1524;		// [m] 5000 ft
-	ObjIdx = ObjIdx + 1;
-//- Giaros Island
-	ObjTyp[ObjIdx] = 1;			// 1 = Large feature
-	ObjNam[ObjIdx] = "giaros";
-	ObjMdl[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb";
-	ObjTxt[ObjIdx] = "https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.jpg";
-	ObjMPX[ObjIdx] = -1609.344;	// [m] 1 mile
-//	ObjMPY[ObjIdx] = 2*Ft2Mtr;	// [m] 2 ft
-	ObjMPY[ObjIdx] = -50;		// [m]
-	ObjMPZ[ObjIdx] = 8046.72;	// [m] 5 miles
+//= STATIC OBJECTS =============//==============================================
+//- Mountain -------------------//----------------------------------------------
+let mnt_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
+		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.jpg"],
+		ObjAdr: [0],
+		ObjSiz: [new THREE.Vector3(6035,6035,6035)], // Scale (Vector3)
+		RndOrd: [0],					// renderOrder (not used)
+		ObjRot: [new THREE.Euler()],	// Rotation
+		MapPos: [new THREE.Vector3(-1000.3048,0,5250)],	// Absolute Position
+		ObjGrp: [new THREE.Object3D()], // Group
+		AltMul: [0.99],					// Altitude Adjustment
+		VrtAdj: [-25],					// Vertical Adjustment
+	};
+//- Static Objects -------------//----------------------------------------------
+//- 0 = Hangar;
+let fxd_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],					// Loaded Object
+		ObjSiz: [Ft2Mtr],				// Scale
+		RndOrd: [0],					// renderOrder
+		ObjRot: [new THREE.Euler()],	// Rotation
+		MapPos: [new THREE.Vector3(1200,0.3048,5000)],	// Relative Position
+		ObjRef: [mnt_.ObjGrp[0]],		// Parent
+		VrtAdj: [-mnt_.VrtAdj[0]],		// Vertical Adjustment
+	};
 	
 //= MY HELICOPTER ==============//===============================================
 let dat_ = {
@@ -693,8 +686,8 @@ function loadAll() {
 	loadSkyBox(sky_,gen_);		// load SkyBox materials
 	loadGrdMat(grd_,gen_);	
 	loadTreLin(grd_,gen_);
-	loadObject();
 	loadAirObj();
+	loadStatic();				// Static Objects
 	// Load stats
 	if (gen_.StatOn) {			// show stats
 		gen_.StatOn = new Stats();
@@ -730,7 +723,7 @@ function initAll() {
 	grids.update(grd_);			// Mode Grid Map
 	initRoads(grd_,gen_);
 	moveTreLin(grd_,gen_,air_); // Add TreeLines
-	initObject();				// Stationary Objects
+	initStatic();				// Static Objects
 	// Other
 	initCamera(camera,cam_);	// position camera
 	PawsText();
@@ -757,7 +750,7 @@ function rendAll() {
 		grids.update(grd_);		// Mode Grid Map
 		moveRoads(grd_,gen_);
 		moveTreLin(grd_,gen_,air_); // Add TreeLines		
-		moveObject();			// Move objects
+		moveStatic();			// Static Objects
 		moveSounds();
 		prntHUDval();			// change HUD value
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
@@ -776,57 +769,21 @@ function rendAll() {
 ********************************************************************************/
 //= These objects include the airfield, mountains and hangar
 
-function loadObject() {
-	for (let i = 0; i < ObjNum; i++) {		// For Each Object
-		if (ObjTyp[i] == 0) {
-			gltfLoader.load(ObjMdl[i], function (gltf) {
-				ObjPtr[i] = gltf.scene;
-				ObjPtr[i].scale.setScalar(Ft2Mtr);
-				ObjPtr[i].rotation.order = "ZXY";
-			});
-		}
-		if (ObjTyp[i] == 1) {
-			let texture = txtrLoader.load(ObjTxt[i]);
-			texture.anisotropy = gen_.MaxAni;
-			let material = new THREE.MeshLambertMaterial({map: texture, transparent: true});
-			gltfLoader.load(ObjMdl[i], function (gltf) {
-				gltf.scene.traverse(function (child) {
-				// Note: Blender object must include a UV map
-					if (child.isMesh) {				
-						child.material = material;
-						child.receiveShadow = true;
-					}
-				});
-				ObjPtr[i] = gltf.scene;
-				ObjPtr[i].scale.setScalar(32000*Ft2Mtr);
-				ObjPtr[i].rotation.order = "ZXY";
-			});
-		}
-	}
+//- STATIC OBJECTS -------------//----------------------------------------------
+
+function loadStatic() {
+	loadMountn(mnt_,air_,gen_);
+	loadFxdObj(fxd_,gen_);	
 }
 
-// Init Objects
-function initObject() {
-	for (let i = 0; i < ObjNum; i++) {
-		// Set Position (cause Objects to elevate above ground as we climb to prevent flicker)
-		let X = ObjMPX[i]-air_.MapPos.x;
-		let Y = ObjMPY[i]-air_.MapPos.y*gen_.AltAdj;
-		let Z = air_.MapPos.z-ObjMPZ[i];
-		ObjPtr[i].position.set(X,Y,Z);
-		scene.add(ObjPtr[i]);
-	}
+function initStatic() {
+	initMountn(mnt_,air_);
+	initFxdObj(fxd_,air_,gen_);	
 }
 
-// Move Objects
-function moveObject() {
-	// Convert Distances into Meters to match landscape program
-	for (let i = 0; i < ObjNum; i ++) {
-		// Set Position (cause Objects to elevate above ground as we climb to prevent flicker)
-		let X = ObjMPX[i]-air_.MapPos.x;
-		let Y = ObjMPY[i]-air_.MapPos.y*gen_.AltAdj;
-		let Z = air_.MapPos.z-ObjMPZ[i];
-		ObjPtr[i].position.set(X,Y,Z);
-	}
+function moveStatic() {
+	moveMountn(mnt_,air_);
+	moveFxdObj(fxd_,air_,gen_);
 }
 
 /********************************************************************************
