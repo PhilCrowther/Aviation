@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Jun 2026
+Version dated 18 Jun 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -69,7 +69,7 @@ function loadMountn(mnt_,air_,gen_) {
 	for (let i = 0; i < mnt_.ObjNum; i++) {
 	// Mountain/Island Objects
 		gen_.txtrLd.load(mnt_.ObjTxt[i], function (IslTxt) {
-			IslTxt.anisotropy = gen_.maxAns;
+			IslTxt.anisotropy = gen_.MaxAni;
 			let mat = new MeshLambertNodeMaterial({colorNode: texture(IslTxt)});
 			gen_.gltfLd.load(mnt_.ObjSrc[i], function (gltf) {
 				gltf.scene.traverse(function (child) {
@@ -80,7 +80,6 @@ function loadMountn(mnt_,air_,gen_) {
 					}
 				});
 				mnt_.ObjAdr[i] = gltf.scene;
-//				mnt_.ObjAdr[i].scale.setScalar(mnt_.ObjSiz[i]);
 				mnt_.ObjAdr[i].scale.copy(mnt_.ObjSiz[i]);
 				mnt_.ObjAdr[i].rotation.copy(mnt_.ObjRot[i]);
 				mnt_.ObjGrp[i].add(mnt_.ObjAdr[i]);
@@ -101,10 +100,7 @@ function moveMountn(mnt_,air_) {
 	let X,Y,Z;
 	for (let i = 0; i < mnt_.ObjNum; i ++) {
 		// Compute New Relative Position
-		// (cause Islands to elevate above water as we climb to prevent flicker)
 		X = mnt_.MapPos[i].x-air_.MapPos.x;
-//		Y = mnt_.MapPos[i].y-gen_.AltDif;
-//		Y = mnt_.MapPos[i].y-(air_.MapPos.y*mnt_.AltMul[i]); // 250929
 		Y = mnt_.MapPos[i].y-(air_.MapPos.y*mnt_.AltMul[i])+mnt_.VrtAdj[i]; // 250930
 		Z = air_.MapPos.z-mnt_.MapPos[i].z;
 		mnt_.ObjGrp[i].position.set(X,Y,Z);
@@ -668,7 +664,7 @@ export {loadMountn,initMountn,moveMountn,
 250810	No Rep of Plane Handler sequence
 250929	Make AltMul for Islands Optional
 250930	Changed Islands to Mountains/Islands, load/init/move, isl_ to mnt_, added mnt_.VrtAdj
-251007	Added maxAni to Mountains/Islands
+251007	Added maxAni to Mountains/Islands (now gen_.MaxAni)
 251019	Added Object Sounds
 251125	Added scene, Loaders and listener to gen_
 251227	Disable ship shadows for now
