@@ -2,15 +2,15 @@
 <html>
 
 <!--
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 Jul 2025
+Version dated 27 Jun 2026
 -->
 
 <head>
 <title>ACM Demo</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<link rel="stylesheet" href="styles/main_ACM.css">
+<link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/main_ACM.css">
 </head>
 
 <body oncontextmenu="return false;">
@@ -61,8 +61,8 @@ Version dated 30 Jul 2025
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.177/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.177/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"	
 		}
 	}
 </script>
@@ -87,7 +87,7 @@ let BegPwr = 1.0;				//
 let BegCfL = 0.265;				// Level Flight
 //- Air2 Only
 let BegPos = new THREE.Vector3(0,0,150); // Offset: x = horizontal, y = vertical, z = distance behind
-let BegRot = new THREE.Vector3(0,0,0); // Beg Air2 OffRot Angles: x = vertical, y = horizontal
+let BegRot = new THREE.Vector3(0,0,0); // Beg Air2 RotOff Angles: x = vertical, y = horizontal
 //	* Trail:		BegPos =    0,   0, 150
 //	* Intercept:	BegPos = -100,-100, 150
 
@@ -204,7 +204,8 @@ let Air1 = {
 		AirRSp: new THREE.Vector3(0,0,0), // Rotation Speed
 		USDFlg: 0,				// Upside Down Flag
 		AirPPR: new THREE.Vector3(0,0,0), // Pitch Plane Rotation
-		AirPPS: 0,				// Pitch Plane Sector
+		AirPPS: new THREE.Vector3(0,0,0), // Pitch Plane Speed
+		AirPPN: 0,				// Pitch Plane Pitch Sector
 		// Airplane Speed
 		SpdKPH: BegSpd,			// Speed in KPH
 		SpdMPS: BegSpd/3.6,
@@ -222,6 +223,7 @@ let Air1 = {
 		// ACM
 		CirRad: new THREE.Vector2(0,0), // Radius of Turn
 		CirCtr: new THREE.Vector3(0,0,0), // Center of Circle
+		AirPPT: new THREE.Vector3(0,0,0), // Old Pitch Plane Rotation
 	}
 let Air2 = {
 		// Inputs
@@ -235,7 +237,8 @@ let Air2 = {
 		AirRSp: new THREE.Vector3(0,0,0), // Rotation Speed
 		USDFlg: 0,				// Upside Down Flag
 		AirPPR: new THREE.Vector3(0,0,0), // Pitch Plane Rotation
-		AirPPS: 0,				// Pitch Plane Sector
+		AirPPS: new THREE.Vector3(0,0,0), // Pitch Plane Speed
+		AirPPN: 0,				// Pitch Plane Pitch Sector
 		// Airplane Speed
 		SpdKPH: BegSpd,			// Spped in KPH
 		SpdMPS: BegSpd/3.6,
@@ -253,6 +256,7 @@ let Air2 = {
 		// ACM
 		CirRad: new THREE.Vector2(0,0), // Radius of Turn
 		CirCtr: new THREE.Vector3(0,0,0), // Center of Circle
+		AirPPT: new THREE.Vector3(0,0,0), // Old Pitch Plane Rotation
 	}
 //- Aircraft Data --------------------------------------------------------------
 //	Constrol Sensitivity
@@ -286,17 +290,13 @@ let SmkInt = 10;
 let SmkSiz = 6;
 
 //= Computations ===============//==============================================
-//- Lag Pursuit ----------------------------------------------------------------
-let	LagMax = 360;				// Max Number of Values (360 = 6 seconds of inputs)
-let LagTim = Math.round((BegPos.z/Air1.SpdMPF)+0.5); // Time = Difference in Distance/Air1 Speed
-let LagInp = [];				// Air1 Rotation Change
-	for (let i = 0; i < LagMax; i++) {
-		LagInp[i] = new THREE.Vector3(0,0,0);	
-	}
-let LagId1 = LagTim;			// Index to next Air1 Entry
 //- Intercept ------------------------------------------------------------------
-let OffPos = new THREE.Vector3(); // Intercept Angle (Pitch,Yaw,Bank)
-let OffRot = new THREE.Vector3(); // Off-Angle (Pitch,Yaw,Bank)
+let bfm_ = {
+		MapDif: new THREE.Vector3(),
+		PosAbs: new THREE.Vector3(), // Absolute Direction of Target
+		PosOff: new THREE.Vector3(), // Intercept Angle (Pitch,Yaw,Bank)
+		RotOff: new THREE.Vector3(), // Off-Angle (Pitch,Yaw,Bank)
+	}
 
 //= CAMERA =====================//==============================================
 	camera.rotation.order = "YXZ";
@@ -663,10 +663,10 @@ function initAirPln() {
 function moveAirPln() {
 	move1ACraft(Air1);
 	move1ACraft(Air2);
-//	console.log(Air1.USDFlg);
-//	console.log(Air2.USDFlg,Math.round(OffPos.x),Math.round(OffRot.x));
-//	console.log(Air1.USDFlg,Math.round(Air1.AirPPR.x));
-//	console.log(Air2.USDFlg,Math.round(Air2.AirPPR.x));
+//	Air.CirRad.x = Math.abs(RadDeg*Air.SpdMPF/Air.AirPPS.x)
+//	console.log(Math.round(Air1.AirPPR.x),Math.round(Air2.AirPPR.x)); // ok
+//	console.log(Math.round(Air1.AirPPS.x),Math.round(Air2.AirPPS.x)); // ok
+//	console.log(Math.round(Air1.AirPPS.x),Math.round(Air1.CirRad.x)); // ok
 }
 
 //= INITIALIZE AIRPLANE ==========//============================================
@@ -743,63 +743,82 @@ function move1ACraft(Air) {
 		* The Intercept Angle - the relative position of the Target. 
 		* The Off Angle - the difference in heading of the Target.
 		In parallel flight
-		* Increasing the OffRot Angle causes Air2 to bank towards Air1.
-		* Increasing the OffPos Angle causes Air2 to bank away from Air1.
+		* Increasing the RotOff Angle causes Air2 to bank towards Air1.
+		* Increasing the PosOff Angle causes Air2 to bank away from Air1.
 	*/
-	// USD Flag
-//	Air.USDFlg = 0;				// Default
-//	if (Air.AirRot.z > 90 && Air.AirRot.z < 270) Air.USDFlg = 1;
-	// Only Works for Vertical Loop - Can Mult by Sin for Banked
-//	if (!Air.USDFlg) Air.PitPln = Mod360(Air.AirRot.x);
-//	else {Air.PitPln = 180 - Air.AirRot.x};
 	if (Air == Air2) {
-		// INTERCEPT: OffPos 
-		let x = -Air.AirObj.position.x;	// Map X Position (in loop = 0)
-		let y = -Air.AirObj.position.y;	// Map Y Position
-		let z =  Air.AirObj.position.z;	// Map Z Position (approaches 0 at 90 degrees)
-		let xz = Math.sqrt(x**2+z**2);	// Horizontal Distance (at 90 degrees, both x and z = 0)
-		if (Air1.AirPPS == 1) xz = -xz; // ### FIX THROUGH 180
-		if (Air1.AirPPS == 3) y = -y; // ### NOT HELP
-		OffPos.x = PoM360(Mod360(Math.atan2(y,xz)*RadDeg-Air.AirRot.x)); // Vertical Angle
-		if (Air1.AirPPS == 2) OffPos.x = -OffPos.x; // ### FIX PROBLEM through 270
-		OffPos.y = PoM360(Mod360(Math.atan2(x,z)*RadDeg-Air.AirRot.y));	// Horizontal Angle (0-360)
-		// INTERCEPT: OffRot
-		OffRot.x = PoM360(Mod360(Air1.AirPPR.x - Air.AirPPR.x)); // Vertical Off-Angle
-		OffRot.y = PoM360(Mod360(Air1.AirRot.y - Air.AirRot.y)); // Horizontal Off-Angle
-		// Rotated Differences (Used by Lag)
-		let hrot = Air2.AirRot.y * DegRad;
-		let rxdif = x*Math.cos(hrot)-z*Math.sin(hrot);
-		let rzdif = x*Math.sin(hrot)+z*Math.cos(hrot);
-		//- AIR2 TRACKING: BANK CHANGES - IF LOOP, THIS CAUSES SPINNING
+		//: COMPUTE ROTOFF AND ROTATED POSOFF ::::::::::::::::::::::::::::::::::
+		//. RotOff Horizontal and Vertical .....................................
+		bfm_.RotOff.y = PoM360(Mod360(Air1.AirRot.y - Air.AirRot.y)); // Horizontal Off-Angle
+		bfm_.RotOff.x = PoM360(Mod360(Air1.AirPPR.x - Air.AirPPR.x)); // Vertical Off-Angle
+		//. PosOff Horizontal ..................................................
+//		let x = -Air.AirObj.position.x;	// Map X Position (in loop = 0)
+//		let z =  Air.AirObj.position.z;	// Map Z Position (approaches 0 at 90 degrees)
+//		bfm_.PosOff.y = PoM360(Mod360(Math.atan2(x,z)*RadDeg-Air.AirRot.y));	// Horizontal Angle (0-360)
+		bfm_.MapDif.x = -Air.AirObj.position.x;	// Map X Position (in loop = 0)
+		bfm_.MapDif.z =  Air.AirObj.position.z;	// Map Z Position (approaches 0 at 90 degrees)
+		bfm_.PosAbs.y = Mod360(Math.atan2(bfm_.MapDif.x,bfm_.MapDif.z)*RadDeg); // Horizontal Angle (0-360)
+		bfm_.PosOff.y = PoM360(Mod360(bfm_.PosAbs.y - Air.AirRot.y));			// Relative Latitude (+/-)
+		//. PosOff - Vertical ..................................................
+//		let y = -Air.AirObj.position.y;	// Map Y Position
+//		let xz = Math.sqrt(x**2+z**2);	// Horizontal Distance (at 90 degrees, both x and z = 0)
+		bfm_.MapDif.y = -Air.AirObj.position.y;	// Map Y Position
+		let xz = Math.sqrt(bfm_.MapDif.x**2+bfm_.MapDif.z**2);
+		if (Air1.AirPPN == 1) xz = -xz; // fix 90
+		if (Air1.AirPPN == 3) bfm_.MapDif.y = -bfm_.MapDif.y; // fix 180
+//		bfm_.PosOff.x = PoM360(Mod360(Math.atan2(y,xz)*RadDeg-Air.AirRot.x)); // Vertical Angle
+		bfm_.PosAbs.x = Mod360(Math.atan2(bfm_.MapDif.y,xz)*RadDeg); // Vertical Angle
+		bfm_.PosOff.x = PoM360(Mod360(bfm_.PosAbs.x-Air.AirRot.x)); // Vertical Angle
+		if (Air1.AirPPN == 2) bfm_.PosOff.x = -bfm_.PosOff.x; // fix 270
+		//. Rotated PosOff - Horizontal ........................................
+		let hrot = Air.AirRot.y * DegRad;
+		let rxhdif = bfm_.MapDif.x*Math.cos(hrot)-bfm_.MapDif.z*Math.sin(hrot);
+		let rzhdif = bfm_.MapDif.x*Math.sin(hrot)+bfm_.MapDif.z*Math.cos(hrot);
+		//. Rotated PosOff - Vertical ..........................................
+		let vrot1 = Air.AirPPR.z * DegRad; // PPB
+		let vrot2 = Air.AirPPR.x * DegRad; // PPP
+		//	Remove PPB 
+//		let rxvdif = x*Math.cos(vrot1)-y*Math.sin(vrot1); // Result s/b 0
+		let ryvdif = bfm_.MapDif.x*Math.sin(vrot1)+bfm_.MapDif.y*Math.cos(vrot1);		
+		//	Remove PPP
+		ryvdif = ryvdif*Math.cos(vrot2)-bfm_.MapDif.z*Math.sin(vrot2);
+		let rzvdif = ryvdif*Math.sin(vrot2)+bfm_.MapDif.z*Math.cos(vrot2);		
+		//: SIMPLE INTERCEPT (Target Flying Straight and Level) ::::::::::::::::
+		//. BANK ...............................................................
 		let PoMBk1 = PoM360(Air1.AirRot.z); // Used by Lag
 		let PoMBk2 = PoM360(Air.AirRot.z);
-		// Off Angle - If Looping, Causes Fast Spin
-		let InpBk1 = 0.75 * OffRot.y; // 0.75 okay for merge
-		if (OffRot.y > 0 && PoMBk2 > 1) InpBk1 = 0;
-		if (OffRot.y < 0 && PoMBk2 < -1) InpBk1 = 0;
-		// Off Position - If Looping, Causes Slow Spin
-		let InpBk2 = .1 * OffPos.y; // 0.1 - 0.25 okay for merge, 0.5 too much
-//		Air.InpRot.z =  InpBk1 + InpBk2; // If Looping, Eliminating this Prevents Spin
-		//- AIR2 TRACKING: CfLIFT CHANGES (range -1.6 to 1.6) - IF LOOP, FLIES STRAIGHT AWAY
-		// Off Angle
-		let InpPt1 = 0.005*OffRot.x; // Adjustment to CfLift	// 0.01
-		// Off Position
-		let InpPt2 = 0.5 * OffPos.x; // Adjustment to CfLift	// 1 = too fast
-		// Total Adjustment to CfLift
-		Air.InpRot.x =  InpPt1 + InpPt2;
-		// Program sets limits to +/- CfLift
-		//- CIRCLE OVERRIDE ===============================================
-		// If OffRot.y > 0.5, Air2 is behind Air1 and Air1 is turning
-		if (Math.abs(OffRot.y) > 0.5 && rzdif > 0 && Air1.CirRad.y) {
+		//	Off Angle
+		let InpBk1 = 0.75 * bfm_.RotOff.y; // 0.75 okay for merge
+		if (bfm_.RotOff.y > 0 && PoMBk2 >  1) InpBk1 = 0;
+		if (bfm_.RotOff.y < 0 && PoMBk2 < -1) InpBk1 = 0;
+		//	Off Position
+		let InpBk2 = .1 * bfm_.PosOff.y; // 0.1 - 0.25 okay for merge, 0.5 too much
+		Air.InpRot.z =  InpBk1 + InpBk2;
+		//. PITCH ..............................................................
+		//	Off Angle
+		let InpPt1 = 0.005*bfm_.RotOff.x; // Adjustment to CfLift	// 0.01
+		if (bfm_.RotOff.x > 0 && Air.AirRot.x >  1) InpPt1 = 0;
+		if (bfm_.RotOff.x < 0 && Air.AirRot.x < -1) InpPt1 = 0;
+		//	Off Position
+		let InpPt2 = 0.5 * bfm_.PosOff.x; // Adjustment to CfLift	// 1 = too fast
+		//	Total Adjustment to CfLift (Program sets limits to +/- CfLift)
+		Air.InpRot.x =  InpPt1 + InpPt2; // Air.InpRot.x = 0.01 of CfLift
+		
+		// DO WE WANT TO ADJUST BANK SO THAT POINTING AT TARGET?
+		// COMPUTE XY OFF ANGLE?
+		
+		//: OVERRIDE BANK ::::::::::::::::::::::::::::::::::::::::::::::::::::::
+		// If bfm_.RotOff.y > 0.5, Air2 is behind Air1 and Air1 is turning
+		if (Math.abs(bfm_.RotOff.y) > 0.5 && rzhdif > 0 && Air1.CirRad.y) {
 			// Air1 Center of Rotation
-			let ctrZ = Air1.CirRad.y*Math.cos((OffRot.y-90)*DegRad); // Z-pos of Air1 radius ctr
+			let ctrZ = Air1.CirRad.y*Math.cos((bfm_.RotOff.y-90)*DegRad); // Z-pos of Air1 radius ctr
 			if (PoMBk1 > 0) ctrZ = -ctrZ; // Make Z-pos negative
-			let ctrZdif = rzdif + ctrZ; // Air2 distance to Z-pos
+			let ctrZdif = rzhdif + ctrZ; // Air2 distance to Z-pos
 			// If Air2 Reaches CtrZ, Can Start Turning
 			if (ctrZdif < 0) {
 				// Compute Rate of Turn
-				let B = 90-Math.abs((OffRot.y/2));		
-				let BD = Math.sqrt(rxdif**2+rzdif**2)/2;
+				let B = 90-Math.abs((bfm_.RotOff.y/2));		
+				let BD = Math.sqrt(rxhdif**2+rzhdif**2)/2;
 				let radius = BD/Math.cos(B*DegRad);
 				let trnrat = RadDeg*Air.SpdMPF/radius;
 				let trgbnk = (Math.atan(trnrat*Air.SpdMPF/(GrvMPS*DLTime)))*RadDeg;
@@ -807,15 +826,34 @@ function move1ACraft(Air) {
 				Air.InpRot.z = trgbnk - PoMBk2;
 			}
 		}
-//		if (Math.abs(OffRot.x) > 0.5 && rzdif > 0 && Air1.CirRad.x) {
+		//: OVERRIDE PITCH :::::::::::::::::::::::::::::::::::::::::::::::::::::
+//		let aa = 0;
+		if (Math.abs(bfm_.RotOff.x) > 0.5 && rzvdif > 0 && Air1.CirRad.x) {
+//			aa = 1;		
 //			// Air1 Center of Rotation
-//			let ctrZ = Air1.CirRad.x*Math.cos((OffRot.y-90)*DegRad); // Z-pos of Air1 radius ctr
-//			if (PoMBk1 > 0) ctrZ = -ctrZ; // Make Z-pos negative
-//			let ctrZdif = rzdif + ctrZ; // Air2 distance to Z-pos
+//			let ctrZ = -Air1.CirRad.x*Math.cos((bfm_.RotOff.x-90)*DegRad); // Z-pos of Air1 radius ctr
+//			if (Air1.AirRot.x < 0) ctrZ = -ctrZ; // Make Z-pos negative
+//			let ctrZdif = rzvdif + ctrZ; // Air2 distance to Z-pos
 //			// If Air2 Reaches CtrZ, Can Start Turning
-//			if (ctrZdif > 0) Air.InpRot.x = 0;
-//		}
+//			if (ctrZdif < 0) {
+				Air.InpRot.z = 0; // Disable Bank Changes During Loop
+//				aa = 2;
+//				// Compute Rate of Turn
+//				let B = 90-Math.abs((bfm_.RotOff.x/2));		
+//				let BD = Math.sqrt(ryvdif**2+rzvdif**2)/2;
+//				let radius = BD/Math.cos(B*DegRad);
+//				let trgpit = RadDeg*Air.SpdMPF/radius;
+//				if (Air1.AirRot.x < 0) trgpit = -trgpit;
+//				if (Air1.AirPPN == 1) trgpit = -trgpit; // fix 90
+//				Air.InpRot.x = trgpit - Air.AirRot.x;
+//			}
+		}
+//		console.log(Math.round(aa),Math.round(Air.InpRot.x));		
 	}
+	// 0. SAVE OLD VALUES ------//----------------------------------------------
+	let ACPold = Air.AirRot.x;	// Pitch
+	let ACHold = Air.AirRot.y;	// heading
+	let ACBold = Air.AirRot.z;	// Bank	
 	// 1. COMPUTE VECTORS ------//----------------------------------------------
 	// Compute Force Vectors in UPS and multiply by FrcAcc to convert to UPT
 	// a. Compute New Speeds for New DLTime
@@ -833,10 +871,10 @@ function move1ACraft(Air) {
 	// Set CfLift
 	// Normally, set power to cause change in flight parth.  CfL adjusted to speed
 	// However, in air combat, power always at max.  Must change pitch with CfL
-	let ACP = Air.AirRot.x * DegRad
-	let ACB = Air.AirRot.z * DegRad;
+	let ACPrad = Air.AirRot.x * DegRad
+	let ACBrad = Air.AirRot.z * DegRad;
 	if (Math.round(Air.InpRot.x) == 0) { // Setting for current flight path (level, climb or descent)
-		Air.CfLift = (Weight * Math.cos(ACP))/(DynPrs * WingAr * Math.abs(Math.cos(ACB)));
+		Air.CfLift = (Weight * Math.cos(ACPrad))/(DynPrs * WingAr * Math.abs(Math.cos(ACBrad)));
 		if (Air.USDFlg) Air.CfLift = -Air.CfLift;
 	}
 	else {						// Allows change of flight path					
@@ -863,10 +901,10 @@ function move1ACraft(Air) {
 	let ACDrPF = DrgCdp * QSTval; // Parasitic Drag =  Cd0 * DynPres * WingA
 	let ACThrF = EnThrF - ACDrPF; // Net Thrust Force
 	let ACTrst = ACThrF * FrcAcc; // Net Thrust Accel
-	let GrvThr = GrvMPF * Math.sin(ACP); // Gravity opposing Thrust = Grav * sin(ACP)
+	let GrvThr = GrvMPF * Math.sin(ACPrad); // Gravity opposing Thrust = Grav * sin(ACPrad)
 	let ACThrG = ACTrst - GrvThr; // Net Thrust after Gravity +/-
 	// e. Gravity Reducing ACPitch
-	let GrvACP = GrvMPF * Math.cos(ACP); // Gravity opposing Lift and Yaw
+	let GrvACP = GrvMPF * Math.cos(ACPrad); // Gravity opposing Lift and Yaw
 	let GrACPD = (GrvACP/Air.SpdMPF)*RadDeg; // Degrees +/-
 	// Save Values
 	let PPPDif = ACLftD;		// Pitch Degrees (before Gravity)
@@ -888,66 +926,74 @@ function move1ACraft(Air) {
 	Air.AirPBY.rotation.z = 0;
 	Air.AirPBY.rotation.x = 0;
 	Air.AirPBY.rotation.y = 0;
-	// Load Resulting Values into Variables (for display)
-	Air.AirRot.z = Mod360(-Air.AirObj.rotation.z*RadDeg);
-	Air.AirRot.x = Air.AirObj.rotation.x*RadDeg;
-	// Update Air.AirObj Heading for Bank
-	let ACH = Air.AirRot.y;		// Save old heading
+	// Load Resulting Values into Variables	
+	Air.AirRot.x = Air.AirObj.rotation.x*RadDeg; // +/- 90 deg
+	Air.AirRSp.x = PoM360(Mod360(Air.AirRot.x - ACPold)); // +/-
+	// Update Air.AirObj Heading
 	Air.AirRot.y = Mod360(-Air.AirObj.rotation.y*RadDeg);
-	Air.AirRSp.y = PoM360(Mod360(Air.AirRot.y - ACH));
-	Air.AirObj.rotation.y = -Air.AirRot.y*DegRad;
-	// Compute Horizontal Radius (Only if Turn Rate > 0.1 deg/sec = 360 deg/hr
-	Air.CirRad.y = 0;				// Default
-	if (Math.abs(Air.AirRSp.y/DLTime) > 0.1) Air.CirRad.y = Math.abs(RadDeg*Air.SpdMPF/Air.AirRSp.y);
-	Air.CirRad.x = 0;				// Default
-	if (Math.abs(Air.AirRSp.y/DLTime) > 0.1) Air.CirRad.x = Math.abs(RadDeg*Air.SpdMPF/Air.AirRSp.y);
-	// USD Flag
-	Air.USDFlg = 0;				// Default
-	if (Air.AirRot.z > 90 && Air.AirRot.z < 270) Air.USDFlg = 1;
-	//  Pitch Plane Pitch (range = 0 => 360)
-	Air.AirPPR.y = Math.atan(Math.tan(Air.AirObj.rotation.z)*Math.sin(Air.AirObj.rotation.x));
-	Air.AirPPR.x = Math.acos(Math.cos(Air.AirObj.rotation.x)*Math.cos(Air.AirPPR.y));
-	Air.AirPPR.x = Air.AirPPR.x*RadDeg;
-	Air.AirPPS = 0;
-	if (Air.AirRot.x >= 0) {
-		if (Air.USDFlg) {
-			Air.AirPPR.x = 180-Air.AirPPR.x;
-			Air.AirPPS = 1;
-		}
-	}
-	else {
-		if (Air.USDFlg) {
-			Air.AirPPR.x = 180+Air.AirPPR.x;
-			Air.AirPPS = 2;
-		}
-		else {
-			Air.AirPPR.x = 360-Air.AirPPR.x;
-			Air.AirPPS = 3;
-		}
-	}
-	// 3. COMPUTE MAP SPEED ----//----------------------------------------------
-	// Inputs:	Air.SpdMPF, ACThrG, Air.AirRot.x, Air.AirRot.y, MPosZV, MPosYV, MPosXV
-	// Results:	Air.SpdKPH, Air.AirRot.x
+	Air.AirRSp.y = PoM360(Mod360(Air.AirRot.y - ACHold));
+	// Compute Bank Change
+	Air.AirRot.z = Mod360(-Air.AirObj.rotation.z*RadDeg);
+	Air.AirRSp.z = PoM360(Mod360(Air.AirRot.z - ACBold));	
+	// 3. COMPUTE ROTATIONS ----//----------------------------------------------
 	// a. Compute Speed
 	Air.SpdMPF = Air.SpdMPF + ACThrG;
 	if (Air.SpdMPF <= 0) Air.SpdMPF = 0.0001; // Set Minimum Speed to avoid division by zero  211031
 	Air.SpdMPS = Air.SpdMPF/DLTime;	// (MPS)
 	Air.SpdKPH = Air.SpdMPS*3.6; // (KPH)	
 	// b1. Compute PSpd (before gravity)
-	ACP = Air.AirRot.x * DegRad;
-	Air.MapSpd.z = Air.SpdMPF * Math.abs(Math.cos(ACP)); // Horizontal speed
+//	ACPrad = Air.AirRot.x * DegRad;
+//	Air.MapSpd.z = Air.SpdMPF * Math.abs(Math.cos(ACPrad)); // Horizontal speed
 	// b2. Adjust ACP for Gravity
 	Air.AirRot.x = Air.AirRot.x-GrACPD;
 	if (Air.AirRot.x < -90) Air.AirRot.x = -90; // Prevents you from pitching back up
-	ACP = Air.AirRot.x*DegRad;
-	Air.AirObj.rotation.x = ACP;
-	Air.MapSpd.y = Air.SpdMPF * Math.sin(ACP); // Vertical speed
-	ACH = Air.AirRot.y*DegRad;
+	ACPrad = Air.AirRot.x*DegRad;
+	Air.AirObj.rotation.x = ACPrad;
+	Air.MapSpd.y = Air.SpdMPF * Math.sin(ACPrad); // Vertical speed
+	// USD Flag
+	Air.USDFlg = 0;				// Default
+	if (Air.AirRot.z > 90 && Air.AirRot.z < 270) Air.USDFlg = 1;
+	//  Compute Pitch Plane
+	Air.AirPPR.y = Math.atan(Math.tan(Air.AirObj.rotation.z)*Math.sin(Air.AirObj.rotation.x));
+	Air.AirPPR.x = Math.acos(Math.cos(Air.AirObj.rotation.x)*Math.cos(Air.AirPPR.y));
+	Air.AirPPR.z = Math.acos(Math.sin(Air.AirObj.rotation.z)*Math.cos(Air.AirObj.rotation.x));
+	Air.AirPPR.x = Air.AirPPR.x*RadDeg;
+	Air.AirPPR.y = -Air.AirPPR.y*RadDeg;
+	Air.AirPPR.z = Mod360(Air.AirPPR.z*RadDeg-90);
+	//  Pitch Plane Pitch (range = 0 => 360)
+	Air.AirPPN = 0;
+	if (Air.AirRot.x >= 0) {
+		if (Air.USDFlg) {
+			Air.AirPPR.x = 180-Air.AirPPR.x;
+			Air.AirPPN = 1;
+		}
+	}
+	else {
+		if (Air.USDFlg) {
+			Air.AirPPR.x = 180+Air.AirPPR.x;
+			Air.AirPPN = 2;
+		}
+		else {
+			Air.AirPPR.x = 360-Air.AirPPR.x;
+			Air.AirPPN = 3;
+		}
+	}
+	Air.AirPPS.x = Air.AirPPR.x - Air.AirPPT.x;
+	Air.AirPPT.x = Air.AirPPR.x;	// Save
+	// Compute Horizontal Radius (Only if Turn Rate > 0.1 deg/sec = 360 deg/hr
+	Air.CirRad.y = 0;			// Default
+	if (Math.abs(Air.AirRSp.y/DLTime) > 0.1) Air.CirRad.y = Math.abs(RadDeg*Air.SpdMPF/Air.AirRSp.y);
+	Air.CirRad.x = 0;			// Default
+	if (Math.abs(Air.AirPPS.x/DLTime) > 0.1) Air.CirRad.x = Math.abs(RadDeg*Air.SpdMPF/Air.AirPPS.x);
+	// 3. COMPUTE MAP SPEED ----//----------------------------------------------
+	// Inputs:	Air.SpdMPF, ACThrG, Air.AirRot.x, Air.AirRot.y, MPosZV, MPosYV, MPosXV
+	// Results:	Air.SpdKPH, Air.AirRot.x
 	// Compute Map Speed
-	Air.MapSpd.y = Air.SpdMPF * Math.sin(ACP);
-	let GS = Air.SpdMPF * Math.cos(ACP);
-	Air.MapSpd.z = GS * Math.cos(ACH);
-	Air.MapSpd.x = GS * Math.sin(ACH);
+	let ACHrad = Air.AirRot.y*DegRad;
+	Air.MapSpd.y = Air.SpdMPF * Math.sin(ACPrad);
+	let GS = Air.SpdMPF * Math.cos(ACPrad);
+	Air.MapSpd.z = GS * Math.cos(ACHrad);
+	Air.MapSpd.x = GS * Math.sin(ACHrad);
 	// Compute Map Position
 	Air.MapPos.y = Air.MapPos.y + Air.MapSpd.y;
 	Air.MapPos.z = Air.MapPos.z - Air.MapSpd.z;
@@ -1098,13 +1144,13 @@ function chngHUDV(Air) {
 	AC2_AoA = Air2.CfLift*10;					// Aircraft AoA
 	AC2_AoANode.nodeValue = AC2_AoA.toFixed(2);
 	//
-	AC2_InY = OffPos.y;							// Aircraft Intercept Angle
+	AC2_InY = bfm_.PosOff.y;							// Aircraft Intercept Angle
 	AC2_InYNode.nodeValue = AC2_InY.toFixed(2);
-	AC2_OfY = OffRot.y;							// Aircraft OffsetAngle
+	AC2_OfY = bfm_.RotOff.y;							// Aircraft OffsetAngle
 	AC2_OfYNode.nodeValue = AC2_OfY.toFixed(2);
-	AC2_InX = OffPos.x;							// Aircraft Intercept Angle
+	AC2_InX = bfm_.PosOff.x;							// Aircraft Intercept Angle
 	AC2_InXNode.nodeValue = AC2_InX.toFixed(2);
-	AC2_OfX = OffRot.x;							// Aircraft OffsetAngle
+	AC2_OfX = bfm_.RotOff.x;							// Aircraft OffsetAngle
 	AC2_OfXNode.nodeValue = AC2_OfX.toFixed(2);
 }
 
