@@ -2,9 +2,9 @@
 <html lang="en">
 
 <!--
-Copyright 2017-25, Phil Crowther <phil@philcrowther.com>
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Jul 2025
+Version dated 27 Jun 2026
 -->
 
 	
@@ -30,8 +30,8 @@ Version dated 27 Jul 2025
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js", 
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js", 
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"
 		}
 	}
 </script>
@@ -207,7 +207,7 @@ function rendAll() {
 
 function makeAirExt() {
 	// Front
-	let color = new THREE.Color("blue");
+	let color = new THREE.Color("aqua");
 	let material = new THREE.MeshPhongMaterial({color: color, flatShading: true});
 	let mesh = new THREE.Mesh(new THREE.CylinderGeometry(0,10,60,3), material);
 	mesh.position.set(0,0,-30);
