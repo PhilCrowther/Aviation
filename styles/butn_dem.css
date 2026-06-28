@@ -45,9 +45,34 @@ button {
 	top: 10px;
 }
 
+.sounButton {
+	right: 70px;
+	top: 10px;
+}
+
 .viewButton {
 	right: 20px;
 	top: 40px;
+}
+
+.gearButton {
+	right: 20px;
+	top: 70px;
+}
+
+.flapButton {
+	right: 70px;
+	top: 70px;
+}
+
+.cnpyButton {
+	right: 20px;
+	top: 100px;
+}
+
+.hookButton {
+	right: 70px;
+	top: 100px;
 }
 
 .d1TypeButton {
