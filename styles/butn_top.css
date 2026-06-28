@@ -1,13 +1,25 @@
 ﻿/* Body */
 
+html {
+	-webkit-user-select: none;
+	-webkit-text-size-adjust: none;
+	position: fixed;
+    overflow: hidden;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: silver;
+}
+
 body {
-	margin: 0;
-	background-color: #000;
-	overscroll-behavior: none;
-	overflow: hidden;
 	height: 100%;
 	width: 100%;
-	padding:0;
+	background-color: #000;
+	padding:0;	
+	margin: 0;
+	overscroll-behavior: none;
+	overflow: hidden;
 	font-weight: bold;
 }
 
@@ -28,7 +40,8 @@ body {
 
 /* Buttons */
 
-button {	
+button {
+	-webkit-appearance: none;	
 	font-family: Courier;
 	font-size: 12pt;
 	text-align: center;
@@ -42,6 +55,11 @@ button {
 
 .pawsButton {
 	right: 20px;
+	top: 10px;
+}
+
+.sounButton {
+	right: 70px;
 	top: 10px;
 }
 
