@@ -1150,10 +1150,10 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,tim_) {
 function initBomExp(bmx_,bom_) {
 	bmx_.ExpGeo = new SphereGeometry(1,32,16);
 	bmx_.ExpMat = new MeshBasicNodeMaterial({
-			colorNode:color("orange"),
-			transparent:true,
-			depthWrite = false,
-			opacity:1,
+			colorNode: color("orange"),
+			transparent: true,
+			depthWrite: false,
+			opacity: 1,
 		}),
 	bmx_.ExpMsh = new Mesh(bmx_.ExpGeo,bmx_.ExpMat);
 	bmx_.ExpMsh.scale.setScalar(bmx_.ExpSiz);
