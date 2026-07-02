@@ -1127,9 +1127,9 @@ function loadExpBom(bom_,gen_) {
 
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_) {
-	initBomExp(bom_,bmx_);
-	initBomSmT(bom_,bmt_);
-	initBomSmk(bom_,bms_);
+	initBomExp(bmx_,bom_);
+	initBomSmT(bmt_,bom_);
+	initBomSmk(bms_,bom_);
 
 }
 
@@ -1137,7 +1137,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_) {
 function moveExpBom(bmx_,bmt_,bms_,tim_) {
 	moveBomExp(bmx_);
 	moveBomSmT(bmt_,tim_);
-	moveBomSmk(bms_);
+	moveBomSmk(bms_,bom_);
 }
 
 /*******************************************************************************
@@ -1147,7 +1147,9 @@ function moveExpBom(bmx_,bmt_,bms_,tim_) {
 *******************************************************************************/
 
 //= INIT =======================//==============================================
-function initBomExp(bom_,bmx_) {
+function initBomExp(bmx_,bom_) {
+	bmx_.ExpGeo = new SphereGeometry(1,32,16);
+	bmx_.ExpMat = new MeshBasicNodeMaterial({colorNode:color("orange"),transparent:true,opacity:1}),
 	bmx_.ExpMat.depthWrite = false;
 	bmx_.ExpMsh = new Mesh(bmx_.ExpGeo,bmx_.ExpMat);
 	bmx_.ExpMsh.scale.setScalar(bmx_.ExpSiz);
@@ -1184,8 +1186,9 @@ function moveBomExp(bmx_) {
 
 //= INIT =======================//==============================================
 
-function initBomSmT(bom_,bmt_) {
+function initBomSmT(bmt_,bom_) {
 	//	Init Material
+	bmt_.SmkMat = new SpriteNodeMaterial(),
 	bmt_.SmkMat.colorNode = texture(bom_.SmkMap);
 	bmt_.SmkMat.transparent = true;
 	bmt_.SmkMat.opacity = bmt_.BegOpa;
@@ -1267,7 +1270,7 @@ function moveBomSmT(bmt_,tim_) {
 
 //=	INIT =======================//==============================================
 
-function initBomSmk(bom_,bms_) {
+function initBomSmk(bms_,bom_) {
 	//- Commom Variables -------------------------------------------------------
 	//	Speed
 	let speed = uniform(.2); // Used by scaledTime
@@ -1305,7 +1308,7 @@ function initBomSmk(bom_,bms_) {
 
 //=	MOVE =======================//==============================================
 
-function moveBomSmk(bms_) {
+function moveBomSmk(bms_,bom_) {
 	// After First Rep, Smoke Plume is Fully Developed. So You Need to Expand the
 	// Whole Plume to Create the Illusion of a Developing Smoke Plume
 
