@@ -1147,7 +1147,7 @@ function moveExpBom(bmx_,bmt_,bms_,tim_) {
 //= INIT =======================//==============================================
 function initBomExp(bom_,bmx_) {
 	bmx_.ExpMat.depthWrite = false;
-	bmx_.ExpMsh = new THREE.Mesh(bmx_.ExpGeo,bmx_.ExpMat);
+	bmx_.ExpMsh = new Mesh(bmx_.ExpGeo,bmx_.ExpMat);
 	bmx_.ExpMsh.scale.setScalar(bmx_.ExpSiz);
 	bom_.ExpGrp.add(bmx_.ExpMsh);
 	bmx_.ExpMsh.position.y = 5;
@@ -1196,7 +1196,7 @@ function initBomSmT(bom_,bmt_) {
 		bmt_.SmkSpd[t].z = Math.cos(bmt_.SmkVec[t].x*DegRad)*Math.sin(bmt_.SmkVec[t].y*DegRad)*bmt_.SmkVec[t].z;
 		for (let n = 0; n < bmt_.SmkNum; n++) {
 			//	Make Sprites
-			bmt_.SmkSpr[t][n] = new THREE.Sprite(bmt_.SmkMat); // 10 different textures
+			bmt_.SmkSpr[t][n] = new Sprite(bmt_.SmkMat); // 10 different textures
 			bmt_.SmkSpr[t][n].scale.setScalar(bmt_.SmkSiz);
 			bmt_.SmkSpr[t][n].material.rotation = bmt_.SmkRot*DegRad;
 			bmt_.SmkSpr[t][n].visible = false;
@@ -1275,7 +1275,7 @@ function initBomSmk(bom_,bms_) {
 	let lifeTime = scaledTime.mul(lifeRange).mod(1); // used by life and Position
 	let life = lifeTime.div(lifeRange);	// Used by Color and Opacity
 	//-	Material ---------------------------------------------------------------
-	let smokeNodeMaterial = new THREE.SpriteNodeMaterial();
+	let smokeNodeMaterial = new SpriteNodeMaterial();
 	//	Color
 	let smokeColor = mix(color(0x2c1501),color(0x222222),positionLocal.y.mul(3).clamp());
 	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
@@ -1286,7 +1286,7 @@ function initBomSmk(bom_,bms_) {
 	let opacityNode = textureNode.a.mul(life.oneMinus());
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
-	let offsetRange = range(new THREE.Vector3(-2,3,-2),new THREE.Vector3(2,5,2));
+	let offsetRange = range(new Vector3(-2,3,-2),new Vector3(2,5,2));
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 	//	Scale
 	let scaleRange = range(.3,2);
@@ -1294,7 +1294,7 @@ function initBomSmk(bom_,bms_) {
 	//	Depth Write
 		smokeNodeMaterial.depthWrite = false;
 	//-	Sprites ----------------------------------------------------------------
-		bms_.SmkSpr = new THREE.Sprite(smokeNodeMaterial);
+		bms_.SmkSpr = new Sprite(smokeNodeMaterial);
 		bms_.SmkSpr.scale.setScalar(bms_.RemSiz);
 		bms_.SmkSpr.count = 1000;
 		bms_.SmkSpr.position.y = 0; // Height Above Ground
