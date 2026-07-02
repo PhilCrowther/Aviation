@@ -1120,7 +1120,7 @@ function initXSHSmk(xss_,txt_) {
 //= LOAD BOMB ==================//==============================================
 function loadExpBom(bom_,gen_) {
 	// Load Common Smoke Material
-	bom_.SmkMap = gen_.txtrLoader.load(bom_.SmkSrc);
+	bom_.SmkMap = gen_.txtrLd.load(bom_.SmkSrc);
 }
 
 //= INIT BOMB ==================//==============================================
