@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 14 Jun 2026
+Version dated 2 Jul 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -698,7 +698,7 @@ function initAAGuns(aag_,air_,gen_) {
 		aag_.SmkMat[n].colorNode = texture(aag_.SmkMap);
 		aag_.SmkMat[n].transparent = true;
 //		aag_.SmkMat[n].opacity = 1.0;
-		aag_.SmkMat[n].opacity = 0.0;		// prevent black square from appears in front of aircraft [260504]
+		aag_.SmkMat[n].opacity = 0.0;		// prevent black square from appearing in front of aircraft [260504]
 		aag_.SmkMat[n].depthWrite = false;
 		//	Smoke Sprite
 		aag_.SmkPtr[n] = new Sprite(aag_.SmkMat[n]);
@@ -1124,10 +1124,10 @@ function loadExpBom(bom_,gen_) {
 }
 
 //= INIT BOMB ==================//==============================================
-function initExpBom(bom_bmx_,bmt_,bms_) {
-	initBomExp(bom_bmx_);
-	initBomSmT(bom_bmt_);
-	initBomSmk(bom_bms_);
+function initExpBom(bom_,bmx_,bmt_,bms_) {
+	initBomExp(bom_,bmx_);
+	initBomSmT(bom_,bmt_);
+	initBomSmk(bom_,bms_);
 
 }
 
