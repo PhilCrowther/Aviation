@@ -1354,16 +1354,17 @@ return mesh;}
 *
 *******************************************************************************/
 
-export {initFad2Blk,moveFad2Blk,			// Fade2Black
-		initBullet,moveBullet,				// Guns - My Airplane
-		initXACBul,moveXACBul,				// Guns - Other Airplane
-		loadAAAGun,initAAAGun,moveAAAGun,	// AA Guns
-		initGrdSmk,initGrdFyr,				// Ground Smoke and Fire
-		initEndSeq,moveEndSeq,				// Ending Sequence
-		initXSHWak,moveXSHWak,				// Ship Wake
-		initXSHSmk,							// Ship Smoke
-		loadExpBom,initExpBom,moveExpBom,
-	};
+export {
+	initFad2Blk,moveFad2Blk,			// Fade2Black
+	initBullet,moveBullet,				// Guns - My Airplane
+	initXACBul,moveXACBul,				// Guns - Other Airplane
+	loadAAAGun,initAAAGun,moveAAAGun,	// AA Guns
+	initGrdSmk,initGrdFyr,				// Ground Smoke and Fire
+	initEndSeq,moveEndSeq,				// Ending Sequence
+	initXSHWak,moveXSHWak,				// Ship Wake
+	initXSHSmk,							// Ship Smoke
+	loadExpBom,initExpBom,moveExpBom,	// Bombs
+};
 
 /*******************************************************************************
 *
