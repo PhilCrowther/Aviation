@@ -1134,7 +1134,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_) {
 }
 
 //= MOVE BOMB ==================//==============================================
-function moveExpBom(bmx_,bmt_,bms_,tim_) {
+function moveExpBom(bom_,bmx_,bmt_,bms_,tim_) {
 	moveBomExp(bmx_);
 	moveBomSmT(bmt_,tim_);
 	moveBomSmk(bms_,bom_);
@@ -1149,8 +1149,12 @@ function moveExpBom(bmx_,bmt_,bms_,tim_) {
 //= INIT =======================//==============================================
 function initBomExp(bmx_,bom_) {
 	bmx_.ExpGeo = new SphereGeometry(1,32,16);
-	bmx_.ExpMat = new MeshBasicNodeMaterial({colorNode:color("orange"),transparent:true,opacity:1}),
-	bmx_.ExpMat.depthWrite = false;
+	bmx_.ExpMat = new MeshBasicNodeMaterial({
+			colorNode:color("orange"),
+			transparent:true,
+			depthWrite = false,
+			opacity:1,
+		}),
 	bmx_.ExpMsh = new Mesh(bmx_.ExpGeo,bmx_.ExpMat);
 	bmx_.ExpMsh.scale.setScalar(bmx_.ExpSiz);
 	bom_.ExpGrp.add(bmx_.ExpMsh);
