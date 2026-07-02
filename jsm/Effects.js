@@ -76,6 +76,7 @@ import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 't
 //= CONSTANTS ==================//==============================================
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const GrvMPS = 9.8;				// Gravity Acceleration m/s2
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const animfps = 24;
 
