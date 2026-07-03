@@ -630,7 +630,7 @@ let bmt_ = {
 		SmkSpr: [[],[],[]],		// Sprite Addresses
 		SmkVec:	[],				// Smoke Vector: Lat (deg),Lon (deg), Speed (m/s)
 		SmkSpd:	[], // m/s (no gravity)
-		SmkPos:	,
+		SmkPos:	0,
 		SmkOff:	[],
 		SmkRnd:	[],
 	};
