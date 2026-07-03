@@ -1128,9 +1128,9 @@ function loadExpBom(bom_,gen_) {
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_) {
 	bom_.ExpGrp = new Group();
-	bom_.SndMsh[n] = new Object3D();
-	bom_.SndFlg[n] = 1;		// 1 = Sound Active
-	bom_.SndDTm[n] = 0;
+	bom_.SndMsh = new Object3D();
+	bom_.SndFlg = 1;		// 1 = Sound Active
+	bom_.SndDTm = 0;
 	initBomExp(bmx_,bom_);
 	initBomSmT(bmt_,bom_);
 	initBomSmk(bms_,bom_);
