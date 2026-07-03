@@ -103,6 +103,7 @@ import {initBullet,moveBullet,	// Guns - My Airplane
 		loadAAAGun,initAAAGun,moveAAAGun,	// Guns - AA
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
+		loadExpBom,initExpBom,moveExpBom, // Bomb
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
@@ -468,6 +469,13 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	aaf_.SmkRot = [0,165,330,210]; // Z-rotation of smoke
 	aaf_.SmkDMx = [6,6,6,6]; // Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
+	
+//= BOMBS ======================//==============================================
+	bmt_.SmkVec = [new THREE.Vector3(50,  0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)]; // Smoke Vector: Lat (deg),Lon (deg), Speed (m/s)
+	bmt_.SmkSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]; // m/s (no gravity)
+	bmt_.SmkPos = new THREE.Vector3(0,0,0);
+	bmt_.SmkOff = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
+	bmt_.SmkRnd = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -629,7 +637,8 @@ function loadObject() {
 	loadShared();				// For FX (### Creates Shadow on Screen)
 	loadStatic();
 	loadMoving();
-	loadAAAGun(aaf_,gen_)
+	loadAAAGun(aaf_,gen_);
+	loadExpBom(bom_,gen_);	
 }
 
 //= INIT OBJECTS ===============================================================
@@ -638,6 +647,13 @@ function initObject() {
 	initStatic();
 	initMoving();
 	initAAAGun(aaf_,txt_,air_,gen_);
+	initExpBom(bom_,bmx_,bmt_,bms_);
+	bom_.ExpGrp.position.x = bom_.ExpGrp.position.x + -10;
+	bom_.ExpGrp.position.z = bom_.ExpGrp.position.z + -100;
+	bom_.ExpFlg = 1;
+	bmx_.ExpFlg = 1;		// Start Explosion
+	bmt_.MakFlg = 1;		// Start Smoke Trails
+	bmt_.FadFlg = 1;		//
 }
 
 //= MOVE OBJECTS ===============================================================
@@ -647,6 +663,7 @@ function moveObject() {
 	moveMoving();
 	moveFxdGun();				// Perform Targeting
 	moveAAAGun(aaf_,air_,gen_,tim_);
+	if (bom_.ExpFlg) moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_);
 }
 
 //- SHARED TEXTURES ------------//----------------------------------------------
@@ -1088,7 +1105,7 @@ function moveAirPln() {
 
 function loadSounds() {
 	loadMySong(air_,mys_,myg_,gen_); // My Airplane Sounds
-	loadObjSnd(xac_,xag_,xsg_,aaf_,gen_); // Object Sounds 
+	loadObjSnd(xac_,xag_,xsg_,aaf_,bom_,gen_); // Object Sounds 
 	gen_.LodSnd = 1;			//- Set Flag
 }
 
