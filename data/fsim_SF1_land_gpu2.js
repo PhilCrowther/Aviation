@@ -1,0 +1,821 @@
+﻿
+/********************************************************************************
+*
+*	FSIM SF1 DATA: 260617
+*
+*********************************************************************************
+
+This data is pre-loaded data into the program.
+Cannot reference three.js routines because three.js has not been loaded yet.
+
+INDEX TO VARIABLES
+
+	1. MAIN VARIABLES
+	   Constants
+	   Input Values					(gen_)
+	   Fad2Black					(f2b_)
+	2. SKY VARIABLES				(sky_)
+	3. LAND GRID VARIABLES
+		GRDWTR MODULE				(grd_)
+		ROADS MODULE				(rd0_,rd1_,rd2_)
+		TREES MODULE				(tre_)
+	4. OBJECT VARIABLES
+		SHARED TEXTURES				(txt_)
+		STATIC OBJECTS
+			Mountains/Islands		(mnt_)
+			Fixed Objects			(fxd_)
+		MOVING VEHICLES
+			Moving Airplanes		(xac_)
+			Moving Ships			(xsh_)
+		ANIMATED FLAG				(flg_)
+	    EFFECTS MODULE
+			Airplane Explosion		(xae_)
+	    	Volcano Smoke			(grs_)
+	    	Ground Fire				(grf_)
+	    	Airplane Smoke Trail	(xas_)
+	    	Airplane Fire Trail		(xaf_)
+	    	Ship Wakes				(wak_)
+		MYPEOPLE					(myp_)
+		MYCREW						(myc_)
+		MINIMUM ALTITUDE			(alt_)
+	5. MY AIRPLANE VARIABLES		(air_)
+		FLIGHT MODULE
+		ANIMFM2 MODULE				(anm_,mxr_,vxr_)
+	x. GUNASG MODULE
+			My Guns					(myg_)
+			Moving Airplanes		(xag_)
+			Moving Ships			(xsg_)
+			Fixed Guns				(aaf_)
+	6. SOUND VARIABLES
+		My Sounds					(mys_)
+		Radio Variables				(rad_)
+	7. CAMERA VARIABLES				(cam_)
+	8. OUTPUT VARIABLES
+	9. INPUT VARIABLES
+	   Pointer Lock Control
+*/
+
+/*******************************************************************************
+*
+*	VARIABLES
+*
+*******************************************************************************/
+
+//= 1. MAIN VARIABLES ==========//==============================================
+
+//- CONSTANTS ------------------//----------------------------------------------
+//	Conversions
+const DegRad = Math.PI/180;		// Convert Degrees to Radians
+const RadDeg = 180/Math.PI;		// Convert Radians to Degrees
+const Ft2Mtr = 0.3048;			// Convert Feet to Meters
+const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
+const Km2Mil = 0.621371;		// Kilometers to Miles
+const Mil2Km = 1.60934;			// Miles to Kilometers
+const MtrMil = 1609.34;			// Meters per Mile
+//	Environmental
+const GrvMPS = 9.80665; 		// Gravity (mps)
+const BegTmp = 288.15;			// K = 59F (loaded into _air)
+// These values could also be used by modules, but that would require that all 
+// module users also create a data file - which complicates the use of modules.
+
+//- GENERAL VARIABLES ----------//----------------------------------------------
+
+let gen_ = {
+		// General
+		scene:  0,				// Scene
+		render: 0,				// Renderer
+		camera: 0,				// Camera
+		imagLd: 0,				// Image Loader
+		txtrLd: 0,				// Texture Loader
+		cubeLd: 0,				// Cube Loader
+		gltfLd: 0,				// GLTF Loader
+		audoLd: 0,				// Audio Loader
+		listnr: 0,				// Audio Listener
+		// Flght Controls
+		PwrMul:	0.0005,			// Power % Input - Mouse Multiplier
+		PwrDif:	0,				// Power % Input - Value
+		InpBrk:	0,				// Brakes
+		//- Display
+		PawsOn:	0,				// Pause
+		InfoOn:	0,				// Info
+		SndFlg:	0,				// Sound (0 = off; 1 = on)
+		StatOn:	1,				// Stats (0 = off, 1 = on)
+		LnFFlg:	1,				// Lensflare
+		// Program Flags
+		LodFlg:	0,				// Set at end of initialization
+		LodSnd:	0,				// Set when sound initialized
+		MYGFlg:	0,				// My Guns (1 = firing)
+		// Altitude Adjustment
+		AltAdj:	0.99,			// Raises objects above map as altitude increases
+		AltDif:	0,
+		// Misc
+		contxt: 0,
+		canvas: 0,
+		MaxAni: 0,
+	}
+
+let tim_ = {
+		DLTime: 1/60,
+		DLTim2: 0,
+		GrvDLT: 0,
+		NowTim: 0,
+		DifTim: 0,
+	}
+
+//- Fade2Black Values -----------//----------------------------------------------
+//	If FadBeg > 0, Prop Invisible.
+//	Therefore, limit use to where Prop would be invisible.
+let f2b_ = {
+		Flr: 0.25,
+		Beg: 0.99,
+		End: 0.25,
+		Spd: 0.005,
+		Mat: 0,
+		Col: "black",
+		Msh: 0,
+	}
+
+//= 2. SKY VARIABLES ===========//==============================================
+let sky_ = {
+		// Sun
+		SunCol: "white",		// Sun
+		SunInt: 4,				// Use 4 to overcome darkness of DifTxt
+		// Fog
+		FogCol: 0xbab4a6,		// Sky (for Fog only)
+		// SkyBox
+		SBxSrc: "https://PhilCrowther.github.io/Aviation/textures/cube/skyboxsun25deg/",
+		envMap: 0,				// For this SkyBox
+		// Sun (position in SkyBox)
+		SunLat: 23,				// Sun Latitude  (Elevation) - Vertical (+/- 90) deg
+		SunLon: 312,			// Sun Longitude (Azimuth) - Horizontal (0->360) deg
+		//	LensFlare		
+		LF0Src: "https://PhilCrowther.github.io/Aviation/textures/fx/lensflare1.png",
+		LF1Src: "https://PhilCrowther.github.io/Aviation/textures/fx/lensflare3.png",
+		LF0Txt: 0,
+		LF1Txt: 0,
+		// Shadow Beg Info
+		SunDst: 50,				// Distance
+		ShdBox: 6,				// Size of shadow box
+		ShdBLR: 6.5,
+		ShdBTB: 4,
+		ShdDst: 1500,			// Shadow Distance (meters)
+		// Computed
+		SunSph: 0,
+		SunPos: 0,
+	}
+
+//= GRID MODULE ================//==============================================
+//	This Map has 3 nested grids of squares.
+//	Grid0 has 16x16 squares, each of size GrdSiz (e.g. 1 mile, range = 8 miles)
+//	Grid1 has 16x16 squares, each of size GrdSi*4z (e.g. 4 miles, range = 32 miles)
+//	Grid2 has 16x16 squares, each of size GrdSiz*16 (e.g. 16 miles, range = 128 miles))
+let grids = 0;
+let grd_ = {
+		SPS: 0,					// MSX, MPY, MSZ (meters) (from Flight)
+		RCs: 27,				// Squares in each of first 2 grids
+		Siz: 804.67,			// Size of smallest square (1/4 section = 1/2 mile)
+		Stp: 3,					// Squares in each of first 2 grids
+		Grx: [],				// Index of Grids (0-2)
+		Idx: [0],				// Index to Patterns
+		Mat: [0],				// Index to Materials
+		// Texture Modifiers
+		DfT: ["https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.jpg",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G3.jpg"],
+		DfM: [0.75,0.75],		// Darken outer grids to match inner grid [transition1G2]
+		// Road Textures
+		DfR: ["https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadV.jpg",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadH.jpg"],
+	}
+
+//= SHARED TEXTURES ============//==============================================
+let txt_ = {
+		ObjNum: 3,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
+		ObjTxt: [0,0,0],
+	};
+
+//= STATIC OBJECTS =============//==============================================
+//- Mountain -------------------//----------------------------------------------
+let mnt_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/giaros.glb"],
+		ObjTxt: ["https://PhilCrowther.github.io/Aviation/scenery/textures/giaros.jpg"],
+		ObjAdr: [],
+		ObjSiz: [0], 			// Scale (Vector3)
+		RndOrd: [0],			// renderOrder (not used)
+		ObjRot: [0],			// Rotation
+		MapPos: [0],			// Absolute Position
+		ObjGrp: [0],			// Group
+		AltMul: [0.99],			// Altitude Adjustment
+		VrtAdj: [-25]			// Vertical Adjustment
+	};
+//- Static Objects -------------//----------------------------------------------
+//- 0 = Hangar;
+let fxd_ = {
+		ObjNum: 1,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
+		ObjTxt: [0],
+		ObjAdr: [0],			// Loaded Object
+		ObjSiz: [Ft2Mtr],		// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [0],			// Rotation
+		MapPos: [0],			// Relative Position
+		ObjRef: [0],			// Parent
+		VrtAdj: [-mnt_.VrtAdj[0]] // Vertical Adjustment
+	};
+
+//= MOVING AIRPLANES ===========//==============================================
+let xac_ = {
+		ObjNum: 0,				// Number of airplanes
+		Parent: [0],			// 0 = not linked
+		ObjSrc: [0], 			// Model Source file
+		ObjTxt: [0],			// Texture Source File (not used)
+		ObjSiz: [0], 			// Scale
+		RndOrd: [0],			// renderOrder (not used)
+		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
+		AirRot: [0],			// Rotation (euler3)
+		AirObj: [0],			// Object Address
+		AirPBY: [0],			// Changes in radians
+		// Changes to Airplane Pitch Bank and Yaw
+		RotDif: [0],			// Change
+		// Airplane Speed
+		SpdKPH: [0],			// Speed in KPH
+		SpdMPS: [0],			// Speed (mtr/sec) (91.5 ms = 329 kph = 205 mph)
+		SpdMPF: [0],			// Speed - meters per frame
+		// Airplane Map Speed and Position
+		MapSpd: [0], 			// Map Speed (meters)
+		MapPos: [0], 			// Map Position (meters)
+		MapSPS: [0], 			// MSX, MPY, MSZ (meters)
+		// Basic Animations
+		ObjDst: [0],			// Object distance (meters) used to activate effects
+		MixSpn: [0],			// Animation Mixer - Prop
+		MixPit: [0],			// Animation Mixer - Pitch
+		AnmPit: [0],			// Animation
+		MixBnk: [0],			// Animation Mixer - Bank
+		AnmBnk: [0],			// Animation
+		// Engine Sounds
+		EngSrc: [0],			// Engine Sound Source
+		EngPtr: [0],			// Engine Object Address
+		EngMsh: [0],			// Engine Sound Address (Object3D)
+		EngVol: [0],			// Volume
+		// End Sequence
+		HitCnt: [0],			// Hits Taken
+		HitMax: 5,				// Hits Required
+		EndSeq: [0],			// End Sequence Flag
+		// End Sound
+		SndFlg: [0],			// 1 = Start Explosion Sound
+		SndSrc: 0,
+		SndPtr: [0],
+		SndVol: 15,				// Volume
+		SndMsh: [0],			// (Object3D)
+		SndDTm: [0],
+	};
+
+//. BFM ........................//..............................................
+let BnkMax = 65;
+let bfm_ = {
+		BFMflg: [0],			//
+		PosCut: 30,				// Cut-Off for Change from Max Turn to Intercept
+		// xac
+		MapDif: [0],			// Difference in Map Position (XYZ)
+		VecHrz: [0],			// Horizontal Vector
+		PosAbs: [0],			// Absolute Direction of Target
+		PosOff: [0],			// Intercept Angle (Pitch,Yaw,Bank)
+		RotOff: [0],			// Off-Angle (Pitch,Yaw,Bank)
+		// Maneuvers
+		ManTyp: [0],			// Type of Maneuver (1 = left turn, 2 = right turn, 3 = intercept)
+		BnkMax:	[0],			// Maximum Bank (+/-) - computed
+		// Target
+		Target: [0],			// If BFMflg set: Target (0 = my plane, 1 = xac[0], etc) ###260606
+	}
+
+//= SMOKE MODULE ===============//==============================================
+//- Vertical Smoke -------------//----------------------------------------------
+let grs_ = {
+		ObjNum: 1,				// Number of Smokes
+		// Shared Values		
+		ObjTxt: 1,				// Shared Texture Reference Number
+		ObjSiz: 4000,			// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Emitter Address
+		// Rotaton and Position
+		ObjRot: [0],			// Rotation (not used)
+		MapPos: [0], 			// Map Position
+		ObjRef: [0],			// Parent Object
+	};
+//- Ground Fire ----------------//----------------------------------------------
+let grf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		// Shared Values
+		ObjTxt: 0,				// Texture
+		ObjSiz: 40,				// Scale
+		// Smoke
+		SmkMat: [0],			// Material
+		SmkMsh: [0],			// Mesh
+		// Fire
+		FyrMat: [0],			// Material
+		FyrMsh: [0],			// Mesh
+		// Rotation and Position
+		ObjRot: [0],			// Rotation
+		MapPos: [0],			// Map Position
+		ObjRef: [0],			// Parent Object
+	};
+
+//= 5. MY AIRPLANE VARIABLES ===//==============================================
+let	flight = 0;
+let air_ = {
+		// General Variables
+		DLTime: tim_.DLTime,	// Seconds per frame (can vary)
+		GrvMPS: GrvMPS,			// Gravity (ups)
+		AirDSL: 0,				// Air Density (varies with altitude)
+		// Designators
+		AirDat: 0,				// Aircraft Type: 1 = Pup
+		// Airplane Rotation: Vertical Angle, Horizontal Angle, Bank Angle
+		AirRot: 0,				// Rotation (in degrees)
+		AirObj: 0,				// Airplane Object 
+		AirPBY: 0,				// Changes in radians
+		// Changes to Airplane Pitch Bank and Yaw
+		RotDif: 0,				// Change
+		// Airplane Speed
+		SpdKPH: 0,				// Speed in KPH
+		SpdMPS: 0,				// Speed - meters per second
+		SpdMPF: 0,				// Speed - meters per frame	
+		// Airplane Map Speed and Position
+		MapSpd: 0, 				// Map Speed (meters)
+		MapPos: 0, 				// Map Position (meters)
+		MapSPS: 0, 				// MSX, MPY, MSZ (meters)
+		// Variables Obtained from Flight
+		PwrPct: 0,				// % of Primary Power (0 to 1) (Main and Flight)
+		SupPct: 0,				// Percent of Supplemental Power (War Enmergency or Afterburner)
+		CfLift: 0,				// Coefficient of Lift (user input) - determines lift
+		CfFlap: 0,				// Coefficient of Lift due to flaps (user input)
+		FlpPct: 0,				// Percent of Flaps
+		LngPct: 0,				// Percent of Landing Gear
+		BrkPct: 0,				// Percent of Air Brakes
+		SplPct: 0,				// Percent of Spoiler
+		AGBank: 0,				// Aileron Bank on Ground
+		BrkVal: 0,				// Brakes
+		GrdZed: 0,				// Ground level (default)
+		GrdFlg: 0,				// Ground Flag (1 = on ground)
+		ACPAdj: 0,				// Airplane pitch adjustment
+		// Values for the Selected Airplane Type (obtained from Flight)
+		CfLMax: 0,				// Maximum Coefficient of Lift
+		FlpCfL: 0,				// Max Flap Cfl (0.2*CfLMax)
+		ACMass: 0,				// Airplane Mass
+		Weight: 0,				// Used by autopilots
+		PYBmul: 0, 				// Airplane Pitch/Yaw/Bank Multiplier
+		BnkMax: 0,				// Maximum bank rate
+		// AutoPilot - Additional Variables
+		AutoOn: 0,				// Autopilot Flag
+		InpKey: 0, 				// Inputs - Keys (replace InpKey)
+		OldRot: 0, 				// Old Rotation (z = radians)
+		CfLDif: 0,				// Change in CfL
+		MaxBnk: 0,				// Max Bank (display only)
+		HdgDif: 0,				// Horizontal Turn Rate (display only)
+		// Air Density and IAS Comps
+		BegTmp: BegTmp,			// Beginning Sea Level Temperature (K)
+		BegPrs: 1013.25,		// Beginning Sea Level Air Pressure (mB) - not used
+		SpdIAS: 0,				// Indicated Airspeed
+		// Ship Pitch and Bank
+		MovFlg: 0,				// If Sitting on Moving Ship
+		ShpPit: 0,
+		ShpBnk: 0,
+	}
+
+//= MY AIRPLANE ================//==============================================
+//- Load Models and Animations -------------------------------------------------
+//-	File Path
+let AirSrc = "https://PhilCrowther.github.io/Aviation/models/sf1/";	// Used to load models and sounds
+//-	Animation Mixers - External Model
+let mxrFNm = "sf1.glb"; // Name of aircraft exterior model file (rotated blender file)
+let vxrFNm = "sf1_int.glb"; // Name of airplane interior model file (rotated blender file)
+
+//- Pup Animations -------------------------------------------------------------
+let anmfps = 24;				// Blender FPS (used by Main Program and all modules (used by Objects.js)
+let anm_ = {
+		anmfps: anmfps,
+		spnprp: 180,			// SpinProp 	degrees = 0 to 360
+		rudder: 180,			// Rudder 		degrees = +/- 360
+		elvatr: 180,			// Elevator 	degrees = +/- 360
+		aillft: 180,			// AileronL 	degrees = +/- 360
+		ailrgt: 180,			// AileronR 	degrees = +/- 360
+		manprs: 0,				// Manifold Pressure
+		stkpit: 180,			// Joystick pitch
+		stkpcm: 0,				// cumulative
+		stkbnk: 180,			// Joystick bank
+		stkbcm: 0,				// cumulative
+		yawval: 180,			// Slip indicator
+		vchead: 0,				// Pilot head
+		gunval: 180,			// Gun value (0 to 360, stop at 180)
+		spnspn: 180,			// Spinner
+	}
+//	Animation Mixers - External Model
+let mxr_ = {
+		// Source
+		Src: AirSrc + mxrFNm,
+		// Address
+		Adr: 0,
+		// Prop,Rudder,Elevator,AilTopLft, AilTopRgt,AilBotLft,AilBotRgt,AilRodLft,AilRodRgt
+		Prp:0,Rdr:0,Elv:0,ATL:0,ATR:0,ABL:0,ABR:0,ARL:0,ARR:0,
+	}
+//	Animation Mixers - Internal Model
+let vxr_ = {
+		// Source
+		Src: AirSrc + vxrFNm,	// Model Address
+		// Address
+		Adr: 0,
+		// Prop,Rudder,Elevator,AilTopLft, AilTopRgt,AilBotLft,AilBotRgt,AilRodLft,AilRodRgt
+		Prp:0,Rdr:0,Elv:0,ATL:0,ATR:0,ABL:0,ABR:0,ARL:0,ARR:0,
+		// Compass,RudderBar,Ball,Gun
+		Cmp:0,Bar:0,Bal:0,Gun:0,
+		// ArmL(T),ArmR(PB),HandL(T),HandR(P),HandR(B)
+		ArL:0,ArR:0,HLT:0,HRP:0,HRB:0,
+		// LegLft,LegRgt,RudLft,RudRgt,Head
+		LgL:0,LgR:0,RdL:0,RdR:0,Hed:0,
+		// Spinner
+		Spn:0,
+	}
+
+//= GUNASG MODULE ==============//==============================================
+//	Lewis .303 caliber
+//	BulSpd = 744;				// Muzzle velocity [mps]
+//	BulDLT = 0.5;				// Bullet Maximum Time in Flight
+
+//- My Guns --------------------//----------------------------------------------
+let myg_ = {
+		// Data
+		BulSpd: 744,			// Muzzle Velocity (mps)
+		BulDLT: 0.5,			// Max Bullet Time in Flight
+		BulNum: 16,				// Number of Tracers
+		BulSpc: 0.125,			// Bullet Spacing (4*BulDLT/BulNum)
+		BulSp2: 0.125,			// Bullet Spacing - time remaining
+		// Appearance
+		BulClr: 0,				// Tracer Colors X2 (Vector2) Alternating
+		BulLen: 10,				// Tracer Length (meters)
+		BulWid: 5,				// Tracer Width - Line2
+		// Object
+		BulPtr: [0],			// Bullet Objects
+		BulMpS: [0],			// Bullet Speed
+		BulTim: [0],			// Bullet Time in Flight
+		// Sound
+		ObjNum: 2,				// Number of Barrels
+		ObjPos: [0,0],			// Position of Each Barrel
+		SndSrc: 0,				// File (my guns)
+		SndPtr: [0,0],			// For Each Gun
+		SndVol: 0.5,			// Volume
+		SndMsh: [0,0],			// For Each Gun
+		// HitBox
+		HitTgt: 1,				// Hit Target (1 = enemy airplane)
+		HitDst: 10,				// Hit Radius
+	}
+
+//- Moving Airplanes -----------//----------------------------------------------
+let xag_ = {
+		ObjNum: 4,
+		// Parent (use this instead of link because bullets not attached)
+		XACRot: [0,0,0,0],
+		XACPos: [0,0,0,0],
+		// Gun Object (Fixed Firing Forward)
+		// GunPtr = Airplane Object
+		GunPtr: [0,0,0,0],		// Not Used Yet
+		GunRot: [0,0,0,0],		// Gun Rotation (Euler degrees)
+		GunPos: [0,0,0,0],		// Map Position (Vector3)
+		// Bullet Data
+		BulFlg: [0,0,0,0],		// 1 = Guns Firing	
+		BulSpd: 887,			// Muzzle Velocity (mps)
+		BulDLT: 0.5,			// Max Bullet Time in Flight
+		BulNum: 16,				// Number of Tracers
+		BulSpc: 0.125,			// Bullet Spacing (4*BulDLT/BulNum)
+		BulSp2: [0.125,0.125,0.125,0.125],	// Bullet Spacing - time remaining
+		// Bullet Colors and Opacity
+		BulClr: 0,				// Red (Vector2)
+		BulOpa: 0.8,
+		// Bullets for each gun
+		BulPtr: [[],[],[],[]],	// Bullet Objects
+		BulMpS: [[0],[0],[0],[0]],	// Bullet Map Speed (V3)
+		BulMpP: [[0],[0],[0],[0]],	// Bullet Map Position (V3)
+		BulTim: [[],[],[],[]],	// Bullet Time in Flight
+		// Gun Sounds
+		SndSrc: [0,0,0,0],		// File (my guns)
+		SndPtr: [0,0,0,0],
+		SndVol: [0.5,0.5,0.5,0.5],	// Volume
+		SndMsh: [0,0,0,0],		// (makMsh)
+		// Timer
+		TimMax: [0,120,120,120],	// Time On (frames)
+		TimMin: [0,-600,-600,-600],	// Time Off (frames)
+		TimFlg: [0,120,120,120],	// Timer (pos = On, neg = Off)
+	};
+
+//- Moving Ships ---------------//----------------------------------------------
+let xsg_ = {
+		ObjNum: 0,
+	}
+
+//- Fixed Guns -----------------//----------------------------------------------
+//	Same variable used for Ship Guns
+let aaf_ = {
+		ObjNum: 2,
+		// Parent (use this instead of link because bullets not attached)
+		ParPos: 0,				// Optional: Common Parent Position (Vector3)
+		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
+		// Gun Data 
+		GunPos: [],				// Map Position (Vector3)
+		GunRot: [],				// Gun Rotation - degrees (Euler)
+		// Optional: Gun Object
+		GunSrc: 0,				// Source of Gun Object File
+		GunPtr: [0],			// Destination of Gun Object ([0] = No Object)
+		ActLon: 0,				// Gun Object Animations
+		ActLat: 0,
+		AnmLon: 0,
+		AnmLat: 0,
+		GunAdj: 0,				// Gun Height Adjustment
+		// Optional: Targeting
+		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
+		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
+		// Bullet Data
+		AAAFlg: [],				// 1 = Gun Firing
+		AAASpd: 0,				// Muzzle Velocity - mps (e.g. 850)
+		AAADLT: 0,				// Max Bullet Time in Flight (e.g. 4.0)
+		AAANum: 0,				// Number of Tracers (e.g. 16)
+		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum) (e.g. 1)
+		AAASp2: [],				// Bullet Spacing - time remaining
+		// Bullet Colors and Opacity
+		AAACol: 0,				// Colors (Vector2)
+		AAAOpa: 0.5,			// Starting Opacity
+		// Bullets for each gun (array with sub-array defined in main program)
+		AAAPtr: 0,				// Bullet Objects
+		AAAMpS: 0,				// Bullet Map Speed (Vector3)
+		AAAMpP: 0,				// Bullet Map Position (Vector3)	
+		AAATim: 0,				// Bullet Time in flight
+		// Smoke
+		SmkFlg: [],				// 1 = Start Smoke
+		SmkMap: 2,				// Shared Texture Reference Number - default
+		SmkMat: [],				// Smoke Material
+		SmkPtr: [],				// Smoke Sprite
+		SmkRot: [],				// Z-rotation of smoke
+		SmkMpP: [],				// Map Position (Vector3)
+		SmkDMx: [],				// Delay between Smoke events - seconds
+		SmkDTm: [],				// Delay Counter
+		SmkOpR:	0.005,			// Opacity Reduction per Frame
+		// Smoke Sounds
+		SndFlg: [],				// 1 = Start Explosion Sound
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: [],
+		SndVol: 15,				// Volume - default
+		SndMsh: [],				// (Object3D)
+		SndDTm: [],
+		// Explosion
+		ExpPtr: [],				// Pointer to Exploding Center
+		ExpSiz: [],				// Expanding Size
+		ExpLif: [],				// Life of Explosion (seconds)	
+	};
+
+//= BOMB DATA ==================//==============================================
+
+//- Bomb -----------------------//----------------------------------------------
+let bom_ = {
+		SmkSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
+		SmkMap: 0,				// Smoke Shape
+		ExpGrp: 0,				// Group
+		ExpFlg: 0,				// Explosion Happening
+		// Sounds
+		SndFlg: 1,				// 1 = Sound Ready to be Triggered
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: 0,
+		SndMsh: 0,				// Object3D
+		SndDTm: 0,				// Delay Time
+		SndRTm: 0,				// Remaining Time
+	}
+
+//- Bomb Geometry --------------//----------------------------------------------
+let bmx_ = {
+		ExpGeo: new THREE.SphereGeometry(1,32,16),
+		ExpMat: new THREE.MeshBasicNodeMaterial({colorNode:color("orange"),transparent:true,opacity:1}),
+		ExpMsh: 0,
+		ExpFlg: 1,
+		ExpSiz: 0,				// Explosion Size
+		BegSiz: 0.001,			// Beginning Size
+		MaxSiz: 30,				// Maximum Size
+		ExpOpa: 1,
+	};
+//- Adjustments
+	bmx_.ExpSiz = bmx_.BegSiz;
+
+//- Bomb Smoke Trails ----------//----------------------------------------------
+let bmt_ = {
+		// Material
+		SmkMat:	new THREE.SpriteNodeMaterial(),	// Smoke Material
+		SmkRot: 90,				// Rotation of Next Sprite Material
+		BegOpa: 0.75,			// Opacity
+		// Spacing
+		SmkSpc:	1,				// Spacing Between Sprites (Integer)
+		SpcCnt: 0,				// Spacing Counter
+		// Flags
+		MakFlg:	1,				// Generating Smoke Trail
+		FadFlg: 1,				// Fading
+		SmkMul:	150,			// Smoke Fade Multiplier (0 = no fade; default = 500)
+		FadTim:	0,				// Fade Time
+		// Sprites// Size of Next Sprite
+		SmkNum: 100,			// Nuumber of Sprites
+		SmkIdx: 0,				// Index to Sprites
+		SmkMax: 30,				// Beg Size of Sprites
+		SmkSiz: 0,				// Size of Next Sprite
+		SmkTim: 0,				// Total Time in Flight (sec)
+		// Multiple
+		Trails: 3,
+		SmkSpr: [[],[],[]],		// Sprite Addresses
+		SmkVec:	[				// Smoke Vector: Lat (deg),Lon (deg), Speed (m/s)
+			new THREE.Vector3(50,  0,100),
+			new THREE.Vector3(60,105,95),
+			new THREE.Vector3(55,220,90)
+		],
+		SmkSpd:	[new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()], // m/s (no gravity)
+		SmkPos:	new THREE.Vector3(0,0,0),
+		SmkOff:	[new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)],
+		SmkRnd:	[new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)],
+	};
+//-	Adjustments
+	bmt_.FadTim = bmt_.BegOpa*bmt_.SmkMul; // Fade Time
+	bmt_.SmkSiz = bmt_.SmkMax;	// Size of Next Sprite
+
+//- Bomb Smoke -----------------//----------------------------------------------
+let bms_ = {
+		SmkSpr: 0,				// Sprite Address
+		MaxSiz: 40,				// Beginning Size
+		RemSiz: 40,				// Remaining Size
+		GroFlg: 0,				// Grow Smoke (after first use)
+	}
+
+//=	MY SOUNDS ==================//==============================================
+let mys_ = {
+		AirMsh:	0,				// For Engine and Prop
+		// Engine Sound - Idle
+		IdlSrc: AirSrc + "sounds/xrpm1.wav",
+		IdlSnd: 0,				// Address
+		IdlVol: 0.5,			// Volume
+		// Engine Sound	
+		EngSrc: AirSrc + "sounds/xrpm2.wav",
+		EngSnd: 0,				// Address
+		EngVol: 0.5,			// Volume
+	}
+
+//= CAMERA =====================//===============================================
+let cam_ = {
+		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
+		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
+		Parent: 0,				// Object holding camera (0 = air_.AirPBY, 1 = xac_.AirObj[0], etc ###260607
+		// Camera
+		CamLLD: 0, 				// cam_.MshRot Lat, Lon, Dst
+		CamAdj: 0,				// Camera Adjustment (180 = look in)
+		CamMMD: 0,				// In/Out - min,max,spd
+		// Rotator
+		MshRot: 0,				// Camera Rotator
+		CamMMR: 0,				// Rotate - min/max Lat/Lon,rspd
+		// Center of Rotation
+		CamPar: 0,				// Center of Rotation	
+		CamFlg: 0,				// View Flag (0 = External, 1 = Internal)
+		// Linked Airplane
+		CamLnk: 0,
+		MshObj: 0,
+		MshDeg: 0,
+		//- Camera Vertical Lag
+		LagFlg: 0,				// 1 = Enable
+		CmAdjX: 0,				// Airborne Pitch Adjustment
+		CmMulX: 35,				// Pitch Adjustment Multiplier
+		CmLagX: 0,				// Transition Offset
+		CmGrdF: 0,				// Camera Ground Flag (1 = On Ground)
+		// Beginning Head Rotation
+		VewRot: 0,
+		//- Source
+		SrcLLD: [0,0],
+		SrcMMD: [0,0],
+		SrcMMR: [0,0],
+		SrcPar: [0,0],
+		SrcAdj: [180,0],
+		SrcFlg: [0,1],			// 1 = Internal View
+		SrcLnk: [1,1],			// 1 = Linked to Airplane	
+	}
+
+//= 8. OUTPUT VARIABLES ========//==============================================
+//- Note: Must be Listed in HTML Header
+
+//- HTML OVERLAY TEXT ----------//----------------------------------------------
+let Air_PwrElement = document.getElementById("Air_Pwr"); // Power
+let Air_PwrNode = document.createTextNode("");
+	Air_PwrElement.appendChild(Air_PwrNode);
+let Air_SpdElement = document.getElementById("Air_Spd"); // Speed
+let Air_SpdNode = document.createTextNode("");
+	Air_SpdElement.appendChild(Air_SpdNode);
+let Air_AltElement = document.getElementById("Air_Alt"); // Altitude
+let Air_AltNode = document.createTextNode("");
+	Air_AltElement.appendChild(Air_AltNode);
+let Air_BnkElement = document.getElementById("Air_Bnk"); // Bank ###260608
+let Air_BnkNode = document.createTextNode("");
+	Air_BnkElement.appendChild(Air_BnkNode);
+let Air_HdgElement = document.getElementById("Air_Hdg"); // Heading
+let Air_HdgNode = document.createTextNode("");
+	Air_HdgElement.appendChild(Air_HdgNode);
+let Air_CfLElement = document.getElementById("Air_CfL"); // CfLift
+let Air_CfLNode = document.createTextNode("");
+	Air_CfLElement.appendChild(Air_CfLNode);		
+let Air_GFmElement = document.getElementById("Air_GFm"); // GFmult
+let Air_GFmNode = document.createTextNode("");
+	Air_GFmElement.appendChild(Air_GFmNode);
+let On_PawsElement = document.getElementById("On_Paws"); // Pause
+let On_PawsNode = document.createTextNode("");
+	On_PawsElement.appendChild(On_PawsNode);
+let Air_AtPElement = document.getElementById("Air_AtP"); // Autopilot
+let Air_AtPNode = document.createTextNode("");
+	Air_AtPElement.appendChild(Air_AtPNode);
+let On_Inf0Element = document.getElementById("On_Inf0"); // Info
+let On_Inf0Node = document.createTextNode("");
+	On_Inf0Element.appendChild(On_Inf0Node);
+let On_Inf1Element = document.getElementById("On_Inf1");
+let On_Inf1Node = document.createTextNode("");
+	On_Inf1Element.appendChild(On_Inf1Node);
+let On_Inf2Element = document.getElementById("On_Inf2");
+let On_Inf2Node = document.createTextNode("");
+	On_Inf2Element.appendChild(On_Inf2Node);
+let On_Inf3Element = document.getElementById("On_Inf3");
+let On_Inf3Node = document.createTextNode("");
+	On_Inf3Element.appendChild(On_Inf3Node);
+let On_Inf4Element = document.getElementById("On_Inf4");
+let On_Inf4Node = document.createTextNode("");
+	On_Inf4Element.appendChild(On_Inf4Node);
+let On_Inf5Element = document.getElementById("On_Inf5");
+let On_Inf5Node = document.createTextNode("");
+	On_Inf5Element.appendChild(On_Inf5Node);
+let On_Inf6Element = document.getElementById("On_Inf6");
+let On_Inf6Node = document.createTextNode("");
+	On_Inf6Element.appendChild(On_Inf6Node);
+let On_Inf7Element = document.getElementById("On_Inf7");
+let On_Inf7Node = document.createTextNode("");
+	On_Inf7Element.appendChild(On_Inf7Node);
+let On_Inf8Element = document.getElementById("On_Inf8");
+let On_Inf8Node = document.createTextNode("");
+	On_Inf8Element.appendChild(On_Inf8Node);
+let On_Inf9Element = document.getElementById("On_Inf9");
+let On_Inf9Node = document.createTextNode("");
+	On_Inf9Element.appendChild(On_Inf9Node);
+//
+let Air_Pwr,Air_Spd,Air_Alt,Air_Bnk,Air_Hdg,Air_CfL,Air_GFm;
+let On_Paws,Air_AtP;
+let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
+
+//= 9. INPUT VARIABLES =========//==============================================
+
+//- DEFAULT KEY BINDINGS -------//----------------------------------------------
+let key_ = {
+		PwLU:	87,				// Power Up (w) - keyboard left
+		PwLD:	81,				// Power Down (q) - keyboard left
+		PwRU:	187,			// Power Up (=) - keyboard right
+		PwRD:	189,			// Power Down (-) - keyboard right
+		BnkL:	37,				// Bank Left (left arrow) - autopilot only
+		BnkR:	39,				// Bank Right (right arrow) - autopilot only
+		PitU:	40,				// Pitch up (down arrow) - autopilot only
+		PitD:	38,				// Pitch down (up arrow) - autopilot only
+		YwLL:	90,				// Yaw Left (z) - keyboard left
+		YwLR:	88,				// Yaw Left (x) - keyboard left
+		YwRL:	188,			// Yaw Left (,) - keyboard right
+		YwRR:	190,			// Yaw Left (.) - keyboard right
+		Brak:	66,				// Brakes (b)
+		Guns:	32,				// Guns (spacebar)
+		//	View
+		Look:	16,				// Pan (shift)
+		// View Keys (Keypad Num Lock)
+		KPad:	0,				// 1 = Using KeyPad
+//		VR45:	105,			// [9] Right 45 deg
+//		VU45:	104,			// [8] View Up 45 deg
+//		VL45:	103,			// [7] Left 45 deg (315 deg)
+//		VR90:	102,			// [6] Right 90 deg
+//		VD45:	101,			// [5] View Down or Back 45 deg
+//		VL90:	100,			// [4] Left 90 deg (270 deg)
+//		VRBk:	99,				// [3] Right Back (135 deg)
+//		VCBk:	98,				// [2] Center Back (180 deg)
+//		VLBk:	97,				// [1] Left Back (225 deg)
+		// Views (Override Keypad)
+		VR45:	45,				// [INS] Right 45 degrees 
+		VU45:	36,				// [HM]  View Up (alone or modifier)
+		VL45:	33,				// [PU]  Left 45 degrees
+		VR90:	46,				// [DEL] Right 90 degrees
+		VD45:	35,				// [END] View Down (alone or modifier)
+		VL90:	34,				// [PD]  Left 90 degrees
+		//	Toggle
+		Paws:	80,				// Pause (p)
+		View:	86,				// Toggle Visibility (v)
+		Next:	78,				// Camera to Next Object (n) ###260607
+		Soun:	83,				// Toggle sound (s)
+		Auto:	65,				// Autopilot (a)
+		Info:	73,				// Info (i)
+		// Flags
+		U45flg:	0,				// Up 45 degrees
+		D45flg:	0,				// Down 45 degrees
+		L45flg:	0,				// Left 45 degrees
+		R45flg:	0,				// Right 45 degrees
+		L90flg:	0,				// Left 90 degrees
+		R90flg:	0,				// Right 90 degrees
+};
