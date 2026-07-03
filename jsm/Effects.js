@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Jul 2026
+Version dated 3 Jul 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -48,6 +48,7 @@ import {
 	BackSide,
 	BufferGeometry,
 	Euler,
+	Group,
 	Line,
 	LineBasicNodeMaterial,
 	Line2NodeMaterial,
@@ -64,7 +65,6 @@ import {
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
-
 import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 'three/tsl';
 
 /*******************************************************************************
@@ -589,10 +589,10 @@ function moveAAAGun(aag_,air_,gen_,tim_) {
 	// Play Sound With Delay
 	for (let n = 0; n < aag_.ObjNum; n ++) {
 		// Start Delay
-		if (aag_.SmkFlg[n]) { // Start Countdown
+		if (aag_.SmkFlg[n]) { // Compute Delay and Start Countdown
 			let X = aag_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
 			let Z = aag_.SmkPtr[n].position.z;
-			let delay = (Math.sqrt(X*X+Z*Z)/343);
+			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
 			if (delay > (aag_.SmkDMx[n]-1)) delay = (aag_.SmkDMx[n]-1); // Avoid overlap issues
 			aag_.SndDTm[n] = delay;	
 		}
@@ -1127,17 +1127,35 @@ function loadExpBom(bom_,gen_) {
 
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_) {
+	bom_.ExpGrp = new Group();
+	bom_.SndMsh = new Object3D();
+	bom_.SndFlg = 1;		// 1 = Sound Active
+	bom_.SndDTm = 0;
 	initBomExp(bmx_,bom_);
 	initBomSmT(bmt_,bom_);
 	initBomSmk(bms_,bom_);
-
 }
 
 //= MOVE BOMB ==================//==============================================
-function moveExpBom(bom_,bmx_,bmt_,bms_,tim_) {
+function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_) {
 	moveBomExp(bmx_);
 	moveBomSmT(bmt_,tim_);
 	moveBomSmk(bms_,bom_);
+	// Sound
+	if (gen_.SndFlg && bom_.SndFlg) {
+		// Start Sound (No Delay)
+		if (!bom_.SndRTm) {
+			bom_.SndPtr.play();
+			bom_.SndRTm = 5 / tim_.DLTime;
+		}
+		// Copntinue Sound
+		if (bom_.SndRTm) bom_.SndRTm--;
+		// Stop Sound
+		if (bom_.SndRTm <= 0) {
+			bom_.SndPtr.stop();
+			bom_.SndFlg = 0;
+		}
+	}	
 }
 
 /*******************************************************************************
@@ -1403,4 +1421,5 @@ export {
 260612: Add Ending Sequence
 260614: Text Bullets for Hits Only if Moving
 260702:	Add Bomb Subroutines
+260703: Add Bomb Sounds
 */

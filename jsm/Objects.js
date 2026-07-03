@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Jun 2026
+Version dated 3 Jul 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -526,7 +526,7 @@ function moveMyCrew(myc_) {
 
 //= LOAD SOUNDS =================================================================
 
-function loadObjSnd(xac_,xag_,xsg_,aaf_,gen_) {
+function loadObjSnd(xac_,xag_,xsg_,aaf_,bom_,gen_) {
 	let RefDst = 25;			// Reference distance for Positional Audio
 	// Load XAC Sounds ..........................................................
 	// XP Engines
@@ -577,6 +577,13 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,gen_) {
 			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
 		});	
 	}
+	// Load Bomb Sound (Only 1 For Now)
+	bom_.SndPtr = new PositionalAudio(gen_.listnr);
+	gen_.audoLd.load(bom_.SndSrc, function(buffer) {
+		bom_.SndPtr.setBuffer(buffer);
+		init1Sound(bom_.SndPtr,RefDst,0,1,0,bom_.SndMsh);		
+		bom_.ExpGrp.add(bom_.SndMsh);
+	});	
 }
 
 //- Positional Audio
@@ -673,4 +680,5 @@ export {loadMountn,initMountn,moveMountn,
 260521: Change xac_.ObjAdr to xac_.AirObj
 260529: Only attach fxd to other object if !ref
 260617:	Mountain/Island scale is now a Vector3 value, allowing adjustment of height
+260703: Load Bomb Sound
 */
