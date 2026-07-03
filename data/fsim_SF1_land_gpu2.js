@@ -593,9 +593,9 @@ let bom_ = {
 
 //- Bomb Geometry --------------//----------------------------------------------
 let bmx_ = {
-		ExpGeo: new THREE.SphereGeometry(1,32,16),
-		ExpMat: new THREE.MeshBasicNodeMaterial({colorNode:color("orange"),transparent:true,opacity:1}),
-		ExpMsh: 0,
+		ExpGeo: 0,				// Loaded by Effects
+		ExpMat: 0,				// Loaded by Effects
+		ExpMsh: 0,				// Loaded by Effects
 		ExpFlg: 1,
 		ExpSiz: 0,				// Explosion Size
 		BegSiz: 0.001,			// Beginning Size
@@ -608,7 +608,7 @@ let bmx_ = {
 //- Bomb Smoke Trails ----------//----------------------------------------------
 let bmt_ = {
 		// Material
-		SmkMat:	new THREE.SpriteNodeMaterial(),	// Smoke Material
+		SmkMat:	0,				// Smoke Material (loaded by Effects)
 		SmkRot: 90,				// Rotation of Next Sprite Material
 		BegOpa: 0.75,			// Opacity
 		// Spacing
@@ -628,15 +628,11 @@ let bmt_ = {
 		// Multiple
 		Trails: 3,
 		SmkSpr: [[],[],[]],		// Sprite Addresses
-		SmkVec:	[				// Smoke Vector: Lat (deg),Lon (deg), Speed (m/s)
-			new THREE.Vector3(50,  0,100),
-			new THREE.Vector3(60,105,95),
-			new THREE.Vector3(55,220,90)
-		],
-		SmkSpd:	[new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()], // m/s (no gravity)
-		SmkPos:	new THREE.Vector3(0,0,0),
-		SmkOff:	[new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)],
-		SmkRnd:	[new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)],
+		SmkVec:	[],				// Smoke Vector: Lat (deg),Lon (deg), Speed (m/s)
+		SmkSpd:	[], // m/s (no gravity)
+		SmkPos:	,
+		SmkOff:	[],
+		SmkRnd:	[],
 	};
 //-	Adjustments
 	bmt_.FadTim = bmt_.BegOpa*bmt_.SmkMul; // Fade Time
