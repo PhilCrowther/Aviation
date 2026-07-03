@@ -28,8 +28,8 @@ INDEX TO VARIABLES
 			Moving Airplanes		(xac_)
 			Moving Ships			(xsh_)
 		ANIMATED FLAG				(flg_)
-		AIRPLANE EXPLOSION			(xae_)
-	    SMOKE MODULE
+	    EFFECTS MODULE
+			Airplane Explosion		(xae_)
 	    	Volcano Smoke			(grs_)
 	    	Ground Fire				(grf_)
 	    	Airplane Smoke Trail	(xas_)
@@ -573,6 +573,78 @@ let aaf_ = {
 		ExpSiz: [],				// Expanding Size
 		ExpLif: [],				// Life of Explosion (seconds)	
 	};
+
+//= BOMB DATA ==================//==============================================
+
+//- Bomb -----------------------//----------------------------------------------
+let bom_ = {
+		SmkSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
+		SmkMap: 0,				// Smoke Shape
+		ExpGrp: 0,				// Group
+		ExpFlg: 0,				// Explosion Happening
+		// Sounds
+		SndFlg: 1,				// 1 = Sound Ready to be Triggered
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndPtr: 0,
+		SndMsh: 0,				// Object3D
+		SndDTm: 0,				// Delay Time
+		SndRTm: 0,				// Remaining Time
+	}
+
+//- Bomb Geometry --------------//----------------------------------------------
+let bmx_ = {
+		ExpGeo: 0,				// Loaded by Effects
+		ExpMat: 0,				// Loaded by Effects
+		ExpMsh: 0,				// Loaded by Effects
+		ExpFlg: 1,
+		ExpSiz: 0,				// Explosion Size
+		BegSiz: 0.001,			// Beginning Size
+		MaxSiz: 30,				// Maximum Size
+		ExpOpa: 1,
+	};
+//- Adjustments
+	bmx_.ExpSiz = bmx_.BegSiz;
+
+//- Bomb Smoke Trails ----------//----------------------------------------------
+let bmt_ = {
+		// Material
+		SmkMat:	0,				// Smoke Material (loaded by Effects)
+		SmkRot: 90,				// Rotation of Next Sprite Material
+		BegOpa: 0.75,			// Opacity
+		// Spacing
+		SmkSpc:	1,				// Spacing Between Sprites (Integer)
+		SpcCnt: 0,				// Spacing Counter
+		// Flags
+		MakFlg:	1,				// Generating Smoke Trail
+		FadFlg: 1,				// Fading
+		SmkMul:	150,			// Smoke Fade Multiplier (0 = no fade; default = 500)
+		FadTim:	0,				// Fade Time
+		// Sprites// Size of Next Sprite
+		SmkNum: 100,			// Nuumber of Sprites
+		SmkIdx: 0,				// Index to Sprites
+		SmkMax: 30,				// Beg Size of Sprites
+		SmkSiz: 0,				// Size of Next Sprite
+		SmkTim: 0,				// Total Time in Flight (sec)
+		// Multiple
+		Trails: 3,
+		SmkSpr: [[],[],[]],		// Sprite Addresses
+		SmkVec:	[],				// Smoke Vector: Lat (deg),Lon (deg), Speed (m/s)
+		SmkSpd:	[], // m/s (no gravity)
+		SmkPos:	0,
+		SmkOff:	[],
+		SmkRnd:	[],
+	};
+//-	Adjustments
+	bmt_.FadTim = bmt_.BegOpa*bmt_.SmkMul; // Fade Time
+	bmt_.SmkSiz = bmt_.SmkMax;	// Size of Next Sprite
+
+//- Bomb Smoke -----------------//----------------------------------------------
+let bms_ = {
+		SmkSpr: 0,				// Sprite Address
+		MaxSiz: 40,				// Beginning Size
+		RemSiz: 40,				// Remaining Size
+		GroFlg: 0,				// Grow Smoke (after first use)
+	}
 
 //=	MY SOUNDS ==================//==============================================
 let mys_ = {
