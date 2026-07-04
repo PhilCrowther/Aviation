@@ -1128,10 +1128,8 @@ function loadExpBom(bom_,gen_) {
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_) {
 	bom_.ExpGrp = new Group();
-	bom_.ExpGrp.visible = false; // Hide Smoke Emitter
-	bom_.ExpGrp.position.y = -10000; // Hide Smoke Emitter
 	bom_.SndMsh = new Object3D();
-	bom_.SndFlg = 1;		// 1 = Sound Available
+	bom_.SndFlg = 1;		// 1 = Sound Active
 	bom_.SndDTm = 0;
 	initBomExp(bmx_,bom_);
 	initBomSmT(bmt_,bom_);
@@ -1338,7 +1336,7 @@ function moveBomSmk(bms_,bom_) {
 
 	// Expand Quickly
 	if (bms_.GroFlg) {
-		bms_.RemSiz = bms_.RemSiz + bms_.SizeBg; // (default = 0.175)
+		bms_.RemSiz = bms_.RemSiz + 0.175; // (default = 0.175)
 		if (bms_.RemSiz > bms_.MaxSiz) {
 			bms_.RemSiz = bms_.MaxSiz;
 			bms_.GroFlg = 0;
@@ -1346,11 +1344,12 @@ function moveBomSmk(bms_,bom_) {
 	}
 	// Contract Slowly
 	if (!bms_.GroFlg) {
-		bms_.RemSiz = bms_.RemSiz - bms_.SizeDn; // (default = 0.01; test = 0.05))
+		bms_.RemSiz = bms_.RemSiz - 0.01; // (default = 0.01; test = 0.05)
 		if (bms_.RemSiz < 1) {
 			bms_.RemSiz = 1;
 			bms_.GroFlg = 1;	// Grow Next Time
 			bom_.ExpFlg = 0;	// End Entire Explosion
+			scene.remove(bom_.ExpGrp);
 		}
 	}
 	bms_.SmkSpr.scale.setScalar(bms_.RemSiz);
