@@ -1126,10 +1126,11 @@ function loadExpBom(bom_,gen_) {
 }
 
 //= INIT BOMB ==================//==============================================
-function initExpBom(bom_,bmx_,bmt_,bms_) {
+function initExpBom(bom_,bmx_,bmt_,bms_,gen) {
 	bom_.ExpGrp = new Group();
+	gen_.scene.add(bom_.ExpGrp);
 	bom_.SndMsh = new Object3D();
-	bom_.SndFlg = 1;		// 1 = Sound Active
+	bom_.SndFlg = 1;		// 1 = Sound Available
 	bom_.SndDTm = 0;
 	initBomExp(bmx_,bom_);
 	initBomSmT(bmt_,bom_);
