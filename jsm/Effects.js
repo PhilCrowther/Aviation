@@ -1129,6 +1129,8 @@ function loadExpBom(bom_,gen_) {
 function initExpBom(bom_,bmx_,bmt_,bms_,gen) {
 	bom_.ExpGrp = new Group();
 	gen_.scene.add(bom_.ExpGrp);
+	bom_.ExpGrp.visible = false; // Hide Smoke Emitter
+	bom_.ExpGrp.position.y = -10000; // Hide Smoke Emitter
 	bom_.SndMsh = new Object3D();
 	bom_.SndFlg = 1;		// 1 = Sound Available
 	bom_.SndDTm = 0;
