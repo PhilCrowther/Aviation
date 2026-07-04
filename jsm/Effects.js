@@ -1126,7 +1126,7 @@ function loadExpBom(bom_,gen_) {
 }
 
 //= INIT BOMB ==================//==============================================
-function initExpBom(bom_,bmx_,bmt_,bms_,gen) {
+function initExpBom(bom_,bmx_,bmt_,bms_,gen_) {
 	bom_.ExpGrp = new Group();
 	gen_.scene.add(bom_.ExpGrp);
 	bom_.ExpGrp.visible = false; // Hide Smoke Emitter
