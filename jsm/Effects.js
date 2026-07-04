@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Jul 2026
+Version dated 4 Jul 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1339,7 +1339,7 @@ function moveBomSmk(bms_,bom_) {
 
 	// Expand Quickly
 	if (bms_.GroFlg) {
-		bms_.RemSiz = bms_.RemSiz + 0.175;
+		bms_.RemSiz = bms_.RemSiz + bms_.SizeBg; // (default = 0.175)
 		if (bms_.RemSiz > bms_.MaxSiz) {
 			bms_.RemSiz = bms_.MaxSiz;
 			bms_.GroFlg = 0;
@@ -1347,7 +1347,7 @@ function moveBomSmk(bms_,bom_) {
 	}
 	// Contract Slowly
 	if (!bms_.GroFlg) {
-		bms_.RemSiz = bms_.RemSiz - 0.05; // TEST (default = 0.01)
+		bms_.RemSiz = bms_.RemSiz - bms_.SizeDn; // (default = 0.01; test = 0.05))
 		if (bms_.RemSiz < 1) {
 			bms_.RemSiz = 1;
 			bms_.GroFlg = 1;	// Grow Next Time

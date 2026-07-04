@@ -5,7 +5,7 @@
 *********************************************************************************
 Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Jul 2026
+Version dated 4 Jul 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -577,13 +577,15 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,bom_,gen_) {
 			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
 		});	
 	}
-	// Load Bomb Sound (Only 1 For Now)
-	bom_.SndPtr = new PositionalAudio(gen_.listnr);
-	gen_.audoLd.load(bom_.SndSrc, function(buffer) {
-		bom_.SndPtr.setBuffer(buffer);
-		init1Sound(bom_.SndPtr,RefDst,0,1,0,bom_.SndMsh);		
-		bom_.ExpGrp.add(bom_.SndMsh);
-	});	
+	// Load Bomb Sound (Only 1 for Now)
+	if (bom_.ObjNum) {
+		bom_.SndPtr = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(bom_.SndSrc, function(buffer) {
+			bom_.SndPtr.setBuffer(buffer);
+			init1Sound(bom_.SndPtr,RefDst,0,1,0,bom_.SndMsh);		
+			bom_.ExpGrp.add(bom_.SndMsh);
+		});
+	}
 }
 
 //- Positional Audio
