@@ -1325,7 +1325,7 @@ function initBomSmk(bms_,bom_) {
 		bms_.SmkMsh.scale.setScalar(bms_.RemSiz);
 		bms_.SmkMsh.isInstancedMesh = true;
 		bms_.SmkMsh.count = 1000;
-		bom_.SmkMsh.renderOrder = 1;
+		bms_.SmkMsh.renderOrder = 1;
 		bom_.ExpGrp.add(bms_.SmkMsh);
 }
 
