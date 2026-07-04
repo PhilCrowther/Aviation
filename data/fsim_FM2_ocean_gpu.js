@@ -901,6 +901,7 @@ let aaf_ = {
 
 //- Bomb -----------------------//----------------------------------------------
 let bom_ = {
+		ObjNum: 0,				// Number of Bomb Explosions Required
 		SmkSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
 		SmkMap: 0,				// Smoke Shape
 		ExpGrp: 0,				// Group
@@ -967,6 +968,8 @@ let bms_ = {
 		MaxSiz: 40,				// Beginning Size
 		RemSiz: 40,				// Remaining Size
 		GroFlg: 0,				// Grow Smoke (after first use)
+		RateSm: 0.01,			// Rate of Size Decrease
+		RateBg: 0.175,			// Rate of Size Increase
 	}
 
 //- 6. SOUND VARIABLES =========//==============================================
