@@ -1320,12 +1320,13 @@ function initBomSmk(bms_,bom_) {
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
 	//	Depth Write
 		smokeNodeMaterial.depthWrite = false;
-	//-	Sprites ----------------------------------------------------------------
-		bms_.SmkSpr = new Sprite(smokeNodeMaterial);
-		bms_.SmkSpr.scale.setScalar(bms_.RemSiz);
-		bms_.SmkSpr.count = 1000;
-		bms_.SmkSpr.position.y = 0; // Height Above Ground
-		bom_.ExpGrp.add(bms_.SmkSpr);
+	//-	Meshes -----------------------------------------------------------------
+		bms_.SmkMsh = new Mesh(new PlaneGeometry(1,1),smokeNodeMaterial);
+		bms_.SmkMsh.scale.setScalar(bms_.RemSiz);
+		bms_.SmkMsh.isInstancedMesh = true;
+		bms_.SmkMsh.count = 1000;
+		bom_.SmkMsh.renderOrder = 1;
+		bom_.ExpGrp.add(bms_.SmkMsh);
 }
 
 //=	MOVE =======================//==============================================
