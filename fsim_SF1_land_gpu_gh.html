@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Jun 2026
+Version dated 4 Jul 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -280,6 +280,9 @@ let loadingScreen = {
 	};
 let boxrot = 0;
 
+//= TIMELINE ===================//=============================================
+let FrmCnt = 0;
+
 //= MODULES - General ==========//=============================================
 	gen_.scene  = scene;
 	gen_.render = renderer;
@@ -471,6 +474,7 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
 	
 //= BOMBS ======================//==============================================
+let BomPos = new THREE.Vector3(50,0,500);
 	bmt_.SmkVec = [new THREE.Vector3(50,  0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)]; // Smoke Vector: Lat (deg),Lon (deg), Speed (m/s)
 	bmt_.SmkSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]; // m/s (no gravity)
 	bmt_.SmkPos = new THREE.Vector3(0,0,0);
@@ -603,6 +607,14 @@ function rendAll() {
 	}
 	if (controls.isLocked === true && !gen_.LodSnd) loadSounds();
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {
+		// Time
+		tim_.DifTim = timer.getDelta();
+		tim_.NowTim = tim_.NowTim + tim_.DifTim;
+		tim_.DLTime = 1/60;		// Seconds per frame
+		tim_.DLTim2 = tim_.DLTime**2;
+		tim_.GrvDLT = GrvMPS*tim_.DLTim2;
+		timer.update();			// update timer
+		// Camera
 		moveCamera(cam_,air_,key_,gen_,InpMos);
 		// Move Objects
 		moveAirPln();			// Move aircaft
@@ -610,9 +622,12 @@ function rendAll() {
 		// Move Grids
 		grd_.SPS.copy(air_.MapSPS);	// Update Position
 		grids.update(grd_);		// Mode Grid Map
-		moveRoads(grd_,gen_);		// Move Roads
+		moveRoads(grd_,gen_);	// Move Roads
 		moveTreLin(grd_,gen_,air_); // Move TreeLines	
 		moveObject();			// Move objects
+		// TimeLine
+		FrmCnt++;				// Frame Counter
+		moveEvents();			// Get Events
 		// Other
 		moveSounds();
 		prntHUDval();			// change HUD value
@@ -623,6 +638,12 @@ function rendAll() {
 		gen_.SndFlg = gen_.MYGFlg = 0;
 	}
 	renderer.render(scene,camera);
+}
+
+//- Timeline -------------------//----------------------------------------------
+// For Times Events
+function moveEvents() {
+	if (FrmCnt == 300) initBomExp();
 }
 
 /*******************************************************************************
@@ -641,29 +662,48 @@ function loadObject() {
 	loadExpBom(bom_,gen_);	
 }
 
-//= INIT OBJECTS ===============================================================
+//= INIT OBJECTS ===============//==============================================
 
 function initObject() {
 	initStatic();
 	initMoving();
 	initAAAGun(aaf_,txt_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_);
-	bom_.ExpGrp.position.x = bom_.ExpGrp.position.x + -10;
-	bom_.ExpGrp.position.z = bom_.ExpGrp.position.z + -100;
+}
+
+//- Init Bomb ------------------//----------------------------------------------
+function initBomExp() {
+//	bom_.ExpGrp.position.x = x;
+//	bom_.ExpGrp.position.y = 0;
+//	bom_.ExpGrp.position.z = -z;
+	bom_.ExpGrp.position.copy(BomPos);
 	bom_.ExpFlg = 1;
 	bmx_.ExpFlg = 1;		// Start Explosion
 	bmt_.MakFlg = 1;		// Start Smoke Trails
 	bmt_.FadFlg = 1;		//
+	bom_.SndFlg = 1;		// 1 = Sound Available
+	bom_.SndDTm = 0;
+	scene.add(bom_.ExpGrp);
 }
 
-//= MOVE OBJECTS ===============================================================
+//= MOVE OBJECTS ===============//==============================================
 
 function moveObject() {
 	moveStatic();
 	moveMoving();
 	moveFxdGun();				// Perform Targeting
 	moveAAAGun(aaf_,air_,gen_,tim_);
-	if (bom_.ExpFlg) moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_);
+	if (bom_.ExpFlg) moveBomExp();
+}
+
+//- Move Bomb ------------------//----------------------------------------------
+function moveBomExp() {
+	moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_);
+	// Compute New Relative Position
+	let X = BomPos.x-air_.MapPos.x;
+	let Y = BomPos.y-gen_.AltDif;
+	let Z = air_.MapPos.z-BomPos.z;
+	bom_.ExpGrp.position.set(X,Y,Z);
 }
 
 //- SHARED TEXTURES ------------//----------------------------------------------
