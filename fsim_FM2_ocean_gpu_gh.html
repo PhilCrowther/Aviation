@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Jul 2026
+Version dated 6 Jul 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -671,11 +671,12 @@ let	AARYBg = [270,0];			// Starting Y-Rotation
 let	AARYDf = [0,0];				// Y-Rotation Adjustment		
 
 //= BOMBS ======================//==============================================
-	bmt_.SmkVec = [new THREE.Vector3(50,  0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)]; // Smoke Vector: Lat (deg),Lon (deg), Speed (m/s)
-	bmt_.SmkSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]; // m/s (no gravity)
-	bmt_.SmkPos = new THREE.Vector3(0,0,0);
-	bmt_.SmkOff = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
-	bmt_.SmkRnd = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
+//-	Adjustments (Identical Inputs for 3 Smoke Trails)
+	for (let n = 0; n < bom_.ObjNum; n ++) {
+		bmt_.SmkVec[n] = [new THREE.Vector3(50,0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)];
+		bmt_.SmkOff[n] = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
+		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
+	}
 
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
@@ -973,8 +974,21 @@ function initObject() {
 	initStatic();
 	initMoving();
 	initAAAGun(aaf_,txt_,air_,gen_);
-	initExpBom(bom_,bmx_,bmt_,bms_,gen_);
-	bom_.ExpGrp.visible = false;
+	initExpBom(bom_,bmx_,bmt_,bms_);
+}
+
+//- Init Bomb ------------------//----------------------------------------------
+function initBomExp(n,pos,rot) {
+	bom_.ExpFlg[n] = 1;
+	bmx_.ExpFlg[n] = 1;		// Start Explosion
+	bmt_.MakFlg[n] = 1;		// Start Smoke Trails
+	bmt_.FadFlg[n] = 1;		//
+	bom_.SndFlg[n] = 1;		// 1 = Sound Available
+	bom_.SndDTm[n] = 0;
+	scene.add(bom_.ExpGrp[n]);
+	bom_.ExpGrp[n].visible = true;
+	bom_.MapPos[n].copy(pos); // Used to compute relative Position
+	bom_.ExpGrp[n].rotation.y = rot;
 }
 
 //== MOVE OBJECTS ==============================================================
@@ -986,10 +1000,23 @@ function moveObject() {
 	moveFxdGun();				// Perform Targeting
 	if(BegLoc == 1) moveMyPeep(myp_,tim_);
 	moveMyCrew(myc_);
-	if (bom_.ExpFlg) moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_);
+	for (let n = 0; n < bom_.ObjNum; n++) {
+		if (bom_.ExpFlg[n]) moveBomExp(n);
+	}
 }
 
-//- SHARED TEXTURES ------------//----------------------------------------------
+//- Move Bomb ------------------//----------------------------------------------
+function moveBomExp(n) {
+	moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n);
+	// Compute New Relative Position
+	let X = bom_.MapPos[n].x-air_.MapPos.x;
+	let Y = bom_.MapPos[n].y-gen_.AltDif;
+	let Z = air_.MapPos.z-bom_.MapPos[n].z;
+	bom_.ExpGrp[n].position.set(X,Y,Z);
+}
+
+//= SHARED TEXTURES ============//==============================================
+
 function loadShared() {
 	if (txt_.ObjNum) {
 		for (let n = 0; n < txt_.ObjNum; n++) {
@@ -998,7 +1025,7 @@ function loadShared() {
 	}
 };
 
-//- STATIC OBJECTS -------------//----------------------------------------------
+//= STATIC OBJECTS =============//=============================================
 
 function loadStatic() {
 	loadMountn(mnt_,air_,gen_);
@@ -1016,7 +1043,7 @@ function moveStatic() {
 	if (fxd_.ObjNum) moveFxdObj(fxd_,air_,gen_);
 }
 
-//- MOVING OBJECTS -------------//----------------------------------------------
+//= MOVING OBJECTS =============//==============================================
 
 function loadMoving() {
 	loadXACVeh(xac_,anm_,gen_); // Airplanes
