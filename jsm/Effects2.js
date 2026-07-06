@@ -1132,6 +1132,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_,gen_) {
 		bom_.SndMsh[n] = new Object3D();
 		bom_.SndFlg[n] = 1;		// 1 = Sound Active
 		bom_.SndDTm[n] = 0;
+		bom_.MapPos[n] = new Vector3();
 		initBomExp(bmx_,bom_,n);
 		initBomSmT(bmt_,bom_,n);
 		initBomSmk(bms_,bom_,n);
@@ -1181,6 +1182,7 @@ function initBomExp(bmx_,bom_,n) {
 	bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
 	bom_.ExpGrp[n].add(bmx_.ExpMsh[n]);
 	bmx_.ExpMsh[n].position.y = 5;
+	bmx_.ExpSiz[n] = bmx_.BegSiz;
 }
 
 //= MOVE =======================//==============================================
@@ -1213,6 +1215,17 @@ function moveBomExp(bmx_,n) {
 //= INIT =======================//==============================================
 
 function initBomSmT(bmt_,bom_,n) {
+	// Init Values
+	bmt_.SmkRot[n] = 90;
+	bmt_.MakFlg[n] = 1;
+	bmt_.FadFlg[n] = 1;
+	bmt_.FadTim[n] = bmt_.BegOpa*bmt_.SmkMul; // Fade Time
+	bmt_.SmkIdx[n] = 0;
+	bmt_.SmkSiz[n] = bmt_.SmkMax; // Size of Next Sprite
+	bmt_.SmkTim[n] = 0;
+	bmt_.SmkSpr[n] = [[],[],[]];
+	bmt_.SmkSpd[n] = [];
+	bmt_.SmkPos[n] = new Vector3(0,0,0);
 	//	Init Material
 	bmt_.SmkMat[n] = new SpriteNodeMaterial(),
 	bmt_.SmkMat[n].colorNode = texture(bom_.SmkMap);
@@ -1222,6 +1235,7 @@ function initBomSmT(bmt_,bom_,n) {
 	//	Init Sprites (initializes Size and Rotation)
 	for (let t = 0; t < bmt_.Trails; t++) {
 		// Compute XYZ Speed (m/s) Before Gravity
+		bmt_.SmkSpd[n][t] = new Vector3();
 		bmt_.SmkSpd[n][t].x = Math.cos(bmt_.SmkVec[n][t].x*DegRad)*Math.cos(bmt_.SmkVec[n][t].y*DegRad)*bmt_.SmkVec[n][t].z;
 		bmt_.SmkSpd[n][t].y = Math.sin(bmt_.SmkVec[n][t].x*DegRad)*bmt_.SmkVec[n][t].z;
 		bmt_.SmkSpd[n][t].z = Math.cos(bmt_.SmkVec[n][t].x*DegRad)*Math.sin(bmt_.SmkVec[n][t].y*DegRad)*bmt_.SmkVec[n][t].z;
@@ -1298,6 +1312,8 @@ function moveBomSmT(bmt_,tim_,n) {
 //=	INIT =======================//==============================================
 
 function initBomSmk(bms_,bom_,n) {
+	//	Init Values
+	bms_.RemSiz[n] = bms_.MaxSiz;	
 	//- Commom Variables -------------------------------------------------------
 	//	Speed
 	let speed = uniform(.2); // Used by scaledTime
