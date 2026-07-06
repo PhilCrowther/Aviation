@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Jul 2026
+Version dated 6 Jul 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -63,7 +63,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_SF1_land_gpu.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_SF1_land_gpu9.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/sf1/data/data.js"></script>
 
 <script type="importmap">
@@ -104,7 +104,7 @@ import {initBullet,moveBullet,	// Guns - My Airplane
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 		loadExpBom,initExpBom,moveExpBom, // Bomb
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects2.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
 		loadGrdMat,initGrdMat,GrdMap,
@@ -115,7 +115,7 @@ import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
 		loadXACVeh,initXACVeh,	// Moving Airplanes
 		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd, // Object Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects2.js";
 
 /*= GENERAL ====================//==============================================
 
@@ -474,12 +474,12 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
 	
 //= BOMBS ======================//==============================================
-let BomPos = new THREE.Vector3(50,0,500);
-	bmt_.SmkVec = [new THREE.Vector3(50,  0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)]; // Smoke Vector: Lat (deg),Lon (deg), Speed (m/s)
-	bmt_.SmkSpd = [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]; // m/s (no gravity)
-	bmt_.SmkPos = new THREE.Vector3(0,0,0);
-	bmt_.SmkOff = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
-	bmt_.SmkRnd = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
+//-	Adjustments (Identical Inputs for 3 Smoke Trails)
+	for (let n = 0; n < bom_.ObjNum; n ++) {
+		bmt_.SmkVec[n] = [new THREE.Vector3(50,0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)];
+		bmt_.SmkOff[n] = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
+		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
+	}
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -643,7 +643,9 @@ function rendAll() {
 //- Timeline -------------------//----------------------------------------------
 // For Times Events
 function moveEvents() {
-	if (FrmCnt == 300) initBomExp();
+	if (FrmCnt == 300) initBomExp(0,new THREE.Vector3(100,0,475),0);		// 5 secs
+	if (FrmCnt == 420) initBomExp(1,new THREE.Vector3(150,0,375),120);	// 7 secs
+	if (FrmCnt == 540) initBomExp(2,new THREE.Vector3(200,0,275),240);	// 9 secs
 }
 
 /*******************************************************************************
@@ -668,22 +670,25 @@ function initObject() {
 	initStatic();
 	initMoving();
 	initAAAGun(aaf_,txt_,air_,gen_);
-	initExpBom(bom_,bmx_,bmt_,bms_);
+	initExpBom(bom_,bmx_,bmt_,bms_,gen_);
+	for (let n = 0; n < bom_.ObjNum; n++) {
+		scene.remove(bom_.ExpGrp[n]);
+		bom_.ExpGrp[n].visible = false;
+	} 
 }
 
 //- Init Bomb ------------------//----------------------------------------------
-function initBomExp() {
-//	bom_.ExpGrp.position.x = x;
-//	bom_.ExpGrp.position.y = 0;
-//	bom_.ExpGrp.position.z = -z;
-	bom_.ExpGrp.position.copy(BomPos);
-	bom_.ExpFlg = 1;
-	bmx_.ExpFlg = 1;		// Start Explosion
-	bmt_.MakFlg = 1;		// Start Smoke Trails
-	bmt_.FadFlg = 1;		//
-	bom_.SndFlg = 1;		// 1 = Sound Available
-	bom_.SndDTm = 0;
-	scene.add(bom_.ExpGrp);
+function initBomExp(n,pos,rot) {
+	bom_.ExpFlg[n] = 1;
+	bmx_.ExpFlg[n] = 1;		// Start Explosion
+	bmt_.MakFlg[n] = 1;		// Start Smoke Trails
+	bmt_.FadFlg[n] = 1;		//
+	bom_.SndFlg[n] = 1;		// 1 = Sound Available
+	bom_.SndDTm[n] = 0;
+	scene.add(bom_.ExpGrp[n]);
+	bom_.ExpGrp[n].visible = true;
+	bom_.MapPos[n].copy(pos); // Used to compute relative Position
+	bom_.ExpGrp[n].rotation.y = rot;
 }
 
 //= MOVE OBJECTS ===============//==============================================
@@ -693,17 +698,19 @@ function moveObject() {
 	moveMoving();
 	moveFxdGun();				// Perform Targeting
 	moveAAAGun(aaf_,air_,gen_,tim_);
-	if (bom_.ExpFlg) moveBomExp();
+	for (let n = 0; n < bom_.ObjNum; n++) {
+		if (bom_.ExpFlg[n]) moveBomExp(n);
+	}
 }
 
 //- Move Bomb ------------------//----------------------------------------------
-function moveBomExp() {
-	moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_);
+function moveBomExp(n) {
+	moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n);
 	// Compute New Relative Position
-	let X = BomPos.x-air_.MapPos.x;
-	let Y = BomPos.y-gen_.AltDif;
-	let Z = air_.MapPos.z-BomPos.z;
-	bom_.ExpGrp.position.set(X,Y,Z);
+	let X = bom_.MapPos[n].x-air_.MapPos.x;
+	let Y = bom_.MapPos[n].y-gen_.AltDif;
+	let Z = air_.MapPos.z-bom_.MapPos[n].z;
+	bom_.ExpGrp[n].position.set(X,Y,Z);
 }
 
 //- SHARED TEXTURES ------------//----------------------------------------------
@@ -1494,6 +1501,7 @@ function onWindowResize() {
 2604--: Added enemy planes.
 260507: Added 4 directed AAA guns.
 260525: Air combat!
+260704: Bombs
 */
 
 </script>
