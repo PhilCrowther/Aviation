@@ -547,9 +547,9 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,bom_,gen_) {
 			xac_.AirObj[n].add(xag_.SndMsh[n]);
 		});
 	}
-	// The Next 3 Sounds Are All the Same (for now)
+	// The Next 4 Sounds Are All the Same (for now)
 	//
-	// XP End Explosion
+	// XP End Explosion  ......................................................-
 	for (let n = 0; n < xac_.ObjNum; n ++) {	// ### fixed 260503
 		xac_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xac_.SndSrc,function(buffer) {
@@ -558,7 +558,7 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,bom_,gen_) {
 			xac_.AirObj[n].add(xac_.SndMsh[n]);
 		});
 	}
-	// Load AAA Sounds ..........................................................
+	// Load AAA Sounds .........................................................
 	// XS Guns - End Explosion
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		xsg_.SndPtr[n] = new PositionalAudio(gen_.listnr);
@@ -577,13 +577,13 @@ function loadObjSnd(xac_,xag_,xsg_,aaf_,bom_,gen_) {
 			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
 		});	
 	}
-	// Load Bomb Sound (Only 1 for Now)
-	if (bom_.ObjNum) {
-		bom_.SndPtr = new PositionalAudio(gen_.listnr);
+	// Load Bomb Sounds  .......................................................
+	for (let n = 0; n < bom_.ObjNum; n ++) {
+		bom_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(bom_.SndSrc, function(buffer) {
-			bom_.SndPtr.setBuffer(buffer);
-			init1Sound(bom_.SndPtr,RefDst,0,1,0,bom_.SndMsh);		
-			bom_.ExpGrp.add(bom_.SndMsh);
+			bom_.SndPtr[n].setBuffer(buffer);
+			init1Sound(bom_.SndPtr[n],RefDst,0,1,0,bom_.SndMsh[n]);		
+			bom_.ExpGrp[n].add(bom_.SndMsh[n]);
 		});
 	}
 }

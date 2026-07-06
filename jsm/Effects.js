@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Jul 2026
+Version dated 6 Jul 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1127,33 +1127,37 @@ function loadExpBom(bom_,gen_) {
 
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_) {
-	bom_.ExpGrp = new Group();
-	bom_.SndMsh = new Object3D();
-	bom_.SndFlg = 1;		// 1 = Sound Active
-	bom_.SndDTm = 0;
-	initBomExp(bmx_,bom_);
-	initBomSmT(bmt_,bom_);
-	initBomSmk(bms_,bom_);
+	for (let n = 0; n < bom_.ObjNum; n ++) {
+		bom_.ExpGrp[n] = new Group();
+		bom_.SndMsh[n] = new Object3D();
+		bom_.SndFlg[n] = 1;		// 1 = Sound Active
+		bom_.SndDTm[n] = 0;
+		bom_.MapPos[n] = new Vector3();
+		initBomExp(bmx_,bom_,n);
+		initBomSmT(bmt_,bom_,n);
+		initBomSmk(bms_,bom_,n);
+		bom_.ExpGrp[n].visible = false;
+	}
 }
 
 //= MOVE BOMB ==================//==============================================
-function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_) {
-	moveBomExp(bmx_);
-	moveBomSmT(bmt_,tim_);
-	moveBomSmk(bms_,bom_);
+function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
+	moveBomExp(bmx_,n);
+	moveBomSmT(bmt_,tim_,n);
+	moveBomSmk(bms_,bom_,n);
 	// Sound
-	if (gen_.SndFlg && bom_.SndFlg) {
+	if (gen_.SndFlg && bom_.SndFlg[n]) {
 		// Start Sound (No Delay)
-		if (!bom_.SndRTm) {
-			bom_.SndPtr.play();
-			bom_.SndRTm = 5 / tim_.DLTime;
+		if (!bom_.SndRTm[n]) {
+			bom_.SndPtr[n].play();
+			bom_.SndRTm[n] = 5 / tim_.DLTime;
 		}
 		// Copntinue Sound
-		if (bom_.SndRTm) bom_.SndRTm--;
+		if (bom_.SndRTm[n]) bom_.SndRTm[n]--;
 		// Stop Sound
-		if (bom_.SndRTm <= 0) {
-			bom_.SndPtr.stop();
-			bom_.SndFlg = 0;
+		if (bom_.SndRTm[n] <= 0) {
+			bom_.SndPtr[n].stop();
+			bom_.SndFlg[n] = 0;
 		}
 	}	
 }
@@ -1165,37 +1169,38 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_) {
 *******************************************************************************/
 
 //= INIT =======================//==============================================
-function initBomExp(bmx_,bom_) {
-	bmx_.ExpGeo = new SphereGeometry(1,32,16);
-	bmx_.ExpMat = new MeshBasicNodeMaterial({
+function initBomExp(bmx_,bom_,n) {
+	bmx_.ExpGeo[n] = new SphereGeometry(1,32,16);
+	bmx_.ExpMat[n] = new MeshBasicNodeMaterial({
 			colorNode: color("orange"),
 			transparent: true,
 			depthWrite: false,
 			opacity: 1,
 		}),
-	bmx_.ExpMsh = new Mesh(bmx_.ExpGeo,bmx_.ExpMat);
-	bmx_.ExpMsh.scale.setScalar(bmx_.ExpSiz);
-	bom_.ExpGrp.add(bmx_.ExpMsh);
-	bmx_.ExpMsh.position.y = 5;
+	bmx_.ExpMsh[n] = new Mesh(bmx_.ExpGeo[n],bmx_.ExpMat[n]);
+	bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
+	bom_.ExpGrp[n].add(bmx_.ExpMsh[n]);
+	bmx_.ExpMsh[n].position.y = 5;
+	bmx_.ExpSiz[n] = bmx_.BegSiz;
 }
 
 //= MOVE =======================//==============================================
-function moveBomExp(bmx_) {
-	if (bmx_.ExpFlg) {
+function moveBomExp(bmx_,n) {
+	if (bmx_.ExpFlg[n]) {
 		// Display New Size and Opacity
-		bmx_.ExpMsh.scale.setScalar(bmx_.ExpSiz);
-		bmx_.ExpMat.OpacityNode = bmx_.ExpOpa;
+		bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
+		bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa[n];
 		// Adjust Side and Opacity
-		bmx_.ExpSiz = bmx_.ExpSiz + 1/Ft2Mtr; // Expand
-		bmx_.ExpOpa = bmx_.ExpOpa - 0.01; // Fade Away
+		bmx_.ExpSiz[n] = bmx_.ExpSiz[n] + 1/Ft2Mtr; // Expand
+		bmx_.ExpOpa[n] = bmx_.ExpOpa[n] - 0.01; // Fade Away
 		// If Size > MaxSiz, Turn Off and Reset
-		if (bmx_.ExpSiz > bmx_.MaxSiz) {
-			bmx_.ExpFlg = 0;
+		if (bmx_.ExpSiz[n] > bmx_.MaxSiz) {
+			bmx_.ExpFlg[n] = 0;
 			// Reset
-			bmx_.ExpSiz = bmx_.BegSiz;
-			bmx_.ExpOpa = 1;
-			bmx_.ExpMsh.scale.setScalar(bmx_.ExpSiz);
-			bmx_.ExpMat.OpacityNode = bmx_.ExpOpa;
+			bmx_.ExpSiz[n] = bmx_.BegSiz;
+			bmx_.ExpOpa[n] = 1;
+			bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
+			bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa[n];
 		}
 	}
 }
@@ -1208,75 +1213,88 @@ function moveBomExp(bmx_) {
 
 //= INIT =======================//==============================================
 
-function initBomSmT(bmt_,bom_) {
+function initBomSmT(bmt_,bom_,n) {
+	// Init Values
+	bmt_.SmkRot[n] = 90;
+	bmt_.MakFlg[n] = 1;
+	bmt_.FadFlg[n] = 1;
+	bmt_.FadTim[n] = bmt_.BegOpa*bmt_.SmkMul; // Fade Time
+	bmt_.SmkIdx[n] = 0;
+	bmt_.SmkSiz[n] = bmt_.SmkMax; // Size of Next Sprite
+	bmt_.SmkTim[n] = 0;
+	bmt_.SmkSpr[n] = [[],[],[]];
+	bmt_.SmkSpd[n] = [];
+	bmt_.SmkPos[n] = new Vector3(0,0,0);
 	//	Init Material
-	bmt_.SmkMat = new SpriteNodeMaterial(),
-	bmt_.SmkMat.colorNode = texture(bom_.SmkMap);
-	bmt_.SmkMat.transparent = true;
-	bmt_.SmkMat.opacity = bmt_.BegOpa;
-	bmt_.SmkMat.depthWrite = false;
+	bmt_.SmkMat[n] = new SpriteNodeMaterial(),
+	bmt_.SmkMat[n].colorNode = texture(bom_.SmkMap);
+	bmt_.SmkMat[n].transparent = true;
+	bmt_.SmkMat[n].opacity = bmt_.BegOpa;
+	bmt_.SmkMat[n].depthWrite = false;
 	//	Init Sprites (initializes Size and Rotation)
 	for (let t = 0; t < bmt_.Trails; t++) {
 		// Compute XYZ Speed (m/s) Before Gravity
-		bmt_.SmkSpd[t].x = Math.cos(bmt_.SmkVec[t].x*DegRad)*Math.cos(bmt_.SmkVec[t].y*DegRad)*bmt_.SmkVec[t].z;
-		bmt_.SmkSpd[t].y = Math.sin(bmt_.SmkVec[t].x*DegRad)*bmt_.SmkVec[t].z;
-		bmt_.SmkSpd[t].z = Math.cos(bmt_.SmkVec[t].x*DegRad)*Math.sin(bmt_.SmkVec[t].y*DegRad)*bmt_.SmkVec[t].z;
-		for (let n = 0; n < bmt_.SmkNum; n++) {
+		bmt_.SmkSpd[n][t] = new Vector3();
+		bmt_.SmkSpd[n][t].x = Math.cos(bmt_.SmkVec[n][t].x*DegRad)*Math.cos(bmt_.SmkVec[n][t].y*DegRad)*bmt_.SmkVec[n][t].z;
+		bmt_.SmkSpd[n][t].y = Math.sin(bmt_.SmkVec[n][t].x*DegRad)*bmt_.SmkVec[n][t].z;
+		bmt_.SmkSpd[n][t].z = Math.cos(bmt_.SmkVec[n][t].x*DegRad)*Math.sin(bmt_.SmkVec[n][t].y*DegRad)*bmt_.SmkVec[n][t].z;
+		for (let x = 0; x < bmt_.SmkNum; x++) {
 			//	Make Sprites
-			bmt_.SmkSpr[t][n] = new Sprite(bmt_.SmkMat); // 10 different textures
-			bmt_.SmkSpr[t][n].scale.setScalar(bmt_.SmkSiz);
-			bmt_.SmkSpr[t][n].material.rotation = bmt_.SmkRot*DegRad;
-			bmt_.SmkSpr[t][n].visible = false;
-			bom_.ExpGrp.add(bmt_.SmkSpr[t][n]); // Add to Group
+			bmt_.SmkSpr[n][t][x] = new Sprite(bmt_.SmkMat[n]); // 10 different textures
+			bmt_.SmkSpr[n][t][x].scale.setScalar(bmt_.SmkSiz[n]);
+			bmt_.SmkSpr[n][t][x].material.rotation = bmt_.SmkRot[n]*DegRad;
+			bmt_.SmkSpr[n][t][x].visible = false;
+			bom_.ExpGrp[n].add(bmt_.SmkSpr[n][t][x]); // Add to Group
 			//	Adjust Size and Rotation
-			bmt_.SmkSiz = bmt_.SmkSiz - 0.01*bmt_.SmkMax;	// Reduce Size of Each Sprite	
-			bmt_.SmkRot = Mod360(bmt_.SmkRot+36);		// Rotate Each Sprite
+			bmt_.SmkSiz[n] = bmt_.SmkSiz[n] - 0.01*bmt_.SmkMax;	// Reduce Size of Each Sprite	
+			bmt_.SmkRot[n] = Mod360(bmt_.SmkRot[n]+36);		// Rotate Each Sprite
 		}
-		bmt_.SmkSiz = bmt_.SmkMax;
+		bmt_.SmkSiz[n] = bmt_.SmkMax;
 	}
 }
 
 //= MOVE =======================//==============================================
 
-function moveBomSmT(bmt_,tim_) {
+function moveBomSmT(bmt_,tim_,n) {
 	// Make Smoke Trail (Only Position One Sprite per Frame)
-	if (bmt_.MakFlg) {
-		if (!bmt_.SpcCnt) {		// If Space Counter = 0;
+	if (bmt_.MakFlg[n]) {
+		if (!bmt_.SpcCnt[n]) {		// If Space Counter = 0;
 			for (let t = 0; t < bmt_.Trails; t++) {
-				bmt_.SmkPos.x = bmt_.SmkSpd[t].x*bmt_.SmkTim+bmt_.SmkRnd[t].x*Math.random()+bmt_.SmkOff[t].x;
-				bmt_.SmkPos.y = bmt_.SmkSpd[t].y*bmt_.SmkTim-0.5*GrvMPS*(bmt_.SmkTim**2)+bmt_.SmkRnd[t].y*Math.random()+bmt_.SmkOff[t].y;
-				bmt_.SmkPos.z = bmt_.SmkSpd[t].z*bmt_.SmkTim+bmt_.SmkRnd[t].z*Math.random()+bmt_.SmkOff[t].z;
-				bmt_.SmkSpr[t][bmt_.SmkIdx].position.copy(bmt_.SmkPos);
-				bmt_.SmkSpr[t][bmt_.SmkIdx].visible = true;
+				bmt_.SmkPos[n].x = bmt_.SmkSpd[n][t].x*bmt_.SmkTim[n]+bmt_.SmkRnd[n][t].x*Math.random()+bmt_.SmkOff[n][t].x;
+				bmt_.SmkPos[n].y = bmt_.SmkSpd[n][t].y*bmt_.SmkTim[n]+bmt_.SmkRnd[n][t].y*Math.random()+bmt_.SmkOff[n][t].y-0.5*GrvMPS*(bmt_.SmkTim[n]**2);
+				bmt_.SmkPos[n].z = bmt_.SmkSpd[n][t].z*bmt_.SmkTim[n]+bmt_.SmkRnd[n][t].z*Math.random()+bmt_.SmkOff[n][t].z;
+				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].position.copy(bmt_.SmkPos[n]);
+				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].material.opacity = bmt_.BegOpa;
+				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].visible = true;
 			}
-			bmt_.SmkIdx++;		// Next Sprite
-			if (bmt_.SmkIdx == bmt_.SmkNum) bmt_.MakFlg = 0; // End Smoke Generation
-			bmt_.SpcCnt = bmt_.SmkSpc;	// Reset Space Counter
+			bmt_.SmkIdx[n]++;		// Next Sprite
+			if (bmt_.SmkIdx[n] == bmt_.SmkNum) bmt_.MakFlg[n] = 0; // End Smoke Generation
+			bmt_.SpcCnt[n] = bmt_.SmkSpc;	// Reset Space Counter
 		}
-		if (bmt_.SmkIdx) bmt_.SmkTim = bmt_.SmkTim + tim_.DifTim;
-		bmt_.SpcCnt--;			// Decrement Space Counter
+		if (bmt_.SmkIdx[n]) bmt_.SmkTim[n] = bmt_.SmkTim[n] + tim_.DifTim;
+		bmt_.SpcCnt[n]--;			// Decrement Space Counter
 	}
 	// Fade Smoke Trail (Only If bmt_.FadFlg > 0)
-	else if (bmt_.FadFlg) {
+	else if (bmt_.FadFlg[n]) {
 		for (let t = 0; t < bmt_.Trails; t++) {
-			for (let n = 0; n < bmt_.SmkNum; n++) { // Fade All at Same Time by Same Amount
-				bmt_.SmkSpr[t][n].material.opacity = bmt_.FadTim/bmt_.SmkMul;
+			for (let x = 0; x < bmt_.SmkNum; x++) { // Fade All at Same Time by Same Amount
+				bmt_.SmkSpr[n][t][x].material.opacity = bmt_.FadTim[n]/bmt_.SmkMul;
 			}
 		}
-		bmt_.FadTim--;
+		bmt_.FadTim[n]--;
 		// If Done, Reset All
-		if (bmt_.FadTim <= 0) {
-			bmt_.FadFlg = 0;
-			bmt_.SmkIdx = 0;
-			bmt_.SmkTim = 0;
-			bmt_.FadTim = bmt_.BegOpa*bmt_.SmkMul;
-			bmt_.SmkSiz = bmt_.SmkMax;
-			bmt_.SpcCnt = bmt_.SmkSpc;
+		if (bmt_.FadTim[n] <= 0) {
+			bmt_.FadFlg[n] = 0;
+			bmt_.SmkIdx[n] = 0;
+			bmt_.SmkTim[n] = 0;
+			bmt_.FadTim[n] = bmt_.BegOpa*bmt_.SmkMul;
+			bmt_.SmkSiz[n] = bmt_.SmkMax;
+			bmt_.SpcCnt[n] = bmt_.SmkSpc;
 			for (let t = 0; t < bmt_.Trails; t++) {
-				for (let n = 0; n < bmt_.SmkNum; n++) {
-					bmt_.SmkSpr[t][n].position.set(0,0,0); // Reset Position
-					bmt_.SmkSpr[t][n].material.opacity = bmt_.BegOpa; // Reset Opacity
-					bmt_.SmkSpr[t][n].visible = false; // Make Invisible
+				for (let x = 0; x < bmt_.SmkNum; x++) {
+					bmt_.SmkSpr[n][t][x].position.set(0,0,0); // Reset Position
+					bmt_.SmkSpr[n][t][x].material.opacity = bmt_.BegOpa; // Reset Opacity
+					bmt_.SmkSpr[n][t][x].visible = false; // Make Invisible
 				}
 			}
 		}
@@ -1292,7 +1310,9 @@ function moveBomSmT(bmt_,tim_) {
 
 //=	INIT =======================//==============================================
 
-function initBomSmk(bms_,bom_) {
+function initBomSmk(bms_,bom_,n) {
+	//	Init Values
+	bms_.RemSiz[n] = bms_.MaxSiz;	
 	//- Commom Variables -------------------------------------------------------
 	//	Speed
 	let speed = uniform(.2); // Used by scaledTime
@@ -1321,39 +1341,41 @@ function initBomSmk(bms_,bom_) {
 	//	Depth Write
 		smokeNodeMaterial.depthWrite = false;
 	//-	Meshes -----------------------------------------------------------------
-		bms_.SmkSpr = new Mesh(new PlaneGeometry(1,1),smokeNodeMaterial);
-		bms_.SmkSpr.scale.setScalar(bms_.RemSiz);
-		bms_.SmkSpr.isInstancedMesh = true;
-		bms_.SmkSpr.count = 1000;
-		bms_.SmkSpr.renderOrder = 1;
-		bom_.ExpGrp.add(bms_.SmkSpr);
+		bms_.SmkSpr[n] = new Mesh(new PlaneGeometry(1,1),smokeNodeMaterial);
+		bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
+		bms_.SmkSpr[n].isInstancedMesh = true;
+		bms_.SmkSpr[n].count = 1000;
+		bms_.SmkSpr[n].renderOrder = 1;
+		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
 }
 
 //=	MOVE =======================//==============================================
 
-function moveBomSmk(bms_,bom_) {
+function moveBomSmk(bms_,bom_,n) {
 	// After First Rep, Smoke Plume is Fully Developed. So You Need to Expand the
 	// Whole Plume to Create the Illusion of a Developing Smoke Plume
 
 	// Expand Quickly
-	if (bms_.GroFlg) {
-		bms_.RemSiz = bms_.RemSiz + 0.175; // (default = 0.175)
-		if (bms_.RemSiz > bms_.MaxSiz) {
-			bms_.RemSiz = bms_.MaxSiz;
-			bms_.GroFlg = 0;
+	if (bms_.GroFlg[n]) {
+		bms_.RemSiz[n] = bms_.RemSiz[n] + 0.175; // (default = 0.175)
+		if (bms_.RemSiz[n] > bms_.MaxSiz) {
+			bms_.RemSiz[n] = bms_.MaxSiz;
+			bms_.GroFlg[n] = 0;
 		}
 	}
 	// Contract Slowly
-	if (!bms_.GroFlg) {
-		bms_.RemSiz = bms_.RemSiz - 0.01; // (default = 0.01; test = 0.05)
-		if (bms_.RemSiz < 1) {
-			bms_.RemSiz = 1;
-			bms_.GroFlg = 1;	// Grow Next Time
-			bom_.ExpFlg = 0;	// End Entire Explosion
-			scene.remove(bom_.ExpGrp);
+	if (!bms_.GroFlg[n]) {
+		bms_.RemSiz[n] = bms_.RemSiz[n] - 0.01; // (default = 0.01; test = 0.05)
+		if (bms_.RemSiz[n] < 1) {
+			bms_.RemSiz[n] = 1;
+			bms_.GroFlg[n] = 1;	// Grow Next Time
+			bom_.ExpFlg[n] = 0;	// End Entire Explosion
+			scene.remove(bom_.ExpGrp[n]);
+			bom_.MapPos[n].x = bom_.MapPos[n].x + 10;
+			bom_.MapPos[n].z = bom_.MapPos[n].z + 10;
 		}
 	}
-	bms_.SmkSpr.scale.setScalar(bms_.RemSiz);
+	bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
 }
 
 /*******************************************************************************
@@ -1424,4 +1446,5 @@ export {
 260614: Text Bullets for Hits Only if Moving
 260702:	Add Bomb Subroutines
 260703: Add Bomb Sounds
+260706: Multiple Bombs
 */
