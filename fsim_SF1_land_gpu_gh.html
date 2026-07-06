@@ -104,7 +104,7 @@ import {initBullet,moveBullet,	// Guns - My Airplane
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 		loadExpBom,initExpBom,moveExpBom, // Bomb
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects2.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
 		loadGrdMat,initGrdMat,GrdMap,
@@ -115,7 +115,7 @@ import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
 		loadXACVeh,initXACVeh,	// Moving Airplanes
 		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd, // Object Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects2.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
 
 /*= GENERAL ====================//==============================================
 
@@ -709,7 +709,8 @@ function moveBomExp(n) {
 	bom_.ExpGrp[n].position.set(X,Y,Z);
 }
 
-//- SHARED TEXTURES ------------//----------------------------------------------
+//= SHARED TEXTURES ============//==============================================
+
 function loadShared() {
 	if (txt_.ObjNum) {
 		for (let n = 0; n < txt_.ObjNum; n++) {
@@ -718,7 +719,7 @@ function loadShared() {
 	}
 };
 
-//- STATIC OBJECTS -------------//----------------------------------------------
+//= STATIC OBJECTS =============//=============================================
 
 function loadStatic() {
 	loadMountn(mnt_,air_,gen_);
@@ -735,7 +736,7 @@ function moveStatic() {
 	moveFxdObj(fxd_,air_,gen_);
 }
 
-//- MOVING OBJECTS -------------//----------------------------------------------
+//= MOVING OBJECTS =============//==============================================
 
 function loadMoving() {
 	loadXACVeh(xac_,anm_,gen_); // Airplanes
