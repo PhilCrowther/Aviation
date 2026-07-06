@@ -1126,7 +1126,7 @@ function loadExpBom(bom_,gen_) {
 }
 
 //= INIT BOMB ==================//==============================================
-function initExpBom(bom_,bmx_,bmt_,bms_,gen_) {
+function initExpBom(bom_,bmx_,bmt_,bms_) {
 	for (let n = 0; n < bom_.ObjNum; n ++) {
 		bom_.ExpGrp[n] = new Group();
 		bom_.SndMsh[n] = new Object3D();
@@ -1136,8 +1136,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_,gen_) {
 		initBomExp(bmx_,bom_,n);
 		initBomSmT(bmt_,bom_,n);
 		initBomSmk(bms_,bom_,n);
-		gen_.scene.add(bom_.ExpGrp[n]);
-		bom_.ExpGrp[n].visible = true;
+		bom_.ExpGrp[n].visible = false;
 	}
 }
 
