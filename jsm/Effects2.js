@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Jul 2026
+Version dated 6 Jul 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1126,7 +1126,7 @@ function loadExpBom(bom_,gen_) {
 }
 
 //= INIT BOMB ==================//==============================================
-function initExpBom(bom_,bmx_,bmt_,bms_) {
+function initExpBom(bom_,bmx_,bmt_,bms_,gen_) {
 	for (let n = 0; n < bom_.ObjNum; n ++) {
 		bom_.ExpGrp[n] = new Group();
 		bom_.SndMsh[n] = new Object3D();
@@ -1135,29 +1135,29 @@ function initExpBom(bom_,bmx_,bmt_,bms_) {
 		initBomExp(bmx_,bom_,n);
 		initBomSmT(bmt_,bom_,n);
 		initBomSmk(bms_,bom_,n);
+		gen_.scene.add(bom_.ExpGrp[n]);
+		bom_.ExpGrp[n].visible = true;
 	}
 }
 
 //= MOVE BOMB ==================//==============================================
-function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_) {
-	for (let n = 0; n < bom_.ObjNum; n ++) {
-		moveBomExp(bmx_,n);
-		moveBomSmT(bmt_,tim_,n);
-		moveBomSmk(bms_,bom_,n);
-		// Sound
-		if (gen_.SndFlg && bom_.SndFlg[n]) {
-			// Start Sound (No Delay)
-			if (!bom_.SndRTm[n]) {
-				bom_.SndPtr[n].play();
-				bom_.SndRTm[n] = 5 / tim_.DLTime;
-			}
-			// Copntinue Sound
-			if (bom_.SndRTm[n]) bom_.SndRTm[n]--;
-			// Stop Sound
-			if (bom_.SndRTm[n] <= 0) {
-				bom_.SndPtr[n].stop();
-				bom_.SndFlg[n] = 0;
-			}
+function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
+	moveBomExp(bmx_,n);
+	moveBomSmT(bmt_,tim_,n);
+	moveBomSmk(bms_,bom_,n);
+	// Sound
+	if (gen_.SndFlg && bom_.SndFlg[n]) {
+		// Start Sound (No Delay)
+		if (!bom_.SndRTm[n]) {
+			bom_.SndPtr[n].play();
+			bom_.SndRTm[n] = 5 / tim_.DLTime;
+		}
+		// Copntinue Sound
+		if (bom_.SndRTm[n]) bom_.SndRTm[n]--;
+		// Stop Sound
+		if (bom_.SndRTm[n] <= 0) {
+			bom_.SndPtr[n].stop();
+			bom_.SndFlg[n] = 0;
 		}
 	}	
 }
@@ -1177,9 +1177,9 @@ function initBomExp(bmx_,bom_,n) {
 			depthWrite: false,
 			opacity: 1,
 		}),
-	bmx_.ExpMsh[n] = new Mesh(bmx_.ExpGeo,bmx_.ExpMat);
-	bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz);
-	bom_.ExpGrp[n].add(bmx_.ExpMsh);
+	bmx_.ExpMsh[n] = new Mesh(bmx_.ExpGeo[n],bmx_.ExpMat[n]);
+	bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
+	bom_.ExpGrp[n].add(bmx_.ExpMsh[n]);
 	bmx_.ExpMsh[n].position.y = 5;
 }
 
@@ -1187,19 +1187,19 @@ function initBomExp(bmx_,bom_,n) {
 function moveBomExp(bmx_,n) {
 	if (bmx_.ExpFlg[n]) {
 		// Display New Size and Opacity
-		bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz);
-		bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa;
+		bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
+		bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa[n];
 		// Adjust Side and Opacity
-		bmx_.ExpSiz[n] = bmx_.ExpSiz + 1/Ft2Mtr; // Expand
-		bmx_.ExpOpa[n] = bmx_.ExpOpa - 0.01; // Fade Away
+		bmx_.ExpSiz[n] = bmx_.ExpSiz[n] + 1/Ft2Mtr; // Expand
+		bmx_.ExpOpa[n] = bmx_.ExpOpa[n] - 0.01; // Fade Away
 		// If Size > MaxSiz, Turn Off and Reset
 		if (bmx_.ExpSiz[n] > bmx_.MaxSiz) {
 			bmx_.ExpFlg[n] = 0;
 			// Reset
 			bmx_.ExpSiz[n] = bmx_.BegSiz;
 			bmx_.ExpOpa[n] = 1;
-			bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz);
-			bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa;
+			bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
+			bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa[n];
 		}
 	}
 }
@@ -1217,13 +1217,13 @@ function initBomSmT(bmt_,bom_,n) {
 	bmt_.SmkMat[n] = new SpriteNodeMaterial(),
 	bmt_.SmkMat[n].colorNode = texture(bom_.SmkMap);
 	bmt_.SmkMat[n].transparent = true;
-	bmt_.SmkMat[n].opacity = bmt_.BegOpa[n];
+	bmt_.SmkMat[n].opacity = bmt_.BegOpa;
 	bmt_.SmkMat[n].depthWrite = false;
 	//	Init Sprites (initializes Size and Rotation)
 	for (let t = 0; t < bmt_.Trails; t++) {
 		// Compute XYZ Speed (m/s) Before Gravity
 		bmt_.SmkSpd[n][t].x = Math.cos(bmt_.SmkVec[n][t].x*DegRad)*Math.cos(bmt_.SmkVec[n][t].y*DegRad)*bmt_.SmkVec[n][t].z;
-		bmt_.SmkSpd[n][t].y = Math.sin(bmt_.SmkVec[n][t].x*DegRad)*bmt_.SmkVec[t].z;
+		bmt_.SmkSpd[n][t].y = Math.sin(bmt_.SmkVec[n][t].x*DegRad)*bmt_.SmkVec[n][t].z;
 		bmt_.SmkSpd[n][t].z = Math.cos(bmt_.SmkVec[n][t].x*DegRad)*Math.sin(bmt_.SmkVec[n][t].y*DegRad)*bmt_.SmkVec[n][t].z;
 		for (let x = 0; x < bmt_.SmkNum; x++) {
 			//	Make Sprites
@@ -1231,12 +1231,12 @@ function initBomSmT(bmt_,bom_,n) {
 			bmt_.SmkSpr[n][t][x].scale.setScalar(bmt_.SmkSiz[n]);
 			bmt_.SmkSpr[n][t][x].material.rotation = bmt_.SmkRot[n]*DegRad;
 			bmt_.SmkSpr[n][t][x].visible = false;
-			bom_.ExpGrp.add(bmt_.SmkSpr[n][t][x]); // Add to Group
+			bom_.ExpGrp[n].add(bmt_.SmkSpr[n][t][x]); // Add to Group
 			//	Adjust Size and Rotation
-			bmt_.SmkSiz[n] = bmt_.SmkSiz[n] - 0.01*bmt_.SmkMax[n];	// Reduce Size of Each Sprite	
+			bmt_.SmkSiz[n] = bmt_.SmkSiz[n] - 0.01*bmt_.SmkMax;	// Reduce Size of Each Sprite	
 			bmt_.SmkRot[n] = Mod360(bmt_.SmkRot[n]+36);		// Rotate Each Sprite
 		}
-		bmt_.SmkSiz[n] = bmt_.SmkMax[n];
+		bmt_.SmkSiz[n] = bmt_.SmkMax;
 	}
 }
 
@@ -1247,11 +1247,12 @@ function moveBomSmT(bmt_,tim_,n) {
 	if (bmt_.MakFlg[n]) {
 		if (!bmt_.SpcCnt[n]) {		// If Space Counter = 0;
 			for (let t = 0; t < bmt_.Trails; t++) {
-				bmt_.SmkPos[n].x = bmt_.SmkSpd[n][t].x*bmt_.SmkTim+bmt_.SmkRnd[n][t].x*Math.random()+bmt_.SmkOff[n][t].x;
-				bmt_.SmkPos[n].y = bmt_.SmkSpd[n][t].y*bmt_.SmkTim-0.5*GrvMPS*(bmt_.SmkTim**2)+bmt_.SmkRnd[n][t].y*Math.random()+bmt_.SmkOff[n][t].y;
-				bmt_.SmkPos[n].z = bmt_.SmkSpd[n][t].z*bmt_.SmkTim+bmt_.SmkRnd[n][t].z*Math.random()+bmt_.SmkOff[n][t].z;
-				bmt_.SmkSpr[n][t][bmt_.SmkIdx].position.copy(bmt_.SmkPos);
-				bmt_.SmkSpr[n][t][bmt_.SmkIdx].visible = true;
+				bmt_.SmkPos[n].x = bmt_.SmkSpd[n][t].x*bmt_.SmkTim[n]+bmt_.SmkRnd[n][t].x*Math.random()+bmt_.SmkOff[n][t].x;
+				bmt_.SmkPos[n].y = bmt_.SmkSpd[n][t].y*bmt_.SmkTim[n]+bmt_.SmkRnd[n][t].y*Math.random()+bmt_.SmkOff[n][t].y-0.5*GrvMPS*(bmt_.SmkTim[n]**2);
+				bmt_.SmkPos[n].z = bmt_.SmkSpd[n][t].z*bmt_.SmkTim[n]+bmt_.SmkRnd[n][t].z*Math.random()+bmt_.SmkOff[n][t].z;
+				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].position.copy(bmt_.SmkPos[n]);
+				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].material.opacity = bmt_.BegOpa;
+				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].visible = true;
 			}
 			bmt_.SmkIdx[n]++;		// Next Sprite
 			if (bmt_.SmkIdx[n] == bmt_.SmkNum) bmt_.MakFlg[n] = 0; // End Smoke Generation
@@ -1261,15 +1262,15 @@ function moveBomSmT(bmt_,tim_,n) {
 		bmt_.SpcCnt[n]--;			// Decrement Space Counter
 	}
 	// Fade Smoke Trail (Only If bmt_.FadFlg > 0)
-	else if (bmt_.FadFlg) {
+	else if (bmt_.FadFlg[n]) {
 		for (let t = 0; t < bmt_.Trails; t++) {
-			for (let n = 0; n < bmt_.SmkNum; n++) { // Fade All at Same Time by Same Amount
-				bmt_.SmkSpr[t][n].material.opacity = bmt_.FadTim/bmt_.SmkMul;
+			for (let x = 0; x < bmt_.SmkNum; x++) { // Fade All at Same Time by Same Amount
+				bmt_.SmkSpr[n][t][x].material.opacity = bmt_.FadTim[n]/bmt_.SmkMul;
 			}
 		}
 		bmt_.FadTim[n]--;
 		// If Done, Reset All
-		if (bmt_.FadTim <= 0) {
+		if (bmt_.FadTim[n] <= 0) {
 			bmt_.FadFlg[n] = 0;
 			bmt_.SmkIdx[n] = 0;
 			bmt_.SmkTim[n] = 0;
@@ -1355,6 +1356,8 @@ function moveBomSmk(bms_,bom_,n) {
 			bms_.GroFlg[n] = 1;	// Grow Next Time
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
 			scene.remove(bom_.ExpGrp[n]);
+			bom_.MapPos[n].x = bom_.MapPos[n].x + 10;
+			bom_.MapPos[n].z = bom_.MapPos[n].z + 10;
 		}
 	}
 	bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
@@ -1428,4 +1431,5 @@ export {
 260614: Text Bullets for Hits Only if Moving
 260702:	Add Bomb Subroutines
 260703: Add Bomb Sounds
+260706: Multiple Bombs
 */
