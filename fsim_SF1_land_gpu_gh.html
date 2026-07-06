@@ -63,7 +63,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 	</div>
 </div>
 
-<script src="https://PhilCrowther.github.io/Aviation/data/fsim_SF1_land_gpu9.js"></script>
+<script src="https://PhilCrowther.github.io/Aviation/data/fsim_SF1_land_gpu.js"></script>
 <script src="https://PhilCrowther.github.io/Aviation/models/sf1/data/data.js"></script>
 
 <script type="importmap">
@@ -670,11 +670,7 @@ function initObject() {
 	initStatic();
 	initMoving();
 	initAAAGun(aaf_,txt_,air_,gen_);
-	initExpBom(bom_,bmx_,bmt_,bms_,gen_);
-	for (let n = 0; n < bom_.ObjNum; n++) {
-		scene.remove(bom_.ExpGrp[n]);
-		bom_.ExpGrp[n].visible = false;
-	} 
+	initExpBom(bom_,bmx_,bmt_,bms_);
 }
 
 //- Init Bomb ------------------//----------------------------------------------
