@@ -487,13 +487,13 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 let smt_ = {
 		ObjNum: 1,
 		SmTFlg: [],
-		// Material
-		SmkSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
-		SmkMap: 0,
-		SmkMat: [],
+		// Sprite Material
+		SprTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
+		SprMap: 0,
+		SprMat: [],
 		// Sprites
 		SprNum: [100],			// Number of Sprites
-		SmkSpr: [],				// Each Sprite
+		Spritz: [],				// Each Sprite
 		MapPos: [],				// Map Position of Each Sprite
 		SprSpc: [3],			// Sprite Spacing
 		SpcCnt: [0],			// Spacing Count
@@ -1184,7 +1184,7 @@ function moveAirPln() {
 //= LOAD =======================//==============================================
 function loadSmkTrl(smt_,gen_) {
 	// Load Common Smoke Material
-	smt_.SmkMap = gen_.txtrLd.load(smt_.SmkSrc);
+	smt_.SprMap = gen_.txtrLd.load(smt_.SprTxt);
 }
 
 //= INIT =======================//==============================================
@@ -1192,25 +1192,25 @@ function loadSmkTrl(smt_,gen_) {
 function initSmkTrl(smt_,gen_) {
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		// Init Values
-		smt_.SmkSpr[n] = [];	
+		smt_.Spritz[n] = [];	
 		smt_.MapPos[n] = [];	// MapPos for Each Sprite
 		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
 		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
 		smt_.SprRot[n] = 90;
 		smt_.Parent[n] = air_.MapPos;
 		//	Init Material
-		smt_.SmkMat[n] = new THREE.SpriteNodeMaterial(),
-		smt_.SmkMat[n].colorNode = texture(smt_.SmkMap);
-		smt_.SmkMat[n].transparent = true;
-		smt_.SmkMat[n].depthWrite = false;
-		smt_.SmkMat[n].alphaTest = 0.1; // Adjust between 0.0 and 1.0
+		smt_.SprMat[n] = new THREE.SpriteNodeMaterial(),
+		smt_.SprMat[n].colorNode = texture(smt_.SprMap);
+		smt_.SprMat[n].transparent = true;
+		smt_.SprMat[n].depthWrite = false;
+		smt_.SprMat[n].alphaTest = 0.1; // Adjust between 0.0 and 1.0
 		//	Init Sprites (initializes Size and Rotation)
 		for (let x = 0; x < smt_.SprNum[n]; x++) {
 			//	Make Sprites
-			smt_.SmkSpr[n][x] = new THREE.Sprite(smt_.SmkMat[n]);
-			smt_.SmkSpr[n][x].material.rotation = smt_.SprRot[n]*DegRad;
-			smt_.SmkSpr[n][x].scale.setScalar(smt_.BegSiz[n]);
-			gen_.scene.add(smt_.SmkSpr[n][x]);
+			smt_.Spritz[n][x] = new THREE.Sprite(smt_.SprMat[n]);
+			smt_.Spritz[n][x].material.rotation = smt_.SprRot[n]*DegRad;
+			smt_.Spritz[n][x].scale.setScalar(smt_.BegSiz[n]);
+			gen_.scene.add(smt_.Spritz[n][x]);
 			smt_.MapPos[n][x] = new THREE.Vector3();
 			//	Adjust Starting Rotation
 			smt_.SprRot[n] = Mod360(smt_.SprRot[n]+36);		// Rotate Each Sprite
@@ -1238,9 +1238,9 @@ function moveSmkTrl(smt_,n) {	// OK
 		X = smt_.MapPos[n][x].x-air_.MapPos.x;
 		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
 		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
-		smt_.SmkSpr[n][x].position.set(X,Y,Z);
-		if (smt_.SprSpn[n]) smt_.SmkSpr[n][x].material.rotation += smt_.SprSpn[n];
-		smt_.SmkSpr[n][x].material.opacity = Opa;
+		smt_.Spritz[n][x].position.set(X,Y,Z);
+		if (smt_.SprSpn[n]) smt_.Spritz[n][x].material.rotation += smt_.SprSpn[n];
+		smt_.Spritz[n][x].material.opacity = Opa;
 		Opa = Opa - OpaDif;
 	}
 // Compute Relative Distance - Remaining
@@ -1249,9 +1249,9 @@ function moveSmkTrl(smt_,n) {	// OK
 		X = smt_.MapPos[n][x].x-air_.MapPos.x;
 		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
 		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
-		smt_.SmkSpr[n][x].position.set(X,Y,Z);
-		if (smt_.SprSpn[n]) smt_.SmkSpr[n][x].material.rotation += smt_.SprSpn[n];
-		smt_.SmkSpr[n][x].material.opacity = Opa;
+		smt_.Spritz[n][x].position.set(X,Y,Z);
+		if (smt_.SprSpn[n]) smt_.Spritz[n][x].material.rotation += smt_.SprSpn[n];
+		smt_.Spritz[n][x].material.opacity = Opa;
 		Opa = Opa - OpaDif;
 	}
 }
