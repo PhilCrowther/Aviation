@@ -497,10 +497,13 @@ let smt_ = {
 		MapPos: [],				// Map Position of Each Sprite
 		SprSpc: [3],			// Sprite Spacing
 		SpcCnt: [0],			// Spacing Count
-		SmkIdx: [],				// Current Sprite
-		SmkRot: [],				// Rotation of Each Sprite
-		BegSiz: [0.5],			// Beginning Size
-		BegOpa: [0.5],			// Beginning Opacity
+		SprIdx: [],				// Current Sprite
+		SprRot: [],				// Rotation of Each Sprite
+		BegOpa: [1.0],			// Beginning Opacity
+		OpaMul: [0.85],			// Opacity Decrement Multiplier
+		OpaDec: [],				// Opacity Decrement
+		SprSpn: [0.005],		// Sprite Spin
+		BegSiz: [1.5],			// Beginning Size
 		Parent: [],				// Parent of Each Sprite
 	}
 
@@ -1189,10 +1192,11 @@ function loadSmkTrl(smt_,gen_) {
 function initSmkTrl(smt_,gen_) {
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		// Init Values
-		smt_.SmkRot[n] = 90;
-		smt_.SmkIdx[n] = 0;
 		smt_.SmkSpr[n] = [];	
 		smt_.MapPos[n] = [];	// MapPos for Each Sprite
+		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
+		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
+		smt_.SprRot[n] = 90;
 		smt_.Parent[n] = air_.MapPos;
 		//	Init Material
 		smt_.SmkMat[n] = new THREE.SpriteNodeMaterial(),
@@ -1204,12 +1208,12 @@ function initSmkTrl(smt_,gen_) {
 		for (let x = 0; x < smt_.SprNum[n]; x++) {
 			//	Make Sprites
 			smt_.SmkSpr[n][x] = new THREE.Sprite(smt_.SmkMat[n]);
-			smt_.SmkSpr[n][x].material.rotation = smt_.SmkRot[n]*DegRad;
+			smt_.SmkSpr[n][x].material.rotation = smt_.SprRot[n]*DegRad;
 			smt_.SmkSpr[n][x].scale.setScalar(smt_.BegSiz[n]);
 			gen_.scene.add(smt_.SmkSpr[n][x]);
 			smt_.MapPos[n][x] = new THREE.Vector3();
 			//	Adjust Starting Rotation
-			smt_.SmkRot[n] = Mod360(smt_.SmkRot[n]+36);		// Rotate Each Sprite
+			smt_.SprRot[n] = Mod360(smt_.SprRot[n]+36);		// Rotate Each Sprite
 		}
 	}
 }
@@ -1220,41 +1224,35 @@ function moveSmkTrl(smt_,n) {	// OK
 	let X,Y,Z;
 //	Deposit New Sprite
 	if (!smt_.SpcCnt[n]) {
-		smt_.MapPos[n][smt_.SmkIdx[n]].copy(smt_.Parent[n]);
-		smt_.SmkIdx[n]++;
-		if (smt_.SmkIdx[n] >= smt_.SprNum[n]) smt_.SmkIdx[n] = 0;
+		if (!smt_.SprIdx[n]) smt_.SprIdx[n] = smt_.SprNum[n];
+		smt_.SprIdx[n]--;
+		smt_.MapPos[n][smt_.SprIdx[n]].copy(smt_.Parent[n]);
 	}
-	smt_.SpcCnt[n] ++
+	smt_.SpcCnt[n]++;
 	if (smt_.SpcCnt[n] == smt_.SprSpc[n]) smt_.SpcCnt[n] = 0;
 //	Compute Relative Distance - from 0 to SprNum
 	let Opa = smt_.BegOpa[n];
-	let Siz = smt_.BegSiz[n];
-	let OpaDif = 0.5*smt_.BegOpa[n]/smt_.SprNum[n];
-	let SizDif = 0.9*smt_.BegSiz[n]/smt_.SprNum[n];
-	for (let x = smt_.SmkIdx[n]; x < smt_.SprNum[n]; x++) {
+	let OpaDif = smt_.OpaDec[n];
+	for (let x = smt_.SprIdx[n]; x < smt_.SprNum[n]; x++) {
 		// Compute New Relative Position
 		X = smt_.MapPos[n][x].x-air_.MapPos.x;
 		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
 		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
 		smt_.SmkSpr[n][x].position.set(X,Y,Z);
-		smt_.SmkSpr[n][x].material.rotation += 0.005; // OK
+		smt_.SmkSpr[n][x].material.rotation += SprSpn[n];
 		smt_.SmkSpr[n][x].material.opacity = Opa;
-		smt_.SmkSpr[n][x].scale.setScalar(Siz);
 		Opa = Opa - OpaDif;
-		Siz = Siz + SizDif;
 	}
 // Compute Relative Distance - Remaining
-	for (let x = 0; x < smt_.SmkIdx[n]; x++) {
+	for (let x = 0; x < smt_.SprIdx[n]; x++) {
 		// Compute New Relative Position
 		X = smt_.MapPos[n][x].x-air_.MapPos.x;
 		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
 		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
 		smt_.SmkSpr[n][x].position.set(X,Y,Z);
-		smt_.SmkSpr[n][x].material.rotation += 0.005; // OK
+		smt_.SmkSpr[n][x].material.rotation += SprSpn[n];
 		smt_.SmkSpr[n][x].material.opacity = Opa;
-		smt_.SmkSpr[n][x].scale.setScalar(Siz);
 		Opa = Opa - OpaDif;
-		Siz = Siz + SizDif;
 	}
 }
 
