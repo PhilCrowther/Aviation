@@ -502,7 +502,7 @@ let smt_ = {
 		BegOpa: [1.0],			// Beginning Opacity
 		OpaMul: [0.85],			// Opacity Decrement Multiplier
 		OpaDec: [],				// Opacity Decrement
-		SprSpn: [0.005],		// Sprite Spin
+		SprSpn: [0],			// Sprite Spin
 		BegSiz: [1.5],			// Beginning Size
 		Parent: [],				// Parent of Each Sprite
 	}
@@ -1239,7 +1239,7 @@ function moveSmkTrl(smt_,n) {	// OK
 		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
 		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
 		smt_.SmkSpr[n][x].position.set(X,Y,Z);
-		smt_.SmkSpr[n][x].material.rotation += SprSpn[n];
+		if (smt_.SprSpn[n]) smt_.SmkSpr[n][x].material.rotation += smt_.SprSpn[n];
 		smt_.SmkSpr[n][x].material.opacity = Opa;
 		Opa = Opa - OpaDif;
 	}
@@ -1250,7 +1250,7 @@ function moveSmkTrl(smt_,n) {	// OK
 		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
 		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
 		smt_.SmkSpr[n][x].position.set(X,Y,Z);
-		smt_.SmkSpr[n][x].material.rotation += SprSpn[n];
+		if (smt_.SprSpn[n]) smt_.SmkSpr[n][x].material.rotation += smt_.SprSpn[n];
 		smt_.SmkSpr[n][x].material.opacity = Opa;
 		Opa = Opa - OpaDif;
 	}
