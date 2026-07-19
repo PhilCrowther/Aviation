@@ -69,10 +69,10 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
 		}
 	}
 </script>
@@ -103,6 +103,7 @@ import {initBullet,moveBullet,	// Guns - My Airplane
 		loadAAAGun,initAAAGun,moveAAAGun,	// Guns - AA
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
+		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom, // Bomb
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
@@ -481,32 +482,6 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
 	}
 
-//= SMOKE TRAIL ================//==============================================
-//	0 = Engine Smoke: SprNum = 150, BegOpa = 0.5;
-//	1 = Damage Smoke Trail: SprNum = 250, BegOpa = 0.75;
-let smt_ = {
-		ObjNum: 1,
-		SmTFlg: [],
-		// Sprite Material
-		SprTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
-		SprMap: 0,
-		SprMat: [],
-		// Sprites
-		SprNum: [100],			// Number of Sprites
-		Spritz: [],				// Each Sprite
-		MapPos: [],				// Map Position of Each Sprite
-		SprSpc: [3],			// Sprite Spacing
-		SpcCnt: [0],			// Spacing Count
-		SprIdx: [],				// Current Sprite
-		SprRot: [],				// Rotation of Each Sprite
-		BegOpa: [1.0],			// Beginning Opacity
-		OpaMul: [0.85],			// Opacity Decrement Multiplier
-		OpaDec: [],				// Opacity Decrement
-		SprSpn: [0],			// Sprite Spin
-		BegSiz: [1.5],			// Beginning Size
-		Parent: [],				// Parent of Each Sprite
-	}
-
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
 	mys_.AirMsh = new THREE.Object3D();
@@ -698,7 +673,7 @@ function initObject() {
 	initMoving();
 	initAAAGun(aaf_,txt_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_);
-	initSmkTrl(smt_,gen_);
+	initSmkTrl(smt_,air_,xac_,gen_);
 }
 
 //- Init Bomb ------------------//----------------------------------------------
@@ -725,9 +700,9 @@ function moveObject() {
 	for (let n = 0; n < bom_.ObjNum; n++) {
 		if (bom_.ExpFlg[n]) moveBomExp(n);
 	}
-	smt_.SmTFlg[0]=1;
+	smt_.SmTFlg[0]=1;			// Start Own Smoke
 	for (let n = 0; n < smt_.ObjNum; n++) {
-		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,n);
+		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,air_,n);
 	}
 }
 
@@ -1173,91 +1148,6 @@ function moveAirPln() {
 
 /*******************************************************************************
 *
-*	AIRCRAFT SMOKE TRAIL
-*
-*******************************************************************************/
-// Fixed Collection of Sprites, with different Opacities and Sizes
-// Start with Sprite #1 at Object Position
-// For next Sprite, Sprite #2 = Sprite #1 Position, Sprite #1 at Object Position
-// For entire line, Sprite #9 = Sprite #8, etc, Sprite #1 = Object Position
-
-//= LOAD =======================//==============================================
-function loadSmkTrl(smt_,gen_) {
-	// Load Common Smoke Material
-	smt_.SprMap = gen_.txtrLd.load(smt_.SprTxt);
-}
-
-//= INIT =======================//==============================================
-
-function initSmkTrl(smt_,gen_) {
-	for (let n = 0; n < smt_.ObjNum; n++) {
-		// Init Values
-		smt_.Spritz[n] = [];	
-		smt_.MapPos[n] = [];	// MapPos for Each Sprite
-		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
-		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
-		smt_.SprRot[n] = 90;
-		smt_.Parent[n] = air_.MapPos;
-		//	Init Material
-		smt_.SprMat[n] = new THREE.SpriteNodeMaterial(),
-		smt_.SprMat[n].colorNode = texture(smt_.SprMap);
-		smt_.SprMat[n].transparent = true;
-		smt_.SprMat[n].depthWrite = false;
-		smt_.SprMat[n].alphaTest = 0.1; // Adjust between 0.0 and 1.0
-		//	Init Sprites (initializes Size and Rotation)
-		for (let x = 0; x < smt_.SprNum[n]; x++) {
-			//	Make Sprites
-			smt_.Spritz[n][x] = new THREE.Sprite(smt_.SprMat[n]);
-			smt_.Spritz[n][x].material.rotation = smt_.SprRot[n]*DegRad;
-			smt_.Spritz[n][x].scale.setScalar(smt_.BegSiz[n]);
-			gen_.scene.add(smt_.Spritz[n][x]);
-			smt_.MapPos[n][x] = new THREE.Vector3();
-			//	Adjust Starting Rotation
-			smt_.SprRot[n] = Mod360(smt_.SprRot[n]+36);		// Rotate Each Sprite
-		}
-	}
-}
-
-//= MOVE =======================//==============================================
-
-function moveSmkTrl(smt_,n) {	// OK
-	let X,Y,Z;
-//	Deposit New Sprite
-	if (!smt_.SpcCnt[n]) {
-		if (!smt_.SprIdx[n]) smt_.SprIdx[n] = smt_.SprNum[n];
-		smt_.SprIdx[n]--;
-		smt_.MapPos[n][smt_.SprIdx[n]].copy(smt_.Parent[n]);
-	}
-	smt_.SpcCnt[n]++;
-	if (smt_.SpcCnt[n] == smt_.SprSpc[n]) smt_.SpcCnt[n] = 0;
-//	Compute Relative Distance - from 0 to SprNum
-	let Opa = smt_.BegOpa[n];
-	let OpaDif = smt_.OpaDec[n];
-	for (let x = smt_.SprIdx[n]; x < smt_.SprNum[n]; x++) {
-		// Compute New Relative Position
-		X = smt_.MapPos[n][x].x-air_.MapPos.x;
-		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
-		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
-		smt_.Spritz[n][x].position.set(X,Y,Z);
-		if (smt_.SprSpn[n]) smt_.Spritz[n][x].material.rotation += smt_.SprSpn[n];
-		smt_.Spritz[n][x].material.opacity = Opa;
-		Opa = Opa - OpaDif;
-	}
-// Compute Relative Distance - Remaining
-	for (let x = 0; x < smt_.SprIdx[n]; x++) {
-		// Compute New Relative Position
-		X = smt_.MapPos[n][x].x-air_.MapPos.x;
-		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
-		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
-		smt_.Spritz[n][x].position.set(X,Y,Z);
-		if (smt_.SprSpn[n]) smt_.Spritz[n][x].material.rotation += smt_.SprSpn[n];
-		smt_.Spritz[n][x].material.opacity = Opa;
-		Opa = Opa - OpaDif;
-	}
-}
-
-/*******************************************************************************
-*
 *	6. SOUNDS
 *
 *******************************************************************************/
@@ -1616,6 +1506,7 @@ function onWindowResize() {
 260507: Added 4 directed AAA guns.
 260525: Air combat!
 260704: Bombs
+260719: Sprite Smoke Trail
 */
 
 </script>
