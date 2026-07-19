@@ -1115,7 +1115,7 @@ function initXSHSmk(xss_,txt_) {
 
 /*******************************************************************************
 *
-*	SPRITE SMOKE TRAIL
+*	SPRITE SMOKE TRAILS
 *
 *******************************************************************************/
 // Fixed Collection of Sprites, with different Opacities and Sizes
@@ -1134,7 +1134,7 @@ function loadSmkTrl(smt_,gen_) {
 function initSmkTrl(smt_,gen_) {
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		// Init Values
-		smt_.Spritz[n] = [];	
+		smt_.Spritz[n] = [];	// Address of Each Sprite
 		smt_.MapPos[n] = [];	// MapPos for Each Sprite
 		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
 		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
@@ -1161,7 +1161,7 @@ function initSmkTrl(smt_,gen_) {
 
 //= MOVE =======================//==============================================
 
-function moveSmkTrl(smt_,n) {	// OK
+function moveSmkTrl(smt_,air_,n) {
 	let X,Y,Z;
 //	Deposit New Sprite
 	if (!smt_.SpcCnt[n]) {
