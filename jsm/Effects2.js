@@ -1140,7 +1140,7 @@ function initSmkTrl(smt_,gen_) {
 		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
 		smt_.SprRot[n] = 90;
 		//	Init Material
-		smt_.SprMat[n] = new THREE.SpriteNodeMaterial(),
+		smt_.SprMat[n] = new SpriteNodeMaterial(),
 		smt_.SprMat[n].colorNode = texture(smt_.SprMap);
 		smt_.SprMat[n].transparent = true;
 		smt_.SprMat[n].depthWrite = false;
