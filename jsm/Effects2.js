@@ -1148,11 +1148,11 @@ function initSmkTrl(smt_,gen_) {
 		//	Init Sprites (initializes Size and Rotation)
 		for (let x = 0; x < smt_.SprNum[n]; x++) {
 			//	Make Sprites
-			smt_.Spritz[n][x] = new THREE.Sprite(smt_.SprMat[n]);
+			smt_.Spritz[n][x] = new Sprite(smt_.SprMat[n]);
 			smt_.Spritz[n][x].material.rotation = smt_.SprRot[n]*DegRad;
 			smt_.Spritz[n][x].scale.setScalar(smt_.BegSiz[n]);
 			gen_.scene.add(smt_.Spritz[n][x]);
-			smt_.MapPos[n][x] = new THREE.Vector3();
+			smt_.MapPos[n][x] = new Vector3();
 			//	Adjust Starting Rotation
 			smt_.SprRot[n] = Mod360(smt_.SprRot[n]+36);		// Rotate Each Sprite
 		}
