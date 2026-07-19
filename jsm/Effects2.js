@@ -1498,7 +1498,7 @@ export {
 	initEndSeq,moveEndSeq,				// Ending Sequence
 	initXSHWak,moveXSHWak,				// Ship Wake
 	initXSHSmk,							// Ship Smoke
-	loadSmkTrl,initSmkTrl,moveSmkTrl	// Sprite Smoke Trail
+	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
 };
 
