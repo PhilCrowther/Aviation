@@ -1130,26 +1130,40 @@ function loadSmkTrl(smt_,gen_) {
 }
 
 //= INIT =======================//==============================================
+//	0 = Engine Smoke: SprNum = 150, BegOpa = 0.5;
+//	1 = Damage Smoke Trail: SprNum = 250, BegOpa = 0.75;
 
 function initSmkTrl(smt_,air_,xac_,gen_) {
-	// My Airplane
+	//- My Airplane - Oil Trail
 	smt_.ObjNum = 1;
+	smt_.SprNum[0] = 150;			// Number of Sprites
+	smt_.SprSpc[0] = 3;				// Sprite Spacing
+	smt_.BegOpa[0] = 1.0;			// Beginning Opacity
+	smt_.OpaMul[0] = 0.85;			// Opacity Decrement Multiplier
+	smt_.BegSiz[0] = 1.5;			// Beginning Size
 	smt_.Parent[0] = air_.MapPos; // Change this when add more
-	// If Other Airplanes (Need to Add xac_ Values to smt_ to create variation)
-//	if (xac_.ObjNum) {
-//		smt_.ObjNum = 1 + xac_.ObjNum;
-//		for (let n = 1; n < smt_.ObjNum; n++) {
-//			smt_.Parent[n] = xac_.MapPos[n-1]
-//		}
-//	}
-	//
+	// If Other Airplanes
+	if (xac_.ObjNum) {
+		smt_.ObjNum = 1 + xac_.ObjNum;
+		for (let n = 1; n < smt_.ObjNum; n++) {
+			smt_.SprNum[n] = 150;	// Number of Sprites
+			smt_.SprSpc[n] = 3;		// Sprite Spacing
+			smt_.BegOpa[n] = 1.0;	// Beginning Opacity
+			smt_.OpaMul[n] = 0.85;	// Opacity Decrement Multiplier
+			smt_.BegSiz[n] = 1.5;	// Beginning Size	
+			smt_.Parent[n] = xac_.MapPos[n-1]
+		}
+	}
+	//- Common Values
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		// Init Values
-		smt_.Spritz[n] = [];	// Address of Each Sprite
-		smt_.MapPos[n] = [];	// MapPos for Each Sprite
+		smt_.Spritz[n] = [];		// Address of Each Sprite
+		smt_.MapPos[n] = [];		// MapPos for Each Sprite
 		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
+		smt_.SpcCnt[n] = 0;			// Initialize
+		smt_.SprSpn[n] = 0;			// Default = No Spin
 		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
-		smt_.SprRot[n] = 90;
+		let SprRot = 90;
 		//	Init Material
 		smt_.SprMat[n] = new SpriteNodeMaterial(),
 		smt_.SprMat[n].colorNode = texture(smt_.SprMap);
@@ -1160,12 +1174,12 @@ function initSmkTrl(smt_,air_,xac_,gen_) {
 		for (let x = 0; x < smt_.SprNum[n]; x++) {
 			//	Make Sprites
 			smt_.Spritz[n][x] = new Sprite(smt_.SprMat[n]);
-			smt_.Spritz[n][x].material.rotation = smt_.SprRot[n]*DegRad;
+			smt_.Spritz[n][x].material.rotation = SprRot*DegRad;
 			smt_.Spritz[n][x].scale.setScalar(smt_.BegSiz[n]);
 			gen_.scene.add(smt_.Spritz[n][x]);
 			smt_.MapPos[n][x] = new Vector3();
 			//	Adjust Starting Rotation
-			smt_.SprRot[n] = Mod360(smt_.SprRot[n]+36);		// Rotate Each Sprite
+			SprRot = Mod360(SprRot+36);	// Rotate Each Sprite
 		}
 	}
 }
@@ -1258,9 +1272,7 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
 }
 
 /*******************************************************************************
-*
 *	BOMB SPHERE GEOMETRY
-*
 *******************************************************************************/
 
 //= INIT =======================//==============================================
@@ -1301,9 +1313,7 @@ function moveBomExp(bmx_,n) {
 }
 
 /*******************************************************************************
-*
 *	BOMB SMOKE TRAILS
-*
 *******************************************************************************/
 
 //= INIT =======================//==============================================
@@ -1397,9 +1407,7 @@ function moveBomSmT(bmt_,tim_,n) {
 }
 
 /*******************************************************************************
-*
 *	BOMB SMOKE
-*
 *******************************************************************************/
 // NOTES: Apparently, the SpriteMaterial moves, not the Sprites
 
