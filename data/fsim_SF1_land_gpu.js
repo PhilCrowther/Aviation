@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260706
+*	FSIM SF1 DATA: 260718
 *
 *********************************************************************************
 
@@ -573,6 +573,32 @@ let aaf_ = {
 		ExpSiz: [],				// Expanding Size
 		ExpLif: [],				// Life of Explosion (seconds)	
 	};
+
+//= SPRITE SMOKE TRAIL =========//==============================================
+//	0 = Engine Smoke: SprNum = 150, BegOpa = 0.5;
+//	1 = Damage Smoke Trail: SprNum = 250, BegOpa = 0.75;
+let smt_ = {
+		ObjNum: 1,
+		SmTFlg: [],
+		// Sprite Material
+		SprTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
+		SprMap: 0,
+		SprMat: [],
+		// Sprites
+		SprNum: [150],			// Number of Sprites
+		Spritz: [],				// Each Sprite
+		MapPos: [],				// Map Position of Each Sprite
+		SprSpc: [3],			// Sprite Spacing
+		SpcCnt: [0],			// Spacing Count
+		SprIdx: [],				// Current Sprite
+		SprRot: [],				// Rotation of Each Sprite
+		BegOpa: [1.0],			// Beginning Opacity
+		OpaMul: [0.85],			// Opacity Decrement Multiplier
+		OpaDec: [],				// Opacity Decrement
+		SprSpn: [0],			// Sprite Spin
+		BegSiz: [1.5],			// Beginning Size
+		Parent: [air_.MapPos],	// Parent of Each Sprite
+	}
 
 //= BOMB DATA ==================//==============================================
 
