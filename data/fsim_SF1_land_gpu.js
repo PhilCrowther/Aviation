@@ -597,7 +597,7 @@ let smt_ = {
 		OpaDec: [],				// Opacity Decrement
 		SprSpn: [0],			// Sprite Spin
 		BegSiz: [1.5],			// Beginning Size
-		Parent: [air_.MapPos],	// Parent of Each Sprite
+		Parent: [],				// Parent of Each Sprite
 	}
 
 //= BOMB DATA ==================//==============================================
