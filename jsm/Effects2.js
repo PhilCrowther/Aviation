@@ -1131,13 +1131,14 @@ function loadSmkTrl(smt_,gen_) {
 
 //= INIT =======================//==============================================
 
-function initSmkTrl(smt_,gen_) {
+function initSmkTrl(smt_,air_,gen_) {
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		// Init Values
 		smt_.Spritz[n] = [];	// Address of Each Sprite
 		smt_.MapPos[n] = [];	// MapPos for Each Sprite
 		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
 		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
+		smt_.Parent[n] = air_.MapPos;
 		smt_.SprRot[n] = 90;
 		//	Init Material
 		smt_.SprMat[n] = new SpriteNodeMaterial(),
