@@ -1131,14 +1131,24 @@ function loadSmkTrl(smt_,gen_) {
 
 //= INIT =======================//==============================================
 
-function initSmkTrl(smt_,air_,gen_) {
+function initSmkTrl(smt_,air_,xac_,gen_) {
+	// My Airplane
+	smt_.ObjNum = 1;
+	smt_.Parent[0] = air_.MapPos; // Change this when add more
+	// If Other Airplanes (Need to Add xac_ Values to smt_ to create variation)
+//	if (xac_.ObjNum) {
+//		smt_.ObjNum = 1 + xac_.ObjNum;
+//		for (let n = 1; n < smt_.ObjNum; n++) {
+//			smt_.Parent[n] = xac_.MapPos[n-1]
+//		}
+//	}
+	//
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		// Init Values
 		smt_.Spritz[n] = [];	// Address of Each Sprite
 		smt_.MapPos[n] = [];	// MapPos for Each Sprite
 		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
 		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
-		smt_.Parent[n] = air_.MapPos;
 		smt_.SprRot[n] = 90;
 		//	Init Material
 		smt_.SprMat[n] = new SpriteNodeMaterial(),
