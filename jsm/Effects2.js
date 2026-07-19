@@ -1151,7 +1151,7 @@ function initSmkTrl(smt_,air_,xac_,gen_) {
 			smt_.BegOpa[n] = 1.0;	// Beginning Opacity
 			smt_.OpaMul[n] = 0.85;	// Opacity Decrement Multiplier
 			smt_.BegSiz[n] = 1.5;	// Beginning Size	
-			smt_.Parent[n] = xac_.MapPos[n-1]
+			smt_.Parent[n] = xac_.MapPos[n-1];
 		}
 	}
 	//- Common Values
