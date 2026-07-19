@@ -1115,6 +1115,101 @@ function initXSHSmk(xss_,txt_) {
 
 /*******************************************************************************
 *
+*	SPRITE SMOKE TRAILS
+*
+*******************************************************************************/
+// Fixed Collection of Sprites, with different Opacities and Sizes
+// Start with Sprite #1 at Object Position
+// For next Sprite, Sprite #2 = Sprite #1 Position, Sprite #1 at Object Position
+// For entire line, Sprite #9 = Sprite #8, etc, Sprite #1 = Object Position
+
+//= LOAD =======================//==============================================
+function loadSmkTrl(smt_,gen_) {
+	// Load Common Smoke Material
+	smt_.SprMap = gen_.txtrLd.load(smt_.SprTxt);
+}
+
+//= INIT =======================//==============================================
+
+function initSmkTrl(smt_,air_,xac_,gen_) {
+	// My Airplane
+	smt_.ObjNum = 1;
+	smt_.Parent[0] = air_.MapPos; // Change this when add more
+	// If Other Airplanes (Need to Add xac_ Values to smt_ to create variation)
+//	if (xac_.ObjNum) {
+//		smt_.ObjNum = 1 + xac_.ObjNum;
+//		for (let n = 1; n < smt_.ObjNum; n++) {
+//			smt_.Parent[n] = xac_.MapPos[n-1]
+//		}
+//	}
+	//
+	for (let n = 0; n < smt_.ObjNum; n++) {
+		// Init Values
+		smt_.Spritz[n] = [];	// Address of Each Sprite
+		smt_.MapPos[n] = [];	// MapPos for Each Sprite
+		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
+		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
+		smt_.SprRot[n] = 90;
+		//	Init Material
+		smt_.SprMat[n] = new SpriteNodeMaterial(),
+		smt_.SprMat[n].colorNode = texture(smt_.SprMap);
+		smt_.SprMat[n].transparent = true;
+		smt_.SprMat[n].depthWrite = false;
+		smt_.SprMat[n].alphaTest = 0.1; // Adjust between 0.0 and 1.0
+		//	Init Sprites (initializes Size and Rotation)
+		for (let x = 0; x < smt_.SprNum[n]; x++) {
+			//	Make Sprites
+			smt_.Spritz[n][x] = new Sprite(smt_.SprMat[n]);
+			smt_.Spritz[n][x].material.rotation = smt_.SprRot[n]*DegRad;
+			smt_.Spritz[n][x].scale.setScalar(smt_.BegSiz[n]);
+			gen_.scene.add(smt_.Spritz[n][x]);
+			smt_.MapPos[n][x] = new Vector3();
+			//	Adjust Starting Rotation
+			smt_.SprRot[n] = Mod360(smt_.SprRot[n]+36);		// Rotate Each Sprite
+		}
+	}
+}
+
+//= MOVE =======================//==============================================
+
+function moveSmkTrl(smt_,air_,n) {
+	let X,Y,Z;
+//	Deposit New Sprite
+	if (!smt_.SpcCnt[n]) {
+		if (!smt_.SprIdx[n]) smt_.SprIdx[n] = smt_.SprNum[n];
+		smt_.SprIdx[n]--;
+		smt_.MapPos[n][smt_.SprIdx[n]].copy(smt_.Parent[n]);
+	}
+	smt_.SpcCnt[n]++;
+	if (smt_.SpcCnt[n] == smt_.SprSpc[n]) smt_.SpcCnt[n] = 0;
+//	Compute Relative Distance - from 0 to SprNum
+	let Opa = smt_.BegOpa[n];
+	let OpaDif = smt_.OpaDec[n];
+	for (let x = smt_.SprIdx[n]; x < smt_.SprNum[n]; x++) {
+		// Compute New Relative Position
+		X = smt_.MapPos[n][x].x-air_.MapPos.x;
+		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
+		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
+		smt_.Spritz[n][x].position.set(X,Y,Z);
+		if (smt_.SprSpn[n]) smt_.Spritz[n][x].material.rotation += smt_.SprSpn[n];
+		smt_.Spritz[n][x].material.opacity = Opa;
+		Opa = Opa - OpaDif;
+	}
+// Compute Relative Distance - Remaining
+	for (let x = 0; x < smt_.SprIdx[n]; x++) {
+		// Compute New Relative Position
+		X = smt_.MapPos[n][x].x-air_.MapPos.x;
+		Y = smt_.MapPos[n][x].y-air_.MapPos.y;
+		Z = air_.MapPos.z-smt_.MapPos[n][x].z;
+		smt_.Spritz[n][x].position.set(X,Y,Z);
+		if (smt_.SprSpn[n]) smt_.Spritz[n][x].material.rotation += smt_.SprSpn[n];
+		smt_.Spritz[n][x].material.opacity = Opa;
+		Opa = Opa - OpaDif;
+	}
+}
+
+/*******************************************************************************
+*
 *	BOMB EXPLOSION
 *
 *******************************************************************************/
@@ -1414,6 +1509,7 @@ export {
 	initEndSeq,moveEndSeq,				// Ending Sequence
 	initXSHWak,moveXSHWak,				// Ship Wake
 	initXSHSmk,							// Ship Smoke
+	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
 };
 
@@ -1447,4 +1543,5 @@ export {
 260702:	Add Bomb Subroutines
 260703: Add Bomb Sounds
 260706: Multiple Bombs
+260718: sPRITE Smoke Trail
 */
