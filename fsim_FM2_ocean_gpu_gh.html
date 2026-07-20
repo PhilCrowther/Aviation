@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Jul 2026
+Version dated 20 Jul 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -71,10 +71,10 @@ This demo has now been expanded to include a battle scenario which will eventual
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
 		}
 	}
 </script>
@@ -109,7 +109,8 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 		initXSHWak,moveXSHWak,	// Ship Wake
 		initXSHSmk,				// Ship Smoke (destroyer only)
-		loadExpBom,initExpBom,moveExpBom, // Bomb
+		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
+		loadExpBom,initExpBom,moveExpBom, // Bomb	
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
@@ -966,6 +967,7 @@ function loadObject() {
 	loadMyPeep(myp_,gen_);
 	loadMyCrew(myc_,gen_);
 	loadExpBom(bom_,gen_);
+	loadSmkTrl(smt_,gen_);
 }
 
 //== INIT OBJECTS ==============================================================
@@ -975,6 +977,7 @@ function initObject() {
 	initMoving();
 	initAAAGun(aaf_,txt_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_);
+	initSmkTrl(smt_,air_,xac_,gen_);
 }
 
 //- Init Bomb ------------------//----------------------------------------------
@@ -991,7 +994,7 @@ function initBomExp(n,pos,rot) {
 	bom_.ExpGrp[n].rotation.y = rot;
 }
 
-//== MOVE OBJECTS ==============================================================
+//== MOVE OBJECTS ==============//==============================================
 
 function moveObject() {
 	moveStatic();
@@ -1002,6 +1005,12 @@ function moveObject() {
 	moveMyCrew(myc_);
 	for (let n = 0; n < bom_.ObjNum; n++) {
 		if (bom_.ExpFlg[n]) moveBomExp(n);
+	}
+	//	Sprite Smoke Trails
+	smt_.SmTFlg[1] = 1;			// FM2 Smoke Test
+	smt_.SmTFlg[2] = 1;			// A6M Smoke Test
+	for (let n = 0; n < smt_.ObjNum; n++) {
+		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,air_,n);
 	}
 }
 
@@ -2016,6 +2025,8 @@ function onWindowResize() {
 251125:	Add scene, renderer, camera, Loaders and listener to gen_
 251226: Added SonLight to illuminate and create shadows in cockpit view only
 251227: Varied SunLight parameters with change in view and take-off/landing
+260706: Bombs
+260720:	Smoke Trail
 */
 
 </script>
