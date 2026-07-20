@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Jul 2026
+Version dated 20 Jul 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -700,7 +700,9 @@ function moveObject() {
 	for (let n = 0; n < bom_.ObjNum; n++) {
 		if (bom_.ExpFlg[n]) moveBomExp(n);
 	}
-	smt_.SmTFlg[0]=1;			// Start Own Smoke
+	//	Sprite Smoke Trails
+	if (!air_.GrdFlg) smt_.SmTFlg[0] = 1; // Start Own Smoke
+//	smt_.SmTFlg[1] = 1;			// Enemy Smoke Test
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,air_,n);
 	}
