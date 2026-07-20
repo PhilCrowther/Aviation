@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260706
+*	FSIM FM2 DATA: 260720
 *
 ********************************************************************************
 
@@ -896,6 +896,30 @@ let aaf_ = {
 		TimMin: [0,0],			// Time Off (frames)
 		TimFlg: [0,1000],		// Timer (pos = On, neg = Off)		
 	};
+
+//= SPRITE SMOKE TRAIL =========//==============================================
+//	Init Creates 1 Trail for My Airplane plus 1 Trail for each External Airplane (xac_)
+let smt_ = {
+		ObjNum: 0,				// [default = 1]
+		SmTFlg: [],
+		// Sprite Material
+		SprTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
+		SprMap: 0,
+		SprMat: [],
+		// Sprites
+		SprNum: [],				// Number of Sprites [default = 150]
+		Spritz: [],				// Each Sprite
+		MapPos: [],				// Map Position of Each Sprite
+		SprSpc: [],				// Sprite Spacing [default = 3]
+		SpcCnt: [],				// Spacing Count [initialize at 0]
+		SprIdx: [],				// Current Sprite
+		BegOpa: [],				// Beginning Opacity [default = 1]
+		OpaMul: [],				// Opacity Decrement Multiplier [default = 0.85]
+		OpaDec: [],				// Opacity Decrement
+		SprSpn: [],				// Sprite Spin [default = 0]
+		BegSiz: [],				// Beginning Size [default = 1.5]
+		Parent: [],				// Parent of Each Sprite
+	}
 
 //= BOMB DATA ==================//==============================================
 
