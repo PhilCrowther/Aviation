@@ -1136,32 +1136,32 @@ function loadSmkTrl(smt_,gen_) {
 function initSmkTrl(smt_,air_,xac_,gen_) {
 	//- My Airplane - Oil Trail
 	smt_.ObjNum = 1;
-	smt_.SprNum[0] = 150;			// Number of Sprites
-	smt_.SprSpc[0] = 3;				// Sprite Spacing
-	smt_.BegOpa[0] = 1.0;			// Beginning Opacity
-	smt_.OpaMul[0] = 0.85;			// Opacity Decrement Multiplier
-	smt_.BegSiz[0] = 1.5;			// Beginning Size
+	smt_.SprNum[0] = 150;		// Number of Sprites
+	smt_.SprSpc[0] = 3;			// Sprite Spacing
+	smt_.BegOpa[0] = 1.0;		// Beginning Opacity
+	smt_.OpaMul[0] = 0.85;		// Opacity Decrement Multiplier
+	smt_.BegSiz[0] = 1.5;		// Beginning Size
 	smt_.Parent[0] = air_.MapPos; // Change this when add more
-	// If Other Airplanes
+	// Other Airplanes - Damage Trail
 	if (xac_.ObjNum) {
 		smt_.ObjNum = 1 + xac_.ObjNum;
 		for (let n = 1; n < smt_.ObjNum; n++) {
-			smt_.SprNum[n] = 150;	// Number of Sprites
-			smt_.SprSpc[n] = 3;		// Sprite Spacing
+			smt_.SprNum[n] = 250;	// Number of Sprites
+			smt_.SprSpc[n] = 2;		// Sprite Spacing
 			smt_.BegOpa[n] = 1.0;	// Beginning Opacity
-			smt_.OpaMul[n] = 0.85;	// Opacity Decrement Multiplier
-			smt_.BegSiz[n] = 1.5;	// Beginning Size	
+			smt_.OpaMul[n] = 0.75;	// Opacity Decrement Multiplier
+			smt_.BegSiz[n] = 2.5;	// Beginning Size	
 			smt_.Parent[n] = xac_.MapPos[n-1];
 		}
 	}
 	//- Common Values
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		// Init Values
-		smt_.Spritz[n] = [];		// Address of Each Sprite
-		smt_.MapPos[n] = [];		// MapPos for Each Sprite
+		smt_.Spritz[n] = [];	// Address of Each Sprite
+		smt_.MapPos[n] = [];	// MapPos for Each Sprite
 		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
-		smt_.SpcCnt[n] = 0;			// Initialize
-		smt_.SprSpn[n] = 0;			// Default = No Spin
+		smt_.SpcCnt[n] = 0;		// Initialize
+		smt_.SprSpn[n] = 0;		// Default = No Spin
 		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
 		let SprRot = 90;
 		//	Init Material
@@ -1178,6 +1178,7 @@ function initSmkTrl(smt_,air_,xac_,gen_) {
 			smt_.Spritz[n][x].scale.setScalar(smt_.BegSiz[n]);
 			gen_.scene.add(smt_.Spritz[n][x]);
 			smt_.MapPos[n][x] = new Vector3();
+			smt_.Spritz[n][x].position.set(0,-10000,0); // Hide Sprites Until Used
 			//	Adjust Starting Rotation
 			SprRot = Mod360(SprRot+36);	// Rotate Each Sprite
 		}
