@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 Jul 2026
+Version dated 21 Jul 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -650,7 +650,9 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	// Gun Data
 	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
 	aaf_.GunRot = [new THREE.Euler(45,270,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
-	// Optional: Targeting [N/A]
+	// Optional: Targeting
+	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3)
+	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y],	// Targeting: Gun Old Rotation [260508]
 	// Optional: Gun Object [N/A]
 	// Bullet Data
 	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
