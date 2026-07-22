@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Jul 2026
+Version dated 22 Jul 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1130,40 +1130,26 @@ function loadSmkTrl(smt_,gen_) {
 }
 
 //= INIT =======================//==============================================
-//	0 = Engine Smoke: SprNum = 150, BegOpa = 0.5;
-//	1 = Damage Smoke Trail: SprNum = 250, BegOpa = 0.75;
 
 function initSmkTrl(smt_,air_,xac_,gen_) {
-	//- My Airplane - Oil Trail
+	// My Airplane
 	smt_.ObjNum = 1;
-	smt_.SprNum[0] = 150;		// Number of Sprites
-	smt_.SprSpc[0] = 3;			// Sprite Spacing
-	smt_.BegOpa[0] = 1.0;		// Beginning Opacity
-	smt_.OpaMul[0] = 0.85;		// Opacity Decrement Multiplier
-	smt_.BegSiz[0] = 1.5;		// Beginning Size
 	smt_.Parent[0] = air_.MapPos; // Change this when add more
-	// Other Airplanes - Damage Trail
-	if (xac_.ObjNum) {
-		smt_.ObjNum = 1 + xac_.ObjNum;
-		for (let n = 1; n < smt_.ObjNum; n++) {
-			smt_.SprNum[n] = 250;	// Number of Sprites
-			smt_.SprSpc[n] = 2;		// Sprite Spacing
-			smt_.BegOpa[n] = 1.0;	// Beginning Opacity
-			smt_.OpaMul[n] = 0.75;	// Opacity Decrement Multiplier
-			smt_.BegSiz[n] = 2.5;	// Beginning Size	
-			smt_.Parent[n] = xac_.MapPos[n-1];
-		}
-	}
-	//- Common Values
+	// If Other Airplanes (Need to Add xac_ Values to smt_ to create variation)
+//	if (xac_.ObjNum) {
+//		smt_.ObjNum = 1 + xac_.ObjNum;
+//		for (let n = 1; n < smt_.ObjNum; n++) {
+//			smt_.Parent[n] = xac_.MapPos[n-1]
+//		}
+//	}
+	//
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		// Init Values
 		smt_.Spritz[n] = [];	// Address of Each Sprite
 		smt_.MapPos[n] = [];	// MapPos for Each Sprite
 		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
-		smt_.SpcCnt[n] = 0;		// Initialize
-		smt_.SprSpn[n] = 0;		// Default = No Spin
 		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
-		let SprRot = 90;
+		smt_.SprRot[n] = 90;
 		//	Init Material
 		smt_.SprMat[n] = new SpriteNodeMaterial(),
 		smt_.SprMat[n].colorNode = texture(smt_.SprMap);
@@ -1174,13 +1160,12 @@ function initSmkTrl(smt_,air_,xac_,gen_) {
 		for (let x = 0; x < smt_.SprNum[n]; x++) {
 			//	Make Sprites
 			smt_.Spritz[n][x] = new Sprite(smt_.SprMat[n]);
-			smt_.Spritz[n][x].material.rotation = SprRot*DegRad;
+			smt_.Spritz[n][x].material.rotation = smt_.SprRot[n]*DegRad;
 			smt_.Spritz[n][x].scale.setScalar(smt_.BegSiz[n]);
 			gen_.scene.add(smt_.Spritz[n][x]);
 			smt_.MapPos[n][x] = new Vector3();
-			smt_.Spritz[n][x].position.set(0,-10000,0); // Hide Sprites Until Used
 			//	Adjust Starting Rotation
-			SprRot = Mod360(SprRot+36);	// Rotate Each Sprite
+			smt_.SprRot[n] = Mod360(smt_.SprRot[n]+36);		// Rotate Each Sprite
 		}
 	}
 }
@@ -1273,7 +1258,9 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
 }
 
 /*******************************************************************************
+*
 *	BOMB SPHERE GEOMETRY
+*
 *******************************************************************************/
 
 //= INIT =======================//==============================================
@@ -1314,7 +1301,9 @@ function moveBomExp(bmx_,n) {
 }
 
 /*******************************************************************************
+*
 *	BOMB SMOKE TRAILS
+*
 *******************************************************************************/
 
 //= INIT =======================//==============================================
@@ -1408,7 +1397,9 @@ function moveBomSmT(bmt_,tim_,n) {
 }
 
 /*******************************************************************************
+*
 *	BOMB SMOKE
+*
 *******************************************************************************/
 // NOTES: Apparently, the SpriteMaterial moves, not the Sprites
 
@@ -1428,9 +1419,9 @@ function initBomSmk(bms_,bom_,n) {
 	//-	Material ---------------------------------------------------------------
 	let smokeNodeMaterial = new SpriteNodeMaterial();
 	//	Color
-	let smokeColor = mix(color(0x2c1501),color(0x222222),positionLocal.y.mul(3).clamp());
+	let smokeColor = mix(color(bms_.SmkCol[n].x),color(bms_.SmkCol[n].y),positionLocal.y.mul(3).clamp());
 	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-		smokeNodeMaterial.colorNode = mix(color(0xf27d0c),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
+		smokeNodeMaterial.colorNode = mix(color(bms_.SmkCol[n].z),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
 	//	Opacity
 	let rotateRange = range(.1,4);
 	let textureNode = texture(bom_.SmkMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
