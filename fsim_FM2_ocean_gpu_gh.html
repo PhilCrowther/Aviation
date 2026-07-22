@@ -680,9 +680,12 @@ let	AARYDf = [0,0];				// Y-Rotation Adjustment
 		bmt_.SmkOff[n] = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
 		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
 		bms_.SmkCol[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
+		bms_.SubSiz[n] = 0.01;	// Longer Life w/Fire
 	}
 	// Explosion Colors
 	bms_.SmkCol[0].z = "black";	// No Fire
+	// Life
+	bms_.SubSiz[0] = 0.05;		// No Fire, Shorter Life
 
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
