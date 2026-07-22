@@ -1469,7 +1469,7 @@ function moveBomSmk(bms_,bom_,n) {
 	}
 	// Contract Slowly
 	if (!bms_.GroFlg[n]) {
-		bms_.RemSiz[n] = bms_.RemSiz[n] - 0.01; // (default = 0.01; test = 0.05)
+		bms_.RemSiz[n] = bms_.RemSiz[n] - bms_.SubSiz[n]; // (default SubSiz = 0.01; test = 0.05)
 		if (bms_.RemSiz[n] < 1) {
 			bms_.RemSiz[n] = 1;
 			bms_.GroFlg[n] = 1;	// Grow Next Time
