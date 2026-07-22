@@ -990,6 +990,7 @@ let bms_ = {
 		RemSiz: [],				// Remaining Size
 		GroFlg: [],				// Grow Smoke (after first use)
 		SmkCol: [],				// Smoke Color (vector3)
+		SubSiz: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
 	}
 
 //- 6. SOUND VARIABLES =========//==============================================
