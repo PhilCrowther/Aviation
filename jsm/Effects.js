@@ -1470,13 +1470,12 @@ function moveBomSmk(bms_,bom_,n) {
 	// Contract Slowly
 	if (!bms_.GroFlg[n]) {
 		bms_.RemSiz[n] = bms_.RemSiz[n] - bms_.SubSiz[n]; // (default SubSiz = 0.01; test = 0.05)
-		if (bms_.RemSiz[n] < 1) {
-			bms_.RemSiz[n] = 1;
+		if (bms_.RemSiz[n] < 0.001) {
+			bms_.RemSiz[n] = 0.001;
 			bms_.GroFlg[n] = 1;	// Grow Next Time
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
-			scene.remove(bom_.ExpGrp[n]);
-			bom_.MapPos[n].x = bom_.MapPos[n].x + 10;
-			bom_.MapPos[n].z = bom_.MapPos[n].z + 10;
+			scene.remove(bom_.ExpGrp[n]); // ERR: not make dispaly invisible
+			bom_.ExpGrp[n].position.y = -10000;
 		}
 	}
 	bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
