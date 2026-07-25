@@ -1427,6 +1427,8 @@ function initBomSmk(bms_,bom_,n) {
 	let life = lifeTime.div(lifeRange);	// Used by Color and Opacity
 	//-	Material ---------------------------------------------------------------
 	let smokeNodeMaterial = new SpriteNodeMaterial();
+		smokeNodeMaterial.transparent = true;
+		smokeNodeMaterial.depthWrite = false;
 	//	Color
 	let smokeColor = mix(color(bms_.SmkCol[n].x),color(bms_.SmkCol[n].y),positionLocal.y.mul(3).clamp());
 	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
@@ -1442,9 +1444,7 @@ function initBomSmk(bms_,bom_,n) {
 	//	Scale
 	let scaleRange = range(.3,2);
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
-	//	Depth Write
-		smokeNodeMaterial.depthWrite = false;
-	//-	Meshes -----------------------------------------------------------------
+	//-	Mesh -------------------------------------------------------------------
 		bms_.SmkSpr[n] = new Mesh(new PlaneGeometry(1,1),smokeNodeMaterial);
 		bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
 		bms_.SmkSpr[n].isInstancedMesh = true;
