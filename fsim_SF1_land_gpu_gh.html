@@ -233,11 +233,10 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.receiveShadow = true;	
 	renderer.shadowMap.type = THREE.PCFShadowMap; // r182
 	renderer.logarithmicDepthBuffer = true;
-//	renderer.reversedDepthBuffer = true; // needs more!!!
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Tone Mapping
-	renderer.toneMapping = THREE.NoToneMapping;			// clouded
+//	renderer.toneMapping = THREE.NoToneMapping;			// clouded
 //	renderer.toneMapping = THREE.LinearToneMapping;		// brighter?
 //	renderer.toneMapping = THREE.ReinhardToneMapping;	// clouded
 //	renderer.toneMapping = THREE.CineonToneMapping;		// contrast - dark
