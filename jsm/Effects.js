@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 22 Jul 2026
+Version dated 26 Jul 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1448,6 +1448,7 @@ function initBomSmk(bms_,bom_,n) {
 		bms_.SmkSpr[n] = new Mesh(new PlaneGeometry(1,1),smokeNodeMaterial);
 		bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
 		bms_.SmkSpr[n].isInstancedMesh = true;
+		bms_.SmkSpr[n].frustumCulled = false;
 		bms_.SmkSpr[n].count = 1000;
 		bms_.SmkSpr[n].renderOrder = 1;
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
