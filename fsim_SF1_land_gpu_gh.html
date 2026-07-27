@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 22 Jul 2026
+Version dated 27 Jul 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -709,7 +709,6 @@ function moveObject() {
 	}
 	//	Sprite Smoke Trails
 	if (!air_.GrdFlg) smt_.SmTFlg[0] = 1; // Start Own Smoke
-//	smt_.SmTFlg[1] = 1;			// Enemy Smoke Test
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,air_,n);
 	}
@@ -818,6 +817,8 @@ function moveMovPln() {
 			xac_.RotDif[n].y = RadDeg*Math.tan(xac_.AirRot[n].z*DegRad)*GrvMPS/xac_.SpdMPS[n];
 			xac_.RotDif[n].y = xac_.RotDif[n].y * tim_.DLTime;
 			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif[n].y);
+			// Start Sprite Smoke Trail
+			if (!smt_.SmTFlg[n+1] && xac_.HitCnt[n] > 10) smt_.SmTFlg[n+1] = 1;
 		}
 		else {				// If Ending Sequence
 			let SegIdx = moveEndSeq(n,xac_,myg_,tim_); // Execute Ending Sequence
