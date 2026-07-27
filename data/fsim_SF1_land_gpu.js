@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260718
+*	FSIM SF1 DATA: 260727
 *
 *********************************************************************************
 
@@ -263,7 +263,7 @@ let xac_ = {
 		EngVol: [0],			// Volume
 		// End Sequence
 		HitCnt: [0],			// Hits Taken
-		HitMax: 5,				// Hits Required
+		HitMax: 25,				// Hits Required
 		EndSeq: [0],			// End Sequence Flag
 		// End Sound
 		SndFlg: [0],			// 1 = Start Explosion Sound
