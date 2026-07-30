@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Jul 2026
+Version dated 30 Jul 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -357,6 +357,7 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb
 		// End Sequence
 		xac_.HitCnt[n] = 0;		// Hits Taken
 		xac_.EndSeq[n] = 0;		// End Sequence Running
+		xac_.HitGrd[n] = 0;		// Hit Ground
 		// End Sound
 		xac_.SndFlg[n] = 0;		// 1 = Start Explosion Sound
 		xac_.SndPtr[n] = 0;
@@ -805,6 +806,7 @@ function initMovPln() {
 
 function moveMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
+		//- Rotation ...........................................................
 		if (!xac_.EndSeq[n]) {
 			// Bank
 			xac_.AirRot[n].z = Mod360(xac_.AirRot[n].z + xac_.RotDif[n].z);
@@ -817,7 +819,7 @@ function moveMovPln() {
 			xac_.RotDif[n].y = RadDeg*Math.tan(xac_.AirRot[n].z*DegRad)*GrvMPS/xac_.SpdMPS[n];
 			xac_.RotDif[n].y = xac_.RotDif[n].y * tim_.DLTime;
 			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif[n].y);
-			// Start Sprite Smoke Trail
+			// If Enough Hits, Start Sprite Smoke Trail
 			if (!smt_.SmTFlg[n+1] && xac_.HitCnt[n] > 10) smt_.SmTFlg[n+1] = 1;
 		}
 		else {				// If Ending Sequence
@@ -832,51 +834,53 @@ function moveMovPln() {
 		}
 		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
 		//- Speed ..............................................................
-		if (bfm_.BFMflg[n]) {
-			//- Air Data
-			let AirGrv = 9.80665;	// Gravity (m/s2)
-			let AirDSL = 1.225;		// Sea level density
-			//- SF1 Data
-			let ACMass = 659;		// Aircraft Mass (grams)
-			let ACWght = 6462;		// Aircraft Weight (Newtons)
-			let WngSqr = 21.5;		// Wing Area (m2)
-			let WngEff = 0.7;		// Wing Efficiency
-			let WngAsp = 4.11;		// Wing Aspect Ratio
-			let CfDrgP = 0.04;		// Coefficientr of Drag - Parasitic
-			let ThrMax = 97;		// Thrust (kw) 97kw = 130hp
-			let PrpEff = 0.75;		// Prop Efficiency
-			//- Comps
-			let DLTim2 = tim_.DLTime**2;
-			let DynPrs = (xac_.SpdMPS[n]**2)*AirDSL/2; // At 47.5mps = 1382
-			let LftReq = Math.abs(Math.cos(xac_.AirObj[n].rotation.x)*ACWght); // At 0 bank = 6462
-			let CfLift = LftReq/(DynPrs*WngSqr*Math.abs(Math.cos(xac_.AirObj[n].rotation.z)));
-			let CfDrgI = (CfLift**2)/(Math.PI*WngEff*WngAsp);
-			let DrgInd = CfDrgI*DynPrs*WngSqr;
-			let DrgPar = CfDrgP*DynPrs*WngSqr;
-			let ThrReq = (DrgInd+DrgPar)/(1000*PrpEff/xac_.SpdMPS[n]);
-			if (ThrReq > ThrMax) ThrReq = ThrMax;
-			let ThrNet = ThrReq - DrgInd - DrgPar;
-			let ThrAcc = (ThrNet/ACMass)*DLTim2;
-			xac_.SpdMPS[n] = xac_.SpdMPS[n] + ThrAcc;
-		}		
-		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
-		xac_.SpdKPH[n] = xac_.SpdMPS[n] * 3.6;
-		//- Map Speed ..........................................................
-		xac_.MapSpd[n] = new THREE.Spherical(xac_.SpdMPF[n],(90-xac_.AirRot[n].x)*DegRad,Mod360(xac_.AirRot[n].y)*DegRad);
-		xac_.MapSpd[n] = new THREE.Vector3().setFromSpherical(xac_.MapSpd[n]);
-		//. Recompute Map Position .............................................
-		xac_.MapPos[n].x = xac_.MapPos[n].x + xac_.MapSpd[n].x;
-		xac_.MapPos[n].z = xac_.MapPos[n].z + xac_.MapSpd[n].z;
-		xac_.MapPos[n].y = xac_.MapPos[n].y + xac_.MapSpd[n].y;
-		// Animation - Prop (same as mine)
-		if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
+		if (!xac_.HitGrd[n]) {
+			if (bfm_.BFMflg[n]) {
+				//- Air Data
+				let AirGrv = 9.80665;	// Gravity (m/s2)
+				let AirDSL = 1.225;		// Sea level density
+				//- SF1 Data
+				let ACMass = 659;		// Aircraft Mass (grams)
+				let ACWght = 6462;		// Aircraft Weight (Newtons)
+				let WngSqr = 21.5;		// Wing Area (m2)
+				let WngEff = 0.7;		// Wing Efficiency
+				let WngAsp = 4.11;		// Wing Aspect Ratio
+				let CfDrgP = 0.04;		// Coefficientr of Drag - Parasitic
+				let ThrMax = 97;		// Thrust (kw) 97kw = 130hp
+				let PrpEff = 0.75;		// Prop Efficiency
+				//- Compute New Speed
+				let DLTim2 = tim_.DLTime**2;
+				let DynPrs = (xac_.SpdMPS[n]**2)*AirDSL/2; // At 47.5mps = 1382
+				let LftReq = Math.abs(Math.cos(xac_.AirObj[n].rotation.x)*ACWght); // At 0 bank = 6462
+				let CfLift = LftReq/(DynPrs*WngSqr*Math.abs(Math.cos(xac_.AirObj[n].rotation.z)));
+				let CfDrgI = (CfLift**2)/(Math.PI*WngEff*WngAsp);
+				let DrgInd = CfDrgI*DynPrs*WngSqr;
+				let DrgPar = CfDrgP*DynPrs*WngSqr;
+				let ThrReq = (DrgInd+DrgPar)/(1000*PrpEff/xac_.SpdMPS[n]);
+				if (ThrReq > ThrMax) ThrReq = ThrMax;
+				let ThrNet = ThrReq - DrgInd - DrgPar;
+				let ThrAcc = (ThrNet/ACMass)*DLTim2;
+				xac_.SpdMPS[n] = xac_.SpdMPS[n] + ThrAcc;
+			}
+			xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
+			xac_.SpdKPH[n] = xac_.SpdMPS[n] * 3.6;
+			//- Map Speed ..........................................................
+			xac_.MapSpd[n] = new THREE.Spherical(xac_.SpdMPF[n],(90-xac_.AirRot[n].x)*DegRad,Mod360(xac_.AirRot[n].y)*DegRad);
+			xac_.MapSpd[n] = new THREE.Vector3().setFromSpherical(xac_.MapSpd[n]);
+			//. Recompute Map Position .............................................
+			xac_.MapPos[n].x = xac_.MapPos[n].x + xac_.MapSpd[n].x;
+			xac_.MapPos[n].z = xac_.MapPos[n].z + xac_.MapSpd[n].z;
+			xac_.MapPos[n].y = xac_.MapPos[n].y + xac_.MapSpd[n].y;
+			// Animation - Prop (same as mine)
+			if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
+		}
 		//. Compute New Relative Position ......................................
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
 		let Y = xac_.MapPos[n].y-air_.MapPos.y;	// No altitude adjustment
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.AirObj[n].position.set(X,Y,Z);
 		//. BFM
-		if (n == (myg_.HitTgt-1)) BFM(n);
+		if (n == (myg_.HitTgt-1)) BFM(n);	// If HitGrd, should no longer be HitTgt
 	}
 }
 

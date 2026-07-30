@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 22 Jul 2026
+Version dated 30 Jul 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -469,6 +469,7 @@ let XPFNam = ["xac_fm2.glb","xac_a6m.glb"];
 		// End Sequence
 		xac_.HitCnt[n] = 0;		// Hits Taken
 		xac_.EndSeq[n] = 0;		// End Sequence Running
+		xac_.HitGrd[n] = 0;		// Hit Ground
 		// End Sound
 		xac_.SndFlg[n] = 0;		// 1 = Start Explosion Sound
 		xac_.SndPtr[n] = 0;
@@ -1165,17 +1166,22 @@ function moveMovPln() {
 		}
 		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
 		//- Speed ..............................................................
-		xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
-		xac_.SpdKPH[n] = xac_.SpdMPS[n] * 3.6;
-		//- Map Speed ..........................................................
-		xac_.MapSpd[n] = new THREE.Spherical(xac_.SpdMPF[n],(90-xac_.AirRot[n].x)*DegRad,Mod360(xac_.AirRot[n].y)*DegRad);
-		xac_.MapSpd[n] = new THREE.Vector3().setFromSpherical(xac_.MapSpd[n]);
-		//. Recompute Map Position .............................................
-		xac_.MapPos[n].x = xac_.MapPos[n].x + xac_.MapSpd[n].x;
-		xac_.MapPos[n].z = xac_.MapPos[n].z + xac_.MapSpd[n].z;
-		xac_.MapPos[n].y = xac_.MapPos[n].y + xac_.MapSpd[n].y;
-		// Animation - Prop (same as mine)
-		if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
+		if (!xac_.HitGrd[n]) {
+			if (bfm_.BFMflg[n]) {
+				// See SF!_land for computation of xac_.SpdMPS[n]
+			}
+			xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
+			xac_.SpdKPH[n] = xac_.SpdMPS[n] * 3.6;
+			//- Map Speed ..........................................................
+			xac_.MapSpd[n] = new THREE.Spherical(xac_.SpdMPF[n],(90-xac_.AirRot[n].x)*DegRad,Mod360(xac_.AirRot[n].y)*DegRad);
+			xac_.MapSpd[n] = new THREE.Vector3().setFromSpherical(xac_.MapSpd[n]);
+			//. Recompute Map Position .............................................
+			xac_.MapPos[n].x = xac_.MapPos[n].x + xac_.MapSpd[n].x;
+			xac_.MapPos[n].z = xac_.MapPos[n].z + xac_.MapSpd[n].z;
+			xac_.MapPos[n].y = xac_.MapPos[n].y + xac_.MapSpd[n].y;
+			// Animation - Prop (same as mine)
+			if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
+		}
 		//. Compute New Relative Position ......................................
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
 		let Y = xac_.MapPos[n].y-air_.MapPos.y;	// No altitude adjustment
