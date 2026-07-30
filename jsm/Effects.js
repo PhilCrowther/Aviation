@@ -444,8 +444,8 @@ function moveEndSeq(n,xac_,myg_,tim_) {
 	else {						// Continuing Actions (if Still Counting Down)
 		if (xat_.SegIdx == 0) {
 			makeXACSpn(n,xac_);
-			if (xac_.MapSPS[n].y < 0) {
-				xac_.MapSPS[n].y = 0; // On Ground
+			if (xac_.MapPos[n].y < 0) {
+				xac_.MapPos[n].y = 0; // On Ground
 				xac_.HitGrd[n] = 1;	// Set Flag to Stop Further Movement
 				stopXACFyr();	// End Fire (later make it vertical and slowly shrink)
 				xac_.EndSeq[n] = 0; // Flag Reset
