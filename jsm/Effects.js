@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 26 Jul 2026
+Version dated 30 Jul 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -423,9 +423,7 @@ function initXACSmk(txt_) {
 
 let xat_ = {
 		// Segments:
-		// 0 = 1st Explosion
 		// 1 = Spinning and Burning
-		// 2 = 2nd Explosion
 		SegTim: [0.05,5,0.1],	// Explosion#1,Flames,	
 		SegIdx: -1,				// Start at -1 so can increment at beginning
 		TimRem: 0,
@@ -436,35 +434,24 @@ function moveEndSeq(n,xac_,myg_,tim_) {
 	// this sequence called if xac_.EndSeq[n] = 1;
 	// TimRem Starts at 0, So Starts Next Event
 	if (!xat_.TimRem) {			// Start New Actions (if Countdown = 0)
-		xat_.SegIdx ++;
-
-		// Select Actions
+		xat_.SegIdx ++;			// Next Segment
+		// Select Actions (Only 1)
 		if (xat_.SegIdx == 0) {
-			begnXACExp(n,xac_); // Begin Explosion 1
-			xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
-		}
-		if (xat_.SegIdx == 1) {
-			stopXACExp(n,xac_); // Stop Explosion 1
 			begnXACFyr(n,xac_); // Start Smoke and Fire
-			xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
-		}
-		if (xat_.SegIdx == 2) {
-			stopXACFyr();		// End Smoke and Fire
-			begnXACExp(n,xac_);	// Begin Explosion 2
-			xat_.TimRem = xat_.SegTim[xat_.SegIdx]; // New Countdown
-		}
-		if (xat_.SegIdx == 3) {
-			stopXACExp(n,xac_);	// Stop Explosion 2
-			xac_.EndSeq[n] = 0; // Flag Reset
-			xat_.SegIdx = -1;	// Reset SegIdx
+			xat_.TimRem = 1;	// New Countdown
 		}
 	}
 	else {						// Continuing Actions (if Still Counting Down)
-		if (xat_.SegIdx == 0) contXACExp();
-		if (xat_.SegIdx == 1) makeXACSpn(n,xac_);
-		if (xat_.SegIdx == 2) contXACExp();
-		xat_.TimRem = xat_.TimRem - tim_.DLTime;
-		if (xat_.TimRem < 0) xat_.TimRem = 0;	// If Done
+		if (xat_.SegIdx == 0) {
+			makeXACSpn(n,xac_);
+			if (xac_.MapSPS[n].y < 0) {
+				xac_.MapSPS[n].y = 0; // On Ground
+				xac_.HitGrd[n] = 1;	// Set Flag to Stop Further Movement
+				stopXACFyr();	// End Fire (later make it vertical and slowly shrink)
+				xac_.EndSeq[n] = 0; // Flag Reset
+				xat_.SegIdx = -1;	// Reset SegIdx for Next Airplane
+			}
+		}
 	}
 return xat_.SegIdx;}			// Returns "-1" if End of Sequence
 
@@ -1254,7 +1241,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_) {
 function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
 	moveBomExp(bmx_,n);
 	moveBomSmT(bmt_,tim_,n);
-	moveBomSmk(bms_,bom_,n);
+	moveBomSmk(bms_,bom_,gen_,n);
 	// Sound
 	if (gen_.SndFlg && bom_.SndFlg[n]) {
 		// Start Sound (No Delay)
@@ -1456,7 +1443,7 @@ function initBomSmk(bms_,bom_,n) {
 
 //=	MOVE =======================//==============================================
 
-function moveBomSmk(bms_,bom_,n) {
+function moveBomSmk(bms_,bom_,gen_,n) {
 	// After First Rep, Smoke Plume is Fully Developed. So You Need to Expand the
 	// Whole Plume to Create the Illusion of a Developing Smoke Plume
 
@@ -1475,7 +1462,7 @@ function moveBomSmk(bms_,bom_,n) {
 			bms_.RemSiz[n] = 0.001;
 			bms_.GroFlg[n] = 1;	// Grow Next Time
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
-			scene.remove(bom_.ExpGrp[n]); // ERR: not make dispaly invisible
+			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
 			bom_.ExpGrp[n].position.y = -10000;
 		}
 	}
