@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260722
+*	FSIM FM2 DATA: 260730
 *
 ********************************************************************************
 
@@ -333,9 +333,10 @@ let xac_ = {
 		EngMsh: [0],			// Engine Sound Address (Object3D)
 		EngVol: [0],			// Volume
 		// End Sequence
-		HitCnt: [0],			// Hits Taken
 		HitMax: 5,				// Hits Requred
+		HitCnt: [0],			// Hits Taken
 		EndSeq: [0],			// End Sequence Flag
+		HitGrd: [0],			// Hit Ground
 		// End Sound
 		SndFlg: [0],			// 1 = Start Explosion Sound
 		SndSrc: 0,
