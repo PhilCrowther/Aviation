@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 Jul 2026
+Version dated 1 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -191,8 +191,6 @@ TO DO:
 		MOVING VEHICLES
 			Moving Airplanes		xac_			adj
 			Moving Ships			xsh_			adj
-		AIRPLANE END SEQUENCE		xat_
-		AIRPLANE EXPLOSION			xae_			adj
 		MYPEOPLE					myp_			adj
 		MYCREW						myc_			adj
 		MINIMUM ALTITUDE			alt_			adj
@@ -1143,33 +1141,40 @@ function initMovPln() {
 
 function moveMovPln() {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
-		if (!xac_.EndSeq[n]) {
-			// Bank
-			xac_.AirRot[n].z = Mod360(xac_.AirRot[n].z + xac_.RotDif[n].z);
-			let BnkPoM = PoM360(xac_.AirRot[n].z);
-			if (bfm_.BnkMax[n]) {
-				if (BnkPoM > 0 && bfm_.BnkMax[n] > 0 && BnkPoM >  bfm_.BnkMax[n]) xac_.AirRot[n].z = bfm_.BnkMax[n];
-				if (BnkPoM < 0 && bfm_.BnkMax[n] < 0 && BnkPoM <  bfm_.BnkMax[n]) xac_.AirRot[n].z = bfm_.BnkMax[n];
-			}
-			// Horizontal Turning Flight
-			xac_.RotDif[n].y = RadDeg*Math.tan(xac_.AirRot[n].z*DegRad)*GrvMPS/xac_.SpdMPS[n];
-			xac_.RotDif[n].y = xac_.RotDif[n].y * tim_.DLTime;
-			xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif[n].y);
-		}
-		else {				// If Ending Sequence
-			let SegIdx = moveEndSeq(n,xac_,myg_,tim_); // Execute Ending Sequence
-			if (SegIdx == -1) {		// If Sequence Over, Do Something
-				// Hide Old Airplane
-				xac_.AirObj[n].visible = false; // Make Airplane Invisible
-				// Need to add pause and radio call from other FM2
-			}
-		}
-		xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
-		//- Speed ..............................................................
 		if (!xac_.HitGrd[n]) {
-			if (bfm_.BFMflg[n]) {
-				// See SF!_land for computation of xac_.SpdMPS[n]
+			//- NORMAL FLIGHT --------------------------------------------------
+			if (!xac_.EndSeq[n]) {
+				//- Rotation ...................................................
+				// BFM Computations
+				if (n == (myg_.HitTgt-1)) BFM(n);
+				// Bank
+				xac_.AirRot[n].z = Mod360(xac_.AirRot[n].z + xac_.RotDif[n].z);
+				let BnkPoM = PoM360(xac_.AirRot[n].z);
+				if (bfm_.BnkMax[n]) {
+					if (BnkPoM > 0 && bfm_.BnkMax[n] > 0 && BnkPoM >  bfm_.BnkMax[n]) xac_.AirRot[n].z = bfm_.BnkMax[n];
+					if (BnkPoM < 0 && bfm_.BnkMax[n] < 0 && BnkPoM <  bfm_.BnkMax[n]) xac_.AirRot[n].z = bfm_.BnkMax[n];
+				}
+				// Horizontal Turning Flight
+				xac_.RotDif[n].y = RadDeg*Math.tan(xac_.AirRot[n].z*DegRad)*GrvMPS/xac_.SpdMPS[n];
+				xac_.RotDif[n].y = xac_.RotDif[n].y * tim_.DLTime;
+				xac_.AirRot[n].y = Mod360(xac_.AirRot[n].y + xac_.RotDif[n].y);
+				//- Speed ......................................................
+				if (n == (myg_.HitTgt-1)) {
+					// See SF!_land for computation of xac_.SpdMPS[n]
+				}
+				// Animation - Prop (same as mine)
+				if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);	
 			}
+			//- ENDING SEQUENCES ------------------------------------------------
+			else {				// If Ending Sequence
+				moveEndSeq(n,xac_,myg_,tim_); // Execute Ending Sequence
+				if (xac_.HitGrd[n]) {		// If Sequence Over, Select Next Target	
+//					myg_.HitTgt = myg_.HitTgt+1;
+//					if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
+				}
+			}
+			//- COMMON ROTATION AND SPEED --------------------------------------
+			xac_.AirObj[n].rotation.set(xac_.AirRot[n].x*DegRad,-xac_.AirRot[n].y*DegRad,-xac_.AirRot[n].z*DegRad);
 			xac_.SpdMPF[n] = xac_.SpdMPS[n] * tim_.DLTime; // Speed (m/t)
 			xac_.SpdKPH[n] = xac_.SpdMPS[n] * 3.6;
 			//- Map Speed ..........................................................
@@ -1179,18 +1184,12 @@ function moveMovPln() {
 			xac_.MapPos[n].x = xac_.MapPos[n].x + xac_.MapSpd[n].x;
 			xac_.MapPos[n].z = xac_.MapPos[n].z + xac_.MapSpd[n].z;
 			xac_.MapPos[n].y = xac_.MapPos[n].y + xac_.MapSpd[n].y;
-			// Animation - Prop (same as mine)
-			if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
 		}
 		//. Compute New Relative Position ......................................
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
 		let Y = xac_.MapPos[n].y-air_.MapPos.y;	// No altitude adjustment
 		let Z = air_.MapPos.z-xac_.MapPos[n].z;
 		xac_.AirObj[n].position.set(X,Y,Z);
-		//. BFM Test
-		if (bfm_.BFMflg[n]) BFM(n);
-		//. HitTgt
-		if (!xac_.EndSeq[n] && n == (myg_.HitTgt-1)) HitTgt(n);
 	}
 }
 
@@ -1236,12 +1235,16 @@ function BFM(n) {
 	}
 	// Fire Guns Until End Sequence Starts
 	if (!xac_.EndSeq[n]) moveXACGun(n); // Keep Firing Until End
+	// If Enough Hits, Start Sprite Smoke Trail
+	if (!smt_.SmTFlg[n+1] && xac_.HitCnt[n] > 10) smt_.SmTFlg[n+1] = 1;
 	// If Enough Hits, Start Ending Sequence
 	if (!xac_.EndSeq[n] && xac_.HitCnt[n] > xac_.HitMax) {
-		xac_.EndSeq[n] = xac_.EndTim;
+		xac_.EndSeq[n] = 1;		// Set Flag to Start Ending Sequence
 		xac_.HitCnt[n] = 0;		// Reset Hit Counter
-		xat_.SegIdx = -1;
-	}
+		// Stop Sounds
+		if (xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].stop(); // Engine
+		if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop(); // Guns
+	}	
 }
 
 // 1. = Left Turn 180 Until Almost Centered on Tarbet
