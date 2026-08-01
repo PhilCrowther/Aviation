@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 30 Jul 2026
+Version dated 31 Jul 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -96,7 +96,7 @@ let xaf_ = {
 		ObjNum: 1,				// Number of Smoke Trails
 		// Shared Values
 		ObjTxt: 0,				// Texture
-		ObjSiz: 40,				// Scale
+		ObjSiz: 10,				// Scale
 		// Smoke
 		SmkMat: [0],			// Material
 		SmkMsh: [0],			// Mesh
@@ -392,18 +392,10 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 //= INIT ENDING SEQUENCE =======//==============================================
 
 function initEndSeq(txt_) {
-	initXACExp();
 	initXACFyr(txt_);
-	initXACSmk(txt_);
 }
 
-//- Init Airplane Explosion ----//----------------------------------------------
-function initXACExp() {
-	xae_.ExpMsh = makeSphere("yellow");
-	xae_.ExpMsh.visible = false;
-}
-
-//- Init Airplane Black Smoke --//----------------------------------------------
+//- Init Smoke and Fire --------//----------------------------------------------
 function initXACFyr(txt_) {
 	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt]; // Assign Texture
 	initAirFyr(xaf_);			// Create Emitter
@@ -411,69 +403,42 @@ function initXACFyr(txt_) {
 	xaf_.FyrMsh[0].visible = false; // Turn Off Fire
 }
 
-//- Init Airplane White Smoke --//----------------------------------------------
-//-	To show damage
-function initXACSmk(txt_) {
-	xas_.ObjTxt = txt_.ObjTxt[xas_.ObjTxt]; // Assign Texture
-	initAirSmk();			// Create Emitter
-	xas_.SmkMsh[0].visible = false;
-}
-
 //= MOVE ENDING SEQUENCE =======//==============================================
 
 let xat_ = {
-		// Segments:
-		// 1 = Spinning and Burning
-		SegTim: [0.05,5,0.1],	// Explosion#1,Flames,	
-		SegIdx: -1,				// Start at -1 so can increment at beginning
-		TimRem: 0,
+		SeqIdx: 0,				// Sequence Index
+		TimRem:	0,				// If Greater Than 0, Continue Sequence
 	}
 
 function moveEndSeq(n,xac_,myg_,tim_) {
-	// n = xac number
-	// this sequence called if xac_.EndSeq[n] = 1;
-	// TimRem Starts at 0, So Starts Next Event
-	if (!xat_.TimRem) {			// Start New Actions (if Countdown = 0)
-		xat_.SegIdx ++;			// Next Segment
-		// Select Actions (Only 1)
-		if (xat_.SegIdx == 0) {
+	//- START SEQUENCE ---------------------------------------------------------
+	if (!xat_.TimRem) {			// Start New Actions (if TimRem = 0)
+		xat_.SeqIdx = 1;		// Advance to Next Sequence
+		// Sequewnce #1 (Only Sequence)
+		if (xat_.SeqIdx) {
 			begnXACFyr(n,xac_); // Start Smoke and Fire
 			xat_.TimRem = 1;	// New Countdown
 		}
 	}
+	//- CONTINUE SEQUENCE ------------------------------------------------------
 	else {						// Continuing Actions (if Still Counting Down)
-		if (xat_.SegIdx == 0) {
+		// Sequence #1 (Only Sequence)
+		if (xat_.SeqIdx) {		// Only 1 Sequence
 			makeXACSpn(n,xac_);
+			// Until Hit Ground
 			if (xac_.MapPos[n].y < 0) {
-				xac_.MapPos[n].y = 0; // On Ground
-				xac_.HitGrd[n] = 1;	// Set Flag to Stop Further Movement
-				stopXACFyr();	// End Fire (later make it vertical and slowly shrink)
-				xac_.EndSeq[n] = 0; // Flag Reset
-				xat_.SegIdx = -1;	// Reset SegIdx for Next Airplane
+				// Set xac_ Final Values
+				xac_.MapPos[n].y = 0;	// On Ground
+				xac_.HitGrd[n] = 1;		// Set Flag to Stop Further Movement
+				xac_.EndSeq[n] = 0;		// Flag Reset
+				// Stop Fire
+				stopXACFyr();			// End Fire (later make it vertical and slowly shrink)
+				// Reset xat_ Values
+				xat_.SeqIdx = 0;		// Reset Sequence Index for Next Airplane
+				xat_.TimRem = 0;		// New Countdown
 			}
 		}
 	}
-return xat_.SegIdx;}			// Returns "-1" if End of Sequence
-
-//-	Begin Explosion ------------//----------------------------------------------
-function begnXACExp(n,xac_) {
-	xac_.AirObj[n].add(xae_.ExpMsh); // Attach to Airplane
-	xae_.ExpSiz = 0.1;			// Starting Size
-	xae_.ExpMsh.visible = true;	// Make Visible
-	if (!xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].play(); // Start Sound
-}
-
-//- Continue Explosion ---------//----------------------------------------------
-function contXACExp() {
-	xae_.ExpMsh.scale.setScalar(xae_.ExpSiz); // New Size
-	xae_.ExpSiz = xae_.ExpSiz + 1/Ft2Mtr; // Make Bigger
-}
-
-//-	Stop Explosion -------------//----------------------------------------------
-function stopXACExp(n,xac_) {
-	xae_.ExpSiz = 0.01;			// Ending Size
-	xae_.ExpMsh.visible = false; // Make Invisible
-	if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop(); // Stop Sound
 }
 
 //-	Begin Smoke and Fire -------//----------------------------------------------
