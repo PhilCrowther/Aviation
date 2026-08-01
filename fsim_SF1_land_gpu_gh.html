@@ -850,11 +850,13 @@ function moveMovPln() {
 					let ThrNet = ThrReq - DrgInd - DrgPar;
 					let ThrAcc = (ThrNet/ACMass)*DLTim2;
 					xac_.SpdMPS[n] = xac_.SpdMPS[n] + ThrAcc; // THIS CAUSES ERROR!
-				}				
+				}
+				// Animation - Prop (same as mine)
+				if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
 			}
 			//- ENDING SEQUENCE ------------------------------------------------
 			else {
-				let SegIdx = moveEndSeq(n,xac_,myg_,tim_); // Execute Ending Sequence
+				moveEndSeq(n,xac_,myg_,tim_); // Execute Ending Sequence
 				if (xac_.HitGrd[n]) {		// If Sequence Over, Select Next Target	
 					myg_.HitTgt = myg_.HitTgt+1;
 					if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
@@ -871,8 +873,6 @@ function moveMovPln() {
 			xac_.MapPos[n].x = xac_.MapPos[n].x + xac_.MapSpd[n].x;
 			xac_.MapPos[n].z = xac_.MapPos[n].z + xac_.MapSpd[n].z;
 			xac_.MapPos[n].y = xac_.MapPos[n].y + xac_.MapSpd[n].y;
-			// Animation - Prop (same as mine)
-			if (xac_.MixSpn[n]) xac_.MixSpn[n].setTime(anm_.spnprp/anm_.anmfps);
 		}
 		//- COMPUTE NEW RELATIVE POSITION --------------------------------------
 		let X = xac_.MapPos[n].x-air_.MapPos.x;
