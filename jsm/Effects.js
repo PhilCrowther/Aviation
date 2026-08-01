@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 31 Jul 2026
+Version dated 1 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1506,4 +1506,5 @@ export {
 260706: Multiple Bombs
 260718: Sprite Smoke Trail
 260722: Add Colors to Bomb Explosion
+260801:	Shorten Ending Sequences
 */
