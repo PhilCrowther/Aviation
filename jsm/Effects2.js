@@ -56,6 +56,7 @@ import {
 	Mesh,
 	Object3D,
 	PlaneGeometry,
+	PositionalAudio,
 	SphereGeometry,
 	Spherical,
 	Sprite,
