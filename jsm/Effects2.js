@@ -1185,6 +1185,16 @@ function moveSmkTrl(smt_,air_,n) {
 function loadExpBom(bom_,gen_) {
 	// Load Common Smoke Material
 	bom_.SmkMap = gen_.txtrLd.load(bom_.SmkSrc);
+	// Load Bomb Sounds  .......................................................
+	let RefDst = 25;			// Reference distance for Positional Audio
+	for (let n = 0; n < bom_.ObjNum; n ++) {
+		bom_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(bom_.SndSrc, function(buffer) {
+			bom_.SndPtr[n].setBuffer(buffer);
+			init1Sound(bom_.SndPtr[n],RefDst,0,1,0,bom_.SndMsh[n]);		
+			bom_.ExpGrp[n].add(bom_.SndMsh[n]);
+		});
+	}
 }
 
 //= INIT BOMB ==================//==============================================
@@ -1204,27 +1214,15 @@ function initExpBom(bom_,bmx_,bmt_,bms_) {
 
 //= MOVE BOMB ==================//==============================================
 function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
+	// Start Sound
+	if (gen_.SndFlg && bom_.SndFlg[n]) {
+		bom_.SndPtr[n].play();
+		bom_.SndFlg[n] = 0;
+	}
+	// Make/Continue Explosion
 	moveBomExp(bmx_,n);
 	moveBomSmT(bmt_,tim_,n);
 	moveBomSmk(bms_,bom_,gen_,n);
-	// Sound
-//	if (gen_.SndFlg && bom_.SndFlg[n]) {
-//		if (!bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].play();
-//	}
-//	if (gen_.SndFlg && bom_.SndFlg[n]) {
-//		// Start Sound (No Delay)
-//		if (!bom_.SndRTm[n]) {
-//			bom_.SndPtr[n].play();
-//			bom_.SndRTm[n] = 5 / tim_.DLTime;
-//		}
-//		// Copntinue Sound
-//		if (bom_.SndRTm[n]) bom_.SndRTm[n]--;
-//		// Stop Sound
-//		if (bom_.SndRTm[n] <= 0) {
-//			bom_.SndPtr[n].stop();
-//			bom_.SndFlg[n] = 0;
-//		}
-//	}	
 }
 
 /*******************************************************************************
@@ -1457,6 +1455,15 @@ function makeSphere(col) {
 	let mesh = new Mesh(geometry,material);
 	mesh.visible = false;
 return mesh;}
+
+//= INIT POSITIONAL AUDIO ======//=============//===============================
+function init1Sound(dest,dist,volm,rate,loop,link) {
+	dest.setRefDistance(dist);	// Position
+	dest.setVolume(volm);
+	dest.playbackRate = rate;
+	if (loop) dest.setLoop(true); // if sound loops
+	link.add(dest);
+}
 
 /*******************************************************************************
 *
