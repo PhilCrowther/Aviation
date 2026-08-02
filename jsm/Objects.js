@@ -1,11 +1,11 @@
-/********************************************************************************
+/*******************************************************************************
 *
 *	OBJECTS MODULE
 *
-*********************************************************************************
+********************************************************************************
 Copyright 2022-2026, Phil Crowther
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Jul 2026
+Version dated 2 Aug 2026
 
 @fileoverview
  * Subroutines to create an air combat simulation
@@ -15,11 +15,11 @@ NOTES:
 This currently includes mountains/islands, and also fixed and animated objects attached to the scenery
 */
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	IMPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 import {
 	// Common
@@ -42,25 +42,25 @@ import {
 
 import {color,texture} from "three/tsl";
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	VARIABLES
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= CONSTANTS ==================//===============================================
+//= CONSTANTS ==================//==============================================
 
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const FlgSiz = new Vector2(30,16); // Standard Flag Dimensions
 const FlgSeg = new Vector2(30,16); // Standard Flag Segments
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	MOUNTAINS/ISLANDS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//=	LOAD MOUNTAINS/ISLANDS ======================================================
+//=	LOAD MOUNTAINS/ISLANDS =====================================================
 function loadMountn(mnt_,air_,gen_) {
 	for (let i = 0; i < mnt_.ObjNum; i++) {
 		mnt_.ObjGrp[i].position.copy(mnt_.MapPos[i]);
@@ -88,12 +88,12 @@ function loadMountn(mnt_,air_,gen_) {
 	}
 }
 
-//=	INIT MOUNTAINS/ISLANDS ===============//=====================================
+//=	INIT MOUNTAINS/ISLANDS ===============//====================================
 function initMountn(mnt_,air_) {
 	moveMountn(mnt_,air_);
 }
 
-//=	MOVE MOUNTAINS/ISLANDS ======================================================
+//=	MOVE MOUNTAINS/ISLANDS =====================================================
 
 function moveMountn(mnt_,air_) {
 //	Assumes that objects are at Sea Level
@@ -107,13 +107,13 @@ function moveMountn(mnt_,air_) {
 	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	FIXED OBJECTS - Only Objects Attached to Mountains/Islands (for Now)
 *
-********************************************************************************/
+*******************************************************************************/
 
-//=	LOAD OBJECTS ================================================================
+//=	LOAD OBJECTS ===============================================================
 function loadFxdObj(fxd_,gen_) {
 	for (let i = 0; i < fxd_.ObjNum; i++) {
 		gen_.gltfLd.load(fxd_.ObjSrc[i], function (gltf) {
@@ -126,12 +126,12 @@ function loadFxdObj(fxd_,gen_) {
 	}
 }
 
-//=	INIT OBJECTS ===============//===============================================
+//=	INIT OBJECTS ===============//==============================================
 function initFxdObj(fxd_,air_,gen_) {
 	moveFxdObj(fxd_,air_,gen_);
 }
 
-//=	MOVE OBJECTS ================================================================
+//=	MOVE OBJECTS ===============================================================
 function moveFxdObj(fxd_,air_,gen_) {
 	let AltAdj = gen_.AltDif*0.01;
 	// Change Altitude on Linked Objects to Prevent Flicker
@@ -140,14 +140,14 @@ function moveFxdObj(fxd_,air_,gen_) {
 	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	ANIMATED FLAGS
 *
-********************************************************************************/
+*******************************************************************************/
 //	Adapted from example at https://codepen.io/okada-web/pen/OJydGzy. Thanks!
 
-//=	LOAD AND INITIALIZE FLAGS ==//===============================================
+//=	LOAD AND INITIALIZE FLAGS ==//==============================================
 function loadAnmFlg(flg_,gen_) {
 	let FlgGeo = new PlaneGeometry(FlgSiz.x,FlgSiz.y,FlgSeg.x,FlgSeg.y); // Standard Dimensions and Segments
 	let FlgMat;
@@ -172,7 +172,7 @@ function loadAnmFlg(flg_,gen_) {
 	}
 }
 
-//=	MOVE FLAG MESHES ===========//===============================================
+//=	MOVE FLAG MESHES ===========//==============================================
 function moveAnmFlg(flg_,tim_) {
 	let flgSeg = new Vector2(FlgSeg.x+1,FlgSeg.y+1); // Standard Flag Segments + 1
 	for (let n = 0; n < flg_.ObjNum; n++) {
@@ -206,13 +206,13 @@ function moveAnmFlg(flg_,tim_) {
 	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	AIRPLANES
 *
-********************************************************************************/
+*******************************************************************************/
 
-//=	LOAD AIRPLANES ==============================================================
+//=	LOAD AIRPLANES =============================================================
 
 function loadXACVeh(xac_,anm_,gen_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
@@ -234,7 +234,7 @@ function loadXACVeh(xac_,anm_,gen_) {
 
 }
 
-//=	INIT AIRPLANES ==============================================================
+//=	INIT AIRPLANES =============================================================
 
 function initXACVeh(xac_,air_,gen_) {
 	for (let n = 0; n < xac_.ObjNum; n ++) {
@@ -248,17 +248,17 @@ function initXACVeh(xac_,air_,gen_) {
 	};
 };
 
-//=	MOVE AIRPLANES ===============//=============================================
+//=	MOVE AIRPLANES ===============//============================================
 
 // No pathing yet
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	SHIPS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//=	LOAD SHIPS ==================================================================
+//=	LOAD SHIPS =================================================================
 
 function loadXSHVeh(xsh_,anm_,gen_) {
 	for (let n = 0; n < xsh_.ObjNum; n ++) {
@@ -285,7 +285,7 @@ function loadXSHVeh(xsh_,anm_,gen_) {
 	}
 }
 
-//=	INIT SHIPS =================//===============================================
+//=	INIT SHIPS =================//==============================================
 
 function initXSHVeh(xsh_,air_,gen_) {
 // Always use group
@@ -303,7 +303,7 @@ function initXSHVeh(xsh_,air_,gen_) {
 	}
 }
 
-//=	MOVE SHIPS =================//===============================================
+//=	MOVE SHIPS =================//==============================================
 
 function moveXSHVeh(xsh_,air_) {
 	let X,Y,Z;
@@ -346,13 +346,13 @@ function moveXSHVeh(xsh_,air_) {
 	}
 };
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	RIGGED ANIMATED PEOPLE
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= LOAD MY PEOPLE =============//===============================================
+//= LOAD MY PEOPLE =============//==============================================
 function loadMyPeep(myp_,gen_) {
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		gen_.gltfLd.load(myp_.ObjSrc[n], function (gltf) {
@@ -381,7 +381,7 @@ function loadMyPeep(myp_,gen_) {
 	}
 }
 
-//= MOVE MY PEOPLE =============//===============================================
+//= MOVE MY PEOPLE =============//==============================================
 function moveMyPeep(myp_,tim_) {
 	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
@@ -389,11 +389,11 @@ function moveMyPeep(myp_,tim_) {
 	// For Each Character (n)
 	for (let n = 0; n < myp_.ObjNum; n++) {
 		if (myp_.SegRef[n] != myp_.SegNum[n]) { // If Have Not Reached Max Segments
-			//= Play Animations //----------------------------------------------.
+			//= Play Animations //----------------------------------------------
 			if (myp_.ObjViz[n]) {	// If in Visual Range
 				// Set Position - AnmTim = time on timeline - setTime converts to position
 				myp_.AnmMxr[n].setTime(myp_.AnmTim[n]);
-				//. Update or Delay Counter .....................................
+				//. Update or Delay Counter ....................................
 				// If No Delay, Update Position Time
 				if (!myp_.DlyRem[n]) myp_.AnmTim[n] = myp_.AnmTim[n] + tim_.DifTim;
 				// If Delay, Don't Change Position Time
@@ -427,7 +427,7 @@ function moveMyPeep(myp_,tim_) {
 				}
 			}
 		}
-		//- Turn On or Off Based on Distance -----------------------------------.
+		//- Turn On or Off Based on Distance -----------------------------------
 		// Get Distances
 		if (myp_.ObjRef[n]) { // If Linked
 			ObjRef = myp_.ObjRef[n];
@@ -449,13 +449,13 @@ function moveMyPeep(myp_,tim_) {
 	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	ANIMATED PEOPLE (Not Rigged)
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= LOAD MY CREW ===============//===============================================
+//= LOAD MY CREW ===============//==============================================
 function loadMyCrew(myc_,gen_) {
 	let clip = 0;
 	for (let n = 0; n < myc_.ObjNum; n++) {
@@ -484,13 +484,13 @@ function loadMyCrew(myc_,gen_) {
 	}
 }
 
-//= MOVE MY CREW ===============//===============================================
+//= MOVE MY CREW ===============//==============================================
 function moveMyCrew(myc_) {
 	// To compute position, use AnmTim * anmfps
 	let ObjRef = 0;
 	let ObjDst = new Vector3();
 	for (let n = 0; n < myc_.ObjNum; n++) {
-		// Turn On or Off Based on Distance ------------------------------------.
+		// Turn On or Off Based on Distance ------------------------------------
 		// Get Distances
 		if (myc_.ObjRef[n]) { // If Linked
 			ObjRef = myc_.ObjRef[n];
@@ -518,72 +518,24 @@ function moveMyCrew(myc_) {
 	}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	SOUNDS
 *
-********************************************************************************/
+*******************************************************************************/
 
-//= LOAD SOUNDS =================================================================
+//= LOAD SOUNDS ================================================================
 
-function loadObjSnd(xac_,xag_,xsg_,aaf_,bom_,gen_) {
+function loadObjSnd(xac_,gen_) {
 	let RefDst = 25;			// Reference distance for Positional Audio
-	// Load XAC Sounds ..........................................................
-	// XP Engines
+	// Load XAC Sounds .........................................................
+	// XAC Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		xac_.EngPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xac_.EngSrc[n],function(buffer) {
 			xac_.EngPtr[n].setBuffer(buffer);
 			init1Sound(xac_.EngPtr[n],RefDst,0,1.3,1,xac_.EngMsh[n]);
 			xac_.AirObj[n].add(xac_.EngMsh[n]);
-		});
-	}
-	// XP Guns
-	for (let n = 0; n < xag_.ObjNum; n ++) {
-		xag_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-		gen_.audoLd.load(xag_.SndSrc[n],function(buffer) {
-			xag_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xag_.SndPtr[n],RefDst,0,1.3,1,xag_.SndMsh[n]);
-			xac_.AirObj[n].add(xag_.SndMsh[n]);
-		});
-	}
-	// The Next 4 Sounds Are All the Same (for now)
-	//
-	// XP End Explosion  ......................................................-
-	for (let n = 0; n < xac_.ObjNum; n ++) {	// ### fixed 260503
-		xac_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-		gen_.audoLd.load(xac_.SndSrc,function(buffer) {
-			xac_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xac_.SndPtr[n],RefDst,0,1,0,xac_.SndMsh[n]);
-			xac_.AirObj[n].add(xac_.SndMsh[n]);
-		});
-	}
-	// Load AAA Sounds .........................................................
-	// XS Guns - End Explosion
-	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		xsg_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-		gen_.audoLd.load(xsg_.SndSrc,function(buffer) {
-			xsg_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xsg_.SndPtr[n],RefDst,0,1,0,xsg_.SndMsh[n]);
-			xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
-		});
-	}
-	// AA Guns - End Explosion
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-		gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
-			aaf_.SndPtr[n].setBuffer(buffer);
-			init1Sound(aaf_.SndPtr[n],RefDst,0,1,0,aaf_.SndMsh[n]);
-			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
-		});	
-	}
-	// Load Bomb Sounds  .......................................................
-	for (let n = 0; n < bom_.ObjNum; n ++) {
-		bom_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-		gen_.audoLd.load(bom_.SndSrc, function(buffer) {
-			bom_.SndPtr[n].setBuffer(buffer);
-			init1Sound(bom_.SndPtr[n],RefDst,0,1,0,bom_.SndMsh[n]);		
-			bom_.ExpGrp[n].add(bom_.SndMsh[n]);
 		});
 	}
 }
@@ -597,46 +549,34 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	link.add(dest);
 }
 
-//= MOVE SOUNDS =================================================================
+//= MOVE SOUNDS ================================================================
 
-function moveObjSnd(xac_,xag_,xsg_,aaf_) {
+function moveObjSnd(xac_) {
 	//- XAC ....................................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Engine
-	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);} // Gun
-	//-	Explosions ..............................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.SndPtr[n].setVolume(xac_.SndVol);} // XAC
-	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);} // XAS
-	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);} // AAA
 }
 
-//= PLAY SOUNDS =================================================================
+//= PLAY SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
-function playObjSnd(xac_,xag_) {
+function playObjSnd(xac_) {
 	//- XAC ....................................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {if (!xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].play();} // Engine
-	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();} // ### FIX THIS - only when firing}
-	//- Explosions Activated Elsewhere (XAC,XAG,AAF)
 }
 
-//= STOP SOUNDS =================================================================
+//= STOP SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
-function stopObjSnd(xac_,xag_,xsg_,aaf_) {
+function stopObjSnd(xac_) {
 	//- XAC ....................................................................
 	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.EngPtr[n].isPlaying) xac_.EngPtr[n].stop();} // Engine
-	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();} // Guns
-	//-	Explosions .............................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {if (xac_.SndPtr[n].isPlaying) xac_.SndPtr[n].stop();} // XAC
-	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.SndPtr[n].isPlaying) xsg_.SndPtr[n].stop();}
-	for (let n = 0; n < aaf_.ObjNum; n ++) {if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();}
 }
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	SUBROUTINES
 *
-********************************************************************************/
+*******************************************************************************/
 
 /* Converts degrees to 360 */
 function Mod360(deg) {
@@ -644,11 +584,11 @@ function Mod360(deg) {
 	deg = deg % 360;				 // Compute remainder of any number divided by 360
 return deg;}
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	EXPORTS
 *
-********************************************************************************/
+*******************************************************************************/
 
 export {loadMountn,initMountn,moveMountn,
 		loadFxdObj,initFxdObj,moveFxdObj,
@@ -660,11 +600,11 @@ export {loadMountn,initMountn,moveMountn,
 		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd
 	};
 
-/********************************************************************************
+/*******************************************************************************
 *
 *	REVISIONS
 *
-*********************************************************************************
+********************************************************************************
 
 250405	In development
 250523	Added loadMyCrew/moveMyCrew
@@ -683,4 +623,5 @@ export {loadMountn,initMountn,moveMountn,
 260529: Only attach fxd to other object if !ref
 260617:	Mountain/Island scale is now a Vector3 value, allowing adjustment of height
 260703: Load Bomb Sound
+260802: Move Effects Sound Subroutines to Effects Module
 */
