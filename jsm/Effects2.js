@@ -1189,7 +1189,9 @@ function loadExpBom(bom_,gen_) {
 	// Load Bomb Sounds  .......................................................
 	let RefDst = 25;			// Reference distance for Positional Audio
 	for (let n = 0; n < bom_.ObjNum; n ++) {
+		bom_.ExpGrp[n] = new Group();
 		bom_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		bom_.SndMsh[n] = new Object3D();
 		gen_.audoLd.load(bom_.SndSrc, function(buffer) {
 			bom_.SndPtr[n].setBuffer(buffer);
 			init1Sound(bom_.SndPtr[n],RefDst,0,1,0,bom_.SndMsh[n]);		
@@ -1201,9 +1203,10 @@ function loadExpBom(bom_,gen_) {
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_) {
 	for (let n = 0; n < bom_.ObjNum; n ++) {
-		bom_.ExpGrp[n] = new Group();
-		bom_.SndMsh[n] = new Object3D();
-		bom_.SndFlg[n] = 1;		// 1 = Sound Active
+//		bom_.ExpGrp[n] = new Group();
+//		bom_.SndMsh[n] = new Object3D();
+		bom_.ExpFlg[n] = 0;
+		bom_.SndFlg[n] = 0;		// 1 = Sound Ready
 		bom_.SndDTm[n] = 0;
 		bom_.MapPos[n] = new Vector3();
 		initBomExp(bmx_,bom_,n);
@@ -1463,7 +1466,7 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	dest.setVolume(volm);
 	dest.playbackRate = rate;
 	if (loop) dest.setLoop(true); // if sound loops
-	link.add(dest);
+	link.add(dest);				// Link SndPtr to SndMsh
 }
 
 /*******************************************************************************
