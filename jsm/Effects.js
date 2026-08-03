@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Aug 2026
+Version dated 3 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1482,15 +1482,6 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	link.add(dest);				// Link SndPtr to SndMsh
 }
 
-//= PLAY SOUNDS ================================================================
-//	This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
-//	Repeating Sounds Only
-
-function playEffSnd(xag_) {
-	//- XAC Guns ...............................................................
-	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();}
-}
-
 //= STOP SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
@@ -1541,7 +1532,7 @@ export {
 	initXSHSmk,							// Ship Smoke
 	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
-	loadEffSnd,playEffSnd,stopEffSnd,	// Sounds
+	loadEffSnd,stopEffSnd,				// Sounds
 };
 
 /*******************************************************************************
@@ -1577,5 +1568,5 @@ export {
 260718: Sprite Smoke Trail
 260722: Add Colors to Bomb Explosion
 260801:	Shorten Ending Sequences
-260802: Move Effects Sounds from Objects Module; Replace aag_ with aaf_
+260802: Move Effects Sounds from Objects Module; Elimiate moveEffSnd and play EffSnd subroutines; Replace aag_ with aaf_	
 */
