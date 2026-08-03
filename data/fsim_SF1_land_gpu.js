@@ -612,7 +612,7 @@ let bom_ = {
 		ExpFlg: [],				// Explosion Happening
 		// Sounds
 		SndFlg: [],				// 1 = Sound Ready to be Triggered
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/exp.mp3",
 		SndPtr: [],
 		SndVol: 15,				// Volume
 		SndMsh: [],				// Object3D (init by initExpBom)
