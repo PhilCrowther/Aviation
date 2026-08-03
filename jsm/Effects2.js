@@ -1482,17 +1482,6 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	link.add(dest);				// Link SndPtr to SndMsh
 }
 
-//= MOVE SOUNDS ================//==============================================
-
-function moveEffSnd(xag_,aaf_,xsg_,bom_) {
-	//- XAC Guns ...............................................................
-	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);}
-	//-	Explosions ..............................................................
-	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);}
-	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);}
-	for (let n = 0; n < bom_.ObjNum; n ++) {bom_.SndPtr[n].setVolume(bom_.SndVol);}
-}
-
 //= PLAY SOUNDS ================================================================
 //	This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 //	Repeating Sounds Only
@@ -1552,7 +1541,7 @@ export {
 	initXSHSmk,							// Ship Smoke
 	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
-	loadEffSnd,moveEffSnd,playEffSnd,stopEffSnd, // Sounds
+	loadEffSnd,playEffSnd,stopEffSnd,	// Sounds
 };
 
 /*******************************************************************************
