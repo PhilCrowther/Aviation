@@ -105,7 +105,7 @@ import {initBullet,moveBullet,	// Guns - My Airplane
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom,	// Bomb
-		loadEffSnd,moveEffSnd,playEffSnd,stopEffSnd,	// Sounds
+		loadEffSnd,playEffSnd,stopEffSnd,	// Effects Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
@@ -116,7 +116,7 @@ import {loadSkyBox,initSkyBox,
 import {loadMountn,initMountn,moveMountn, // Mountains/Islands
 		loadFxdObj,initFxdObj,moveFxdObj, // Fixed Objects
 		loadXACVeh,initXACVeh,	// Moving Airplanes
-		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd, // Object Sounds
+		loadObjSnd,playObjSnd,stopObjSnd, // Object Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Objects.js";
 
 /*= GENERAL ====================//==============================================
@@ -1195,8 +1195,6 @@ function moveSounds() {
 //	mys_.IdlFlg = 0;			// Default = Not Idling
 //	if (Throtl < .25) mys_.IdlFlg = 1; // If Idling
 	moveMySong(air_,mys_,myg_);	// My Airplane
-	moveObjSnd(xac_);			// Other Airplanes
-	moveEffSnd(xag_,aaf_,xsg_,bom_); // Effects
 }
 
 //= PLAY SOUNDS ================//==============================================
