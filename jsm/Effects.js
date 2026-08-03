@@ -1494,7 +1494,8 @@ function moveEffSnd(xag_,aaf_,xsg_,bom_) {
 }
 
 //= PLAY SOUNDS ================================================================
-// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+//	This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+//	Repeating Sounds Only
 
 function playEffSnd(xag_) {
 	//- XAC Guns ...............................................................
@@ -1504,7 +1505,7 @@ function playEffSnd(xag_) {
 //= STOP SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
-function stopEffSnd(xag_,aaf_,xsg_) {
+function stopEffSnd(xag_,aaf_,xsg_,bom_) {
 	//- XAC Guns ................................................................
 	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();}
 	//-	Explosions .............................................................
