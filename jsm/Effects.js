@@ -1096,7 +1096,7 @@ function loadExpBom(bom_,gen_) {
 		bom_.SndMsh[n] = new Object3D();
 		gen_.audoLd.load(bom_.SndSrc, function(buffer) {
 			bom_.SndPtr[n].setBuffer(buffer);
-			init1Sound(bom_.SndPtr[n],RefDst,0,1,0,bom_.SndMsh[n]);		
+			init1Sound(bom_.SndPtr[n],RefDst,bom_.SndVol,1,0,bom_.SndMsh[n]);	
 			bom_.ExpGrp[n].add(bom_.SndMsh[n]);
 		});
 	}
@@ -1448,7 +1448,7 @@ function loadEffSnd(xag_,aaf_,xsg_,gen_) {
 		xag_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xag_.SndSrc[n],function(buffer) {
 			xag_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xag_.SndPtr[n],RefDst,0,1.3,1,xag_.SndMsh[n]);
+			init1Sound(xag_.SndPtr[n],RefDst,xag_.SndVol[n],1.3,1,xag_.SndMsh[n]);
 			xac_.AirObj[n].add(xag_.SndMsh[n]);
 		});
 	}
@@ -1458,7 +1458,7 @@ function loadEffSnd(xag_,aaf_,xsg_,gen_) {
 		aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 			aaf_.SndPtr[n].setBuffer(buffer);
-			init1Sound(aaf_.SndPtr[n],RefDst,0,1,0,aaf_.SndMsh[n]);
+			init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SndMsh[n]);
 			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
 		});	
 	}
@@ -1467,7 +1467,7 @@ function loadEffSnd(xag_,aaf_,xsg_,gen_) {
 		xsg_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xsg_.SndSrc,function(buffer) {
 			xsg_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xsg_.SndPtr[n],RefDst,0,1,0,xsg_.SndMsh[n]);
+			init1Sound(xsg_.SndPtr[n],RefDst,xsg_.SndVol,1,0,xsg_.SndMsh[n]);
 			xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
 		});
 	}
@@ -1480,17 +1480,6 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	dest.playbackRate = rate;
 	if (loop) dest.setLoop(true); // if sound loops
 	link.add(dest);				// Link SndPtr to SndMsh
-}
-
-//= MOVE SOUNDS ================//==============================================
-
-function moveEffSnd(xag_,aaf_,xsg_,bom_) {
-	//- XAC Guns ...............................................................
-	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);}
-	//-	Explosions ..............................................................
-	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);}
-	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);}
-	for (let n = 0; n < bom_.ObjNum; n ++) {bom_.SndPtr[n].setVolume(bom_.SndVol);}
 }
 
 //= PLAY SOUNDS ================================================================
@@ -1552,7 +1541,7 @@ export {
 	initXSHSmk,							// Ship Smoke
 	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
-	loadEffSnd,moveEffSnd,playEffSnd,stopEffSnd, // Sounds
+	loadEffSnd,playEffSnd,stopEffSnd,	// Sounds
 };
 
 /*******************************************************************************

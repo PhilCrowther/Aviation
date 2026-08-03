@@ -534,7 +534,7 @@ function loadObjSnd(xac_,gen_) {
 		xac_.EngPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xac_.EngSrc[n],function(buffer) {
 			xac_.EngPtr[n].setBuffer(buffer);
-			init1Sound(xac_.EngPtr[n],RefDst,0,1.3,1,xac_.EngMsh[n]);
+			init1Sound(xac_.EngPtr[n],RefDst,xac_.EngVol[n],1.3,1,xac_.EngMsh[n]);
 			xac_.AirObj[n].add(xac_.EngMsh[n]);
 		});
 	}
@@ -547,13 +547,6 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	dest.playbackRate = rate;
 	if (loop) dest.setLoop(true);
 	link.add(dest);
-}
-
-//= MOVE SOUNDS ================================================================
-
-function moveObjSnd(xac_) {
-	//- XAC ....................................................................
-	for (let n = 0; n < xac_.ObjNum; n ++) {xac_.EngPtr[n].setVolume(xac_.EngVol[n]);} // Engine
 }
 
 //= PLAY SOUNDS ================================================================
@@ -597,7 +590,7 @@ export {loadMountn,initMountn,moveMountn,
 		loadXSHVeh,initXSHVeh,moveXSHVeh,
 		loadMyPeep,moveMyPeep,
 		loadMyCrew,moveMyCrew,
-		loadObjSnd,moveObjSnd,playObjSnd,stopObjSnd
+		loadObjSnd,playObjSnd,stopObjSnd,
 	};
 
 /*******************************************************************************
