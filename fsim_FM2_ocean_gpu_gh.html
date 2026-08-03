@@ -675,7 +675,6 @@ let	AARYDf = [0,0];				// Y-Rotation Adjustment
 
 //= BOMBS ======================//==============================================
 //-	Adjustments (Identical Inputs for 3 Smoke Trails)
-	bom_.SndSrc = "https://PhilCrowther.github.io/Aviation/sounds/fx/exp.mp3";
 	for (let n = 0; n < bom_.ObjNum; n ++) {
 		bmt_.SmkVec[n] = [new THREE.Vector3(50,0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)];
 		bmt_.SmkOff[n] = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
@@ -1003,7 +1002,7 @@ function initBomExp(n,pos,rot) {
 	bom_.ExpGrp[n].rotation.y = rot;
 }
 
-//== MOVE OBJECTS ==============//==============================================
+//= MOVE OBJECTS ===============//==============================================
 
 function moveObject() {
 	moveStatic();
@@ -1012,6 +1011,7 @@ function moveObject() {
 	moveFxdGun();				// Perform Targeting
 	if(BegLoc == 1) moveMyPeep(myp_,tim_);
 	moveMyCrew(myc_);
+	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
 		if (bom_.ExpFlg[n]) moveBomExp(n);
 	}
@@ -1506,35 +1506,36 @@ function loadSounds() {
 	loadMySong(air_,mys_,myg_,gen_); // My Airplane Sounds
 	loadObjSnd(xac_,gen_);		// Object Sounds
 	loadEffSnd(xag_,aaf_,xsg_,gen_); // Object Sounds	
-	gen_.LodSnd = 1;			//- Set Flag
+	gen_.LodSnd = 1;			// Set Flag
 }
 
 //= MOVE SOUNDS ================//==============================================
 
 function moveSounds() {
 	mys_.IdlFlg = 0;			// Default = Not Idling
-	if (Throtl < .25) mys_.IdlFlg = 1; // If Idling
+	if (Throtl < .25) mys_.IdlFlg = 1;	// If Idling
 	moveMySong(air_,mys_,myg_);	// My Airplane
 	moveObjSnd(xac_);			// Other Airplanes
-	moveEffSnd(xag_,aaf_,xsg_);	// Effects
+	moveEffSnd(xag_,aaf_,xsg_,bom_);	// Effects
 }
 
 //= PLAY SOUNDS ================//==============================================
+//	This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+//	Repeating Sounds Only
 
 function playSounds() {
-// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 	playMySong(mys_,myg_,gen_); // My Airplane
 	playObjSnd(xac_);			// Objects
 	playEffSnd(xag_);			// Effects
 }
 
 //= STOP SOUNDS ================//==============================================
+//	This leaves gen_.SndFlg = 0 and gen_.MYGFlg unchanged.
 
 function stopSounds() {
-// This leaves gen_.SndFlg = 0 and gen_.MYGFlg unchanged.
 	stopMySong(mys_,myg_);		// My Airplane
 	stopObjSnd(xac_);			// Objects
-	stopEffSnd(xag_,aaf_,xsg_); // Effects
+	stopEffSnd(xag_,aaf_,xsg_,bom_);	// Effects
 }
 
 //= RADIO SOUNDS ===============//==============================================
