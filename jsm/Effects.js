@@ -1484,31 +1484,33 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 
 //= MOVE SOUNDS ================//==============================================
 
-function moveEffSnd(xag_,aaf_,xsg_) {
-	//- XAC ....................................................................
-	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);} // Gun
+function moveEffSnd(xag_,aaf_,xsg_,bom_) {
+	//- XAC Guns ...............................................................
+	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);}
 	//-	Explosions ..............................................................
-	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);} // AAA
-	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);} // XAS
+	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);}
+	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);}
+	for (let n = 0; n < bom_.ObjNum; n ++) {bom_.SndPtr[n].setVolume(bom_.SndVol);}
 }
 
 //= PLAY SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
 function playEffSnd(xag_) {
-	//- XAC ....................................................................
-	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();} // ### FIX THIS - only when firing}
+	//- XAC Guns ...............................................................
+	for (let n = 0; n < xag_.ObjNum; n ++) {if (!xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].play();}
 }
 
 //= STOP SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
 function stopEffSnd(xag_,aaf_,xsg_) {
-	//- XAC ....................................................................
-	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();} // Guns
+	//- XAC Guns ................................................................
+	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();}
 	//-	Explosions .............................................................
 	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.SndPtr[n].isPlaying) xsg_.SndPtr[n].stop();}
 	for (let n = 0; n < aaf_.ObjNum; n ++) {if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();}
+	for (let n = 0; n < bom_.ObjNum; n ++) {if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();}
 }
 
 /*******************************************************************************
