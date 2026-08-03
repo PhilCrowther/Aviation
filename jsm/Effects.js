@@ -1486,7 +1486,7 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 
 function moveEffSnd(xag_,aaf_,xsg_,bom_) {
 	//- XAC Guns ...............................................................
-	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol[n]);}
+	for (let n = 0; n < xag_.ObjNum; n ++) {xag_.SndPtr[n].setVolume(xag_.SndVol);}
 	//-	Explosions ..............................................................
 	for (let n = 0; n < aaf_.ObjNum; n ++) {aaf_.SndPtr[n].setVolume(aaf_.SndVol);}
 	for (let n = 0; n < xsg_.ObjNum; n ++) {xsg_.SndPtr[n].setVolume(xsg_.SndVol);}
