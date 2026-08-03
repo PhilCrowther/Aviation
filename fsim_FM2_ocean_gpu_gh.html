@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 2 Aug 2026
+Version dated 3 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -87,7 +87,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 *
 *******************************************************************************/
 
-//= LOAD MODULES ===============================================================
+//= LOAD MODULES ===============//==============================================
 //- Basic Modules --------------------------------------------------------------
 import * as THREE from "three";
 import {color,texture,uniform} from "three/tsl";
@@ -111,7 +111,7 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initXSHSmk,				// Ship Smoke (destroyer only)
 		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom, // Bomb
-		loadEffSnd,playEffSnd,stopEffSnd, // Effects Sounds
+		loadEffSnd,stopEffSnd,	// Effects Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
@@ -1524,7 +1524,6 @@ function moveSounds() {
 function playSounds() {
 	playMySong(mys_,myg_,gen_); // My Airplane
 	playObjSnd(xac_);			// Objects
-	playEffSnd(xag_);			// Effects
 }
 
 //= STOP SOUNDS ================//==============================================
