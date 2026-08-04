@@ -284,18 +284,18 @@ let mnt_ = {
 		VrtAdj: [-2,-15]		// Vertical Adjustment
 	};
 //- Static Objects -------------//----------------------------------------------
-//- 0 = Hangar;
+//- 2 Hangars = One Damaged and One Undamaged;
 let fxd_ = {
-		ObjNum: 1,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb"],
-		ObjTxt: [0],
-		ObjAdr: [0],			// Loaded Object
-		ObjSiz: [Ft2Mtr],		// Scale
-		RndOrd: [0],			// renderOrder
-		ObjRot: [0],			// Rotation
-		MapPos: [0],			// Relative Position
-		ObjRef: [0],			// Parent
-		VrtAdj: [0],			// Vertical Adjustment
+		ObjNum: 2,
+		ObjSrc: [],				// File Name
+		ObjTxt: [],				// Texture
+		ObjAdr: [],				// Object Address
+		ObjSiz: [],				// Scale
+		RndOrd: [],				// renderOrder
+		ObjRot: [],				// Rotation
+		MapPos: [],				// Relative Position
+		ObjRef: [],				// Parent
+		VrtAdj: [], 			// Vertical Adjustment
 	};
 
 //= MOVING AIRPLANES ===========//==============================================
