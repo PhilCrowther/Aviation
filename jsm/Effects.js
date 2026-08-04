@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Aug 2026
+Version dated 4 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -325,6 +325,14 @@ function initXACBul(xag_,gen_) {
 			xag_.BulMpS[n][i] = new Vector3();
 			xag_.BulMpP[n][i] = new Vector3();
 		} // end i
+		// Load Sounds
+		let RefDst = 25;		// Reference distance for Positional Audio
+		xag_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(xag_.SndSrc[n],function(buffer) {
+			xag_.SndPtr[n].setBuffer(buffer);
+			init1Sound(xag_.SndPtr[n],RefDst,xag_.SndVol[n],1.3,1,xag_.SndMsh[n]);
+			xac_.AirObj[n].add(xag_.SndMsh[n]);
+		});
 	} // end n
 }
 
@@ -489,6 +497,14 @@ function loadAAAGun(aaf_,gen_) {
 			// Initialize
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
+			// Load Ending Explosion
+			let RefDst = 25;	// Reference distance for Positional Audio		
+			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
+				aaf_.SndPtr[n].setBuffer(buffer);
+				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SndMsh[n]);
+				aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
+			});			
 		});	
 	}
 }
@@ -552,9 +568,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 }
 
 /*******************************************************************************
-*
 *	AA GUNS WITH SMOKE
-*
 *******************************************************************************/
 // Many objects
 // Tracers = Single Lines - 2 Color (Series)
@@ -1440,39 +1454,6 @@ function initGrdFyr(grf_) {
 
 //= LOAD SOUNDS ================//===============================================
 
-function loadEffSnd(xag_,aaf_,xsg_,gen_) {
-	let RefDst = 25;			// Reference distance for Positional Audio
-	// Load XAC Sounds ..........................................................
-	// XAC Guns
-	for (let n = 0; n < xag_.ObjNum; n ++) {
-		xag_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-		gen_.audoLd.load(xag_.SndSrc[n],function(buffer) {
-			xag_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xag_.SndPtr[n],RefDst,xag_.SndVol[n],1.3,1,xag_.SndMsh[n]);
-			xac_.AirObj[n].add(xag_.SndMsh[n]);
-		});
-	}
-	// Load AAA Sounds .........................................................
-	// AAA Guns - End Explosion
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-		gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
-			aaf_.SndPtr[n].setBuffer(buffer);
-			init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SndMsh[n]);
-			aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
-		});	
-	}
-	// XSH Guns - End Explosion
-	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		xsg_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-		gen_.audoLd.load(xsg_.SndSrc,function(buffer) {
-			xsg_.SndPtr[n].setBuffer(buffer);
-			init1Sound(xsg_.SndPtr[n],RefDst,xsg_.SndVol,1,0,xsg_.SndMsh[n]);
-			xsg_.SmkPtr[n].add(xsg_.SndMsh[n]);
-		});
-	}
-}
-
 //- INIT POSITIONAL AUDIO ------//----------------------------------------------
 function init1Sound(dest,dist,volm,rate,loop,link) {
 	dest.setRefDistance(dist);	// Position
@@ -1532,7 +1513,7 @@ export {
 	initXSHSmk,							// Ship Smoke
 	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
-	loadEffSnd,stopEffSnd,				// Sounds
+	stopEffSnd,							// Sounds
 };
 
 /*******************************************************************************
