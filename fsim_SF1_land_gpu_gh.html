@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Aug 2026
+Version dated 4 Aug 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -312,13 +312,18 @@ let mntSiz = 3.75*MtrMil
 	mnt_.ObjRot = [new THREE.Euler()]; // Rotation
 	mnt_.MapPos = [new THREE.Vector3(-1000.3048,0,5250)];
 	mnt_.ObjGrp = [new THREE.Object3D()]; // Group
-	mnt_.ObjSiz = [new THREE.Vector3(mntSiz,mntSiz/2,mntSiz)], // Scale
+	mnt_.ObjSiz = [new THREE.Vector3(mntSiz,mntSiz/2,mntSiz)]; // Scale
 
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
-	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
-	fxd_.MapPos = [new THREE.Vector3(1200,0.3048,5000)]; // Relative Position
-	fxd_.ObjRef = [mnt_.ObjGrp[0]];
+	for (let n = 0; n < fxd_.ObjNum; n ++) {
+		fxd_.ObjSiz[n] = Ft2Mtr; // Scale
+		fxd_.RndOrd[n] = 0;		// renderOrder
+		fxd_.ObjRot[n] = new THREE.Euler(); // Rotation
+		fxd_.MapPos[n] = new THREE.Vector3(1200,0.3048,5000); // Relative Position
+		fxd_.ObjRef[n] = mnt_.ObjGrp[0];
+		fxd_.VrtAdj[n] = -mnt_.VrtAdj[0];
+	}
 
 //= MOVING AIRPLANES ===========//==============================================
 //- Airplane File Addresses (animated prop only)
@@ -653,9 +658,13 @@ function rendAll() {
 //- Timeline -------------------//----------------------------------------------
 // For Times Events
 function moveEvents() {
-	if (FrmCnt == 300) initBomExp(0,new THREE.Vector3(100,0,475),0);		// 5 secs
+	if (FrmCnt == 300) initBomExp(0,new THREE.Vector3(100,0,475),0);	// 5 secs
 	if (FrmCnt == 420) initBomExp(1,new THREE.Vector3(150,0,375),120);	// 7 secs
-	if (FrmCnt == 540) initBomExp(2,new THREE.Vector3(200,0,275),240);	// 9 secs
+	if (FrmCnt == 540) {												// 9 secs
+		initBomExp(2,new THREE.Vector3(200,0,275),240);
+		fxd_.ObjAdr[0].visible = false;	// undamaged model invisible
+		fxd_.ObjAdr[1].visible = true;	// damaged model visible
+	}
 }
 
 /*******************************************************************************
@@ -741,12 +750,13 @@ function loadShared() {
 
 function loadStatic() {
 	loadMountn(mnt_,air_,gen_);
-	loadFxdObj(fxd_,gen_);	
+	loadFxdObj(fxd_,gen_);
+	fxd_.ObjAdr[1].visible = false; // damaged model not visible
 }
 
 function initStatic() {
 	initMountn(mnt_,air_);
-	initFxdObj(fxd_,air_,gen_);	
+	initFxdObj(fxd_,air_,gen_);
 }
 
 function moveStatic() {
