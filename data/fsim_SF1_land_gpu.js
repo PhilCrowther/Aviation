@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260803
+*	FSIM SF1 DATA: 260804
 *
 *********************************************************************************
 
@@ -213,19 +213,18 @@ let mnt_ = {
 		VrtAdj: [-25]			// Vertical Adjustment
 	};
 //- Static Objects -------------//----------------------------------------------
-//- 0 = Hangars;
+//- 2 Hangars = One Damaged and One Undamaged;
 let fxd_ = {
 		ObjNum: 2,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/scenery/models/hangar.glb",
-				 "https://PhilCrowther.github.io/Aviation/scenery/models/hangar2.glb"],
-		ObjTxt: [0,0],
-		ObjAdr: [0,0],			// Loaded Object
-		ObjSiz: [Ft2Mtr,Ft2Mtr],	// Scale
-		RndOrd: [0,0],			// renderOrder
-		ObjRot: [0,0],			// Rotation
-		MapPos: [0,0],			// Relative Position
-		ObjRef: [0,0],			// Parent
-		VrtAdj: [-mnt_.VrtAdj[0],-mnt_.VrtAdj[0]] // Vertical Adjustment
+		ObjSrc: [],				// File Name
+		ObjTxt: [],				// Texture
+		ObjAdr: [],				// Object Address
+		ObjSiz: [],				// Scale
+		RndOrd: [],				// renderOrder
+		ObjRot: [],				// Rotation
+		MapPos: [],				// Relative Position
+		ObjRef: [],				// Parent
+		VrtAdj: [], 			// Vertical Adjustment
 	};
 
 //= MOVING AIRPLANES ===========//==============================================
