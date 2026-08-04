@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 3 Aug 2026
+Version dated 4 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -111,8 +111,8 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initXSHSmk,				// Ship Smoke (destroyer only)
 		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom, // Bomb
-		loadEffSnd,stopEffSnd,	// Effects Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+		stopEffSnd,				// Effects Sounds
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects2.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
 		loadGeoMat,GrdMap,
@@ -426,9 +426,19 @@ let boxrot = 0;
 	mnt_.ObjSiz = [new THREE.Vector3(MtrMil,MtrMil,MtrMil),new THREE.Vector3(1.5*MtrMil,1.5*MtrMil,1.5*MtrMil)];
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
-	fxd_.ObjRot = [new THREE.Euler()]; // Rotation
-	fxd_.MapPos = [new THREE.Vector3(-562,10,-345)]; // Relative Position
-	fxd_.ObjRef = [mnt_.ObjGrp[0]];
+	fxd_.ObjNum = 2;
+	fxd_.ObjSrc = [
+			"https://PhilCrowther.github.io/Aviation/scenery/models/hangar1.glb",
+			"https://PhilCrowther.github.io/Aviation/scenery/models/hangar2.glb"
+		];
+	for (let n = 0; n < fxd_.ObjNum; n ++) {
+		fxd_.ObjSiz[n] = 1;		// Scale
+		fxd_.RndOrd[n] = 0;		// renderOrder
+		fxd_.ObjRot[n] = new THREE.Euler(); // Rotation
+		fxd_.MapPos[n] = new THREE.Vector3(1200,0.3048,5000); // Relative Position
+		fxd_.ObjRef[n] = mnt_.ObjGrp[0];
+		fxd_.VrtAdj[n] = -mnt_.VrtAdj[0];
+	}
 	
 //= MOVING AIRPLANES ===========//==============================================
 //- Airplane File Addresses (animated prop only)
@@ -1504,8 +1514,7 @@ function moveAirObj() {
 
 function loadSounds() {
 	loadMySong(air_,mys_,myg_,gen_); // My Airplane Sounds
-	loadObjSnd(xac_,gen_);		// Object Sounds
-	loadEffSnd(xag_,aaf_,xsg_,gen_); // Object Sounds	
+	loadObjSnd(xac_,gen_);		// Object Sounds	
 	gen_.LodSnd = 1;			// Set Flag
 }
 
