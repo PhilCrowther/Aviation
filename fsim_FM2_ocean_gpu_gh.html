@@ -112,7 +112,7 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom, // Bomb
 		stopEffSnd,				// Effects Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects2.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
 		loadGeoMat,GrdMap,
@@ -435,9 +435,9 @@ let boxrot = 0;
 		fxd_.ObjSiz[n] = 1;		// Scale
 		fxd_.RndOrd[n] = 0;		// renderOrder
 		fxd_.ObjRot[n] = new THREE.Euler(); // Rotation
-		fxd_.MapPos[n] = new THREE.Vector3(1200,0.3048,5000); // Relative Position
+		fxd_.MapPos[n] = new THREE.Vector3(-562,10,-345); // Relative Position
 		fxd_.ObjRef[n] = mnt_.ObjGrp[0];
-		fxd_.VrtAdj[n] = -mnt_.VrtAdj[0];
+		fxd_.VrtAdj[n] = 0;
 	}
 	
 //= MOVING AIRPLANES ===========//==============================================
