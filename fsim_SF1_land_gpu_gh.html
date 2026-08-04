@@ -316,8 +316,13 @@ let mntSiz = 3.75*MtrMil
 
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
+	fxd_.ObjNum = 2;
+	fxd_.ObjSrc = [
+			"https://PhilCrowther.github.io/Aviation/scenery/models/hangar1.glb",
+			"https://PhilCrowther.github.io/Aviation/scenery/models/hangar2.glb"
+		];
 	for (let n = 0; n < fxd_.ObjNum; n ++) {
-		fxd_.ObjSiz[n] = Ft2Mtr; // Scale
+		fxd_.ObjSiz[n] = 1;		// Scale
 		fxd_.RndOrd[n] = 0;		// renderOrder
 		fxd_.ObjRot[n] = new THREE.Euler(); // Rotation
 		fxd_.MapPos[n] = new THREE.Vector3(1200,0.3048,5000); // Relative Position
@@ -751,12 +756,12 @@ function loadShared() {
 function loadStatic() {
 	loadMountn(mnt_,air_,gen_);
 	loadFxdObj(fxd_,gen_);
-	fxd_.ObjAdr[1].visible = false; // damaged model not visible
 }
 
 function initStatic() {
 	initMountn(mnt_,air_);
 	initFxdObj(fxd_,air_,gen_);
+	fxd_.ObjAdr[1].visible = false; // damaged model not visible
 }
 
 function moveStatic() {
