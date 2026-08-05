@@ -530,10 +530,10 @@ let aaf_ = {
 		// Optional: Gun Object
 		GunSrc: 0,				// Source of Gun Object File [^m]
 		GunPtr: [0],			// Gun Object (0 = none) [^m]
-		ActLon: 0,				// Gun Object Animations [^e]
-		ActLat: 0,				//						 [^e]
-		AnmLon: 0,				//						 [^m]
-		AnmLat: 0,				//						 [^m]
+		ActLon: [],				// Gun Object Animations [^e]
+		ActLat: [],				//						 [^e]
+		AnmLon: [],				//						 [^m]
+		AnmLat: [],				//						 [^m]
 		GunAdj: 0,				// Gun Height Adjustment [^m]
 		// Optional: Targeting
 		GunTar: 0,				// Common Target, if any (Vector3)
@@ -549,10 +549,10 @@ let aaf_ = {
 		AAACol: 0,				// Colors (Vector2)
 		AAAOpa: 0.5,			// Starting Opacity
 		// Bullets for each gun (array with sub-array defined in main program)
-		AAAPtr: 0,				// Bullet Objects
-		AAAMpS: 0,				// Bullet Map Speed (Vector3)
-		AAAMpP: 0,				// Bullet Map Position (Vector3)	
-		AAATim: 0,				// Bullet Time in flight
+		AAAPtr: [],				// Bullet Objects
+		AAAMpS: [],				// Bullet Map Speed (Vector3)
+		AAAMpP: [],				// Bullet Map Position (Vector3)	
+		AAATim: [],				// Bullet Time in flight
 		// Gunfire Sounds
 		FirFlg: [],				// 1 = Start Explosion Sound
 		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
