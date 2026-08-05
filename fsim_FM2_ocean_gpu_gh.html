@@ -629,22 +629,22 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
 				   XPPath + "sounds/" + "fm2_gun.mp3"];
 //- Fixed Guns -----------------//----------------------------------------------
-	aaf_.ObjNum = 2;
-	// Gun Data
+	//	2 Guns
+	//	Gun Data
 	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
 	aaf_.GunRot = [new THREE.Euler(45,270,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
-	// Optional: Targeting
+	//	Gun Object
+	aaf_.ActLon = [0,0];		// Gun Object Animations
+	aaf_.ActLat = [0,0];
+	aaf_.AnmLon = [0,0];
+	aaf_.AnmLat = [0,0];
+	//	Targeting (Optional)
 	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3)
 	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y],	// Targeting: Gun Old Rotation [260508]
-	// Optional: Gun Object [N/A]
-	// Bullet Data
-	aaf_.AAASpd = 850;			// Muzzle Velocity - mps
-	aaf_.AAADLT = 4.0;			// Max Bullet Time in Flight
-	aaf_.AAANum = 16;			// Number of Tracers
-	aaf_.AAASpc = 1;			// Bullet Spacing (4*BulDLT/BulNum)
+	//	Bullets - General Data
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Red
 	aaf_.AAAOpa = new THREE.Vector2(0.9,0.5);
-//	Specific Adjustments
+	//	Bullets - Detailed Data
 	aaf_.AAAPtr = [[],[]];		// Bullet Objects
 	aaf_.AAAMpS = [[],[]];		// Bullet Map Speed (Vector3)
 	aaf_.AAAMpP = [[],[]];		// Bullet Map Position (Vector3)	
