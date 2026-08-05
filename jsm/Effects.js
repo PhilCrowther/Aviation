@@ -498,8 +498,9 @@ function loadAAAGun(aaf_,gen_) {
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
 			// Load Ending Explosion
-			let RefDst = 25;	// Reference distance for Positional Audio		
+			let RefDst = 25;	// Reference distance for Positional Audio
 			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+			aaf_.SndMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 				aaf_.SndPtr[n].setBuffer(buffer);
 				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SndMsh[n]);
@@ -1466,11 +1467,10 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 //= STOP SOUNDS ================================================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
-function stopEffSnd(xag_,aaf_,xsg_,bom_) {
+function stopEffSnd(xag_,aaf_,bom_) {
 	//- XAC Guns ................................................................
 	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();}
 	//-	Explosions .............................................................
-	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.SndPtr[n].isPlaying) xsg_.SndPtr[n].stop();}
 	for (let n = 0; n < aaf_.ObjNum; n ++) {if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();}
 	for (let n = 0; n < bom_.ObjNum; n ++) {if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();}
 }
@@ -1549,5 +1549,6 @@ export {
 260718: Sprite Smoke Trail
 260722: Add Colors to Bomb Explosion
 260801:	Shorten Ending Sequences
-260802: Move Effects Sounds from Objects Module; Elimiate moveEffSnd and play EffSnd subroutines; Replace aag_ with aaf_	
+260802: Move Effects Sounds from Objects Module; Elimiate moveEffSnd and play EffSnd subroutines; Replace aag_ with aaf_
+260805: Eliminate xsg_
 */
