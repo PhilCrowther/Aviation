@@ -845,8 +845,8 @@ let aaf_ = {
 		// Gun Data 
 		GunPos: [],				// Map Position (Vector3)
 		GunRot: [],				// Gun Rotation - degrees (Euler)
-		// Optional: Gun Object
-		GunSrc: 0,				// Source of Gun Object File
+		// Gun Object
+		GunSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/gunAA_crew.glb",
 		GunPtr: [0],			// Gun Object (0 = none)
 		ActLon: [],				// Gun Object Animations
 		ActLat: [],
