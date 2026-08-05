@@ -565,8 +565,8 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		//- Gunfire ---------------------------------------------------------
 		// Start Delay
 		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown
-			let X = aaf_.GunPos[n].position.x; // SndMsh attached to SmkPtr
-			let Z = aaf_.GunPos[n].position.z;
+			let X = aaf_.GunPtr[n].position.x; // SndMsh attached to SmkPtr
+			let Z = aaf_.GunPtr[n].position.z;
 			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
 			aaf_.FirDTm[n] = delay;	
 		}
