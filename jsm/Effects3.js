@@ -498,8 +498,9 @@ function loadAAAGun(aaf_,gen_) {
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
 			// Load Ending Explosion
-			let RefDst = 25;	// Reference distance for Positional Audio		
+			let RefDst = 25;	// Reference distance for Positional Audio
 			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+			aaf_.SndMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 				aaf_.SndPtr[n].setBuffer(buffer);
 				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SndMsh[n]);
