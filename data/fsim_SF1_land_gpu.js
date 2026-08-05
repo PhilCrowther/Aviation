@@ -528,11 +528,11 @@ let aaf_ = {
 		GunRot: [],				// Gun Rotation - degrees (Euler)
 		// Optional: Gun Object
 		GunSrc: 0,				// Source of Gun Object File
-		GunPtr: [0],			// Destination of Gun Object ([0] = No Object)
-		ActLon: 0,				// Gun Object Animations
-		ActLat: 0,
-		AnmLon: 0,
-		AnmLat: 0,
+		GunPtr: [],				// Destination of Gun Object ([0] = No Object)
+		ActLon: [],				// Gun Object Animations
+		ActLat: [],
+		AnmLon: [],
+		AnmLat: [],
 		GunAdj: 0,				// Gun Height Adjustment
 		// Optional: Targeting
 		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
@@ -548,10 +548,10 @@ let aaf_ = {
 		AAACol: 0,				// Colors (Vector2)
 		AAAOpa: 0.5,			// Starting Opacity
 		// Bullets for each gun (array with sub-array defined in main program)
-		AAAPtr: 0,				// Bullet Objects
-		AAAMpS: 0,				// Bullet Map Speed (Vector3)
-		AAAMpP: 0,				// Bullet Map Position (Vector3)	
-		AAATim: 0,				// Bullet Time in flight
+		AAAPtr: [],				// Bullet Objects
+		AAAMpS: [],				// Bullet Map Speed (Vector3)
+		AAAMpP: [],				// Bullet Map Position (Vector3)	
+		AAATim: [],				// Bullet Time in flight
 		// Smoke
 		SmkFlg: [],				// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number - default
