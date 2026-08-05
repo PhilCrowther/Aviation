@@ -847,7 +847,7 @@ let aaf_ = {
 		GunRot: [],				// Gun Rotation - degrees (Euler)
 		// Gun Object
 		GunSrc: "https://PhilCrowther.github.io/Aviation/scenery/models/gunAA_crew.glb",
-		GunPtr: [0],			// Gun Object (0 = none)
+		GunPtr: [],				// Gun Object
 		ActLon: [],				// Gun Object Animations
 		ActLat: [],
 		AnmLon: [],
@@ -866,7 +866,7 @@ let aaf_ = {
 		// Bullet Colors and Opacity
 		AAACol: 0,				// Colors (Vector2)
 		AAAOpa: 0.5,			// Starting Opacity
-		// Bullets for each gun (array with sub-array defined in main program)
+		// Bullets for each gun
 		AAAPtr: [],				// Bullet Objects
 		AAAMpS: [],				// Bullet Map Speed (Vector3)
 		AAAMpP: [],				// Bullet Map Position (Vector3)	
@@ -878,11 +878,11 @@ let aaf_ = {
 		FirVol: 15,				// Volume - default
 		FirMsh: [],				// (Object3D)
 		FirDTm: [],
-		// Explosion - Visual
+		// Explosion - Visual Center
 		ExpPtr: [],				// Pointer to Exploding Center
 		ExpSiz: [],				// Expanding Size
 		ExpLif: [],				// Life of Explosion (seconds)
-		// Explosion - Visual
+		// Explosion - Visual Smoke
 		SmkFlg: [],				// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number - default
 		SmkMat: [],				// Smoke Material
