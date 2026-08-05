@@ -40,7 +40,6 @@ INDEX TO VARIABLES
 	x. GUNASG MODULE
 			My Guns					(myg_)
 			Moving Airplanes		(xag_)
-			Moving Ships			(xsg_)
 			Fixed Guns				(aaf_)
 	6. SOUND VARIABLES
 		My Sounds					(mys_)
@@ -765,75 +764,6 @@ let xag_ = {
 		TimMin: [0,-600],		// Time Off (frames)
 		TimFlg: [0,120],		// Timer (pos = On, neg = Off)
 	};
-
-//-	AA Guns --------------------//----------------------------------------------
-//	Bofors anti-aircraft guns - 40 mm (1.57 in)
-//	AAASpd = 850;				// Muzzle Velocity [mps = 2,800 fps]
-//	AAADLT = 4.0;				// Life of bullet [23,490 ft range/2800 fps]
-
-//- Moving Ships ---------------//----------------------------------------------
-//	Same variable used for Fixed Guns
-let xsg_ = {
-		ObjNum: 0,				// Number of guns
-		// Parent (use this instead of link because bullets not attached)
-		ParPos: 0,				// Optional: Common Parent Position (Vector3)
-		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
-		// Gun Data 
-		GunPos: [],				// Map Position (Vector3)
-		GunRot: [],				// Gun Rotation - degrees (Euler)
-		// Optional: Gun Object
-		GunSrc: 0,				// Source of Gun Object File
-		GunPtr: [0],			// Destination of Gun Object ([0] = No Object)
-		ActLon: 0,				// Gun Object Animations
-		ActLat: 0,
-		AnmLon: 0,
-		AnmLat: 0,
-		GunAdj: 0,				// Gun Height Adjustment
-		// Optional: Targeting
-		GunTar: 0,				// Optional: Common Target, if any (Vector3) [260507]
-		GunOld: [],				// Gun Old Rotation - degrees (Euler) [260507]
-		// Bullet Data
-		AAAFlg: [],				// 1 = Guns Firing
-		AAASpd: 0,				// Muzzle Velocity (mps)
-		AAADLT: 0,				// Max Bullet Time in Flight
-		AAANum: 0,				// Number of Tracers
-		AAASpc: 0,				// Bullet Spacing (4*BulDLT/BulNum)
-		AAASp2: [],				// Bullet Spacing - time remaining	 
-		// Bullet Colors and Opacity
-		AAACol: 0,				// Red (Vector2)
-		AAAOpa: 0,				// Opacity (Vector2) [260507]
-		// Bullets for each gun		
-		AAAPtr: 0,				// Bullet Objects
-		AAAMpS: 0,				// Bullet Map Speed (V3)
-		AAAMpP: 0,				// Bullet Map Position (V3)
-		AAATim: 0,				// Bullet Time in Flight
-		// Smoke
-		SmkFlg: [],				// 1 = Start Smoke
-		SmkMap: 2,				// Shared Texture Reference Number
-		SmkMat: [],				// Smoke Material
-		SmkPtr: [],				// Smoke Sprite
-		SmkRot: [],				// Z-rotation of smoke
-		SmkMpP: [],				// Map Position (Vector3)
-		SmkDMx: [],				// Delay between Smoke events (secs)
-		SmkDTm: [],				// Delay Counter
-		SmkOpR:	0.005,			// Opacity Reduction per Frame
-		// Smoke Sounds
-		SndFlg: [],				// 1 = Explosion
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [],
-		SndVol: 15,				// Volume
-		SndMsh: [],				// Sound Mesh (makMsh())
-		SndDTm: [],
-		// Exploding Center
-		ExpPtr: [],				// Pointer to Exploding Center
-		ExpSiz: [],				// Expanding Size
-		ExpLif: [],				// Life of Explosion (seconds)
-		// Timer
-		TimMax: [0,1200,0],		// Time On (frames)
-		TimMin: [0,-1200,0],		// Time Off (frames)
-		TimFlg: [0,1200,0],		// Timer (pos = On, neg = Off)
-	};
-
 
 //- Fixed Guns -----------------//----------------------------------------------
 //	Same variable used for Ship Guns
