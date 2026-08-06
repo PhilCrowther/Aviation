@@ -862,8 +862,7 @@ let smt_ = {
 //- Bomb -----------------------//----------------------------------------------
 let bom_ = {
 		ObjNum: 3,
-		SmkSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
-		SmkMap: 0,				// Smoke Shape
+		SmkMap: 2,				// Shared Texture Reference Number
 		ExpGrp: [],				// Group (init by initExpBom)
 		ExpFlg: [],				// Explosion Happening
 		// Sounds
