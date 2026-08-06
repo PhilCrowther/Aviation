@@ -625,17 +625,15 @@ function initAAGuns(aaf_,air_,gen_) {
 			MapPos.add(aaf_.ParPos);
 			MapRot.add(aaf_.ParRot);
 		}
-		// Optional: Gun Object
-		if (aaf_.GunPtr[0]) {
-			aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
-			aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
-			aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-			//	Animations
-			aaf_.AnmLon[n] = aaf_.GunRot[n].y;
-			aaf_.AnmLat[n] = aaf_.GunRot[n].x;
-			if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
-			if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
-		}		
+		// Gun Object
+		aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
+		aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
+		aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+		//	Animations
+		aaf_.AnmLon[n] = aaf_.GunRot[n].y;
+		aaf_.AnmLat[n] = aaf_.GunRot[n].x;
+		if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
+		if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
 		//	Load Bullets
 		for (let i = 0; i < aaf_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
@@ -687,36 +685,32 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 			MapRot.add(aaf_.ParRot);
 		}
 		MapRot.y = Mod360(-MapRot.y);
-		// Optional: Gun Object
-		if (aaf_.GunPtr[0]) {
-			aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
-			aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
-			aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-			//	Animations
-			aaf_.AnmLon[n] = aaf_.GunRot[n].y;
-			aaf_.AnmLat[n] = aaf_.GunRot[n].x;
-			if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
-			if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
-		}
+		// Gun Object
+		aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
+		aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
+		aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+		//	Animations
+		aaf_.AnmLon[n] = aaf_.GunRot[n].y;
+		aaf_.AnmLat[n] = aaf_.GunRot[n].x;
+		if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
+		if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
 		// Targeting
 		if (aaf_.GunTar) {
 			let DifX,DifY,DifZ,DifH,LonL;
 			let Trgt = new Vector3().copy(aaf_.GunTar);
-			for (let n = 0; n < aaf_.ObjNum; n ++) {
-				// Targeting - Adjust Gun Longitude		
-				DifX = Trgt.x - aaf_.GunPos[n].x;
-				DifY = Trgt.y - aaf_.GunPos[n].y;
-				DifZ = Trgt.z - aaf_.GunPos[n].z;
-				DifH = Math.sqrt(DifX**2+DifZ**2);
-				// Longitude (add lead based on past rotation)
-				aaf_.GunRot[n].y = Mod360(Math.atan2(DifX,DifZ)*RadDeg);
-				LonL = (5/tim_.DLTime)*(aaf_.GunRot[n].y - aaf_.GunOld[n]); // Lead X factor for flight time
-				aaf_.GunOld[n] = aaf_.GunRot[n].y; // Save Old
-				aaf_.GunRot[n].y = Mod360(aaf_.GunRot[n].y + LonL);
-				// Latitude
-				aaf_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
-				if 	(aaf_.GunRot[n].x < 10 || aaf_.GunRot[n].x > 90) aaf_.GunRot[n].x = 10;
-			}
+			// Targeting - Adjust Gun Longitude		
+			DifX = Trgt.x - aaf_.GunPos[n].x;
+			DifY = Trgt.y - aaf_.GunPos[n].y;
+			DifZ = Trgt.z - aaf_.GunPos[n].z;
+			DifH = Math.sqrt(DifX**2+DifZ**2);
+			// Longitude (add lead based on past rotation)
+			aaf_.GunRot[n].y = Mod360(Math.atan2(DifX,DifZ)*RadDeg);
+			LonL = (5/tim_.DLTime)*(aaf_.GunRot[n].y - aaf_.GunOld[n]); // Lead X factor for flight time
+			aaf_.GunOld[n] = aaf_.GunRot[n].y; // Save Old
+			aaf_.GunRot[n].y = Mod360(aaf_.GunRot[n].y + LonL);
+			// Latitude
+			aaf_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
+			if 	(aaf_.GunRot[n].x < 10 || aaf_.GunRot[n].x > 90) aaf_.GunRot[n].x = 10;
 		}
 		// Smoke Flag Default
 		aaf_.SmkFlg[n] = 0;
