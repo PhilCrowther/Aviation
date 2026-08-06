@@ -481,24 +481,33 @@ function loadAAAGun(aaf_,gen_) {
 		gen_.gltfLd.load(aaf_.GunSrc, function (gltf) { // The OnLoad function
 			aaf_.GunPtr[n] = gltf.scene;
 			aaf_.GunPtr[n].rotation.order = "YXZ";
-			// Loasd Animations
+			//-	Loasd Animations -----------------------------------------------
 			// Rotator
 			let clip = AnimationClip.findByName(gltf.animations,"rotatorAction");
 			aaf_.ActLon[n] = new AnimationMixer(gltf.scene);
 			let actun = aaf_.ActLon[n].clipAction(clip);
 			actun.play();
 			if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
-			// Barrel
+			//	Barrel
 			clip = AnimationClip.findByName(gltf.animations,"barrelAction");
 			aaf_.ActLat[n] = new AnimationMixer(gltf.scene);
 			actun = aaf_.ActLat[n].clipAction(clip);
 			actun.play();
 			if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
-			// Initialize
+			//- Initialize -----------------------------------------------------
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
-			// Load Ending Explosion
+			//-	Load Sounds -----------------------------------------------------
 			let RefDst = 25;	// Reference distance for Positional Audio
+			//	GunFire
+			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
+			aaf_.FirMsh[n] = new Object3D();
+			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
+				aaf_.FirPtr[n].setBuffer(buffer);
+				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.SndVol,2,0,aaf_.FirMsh[n]); // 2X speed
+				aaf_.FirPtr[n].add(aaf_.FirMsh[n]);
+			});
+			//	Explosion
 			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 			aaf_.SndMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
@@ -551,6 +560,21 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 //	}
 	// Play Sound With Delay
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		//- Gunfire ---------------------------------------------------------
+		// Start Delay
+		if (aaf_.FirFlg[n] && !aaf_.FirPtr[n].isPlaying) { // Compute Delay and Start Countdown		
+			let X = aaf_.GunPtr[n].position.x; // SndMsh attached to SmkPtr
+			let Z = aaf_.GunPtr[n].position.z;
+			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
+			aaf_.FirDTm[n] = delay;	
+		}
+		// If End of Delay Start Sound
+		if (aaf_.FirDTm[n]) aaf_.FirDTm[n] = aaf_.FirDTm[n] - tim_.DLTime;
+		if (aaf_.FirDTm[n] < 0) {
+			aaf_.FirDTm[n] = 0;
+			if (gen_.SndFlg) aaf_.FirPtr[n].play();
+		}
+		//-	Exlosion --------------------------------------------------------
 		// Start Delay
 		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
 			let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
@@ -585,7 +609,10 @@ function initAAGuns(aaf_,air_,gen_) {
 		aaf_.AAASp2[n] = 1;		// Bullet Spacing - time remaining
 		aaf_.SmkFlg[n] = 0;
 		aaf_.SmkMpP[n] = new Vector3();
-		aaf_.SndMsh[n] = new Object3D();
+		//	Sound - GunFire
+		aaf_.FirFlg[n] = 1;		// 1 = Sound Ready
+		aaf_.FirDTm[n] = 0;
+		//	Sound - Explosion
 		aaf_.SndFlg[n] = 1;		// 1 = Sound Active
 		aaf_.SndDTm[n] = 0;
 	}
@@ -1458,14 +1485,18 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	link.add(dest);				// Link SndPtr to SndMsh
 }
 
-//= STOP SOUNDS ================================================================
+//= STOP SOUNDS ================//==============================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
 function stopEffSnd(xag_,aaf_,bom_) {
-	//- XAC Guns ................................................................
+	//- XAC Guns ---------------------------------------------------------------
 	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();}
-	//-	Explosions .............................................................
-	for (let n = 0; n < aaf_.ObjNum; n ++) {if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();}
+	//-	AAF Guns ---------------------------------------------------------------
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
+		if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();
+	}
+	//- Bombs ------------------------------------------------------------------
 	for (let n = 0; n < bom_.ObjNum; n ++) {if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();}
 }
 
