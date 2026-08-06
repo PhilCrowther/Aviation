@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 4 Aug 2026
+Version dated 6 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1123,8 +1123,9 @@ function moveSmkTrl(smt_,air_,n) {
 //= LOAD BOMB ==================//==============================================
 function loadExpBom(bom_,gen_) {
 	// Load Common Smoke Material
-	bom_.SmkMap = gen_.txtrLd.load(bom_.SmkSrc);
-	// Load Bomb Sounds  .......................................................
+//	bom_.SmkMap = gen_.txtrLd.load(bom_.SmkSrc);
+	bom_.SmkMap = txt_.ObjTxt[bom_.SmkMap];
+	// Load Explosion Sounds  ..................................................
 	let RefDst = 25;			// Reference distance for Positional Audio
 	for (let n = 0; n < bom_.ObjNum; n ++) {
 		bom_.ExpGrp[n] = new Group();
@@ -1141,8 +1142,6 @@ function loadExpBom(bom_,gen_) {
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_) {
 	for (let n = 0; n < bom_.ObjNum; n ++) {
-//		bom_.ExpGrp[n] = new Group();
-//		bom_.SndMsh[n] = new Object3D();
 		bom_.ExpFlg[n] = 0;
 		bom_.SndFlg[n] = 0;		// 1 = Sound Ready
 		bom_.SndDTm[n] = 0;
