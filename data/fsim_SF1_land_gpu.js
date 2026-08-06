@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260804
+*	FSIM SF1 DATA: 260805
 *
 *********************************************************************************
 
@@ -552,7 +552,18 @@ let aaf_ = {
 		AAAMpS: [],				// Bullet Map Speed (Vector3)
 		AAAMpP: [],				// Bullet Map Position (Vector3)	
 		AAATim: [],				// Bullet Time in flight
-		//	Smoke
+		//	Gunfire Sounds
+		FirFlg: [],				// 1 = Start Explosion Sound
+		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		FirPtr: [],
+		FirVol: 15,				// Volume - default
+		FirMsh: [],				// (Object3D)
+		FirDTm: [],
+		//	Explosion Circle
+		ExpPtr: [],				// Pointer to Exploding Center
+		ExpSiz: [],				// Expanding Size
+		ExpLif: [],				// Life of Explosion (seconds)	
+		//	Explosion Smoke
 		SmkFlg: [],				// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
 		SmkMat: [],				// Smoke Material
@@ -562,17 +573,13 @@ let aaf_ = {
 		SmkDMx: [],				// Delay between Smoke events (secs)
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
-		//	Smoke Sounds
+		//	Explosion Sounds
 		SndFlg: [],				// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [],
 		SndVol: 15,				// Volume
 		SndMsh: [],				// (Object3D)
 		SndDTm: [],
-		//	Explosion
-		ExpPtr: [],				// Pointer to Exploding Center
-		ExpSiz: [],				// Expanding Size
-		ExpLif: [],				// Life of Explosion (seconds)	
 	};
 
 //= SPRITE SMOKE TRAIL =========//==============================================
