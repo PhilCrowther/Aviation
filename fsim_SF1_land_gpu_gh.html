@@ -106,7 +106,7 @@ import {initBullet,moveBullet,	// Guns - My Airplane
 		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom,	// Bomb
 		stopEffSnd,				// Effects Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects1.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
 		loadGrdMat,initGrdMat,GrdMap,
@@ -453,37 +453,33 @@ let gau_ = {
 let AAFOff = 3.0;				// Bullet Start Height Above Ground - Blender value = 2.88
 let AAFHrz = 15;				// Horizontal Inset for Guns
 //- Ajdustments
-	aaf_.ObjNum = 4;			// Number of Guns in Battery
 	// Gun Data
 	aaf_.GunPos = [new THREE.Vector3(-402+AAFHrz,AAFOff, 402-AAFHrz),new THREE.Vector3(402-AAFHrz,AAFOff, 402-AAFHrz), // Map Position
 				   new THREE.Vector3(-402+AAFHrz,AAFOff,-402+AAFHrz),new THREE.Vector3(402-AAFHrz,AAFOff,-402+AAFHrz)];
 	aaf_.GunRot = [new THREE.Euler(45,0,0),new THREE.Euler(45,0,0), // Gun Rotation (degrees)
 				   new THREE.Euler(20,0,0),new THREE.Euler(20,0,0)];
-	// Optional: Targeting
+	// Targeting (Optional)
 	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3)
 	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y,aaf_.GunRot[2].y,aaf_.GunRot[3].y],	// Targeting: Gun Old Rotation [260508]
-	// Optional: Gun Object
-	aaf_.GunSrc = "https://PhilCrowther.github.io/Aviation/scenery/models/gunAA_crew.glb";
-	aaf_.ActLon = [0,0,0,0];	// Gun Object Animations
-	aaf_.ActLat = [0,0,0,0];
-	aaf_.AnmLon = [0,0,0,0];
-	aaf_.AnmLat = [0,0,0,0];
-	aaf_.GunAdj = -AAFOff;
 	// Bullets - General Data 
-	aaf_.AAASpd = 655;			// Muzzle Velocity - mps
-	aaf_.AAADLT = 300;			// Max Bullet Altitude - meters
-	aaf_.AAANum = 1;			// Number of Tracers
-	aaf_.AAASpc = 7.5;			// Bullet Spacing (4*BulDLT/BulNum)
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
 	aaf_.AAAOpa = new THREE.Vector2(0.9,0.5);
 	// Bullets - Detailed Data
-	aaf_.AAAPtr = [[],[],[],[]]; // Bullet Objects
-	aaf_.AAAMpS = [[],[],[],[]]; // Bullet Map Speed (Vector3)
-	aaf_.AAAMpP = [[],[],[],[]]; // Bullet Map Position (Vector3)	
-	aaf_.AAATim = [[],[],[],[]]; // Bullet Time in flight
 	aaf_.SmkRot = [0,165,330,210]; // Z-rotation of smoke
 	aaf_.SmkDMx = [6,6,6,6];	// Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		// Gun Object
+		aaf_.AnmLon[n] = 0;
+		aaf_.AnmLat[n] = 0;
+		// Optional: Targeting
+		aaf_.GunOld[n] = aaf_.GunRot[n].y;	// Targeting: Gun Old Rotation	
+		// Bullets - Detailed Data
+		aaf_.AAAPtr[n] = []; 	// Bullet Objects
+		aaf_.AAAMpS[n] = []; 	// Bullet Map Speed (Vector3)
+		aaf_.AAAMpP[n] = []; 	// Bullet Map Position (Vector3)	
+		aaf_.AAATim[n] = []; 	// Bullet Time in flight
+	}
 	
 //= BOMBS ======================//==============================================
 //-	Adjustments (Identical Inputs for 3 Smoke Trails)
@@ -1200,32 +1196,33 @@ function moveAirPln() {
 function loadSounds() {
 	loadMySong(air_,mys_,myg_,gen_); // My Airplane Sounds
 	loadObjSnd(xac_,gen_);		// Object Sounds	
-	gen_.LodSnd = 1;			//- Set Flag
+	gen_.LodSnd = 1;			// Set Flag
 }
 
 //= MOVE SOUNDS ================//==============================================
 
 function moveSounds() {
 //	mys_.IdlFlg = 0;			// Default = Not Idling
-//	if (Throtl < .25) mys_.IdlFlg = 1; // If Idling
+//	if (Throtl < .25) mys_.IdlFlg = 1;	// If Idling
 	moveMySong(air_,mys_,myg_);	// My Airplane
 }
 
 //= PLAY SOUNDS ================//==============================================
+//	This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
+//	Repeating Sounds Only
 
 function playSounds() {
-// This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 	playMySong(mys_,myg_,gen_); // My Airplane
 	playObjSnd(xac_);			// Objects
 }
 
 //= STOP SOUNDS ================//==============================================
+//	This leaves gen_.SndFlg = 0 and gen_.MYGFlg unchanged.
 
 function stopSounds() {
-// This leaves gen_.SndFlg = 0 and gen_.MYGFlg unchanged.
 	stopMySong(mys_,myg_);		// My Airplane
 	stopObjSnd(xac_);			// Objects
-	stopEffSnd(xag_,aaf_,xsg_,bom_); // Effects
+	stopEffSnd(xag_,aaf_,bom_); // Effects
 }
 
 /*******************************************************************************

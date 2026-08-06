@@ -104,7 +104,7 @@ import {PointerLockControls,	// three.js modified
 import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initBullet,moveBullet,	// Guns - My Airplane
 		initXACBul,moveXACBul,	// Guns - Other Airplane
-		initAAAGun,moveAAAGun,	// Guns - Fixed and Ship
+		loadAAAGun,initAAAGun,moveAAAGun,	// Guns - Fixed and Ship
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 		initXSHWak,moveXSHWak,	// Ship Wake
@@ -112,7 +112,7 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom, // Bomb
 		stopEffSnd,				// Effects Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects1.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
 		loadGeoMat,GrdMap,
@@ -633,11 +633,6 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	//	Gun Data
 	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
 	aaf_.GunRot = [new THREE.Euler(45,270,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
-	//	Gun Object
-	aaf_.ActLon = [0,0];		// Gun Object Animations
-	aaf_.ActLat = [0,0];
-	aaf_.AnmLon = [0,0];
-	aaf_.AnmLat = [0,0];
 	//	Targeting (Optional)
 	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3)
 	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y],	// Targeting: Gun Old Rotation [260508]
@@ -645,13 +640,21 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Red
 	aaf_.AAAOpa = new THREE.Vector2(0.9,0.5);
 	//	Bullets - Detailed Data
-	aaf_.AAAPtr = [[],[]];		// Bullet Objects
-	aaf_.AAAMpS = [[],[]];		// Bullet Map Speed (Vector3)
-	aaf_.AAAMpP = [[],[]];		// Bullet Map Position (Vector3)	
-	aaf_.AAATim = [[],[]];		// Bullet Time in flight
 	aaf_.SmkRot = [0,165];		// Z-rotation of smoke
 	aaf_.SmkDMx = [12,11];		// Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6];		// Delay Counter
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		// Gun Object
+		aaf_.AnmLon[n] = 0;
+		aaf_.AnmLat[n] = 0;
+		// Optional: Targeting
+		aaf_.GunOld[n] = aaf_.GunRot[n].y;	// Targeting: Gun Old Rotation	
+		// Bullets - Detailed Data
+		aaf_.AAAPtr[n] = []; 	// Bullet Objects
+		aaf_.AAAMpS[n] = []; 	// Bullet Map Speed (Vector3)
+		aaf_.AAAMpP[n] = []; 	// Bullet Map Position (Vector3)	
+		aaf_.AAATim[n] = []; 	// Bullet Time in flight
+	}
 //	Custom Targeting Variables
 let	AARYBg = [270,0];			// Starting Y-Rotation
 let	AARYDf = [0,0];				// Y-Rotation Adjustment		
@@ -957,6 +960,7 @@ function loadObject() {
 	loadAnmFlg(flg_,gen_);
 	loadMyPeep(myp_,gen_);
 	loadMyCrew(myc_,gen_);
+	loadAAAGun(aaf_,gen_);
 	loadExpBom(bom_,gen_);
 	loadSmkTrl(smt_,gen_);
 }
