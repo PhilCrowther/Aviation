@@ -562,7 +562,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		//- Gunfire ---------------------------------------------------------
 		// Start Delay
-		if (aaf_.FirFlg[n] && !aaf_.FirPtr[n].isPlaying) { // Compute Delay and Start Countdown		
+		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown		
 			let X = aaf_.GunPtr[n].position.x; // SndMsh attached to SmkPtr
 			let Z = aaf_.GunPtr[n].position.z;
 			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
@@ -572,7 +572,10 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		if (aaf_.FirDTm[n]) aaf_.FirDTm[n] = aaf_.FirDTm[n] - tim_.DLTime;
 		if (aaf_.FirDTm[n] < 0) {
 			aaf_.FirDTm[n] = 0;
-			if (gen_.SndFlg) aaf_.FirPtr[n].play();
+			if (gen_.SndFlg) {
+				 if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
+				 aaf_.FirPtr[n].play();
+			}
 		}
 		//-	Exlosion --------------------------------------------------------
 		// Start Delay
@@ -587,7 +590,10 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - tim_.DLTime;
 		if (aaf_.SndDTm[n] < 0) {
 			aaf_.SndDTm[n] = 0;
-			if (gen_.SndFlg) aaf_.SndPtr[n].play();
+			if (gen_.SndFlg) {
+				if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();
+				aaf_.SndPtr[n].play();
+			}
 		}
 	}
 }
@@ -1157,6 +1163,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_) {
 function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
 	// Start Sound
 	if (gen_.SndFlg && bom_.SndFlg[n]) {
+		if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();
 		bom_.SndPtr[n].play();
 		bom_.SndFlg[n] = 0;
 	}
