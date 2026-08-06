@@ -576,7 +576,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		}
 		//-	Exlosion --------------------------------------------------------
 		// Start Delay
-		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
+		if (aaf_.SmkFlg[n] && !aaf_.SndPtr[n].isPlaying) { // Compute Delay and Start Countdown
 			let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
 			let Z = aaf_.SmkPtr[n].position.z;
 			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
