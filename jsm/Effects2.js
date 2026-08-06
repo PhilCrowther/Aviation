@@ -481,8 +481,8 @@ function loadAAAGun(aaf_,gen_) {
 		gen_.gltfLd.load(aaf_.GunSrc, function (gltf) { // The OnLoad function
 			aaf_.GunPtr[n] = gltf.scene;
 			aaf_.GunPtr[n].rotation.order = "YXZ";
-			//- Load Animations ------------------------------------------------
-			//	Rotator
+			//-	Loasd Animations -----------------------------------------------
+			// Rotator
 			let clip = AnimationClip.findByName(gltf.animations,"rotatorAction");
 			aaf_.ActLon[n] = new AnimationMixer(gltf.scene);
 			let actun = aaf_.ActLon[n].clipAction(clip);
@@ -494,27 +494,27 @@ function loadAAAGun(aaf_,gen_) {
 			actun = aaf_.ActLat[n].clipAction(clip);
 			actun.play();
 			if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
-			//-	Initialize ------------------------------------------------------
+			//- Initialize -----------------------------------------------------
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
 			//-	Load Sounds -----------------------------------------------------
 			let RefDst = 25;	// Reference distance for Positional Audio
 			//	GunFire
-			aaf_.FirMsh[n] = new Object3D();
 			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
+			aaf_.FirMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
 				aaf_.FirPtr[n].setBuffer(buffer);
 				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.SndVol,2,0,aaf_.FirMsh[n]); // 2X speed
 				aaf_.FirPtr[n].add(aaf_.FirMsh[n]);
 			});
-			//	Ending Explosion
-			aaf_.SndMsh[n] = new Object3D();
+			//	Explosion
 			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+			aaf_.SndMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 				aaf_.SndPtr[n].setBuffer(buffer);
 				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SndMsh[n]);
 				aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
-			});
+			});			
 		});	
 	}
 }
@@ -537,9 +537,8 @@ function initAAAGun(aaf_,txt_,air_,gen_) {
 
 function moveAAAGun(aaf_,air_,gen_,tim_) {
 	moveAAGuns(aaf_,air_,gen_,tim_);
-	//-	Visuals
+	// Explosion
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		//-	Final Explosion
 		if (aaf_.SmkFlg[n]) {
 			aaf_.ExpSiz[n] = 1/200; // Start Size
 			aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
@@ -557,8 +556,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 	}	
 	// Play Sound (No Delay)
 //	for (let n = 0; n < aaf_.ObjNum; n ++) {
-//		if (gen_.SndFlg && aaf_.FirFlg[n]) aaf_.FirPtr[n].play(); // GunFire
-//		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play(); // Explosion
+//		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
 //	}
 	// Play Sound With Delay
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
@@ -576,7 +574,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 			aaf_.FirDTm[n] = 0;
 			if (gen_.SndFlg) aaf_.FirPtr[n].play();
 		}
-		//-	Explosion -------------------------------------------------------
+		//-	Exlosion --------------------------------------------------------
 		// Start Delay
 		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
 			let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
@@ -597,13 +595,10 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 /*******************************************************************************
 *	AA GUNS WITH SMOKE
 *******************************************************************************/
-//	Many objects
-//	Tracers = Single Lines - 2 Color (Series)
-//	Smoke
-//	Gun Object = Gun at Relative Position to Ship
-//	Gunfire can take 2 forms:
-//	* Single firing Sound with all tracer
-//	* Continually firing Sound with occasional tracers
+// Many objects
+// Tracers = Single Lines - 2 Color (Series)
+// Smoke
+// Gun Object = Gun at Relative Position to Ship
 
 //= INIT AA GUNS ===============//==============================================
 
@@ -618,7 +613,7 @@ function initAAGuns(aaf_,air_,gen_) {
 		aaf_.FirFlg[n] = 1;		// 1 = Sound Ready
 		aaf_.FirDTm[n] = 0;
 		//	Sound - Explosion
-		aaf_.SndFlg[n] = 1;		// 1 = Sound Ready
+		aaf_.SndFlg[n] = 1;		// 1 = Sound Active
 		aaf_.SndDTm[n] = 0;
 	}
 	//- Combined Rotation and Map Position of Parent plus Gun
@@ -657,17 +652,15 @@ function initAAGuns(aaf_,air_,gen_) {
 			MapPos.add(aaf_.ParPos);
 			MapRot.add(aaf_.ParRot);
 		}
-		// Optional: Gun Object
-		if (aaf_.GunPtr[0]) {
-			aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
-			aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
-			aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-			//	Animations
-			aaf_.AnmLon[n] = aaf_.GunRot[n].y;
-			aaf_.AnmLat[n] = aaf_.GunRot[n].x;
-			if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
-			if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
-		}		
+		// Gun Object
+		aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
+		aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
+		aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+		//	Animations
+		aaf_.AnmLon[n] = aaf_.GunRot[n].y;
+		aaf_.AnmLat[n] = aaf_.GunRot[n].x;
+		if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
+		if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
 		//	Load Bullets
 		for (let i = 0; i < aaf_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
@@ -719,36 +712,32 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 			MapRot.add(aaf_.ParRot);
 		}
 		MapRot.y = Mod360(-MapRot.y);
-		// Optional: Gun Object
-		if (aaf_.GunPtr[0]) {
-			aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
-			aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
-			aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-			//	Animations
-			aaf_.AnmLon[n] = aaf_.GunRot[n].y;
-			aaf_.AnmLat[n] = aaf_.GunRot[n].x;
-			if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
-			if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
-		}
+		// Gun Object
+		aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
+		aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
+		aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
+		//	Animations
+		aaf_.AnmLon[n] = aaf_.GunRot[n].y;
+		aaf_.AnmLat[n] = aaf_.GunRot[n].x;
+		if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
+		if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
 		// Targeting
 		if (aaf_.GunTar) {
 			let DifX,DifY,DifZ,DifH,LonL;
 			let Trgt = new Vector3().copy(aaf_.GunTar);
-			for (let n = 0; n < aaf_.ObjNum; n ++) {
-				// Targeting - Adjust Gun Longitude		
-				DifX = Trgt.x - aaf_.GunPos[n].x;
-				DifY = Trgt.y - aaf_.GunPos[n].y;
-				DifZ = Trgt.z - aaf_.GunPos[n].z;
-				DifH = Math.sqrt(DifX**2+DifZ**2);
-				// Longitude (add lead based on past rotation)
-				aaf_.GunRot[n].y = Mod360(Math.atan2(DifX,DifZ)*RadDeg);
-				LonL = (5/tim_.DLTime)*(aaf_.GunRot[n].y - aaf_.GunOld[n]); // Lead X factor for flight time
-				aaf_.GunOld[n] = aaf_.GunRot[n].y; // Save Old
-				aaf_.GunRot[n].y = Mod360(aaf_.GunRot[n].y + LonL);
-				// Latitude
-				aaf_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
-				if 	(aaf_.GunRot[n].x < 10 || aaf_.GunRot[n].x > 90) aaf_.GunRot[n].x = 10;
-			}
+			// Targeting - Adjust Gun Longitude		
+			DifX = Trgt.x - aaf_.GunPos[n].x;
+			DifY = Trgt.y - aaf_.GunPos[n].y;
+			DifZ = Trgt.z - aaf_.GunPos[n].z;
+			DifH = Math.sqrt(DifX**2+DifZ**2);
+			// Longitude (add lead based on past rotation)
+			aaf_.GunRot[n].y = Mod360(Math.atan2(DifX,DifZ)*RadDeg);
+			LonL = (5/tim_.DLTime)*(aaf_.GunRot[n].y - aaf_.GunOld[n]); // Lead X factor for flight time
+			aaf_.GunOld[n] = aaf_.GunRot[n].y; // Save Old
+			aaf_.GunRot[n].y = Mod360(aaf_.GunRot[n].y + LonL);
+			// Latitude
+			aaf_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
+			if 	(aaf_.GunRot[n].x < 10 || aaf_.GunRot[n].x > 90) aaf_.GunRot[n].x = 10;
 		}
 		// Smoke Flag Default
 		aaf_.SmkFlg[n] = 0;
@@ -1152,6 +1141,8 @@ function loadExpBom(bom_,gen_) {
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_) {
 	for (let n = 0; n < bom_.ObjNum; n ++) {
+//		bom_.ExpGrp[n] = new Group();
+//		bom_.SndMsh[n] = new Object3D();
 		bom_.ExpFlg[n] = 0;
 		bom_.SndFlg[n] = 0;		// 1 = Sound Ready
 		bom_.SndDTm[n] = 0;
@@ -1494,14 +1485,18 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 	link.add(dest);				// Link SndPtr to SndMsh
 }
 
-//= STOP SOUNDS ================================================================
+//= STOP SOUNDS ================//==============================================
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
 function stopEffSnd(xag_,aaf_,bom_) {
-	//- XAC Guns ................................................................
+	//- XAC Guns ---------------------------------------------------------------
 	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();}
-	//-	Explosions .............................................................
-	for (let n = 0; n < aaf_.ObjNum; n ++) {if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();}
+	//-	AAF Guns ---------------------------------------------------------------
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
+		if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();
+	}
+	//- Bombs ------------------------------------------------------------------
 	for (let n = 0; n < bom_.ObjNum; n ++) {if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();}
 }
 
@@ -1580,5 +1575,5 @@ export {
 260722: Add Colors to Bomb Explosion
 260801:	Shorten Ending Sequences
 260802: Move Effects Sounds from Objects Module; Elimiate moveEffSnd and play EffSnd subroutines; Replace aag_ with aaf_
-260805: Eliminated xsg_
+260805: Eliminate xsg_
 */
