@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Aug 2026
+Version dated 7 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -504,7 +504,7 @@ function loadAAAGun(aaf_,gen_) {
 			aaf_.FirMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
 				aaf_.FirPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.SndVol,2,0,aaf_.FirMsh[n]); // 2X speed
+				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.FirVol,1,0,aaf_.FirMsh[n]);
 				aaf_.FirPtr[n].add(aaf_.FirMsh[n]);
 			});
 			//	Explosion
@@ -566,7 +566,8 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 			let X = aaf_.GunPtr[n].position.x; // SndMsh attached to SmkPtr
 			let Z = aaf_.GunPtr[n].position.z;
 			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
-			aaf_.FirDTm[n] = delay;	
+			aaf_.FirDTm[n] = delay;
+			aaf_.FirFlg[n] = 0;
 		}
 		// If End of Delay Start Sound
 		if (aaf_.FirDTm[n]) aaf_.FirDTm[n] = aaf_.FirDTm[n] - tim_.DLTime;
@@ -616,7 +617,7 @@ function initAAGuns(aaf_,air_,gen_) {
 		aaf_.SmkFlg[n] = 0;
 		aaf_.SmkMpP[n] = new Vector3();
 		//	Sound - GunFire
-		aaf_.FirFlg[n] = 1;		// 1 = Sound Ready
+		aaf_.FirFlg[n] = 0;		// 1 = Sound Ready
 		aaf_.FirDTm[n] = 0;
 		//	Sound - Explosion
 		aaf_.SndFlg[n] = 1;		// 1 = Sound Active
@@ -768,7 +769,10 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 				aaf_.AAASp2[n] = aaf_.AAASpc; // restart delay
 				aaf_.AAAPtr[n][i].visible = true;
 				// End Smoke When Bullet0 Begins
-				if (!i) aaf_.SmkPtr[n].visible = false;
+				if (!i) {
+					aaf_.SmkPtr[n].visible = false;
+					aaf_.FirFlg[n] = 1; 	// 1 = Sound Ready
+				}
 			}
 			// Continue Bullets
 			aaf_.AAATim[n][i] = aaf_.AAATim[n][i] + tim_.DLTime;
