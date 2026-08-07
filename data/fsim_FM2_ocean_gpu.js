@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260802
+*	FSIM FM2 DATA: 260807
 *
 ********************************************************************************
 
@@ -804,9 +804,9 @@ let aaf_ = {
 		AAATim: [],				// Bullet Time in flight
 		//	Gunfire Sounds
 		FirFlg: [],				// 1 = Start Explosion Sound
-		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
+		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",
 		FirPtr: [],
-		FirVol: 15,				// Volume - default
+		FirVol: 0.25,			// Volume - default
 		FirMsh: [],				// (Object3D)
 		FirDTm: [],
 		//	Explosion Circle
