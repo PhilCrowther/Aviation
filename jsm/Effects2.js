@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Aug 2026
+Version dated 8 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -823,8 +823,8 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 			}
 			// Flash
 			if (aaf_.FrLPtr[n].visible = true) {
-				aaf_.FrlTim[n] = aaf_.FrlTim[n] - tim_.DLTime;
-				if (aaf_.FrlTim[n] < 0) aaf_.FrLPtr[n].visible = false;
+				aaf_.FrLTim[n] = aaf_.FrLTim[n] - tim_.DLTime;
+				if (aaf_.FrLTim[n] < 0) aaf_.FrLPtr[n].visible = false;
 			}
 		} // end of i
 		// Smoke Relative Position
@@ -1606,4 +1606,5 @@ export {
 260801:	Shorten Ending Sequences
 260802: Move Effects Sounds from Objects Module; Elimiate moveEffSnd and play EffSnd subroutines; Replace aag_ with aaf_
 260805: Eliminate xsg_
+260808: Show guns firing (FrL)
 */
