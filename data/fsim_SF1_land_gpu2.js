@@ -533,7 +533,7 @@ let aaf_ = {
 		ActLat: [],
 		AnmLon: [],
 		AnmLat: [],
-		GunAdj: -5,				// Gun Height Adjustment
+		GunAdj: -2.5,			// Gun Height Adjustment
 		//	Targeting (Optional)
 		GunTar: 0,				// Optional: Common Target, if any (Vector3)
 		GunOld: [],				// Gun Old Rotation - degrees (Euler)
