@@ -832,8 +832,7 @@ let aaf_ = {
 		SndPtr: [],
 		SndVol: 10,				// Volume
 		SndMsh: [],				// (Object3D)
-		SndDTm: [],
-	
+		SndDTm: [],	
 	};
 
 //= SPRITE SMOKE TRAIL =========//==============================================
