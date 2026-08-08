@@ -527,12 +527,13 @@ function initAAAGun(aaf_,txt_,air_,gen_) {
 		initAAGuns(aaf_,air_,gen_);
 		// Initial Flash Geo and Mat
 		let FrLGeo = new LineGeometry();
-		FrLGeo.setPositions([0,0,0, 0,0,10]);
+		FrLGeo.setPositions([0,0,5, 0,0,15]);
 		let FrLMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
 		for (let n = 0; n < aaf_.ObjNum; n ++) {
 			// Create Flash
 			aaf_.FrLPtr[n] = new Line2(FrLGeo,FrLMat);
-			// adjust position
+			aaf_.FrLPtr[n].rotation.order = "YXZ";
+			aaf_.FrLPtr[n].position.set(0,2.75,0);
 			aaf_.GunPtr[n].add(aaf_.FrLPtr[n]);
 			aaf_.FrLPtr[n].visible = false;			
 			// Create Exploding Center
@@ -781,6 +782,11 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 				if (!i) {
 					aaf_.SmkPtr[n].visible = false;
 					aaf_.FirFlg[n] = 1; 	// 1 = Sound Ready
+				// Flash
+				aaf_.FrLPtr[n].rotation.x = -aaf_.AnmLat[n]*DegRad;
+				aaf_.FrLPtr[n].rotation.y = -(aaf_.AnmLon[n]+180)*DegRad;
+				aaf_.FrLPtr[n].visible = true;
+				aaf_.FrLTim[n] = 1;
 				}
 			}
 			// Continue Bullets
@@ -814,6 +820,11 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 				aaf_.AAAPtr[n][i].position.x = aaf_.AAAMpP[n][i].x - air_.MapPos.x;
 				aaf_.AAAPtr[n][i].position.y = aaf_.AAAMpP[n][i].y - air_.MapPos.y;
 				aaf_.AAAPtr[n][i].position.z = air_.MapPos.z - aaf_.AAAMpP[n][i].z;
+			}
+			// Flash
+			if (aaf_.FrLPtr[n].visible = true) {
+				aaf_.FrlTim[n] = aaf_.FrlTim[n] - tim_.DLTime;
+				if (aaf_.FrlTim[n] < 0) aaf_.FrLPtr[n].visible = false;
 			}
 		} // end of i
 		// Smoke Relative Position
