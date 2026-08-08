@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Aug 2026
+Version dated 7 Aug 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -458,23 +458,22 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 				   new THREE.Vector3(-402+AAFHrz,AAFOff,-402+AAFHrz),new THREE.Vector3(402-AAFHrz,AAFOff,-402+AAFHrz)];
 	aaf_.GunRot = [new THREE.Euler(45,0,0),new THREE.Euler(45,0,0), // Gun Rotation (degrees)
 				   new THREE.Euler(20,0,0),new THREE.Euler(20,0,0)];
-	// Targeting (Optional)
+	//	Targeting (Optional)
 	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3)
-	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y,aaf_.GunRot[2].y,aaf_.GunRot[3].y],	// Targeting: Gun Old Rotation [260508]
-	// Bullets - General Data 
+	//	Bullets - General Data 
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Green-Blue
 	aaf_.AAAOpa = new THREE.Vector2(0.9,0.5);
-	// Bullets - Detailed Data
+	//	Bullets - Detailed Data
 	aaf_.SmkRot = [0,165,330,210]; // Z-rotation of smoke
 	aaf_.SmkDMx = [6,6,6,6];	// Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6,2,4];	// Delay Counter
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		// Gun Object
+		//	Gun Object
 		aaf_.AnmLon[n] = 0;
 		aaf_.AnmLat[n] = 0;
-		// Optional: Targeting
+		//	Optional: Targeting
 		aaf_.GunOld[n] = aaf_.GunRot[n].y;	// Targeting: Gun Old Rotation	
-		// Bullets - Detailed Data
+		//	Bullets - Detailed Data
 		aaf_.AAAPtr[n] = []; 	// Bullet Objects
 		aaf_.AAAMpS[n] = []; 	// Bullet Map Speed (Vector3)
 		aaf_.AAAMpP[n] = []; 	// Bullet Map Position (Vector3)	
@@ -714,7 +713,6 @@ function initBomExp(n,pos,rot) {
 function moveObject() {
 	moveStatic();
 	moveMoving();
-	moveFxdGun();				// Perform Targeting
 	moveAAAGun(aaf_,air_,gen_,tim_);
 	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
@@ -782,12 +780,6 @@ function moveMoving() {
 //- Animated Attachments -------//----------------------------------------------
 
 function moveAnmObj() {moveAnmFlg(flg_,tim_);}
-
-//- AAA Guns -------------------//----------------------------------------------
-
-function moveFxdGun() {
-	if (aaf_.ObjNum) moveAAAGun(aaf_,air_,gen_,tim_);
-}
 
 /*******************************************************************************
 *

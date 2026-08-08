@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 6 Aug 2026
+Version dated 7 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -634,8 +634,7 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
 	aaf_.GunRot = [new THREE.Euler(45,270,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
 	//	Targeting (Optional)
-	aaf_.GunTar = xac_.MapPos[0], // Optional: Common Target, if any (Vector3)
-	aaf_.GunOld = [aaf_.GunRot[0].y,aaf_.GunRot[1].y],	// Targeting: Gun Old Rotation [260508]
+	aaf_.GunTar = xac_.MapPos[0]; // Optional: Common Target, if any (Vector3)
 	//	Bullets - General Data
 	aaf_.AAACol = new THREE.Vector2(0x80ffff,0x408080); // Red
 	aaf_.AAAOpa = new THREE.Vector2(0.9,0.5);
@@ -644,12 +643,12 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	aaf_.SmkDMx = [12,11];		// Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6];		// Delay Counter
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		// Gun Object
+		//	Gun Object
 		aaf_.AnmLon[n] = 0;
 		aaf_.AnmLat[n] = 0;
-		// Optional: Targeting
+		//	Optional: Targeting
 		aaf_.GunOld[n] = aaf_.GunRot[n].y;	// Targeting: Gun Old Rotation	
-		// Bullets - Detailed Data
+		//	Bullets - Detailed Data
 		aaf_.AAAPtr[n] = []; 	// Bullet Objects
 		aaf_.AAAMpS[n] = []; 	// Bullet Map Speed (Vector3)
 		aaf_.AAAMpP[n] = []; 	// Bullet Map Position (Vector3)	
@@ -995,9 +994,9 @@ function moveObject() {
 	moveStatic();
 	moveMoving();
 	moveAnmObj();
-	moveFxdGun();				// Perform Targeting
 	if(BegLoc == 1) moveMyPeep(myp_,tim_);
 	moveMyCrew(myc_);
+	moveAAAGun(aaf_,air_,gen_,tim_);
 	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
 		if (bom_.ExpFlg[n]) moveBomExp(n);
@@ -1068,20 +1067,6 @@ function moveMoving() {
 //- Animated Attachments -------//----------------------------------------------
 
 function moveAnmObj() {moveAnmFlg(flg_,tim_);}
-
-//- AAA Guns -------------------//----------------------------------------------
-
-function moveFxdGun() {
-	if (aaf_.ObjNum) {
-		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			// Targeting - Adjust Gun Longitude
-			AARYDf[n] = Mod360(AARYDf[n]+0.005); // Range 0 to 360
-			aaf_.GunRot[n].y = AARYBg[n] + 5*Math.sin(AARYDf[n]); // Offset = -45 to +45
-			// Continuous Fire
-		}
-		moveAAAGun(aaf_,air_,gen_,tim_);
-	}
-}
 
 //= MOUNTAINS/ISLANDS ==========//==============================================
 
@@ -1305,7 +1290,6 @@ function initMovShp() {
 	initXSHVeh(xsh_,air_,gen_);
 	initXSHWak(wak_,txt_);		// Init Ship Wake
 	initXSHSmk(xss_,txt_);		// Init Ship Smoke
-	initAAAGun(aaf_,txt_,air_,gen_); // Init Common Testure
 }
 
 //-	Move Ship ------------------//----------------------------------------------
