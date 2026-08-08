@@ -552,6 +552,9 @@ let aaf_ = {
 		AAAMpS: [],				// Bullet Map Speed (Vector3)
 		AAAMpP: [],				// Bullet Map Position (Vector3)	
 		AAATim: [],				// Bullet Time in flight
+		//	Gunfire Flash
+		FrLPtr: [],				// Gunfire Flash
+		FrLTim: [],				// Time of Flash
 		//	Gunfire Sounds
 		FirFlg: [],				// 1 = Start Explosion Sound
 		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",
