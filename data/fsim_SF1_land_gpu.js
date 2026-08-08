@@ -194,7 +194,7 @@ let txt_ = {
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
 				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",
 				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],
-		ObjTxt: [0,0,0],
+		ObjTxt: [],
 	};
 
 //= STATIC OBJECTS =============//==============================================
@@ -533,7 +533,7 @@ let aaf_ = {
 		ActLat: [],
 		AnmLon: [],
 		AnmLat: [],
-		GunAdj: -5,				// Gun Height Adjustment
+		GunAdj: -2.5,			// Gun Height Adjustment
 		//	Targeting (Optional)
 		GunTar: 0,				// Optional: Common Target, if any (Vector3)
 		GunOld: [],				// Gun Old Rotation - degrees (Euler)
@@ -552,6 +552,9 @@ let aaf_ = {
 		AAAMpS: [],				// Bullet Map Speed (Vector3)
 		AAAMpP: [],				// Bullet Map Position (Vector3)	
 		AAATim: [],				// Bullet Time in flight
+		//	Gunfire Flash
+		FrLPtr: [],				// Gunfire Flash
+		FrLTim: [],				// Time of Flash
 		//	Gunfire Sounds
 		FirFlg: [],				// 1 = Start Explosion Sound
 		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",
