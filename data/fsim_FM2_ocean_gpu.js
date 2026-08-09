@@ -37,10 +37,9 @@ INDEX TO VARIABLES
 	5. MY AIRPLANE VARIABLES		(air_)
 		FLIGHT MODULE
 		ANIMFM2 MODULE				(anm_,mxr_,vxr_)
-	x. GUNASG MODULE
+	x. EFFECTS MODULE
 			My Guns					(myg_)
 			Moving Airplanes		(xag_)
-			Moving Ships			(xsg_)
 			Fixed Guns				(aaf_)
 	6. SOUND VARIABLES
 		My Sounds					(mys_)

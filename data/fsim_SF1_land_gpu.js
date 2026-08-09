@@ -41,10 +41,9 @@ INDEX TO VARIABLES
 	5. MY AIRPLANE VARIABLES		(air_)
 		FLIGHT MODULE
 		ANIMFM2 MODULE				(anm_,mxr_,vxr_)
-	x. GUNASG MODULE
+	x. EFFECTS MODULE
 			My Guns					(myg_)
 			Moving Airplanes		(xag_)
-			Moving Ships			(xsg_)
 			Fixed Guns				(aaf_)
 	6. SOUND VARIABLES
 		My Sounds					(mys_)
@@ -510,11 +509,6 @@ let xag_ = {
 		TimMin: [0,-600,-600,-600],	// Time Off (frames)
 		TimFlg: [0,120,120,120],	// Timer (pos = On, neg = Off)
 	};
-
-//- Moving Ships ---------------//----------------------------------------------
-let xsg_ = {
-		ObjNum: 0,
-	}
 
 //- Fixed Guns -----------------//----------------------------------------------
 //	Same variables used for Ship Guns
