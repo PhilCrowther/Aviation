@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Aug 2026
+Version dated 8 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -330,7 +330,6 @@ function initXACBul(xag_,gen_) {
 		xag_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xag_.SndSrc[n],function(buffer) {
 			xag_.SndPtr[n].setBuffer(buffer);
-//			xag_.SndPtr[n].setMediaElementSource(buffer);
 			init1Sound(xag_.SndPtr[n],RefDst,xag_.SndVol[n],1.3,1,xag_.SndMsh[n]);
 			xac_.AirObj[n].add(xag_.SndMsh[n]);
 		});
@@ -501,12 +500,10 @@ function loadAAAGun(aaf_,gen_) {
 			//-	Load Sounds -----------------------------------------------------
 			let RefDst = 25;	// Reference distance for Positional Audio
 			//	GunFire
-			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);		
-			aaf_.FirPtr[n].setMediaElementSource( audioElement );			
+			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
 			aaf_.FirMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
 				aaf_.FirPtr[n].setBuffer(buffer);
-//				aaf_.FirPtr[n].setMediaElementSource(buffer);
 				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.FirVol,1,0,aaf_.FirMsh[n]);
 				aaf_.FirPtr[n].add(aaf_.FirMsh[n]);
 			});
@@ -515,7 +512,6 @@ function loadAAAGun(aaf_,gen_) {
 			aaf_.SndMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 				aaf_.SndPtr[n].setBuffer(buffer);
-//				aaf_.SndPtr[n].setMediaElementSource(buffer);
 				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SndMsh[n]);
 				aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
 			});			
@@ -1169,7 +1165,6 @@ function loadExpBom(bom_,gen_) {
 		bom_.SndMsh[n] = new Object3D();
 		gen_.audoLd.load(bom_.SndSrc, function(buffer) {
 			bom_.SndPtr[n].setBuffer(buffer);
-//			bom_.SndPtr[n].setMediaElementSource(buffer);
 			init1Sound(bom_.SndPtr[n],RefDst,bom_.SndVol,1,0,bom_.SndMsh[n]);	
 			bom_.ExpGrp[n].add(bom_.SndMsh[n]);
 		});
