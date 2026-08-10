@@ -507,12 +507,11 @@ function loadAAAGun(aaf_,txt_,gen_) {
 				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
 			});
 			//	Explosion
+			aaf_.SmkPtr[n] = new Object3D(); // Temporary
 			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-			aaf_.SndMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 				aaf_.SndPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SndMsh[n]);
-				aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
+				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SmkPtr[n]);
 			});			
 		});	
 	}
@@ -779,7 +778,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		//. Gunfire ............................................................
 		//	Start Delay
 		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown 		
-			let X = aaf_.GunPtr[n].position.x; // SndMsh attached to SmkPtr
+			let X = aaf_.GunPtr[n].position.x;
 			let Z = aaf_.GunPtr[n].position.z;
 			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
 			aaf_.FirDTm[n] = delay;
