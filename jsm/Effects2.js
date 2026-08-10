@@ -498,14 +498,12 @@ function loadAAAGun(aaf_,gen_) {
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
 			//-	Load Sounds -----------------------------------------------------
-			let RefDst = 5;	// Reference distance for Positional Audio
+			let RefDst = 25;	// Reference distance for Positional Audio
 			//	GunFire
 			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
-			aaf_.FirMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
 				aaf_.FirPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.FirVol,1,0,aaf_.FirMsh[n]);
-				aaf_.FirPtr[n].add(aaf_.FirMsh[n]);
+				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
 			});
 			//	Explosion
 			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
@@ -585,7 +583,6 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 			aaf_.FirDTm[n] = 0;
 			if (gen_.SndFlg) {
 				 if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
-				 aaf_.FirPtr[n].setVolume(aaf_.FirVol);
 				 aaf_.FirPtr[n].play();
 			}
 		}
@@ -604,7 +601,6 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 			aaf_.SndDTm[n] = 0;
 			if (gen_.SndFlg) {
 				if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();
-				aaf_.SndPtr[n].setVolume(aaf_.SndVol);
 				aaf_.SndPtr[n].play();
 			}
 		}
@@ -1158,7 +1154,7 @@ function loadExpBom(bom_,gen_) {
 //	bom_.SmkMap = gen_.txtrLd.load(bom_.SmkSrc);
 	bom_.SmkMap = txt_.ObjTxt[bom_.SmkMap];
 	// Load Explosion Sounds  ..................................................
-	let RefDst = 5;				// Reference distance for Positional Audio
+	let RefDst = 25;			// Reference distance for Positional Audio
 	for (let n = 0; n < bom_.ObjNum; n ++) {
 		bom_.ExpGrp[n] = new Group();
 		bom_.SndPtr[n] = new PositionalAudio(gen_.listnr);
@@ -1190,7 +1186,6 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
 	// Start Sound
 	if (gen_.SndFlg && bom_.SndFlg[n]) {
 		if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();
-		bom_.SndPtr[n].setVolume(bom_.SndVol);
 		bom_.SndPtr[n].play();
 		bom_.SndFlg[n] = 0;
 	}
