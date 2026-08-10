@@ -476,7 +476,8 @@ function makeXACSpn(n,xac_) {
 
 //= LOAD AA GUNS ===============//==============================================
 
-function loadAAAGun(aaf_,gen_) {
+function loadAAAGun(aaf_,txt_,gen_) {
+	aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		gen_.gltfLd.load(aaf_.GunSrc, function (gltf) { // The OnLoad function
 			aaf_.GunPtr[n] = gltf.scene;
@@ -519,9 +520,8 @@ function loadAAAGun(aaf_,gen_) {
 
 //= INIT AAA GUN ===============//==============================================
 
-function initAAAGun(aaf_,txt_,air_,gen_) {
+function initAAAGun(aaf_,air_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
-	aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
 	// Initial Flash Geo and Mat
@@ -634,7 +634,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	let MapPos = new Vector3();
 	let MapRot = new Vector3();
-	let AAASV3 = new Vector3();
+	let AAASV3 = new Vector3();	// Initial Speed
 	let	AAASpT = aaf_.AAASpd * tim_.DLTime;
 	//- EACH GUN ---------------------------------------------------------------
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
