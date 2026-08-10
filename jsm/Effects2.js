@@ -330,7 +330,7 @@ function initXACBul(xag_,gen_) {
 		xag_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xag_.SndSrc[n],function(buffer) {
 			xag_.SndPtr[n].setBuffer(buffer);
-			xag_.SndPtr[n].setMediaElementSource(buffer);
+//			xag_.SndPtr[n].setMediaElementSource(buffer);
 			init1Sound(xag_.SndPtr[n],RefDst,xag_.SndVol[n],1.3,1,xag_.SndMsh[n]);
 			xac_.AirObj[n].add(xag_.SndMsh[n]);
 		});
@@ -502,7 +502,6 @@ function loadAAAGun(aaf_,gen_) {
 			let RefDst = 25;	// Reference distance for Positional Audio
 			//	GunFire
 			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);		
-			aaf_.FirPtr[n].setMediaElementSource( audioElement );			
 			aaf_.FirMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
 //				aaf_.FirPtr[n].setBuffer(buffer);
