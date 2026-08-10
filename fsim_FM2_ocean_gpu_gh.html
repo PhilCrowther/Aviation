@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 7 Aug 2026
+Version dated 10 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -112,7 +112,7 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom, // Bomb
 		stopEffSnd,				// Effects Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects2.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
 		loadGeoMat,GrdMap,
@@ -653,7 +653,7 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		aaf_.AAAMpS[n] = []; 	// Bullet Map Speed (Vector3)
 		aaf_.AAAMpP[n] = []; 	// Bullet Map Position (Vector3)	
 		aaf_.AAATim[n] = []; 	// Bullet Time in flight
-	}		
+	}	
 
 //= BOMBS ======================//==============================================
 //-	Adjustments (Identical Inputs for 3 Smoke Trails)
