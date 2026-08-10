@@ -29,7 +29,6 @@ INDEX TO VARIABLES
 		ANIMATED FLAG				(flg_)
 	    SMOKE MODULE
 	    	Volcano Smoke			(grs_)
-	    	Ground Fire				(grf_)
 	    	Ship Wakes				(wak_)
 		MYPEOPLE					(myp_)
 		MYCREW						(myc_)
@@ -408,7 +407,7 @@ let	flg_ = {
 	};
 
 //= SMOKE MODULE ===============//==============================================
-//- Vertical Smoke -------------//----------------------------------------------
+//- Volcano Smoke --------------//----------------------------------------------
 let grs_ = {
 		ObjNum: 1,				// Number of Smokes
 		// Shared Values		
@@ -422,28 +421,10 @@ let grs_ = {
 		MapPos: [0], 			// Map Position
 		ObjRef: [0],			// Parent Object
 	};
-//- Ground Fire ----------------//----------------------------------------------
-let grf_ = {
-		ObjNum: 1,				// Number of Smoke Trails
-		// Shared Values
-		ObjTxt: 0,				// Texture
-		ObjSiz: 40,				// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Mesh
-		// Fire
-		FyrMat: [0],			// Material
-		FyrMsh: [0],			// Mesh
-		// Rotation and Position
-		ObjRot: [0],			// Rotation
-		MapPos: [0],			// Map Position
-		ObjRef: [0],			// Parent Object
-	};
 
 //- Ship Wake ------------------//----------------------------------------------
 let wak_ = {
 		ObjNum: 0,				// Number of Wakes
-		ObjSrc: [0],			// Not Used
 		ObjTxt: [0],			// Shared Texture Reference Number
 		ObjMat: [0],			// Material
 		ObjAdr: [0],			// Emitter Address
@@ -456,16 +437,15 @@ let wak_ = {
 
 //- Ship Smoke (destroyer only) ------------------------------------------------
 let xss_ = {
-		ObjNum: 2,				// Number of Stacks
-		ObjSrc: [0,0],			// Not Used
-		ObjTxt: [0,0],			// Shared Texture Reference Number
-		ObjMat: [0,0],			// Material
-		ObjAdr: [0,0],			// Emitter Address
-		ObjSiz: [0,0],			// Scale
-		RndOrd: [1,1],			// renderOrder
-		ObjRot: [0,0],			// Rotation (not used)
-		ObjPos: [0,0],			// Offset Position
-		ObjRef: [0,0],			// Parent Object
+		ObjNum: 0,				// Number of Stacks
+		ObjTxt: [0],			// Shared Texture Reference Number
+		ObjMat: [0],			// Material
+		ObjAdr: [0],			// Emitter Address
+		ObjSiz: [0],			// Scale
+		RndOrd: [0],			// renderOrder
+		ObjRot: [0],			// Rotation (not used)
+		ObjPos: [0],			// Offset Position
+		ObjRef: [0],			// Parent Object
 	};
 
 //= MY PEOPLE ==================//==============================================
