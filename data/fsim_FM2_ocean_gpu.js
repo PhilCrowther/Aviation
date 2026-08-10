@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260808
+*	FSIM FM2 DATA: 260810
 *
 ********************************************************************************
 
@@ -808,8 +808,7 @@ let aaf_ = {
 		FirFlg: [],				// 1 = Start Explosion Sound
 		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",
 		FirPtr: [],
-		FirVol: 0.25,			// Volume - default
-		FirMsh: [],				// (Object3D)
+		FirVol: 15,				// Volume - default
 		FirDTm: [],
 		//	Explosion Circle
 		ExpPtr: [],				// Pointer to Exploding Center
@@ -829,7 +828,7 @@ let aaf_ = {
 		SndFlg: [],				// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [],
-		SndVol: 10,				// Volume
+		SndVol: 15,				// Volume
 		SndMsh: [],				// (Object3D)
 		SndDTm: [],	
 	};
