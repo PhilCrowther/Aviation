@@ -679,7 +679,7 @@ function loadObject() {
 	loadShared();				// For FX (### Creates Shadow on Screen)
 	loadStatic();
 	loadMoving();
-	loadAAAGun(aaf_,gen_);
+	loadAAAGun(aaf_,txt_,gen_);
 	loadExpBom(bom_,gen_);
 	loadSmkTrl(smt_,gen_);
 }
@@ -689,7 +689,7 @@ function loadObject() {
 function initObject() {
 	initStatic();
 	initMoving();
-	initAAAGun(aaf_,txt_,air_,gen_);
+	initAAAGun(aaf_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_);
 	initSmkTrl(smt_,air_,xac_,gen_);
 }

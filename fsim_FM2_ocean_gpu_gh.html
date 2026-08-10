@@ -205,8 +205,7 @@ TO DO:
 			Moving Airplanes		xag_
 			Fixed Guns				aaf_
 		Smoke and Ship Wakes
-			Vertical Smoke			grs_			adj
-	    	Ground Fire				grf_			adj
+			Volcano Smoke			grs_			adj
 	    	Airplane Smoke Trail	xas_			adj
 	    	Airplane Fire Trail		xaf_			adj
 	    	Ship Wake				wak_			adj	
@@ -530,8 +529,8 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 //	Adjustments
 	wak_.ObjNum = xsh_.ObjNum;	// Number of Wakes = Number of Ships
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.ObjTxt[n] = 0;		// Shared Texture Reference Number
 		wak_.ObjSiz[n] = 4000;	// Size
+		wak_.ObjTxt[n] = 0;		// Shared Texture Reference Number
 		wak_.RndOrd[n] = 1;		// Drawing Order
 		wak_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
 		wak_.ObjPos[n] = new THREE.Vector3(0,-5,0); // Offset Position
@@ -539,23 +538,21 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	}
 //- Ship Smoke (destroyer only) ------------------------------------------------
 //	Adjustments
-	xss_.ObjRot = [new THREE.Euler(),new THREE.Euler()]; // Rotation (degrees) [not used]
+	xss_.ObjNum = 2;			// 2 stacks
 	xss_.ObjPos = [new THREE.Vector3(0,13.5,-9.5),new THREE.Vector3(0,12.5,6)]; // Offset Position
-	xss_.ObjRef = [xsh_.ObjGrp[1],xsh_.ObjGrp[1]]; // Parent Object (destroyer only)
-	xss_.ObjSiz = [200,200];
-
+	for (let n = 0; n < xss_.ObjNum; n ++) {
+		xss_.ObjSiz[n] = 200;	// Size
+		xss_.ObjTxt[n] = 0;		// Shared Texture Reference Number
+		xss_.RndOrd[n] = 1;		// Drawing Order
+		xss_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
+		xss_.ObjRef[n] = xsh_.ObjGrp[1]; // Parent Object
+	}
 //= SMOKE MODULE ===============//==============================================
-//- Vertical Smoke -------------//----------------------------------------------
+//- Volcano Smoke -------------//----------------------------------------------
 //	Adjustments
 	grs_.ObjRot = [new THREE.Euler()]; // Rotation (degrees) [not used]
 	grs_.MapPos = [new THREE.Vector3(50,75,25)]; // Map Position
 	grs_.ObjRef = [mnt_.ObjGrp[0]]; // Parent Object
-//- Ground Fire ----------------//----------------------------------------------
-//	Adjustments
-	grf_.ObjRot = [new THREE.Euler()]; // Rotation (degrees) [not used]
-	grf_.MapPos = [new THREE.Vector3(-562,-22.5,-363)]; // Map Position
-	grf_.ObjRef = [mnt_.ObjGrp[0]], // Parent Object
-
 //= MY PEOPLE (Rigged Animated Characters) =====================================
 //	Adjustments
 	myp_.ObjRot = [new THREE.Euler(0,-45,0)]; // Rotation (degrees)
@@ -956,7 +953,7 @@ function loadObject() {
 	loadAnmFlg(flg_,gen_);
 	loadMyPeep(myp_,gen_);
 	loadMyCrew(myc_,gen_);
-	loadAAAGun(aaf_,gen_);
+	loadAAAGun(aaf_,txt_,gen_);
 	loadExpBom(bom_,gen_);
 	loadSmkTrl(smt_,gen_);
 }
@@ -966,7 +963,7 @@ function loadObject() {
 function initObject() {
 	initStatic();
 	initMoving();
-	initAAAGun(aaf_,txt_,air_,gen_);
+	initAAAGun(aaf_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_);
 	initSmkTrl(smt_,air_,xac_,gen_);
 }
