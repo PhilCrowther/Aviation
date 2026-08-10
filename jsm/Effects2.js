@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Aug 2026
+Version dated 10 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -470,7 +470,7 @@ function makeXACSpn(n,xac_) {
 
 /*******************************************************************************
 *
-*	AA GUNS - FIXED AND SHIP
+*	AA GUNS
 *
 *******************************************************************************/
 
@@ -498,7 +498,7 @@ function loadAAAGun(aaf_,gen_) {
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
 			//-	Load Sounds -----------------------------------------------------
-			let RefDst = 25;	// Reference distance for Positional Audio
+			let RefDst = 5;		// Reference distance for Positional Audio
 			//	GunFire
 			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
 			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
@@ -520,120 +520,14 @@ function loadAAAGun(aaf_,gen_) {
 //= INIT AAA GUN ===============//==============================================
 
 function initAAAGun(aaf_,txt_,air_,gen_) {
-	if (aaf_.ObjNum) {
-		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
-		initAAGuns(aaf_,air_,gen_);
-		// Initial Flash Geo and Mat
-		let FrLGeo = new LineGeometry();
-		FrLGeo.setPositions([0,0,5, 0,0,15]);
-		let FrLMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
-		for (let n = 0; n < aaf_.ObjNum; n ++) {
-			// Create Flash
-			aaf_.FrLPtr[n] = new Line2(FrLGeo,FrLMat);
-			aaf_.FrLPtr[n].rotation.order = "YXZ";
-			aaf_.FrLPtr[n].position.set(0,2.75,0);
-			aaf_.GunPtr[n].add(aaf_.FrLPtr[n]);
-			aaf_.FrLPtr[n].visible = false;			
-			// Create Exploding Center
-			aaf_.ExpPtr[n] = makeSphere("crimson");
-			aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
-		}
-	}
-}
-
-//= MOVE AAA GUN ===============//==============================================
-
-function moveAAAGun(aaf_,air_,gen_,tim_) {
-	moveAAGuns(aaf_,air_,gen_,tim_);
-	// Explosion
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		if (aaf_.SmkFlg[n]) {
-			aaf_.ExpSiz[n] = 1/200; // Start Size
-			aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
-			aaf_.ExpPtr[n].visible = true;
-		}
-		if (aaf_.ExpLif[n] > 0) {
-			aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
-			aaf_.ExpSiz[n] = aaf_.ExpSiz[n] + 1/200;
-			aaf_.ExpLif[n] = aaf_.ExpLif[n] - tim_.DLTime;
-			if (aaf_.ExpLif[n] < 0) {
-				aaf_.ExpLif[n] = 0;
-				aaf_.ExpPtr[n].visible = false;
-			}
-		}
-	}	
-	// Play Sound (No Delay)
-//	for (let n = 0; n < aaf_.ObjNum; n ++) {
-//		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
-//	}
-	// Play Sound With Delay
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		//- Gunfire ---------------------------------------------------------
-		// Start Delay
-		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown		
-			let X = aaf_.GunPtr[n].position.x; // SndMsh attached to SmkPtr
-			let Z = aaf_.GunPtr[n].position.z;
-			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
-			aaf_.FirDTm[n] = delay;
-			aaf_.FirFlg[n] = 0;
-		}
-		// If End of Delay Start Sound
-		if (aaf_.FirDTm[n]) aaf_.FirDTm[n] = aaf_.FirDTm[n] - tim_.DLTime;
-		if (aaf_.FirDTm[n] < 0) {
-			aaf_.FirDTm[n] = 0;
-			if (gen_.SndFlg) {
-				 if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
-				 aaf_.FirPtr[n].play();
-			}
-		}
-		//-	Exlosion --------------------------------------------------------
-		// Start Delay
-		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
-			let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
-			let Z = aaf_.SmkPtr[n].position.z;
-			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
-			if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
-			aaf_.SndDTm[n] = delay;	
-		}
-		// If End of Delay Start Sound
-		if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - tim_.DLTime;
-		if (aaf_.SndDTm[n] < 0) {
-			aaf_.SndDTm[n] = 0;
-			if (gen_.SndFlg) {
-				if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();
-				aaf_.SndPtr[n].play();
-			}
-		}
-	}
-}
-
-/*******************************************************************************
-*	AA GUNS WITH SMOKE
-*******************************************************************************/
-// Many objects
-// Tracers = Single Lines - 2 Color (Series)
-// Smoke
-// Gun Object = Gun at Relative Position to Ship
-
-//= INIT AA GUNS ===============//==============================================
-
-function initAAGuns(aaf_,air_,gen_) {
-	//- Standard Values
-	for (let n = 0; n < aaf_.ObjNum; n ++) {
-		aaf_.AAAFlg[n] = 1;		// Gun Firing
-		aaf_.AAASp2[n] = 1;		// Bullet Spacing - time remaining
-		aaf_.SmkFlg[n] = 0;
-		aaf_.SmkMpP[n] = new Vector3();
-		//	Sound - GunFire
-		aaf_.FirFlg[n] = 0;		// 1 = Sound Ready
-		aaf_.FirDTm[n] = 0;
-		//	Sound - Explosion
-		aaf_.SndFlg[n] = 1;		// 1 = Sound Active
-		aaf_.SndDTm[n] = 0;
-	}
-	//- Combined Rotation and Map Position of Parent plus Gun
+	//- COMMON VARIABLES -------------------------------------------------------
+	aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
+	// Initial Flash Geo and Mat
+	let FrLGeo = new LineGeometry();
+	FrLGeo.setPositions([0,0,5, 0,0,15]);
+	let FrLMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
 	//- Lines
 	let scale = 2.5;			// Smoke Scale
 	let line = 0;
@@ -648,19 +542,33 @@ function initAAGuns(aaf_,air_,gen_) {
 	let point1 = [];
 		point1.push(new Vector3(0,0,-lnB));
 		point1.push(new Vector3(0,0,lnB));
-	let AAAGeD = new BufferGeometry().setFromPoints(point1);	
+	let AAAGeD = new BufferGeometry().setFromPoints(point1);
+	//	AAAMtL
 	let AAAMtL = new LineBasicNodeMaterial();
 		AAAMtL.colorNode = color(aaf_.AAACol.x);
 		AAAMtL.transparent = true;
 		AAAMtL.opacityNode = aaf_.AAAOpa.x;
 		AAAMtL.depthWrite = false;
+	//	AAAMtD
 	let AAAMtD = new LineBasicNodeMaterial();
 		AAAMtD.colorNode = color(aaf_.AAACol.y);
 		AAAMtD.transparent = true;
 		AAAMtD.opacityNode = aaf_.AAAOpa.y;
 		AAAMtD.depthWrite = false;
-	//- For Each Gun
+	//- EACH GUN ---------------------------------------------------------------
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		//.	Standard Values ....................................................
+		aaf_.AAAFlg[n] = 1;		// Gun Firing
+		aaf_.AAASp2[n] = 1;		// Bullet Spacing - time remaining
+		aaf_.SmkFlg[n] = 0;
+		aaf_.SmkMpP[n] = new Vector3();
+		//	Sound - GunFire
+		aaf_.FirFlg[n] = 0;		// 1 = Sound Ready
+		aaf_.FirDTm[n] = 0;
+		//	Sound - Explosion
+		aaf_.SndFlg[n] = 1;		// 1 = Sound Active
+		aaf_.SndDTm[n] = 0;
+		//.	Map Position and Rotation of Gun plus Parent .......................
 		MapPos.copy(aaf_.GunPos[n]);
 		MapRot.copy(aaf_.GunRot[n]);
 		if (aaf_.ParPos) {		// Add Parent since bullets not linked
@@ -671,12 +579,12 @@ function initAAGuns(aaf_,air_,gen_) {
 		aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
 		aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-		//	Animations
+		//.	Animations .........................................................
 		aaf_.AnmLon[n] = aaf_.GunRot[n].y;
 		aaf_.AnmLat[n] = aaf_.GunRot[n].x;
 		if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
 		if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
-		//	Load Bullets
+		//.	Load Bullets .......................................................
 		for (let i = 0; i < aaf_.AAANum; i ++) {
 			// Create AAA Meshes - 1 Double Line
 			aaf_.AAAPtr[n][i] = new Object3D();
@@ -695,15 +603,24 @@ function initAAGuns(aaf_,air_,gen_) {
 			aaf_.AAAMpS[n][i] = new Vector3();
 			aaf_.AAAMpP[n][i] = new Vector3();
 		}
-		//	Smoke Material
+		//. Create Graphics ....................................................
+		//	Gun Flash
+		aaf_.FrLPtr[n] = new Line2(FrLGeo,FrLMat);
+		aaf_.FrLPtr[n].rotation.order = "YXZ";
+		aaf_.FrLPtr[n].position.set(0,2.75,0);
+		aaf_.GunPtr[n].add(aaf_.FrLPtr[n]);
+		aaf_.FrLPtr[n].visible = false;
+		//	Explosion Center
+		aaf_.ExpPtr[n] = makeSphere("crimson");
+		aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
+		//	Explosion Smoke Material (need separate material becuase vary opacity)
 		aaf_.SmkMat[n] = new SpriteNodeMaterial();
 		aaf_.SmkMat[n].colorNode = color(0xffffff);
 		aaf_.SmkMat[n].colorNode = texture(aaf_.SmkMap);
 		aaf_.SmkMat[n].transparent = true;
-//		aaf_.SmkMat[n].opacity = 1.0;
 		aaf_.SmkMat[n].opacity = 0.0;		// prevent black square from appearing in front of aircraft [260504]
 		aaf_.SmkMat[n].depthWrite = false;
-		//	Smoke Sprite
+		//	Explosion Smoke Sprite
 		aaf_.SmkPtr[n] = new Sprite(aaf_.SmkMat[n]);
 		aaf_.SmkPtr[n].scale.set(100,100,100);	
 		gen_.scene.add(aaf_.SmkPtr[n]);
@@ -711,15 +628,17 @@ function initAAGuns(aaf_,air_,gen_) {
 	} // end of n
 }
 
-//= MOVE AA GUNS ===============//==============================================
+//= MOVE AAA GUN ===============//==============================================
 
-function moveAAGuns(aaf_,air_,gen_,tim_) {
-	//- Combined Rotation and Map Position of Parent plus Gun
+function moveAAAGun(aaf_,air_,gen_,tim_) {
+	//- COMMON VARIABLES -------------------------------------------------------
 	let MapPos = new Vector3();
 	let MapRot = new Vector3();
 	let AAASV3 = new Vector3();
 	let	AAASpT = aaf_.AAASpd * tim_.DLTime;
+	//- EACH GUN ---------------------------------------------------------------
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		//. Map Position and Rotation of Gun plus Parent .......................
 		MapPos.copy(aaf_.GunPos[n]);
 		MapRot.copy(aaf_.GunRot[n]);
 		if (aaf_.ParPos) {		// Add Parent since bullets not linked
@@ -731,12 +650,12 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 		aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
 		aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
-		//	Animations
+		//.	Animations .........................................................
 		aaf_.AnmLon[n] = aaf_.GunRot[n].y;
 		aaf_.AnmLat[n] = aaf_.GunRot[n].x;
 		if (aaf_.ActLon[n]) aaf_.ActLon[n].setTime(aaf_.AnmLon[n]/anmfps);
 		if (aaf_.ActLat[n]) aaf_.ActLat[n].setTime(aaf_.AnmLat[n]/anmfps);
-		// Targeting
+		//. Targeting ..........................................................
 		if (aaf_.GunTar) {
 			let DifX,DifY,DifZ,DifH,LonL;
 			let Trgt = new Vector3().copy(aaf_.GunTar);
@@ -754,9 +673,8 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 			aaf_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
 			if 	(aaf_.GunRot[n].x < 10 || aaf_.GunRot[n].x > 90) aaf_.GunRot[n].x = 10;
 		}
-		// Smoke Flag Default
-		aaf_.SmkFlg[n] = 0;
-		// For Each Bullet String	
+		//. For Each Bullet String .............................................			
+		aaf_.SmkFlg[n] = 0;			// Smoke Flag Default
 		aaf_.AAASp2[n] = aaf_.AAASp2[n] - tim_.DLTime; // When reach 0, fire next bullet
 		if (aaf_.AAASp2[n] < 0) aaf_.AAASp2[n] = 0; // Ready to fire next bullet
 		for (let i = 0; i < aaf_.AAANum; i ++) {
@@ -803,7 +721,7 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 					aaf_.SmkMat[n].opacity = 1.0;
 					aaf_.SmkRot[n] = Mod360(aaf_.SmkRot[n] + 163); // Change appearance
 					aaf_.SmkDTm[n] = aaf_.SmkDMx[n]; // Reset Delay Timer
-					aaf_.SmkFlg[n] = 1 // Smoke Flag On (Used to Start Sound)
+					aaf_.SmkFlg[n] = 1 // Smoke Flag On (Used to Start Sound) - reset to zero on next rep
 				}
 			}
 			// Continue
@@ -824,7 +742,7 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 				aaf_.FrLTim[n] = aaf_.FrLTim[n] - tim_.DLTime;
 				if (aaf_.FrLTim[n] < 0) aaf_.FrLPtr[n].visible = false;
 			}
-		} // end of i
+		} // end of i (Bulllets)
 		// Smoke Relative Position
 		if (aaf_.SmkPtr[n].visible = true) {
 			aaf_.SmkPtr[n].position.x = aaf_.SmkMpP[n].x - air_.MapPos.x;
@@ -840,6 +758,61 @@ function moveAAGuns(aaf_,air_,gen_,tim_) {
 		// Smoke Timer
 		if (aaf_.SmkDTm[n] > 0) aaf_.SmkDTm[n] = aaf_.SmkDTm[n] - tim_.DLTime;
 		if (aaf_.SmkDTm[n] < 0) aaf_.SmkDTm[n] = 0;
+		// Explosion (Red Flash)
+		if (aaf_.SmkFlg[n]) {
+			aaf_.ExpSiz[n] = 1/200; // Start Size
+			aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
+			aaf_.ExpPtr[n].visible = true;
+		}
+		if (aaf_.ExpLif[n] > 0) {
+			aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
+			aaf_.ExpSiz[n] = aaf_.ExpSiz[n] + 1/200;
+			aaf_.ExpLif[n] = aaf_.ExpLif[n] - tim_.DLTime;
+			if (aaf_.ExpLif[n] < 0) {
+				aaf_.ExpLif[n] = 0;
+				aaf_.ExpPtr[n].visible = false;
+			}
+		}
+		//.	Play Sounds (No Delay) .............................................
+//		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
+		// Play Sound With Delay
+		//. Gunfire ............................................................
+		//	Start Delay
+		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown		
+			let X = aaf_.GunPtr[n].position.x; // SndMsh attached to SmkPtr
+			let Z = aaf_.GunPtr[n].position.z;
+			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
+			aaf_.FirDTm[n] = delay;
+			aaf_.FirFlg[n] = 0;
+		}
+		//	If End of Delay Start Sound
+		if (aaf_.FirDTm[n]) aaf_.FirDTm[n] = aaf_.FirDTm[n] - tim_.DLTime;
+		if (aaf_.FirDTm[n] < 0) {
+			aaf_.FirDTm[n] = 0;
+			if (gen_.SndFlg) {
+				if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
+				aaf_.FirPtr[n].setVolume(aaf_.FirVol);
+				aaf_.FirPtr[n].play();
+			}
+		}
+		//.	Exlosion ...........................................................
+		// Start Delay
+		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
+			let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
+			let Z = aaf_.SmkPtr[n].position.z;
+			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
+			if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
+			aaf_.SndDTm[n] = delay;	
+		}
+		// If End of Delay Start Sound
+		if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - tim_.DLTime;
+		if (aaf_.SndDTm[n] < 0) {
+			aaf_.SndDTm[n] = 0;
+			if (gen_.SndFlg) {
+				if (aaf_.SndPtr[n].isPlaying) aaf_.SndPtr[n].stop();
+				aaf_.SndPtr[n].play();
+			}
+		}
 	} // end of n
 }
 
