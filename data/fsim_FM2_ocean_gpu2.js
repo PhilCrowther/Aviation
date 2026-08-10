@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260808
+*	FSIM FM2 DATA: 260810
 *
 ********************************************************************************
 
@@ -29,7 +29,6 @@ INDEX TO VARIABLES
 		ANIMATED FLAG				(flg_)
 	    SMOKE MODULE
 	    	Volcano Smoke			(grs_)
-	    	Ground Fire				(grf_)
 	    	Ship Wakes				(wak_)
 		MYPEOPLE					(myp_)
 		MYCREW						(myc_)
@@ -408,7 +407,7 @@ let	flg_ = {
 	};
 
 //= SMOKE MODULE ===============//==============================================
-//- Vertical Smoke -------------//----------------------------------------------
+//- Volcano Smoke --------------//----------------------------------------------
 let grs_ = {
 		ObjNum: 1,				// Number of Smokes
 		// Shared Values		
@@ -422,29 +421,11 @@ let grs_ = {
 		MapPos: [0], 			// Map Position
 		ObjRef: [0],			// Parent Object
 	};
-//- Ground Fire ----------------//----------------------------------------------
-let grf_ = {
-		ObjNum: 1,				// Number of Smoke Trails
-		// Shared Values
-		ObjTxt: 0,				// Texture
-		ObjSiz: 40,				// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Mesh
-		// Fire
-		FyrMat: [0],			// Material
-		FyrMsh: [0],			// Mesh
-		// Rotation and Position
-		ObjRot: [0],			// Rotation
-		MapPos: [0],			// Map Position
-		ObjRef: [0],			// Parent Object
-	};
 
 //- Ship Wake ------------------//----------------------------------------------
 let wak_ = {
 		ObjNum: 0,				// Number of Wakes
-		ObjSrc: [0],			// Not Used
-		ObjTxt: [0],			// Shared Texture Reference Number
+		ObjTxt: 0,				// Shared Texture Reference Number
 		ObjMat: [0],			// Material
 		ObjAdr: [0],			// Emitter Address
 		ObjSiz: [0], 			// Scale
@@ -457,8 +438,7 @@ let wak_ = {
 //- Ship Smoke (destroyer only) ------------------------------------------------
 let xss_ = {
 		ObjNum: 2,				// Number of Stacks
-		ObjSrc: [0,0],			// Not Used
-		ObjTxt: [0,0],			// Shared Texture Reference Number
+		ObjTxt: 2,				// Shared Texture Reference Number
 		ObjMat: [0,0],			// Material
 		ObjAdr: [0,0],			// Emitter Address
 		ObjSiz: [0,0],			// Scale
