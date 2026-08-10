@@ -809,7 +809,6 @@ let aaf_ = {
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [],
 		SndVol: 15,				// Volume
-		SndMsh: [],				// (Object3D)
 		SndDTm: [],	
 	};
 
