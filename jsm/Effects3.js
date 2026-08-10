@@ -476,7 +476,7 @@ function makeXACSpn(n,xac_) {
 
 //= LOAD AA GUNS ===============//==============================================
 
-function loadAAAGun(aaf_,txt_gen_) {
+function loadAAAGun(aaf_,txt_,gen_) {
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		gen_.gltfLd.load(aaf_.GunSrc, function (gltf) { // The OnLoad function
 			//-	Gun Object -----------------------------------------------------
