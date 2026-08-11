@@ -697,7 +697,6 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				aaf_.FrLPtr[n].rotation.y = -(aaf_.AnmLon[n]+180)*DegRad;
 				aaf_.FrLPtr[n].visible = true;
 				aaf_.FrLTim[n] = 0.1;
-				}
 			}
 			// Continue Bullets
 			aaf_.AAATim[n][i] = aaf_.AAATim[n][i] + tim_.DLTime;
