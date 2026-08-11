@@ -507,13 +507,12 @@ function loadAAAGun(aaf_,txt_,gen_) {
 				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
 			});
 			//	Explosion
-			aaf_.SmkPtr[n] = new Object3D(); // Temporary
+			aaf_.SmkPtr[n] = new Object3D();	// Temporary
+			aaf_.SmkPtr[n].position.y = -10000;	// Temporary
 			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-			aaf_.SndMsh[n] = new Object3D();
 			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 				aaf_.SndPtr[n].setBuffer(buffer);
 				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SmkPtr[n]);
-//				aaf_.SmkPtr[n].add(aaf_.SndMsh[n]);
 			});			
 		});	
 	}
