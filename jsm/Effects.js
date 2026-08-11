@@ -644,7 +644,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 			MapRot.add(aaf_.ParRot);
 		}
 		MapRot.y = Mod360(-MapRot.y);
-		// Gun Object
+		//- Gun Object ---------------------------------------------------------
 		aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
 		aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
@@ -671,7 +671,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 			aaf_.GunRot[n].x = Mod360(Math.atan2(DifY,DifH)*RadDeg);
 			if 	(aaf_.GunRot[n].x < 10 || aaf_.GunRot[n].x > 90) aaf_.GunRot[n].x = 10;
 		}
-		//. For Each Bullet String .............................................			
+		//- Bullets ------------------------------------------------------------		
 		aaf_.SmkFlg[n] = 0;		// Smoke Flag Default
 		aaf_.AAASp2[n] = aaf_.AAASp2[n] - tim_.DLTime; // When reach 0, fire next bullet
 		if (aaf_.AAASp2[n] < 0) aaf_.AAASp2[n] = 0; // Ready to fire next bullet
@@ -735,12 +735,13 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				aaf_.AAAPtr[n][i].position.y = aaf_.AAAMpP[n][i].y - air_.MapPos.y;
 				aaf_.AAAPtr[n][i].position.z = air_.MapPos.z - aaf_.AAAMpP[n][i].z;
 			}
-			// Flash
+			//	Gun Flash
 			if (aaf_.FrLPtr[n].visible = true) {
 				aaf_.FrLTim[n] = aaf_.FrLTim[n] - tim_.DLTime;
 				if (aaf_.FrLTim[n] < 0) aaf_.FrLPtr[n].visible = false;
 			}
 		} // end of i (Bulllets)
+		//-	Smoke --------------------------------------------------------------
 		// Smoke Relative Position
 		if (aaf_.SmkPtr[n].visible = true) {
 			aaf_.ExpGrp[n].position.x = aaf_.SmkMpP[n].x - air_.MapPos.x;
@@ -753,9 +754,9 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				aaf_.SmkMat[n].opacity = 0;
 			}
 		}
-		// Smoke Timer
+		// Smoke Timer (This Timer Allows Explosions - Generally Only After Several Bullets Have Passed)
 		if (aaf_.SmkDTm[n] > 0) aaf_.SmkDTm[n] = aaf_.SmkDTm[n] - tim_.DLTime;
-		if (aaf_.SmkDTm[n] < 0) aaf_.SmkDTm[n] = 0;
+		if (aaf_.SmkDTm[n] < 0) aaf_.SmkDTm[n] = 0; // Ready for Next Explosion
 		// Explosion (Red Flash)
 		if (aaf_.SmkFlg[n]) {
 			aaf_.ExpSiz[n] = 1/200; // Start Size
@@ -771,6 +772,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				aaf_.ExpPtr[n].visible = false;
 			}
 		}
+		//-	Sounds -------------------------------------------------------------
 		//.	Play Sounds (No Delay) .............................................
 //		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
 		// Play Sound With Delay
