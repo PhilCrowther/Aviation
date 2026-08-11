@@ -618,7 +618,7 @@ function initAAAGun(aaf_,air_,gen_) {
 		//	Explosion Smoke Sprite
 		aaf_.SmkPtr[n] = new Sprite(aaf_.SmkMat[n]);
 		aaf_.SmkPtr[n].scale.set(100,100,100);	
-		aaf_ExpGrp.add(aaf_.SmkPtr[n]);
+		aaf_.ExpGrp.add(aaf_.SmkPtr[n]);
 		aaf_.SmkPtr[n].visible = false;		// hide it
 		//	Explosion Center
 		aaf_.ExpPtr[n] = makeSphere("crimson");
