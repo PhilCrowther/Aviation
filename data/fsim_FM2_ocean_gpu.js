@@ -790,7 +790,7 @@ let aaf_ = {
 		//	Gunfire Sounds
 		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",
 		FirDst: 0,				// Reference Distance
-		FirVol: 15,				// Volume
+		FirVol: 0,				// Volume
 		FirFlg: [],				// 1 = Start Explosion Sound
 		FirPtr: [],
 		FirDTm: [],
@@ -813,7 +813,7 @@ let aaf_ = {
 		//	Explosion Sounds
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndDst: 0,				// Reference Distance
-		SndVol: 15,				// Volume
+		SndVol: 0,				// Volume
 		SndFlg: [],				// 1 = Start Explosion Sound
 		SndPtr: [],
 		SndDTm: [],	
