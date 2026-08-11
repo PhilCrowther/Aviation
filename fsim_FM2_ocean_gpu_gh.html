@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Aug 2026
+Version dated 11 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -626,7 +626,6 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	xag_.SndSrc = [XPPath + "sounds/" + "fm2_gun.mp3", // File (my guns)
 				   XPPath + "sounds/" + "fm2_gun.mp3"];
 //- Fixed Guns -----------------//----------------------------------------------
-	//	2 Guns
 	//	Gun Data
 	aaf_.GunPos = [new THREE.Vector3(48,8,5638),new THREE.Vector3(-1225,5,3355)]; // Map Position
 	aaf_.GunRot = [new THREE.Euler(45,270,0),new THREE.Euler(30,0,0)]; // Gun Rotation (degrees)
@@ -639,6 +638,7 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	aaf_.SmkRot = [0,165];		// Z-rotation of smoke
 	aaf_.SmkDMx = [12,11];		// Delay between Smoke events - seconds
 	aaf_.SmkDTm = [0,6];		// Delay Counter
+	//	2 Guns
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		//	Gun Object
 		aaf_.AnmLon[n] = 0;
@@ -650,7 +650,10 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		aaf_.AAAMpS[n] = []; 	// Bullet Map Speed (Vector3)
 		aaf_.AAAMpP[n] = []; 	// Bullet Map Position (Vector3)	
 		aaf_.AAATim[n] = []; 	// Bullet Time in flight
-	}	
+		//	Explosion
+		aaf_.ExpGrp[n] = new THREE.Group;
+		scene.add(aaf_.ExpGrp[n]);
+	}
 
 //= BOMBS ======================//==============================================
 //-	Adjustments (Identical Inputs for 3 Smoke Trails)
@@ -991,6 +994,7 @@ function moveObject() {
 	if(BegLoc == 1) moveMyPeep(myp_,tim_);
 	moveMyCrew(myc_);
 	moveAAAGun(aaf_,air_,gen_,tim_);
+	console.log(aaf_.ExpGrp[0].position.x,aaf_.ExpGrp[0].position.z);
 	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
 		if (bom_.ExpFlg[n]) moveBomExp(n);

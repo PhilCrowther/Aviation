@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Aug 2026
+Version dated 11 Aug 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -478,6 +478,9 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 		aaf_.AAAMpS[n] = []; 	// Bullet Map Speed (Vector3)
 		aaf_.AAAMpP[n] = []; 	// Bullet Map Position (Vector3)	
 		aaf_.AAATim[n] = []; 	// Bullet Time in flight
+		//	Explosion
+		aaf_.ExpGrp[n] = new THREE.Group;
+		scene.add(aaf_.ExpGrp[n]);
 	}
 	
 //= BOMBS ======================//==============================================
