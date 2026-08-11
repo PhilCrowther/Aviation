@@ -788,10 +788,11 @@ let aaf_ = {
 		FrLPtr: [],				// Gunfire Flash
 		FrLTim: [],				// Time of Flash
 		//	Gunfire Sounds
-		FirFlg: [],				// 1 = Start Explosion Sound
 		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",
+		FirDst: 0,				// Reference Distance
+		FirVol: 15,				// Volume
+		FirFlg: [],				// 1 = Start Explosion Sound
 		FirPtr: [],
-		FirVol: 15,				// Volume - default
 		FirDTm: [],
 		//.	Explosion ..........................................................
 		ExpGrp: [],				// Explosion Group
@@ -810,10 +811,11 @@ let aaf_ = {
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		//	Explosion Sounds
-		SndFlg: [],				// 1 = Start Explosion Sound
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
-		SndPtr: [],
+		SndDst: 0,				// Reference Distance
 		SndVol: 15,				// Volume
+		SndFlg: [],				// 1 = Start Explosion Sound
+		SndPtr: [],
 		SndDTm: [],	
 	};
 
