@@ -507,11 +507,10 @@ function loadAAAGun(aaf_,txt_,gen_) {
 				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
 			});
 			//	Explosion
-			aaf_.SmkPtr[n] = new Object3D(); // Temporary
 			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 				aaf_.SndPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.SmkPtr[n]);
+				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
 			});			
 		});	
 	}
@@ -619,11 +618,11 @@ function initAAAGun(aaf_,air_,gen_) {
 		//	Explosion Smoke Sprite
 		aaf_.SmkPtr[n] = new Sprite(aaf_.SmkMat[n]);
 		aaf_.SmkPtr[n].scale.set(100,100,100);	
-		gen_.scene.add(aaf_.SmkPtr[n]);
+		aaf_.ExpGrp[n].add(aaf_.SmkPtr[n]);
 		aaf_.SmkPtr[n].visible = false;		// hide it
 		//	Explosion Center
 		aaf_.ExpPtr[n] = makeSphere("crimson");
-		aaf_.SmkPtr[n].add(aaf_.ExpPtr[n]);
+		aaf_.ExpGrp[n].add(aaf_.ExpPtr[n]);
 	} // end of n
 }
 
@@ -744,9 +743,9 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		} // end of i (Bulllets)
 		// Smoke Relative Position
 		if (aaf_.SmkPtr[n].visible = true) {
-			aaf_.SmkPtr[n].position.x = aaf_.SmkMpP[n].x - air_.MapPos.x;
-			aaf_.SmkPtr[n].position.y = aaf_.SmkMpP[n].y - air_.MapPos.y;
-			aaf_.SmkPtr[n].position.z = air_.MapPos.z - aaf_.SmkMpP[n].z;
+			aaf_.ExpGrp[n].position.x = aaf_.SmkMpP[n].x - air_.MapPos.x;
+			aaf_.ExpGrp[n].position.y = aaf_.SmkMpP[n].y - air_.MapPos.y;
+			aaf_.ExpGrp[n].position.z = air_.MapPos.z - aaf_.SmkMpP[n].z;
 			aaf_.SmkMat[n].rotation = Mod360((air_.AirRot.z + aaf_.SmkRot[n])) * DegRad;
 			// Reduce Opacity
 			aaf_.SmkMat[n].opacity = aaf_.SmkMat[n].opacity - aaf_.SmkOpR;
@@ -797,8 +796,8 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		//.	Exlosion ...........................................................
 		// Start Delay
 		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
-			let X = aaf_.SmkPtr[n].position.x; // SndMsh attached to SmkPtr
-			let Z = aaf_.SmkPtr[n].position.z;
+			let X = aaf_.ExpGrp[n].position.x; // SndMsh attached to ExpGrp
+			let Z = aaf_.ExpGrp[n].position.z;
 			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
 			if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
 			aaf_.SndDTm[n] = delay;
