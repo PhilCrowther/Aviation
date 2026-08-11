@@ -517,6 +517,7 @@ let aaf_ = {
 		//	Parent (use this instead of link because bullets not attached)
 		ParPos: 0,				// Optional: Common Parent Position (Vector3)
 		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
+		//.	Gun ................................................................
 		//	Gun Data 
 		GunPos: [],				// Map Position (Vector3)
 		GunRot: [],				// Gun Rotation (Euler)
@@ -531,6 +532,7 @@ let aaf_ = {
 		//	Targeting (Optional)
 		GunTar: 0,				// Optional: Common Target, if any (Vector3)
 		GunOld: [],				// Gun Old Rotation - degrees (Euler)
+		//.	Bullets ............................................................
 		//	Bullet Data
 		AAAFlg: [],				// 1 = Gun Firing
 		AAASpd: 655,			// Muzzle Velocity (mps)
@@ -546,6 +548,7 @@ let aaf_ = {
 		AAAMpS: [],				// Bullet Map Speed (Vector3)
 		AAAMpP: [],				// Bullet Map Position (Vector3)	
 		AAATim: [],				// Bullet Time in flight
+		//.	Gunfire ............................................................
 		//	Gunfire Flash
 		FrLPtr: [],				// Gunfire Flash
 		FrLTim: [],				// Time of Flash
@@ -555,6 +558,8 @@ let aaf_ = {
 		FirPtr: [],
 		FirVol: 15,				// Volume - default
 		FirDTm: [],
+		//.	Explosion ..........................................................
+		ExpGrp: [],				// Explosion Group
 		//	Explosion Circle
 		ExpPtr: [],				// Pointer to Exploding Center
 		ExpSiz: [],				// Expanding Size
@@ -574,7 +579,7 @@ let aaf_ = {
 		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",
 		SndPtr: [],
 		SndVol: 15,				// Volume
-		SndDTm: [],
+		SndDTm: [],	
 	};
 
 //= SPRITE SMOKE TRAIL =========//==============================================
