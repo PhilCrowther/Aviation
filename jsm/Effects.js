@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 10 Aug 2026
+Version dated 11 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -499,18 +499,18 @@ function loadAAAGun(aaf_,txt_,gen_) {
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
 			//-	Load Sounds -----------------------------------------------------
-			let RefDst = 5;		// Reference distance for Positional Audio
+			//	init1Sound(SndPtr,RefDst,Volume,Rate,Loop(1/0),Parent) 
 			//	GunFire
 			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
 			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
 				aaf_.FirPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.FirPtr[n],RefDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
+				init1Sound(aaf_.FirPtr[n],aaf_.FirDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
 			});
 			//	Explosion
 			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
 				aaf_.SndPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.SndPtr[n],RefDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
+				init1Sound(aaf_.SndPtr[n],aaf_.SndDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
 			});			
 		});	
 	}
