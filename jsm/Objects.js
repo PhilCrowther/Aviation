@@ -527,14 +527,13 @@ function moveMyCrew(myc_) {
 //= LOAD SOUNDS ================================================================
 
 function loadObjSnd(xac_,gen_) {
-	let RefDst = 25;			// Reference distance for Positional Audio
 	// Load XAC Sounds .........................................................
 	// XAC Engines
 	for (let n = 0; n < xac_.ObjNum; n ++) {
 		xac_.EngPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xac_.EngSrc[n],function(buffer) {
 			xac_.EngPtr[n].setBuffer(buffer);
-			init1Sound(xac_.EngPtr[n],RefDst,xac_.EngVol[n],1.3,1,xac_.EngMsh[n]);
+			init1Sound(xac_.EngPtr[n],xac_.RefDst[n],xac_.EngVol[n],1.3,1,xac_.EngMsh[n]);
 			xac_.AirObj[n].add(xac_.EngMsh[n]);
 		});
 	}
