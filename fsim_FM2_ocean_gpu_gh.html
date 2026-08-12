@@ -1000,7 +1000,6 @@ function moveObject() {
 	if(BegLoc == 1) moveMyPeep(myp_,tim_);
 	moveMyCrew(myc_);
 	moveAAAGun(aaf_,air_,gen_,tim_);
-	console.log(aaf_.ExpGrp[0].position.x,aaf_.ExpGrp[0].position.z);
 	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
 		if (bom_.ExpFlg[n]) moveBomExp(n);
