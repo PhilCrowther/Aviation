@@ -330,7 +330,7 @@ let xac_ = {
 		EngPtr: [0],			// Engine Object Address
 		EngMsh: [0],			// Engine Sound Address (Object3D)
 		EngVol: [0],			// Volume
-		EngRef: [0],			// Reference Distance
+		EngDst: [0],			// Reference Distance
 		// End Sequence
 		HitMax: 5,				// Hits Requred
 		HitCnt: [0],			// Hits Taken
