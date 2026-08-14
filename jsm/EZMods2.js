@@ -103,7 +103,7 @@ let Grd4 = {
 		Typ: 4,					// Type of Grid - Inner or Outer
 		RCs: 27,				// Rows and Columns - use odd number (for now = divisible by 3)
 		Siz: GrdSiz,			// Size of square
-		Stp: 3,					// Steps
+		Stp: 9,					// Steps
 		RCi: 0,					// Rows and Columns Index (computed)
 		MZV: [0],				// Ground Z Value
 		MXV: [0],				// Ground X Value
@@ -171,7 +171,7 @@ function init1GrMap(GrdSPS,gen_,Grd) {
 	}
 	let geometry;
 	if (Grd.Typ == 4) geometry = new PlaneGeometry(Grd.Siz, Grd.Siz,2,2);
-	if (Grd.Typ == 5) geometry = new PlaneGeometry(Grd.Siz, Grd.Siz,2*Grd4.Stp*3,2*Grd4.Stp*3);
+	if (Grd.Typ == 5) geometry = new PlaneGeometry(Grd.Siz, Grd.Siz,2*Grd4.Stp,2*Grd4.Stp);
 	geometry = new EdgesGeometry(geometry);
 	let airmat = new LineBasicNodeMaterial({colorNode: color("green")});
 	// Set Starting Position of Squares
