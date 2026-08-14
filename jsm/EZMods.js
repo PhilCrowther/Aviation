@@ -344,4 +344,6 @@ export {loadSkyBox,initSkyBox,initGrdMap,moveGrdMap};
 *
 ********************************************************************************
 
+060814: Replace ToQuads function with createGridPlaneGeometry function to create transparent grids
+
 */
