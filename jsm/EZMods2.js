@@ -171,7 +171,7 @@ function init1GrMap(GrdSPS,gen_,Grd) {
 	}
 	let geometry;
 	if (Grd.Typ == 4) geometry = new PlaneGeometry(Grd.Siz, Grd.Siz,2,2);
-	if (Grd.Typ == 5) geometry = new PlaneGeometry(Grd.Siz, Grd.Siz,6,6); // Siz = 2X
+	if (Grd.Typ == 5) geometry = new PlaneGeometry(Grd.Siz, Grd.Siz,9,9); // Siz = 2X
 	geometry = new EdgesGeometry(geometry);
 	let airmat = new LineBasicNodeMaterial({colorNode: color("green")});
 	// Set Starting Position of Squares
