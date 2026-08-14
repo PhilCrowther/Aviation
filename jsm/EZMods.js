@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 May 2026
+Version dated 14 Aug 2026
 
 @fileoverview
 This module contains functions for the EZ flight program, including functions for:
@@ -21,6 +21,7 @@ This module contains functions for the EZ flight program, including functions fo
 
 import {
 	Color,
+	EdgesGeometry,
 	Fog,
 	LineBasicNodeMaterial,
 	LineSegments,
@@ -169,9 +170,9 @@ function init1GrMap(GrdSPS,gen_,Grd) {
 		zx = zx + Grd.Siz;
 	}
 	let geometry;
-	if (Grd.Typ == 4) geometry = new PlaneGeometry(Grd.Siz, Grd.Siz,2,2);
-	if (Grd.Typ == 5) geometry = new PlaneGeometry(Grd.Siz, Grd.Siz, 2*Grd4.Stp, 2*Grd4.Stp);
-	ToQuads(geometry);
+	if (Grd.Typ == 4) geometry = createGridPlaneGeometry(Grd.Siz,Grd.Siz,2,2);
+	if (Grd.Typ == 5) geometry = createGridPlaneGeometry(Grd.Siz,Grd.Siz,2*Grd4.Stp,2*Grd4.Stp);
+//	geometry = new EdgesGeometry(geometry);
 	let airmat = new LineBasicNodeMaterial({colorNode: color("green")});
 	// Set Starting Position of Squares
 	let n = 0;
@@ -186,29 +187,31 @@ function init1GrMap(GrdSPS,gen_,Grd) {
 	}
 }
 
-function ToQuads(g) {
-  let p = g.parameters;
-  let segmentsX = (g.type == "TorusGeometry" ? p.tubularSegments : p.radialSegments) || p.widthSegments || p.thetaSegments || (p.points.length - 1) || 1;
-  let segmentsY = (g.type == "TorusGeometry" ? p.radialSegments : p.tubularSegments) || p.heightSegments || p.phiSegments || p.segments || 1;
-  let indices = [];
-  for (let i = 0; i < segmentsY + 1; i++) {
-    let index11 = 0;
-    let index12 = 0;
-    for (let j = 0; j < segmentsX; j++) {
-      index11 = (segmentsX + 1) * i + j;
-      index12 = index11 + 1;
-      let index21 = index11;
-      let index22 = index11 + (segmentsX + 1);
-      indices.push(index11, index12);
-      if (index22 < ((segmentsX + 1) * (segmentsY + 1) - 1)) {
-        indices.push(index21, index22);
-      }
-    }
-    if ((index12 + segmentsX + 1) <= ((segmentsX + 1) * (segmentsY + 1) - 1)) {
-      indices.push(index12, index12 + segmentsX + 1);
-    }
-  }
-  g.setIndex(indices);
+//= CREATE TRANSPARENT SQUARES =================================================
+function createGridPlaneGeometry(width, height, widthSegments, heightSegments) {
+	let geo = new PlaneGeometry(width, height, widthSegments, heightSegments);
+	let pos = geo.attributes.position;
+	let indices = [];
+	let xCount = widthSegments + 1;
+	let yCount = heightSegments + 1;
+	// Horizontal lines
+	for (let j = 0; j < yCount; j++) {
+		for (let i = 0; i < widthSegments; i++) {
+			const a = i + j * xCount;
+			const b = (i + 1) + j * xCount;
+			indices.push(a, b);
+		}
+	}
+	// Vertical lines
+	for (let j = 0; j < heightSegments; j++) {
+		for (let i = 0; i < xCount; i++) {
+			const a = i + j * xCount;
+			const b = i + (j + 1) * xCount;
+			indices.push(a, b);
+		}
+	}
+	geo.setIndex(indices);
+	return geo;
 }
 
 //= MOVE GRID MAP ============================================================
