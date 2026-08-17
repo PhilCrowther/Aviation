@@ -1038,18 +1038,18 @@ function loadXSHGun(xsg_,gen_) {
 function initXSHGun(xsg_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	//. Initial Flash Geo and Mat
-	let FirGeo = new LineGeometry();
-	FirGeo.setPositions([0,0,15, 0,0,50]);
-	let FirMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
+	let FrLGeo = new LineGeometry();
+	FrLGeo.setPositions([0,0,15, 0,0,50]);
+	let FrLMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
 	//- EACH GUN ---------------------------------------------------------------
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		//.	Create Graphics ....................................................
 		//.	Gun Flash
-		xsg_.FirPtr[n] = new Line2(FirGeo,FirMat);
-		xsg_.FirPtr[n].rotation.order = "YXZ";
-		xsg_.FirPtr[n].position.set(0,0,0);
-		xsg_.GunPtr[n].add(xsg_.FirPtr[n]);
-		xsg_.FirPtr[n].visible = false;
+		xsg_.FrLPtr[n] = new Line2(FrLGeo,FrLMat);
+		xsg_.FrLPtr[n].rotation.order = "YXZ";
+		xsg_.FrLPtr[n].position.set(0,0,0);
+		xsg_.GunPtr[n].add(xsg_.FrLPtr[n]);
+		xsg_.FrLPtr[n].visible = false;
 	}
 }
 
@@ -1057,9 +1057,9 @@ function initXSHGun(xsg_,gen_) {
 function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		//	Gunfire Flash
-		if (xsg_.FirPtr[n].visible = true) {
-			xsg_.FirTim[n] = xsg_.FirTim[n] - tim_.DLTime;
-			if (xsg_.FirTim[n] < 0) xsg_.FirPtr[n].visible = false;
+		if (xsg_.FrLPtr[n].visible = true) {
+			xsg_.FrLTim[n] = xsg_.FrLTim[n] - tim_.DLTime;
+			if (xsg_.FrLTim[n] < 0) xsg_.FrLPtr[n].visible = false;
 		}
 		// Play Gunfire Sound With Delay
 		//	Start Delay
