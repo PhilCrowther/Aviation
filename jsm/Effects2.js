@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Aug 2026
+Version dated 17 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1044,14 +1044,13 @@ function initXSHGun(xsg_,gen_) {
 	let FrLMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
 	//- EACH GUN ---------------------------------------------------------------
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		//.	Create Graphics ....................................................
-		//.	Gun Flash
+		//.	Create Gun Flash ...................................................
 		xsg_.FrLPtr[n] = new Line2(FrLGeo,FrLMat);
 		xsg_.FrLPtr[n].rotation.order = "YXZ";
 		xsg_.FrLPtr[n].position.set(0,0,0);
 		xsg_.GunPtr[n].add(xsg_.FrLPtr[n]);
-		xsg_.FrLPtr[n].visible = false;
 		xsg_.FrLPtr[n].scale.set(Mtr2Ft,Mtr2Ft,Mtr2Ft);
+		xsg_.FrLPtr[n].visible = false;
 	}
 }
 
@@ -1066,8 +1065,6 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 		// Play Gunfire Sound With Delay
 		//	Start Delay
 		if (xsg_.FirFlg[n]) { // Compute Delay and Start Countdown 		
-//			let X = xsg_.GunPtr[n].position.x;
-//			let Z = xsg_.GunPtr[n].position.z;
 			let X = xsh_.ObjGrp[n].position.x;
 			let Z = xsh_.ObjGrp[n].position.z; 
 			xsg_.FirTim[n] = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
@@ -1661,5 +1658,6 @@ export {
 260801:	Shorten Ending Sequences
 260802: Move Effects Sounds from Objects Module; Elimiate moveEffSnd and play EffSnd subroutines; Replace aag_ with aaf_
 260805: Eliminate xsg_
-260808: Show guns firing (FrL)
+260808: Show aaf_ guns firing (FrL)
+260817: Add xsg_ ship guns firing animation and sounds
 */
