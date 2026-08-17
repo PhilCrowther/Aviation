@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Aug 2026
+Version dated 17 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -79,6 +79,7 @@ import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 't
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const GrvMPS = 9.8;				// Gravity Acceleration m/s2
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
+const Mtr2Ft = 3.281;
 const animfps = 24;
 
 //- Airplane Smoke Trail .......//..............................................
@@ -781,8 +782,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown 		
 			let X = aaf_.GunPtr[n].position.x;
 			let Z = aaf_.GunPtr[n].position.z;
-			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
-			aaf_.FirDTm[n] = delay;
+			aaf_.FirDTm[n] = (Math.sqrt(X*X+Z*Z)/343); // In Seconds;
 			aaf_.FirFlg[n] = 0;
 		}
 		//	If End of Delay Start Sound
@@ -912,6 +912,10 @@ function initAirFyr(xaf_) {
 *
 *******************************************************************************/
 
+/*******************************************************************************
+*	SHIP WAKE
+*******************************************************************************/
+
 //= INIT SHIP WAKE =============//==============================================
 function initXSHWak(wak_,txt_) {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
@@ -957,14 +961,18 @@ function initXSHWak(wak_,txt_) {
 	}
 }
 
-//= MOVE SHIP WAKE =============//=============================================
+//= MOVE SHIP WAKE =============//==============================================
 function moveXSHWak() {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
 		wak_.ObjAdr[n].rotation.x = Math.PI/2-wak_.ObjRef[n].rotation.x; // Remain flat
 	}
 }
 
-//= INIT SHIP SMOKE ============//=============================================
+/*******************************************************************************
+*	SHIP SMOKE
+*******************************************************************************/
+
+//= INIT SHIP SMOKE ============//==============================================
 function initXSHSmk(xss_,txt_) {
 	for (let n = 0; n < xss_.ObjNum; n ++) {
 		xss_.ObjTxt[n] = txt_.ObjTxt[xss_.ObjTxt[n]];
@@ -1003,6 +1011,75 @@ function initXSHSmk(xss_,txt_) {
 		xss_.ObjAdr[n].position.copy(xss_.ObjPos[n]);
 		//	Link
 		xss_.ObjRef[n].add(xss_.ObjAdr[n]);
+	}
+}
+
+/*******************************************************************************
+*	SHIP GUNFIRE
+*******************************************************************************/
+
+//= LOAD SHIP GUNS =============//==============================================
+
+//	Sounds Only - For Now
+function loadXSHGun(xsg_,gen_) {
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		//-	Load Sounds -----------------------------------------------------
+		//	init1Sound(SndPtr,RefDst,Volume,Rate,Loop(1/0),Parent) 
+		//	GunFire
+		xsg_.FirPtr[n] = new PositionalAudio(gen_.listnr);
+		gen_.audoLd.load(xsg_.FirSrc, function(buffer) {
+			xsg_.FirPtr[n].setBuffer(buffer);
+			init1Sound(xsg_.FirPtr[n],xsg_.FirDst,xsg_.FirVol,1,0,xsg_.GunPtr[n]);
+		});	
+	}
+}
+
+//= INIT SHIP GUNS =============//==============================================
+
+function initXSHGun(xsg_,gen_) {
+	//- COMMON VARIABLES -------------------------------------------------------
+	//. Initial Flash Geo and Mat
+	let FrLGeo = new LineGeometry();
+	FrLGeo.setPositions([0,0,15, 0,0,50]);
+	let FrLMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
+	//- EACH GUN ---------------------------------------------------------------
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		//.	Create Gun Flash ...................................................
+		xsg_.FrLPtr[n] = new Line2(FrLGeo,FrLMat);
+		xsg_.FrLPtr[n].rotation.order = "YXZ";
+		xsg_.FrLPtr[n].position.set(0,0,0);
+		xsg_.GunPtr[n].add(xsg_.FrLPtr[n]);
+		xsg_.FrLPtr[n].scale.set(Mtr2Ft,Mtr2Ft,Mtr2Ft);
+		xsg_.FrLPtr[n].visible = false;
+	}
+}
+
+//= MOVE SHIP GUNS =============//==============================================
+function moveXSHGun(xsg_,xsh_,gen_,tim_) {
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		//	Gunfire Flash
+		if (xsg_.FrLPtr[n].visible = true) {
+			xsg_.FrLTim[n] = xsg_.FrLTim[n] - tim_.DLTime;
+			if (xsg_.FrLTim[n] < 0) xsg_.FrLPtr[n].visible = false;
+		}
+		// Play Gunfire Sound With Delay
+		//	Start Delay
+		if (xsg_.FirFlg[n]) { // Compute Delay and Start Countdown 		
+			let X = xsh_.ObjGrp[n].position.x;
+			let Z = xsh_.ObjGrp[n].position.z; 
+			xsg_.FirTim[n] = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
+			xsg_.FirFlg[n] = 0;
+		}
+		//	If End of Delay Start Sound
+		if (xsg_.FirTim[n]) xsg_.FirTim[n] = xsg_.FirTim[n] - tim_.DLTime;
+		if (xsg_.FirTim[n] < 0) {
+			xsg_.FirTim[n] = 0;
+			if (gen_.SndFlg) {
+				if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();
+				xsg_.FirPtr[n].setVolume(xsg_.FirVol);
+				xsg_.FirPtr[n].play();
+			}
+		}
 	}
 }
 
@@ -1491,8 +1568,10 @@ function init1Sound(dest,dist,volm,rate,loop,link) {
 // This leaves gen_.SndFlg = 1 and gen_.MYGFlg unchanged.
 
 function stopEffSnd(xag_,aaf_,bom_) {
-	//- XAC Guns ---------------------------------------------------------------
+	//- XAC Aircraft Guns ---------------------------------------------------------------
 	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();}
+	//- XAS Ship Guns
+	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();}	
 	//-	AAF Guns ---------------------------------------------------------------
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
@@ -1538,6 +1617,7 @@ export {
 	initEndSeq,moveEndSeq,				// Ending Sequence
 	initXSHWak,moveXSHWak,				// Ship Wake
 	initXSHSmk,							// Ship Smoke
+	loadXSHGun,initXSHGun,moveXSHGun,	// Ship Guns
 	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
 	stopEffSnd,							// Sounds
@@ -1578,5 +1658,6 @@ export {
 260801:	Shorten Ending Sequences
 260802: Move Effects Sounds from Objects Module; Elimiate moveEffSnd and play EffSnd subroutines; Replace aag_ with aaf_
 260805: Eliminate xsg_
-260808: Show guns firing (FrL)
+260808: Show aaf_ guns firing (FrL)
+260817: Add xsg_ ship guns firing animation and sounds
 */
