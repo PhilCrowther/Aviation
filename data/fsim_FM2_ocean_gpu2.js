@@ -830,6 +830,9 @@ let	xsg_ = {
 		GunPtr: [],
 		GunPos: [],
 		GunRot: [],
+		//	Gunfire Flash
+		FrLPtr: [],				// Gunfire Flash
+		FrLTim: [],				// Time of Flash		
 		//	Gunfire Sounds
 		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",
 		FirDst: 0,				// Reference Distance
