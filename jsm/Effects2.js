@@ -781,8 +781,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown 		
 			let X = aaf_.GunPtr[n].position.x;
 			let Z = aaf_.GunPtr[n].position.z;
-			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
-			aaf_.FirDTm[n] = delay;
+			aaf_.FirDTm[n] = (Math.sqrt(X*X+Z*Z)/343); // In Seconds;
 			aaf_.FirFlg[n] = 0;
 		}
 		//	If End of Delay Start Sound
@@ -1068,9 +1067,8 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 //			let X = xsg_.GunPtr[n].position.x;
 //			let Z = xsg_.GunPtr[n].position.z;
 			let X = xsh_.ObjGrp[n].position.x;
-			let Z = xsh_.ObjGrp[n].position.z;
-			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
-			xsg_.FirDTm[n] = delay;
+			let Z = xsh_.ObjGrp[n].position.z; 
+			xsg_.FirTim[n] = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
 			xsg_.FirFlg[n] = 0;
 		}
 		//	If End of Delay Start Sound
