@@ -1024,7 +1024,7 @@ function loadXSHGun(xsg_,gen_) {
 	//	Load Common Sound
 	gen_.audoLd.load(xsg_.FirSrc, function(buffer) {
 		xsg_.FirSrc = buffer;
-	}	
+	});
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		//-	Load Sounds -----------------------------------------------------	
 		//	init1Sound(SndPtr,RefDst,Volume,Rate,Loop(1/0),Parent) 
