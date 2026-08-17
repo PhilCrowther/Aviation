@@ -1074,9 +1074,9 @@ function moveXSHGun(xsg_,gen_,tim_) {
 			xsg_.FirFlg[n] = 0;
 		}
 		//	If End of Delay Start Sound
-		if (xsg_.FirDTm[n]) xsg_.FirDTm[n] = xsg_.FirDTm[n] - tim_.DLTime;
-		if (xsg_.FirDTm[n] < 0) {
-			xsg_.FirDTm[n] = 0;
+		if (xsg_.FirTim[n]) xsg_.FirTim[n] = xsg_.FirTim[n] - tim_.DLTime;
+		if (xsg_.FirTim[n] < 0) {
+			xsg_.FirTim[n] = 0;
 			if (gen_.SndFlg) {
 				if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();
 				xsg_.FirPtr[n].setVolume(xsg_.FirVol);
