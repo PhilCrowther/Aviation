@@ -79,7 +79,6 @@ import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 't
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const GrvMPS = 9.8;				// Gravity Acceleration m/s2
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
-const Mtr2Ft = 3.281;
 const animfps = 24;
 
 //- Airplane Smoke Trail .......//..............................................
@@ -1049,7 +1048,6 @@ function initXSHGun(xsg_,gen_) {
 		xsg_.FrLPtr[n].rotation.order = "YXZ";
 		xsg_.FrLPtr[n].position.set(0,0,0);
 		xsg_.GunPtr[n].add(xsg_.FrLPtr[n]);
-		xsg_.FrLPtr[n].scale.set(Mtr2Ft,Mtr2Ft,Mtr2Ft);
 		xsg_.FrLPtr[n].visible = false;
 	}
 }
