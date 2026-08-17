@@ -1026,7 +1026,7 @@ function loadXSHGun(xsg_,gen_) {
 		//-	Load Sounds -----------------------------------------------------
 		//	init1Sound(SndPtr,RefDst,Volume,Rate,Loop(1/0),Parent) 
 		//	GunFire
-		xsg_.FirPtr[s][n] = new PositionalAudio(gen_.listnr);
+		xsg_.FirPtr[n] = new PositionalAudio(gen_.listnr);
 		gen_.audoLd.load(xsg_.FirSrc, function(buffer) {
 			xsg_.FirPtr[n].setBuffer(buffer);
 			init1Sound(xsg_.FirPtr[n],xsg_.FirDst,xsg_.FirVol,1,0,xsg_.GunPtr[n]);
