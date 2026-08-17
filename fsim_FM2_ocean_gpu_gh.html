@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Aug 2026
+Version dated 17 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -104,12 +104,13 @@ import {PointerLockControls,	// three.js modified
 import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initBullet,moveBullet,	// Guns - My Airplane
 		initXACBul,moveXACBul,	// Guns - Other Airplane
-		loadAAAGun,initAAAGun,moveAAAGun,	// Guns - Fixed and Ship
+		loadAAAGun,initAAAGun,moveAAAGun,	// Guns - Fixed
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 		initXSHWak,moveXSHWak,	// Ship Wake
 		initXSHSmk,				// Ship Smoke (destroyer only)
-		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
+		loadXSHGun,initXSHGun,moveXSHGun, // Ship Guns
+		loadSmkTrl,initSmkTrl,moveSmkTrl, // Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom, // Bomb
 		stopEffSnd,				// Effects Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
@@ -548,6 +549,26 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 		xss_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
 		xss_.ObjRef[n] = xsh_.ObjGrp[1]; // Parent Object
 	}
+//- Ship Guns ------------------//----------------------------------------------
+//	Adjustments
+	xsg_.ObjNum = 1;			// 1 Gun
+	//	Gun Object Data
+	xsg_.GunPos = [new THREE.Vector3(0,8.8226,-30.7857)]; // Map Position
+	xsg_.GunRot = [new THREE.Euler(-45,105,0)]; // Gun Rotation (degrees)
+	//	Sounds
+	xsg_.FirDst = 5;			// Gunfire Reference Distance
+	xsg_.FirVol = 15;			// Gunfire Volume
+	//	For Each Gun
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		// Gun Object
+		xsg_.GunPtr[n] = new THREE.Object3D();
+		xsh_.ObjGrp[1].add(xsg_.GunPtr[n]);	// Attach to Fletcher
+		// Gunfire Flash
+		xsg_.FrLTim[n] = 0;
+	}
+	let XSGRem = 10;
+	let XSGTim = 10;
+
 //= SMOKE MODULE ===============//==============================================
 //- Volcano Smoke -------------//----------------------------------------------
 //	Adjustments
@@ -956,15 +977,15 @@ function moveShpAlt() {
 //== LOAD OBJECTS ==============================================================
 
 function loadObject() {
-	loadShared();
-	loadStatic();
-	loadMoving();
-	loadAnmFlg(flg_,gen_);
-	loadMyPeep(myp_,gen_);
-	loadMyCrew(myc_,gen_);
-	loadAAAGun(aaf_,txt_,gen_);
-	loadExpBom(bom_,gen_);
-	loadSmkTrl(smt_,gen_);
+	loadShared();				// Load Shared Textures
+	loadStatic();				// Load Static Objects
+	loadMoving();				// Load Moving Objects
+	loadAnmFlg(flg_,gen_);		// Load Animated Flag
+	loadMyPeep(myp_,gen_);		// Load Static Crew
+	loadMyCrew(myc_,gen_);		// Load Animated Crew
+	loadAAAGun(aaf_,txt_,gen_);	// Load Fixed AAA Gun Objects, Trestures and Sounds
+	loadExpBom(bom_,gen_);		// Load Bombs
+	loadSmkTrl(smt_,gen_);		// Load Smoke Trails
 }
 
 //== INIT OBJECTS ==============================================================
@@ -1054,7 +1075,7 @@ function moveStatic() {
 
 function loadMoving() {
 	loadXACVeh(xac_,anm_,gen_); // Airplanes
-	loadXSHVeh(xsh_,anm_,gen_); // Ships
+	loadMovShp();
 }
 
 function initMoving() {
@@ -1262,9 +1283,7 @@ function HitTgt(n) {
 }
 
 /*******************************************************************************
-*
 *	XAC GUNS
-*
 *******************************************************************************/
 
 //= MOVE XAC GUNS ==============//==============================================
@@ -1286,19 +1305,46 @@ function moveXACGun(n) {
 	moveXACBul(xag_,air_,gen_,tim_);
 }
 
-//= MOVING SHIPS ===============//==============================================
+/*******************************************************************************
+*
+*	XSH SHIPS
+*
+*******************************************************************************/
 
-//-	Init Ship ------------------//----------------------------------------------
-function initMovShp() {
-	initXSHVeh(xsh_,air_,gen_);
-	initXSHWak(wak_,txt_);		// Init Ship Wake
-	initXSHSmk(xss_,txt_);		// Init Ship Smoke
+//=	Load Ship ==================//==============================================
+function loadMovShp() {
+	loadXSHVeh(xsh_,anm_,gen_); // Ships
+	loadXSHGun(xsg_,gen_);		// Ship Gun and Sound
 }
 
-//-	Move Ship ------------------//----------------------------------------------
+//=	Init Ship ==================//==============================================
+function initMovShp() {
+	initXSHVeh(xsh_,air_,gen_);
+	initXSHWak(wak_,txt_);		// Ship Wake
+	initXSHSmk(xss_,txt_);		// Ship Smoke
+	initXSHGun(xsg_,gen_);		// Ship Gun Graphics
+	xsg_.GunPtr[0].position.copy(xsg_.GunPos[0]);
+	xsg_.GunPtr[0].rotation.set(-xsg_.GunRot[0].x*DegRad,xsg_.GunRot[0].y*DegRad,0);
+}
+
+//=	Move Ship ==================//==============================================
 function moveMovShp() {
-	moveXSHVeh(xsh_,air_);		// Both Ships
-	moveXSHWak(wak_);			// Both Ships
+	moveXSHVeh(xsh_,air_);		// All Ships
+	moveXSHWak(wak_);			// All Ships
+	// Ship Guns
+	let n = 0;
+	if (XSGRem) {
+		XSGRem = XSGRem - tim_.DLTime;
+		if (XSGRem < 0) {
+			xsg_.FrLPtr[n].rotation.x = -xsg_.GunRot[n].x*DegRad;
+			xsg_.FrLPtr[n].rotation.y = -(xsg_.GunRot[n].y+180)*DegRad;
+			xsg_.FrLPtr[n].visible = true;
+			xsg_.FrLTim[n] = 0.1;		
+			XSGRem = XSGTim;
+			xsg_.FirFlg[n] = 1;	// Start Sound
+		}
+	}
+	moveXSHGun(xsg_,xsh_,gen_,tim_);	// Ship Gun Graphics and Sound
 }
 
 /*******************************************************************************
