@@ -1055,7 +1055,7 @@ function initXSHGun(xsg_,gen_) {
 }
 
 //= MOVE SHIP GUNS =============//==============================================
-function moveXSHGun(xsg_,gen_,tim_) {
+function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		//	Gunfire Flash
 		if (xsg_.FirPtr[n].visible = true) {
@@ -1067,8 +1067,8 @@ function moveXSHGun(xsg_,gen_,tim_) {
 		if (xsg_.FirFlg[n]) { // Compute Delay and Start Countdown 		
 //			let X = xsg_.GunPtr[n].position.x;
 //			let Z = xsg_.GunPtr[n].position.z;
-			let X = xsg_.Parent[n].position.x;
-			let Z = xsg_.Parent[n].position.z;
+			let X = xsh_.ObjGrp[n].position.x;
+			let Z = xsh_.ObjGrp[n].position.z;
 			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
 			xsg_.FirDTm[n] = delay;
 			xsg_.FirFlg[n] = 0;
