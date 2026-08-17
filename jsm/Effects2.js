@@ -1044,7 +1044,7 @@ function initXSHGun(xsg_,gen_) {
 	let FirMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
 	//- EACH GUN ---------------------------------------------------------------
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		xsg_.Parent[n].add(xsg_.GunPtr[n];
+		xsg_.Parent[n].add(xsg_.GunPtr[n]);
 		//.	Create Graphics ....................................................
 		//.	Gun Flash
 		xsg_.FirPtr[n] = new Line2(FirGeo,FirMat);
