@@ -551,10 +551,10 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	}
 //- Ship Guns ------------------//----------------------------------------------
 //	Adjustments
-	xsg_.ObjNum = 1;			// 1 Gun
+	xsg_.ObjNum = 2;			// 2 Guns
 	//	Gun Object Data
-	xsg_.GunPos = [new THREE.Vector3(0,8.8226,-30.7857)]; // Map Position
-	xsg_.GunRot = [new THREE.Euler(-45,105,0)]; // Gun Rotation (degrees)
+	xsg_.GunPos = [new THREE.Vector3(0,6.9695,-38.1774),new THREE.Vector3(0,8.8226,-30.7857)]; // Map Position
+	xsg_.GunRot = [new THREE.Euler(-45,105,0),new THREE.Euler(-45,105,0)]; // Gun Rotation (degrees)
 	//	Sounds
 	xsg_.FirDst = 5;			// Gunfire Reference Distance
 	xsg_.FirVol = 15;			// Gunfire Volume
@@ -562,10 +562,11 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		// Gun Object
 		xsg_.GunPtr[n] = new THREE.Object3D();
-		xsh_.ObjGrp[1].add(xsg_.GunPtr[n]);	// Attach to Fletcher
+		xsh_.ObjGrp[1].add(xsg_.GunPtr[n]);	// Attach both guns to Fletcher
 		// Gunfire Flash
 		xsg_.FrLTim[n] = 0;
 	}
+	let XSGSel = 0;
 	let XSGRem = 10;
 	let XSGTim = 10;
 
@@ -1323,8 +1324,10 @@ function initMovShp() {
 	initXSHWak(wak_,txt_);		// Ship Wake
 	initXSHSmk(xss_,txt_);		// Ship Smoke
 	initXSHGun(xsg_,gen_);		// Ship Gun Graphics
-	xsg_.GunPtr[0].position.copy(xsg_.GunPos[0]);
-	xsg_.GunPtr[0].rotation.set(-xsg_.GunRot[0].x*DegRad,xsg_.GunRot[0].y*DegRad,0);
+	for (let n = 0; n < xsg_.ObjNum; n ++) {
+		xsg_.GunPtr[n].position.copy(xsg_.GunPos[n]);
+		xsg_.GunPtr[n].rotation.set(-xsg_.GunRot[n].x*DegRad,xsg_.GunRot[n].y*DegRad,0);
+	}
 }
 
 //=	Move Ship ==================//==============================================
@@ -1332,16 +1335,17 @@ function moveMovShp() {
 	moveXSHVeh(xsh_,air_);		// All Ships
 	moveXSHWak(wak_);			// All Ships
 	// Ship Guns
-	let n = 0;
 	if (XSGRem) {
 		XSGRem = XSGRem - tim_.DLTime;
 		if (XSGRem < 0) {
+			let n = XSGSel;
 			xsg_.FrLPtr[n].rotation.x = -xsg_.GunRot[n].x*DegRad;
 			xsg_.FrLPtr[n].rotation.y = -(xsg_.GunRot[n].y+180)*DegRad;
 			xsg_.FrLPtr[n].visible = true;
 			xsg_.FrLTim[n] = 0.1;		
 			XSGRem = XSGTim;
 			xsg_.FirFlg[n] = 1;	// Start Sound
+			XSGSel = 1 - XSGSel; // Next Gun
 		}
 	}
 	moveXSHGun(xsg_,xsh_,gen_,tim_);	// Ship Gun Graphics and Sound
