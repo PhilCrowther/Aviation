@@ -11,9 +11,9 @@ Cannot reference three.js routines because three.js has not been loaded yet.
 INDEX TO VARIABLES
 
 	1. MAIN VARIABLES
-	   Constants
-	   Input Values					(gen_)
-	   Fad2Black					(f2b_)
+		Constants
+		Input Values				(gen_)
+		Fad2Black					(f2b_)
 	2. SKY VARIABLES				(sky_)
 	3. OCEAN GRID VARIABLES
 		GRDWTR MODULE				(grd_)
@@ -27,9 +27,9 @@ INDEX TO VARIABLES
 			Moving Airplanes		(xac_)
 			Moving Ships			(xsh_)
 		ANIMATED FLAG				(flg_)
-	    SMOKE MODULE
-	    	Volcano Smoke			(grs_)
-	    	Ship Wakes				(wak_)
+		SMOKE MODULE
+			Volcano Smoke			(grs_)
+			Ship Wakes				(wak_)
 		MYPEOPLE					(myp_)
 		MYCREW						(myc_)
 		MINIMUM ALTITUDE			(alt_)
@@ -751,8 +751,8 @@ let xag_ = {
 let aaf_ = {
 		ObjNum: 2,				// Number of Guns in Battery
 		//	Parent (use this instead of link because bullets not attached)
-		ParPos: 0,				// Optional: Common Parent Rotation (Euler)
-		ParRot: 0,				// Optional: Common Parent Position (Vector3)
+		ParPos: 0,				// Optional: Common Parent Position (Vector3)
+		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
 		//.	Gun ................................................................
 		//	Gun Data 
 		GunPos: [],				// Map Position (Vector3)
@@ -817,8 +817,30 @@ let aaf_ = {
 		SndVol: 0,				// Volume
 		SndFlg: [],				// 1 = Start Explosion Sound
 		SndPtr: [],
-		SndDTm: [],	
+		SndDTm: [],
 	};
+
+//=	SHIP GUNS ==================================================================
+let	xsg_ = {
+		ObjNum: 0,
+		Parent: 0,
+		ParPos: 0,				// Optional: Common Parent Position (Vector3)
+		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
+		//	Gun Object
+		GunPtr: [],
+		GunPos: [],
+		GunRot: [],
+		//	Gunfire Flash
+		FrLPtr: [],				// Gunfire Flash
+		FrLTim: [],				// Time of Flash		
+		//	Gunfire Sounds
+		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",
+		FirDst: 0,				// Reference Distance
+		FirVol: 0,				// Volume
+		FirFlg: [],				// 1 = Start Explosion Sound
+		FirPtr:	[],
+		FirTim: [],
+	}
 
 //= SPRITE SMOKE TRAIL =========//==============================================
 //	Init Creates 1 Trail for My Airplane plus 1 Trail for each External Airplane (xac_)
@@ -974,7 +996,7 @@ let	rad_ = {
 	}
 
 //= 7. CAMERA VARIABLES ========//==============================================
-//	Only Two Views: 0 = External; 1 = Internal			
+//	Only Two Views: 0 = External; 1 = Internal
 //- Shared Variables
 let cam_ = {
 		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
