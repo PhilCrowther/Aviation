@@ -1040,7 +1040,7 @@ function initXSHGun(xsg_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	//. Initial Flash Geo and Mat
 	let FirGeo = new LineGeometry();
-	FirGeo.setPositions([0,0,5, 0,0,50]);
+	FirGeo.setPositions([0,0,15, 0,0,50]);
 	let FirMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
 	//- EACH GUN ---------------------------------------------------------------
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
