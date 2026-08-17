@@ -1036,7 +1036,7 @@ function loadXSHGun(xsg_,gen_) {
 
 //= INIT SHIP GUNS =============//==============================================
 
-function initXSHGun(xsg_,xsh_,gen_) {
+function initXSHGun(xsg_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	//. Initial Flash Geo and Mat
 	let FirGeo = new LineGeometry();
