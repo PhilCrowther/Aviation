@@ -1316,19 +1316,18 @@ function moveXACGun(n) {
 //=	Load Ship ==================//==============================================
 function loadMovShp() {
 	loadXSHVeh(xsh_,anm_,gen_); // Ships
-	loadXSHGun(xsg_,gen_);		// Ship Gun and Sound
+	loadXSHGun(xsg_,gen_);		// Gunfire Sound
 }
 
 //=	Init Ship ==================//==============================================
 function initMovShp() {
 	initXSHVeh(xsh_,air_,gen_);
-	initXSHWak(wak_,txt_);		// Ship Wake
-	initXSHSmk(xss_,txt_);		// Ship Smoke
-	initXSHGun(xsg_,gen_);		// Ship Gun Graphics
+	initXSHWak(wak_,txt_);		// Wake
+	initXSHSmk(xss_,txt_);		// Smoke
+	initXSHGun(xsg_,gen_);		// Gunfire
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		xsg_.GunPtr[n].position.copy(xsg_.GunPos[n]);
 		xsg_.GunPtr[n].rotation.set(-xsg_.GunRot[n].x*DegRad,xsg_.GunRot[n].y*DegRad,0);
-		xsg_.FrLPtr[n].scale.set(1,1,1); // Override
 	}
 }
 
@@ -1341,8 +1340,6 @@ function moveMovShp() {
 		XSGRem = XSGRem - tim_.DLTime;
 		if (XSGRem < 0) {
 			let n = XSGSel;
-//			xsg_.FrLPtr[n].rotation.x = -xsg_.GunRot[n].x*DegRad;
-//			xsg_.FrLPtr[n].rotation.y = -(xsg_.GunRot[n].y+180)*DegRad;
 			xsg_.FrLPtr[n].visible = true;
 			xsg_.FrLTim[n] = 0.1;		
 			XSGRem = XSGTim;
