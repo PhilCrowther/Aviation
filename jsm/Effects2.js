@@ -79,6 +79,7 @@ import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,} from 't
 const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const GrvMPS = 9.8;				// Gravity Acceleration m/s2
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
+const Mtr2Ft = 1/Ft2Mtr;
 const animfps = 24;
 
 //- Airplane Smoke Trail .......//..............................................
@@ -1035,7 +1036,7 @@ function loadXSHGun(xsg_,gen_) {
 
 //= INIT SHIP GUNS =============//==============================================
 
-function initXSHGun(xsg_,xsh_,gen_) {
+function initXSHGun(xsg_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	//. Initial Flash Geo and Mat
 	let FrLGeo = new LineGeometry();
@@ -1050,7 +1051,7 @@ function initXSHGun(xsg_,xsh_,gen_) {
 		xsg_.FrLPtr[n].position.set(0,0,0);
 		xsg_.GunPtr[n].add(xsg_.FrLPtr[n]);
 		xsg_.FrLPtr[n].visible = false;
-		xsg_.FrLPtr[n].scale = 1/xsh_.ObjSiz[1];
+		xsg_.FrLPtr[n].scale = Mtr2Ft;
 	}
 }
 
