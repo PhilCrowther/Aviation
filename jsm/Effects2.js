@@ -1036,7 +1036,7 @@ function loadXSHGun(xsg_,gen_) {
 
 //= INIT SHIP GUNS =============//==============================================
 
-function initXSHGun(xsg_,gen_) {
+function initXSHGun(xsg_,xsh_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	//. Initial Flash Geo and Mat
 	let FirGeo = new LineGeometry();
@@ -1621,6 +1621,7 @@ export {
 	initEndSeq,moveEndSeq,				// Ending Sequence
 	initXSHWak,moveXSHWak,				// Ship Wake
 	initXSHSmk,							// Ship Smoke
+	loadXSHGun,initXSHGun,moveXSHGun,	// Ship Guns
 	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
 	stopEffSnd,							// Sounds
