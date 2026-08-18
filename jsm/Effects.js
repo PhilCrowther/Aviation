@@ -476,8 +476,7 @@ function makeXACSpn(n,xac_) {
 
 //= LOAD AA GUNS ===============//==============================================
 
-function loadAAAGun(aaf_,txt_,gen_) {
-	aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
+function loadAAAGun(aaf_,gen_) {
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		gen_.gltfLd.load(aaf_.GunSrc, function (gltf) { // The OnLoad function
 			aaf_.GunPtr[n] = gltf.scene;
@@ -498,27 +497,13 @@ function loadAAAGun(aaf_,txt_,gen_) {
 			//- Initialize -----------------------------------------------------
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
-			//-	Load Sounds -----------------------------------------------------
-			//	init1Sound(SndPtr,RefDst,Volume,Rate,Loop(1/0),Parent) 
-			//	GunFire
-			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
-			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
-				aaf_.FirPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.FirPtr[n],aaf_.FirDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
-			});
-			//	Explosion
-			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
-				aaf_.SndPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.SndPtr[n],aaf_.SndDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
-			});			
 		});	
 	}
 }
 
 //= INIT AAA GUN ===============//==============================================
 
-function initAAAGun(aaf_,air_,gen_) {
+function initAAAGun(aaf_,air_,txt_,snd_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
@@ -609,6 +594,7 @@ function initAAAGun(aaf_,air_,gen_) {
 		aaf_.GunPtr[n].add(aaf_.FrLPtr[n]);
 		aaf_.FrLPtr[n].visible = false;
 		//	Explosion Smoke Material (need separate material becuase vary opacity)
+		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
 		aaf_.SmkMat[n] = new SpriteNodeMaterial();
 		aaf_.SmkMat[n].colorNode = color(0xffffff);
 		aaf_.SmkMat[n].colorNode = texture(aaf_.SmkMap);
@@ -623,6 +609,15 @@ function initAAAGun(aaf_,air_,gen_) {
 		//	Explosion Center
 		aaf_.ExpPtr[n] = makeSphere("crimson");
 		aaf_.ExpGrp[n].add(aaf_.ExpPtr[n]);
+		//.	Create Sounds ......................................................
+		//	Gunfire Sound
+		aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
+		aaf_.FirPtr[n].setBuffer(snd_.ObjSnd[aaf_.FirSrc]);
+		init1Sound(aaf_.FirPtr[n],aaf_.FirDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
+		//	Explosion Sound
+		aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		aaf_.SndPtr[n].setBuffer(snd_.ObjSnd[aaf_.SndSrc]);
+		init1Sound(aaf_.SndPtr[n],aaf_.SndDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
 	} // end of n
 }
 
@@ -1017,25 +1012,9 @@ function initXSHSmk(xss_,txt_) {
 *	SHIP GUNFIRE
 *******************************************************************************/
 
-//= LOAD SHIP GUNS =============//==============================================
-
-//	Sounds Only - For Now
-function loadXSHGun(xsg_,gen_) {
-	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		//-	Load Sounds -----------------------------------------------------
-		//	init1Sound(SndPtr,RefDst,Volume,Rate,Loop(1/0),Parent) 
-		//	GunFire
-		xsg_.FirPtr[n] = new PositionalAudio(gen_.listnr);
-		gen_.audoLd.load(xsg_.FirSrc, function(buffer) {
-			xsg_.FirPtr[n].setBuffer(buffer);
-			init1Sound(xsg_.FirPtr[n],xsg_.FirDst,xsg_.FirVol,1,0,xsg_.GunPtr[n]);
-		});	
-	}
-}
-
 //= INIT SHIP GUNS =============//==============================================
 
-function initXSHGun(xsg_,gen_) {
+function initXSHGun(xsg_,snd_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	//. Initial Flash Geo and Mat
 	let FrLGeo = new LineGeometry();
@@ -1049,10 +1028,15 @@ function initXSHGun(xsg_,gen_) {
 		xsg_.FrLPtr[n].position.set(0,0,0);
 		xsg_.GunPtr[n].add(xsg_.FrLPtr[n]);
 		xsg_.FrLPtr[n].visible = false;
+		//.	Sounds .............................................................
+		xsg_.FirPtr[n] = new PositionalAudio(gen_.listnr);
+		xsg_.FirPtr[n].setBuffer(snd_.ObjSnd[xsg_.FirSrc]);
+		init1Sound(xsg_.FirPtr[n],xsg_.FirDst,xsg_.FirVol,1,0,xsg_.GunPtr[n]);		
 	}
 }
 
 //= MOVE SHIP GUNS =============//==============================================
+//	### LONG DELAY FOR SECOND SOUND
 function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		//	Gunfire Flash
@@ -1569,7 +1553,9 @@ function stopEffSnd(xag_,aaf_,bom_) {
 	//- XAC Aircraft Guns ---------------------------------------------------------------
 	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();}
 	//- XAS Ship Guns
-	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();}	
+	if (typeof xsg_ !== 'undefined') {
+		for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();}
+	}	
 	//-	AAF Guns ---------------------------------------------------------------
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
@@ -1615,7 +1601,7 @@ export {
 	initEndSeq,moveEndSeq,				// Ending Sequence
 	initXSHWak,moveXSHWak,				// Ship Wake
 	initXSHSmk,							// Ship Smoke
-	loadXSHGun,initXSHGun,moveXSHGun,	// Ship Guns
+	initXSHGun,moveXSHGun,				// Ship Guns
 	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
 	stopEffSnd,							// Sounds
