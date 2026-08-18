@@ -518,7 +518,7 @@ function loadAAAGun(aaf_,txt_,gen_) {
 
 //= INIT AAA GUN ===============//==============================================
 
-function initAAAGun(aaf_,air_,gen_) {
+function initAAAGun(aaf_,air_,snd_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
@@ -1044,7 +1044,6 @@ function initXSHGun(xsg_,snd_,gen_) {
 		xsg_.FrLPtr[n].visible = false;
 		//.	Sounds .............................................................
 		xsg_.FirPtr[n] = new PositionalAudio(gen_.listnr);
-//		xsg_.FirPtr[n].setBuffer(xsg_.FirSrc);
 		xsg_.FirPtr[n].setBuffer(snd_.ObjSnd[xsg_.FirSrc]);
 		init1Sound(xsg_.FirPtr[n],xsg_.FirDst,xsg_.FirVol,1,0,xsg_.GunPtr[n]);		
 	}
