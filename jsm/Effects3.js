@@ -501,17 +501,17 @@ function loadAAAGun(aaf_,txt_,gen_) {
 			//-	Load Sounds -----------------------------------------------------
 			//	init1Sound(SndPtr,RefDst,Volume,Rate,Loop(1/0),Parent) 
 			//	GunFire
-			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
-			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
-				aaf_.FirPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.FirPtr[n],aaf_.FirDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
-			});
+//			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
+//			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
+//				aaf_.FirPtr[n].setBuffer(buffer);
+//				init1Sound(aaf_.FirPtr[n],aaf_.FirDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
+//			});
 			//	Explosion
-			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
-				aaf_.SndPtr[n].setBuffer(buffer);
-				init1Sound(aaf_.SndPtr[n],aaf_.SndDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
-			});			
+//			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+//			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
+//				aaf_.SndPtr[n].setBuffer(buffer);
+//				init1Sound(aaf_.SndPtr[n],aaf_.SndDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
+//			});	
 		});	
 	}
 }
@@ -623,6 +623,15 @@ function initAAAGun(aaf_,air_,gen_) {
 		//	Explosion Center
 		aaf_.ExpPtr[n] = makeSphere("crimson");
 		aaf_.ExpGrp[n].add(aaf_.ExpPtr[n]);
+		//.	Create Sounds ......................................................
+		//	Gunfire Sound
+		aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
+		aaf_.FirPtr[n].setBuffer(snd_.ObjSnd[aaf_.FirSrc]);
+		init1Sound(aaf_.FirPtr[n],aaf_.FirDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
+		//	Explosion Sound
+		aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
+		aaf_.SndPtr[n].setBuffer(snd_.ObjSnd[aaf_.SndSrc]);
+		init1Sound(aaf_.SndPtr[n],aaf_.SndDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
 	} // end of n
 }
 
@@ -1016,16 +1025,6 @@ function initXSHSmk(xss_,txt_) {
 /*******************************************************************************
 *	SHIP GUNFIRE
 *******************************************************************************/
-
-//= LOAD SHIP GUNS =============//==============================================
-
-//	Load Common Sound
-function loadXSHGun(xsg_,gen_) {
-	//	Load Common Sound
-	gen_.audoLd.load(xsg_.FirSrc, function(buffer) {
-		xsg_.FirSrc = buffer;
-	});
-}
 
 //= INIT SHIP GUNS =============//==============================================
 
@@ -1615,7 +1614,7 @@ export {
 	initEndSeq,moveEndSeq,				// Ending Sequence
 	initXSHWak,moveXSHWak,				// Ship Wake
 	initXSHSmk,							// Ship Smoke
-	loadXSHGun,initXSHGun,moveXSHGun,	// Ship Guns
+	initXSHGun,moveXSHGun,				// Ship Guns
 	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 	loadExpBom,initExpBom,moveExpBom,	// Bombs
 	stopEffSnd,							// Sounds
