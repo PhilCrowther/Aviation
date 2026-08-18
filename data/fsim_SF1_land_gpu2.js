@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260810
+*	FSIM SF1 DATA: 260818
 *
 *********************************************************************************
 
@@ -202,7 +202,7 @@ let snd_ = {
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",	// Gunfire
 				 "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",	// AAA explosion
 				 "https://PhilCrowther.github.io/Aviation/sounds/fx/exp.mp3"],	// Bomb explosion
-		ObjPtr: [],
+		ObjSnd: [],
 	};
 
 //= STATIC OBJECTS =============//==============================================
