@@ -843,7 +843,7 @@ let	xsg_ = {
 		FrLPtr: [],				// Gunfire Flash
 		FrLTim: [],				// Time of Flash		
 		//	Gunfire Sounds
-		FirSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",
+		FirSrc: 0,				// Common Sound Reference
 		FirDst: 0,				// Reference Distance
 		FirVol: 0,				// Volume
 		FirFlg: [],				// 1 = Start Explosion Sound
