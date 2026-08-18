@@ -1058,7 +1058,7 @@ function initXSHSmk(xss_) {
 
 //= INIT SHIP GUNS =============//==============================================
 
-function initXSHGun(xsg_,snd_,gen_) {
+function initXSHGun(xsg_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	//. Initial Flash Geo and Mat
 	let FrLGeo = new LineGeometry();
