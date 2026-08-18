@@ -1553,7 +1553,9 @@ function stopEffSnd(xag_,aaf_,bom_) {
 	//- XAC Aircraft Guns ---------------------------------------------------------------
 	for (let n = 0; n < xag_.ObjNum; n ++) {if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();}
 	//- XAS Ship Guns
-	for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();}	
+	if (typeof xsg_ !== 'undefined') {
+		for (let n = 0; n < xsg_.ObjNum; n ++) {if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();}
+	}	
 	//-	AAF Guns ---------------------------------------------------------------
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
