@@ -476,8 +476,7 @@ function makeXACSpn(n,xac_) {
 
 //= LOAD AA GUNS ===============//==============================================
 
-function loadAAAGun(aaf_,txt_,gen_) {
-	aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
+function loadAAAGun(aaf_,gen_) {
 	for (let n = 0; n < aaf_.ObjNum; n ++) {
 		gen_.gltfLd.load(aaf_.GunSrc, function (gltf) { // The OnLoad function
 			aaf_.GunPtr[n] = gltf.scene;
@@ -498,27 +497,13 @@ function loadAAAGun(aaf_,txt_,gen_) {
 			//- Initialize -----------------------------------------------------
 			aaf_.GunPtr[n].position.y = -1000; // Temporary Position (aaf value not initialized yet)
 			gen_.scene.add(aaf_.GunPtr[n]);
-			//-	Load Sounds -----------------------------------------------------
-			//	init1Sound(SndPtr,RefDst,Volume,Rate,Loop(1/0),Parent) 
-			//	GunFire
-//			aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
-//			gen_.audoLd.load(aaf_.FirSrc, function(buffer) {
-//				aaf_.FirPtr[n].setBuffer(buffer);
-//				init1Sound(aaf_.FirPtr[n],aaf_.FirDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
-//			});
-			//	Explosion
-//			aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-//			gen_.audoLd.load(aaf_.SndSrc, function(buffer) {
-//				aaf_.SndPtr[n].setBuffer(buffer);
-//				init1Sound(aaf_.SndPtr[n],aaf_.SndDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
-//			});	
 		});	
 	}
 }
 
 //= INIT AAA GUN ===============//==============================================
 
-function initAAAGun(aaf_,air_,snd_,gen_) {
+function initAAAGun(aaf_,air_,txt_,snd_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
@@ -609,6 +594,7 @@ function initAAAGun(aaf_,air_,snd_,gen_) {
 		aaf_.GunPtr[n].add(aaf_.FrLPtr[n]);
 		aaf_.FrLPtr[n].visible = false;
 		//	Explosion Smoke Material (need separate material becuase vary opacity)
+		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
 		aaf_.SmkMat[n] = new SpriteNodeMaterial();
 		aaf_.SmkMat[n].colorNode = color(0xffffff);
 		aaf_.SmkMat[n].colorNode = texture(aaf_.SmkMap);
