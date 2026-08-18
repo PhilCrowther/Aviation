@@ -81,6 +81,26 @@ const GrvMPS = 9.8;				// Gravity Acceleration m/s2
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const animfps = 24;
 
+//= VARIABLES ==================//==============================================
+
+//. Shared Textures ............//..............................................
+let txt_ = {
+		ObjNum: 3,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",	// White Smoke
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke2.png",	// Gray Smoke
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],	// Black Smoke
+		ObjTxt: [],
+	};
+
+//. Shared Sounds ..............//..............................................
+let snd_ = {
+		ObjNum: 3,
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",	// Gunfire
+				 "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",	// AAA explosion
+				 "https://PhilCrowther.github.io/Aviation/sounds/fx/exp.mp3"],	// Bomb explosion
+		ObjSnd: [],
+	};
+
 //- Airplane Smoke Trail .......//..............................................
 let xas_ = {
 		// Shared Values
@@ -105,6 +125,29 @@ let xaf_ = {
 		FyrMat: [0],			// Material
 		FyrMsh: [0],			// Mesh
 	};
+
+/*******************************************************************************
+*
+*	LOAD EFFECTS FIRES
+*
+*******************************************************************************/
+
+function loadFXfile(gen_) {
+	//	Textures
+	if (txt_.ObjNum) {
+		for (let n = 0; n < txt_.ObjNum; n++) {
+			txt_.ObjTxt[n] = gen_.txtrLd.load(txt_.ObjSrc[n]);	
+		}
+	}
+	//	Sounds
+	if (snd_.ObjNum) {
+		for (let n = 0; n < snd_.ObjNum; n++) {	
+			gen_.audoLd.load(snd_.ObjSrc[n], function(buffer) {
+				snd_.ObjSnd[n] = buffer;
+			});
+		}
+	}
+};
 
 /*******************************************************************************
 *
@@ -393,13 +436,13 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 
 //= INIT ENDING SEQUENCE =======//==============================================
 
-function initEndSeq(txt_) {
-	initXACFyr(txt_);
+function initEndSeq() {
+	initXACFyr();
 }
 
 //- Init Smoke and Fire --------//----------------------------------------------
-function initXACFyr(txt_) {
-	xaf_.ObjTxt = txt_.ObjTxt[xaf_.ObjTxt]; // Assign Texture
+function initXACFyr() {
+	xaf_.ObjTxt = txt_.ObjTxt[2]; // Assign Texture
 	initAirFyr(xaf_);			// Create Emitter
 	xaf_.SmkMsh[0].visible = false; // Turn Off Smoke
 	xaf_.FyrMsh[0].visible = false; // Turn Off Fire
@@ -503,7 +546,7 @@ function loadAAAGun(aaf_,gen_) {
 
 //= INIT AAA GUN ===============//==============================================
 
-function initAAAGun(aaf_,air_,txt_,snd_,gen_) {
+function initAAAGun(aaf_,air_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	let MapRot = new Vector3();
 	let MapPos = new Vector3();
@@ -594,7 +637,7 @@ function initAAAGun(aaf_,air_,txt_,snd_,gen_) {
 		aaf_.GunPtr[n].add(aaf_.FrLPtr[n]);
 		aaf_.FrLPtr[n].visible = false;
 		//	Explosion Smoke Material (need separate material becuase vary opacity)
-		aaf_.SmkMap = txt_.ObjTxt[aaf_.SmkMap];
+		aaf_.SmkMap = txt_.ObjTxt[2];
 		aaf_.SmkMat[n] = new SpriteNodeMaterial();
 		aaf_.SmkMat[n].colorNode = color(0xffffff);
 		aaf_.SmkMat[n].colorNode = texture(aaf_.SmkMap);
@@ -612,11 +655,11 @@ function initAAAGun(aaf_,air_,txt_,snd_,gen_) {
 		//.	Create Sounds ......................................................
 		//	Gunfire Sound
 		aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
-		aaf_.FirPtr[n].setBuffer(snd_.ObjSnd[aaf_.FirSrc]);
+		aaf_.FirPtr[n].setBuffer(snd_.ObjSnd[0]);	// Gunfire Sound
 		init1Sound(aaf_.FirPtr[n],aaf_.FirDst,aaf_.FirVol,1,0,aaf_.GunPtr[n]);
 		//	Explosion Sound
 		aaf_.SndPtr[n] = new PositionalAudio(gen_.listnr);
-		aaf_.SndPtr[n].setBuffer(snd_.ObjSnd[aaf_.SndSrc]);
+		aaf_.SndPtr[n].setBuffer(snd_.ObjSnd[1]);	// AAA Explosion Sound
 		init1Sound(aaf_.SndPtr[n],aaf_.SndDst,aaf_.SndVol,1,0,aaf_.ExpGrp[n]);
 	} // end of n
 }
@@ -911,9 +954,9 @@ function initAirFyr(xaf_) {
 *******************************************************************************/
 
 //= INIT SHIP WAKE =============//==============================================
-function initXSHWak(wak_,txt_) {
+function initXSHWak(wak_) {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.ObjTxt[n] = txt_.ObjTxt[wak_.ObjTxt[n]];
+		wak_.ObjTxt[n] = txt_.ObjTxt[0];
 		//- Timer
 		let speed = uniform(.001); // r170 Lower = slower
 		let scaledTime = time.add(125).mul(speed); // r170
@@ -967,9 +1010,9 @@ function moveXSHWak() {
 *******************************************************************************/
 
 //= INIT SHIP SMOKE ============//==============================================
-function initXSHSmk(xss_,txt_) {
+function initXSHSmk(xss_) {
 	for (let n = 0; n < xss_.ObjNum; n ++) {
-		xss_.ObjTxt[n] = txt_.ObjTxt[xss_.ObjTxt[n]];
+		xss_.ObjTxt[n] = txt_.ObjTxt[2];
 		//- Timer
 		let speed = uniform(.001); // r170 Lower = slower
 		let scaledTime = time.add(5).mul(speed); // r170
@@ -1014,7 +1057,7 @@ function initXSHSmk(xss_,txt_) {
 
 //= INIT SHIP GUNS =============//==============================================
 
-function initXSHGun(xsg_,snd_,gen_) {
+function initXSHGun(xsg_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	//. Initial Flash Geo and Mat
 	let FrLGeo = new LineGeometry();
@@ -1030,7 +1073,7 @@ function initXSHGun(xsg_,snd_,gen_) {
 		xsg_.FrLPtr[n].visible = false;
 		//.	Sounds .............................................................
 		xsg_.FirPtr[n] = new PositionalAudio(gen_.listnr);
-		xsg_.FirPtr[n].setBuffer(snd_.ObjSnd[xsg_.FirSrc]);
+		xsg_.FirPtr[n].setBuffer(snd_.ObjSnd[0]);	// Gunfire Sound
 		init1Sound(xsg_.FirPtr[n],xsg_.FirDst,xsg_.FirVol,1,0,xsg_.GunPtr[n]);		
 	}
 }
@@ -1181,28 +1224,19 @@ function moveSmkTrl(smt_,air_,n) {
 *
 *******************************************************************************/
 
-//= LOAD BOMB ==================//==============================================
-function loadExpBom(bom_,gen_) {
-	// Load Common Smoke Material
-//	bom_.SmkMap = gen_.txtrLd.load(bom_.SmkSrc);
-	bom_.SmkMap = txt_.ObjTxt[bom_.SmkMap];
-	// Load Explosion Sounds  ..................................................
+//= INIT BOMB ==================//==============================================
+function initExpBom(bom_,bmx_,bmt_,bms_) {
+	bom_.SmkMap = txt_.ObjTxt[2];
 	let RefDst = 25;			// Reference distance for Positional Audio
 	for (let n = 0; n < bom_.ObjNum; n ++) {
 		bom_.ExpGrp[n] = new Group();
+		//	Explosion Sound
 		bom_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		bom_.SndMsh[n] = new Object3D();
-		gen_.audoLd.load(bom_.SndSrc, function(buffer) {
-			bom_.SndPtr[n].setBuffer(buffer);
-			init1Sound(bom_.SndPtr[n],RefDst,bom_.SndVol,1,0,bom_.SndMsh[n]);	
-			bom_.ExpGrp[n].add(bom_.SndMsh[n]);
-		});
-	}
-}
-
-//= INIT BOMB ==================//==============================================
-function initExpBom(bom_,bmx_,bmt_,bms_) {
-	for (let n = 0; n < bom_.ObjNum; n ++) {
+		bom_.SndPtr[n].setBuffer(snd_.ObjSnd[2]);	// Bomb Explosion Sound
+		init1Sound(bom_.SndPtr[n],RefDst,bom_.SndVol,1,0,bom_.SndMsh[n]);	
+		bom_.ExpGrp[n].add(bom_.SndMsh[n]);
+		//
 		bom_.ExpFlg[n] = 0;
 		bom_.SndFlg[n] = 0;		// 1 = Sound Ready
 		bom_.SndDTm[n] = 0;
@@ -1447,6 +1481,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 //= INITIALIZE GROUND SMOKE ====//==============================================
 
 function initGrdSmk(grs_) {
+	grs_.ObjTxt = txt_.ObjTxt[2];
 	for (let n = 0; n < grs_.ObjNum; n ++) {
 		//- Timer
 		let speed = uniform(.001); // r170
@@ -1593,17 +1628,18 @@ return mesh;}
 *******************************************************************************/
 
 export {
+	loadFXfile,							// Load Common FX Textures and Sounds
 	initFad2Blk,moveFad2Blk,			// Fade2Black
 	initBullet,moveBullet,				// Guns - My Airplane
 	initXACBul,moveXACBul,				// Guns - Other Airplane
 	loadAAAGun,initAAAGun,moveAAAGun,	// AA Guns
-	initGrdSmk,initGrdFyr,				// Ground Smoke and Fire
 	initEndSeq,moveEndSeq,				// Ending Sequence
 	initXSHWak,moveXSHWak,				// Ship Wake
 	initXSHSmk,							// Ship Smoke
 	initXSHGun,moveXSHGun,				// Ship Guns
 	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
-	loadExpBom,initExpBom,moveExpBom,	// Bombs
+	initExpBom,moveExpBom,	// Bombs
+	initGrdSmk,initGrdFyr,				// Ground Smoke and Fire
 	stopEffSnd,							// Sounds
 };
 
@@ -1644,4 +1680,5 @@ export {
 260805: Eliminate xsg_
 260808: Show aaf_ guns firing (FrL)
 260817: Add xsg_ ship guns firing animation and sounds
+260818: Move load of common textures and sounds to this module; move reference to those files internally
 */
