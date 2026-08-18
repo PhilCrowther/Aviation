@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Aug 2026
+Version dated 18 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -109,7 +109,7 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 		initXSHWak,moveXSHWak,	// Ship Wake
 		initXSHSmk,				// Ship Smoke (destroyer only)
-		loadXSHGun,initXSHGun,moveXSHGun, // Ship Guns
+		initXSHGun,moveXSHGun,	// Ship Guns
 		loadSmkTrl,initSmkTrl,moveSmkTrl, // Sprite Smoke Trail
 		loadExpBom,initExpBom,moveExpBom, // Bomb
 		stopEffSnd,				// Effects Sounds
@@ -556,6 +556,7 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	xsg_.GunPos = [new THREE.Vector3(0,6.9695,-38.1774),new THREE.Vector3(0,8.8226,-30.7857)]; // Map Position
 	xsg_.GunRot = [new THREE.Euler(30,105,0),new THREE.Euler(30,105,0)]; // Gun Rotation (degrees)
 	//	Sounds
+	xsg_.FirSrc = 0;			// Common Sounds Index
 	xsg_.FirDst = 5;			// Gunfire Reference Distance
 	xsg_.FirVol = 15;			// Gunfire Volume
 	//	For Each Gun
@@ -679,8 +680,10 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		scene.add(aaf_.ExpGrp[n]);
 	}
 	//	Sounds
+	aaf_.FirSrc = 0;			// Gunfire Sound Index
 	aaf_.FirDst = 5;			// Gunfire Reference Distance
 	aaf_.FirVol = 15;			// Gunfire Volume
+	aaf_.SndSrc = 1;			// Explosion Sound Index
 	aaf_.SndDst = 5;			// Explosion Reference Distance
 	aaf_.SndVol = 15;			// Explosion Volume
 
@@ -985,7 +988,7 @@ function loadObject() {
 	loadAnmFlg(flg_,gen_);		// Load Animated Flag
 	loadMyPeep(myp_,gen_);		// Load Static Crew
 	loadMyCrew(myc_,gen_);		// Load Animated Crew
-	loadAAAGun(aaf_,txt_,gen_);	// Load Fixed AAA Gun Objects, Trestures and Sounds
+	loadAAAGun(aaf_,gen_);	// Load Fixed AAA Gun Objects, Trestures and Sounds
 	loadExpBom(bom_,gen_);		// Load Bombs
 	loadSmkTrl(smt_,gen_);		// Load Smoke Trails
 }
@@ -995,7 +998,7 @@ function loadObject() {
 function initObject() {
 	initStatic();
 	initMoving();
-	initAAAGun(aaf_,air_,gen_);
+	initAAAGun(aaf_,air_,txt_,snd_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_);
 	initSmkTrl(smt_,air_,xac_,gen_);
 }
@@ -1048,9 +1051,19 @@ function moveBomExp(n) {
 //= SHARED TEXTURES ============//==============================================
 
 function loadShared() {
+	//	Textures
 	if (txt_.ObjNum) {
 		for (let n = 0; n < txt_.ObjNum; n++) {
 			txt_.ObjTxt[n] = txtrLoader.load(txt_.ObjSrc[n]);	
+		}
+	}
+	//	Sounds
+	if (snd_.ObjNum) {
+		for (let n = 0; n < snd_.ObjNum; n++) {
+//			snd_.ObjSnd[n] = audoLoader.load(snd_.ObjSrc[n]);	
+			audoLoader.load(snd_.ObjSrc[n], function(buffer) {
+				snd_.ObjSnd[n] = buffer;
+			});
 		}
 	}
 };
@@ -1316,7 +1329,7 @@ function moveXACGun(n) {
 //=	Load Ship ==================//==============================================
 function loadMovShp() {
 	loadXSHVeh(xsh_,anm_,gen_); // Ships
-	loadXSHGun(xsg_,gen_);		// Gunfire Sound
+//	loadXSHGun(xsg_,gen_);		// Gunfire Sound
 }
 
 //=	Init Ship ==================//==============================================
@@ -1324,7 +1337,7 @@ function initMovShp() {
 	initXSHVeh(xsh_,air_,gen_);
 	initXSHWak(wak_,txt_);		// Wake
 	initXSHSmk(xss_,txt_);		// Smoke
-	initXSHGun(xsg_,gen_);		// Gunfire
+	initXSHGun(xsg_,snd_,gen_);	// Gunfire
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		xsg_.GunPtr[n].position.copy(xsg_.GunPos[n]);
 		xsg_.GunPtr[n].rotation.set(-xsg_.GunRot[n].x*DegRad,xsg_.GunRot[n].y*DegRad,0);

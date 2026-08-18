@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Aug 2026
+Version dated 18 Aug 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -365,7 +365,7 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb
 		xac_.EngPtr[n] = 0;
 		xac_.EngMsh[n] = new THREE.Object3D();	// (Object3D)
 		xac_.EngVol[n] = 0.2;	// Default Volume
-		xac_.EngDst[n] = 25;	// Reference Distance
+		xac_.EngDst[n] = 50;	// Reference Distance
 		// End Sequence
 		xac_.HitCnt[n] = 0;		// Hits Taken
 		xac_.EndSeq[n] = 0;		// End Sequence Running
@@ -484,8 +484,10 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 		scene.add(aaf_.ExpGrp[n]);
 	}
 	//	Sounds
+	aaf_.FirSrc = 0;			// Gunfire Sound Index
 	aaf_.FirDst = 5;			// Gunfire Reference Distance
 	aaf_.FirVol = 15;			// Gunfire Volume
+	aaf_.SndSrc = 1;			// Explosion Sound Index
 	aaf_.SndDst = 5;			// Explosion Reference Distance
 	aaf_.SndVol = 15;			// Explosion Volume
 	
@@ -688,7 +690,7 @@ function loadObject() {
 	loadShared();				// For FX (### Creates Shadow on Screen)
 	loadStatic();
 	loadMoving();
-	loadAAAGun(aaf_,txt_,gen_);
+	loadAAAGun(aaf_,gen_);
 	loadExpBom(bom_,gen_);
 	loadSmkTrl(smt_,gen_);
 }
@@ -698,7 +700,7 @@ function loadObject() {
 function initObject() {
 	initStatic();
 	initMoving();
-	initAAAGun(aaf_,air_,gen_);
+	initAAAGun(aaf_,air_,txt_,snd_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_);
 	initSmkTrl(smt_,air_,xac_,gen_);
 }
@@ -747,9 +749,19 @@ function moveBomExp(n) {
 //= SHARED TEXTURES ============//==============================================
 
 function loadShared() {
+	//	Textures
 	if (txt_.ObjNum) {
 		for (let n = 0; n < txt_.ObjNum; n++) {
-			txt_.ObjTxt[n] = txtrLoader.load(txt_.ObjSrc[n]);
+			txt_.ObjTxt[n] = txtrLoader.load(txt_.ObjSrc[n]);	
+		}
+	}
+	//	Sounds
+	if (snd_.ObjNum) {
+		for (let n = 0; n < snd_.ObjNum; n++) {
+//			snd_.ObjSnd[n] = audoLoader.load(snd_.ObjSrc[n]);	
+			audoLoader.load(snd_.ObjSrc[n], function(buffer) {
+				snd_.ObjSnd[n] = buffer;
+			});
 		}
 	}
 };
