@@ -255,24 +255,6 @@ let wav_ = {
 //		AnmNam: [0]				// Animation
 //	};
 
-//= SHARED TEXTURES ============//==============================================
-let txt_ = {
-		ObjNum: 3,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",	// White smoke
-				 "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1r.png",	//
-				 "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png"],	// Black smoke
-		ObjTxt: [],
-	};
-
-//= SHARED SOUNDS ==============//==============================================
-let snd_ = {
-		ObjNum: 3,
-		ObjSrc: ["https://PhilCrowther.github.io/Aviation/sounds/fx/gun.mp3",	// Gunfire
-				 "https://PhilCrowther.github.io/Aviation/sounds/fx/aaa.mp3",	// AAA explosion
-				 "https://PhilCrowther.github.io/Aviation/sounds/fx/exp.mp3"],	// Bomb explosion
-		ObjSnd: [],
-	};
-
 //= STATIC OBJECTS =============//==============================================
 //- Islands --------------------//----------------------------------------------
 let mnt_ = {
@@ -798,7 +780,6 @@ let aaf_ = {
 		FrLPtr: [],				// Gunfire Flash
 		FrLTim: [],				// Time of Flash
 		//	Gunfire Sounds
-		FirSrc: 0,
 		FirDst: 0,				// Reference Distance
 		FirVol: 0,				// Volume
 		FirFlg: [],				// 1 = Start Explosion Sound
@@ -821,7 +802,6 @@ let aaf_ = {
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		//	Explosion Sounds
-		SndSrc: 0,
 		SndDst: 0,				// Reference Distance
 		SndVol: 0,				// Volume
 		SndFlg: [],				// 1 = Start Explosion Sound
@@ -843,7 +823,6 @@ let	xsg_ = {
 		FrLPtr: [],				// Gunfire Flash
 		FrLTim: [],				// Time of Flash		
 		//	Gunfire Sounds
-		FirSrc: 0,				// Common Sound Reference
 		FirDst: 0,				// Reference Distance
 		FirVol: 0,				// Volume
 		FirFlg: [],				// 1 = Start Explosion Sound
@@ -885,7 +864,6 @@ let bom_ = {
 		ExpFlg: [],				// Explosion Happening
 		// Sounds
 		SndFlg: [],				// 1 = Sound Ready to be Triggered
-		SndSrc: "https://PhilCrowther.github.io/Aviation/sounds/fx/exp.mp3",
 		SndPtr: [],
 		SndVol: 10,				// Volume
 		SndMsh: [],				// Object3D (init by initExpBom)
