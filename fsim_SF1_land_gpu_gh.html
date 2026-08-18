@@ -98,13 +98,14 @@ import {loadAirExt,loadAirInt,moveAirObj,
 import {PointerLockControls,	// three.js modified
 		initCamera,moveCamera,	// camera
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
-import {initBullet,moveBullet,	// Guns - My Airplane
+import {loadFXfile,				// Load Common FX Textures and Sounds
+		initBullet,moveBullet,	// Guns - My Airplane
 		initXACBul,moveXACBul,	// Guns - Other Airplane
 		loadAAAGun,initAAAGun,moveAAAGun,	// Guns - AA
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
-		loadExpBom,initExpBom,moveExpBom,	// Bomb
+		initExpBom,moveExpBom,	// Bomb
 		stopEffSnd,				// Effects Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
@@ -484,13 +485,11 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 		scene.add(aaf_.ExpGrp[n]);
 	}
 	//	Sounds
-	aaf_.FirSrc = 0;			// Gunfire Sound Index
 	aaf_.FirDst = 5;			// Gunfire Reference Distance
 	aaf_.FirVol = 15;			// Gunfire Volume
-	aaf_.SndSrc = 1;			// Explosion Sound Index
 	aaf_.SndDst = 5;			// Explosion Reference Distance
 	aaf_.SndVol = 15;			// Explosion Volume
-	
+
 //= BOMBS ======================//==============================================
 //-	Adjustments (Identical Inputs for 3 Smoke Trails)
 	for (let n = 0; n < bom_.ObjNum; n ++) {
@@ -500,12 +499,12 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 		bms_.SmkCol[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
 		bms_.SubSiz[n] = 0.01;	// Longer Life w/Fire
 	}
-	// Explosion Colors
+	//	Explosion Colors
 	bms_.SmkCol[0].z = "black";	// No Fire
 	bms_.SmkCol[1].z = "black";	// No Fire
-	// Life
+	//	Life
 	bms_.SubSiz[0] = 0.2;		// No Fire, Shorter Life
-	bms_.SubSiz[1] = 0.2;		// No Fire, Shorter Life
+	bms_.SubSiz[1] = 0.2;		// No Fire, Shorter Life	
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -687,11 +686,10 @@ function moveEvents() {
 //= LOAD OBJECTS ===============================================================
 
 function loadObject() {
-	loadShared();				// For FX (### Creates Shadow on Screen)
+	loadFXfile(gen_);				// Load FX Texture and Sound Files
 	loadStatic();
 	loadMoving();
 	loadAAAGun(aaf_,gen_);
-	loadExpBom(bom_,gen_);
 	loadSmkTrl(smt_,gen_);
 }
 
@@ -700,7 +698,7 @@ function loadObject() {
 function initObject() {
 	initStatic();
 	initMoving();
-	initAAAGun(aaf_,air_,txt_,snd_,gen_);
+	initAAAGun(aaf_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_);
 	initSmkTrl(smt_,air_,xac_,gen_);
 }
@@ -745,26 +743,6 @@ function moveBomExp(n) {
 	let Z = air_.MapPos.z-bom_.MapPos[n].z;
 	bom_.ExpGrp[n].position.set(X,Y,Z);
 }
-
-//= SHARED TEXTURES ============//==============================================
-
-function loadShared() {
-	//	Textures
-	if (txt_.ObjNum) {
-		for (let n = 0; n < txt_.ObjNum; n++) {
-			txt_.ObjTxt[n] = txtrLoader.load(txt_.ObjSrc[n]);	
-		}
-	}
-	//	Sounds
-	if (snd_.ObjNum) {
-		for (let n = 0; n < snd_.ObjNum; n++) {
-//			snd_.ObjSnd[n] = audoLoader.load(snd_.ObjSrc[n]);	
-			audoLoader.load(snd_.ObjSrc[n], function(buffer) {
-				snd_.ObjSnd[n] = buffer;
-			});
-		}
-	}
-};
 
 //= STATIC OBJECTS =============//=============================================
 
@@ -825,7 +803,7 @@ function initMovPln() {
 		bfm_.ManTyp[n] = 0;
 		bfm_.BnkMax[n] = 0;
 	}
-	initEndSeq(txt_);
+	initEndSeq();
 }
 
 //= MOVE AIRPLANES =============//==============================================

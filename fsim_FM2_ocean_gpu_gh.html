@@ -101,7 +101,8 @@ import {loadAirExt,loadAirInt,	// Load External Model
 import {PointerLockControls,	// three.js modified
 		initCamera,moveCamera,	// camera
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Controls.js";
-import {initFad2Blk,moveFad2Blk, // Fade to/from Black
+import {loadFXfile,				// Load Common FX Textures and Sounds
+		initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initBullet,moveBullet,	// Guns - My Airplane
 		initXACBul,moveXACBul,	// Guns - Other Airplane
 		loadAAAGun,initAAAGun,moveAAAGun,	// Guns - Fixed
@@ -111,7 +112,7 @@ import {initFad2Blk,moveFad2Blk, // Fade to/from Black
 		initXSHSmk,				// Ship Smoke (destroyer only)
 		initXSHGun,moveXSHGun,	// Ship Guns
 		loadSmkTrl,initSmkTrl,moveSmkTrl, // Sprite Smoke Trail
-		loadExpBom,initExpBom,moveExpBom, // Bomb
+		initExpBom,moveExpBom,	// Bomb
 		stopEffSnd,				// Effects Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
@@ -556,7 +557,6 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	xsg_.GunPos = [new THREE.Vector3(0,6.9695,-38.1774),new THREE.Vector3(0,8.8226,-30.7857)]; // Map Position
 	xsg_.GunRot = [new THREE.Euler(30,105,0),new THREE.Euler(30,105,0)]; // Gun Rotation (degrees)
 	//	Sounds
-	xsg_.FirSrc = 0;			// Common Sounds Index
 	xsg_.FirDst = 5;			// Gunfire Reference Distance
 	xsg_.FirVol = 15;			// Gunfire Volume
 	//	For Each Gun
@@ -680,10 +680,8 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		scene.add(aaf_.ExpGrp[n]);
 	}
 	//	Sounds
-	aaf_.FirSrc = 0;			// Gunfire Sound Index
 	aaf_.FirDst = 5;			// Gunfire Reference Distance
 	aaf_.FirVol = 15;			// Gunfire Volume
-	aaf_.SndSrc = 1;			// Explosion Sound Index
 	aaf_.SndDst = 5;			// Explosion Reference Distance
 	aaf_.SndVol = 15;			// Explosion Volume
 
@@ -982,14 +980,13 @@ function moveShpAlt() {
 //== LOAD OBJECTS ==============================================================
 
 function loadObject() {
-	loadShared();				// Load Shared Textures
+	loadFXfile(gen_);				// Load FX Texture and Sound Files
 	loadStatic();				// Load Static Objects
 	loadMoving();				// Load Moving Objects
 	loadAnmFlg(flg_,gen_);		// Load Animated Flag
 	loadMyPeep(myp_,gen_);		// Load Static Crew
 	loadMyCrew(myc_,gen_);		// Load Animated Crew
-	loadAAAGun(aaf_,gen_);	// Load Fixed AAA Gun Objects, Trestures and Sounds
-	loadExpBom(bom_,gen_);		// Load Bombs
+	loadAAAGun(aaf_,gen_);		// Load Fixed AAA Gun Objects
 	loadSmkTrl(smt_,gen_);		// Load Smoke Trails
 }
 
@@ -998,7 +995,7 @@ function loadObject() {
 function initObject() {
 	initStatic();
 	initMoving();
-	initAAAGun(aaf_,air_,txt_,snd_,gen_);
+	initAAAGun(aaf_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_);
 	initSmkTrl(smt_,air_,xac_,gen_);
 }
@@ -1048,26 +1045,6 @@ function moveBomExp(n) {
 	bom_.ExpGrp[n].position.set(X,Y,Z);
 }
 
-//= SHARED TEXTURES ============//==============================================
-
-function loadShared() {
-	//	Textures
-	if (txt_.ObjNum) {
-		for (let n = 0; n < txt_.ObjNum; n++) {
-			txt_.ObjTxt[n] = txtrLoader.load(txt_.ObjSrc[n]);	
-		}
-	}
-	//	Sounds
-	if (snd_.ObjNum) {
-		for (let n = 0; n < snd_.ObjNum; n++) {
-//			snd_.ObjSnd[n] = audoLoader.load(snd_.ObjSrc[n]);	
-			audoLoader.load(snd_.ObjSrc[n], function(buffer) {
-				snd_.ObjSnd[n] = buffer;
-			});
-		}
-	}
-};
-
 //= STATIC OBJECTS =============//=============================================
 
 function loadStatic() {
@@ -1111,7 +1088,7 @@ function moveAnmObj() {moveAnmFlg(flg_,tim_);}
 
 //- Init Volcano Smoke ---------//----------------------------------------------
 function initVlkSmk() {
-	grs_.ObjTxt = txt_.ObjTxt[grs_.ObjTxt];
+//	grs_.ObjTxt = txt_.ObjTxt[grs_.ObjTxt];
 	initGrdSmk(grs_);
 	grs_.SmkMsh[0].position.copy(grs_.MapPos[0]);
 	grs_.ObjRef[0].add(grs_.SmkMsh[0]);
@@ -1137,7 +1114,7 @@ function initMovPln() {
 		bfm_.ManTyp[n] = 0;
 		bfm_.BnkMax[n] = 0;
 	}
-	initEndSeq(txt_);
+	initEndSeq();
 	// Draw Red Sphere Around xac 0
 //	let Sphere0 = makeSphere("red");
 //	Sphere0.scale.setScalar(25);
@@ -1335,9 +1312,9 @@ function loadMovShp() {
 //=	Init Ship ==================//==============================================
 function initMovShp() {
 	initXSHVeh(xsh_,air_,gen_);
-	initXSHWak(wak_,txt_);		// Wake
-	initXSHSmk(xss_,txt_);		// Smoke
-	initXSHGun(xsg_,snd_,gen_);	// Gunfire
+	initXSHWak(wak_);			// Wake
+	initXSHSmk(xss_);			// Smoke
+	initXSHGun(xsg_,gen_);		// Gunfire
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
 		xsg_.GunPtr[n].position.copy(xsg_.GunPos[n]);
 		xsg_.GunPtr[n].rotation.set(-xsg_.GunRot[n].x*DegRad,xsg_.GunRot[n].y*DegRad,0);
