@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Aug 2026
+Version dated 19 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -1306,7 +1306,6 @@ function moveXACGun(n) {
 //=	Load Ship ==================//==============================================
 function loadMovShp() {
 	loadXSHVeh(xsh_,anm_,gen_); // Ships
-//	loadXSHGun(xsg_,gen_);		// Gunfire Sound
 }
 
 //=	Init Ship ==================//==============================================
@@ -1330,11 +1329,11 @@ function moveMovShp() {
 		XSGRem = XSGRem - tim_.DLTime;
 		if (XSGRem < 0) {
 			let n = XSGSel;
-			xsg_.FrLPtr[n].visible = true;
-			xsg_.FrLTim[n] = 0.1;		
-			XSGRem = XSGTim;
-			xsg_.FirFlg[n] = 1;	// Start Sound
+			xsg_.FirFlg[n] = 1;	// Fire Gun
+//			xsg_.FrLPtr[n].visible = true;
+//			xsg_.FrLTim[n] = 0.1;		
 			XSGSel = 1 - XSGSel; // Next Gun
+			XSGRem = XSGTim;	// Reset Delay
 		}
 	}
 	moveXSHGun(xsg_,xsh_,gen_,tim_);	// Ship Gun Graphics and Sound
