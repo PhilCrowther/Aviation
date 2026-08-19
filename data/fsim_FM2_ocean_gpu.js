@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260818
+*	FSIM FM2 DATA: 260819
 *
 ********************************************************************************
 
@@ -827,7 +827,7 @@ let	xsg_ = {
 		SmkMat: [],				// Material
 		SmkPtr: [],				// Sprite Address
 		SmkOpa: [],				// Opacity Remaining
-		SmkOpR:	0.005,			// Opacity Reduction per Frame
+		SmkOpR:	0.01,			// Opacity Reduction per Frame
 		//	Gunfire Sounds
 		FirDst: 0,				// Reference Distance
 		FirVol: 0,				// Volume
