@@ -1084,7 +1084,7 @@ function initXSHGun(xsg_,gen_) {
 		//	Explosion Smoke Sprite
 		xsg_.SmkPtr[n] = new Sprite(xsg_.SmkMat[n]);
 		xsg_.SmkPtr[n].position.set(0,0,10);
-		xsg_.SmkPtr[n].scale.set(20,20,20);
+		xsg_.SmkPtr[n].scale.set(15,15,15);
 		xsg_.GunPtr[n].add(xsg_.SmkPtr[n]);
 		xsg_.SmkPtr[n].visible = false;
 		//.	Sounds .............................................................
