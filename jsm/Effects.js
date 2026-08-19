@@ -1061,7 +1061,7 @@ function initXSHGun(xsg_,gen_) {
 	//- COMMON VARIABLES -------------------------------------------------------
 	//. Initial Flash Geo and Mat
 	let FrLGeo = new LineGeometry();
-	FrLGeo.setPositions([0,0,15, 0,0,50]);
+	FrLGeo.setPositions([0,0,5, 0,0,30]);
 	let FrLMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
 	//- EACH GUN ---------------------------------------------------------------
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
@@ -1071,6 +1071,22 @@ function initXSHGun(xsg_,gen_) {
 		xsg_.FrLPtr[n].position.set(0,0,0);
 		xsg_.GunPtr[n].add(xsg_.FrLPtr[n]);
 		xsg_.FrLPtr[n].visible = false;
+		//.	Smoke ..............................................................
+		//	Explosion Smoke Material (need separate material becuase vary opacity)
+		xsg_.SmkMap = txt_.ObjTxt[1];
+		xsg_.SmkMat[n] = new SpriteNodeMaterial();
+		xsg_.SmkMat[n].colorNode = color(0xffffff);
+		xsg_.SmkMat[n].colorNode = texture(xsg_.SmkMap);
+		xsg_.SmkMat[n].transparent = true;
+		xsg_.SmkOpa[n] = 0;
+		xsg_.SmkMat[n].opacity = 0;		// prevent black square from appearing in front of aircraft [260504]
+		xsg_.SmkMat[n].depthWrite = false;
+		//	Explosion Smoke Sprite
+		xsg_.SmkPtr[n] = new Sprite(xsg_.SmkMat[n]);
+		xsg_.SmkPtr[n].position.set(0,0,10);
+		xsg_.SmkPtr[n].scale.set(10,10,10);
+		xsg_.GunPtr[n].add(xsg_.SmkPtr[n]);
+		xsg_.SmkPtr[n].visible = false;
 		//.	Sounds .............................................................
 		xsg_.FirPtr[n] = new PositionalAudio(gen_.listnr);
 		xsg_.FirPtr[n].setBuffer(snd_.ObjSnd[0]);	// Gunfire Sound
@@ -1079,30 +1095,51 @@ function initXSHGun(xsg_,gen_) {
 }
 
 //= MOVE SHIP GUNS =============//==============================================
-//	### LONG DELAY FOR SECOND SOUND
 function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 	for (let n = 0; n < xsg_.ObjNum; n ++) {
-		//	Gunfire Flash
-		if (xsg_.FrLPtr[n].visible = true) {
-			xsg_.FrLTim[n] = xsg_.FrLTim[n] - tim_.DLTime;
-			if (xsg_.FrLTim[n] < 0) xsg_.FrLPtr[n].visible = false;
-		}
-		// Play Gunfire Sound With Delay
-		//	Start Delay
-		if (xsg_.FirFlg[n]) { // Compute Delay and Start Countdown 		
+		//	Start
+		if (xsg_.FirFlg[n]) { // Compute Delay and Start Countdown 
+			// Gun Flash	
+			xsg_.FrLPtr[n].visible = true;
+			xsg_.FrLTim[n] = 0.1;
+			//	Smoke
+			xsg_.SmkPtr[n].visible = true;
+			xsg_.SmkOpa[n] = 0.7;
+			//	Compute Sound Delay	
 			let X = xsh_.ObjGrp[n].position.x;
 			let Z = xsh_.ObjGrp[n].position.z; 
 			xsg_.FirTim[n] = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
+			//	No Flag
 			xsg_.FirFlg[n] = 0;
+		}		
+		//	Gunfire Flash Delay
+		if (xsg_.FrLTim[n]) {
+			xsg_.FrLTim[n] = xsg_.FrLTim[n] - tim_.DLTime;
+			if (xsg_.FrLTim[n] < 0) {
+				xsg_.FrLTim[n] = 0;
+				xsg_.FrLPtr[n].visible = false;
+			}
 		}
-		//	If End of Delay Start Sound
-		if (xsg_.FirTim[n]) xsg_.FirTim[n] = xsg_.FirTim[n] - tim_.DLTime;
-		if (xsg_.FirTim[n] < 0) {
-			xsg_.FirTim[n] = 0;
-			if (gen_.SndFlg) {
-				if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();
-				xsg_.FirPtr[n].setVolume(xsg_.FirVol);
-				xsg_.FirPtr[n].play();
+		// Smoke Dealy
+		if (xsg_.SmkOpa[n]) {
+			xsg_.SmkMat[n].opacity = xsg_.SmkOpa[n];
+			xsg_.SmkOpa[n] = xsg_.SmkOpa[n] - xsg_.SmkOpR;
+			if (xsg_.SmkOpa[n] < 0) {
+				xsg_.SmkOpa[n] = 0;
+				xsg_.SmkMat[n].opacity = 0;
+				xsg_.SmkPtr[n].visible = false;				
+			}
+		}
+		//	Sound Delay
+		if (xsg_.FirTim[n]) {
+			xsg_.FirTim[n] = xsg_.FirTim[n] - tim_.DLTime;
+			if (xsg_.FirTim[n] < 0) {
+				xsg_.FirTim[n] = 0;
+				if (gen_.SndFlg) {
+					if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();
+					xsg_.FirPtr[n].setVolume(xsg_.FirVol);
+					xsg_.FirPtr[n].play();
+				}
 			}
 		}
 	}
@@ -1681,4 +1718,5 @@ export {
 260808: Show aaf_ guns firing (FrL)
 260817: Add xsg_ ship guns firing animation and sounds
 260818: Move load of common textures and sounds to this module; move reference to those files internally
+260819: Add Smoke to Gunfire
 */
