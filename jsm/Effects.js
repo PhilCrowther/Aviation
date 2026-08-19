@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Aug 2026
+Version dated 19 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1084,7 +1084,7 @@ function initXSHGun(xsg_,gen_) {
 		//	Explosion Smoke Sprite
 		xsg_.SmkPtr[n] = new Sprite(xsg_.SmkMat[n]);
 		xsg_.SmkPtr[n].position.set(0,0,10);
-		xsg_.SmkPtr[n].scale.set(10,10,10);
+		xsg_.SmkPtr[n].scale.set(20,20,20);
 		xsg_.GunPtr[n].add(xsg_.SmkPtr[n]);
 		xsg_.SmkPtr[n].visible = false;
 		//.	Sounds .............................................................
@@ -1104,7 +1104,7 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 			xsg_.FrLTim[n] = 0.1;
 			//	Smoke
 			xsg_.SmkPtr[n].visible = true;
-			xsg_.SmkOpa[n] = 0.7;
+			xsg_.SmkOpa[n] = 1.0;
 			//	Compute Sound Delay	
 			let X = xsh_.ObjGrp[n].position.x;
 			let Z = xsh_.ObjGrp[n].position.z; 
