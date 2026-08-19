@@ -816,18 +816,24 @@ let	xsg_ = {
 		ParPos: 0,				// Optional: Common Parent Position (Vector3)
 		ParRot: 0,				// Optional: Common Parent Rotation (Euler)
 		//	Gun Object
-		GunPtr: [],
-		GunPos: [],
-		GunRot: [],
+		GunPtr: [],				// Gun Object Address
+		GunPos: [],				// Gun Relative Position
+		GunRot: [],				// Gun Rotation
 		//	Gunfire Flash
 		FrLPtr: [],				// Gunfire Flash
-		FrLTim: [],				// Time of Flash		
+		FrLTim: [],				// Time Remaining
+		//	Gunfire Smoke
+		SmkMap: 0,				// Material Map
+		SmkMat: [],				// Material
+		SmkPtr: [],				// Sprite Address
+		SmkOpa: [],				// Opacity Remaining
+		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		//	Gunfire Sounds
 		FirDst: 0,				// Reference Distance
 		FirVol: 0,				// Volume
 		FirFlg: [],				// 1 = Start Explosion Sound
 		FirPtr:	[],
-		FirTim: [],
+		FirTim: [],				// Remaining Time
 	}
 
 //= SPRITE SMOKE TRAIL =========//==============================================
