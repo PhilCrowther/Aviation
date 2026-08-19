@@ -1132,7 +1132,7 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 			}
 		}
 		//	Sound Delay
-		if (xsg_.FirTim[n]) [
+		if (xsg_.FirTim[n]) {
 			xsg_.FirTim[n] = xsg_.FirTim[n] - tim_.DLTime;
 			if (xsg_.FirTim[n] < 0) {
 				xsg_.FirTim[n] = 0;
