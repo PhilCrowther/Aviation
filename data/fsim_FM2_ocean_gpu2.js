@@ -821,13 +821,12 @@ let	xsg_ = {
 		GunRot: [],				// Gun Rotation
 		//	Gunfire Flash
 		FrLPtr: [],				// Gunfire Flash
-		FrLTim: [],				// Time of Flash
+		FrLTim: [],				// Time Remaining
 		//	Gunfire Smoke
 		SmkMap: 0,				// Material Map
 		SmkMat: [],				// Material
 		SmkPtr: [],				// Sprite Address
-		SmkOpa: [],				// Opacity
-		SmkTim: [],				// Remaining Time
+		SmkOpa: [],				// Opacity Remaining
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
 		//	Gunfire Sounds
 		FirDst: 0,				// Reference Distance
