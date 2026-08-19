@@ -1073,7 +1073,7 @@ function initXSHGun(xsg_,gen_) {
 		xsg_.FrLPtr[n].visible = false;
 		//.	Smoke ..............................................................
 		//	Explosion Smoke Material (need separate material becuase vary opacity)
-		xsg_.SmkMap = txt_.ObjTxt[1];
+		xsg_.SmkMap = txt_.ObjTxt[2];
 		xsg_.SmkMat[n] = new SpriteNodeMaterial();
 		xsg_.SmkMat[n].colorNode = color(0xffffff);
 		xsg_.SmkMat[n].colorNode = texture(xsg_.SmkMap);
