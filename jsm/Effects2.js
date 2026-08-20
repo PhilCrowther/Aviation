@@ -652,7 +652,7 @@ function initAAAGun(aaf_,air_,gen_) {
 		aaf_.GfSMat[n].depthWrite = false;
 		//	Gunfire Smoke Sprite
 		aaf_.GfSPtr[n] = new Sprite(aaf_.GfSMat[n]);
-		aaf_.GfSPtr[n].position.set(0,0,10);
+		aaf_.GfSPtr[n].position.set(0,2.75,0);
 		aaf_.GfSPtr[n].scale.set(15,15,15);
 		aaf_.GunPtr[n].add(aaf_.GfSPtr[n]);
 		aaf_.GfSPtr[n].visible = false;
