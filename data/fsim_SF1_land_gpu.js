@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260818
+*	FSIM SF1 DATA: 260820
 *
 *********************************************************************************
 
@@ -544,6 +544,12 @@ let aaf_ = {
 		//	Gunfire Flash
 		FrLPtr: [],				// Gunfire Flash
 		FrLTim: [],				// Time of Flash
+		//	Gunfire Smoke
+		GfSMap: 0,				// Material Map
+		GfSMat: [],				// Material
+		GfSPtr: [],				// Sprite Address
+		GfSOpa: [],				// Opacity Remaining
+		GfSOpR:	0.01,			// Opacity Reduction per Frame
 		//	Gunfire Sound
 		FirDst: 0,				// Reference Distance
 		FirVol: 0,				// Volume
@@ -552,7 +558,7 @@ let aaf_ = {
 		FirDTm: [],
 		//.	Explosion ..........................................................
 		ExpGrp: [],				// Explosion Group
-		//	Explosion Circle
+		//	Explosion Flash
 		ExpPtr: [],				// Pointer to Exploding Center
 		ExpSiz: [],				// Expanding Size
 		ExpLif: [],				// Life of Explosion (seconds)	
@@ -566,7 +572,7 @@ let aaf_ = {
 		SmkDMx: [],				// Delay between Smoke events (secs)
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
-		//	Explosion Sounds
+		//	Explosion Sound
 		SndDst: 0,				// Reference Distance
 		SndVol: 0,				// Volume
 		SndFlg: [],				// 1 = Start Explosion Sound
@@ -581,7 +587,6 @@ let smt_ = {
 		ObjNum: 1,
 		SmTFlg: [],
 		// Sprite Material
-		SprTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
 		SprMap: 0,
 		SprMat: [],
 		// Sprites
@@ -591,7 +596,6 @@ let smt_ = {
 		SprSpc: [3],			// Sprite Spacing
 		SpcCnt: [0],			// Spacing Count
 		SprIdx: [],				// Current Sprite
-		SprRot: [],				// Rotation of Each Sprite
 		BegOpa: [1.0],			// Beginning Opacity
 		OpaMul: [0.85],			// Opacity Decrement Multiplier
 		OpaDec: [],				// Opacity Decrement

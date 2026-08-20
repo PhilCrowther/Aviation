@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260819
+*	FSIM FM2 DATA: 260820
 *
 ********************************************************************************
 
@@ -779,7 +779,13 @@ let aaf_ = {
 		//	Gunfire Flash
 		FrLPtr: [],				// Gunfire Flash
 		FrLTim: [],				// Time of Flash
-		//	Gunfire Sounds
+		//	Gunfire Smoke
+		GfSMap: 0,				// Material Map
+		GfSMat: [],				// Material
+		GfSPtr: [],				// Sprite Address
+		GfSOpa: [],				// Opacity Remaining
+		GfSOpR:	0.01,			// Opacity Reduction per Frame
+		//	Gunfire Sound
 		FirDst: 0,				// Reference Distance
 		FirVol: 0,				// Volume
 		FirFlg: [],				// 1 = Start Explosion Sound
@@ -787,7 +793,7 @@ let aaf_ = {
 		FirDTm: [],
 		//.	Explosion ..........................................................
 		ExpGrp: [],				// Explosion Group
-		//	Explosion Circle
+		//	Explosion Flash
 		ExpPtr: [],				// Pointer to Exploding Center
 		ExpSiz: [],				// Expanding Size
 		ExpLif: [],				// Life of Explosion (seconds)	
@@ -801,7 +807,7 @@ let aaf_ = {
 		SmkDMx: [],				// Delay between Smoke events (secs)
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
-		//	Explosion Sounds
+		//	Explosion Sound
 		SndDst: 0,				// Reference Distance
 		SndVol: 0,				// Volume
 		SndFlg: [],				// 1 = Start Explosion Sound
@@ -837,12 +843,12 @@ let	xsg_ = {
 	}
 
 //= SPRITE SMOKE TRAIL =========//==============================================
-//	Init Creates 1 Trail for My Airplane plus 1 Trail for each External Airplane (xac_)
+//	0 = Engine Smoke: SprNum = 150, BegOpa = 0.5;
+//	1 = Damage Smoke Trail: SprNum = 250, BegOpa = 0.75;
 let smt_ = {
 		ObjNum: 0,				// [default = 1]
 		SmTFlg: [],
 		// Sprite Material
-		SprTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
 		SprMap: 0,
 		SprMat: [],
 		// Sprites
