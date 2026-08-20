@@ -92,6 +92,10 @@ let txt_ = {
 		ObjTxt: [],
 	};
 
+let SmkWyte = 0;
+let SmkGray = 1;
+let SmkBlak = 2;
+
 //. Shared Sounds ..............//..............................................
 let snd_ = {
 		ObjNum: 3,
@@ -629,29 +633,47 @@ function initAAAGun(aaf_,air_,gen_) {
 			aaf_.AAAMpS[n][i] = new Vector3();
 			aaf_.AAAMpP[n][i] = new Vector3();
 		}
-		//. Create Graphics ....................................................
-		//	Gun Flash
+		//. Create Gunfire Graphics ............................................
+		//	Gunfire Flash
 		aaf_.FrLPtr[n] = new Line2(FrLGeo,FrLMat);
 		aaf_.FrLPtr[n].rotation.order = "YXZ";
 		aaf_.FrLPtr[n].position.set(0,2.75,0);
 		aaf_.GunPtr[n].add(aaf_.FrLPtr[n]);
 		aaf_.FrLPtr[n].visible = false;
-		//	Explosion Smoke Material (need separate material becuase vary opacity)
-		aaf_.SmkMap = txt_.ObjTxt[2];
+		//	Gunfire Smoke Material
+		//	(need separate material becuase vary opacity)
+		aaf_.GfSMap = txt_.ObjTxt[SmkBlak];
+		aaf_.GfSMat[n] = new SpriteNodeMaterial();
+		aaf_.GfSMat[n].colorNode = color(0xffffff);
+		aaf_.GfSMat[n].colorNode = texture(aaf_.GfSMap);
+		aaf_.GfSOpa[n] = 0;
+		aaf_.GfSMat[n].transparent = true;
+		aaf_.GfSMat[n].opacity = 0; // prevent black square from appearing in front of aircraft [260504]
+		aaf_.GfSMat[n].depthWrite = false;
+		//	Gunfire Smoke Sprite
+		aaf_.GfSPtr[n] = new Sprite(aaf_.GfSMat[n]);
+		aaf_.GfSPtr[n].position.set(0,2.75,0);
+		aaf_.GfSPtr[n].scale.set(15,15,15);
+		aaf_.GunPtr[n].add(aaf_.GfSPtr[n]);
+		aaf_.GfSPtr[n].visible = false;
+		//. Create Explosion Graphics ..........................................
+		//	Explosion Flash
+		aaf_.ExpPtr[n] = makeSphere("crimson");
+		aaf_.ExpGrp[n].add(aaf_.ExpPtr[n]);
+		//	Explosion Smoke Material
+		//	(need separate material becuase vary opacity)
+		aaf_.SmkMap = txt_.ObjTxt[SmkBlak];
 		aaf_.SmkMat[n] = new SpriteNodeMaterial();
 		aaf_.SmkMat[n].colorNode = color(0xffffff);
 		aaf_.SmkMat[n].colorNode = texture(aaf_.SmkMap);
 		aaf_.SmkMat[n].transparent = true;
-		aaf_.SmkMat[n].opacity = 0.0;		// prevent black square from appearing in front of aircraft [260504]
+		aaf_.SmkMat[n].opacity = 0;	// prevent black square from appearing in front of aircraft [260504]
 		aaf_.SmkMat[n].depthWrite = false;
 		//	Explosion Smoke Sprite
 		aaf_.SmkPtr[n] = new Sprite(aaf_.SmkMat[n]);
 		aaf_.SmkPtr[n].scale.set(100,100,100);	
 		aaf_.ExpGrp[n].add(aaf_.SmkPtr[n]);
 		aaf_.SmkPtr[n].visible = false;		// hide it
-		//	Explosion Center
-		aaf_.ExpPtr[n] = makeSphere("crimson");
-		aaf_.ExpGrp[n].add(aaf_.ExpPtr[n]);
 		//.	Create Sounds ......................................................
 		//	Gunfire Sound
 		aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
@@ -734,11 +756,14 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				if (!i) {
 					aaf_.SmkPtr[n].visible = false;
 					aaf_.FirFlg[n] = 1; 	// 1 = Sound Ready
-				// Flash
+				// Start Gun Flash
 				aaf_.FrLPtr[n].rotation.x = -aaf_.AnmLat[n]*DegRad;
 				aaf_.FrLPtr[n].rotation.y = -(aaf_.AnmLon[n]+180)*DegRad;
 				aaf_.FrLPtr[n].visible = true;
 				aaf_.FrLTim[n] = 0.1;
+				// Start Gunsmoke
+				aaf_.GfSPtr[n].visible = true;
+				aaf_.GfSOpa[n] = 1.0;
 				}
 			}
 			// Continue Bullets
@@ -773,10 +798,20 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				aaf_.AAAPtr[n][i].position.y = aaf_.AAAMpP[n][i].y - air_.MapPos.y;
 				aaf_.AAAPtr[n][i].position.z = air_.MapPos.z - aaf_.AAAMpP[n][i].z;
 			}
-			//	Gun Flash
+			//	Gun Flash Delay
 			if (aaf_.FrLPtr[n].visible = true) {
 				aaf_.FrLTim[n] = aaf_.FrLTim[n] - tim_.DLTime;
 				if (aaf_.FrLTim[n] < 0) aaf_.FrLPtr[n].visible = false;
+			}
+			// Smoke Delay
+			if (aaf_.GfSOpa[n]) {
+				aaf_.GfSMat[n].opacity = aaf_.GfSOpa[n];
+				aaf_.GfSOpa[n] = aaf_.GfSOpa[n] - aaf_.GfSOpR;
+				if (aaf_.GfSOpa[n] < 0) {
+					aaf_.GfSOpa[n] = 0;
+					aaf_.GfSMat[n].opacity = 0;
+					aaf_.GfSPtr[n].visible = false;				
+				}
 			}
 		} // end of i (Bulllets)
 		//-	Smoke --------------------------------------------------------------
@@ -1073,7 +1108,7 @@ function initXSHGun(xsg_,gen_) {
 		xsg_.FrLPtr[n].visible = false;
 		//.	Smoke ..............................................................
 		//	Explosion Smoke Material (need separate material becuase vary opacity)
-		xsg_.SmkMap = txt_.ObjTxt[2];
+		xsg_.SmkMap = txt_.ObjTxt[SmkBlak];
 		xsg_.SmkMat[n] = new SpriteNodeMaterial();
 		xsg_.SmkMat[n].colorNode = color(0xffffff);
 		xsg_.SmkMat[n].colorNode = texture(xsg_.SmkMap);
@@ -1120,7 +1155,7 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 				xsg_.FrLPtr[n].visible = false;
 			}
 		}
-		// Smoke Dealy
+		// Smoke Delay
 		if (xsg_.SmkOpa[n]) {
 			xsg_.SmkMat[n].opacity = xsg_.SmkOpa[n];
 			xsg_.SmkOpa[n] = xsg_.SmkOpa[n] - xsg_.SmkOpR;
@@ -1155,18 +1190,13 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 // For next Sprite, Sprite #2 = Sprite #1 Position, Sprite #1 at Object Position
 // For entire line, Sprite #9 = Sprite #8, etc, Sprite #1 = Object Position
 
-//= LOAD =======================//==============================================
-function loadSmkTrl(smt_,gen_) {
-	// Load Common Smoke Material
-	smt_.SprMap = gen_.txtrLd.load(smt_.SprTxt);
-}
-
 //= INIT =======================//==============================================
 //	0 = Engine Smoke: SprNum = 150, BegOpa = 0.5;
 //	1 = Damage Smoke Trail: SprNum = 250, BegOpa = 0.75;
 
 function initSmkTrl(smt_,air_,xac_,gen_) {
 	//- My Airplane - Oil Trail
+	smt_.SprMap = txt_.ObjTxt[SmkBlak];
 	smt_.ObjNum = 1;
 	smt_.SprNum[0] = 150;		// Number of Sprites
 	smt_.SprSpc[0] = 3;			// Sprite Spacing
@@ -1263,7 +1293,7 @@ function moveSmkTrl(smt_,air_,n) {
 
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_) {
-	bom_.SmkMap = txt_.ObjTxt[2];
+	bom_.SmkMap = txt_.ObjTxt[SmkBlak];
 	let RefDst = 25;			// Reference distance for Positional Audio
 	for (let n = 0; n < bom_.ObjNum; n ++) {
 		bom_.ExpGrp[n] = new Group();
@@ -1674,8 +1704,8 @@ export {
 	initXSHWak,moveXSHWak,				// Ship Wake
 	initXSHSmk,							// Ship Smoke
 	initXSHGun,moveXSHGun,				// Ship Guns
-	loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
-	initExpBom,moveExpBom,	// Bombs
+	initSmkTrl,moveSmkTrl,				// Sprite Smoke Trail
+	initExpBom,moveExpBom,				// Bombs
 	initGrdSmk,initGrdFyr,				// Ground Smoke and Fire
 	stopEffSnd,							// Sounds
 };
