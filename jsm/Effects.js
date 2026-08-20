@@ -852,9 +852,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		//. Gunfire ............................................................
 		//	Start Delay
 		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown 		
-			let X = aaf_.GunPtr[n].position.x;
-			let Z = aaf_.GunPtr[n].position.z;
-			aaf_.FirDTm[n] = (Math.sqrt(X*X+Z*Z)/343); // In Seconds;
+			aaf_.FirDTm[n] = aaf_.GunPtr[n].position.length()/343;
 			aaf_.FirFlg[n] = 0;
 		}
 		//	If End of Delay Start Sound
@@ -870,9 +868,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		//.	Exlosion ...........................................................
 		// Start Delay
 		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
-			let X = aaf_.ExpGrp[n].position.x; // SndMsh attached to ExpGrp
-			let Z = aaf_.ExpGrp[n].position.z;
-			let delay = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
+			let delay = aaf_.ExpGrp[n].position.length()/343;
 			if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
 			aaf_.SndDTm[n] = delay;
 //			aaf_.SmkFlg[n] = 0;		// Automatically reeset with each frame
@@ -1141,10 +1137,8 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 			xsg_.SmkPtr[n].visible = true;
 			xsg_.SmkOpa[n] = 1.0;
 			//	Compute Sound Delay	
-			let X = xsh_.ObjGrp[n].position.x;
-			let Z = xsh_.ObjGrp[n].position.z; 
-			xsg_.FirTim[n] = (Math.sqrt(X*X+Z*Z)/343); // In Seconds
-			//	No Flag
+			xsg_.FirTim[n] = xsh_.ObjGrp[1].position.length()/343;
+			//	Reset Flag
 			xsg_.FirFlg[n] = 0;
 		}		
 		//	Gunfire Flash Delay
