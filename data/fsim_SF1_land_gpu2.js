@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260819
+*	FSIM SF1 DATA: 260820
 *
 *********************************************************************************
 
@@ -572,7 +572,7 @@ let aaf_ = {
 		SmkDMx: [],				// Delay between Smoke events (secs)
 		SmkDTm: [],				// Delay Counter
 		SmkOpR:	0.005,			// Opacity Reduction per Frame
-		//	Explosion Sounds
+		//	Explosion Sound
 		SndDst: 0,				// Reference Distance
 		SndVol: 0,				// Volume
 		SndFlg: [],				// 1 = Start Explosion Sound
@@ -587,7 +587,6 @@ let smt_ = {
 		ObjNum: 1,
 		SmTFlg: [],
 		// Sprite Material
-		SprTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
 		SprMap: 0,
 		SprMat: [],
 		// Sprites
@@ -597,7 +596,6 @@ let smt_ = {
 		SprSpc: [3],			// Sprite Spacing
 		SpcCnt: [0],			// Spacing Count
 		SprIdx: [],				// Current Sprite
-		SprRot: [],				// Rotation of Each Sprite
 		BegOpa: [1.0],			// Beginning Opacity
 		OpaMul: [0.85],			// Opacity Decrement Multiplier
 		OpaDec: [],				// Opacity Decrement
