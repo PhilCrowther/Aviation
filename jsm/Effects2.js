@@ -646,8 +646,9 @@ function initAAAGun(aaf_,air_,gen_) {
 		aaf_.GfSMat[n] = new SpriteNodeMaterial();
 		aaf_.GfSMat[n].colorNode = color(0xffffff);
 		aaf_.GfSMat[n].colorNode = texture(aaf_.GfSMap);
+		aaf_.GfSOpa[n] = 0;
 		aaf_.GfSMat[n].transparent = true;
-		aaf_.GfSMat[n].opacity = 0.0; // prevent black square from appearing in front of aircraft [260504]
+		aaf_.GfSMat[n].opacity = 0; // prevent black square from appearing in front of aircraft [260504]
 		aaf_.GfSMat[n].depthWrite = false;
 		//	Gunfire Smoke Sprite
 		aaf_.GfSPtr[n] = new Sprite(aaf_.GfSMat[n]);
@@ -666,15 +667,13 @@ function initAAAGun(aaf_,air_,gen_) {
 		aaf_.SmkMat[n].colorNode = color(0xffffff);
 		aaf_.SmkMat[n].colorNode = texture(aaf_.SmkMap);
 		aaf_.SmkMat[n].transparent = true;
-		aaf_.SmkOpa[n] = 0;
-		aaf_.SmkMat[n].opacity = 0; // prevent black square from appearing in front of aircraft [260504]
+		aaf_.SmkMat[n].opacity = 0;	// prevent black square from appearing in front of aircraft [260504]
 		aaf_.SmkMat[n].depthWrite = false;
 		//	Explosion Smoke Sprite
 		aaf_.SmkPtr[n] = new Sprite(aaf_.SmkMat[n]);
-		aaf_.SmkPtr[n].position.set(0,0,10);
-		aaf_.SmkPtr[n].scale.set(15,15,15);
-		aaf_.GunPtr[n].add(aaf_.SmkPtr[n]);
-		aaf_.SmkPtr[n].visible = false;
+		aaf_.SmkPtr[n].scale.set(100,100,100);	
+		aaf_.ExpGrp[n].add(aaf_.SmkPtr[n]);
+		aaf_.SmkPtr[n].visible = false;		// hide it
 		//.	Create Sounds ......................................................
 		//	Gunfire Sound
 		aaf_.FirPtr[n] = new PositionalAudio(gen_.listnr);
