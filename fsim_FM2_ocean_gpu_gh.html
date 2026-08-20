@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Aug 2026
+Version dated 20 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -111,7 +111,7 @@ import {loadFXfile,				// Load Common FX Textures and Sounds
 		initXSHWak,moveXSHWak,	// Ship Wake
 		initXSHSmk,				// Ship Smoke (destroyer only)
 		initXSHGun,moveXSHGun,	// Ship Guns
-		loadSmkTrl,initSmkTrl,moveSmkTrl, // Sprite Smoke Trail
+		initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		initExpBom,moveExpBom,	// Bomb
 		stopEffSnd,				// Effects Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
@@ -987,7 +987,6 @@ function loadObject() {
 	loadMyPeep(myp_,gen_);		// Load Static Crew
 	loadMyCrew(myc_,gen_);		// Load Animated Crew
 	loadAAAGun(aaf_,gen_);		// Load Fixed AAA Gun Objects
-	loadSmkTrl(smt_,gen_);		// Load Smoke Trails
 }
 
 //== INIT OBJECTS ==============================================================

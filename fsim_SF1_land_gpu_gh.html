@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Aug 2026
+Version dated 20 Aug 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -104,7 +104,7 @@ import {loadFXfile,				// Load Common FX Textures and Sounds
 		loadAAAGun,initAAAGun,moveAAAGun,	// Guns - AA
 		initGrdSmk,initGrdFyr,	// Ground Smoke and Fire
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
-		loadSmkTrl,initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
+		initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		initExpBom,moveExpBom,	// Bomb
 		stopEffSnd,				// Effects Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
@@ -690,7 +690,6 @@ function loadObject() {
 	loadStatic();
 	loadMoving();
 	loadAAAGun(aaf_,gen_);
-	loadSmkTrl(smt_,gen_);
 }
 
 //= INIT OBJECTS ===============//==============================================
