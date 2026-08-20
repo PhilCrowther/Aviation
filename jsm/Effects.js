@@ -132,7 +132,7 @@ let xaf_ = {
 
 /*******************************************************************************
 *
-*	LOAD EFFECTS FIRES
+*	LOAD EFFECTS FILES
 *
 *******************************************************************************/
 
@@ -446,7 +446,7 @@ function initEndSeq() {
 
 //- Init Smoke and Fire --------//----------------------------------------------
 function initXACFyr() {
-	xaf_.ObjTxt = txt_.ObjTxt[2]; // Assign Texture
+	xaf_.ObjTxt = txt_.ObjTxt[SmkBlak]; // Assign Texture
 	initAirFyr(xaf_);			// Create Emitter
 	xaf_.SmkMsh[0].visible = false; // Turn Off Smoke
 	xaf_.FyrMsh[0].visible = false; // Turn Off Fire
@@ -558,7 +558,7 @@ function initAAAGun(aaf_,air_,gen_) {
 	let FrLGeo = new LineGeometry();
 	FrLGeo.setPositions([0,0,5, 0,0,15]);
 	let FrLMat = new Line2NodeMaterial({color:"crimson",linewidth:2});
-	//- Lines
+	//. Lines ..................................................................
 	let scale = 2.5;			// Smoke Scale
 	let line = 0;
 	//- Front Line
@@ -605,7 +605,7 @@ function initAAAGun(aaf_,air_,gen_) {
 			MapPos.add(aaf_.ParPos);
 			MapRot.add(aaf_.ParRot);
 		}
-		// Gun Object
+		//. Gun Object .........................................................
 		aaf_.GunPtr[n].position.x = MapPos.x-air_.MapPos.x;
 		aaf_.GunPtr[n].position.y = (MapPos.y+aaf_.GunAdj)-gen_.AltDif;
 		aaf_.GunPtr[n].position.z = air_.MapPos.z-MapPos.z;
@@ -991,7 +991,7 @@ function initAirFyr(xaf_) {
 //= INIT SHIP WAKE =============//==============================================
 function initXSHWak(wak_) {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.ObjTxt[n] = txt_.ObjTxt[0];
+		wak_.ObjTxt[n] = txt_.ObjTxt[SmkWyte];
 		//- Timer
 		let speed = uniform(.001); // r170 Lower = slower
 		let scaledTime = time.add(125).mul(speed); // r170
@@ -1047,7 +1047,7 @@ function moveXSHWak() {
 //= INIT SHIP SMOKE ============//==============================================
 function initXSHSmk(xss_) {
 	for (let n = 0; n < xss_.ObjNum; n ++) {
-		xss_.ObjTxt[n] = txt_.ObjTxt[2];
+		xss_.ObjTxt[n] = txt_.ObjTxt[SmkBlak];
 		//- Timer
 		let speed = uniform(.001); // r170 Lower = slower
 		let scaledTime = time.add(5).mul(speed); // r170
@@ -1548,7 +1548,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 //= INITIALIZE GROUND SMOKE ====//==============================================
 
 function initGrdSmk(grs_) {
-	grs_.ObjTxt = txt_.ObjTxt[2];
+	grs_.ObjTxt = txt_.ObjTxt[SmkBlak];
 	for (let n = 0; n < grs_.ObjNum; n ++) {
 		//- Timer
 		let speed = uniform(.001); // r170
