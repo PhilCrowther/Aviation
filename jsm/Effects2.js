@@ -804,13 +804,13 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				if (aaf_.FrLTim[n] < 0) aaf_.FrLPtr[n].visible = false;
 			}
 			// Smoke Delay
-			if (aaf_.SmkOpa[n]) {
-				aaf_.SmkMat[n].opacity = aaf_.SmkOpa[n];
-				aaf_.SmkOpa[n] = aaf_.SmkOpa[n] - aaf_.SmkOpR;
-				if (aaf_.SmkOpa[n] < 0) {
-					aaf_.SmkOpa[n] = 0;
-					aaf_.SmkMat[n].opacity = 0;
-					aaf_.SmkPtr[n].visible = false;				
+			if (aaf_.GfSkOpa[n]) {
+				aaf_.GfSMat[n].opacity = aaf_.GfSOpa[n];
+				aaf_.GfSOpa[n] = aaf_.GfSOpa[n] - aaf_.GfSOpR;
+				if (aaf_.GfSOpa[n] < 0) {
+					aaf_.GfSOpa[n] = 0;
+					aaf_.GfSMat[n].opacity = 0;
+					aaf_.GfSPtr[n].visible = false;				
 				}
 			}
 		} // end of i (Bulllets)
