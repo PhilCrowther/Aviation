@@ -1132,20 +1132,20 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 		if (xsg_.FirFlg[n]) { // Compute Delay and Start Countdown 
 			// Gun Flash	
 			xsg_.FrLPtr[n].visible = true;
-			xsg_.FrLTim[n] = 0.1;
+			xsg_.FrLDTm[n] = 0.1;
 			//	Smoke
 			xsg_.SmkPtr[n].visible = true;
 			xsg_.SmkOpa[n] = 1.0;
 			//	Compute Sound Delay	
-			xsg_.FirTim[n] = xsh_.ObjGrp[1].position.length()/343;
+			xsg_.FirDTm[n] = xsh_.ObjGrp[1].position.length()/343;
 			//	Reset Flag
 			xsg_.FirFlg[n] = 0;
 		}		
 		//	Gunfire Flash Delay
-		if (xsg_.FrLTim[n]) {
-			xsg_.FrLTim[n] = xsg_.FrLTim[n] - tim_.DLTime;
-			if (xsg_.FrLTim[n] < 0) {
-				xsg_.FrLTim[n] = 0;
+		if (xsg_.FrLDTm[n]) {
+			xsg_.FrLDTm[n] = xsg_.FrLDTm[n] - tim_.DLTime;
+			if (xsg_.FrLDTm[n] < 0) {
+				xsg_.FrLDTm[n] = 0;
 				xsg_.FrLPtr[n].visible = false;
 			}
 		}
@@ -1160,10 +1160,10 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 			}
 		}
 		//	Sound Delay
-		if (xsg_.FirTim[n]) {
-			xsg_.FirTim[n] = xsg_.FirTim[n] - tim_.DLTime;
-			if (xsg_.FirTim[n] < 0) {
-				xsg_.FirTim[n] = 0;
+		if (xsg_.FirDTm[n]) {
+			xsg_.FirDTm[n] = xsg_.FirDTm[n] - tim_.DLTime;
+			if (xsg_.FirDTm[n] < 0) {
+				xsg_.FirDTm[n] = 0;
 				if (gen_.SndFlg) {
 					if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();
 					xsg_.FirPtr[n].setVolume(xsg_.FirVol);
