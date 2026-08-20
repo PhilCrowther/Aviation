@@ -762,8 +762,8 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				aaf_.FrLPtr[n].visible = true;
 				aaf_.FrLTim[n] = 0.1;
 				// Start Gunsmoke
-				aaf_.SmkPtr[n].visible = true;
-				aaf_.SmkOpa[n] = 1.0;
+				aaf_.GfSPtr[n].visible = true;
+				aaf_.GfSOpa[n] = 1.0;
 				}
 			}
 			// Continue Bullets
