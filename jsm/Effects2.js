@@ -804,7 +804,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				if (aaf_.FrLTim[n] < 0) aaf_.FrLPtr[n].visible = false;
 			}
 			// Smoke Delay
-			if (aaf_.GfSkOpa[n]) {
+			if (aaf_.GfSOpa[n]) {
 				aaf_.GfSMat[n].opacity = aaf_.GfSOpa[n];
 				aaf_.GfSOpa[n] = aaf_.GfSOpa[n] - aaf_.GfSOpR;
 				if (aaf_.GfSOpa[n] < 0) {
