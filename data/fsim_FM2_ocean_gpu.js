@@ -827,7 +827,7 @@ let	xsg_ = {
 		GunRot: [],				// Gun Rotation
 		//	Gunfire Flash
 		FrLPtr: [],				// Gunfire Flash
-		FrLTim: [],				// Time Remaining
+		FrLDTm: [],				// Time Remaining
 		//	Gunfire Smoke
 		SmkMap: 0,				// Material Map
 		SmkMat: [],				// Material
@@ -839,7 +839,7 @@ let	xsg_ = {
 		FirVol: 0,				// Volume
 		FirFlg: [],				// 1 = Start Explosion Sound
 		FirPtr:	[],
-		FirTim: [],				// Remaining Time
+		FirDTm: [],				// Remaining Time
 	}
 
 //= SPRITE SMOKE TRAIL =========//==============================================
