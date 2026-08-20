@@ -1196,7 +1196,7 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 
 function initSmkTrl(smt_,air_,xac_,gen_) {
 	//- My Airplane - Oil Trail
-	smt_.SmkMap = txt_.ObjTxt[SmkBlak];
+	smt_.SprMap = txt_.ObjTxt[SmkBlak];
 	smt_.ObjNum = 1;
 	smt_.SprNum[0] = 150;		// Number of Sprites
 	smt_.SprSpc[0] = 3;			// Sprite Spacing
