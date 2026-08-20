@@ -558,7 +558,7 @@ let aaf_ = {
 		FirDTm: [],
 		//.	Explosion ..........................................................
 		ExpGrp: [],				// Explosion Group
-		//	Explosion Circle
+		//	Explosion Flash
 		ExpPtr: [],				// Pointer to Exploding Center
 		ExpSiz: [],				// Expanding Size
 		ExpLif: [],				// Life of Explosion (seconds)	
