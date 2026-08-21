@@ -504,7 +504,9 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	bms_.SmkCol[1].z = "black";	// No Fire
 	//	Life
 	bms_.SubSiz[0] = 0.2;		// No Fire, Shorter Life
-	bms_.SubSiz[1] = 0.2;		// No Fire, Shorter Life	
+	bms_.SubSiz[1] = 0.2;		// No Fire, Shorter Life
+	//	Size
+	bmx_.MaxSiz = 15;
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -698,7 +700,7 @@ function initObject() {
 	initStatic();
 	initMoving();
 	initAAAGun(aaf_,air_,gen_);
-	initExpBom(bom_,bmx_,bmt_,bms_);
+	initExpBom(bom_,bmx_,bmt_,bms_,air_);
 	initSmkTrl(smt_,air_,xac_,gen_);
 }
 
@@ -710,6 +712,7 @@ function initBomExp(n,pos,rot) {
 	bmt_.FadFlg[n] = 1;			//
 	bom_.SndFlg[n] = 1;			// 1 = Sound Available
 	bom_.SndDTm[n] = 0;
+	bms_.GroFlg[n] = 1;
 	scene.add(bom_.ExpGrp[n]);
 	bom_.ExpGrp[n].visible = true;
 	bom_.MapPos[n].copy(pos); // Used to compute relative Position
@@ -724,23 +727,13 @@ function moveObject() {
 	moveAAAGun(aaf_,air_,gen_,tim_);
 	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
-		if (bom_.ExpFlg[n]) moveBomExp(n);
+		if (bom_.ExpFlg[n]) moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n);
 	}
 	//	Sprite Smoke Trails
 	if (!air_.GrdFlg) smt_.SmTFlg[0] = 1; // Start Own Smoke
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,air_,n);
 	}
-}
-
-//- Move Bomb ------------------//----------------------------------------------
-function moveBomExp(n) {
-	moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n);
-	// Compute New Relative Position
-	let X = bom_.MapPos[n].x-air_.MapPos.x;
-	let Y = bom_.MapPos[n].y-gen_.AltDif;
-	let Z = air_.MapPos.z-bom_.MapPos[n].z;
-	bom_.ExpGrp[n].position.set(X,Y,Z);
 }
 
 //= STATIC OBJECTS =============//=============================================

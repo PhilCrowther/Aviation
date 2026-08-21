@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 Aug 2026
+Version dated 21 Aug 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -114,7 +114,7 @@ import {loadFXfile,				// Load Common FX Textures and Sounds
 		initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		initExpBom,moveExpBom,	// Bomb
 		stopEffSnd,				// Effects Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects2b.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
 		loadGeoMat,GrdMap,
@@ -375,6 +375,9 @@ let loadingScreen = {
 		box: 0
 	};
 let boxrot = 0;
+
+//= TIMELINE ===================//=============================================
+let FrmCnt = 0;
 
 //= MODULES - General ==========//==============================================
 	gen_.scene  = scene;
@@ -694,10 +697,14 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		bms_.SmkCol[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
 		bms_.SubSiz[n] = 0.01;	// Longer Life w/Fire
 	}
-	// Explosion Colors
+	//	Explosion Colors
 	bms_.SmkCol[0].z = "black";	// No Fire
-	// Life
+	bms_.SmkCol[1].z = "black";	// No Fire
+	//	Life
 	bms_.SubSiz[0] = 0.05;		// No Fire, Shorter Life
+	bms_.SubSiz[1] = 0.2;		// No Fire, Shorter Life
+	//	Size
+	bmx_.MaxSiz = 15;	
 
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
@@ -866,7 +873,10 @@ function rendAll() {
 		// Move Grids
 		waves.update();			// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);
-		grids.update();			// Move Grids	
+		grids.update();			// Move Grids
+		// TimeLine
+		FrmCnt++;				// Frame Counter
+		moveEvents();			// Get Events
 		// Sounds
 		moveSounds();
 		// Timed Radio Sequence
@@ -882,13 +892,25 @@ function rendAll() {
 	renderer.render(scene,camera);
 }
 
+//= Timeline ===================//==============================================
+// For Times Events
+function moveEvents() {
+	if (FrmCnt == 40*60) initBomExp(0,new THREE.Vector3(48,10,5235),0);	// 40 secs
+	if (FrmCnt == 50*60) initBomExp(1,new THREE.Vector3(48,10,5435),120);	// 50 secs
+	if (FrmCnt == 60*60) {												// 60 secs
+		initBomExp(2,new THREE.Vector3(48,10,5635),240);
+		fxd_.ObjAdr[0].visible = false;	// undamaged model invisible
+		fxd_.ObjAdr[1].visible = true;	// damaged model visible
+	}
+}
+
 /*******************************************************************************
 *
 *	3. GRID
 *
 *******************************************************************************/
 
-//= HARDENED SURFACES ==========================================================
+//= HARDENED SURFACES ==========//==============================================
 // The hardened surfaces are the Home Airfield and the CVE Deck (moving)
 // Where CVE not facing north, can we rotate ref points and airplane to north?
 
@@ -995,7 +1017,7 @@ function initObject() {
 	initStatic();
 	initMoving();
 	initAAAGun(aaf_,air_,gen_);
-	initExpBom(bom_,bmx_,bmt_,bms_);
+	initExpBom(bom_,bmx_,bmt_,bms_,air_);
 	initSmkTrl(smt_,air_,xac_,gen_);
 }
 
@@ -1007,6 +1029,7 @@ function initBomExp(n,pos,rot) {
 	bmt_.FadFlg[n] = 1;			//
 	bom_.SndFlg[n] = 1;			// 1 = Sound Available
 	bom_.SndDTm[n] = 0;
+	bms_.GroFlg[n] = 1;
 	scene.add(bom_.ExpGrp[n]);
 	bom_.ExpGrp[n].visible = true;
 	bom_.MapPos[n].copy(pos); // Used to compute relative Position
@@ -1024,7 +1047,7 @@ function moveObject() {
 	moveAAAGun(aaf_,air_,gen_,tim_);
 	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
-		if (bom_.ExpFlg[n]) moveBomExp(n);
+		if (bom_.ExpFlg[n]) moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n);
 	}
 	//	Sprite Smoke Trails
 	smt_.SmTFlg[1] = 1;			// FM2 Smoke Test
@@ -1032,16 +1055,6 @@ function moveObject() {
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,air_,n);
 	}
-}
-
-//- Move Bomb ------------------//----------------------------------------------
-function moveBomExp(n) {
-	moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n);
-	// Compute New Relative Position
-	let X = bom_.MapPos[n].x-air_.MapPos.x;
-	let Y = bom_.MapPos[n].y-gen_.AltDif;
-	let Z = air_.MapPos.z-bom_.MapPos[n].z;
-	bom_.ExpGrp[n].position.set(X,Y,Z);
 }
 
 //= STATIC OBJECTS =============//=============================================
