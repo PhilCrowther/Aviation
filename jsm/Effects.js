@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Aug 2026
+Version dated 21 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1286,7 +1286,7 @@ function moveSmkTrl(smt_,air_,n) {
 *******************************************************************************/
 
 //= INIT BOMB ==================//==============================================
-function initExpBom(bom_,bmx_,bmt_,bms_) {
+function initExpBom(bom_,bmx_,bmt_,bms_,air_) {
 	bom_.SmkMap = txt_.ObjTxt[SmkBlak];
 	let RefDst = 25;			// Reference distance for Positional Audio
 	for (let n = 0; n < bom_.ObjNum; n ++) {
@@ -1306,11 +1306,16 @@ function initExpBom(bom_,bmx_,bmt_,bms_) {
 		initBomSmT(bmt_,bom_,n);
 		initBomSmk(bms_,bom_,n);
 		bom_.ExpGrp[n].visible = false;
+		// Compute New Relative Position
+		let X = bom_.MapPos[n].x-air_.MapPos.x;
+		let Y = bom_.MapPos[n].y-gen_.AltDif;
+		let Z = air_.MapPos.z-bom_.MapPos[n].z;
+		bom_.ExpGrp[n].position.set(X,Y,Z);
 	}
 }
 
 //= MOVE BOMB ==================//==============================================
-function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
+function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 	// Start Sound
 	if (gen_.SndFlg && bom_.SndFlg[n]) {
 		if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();
@@ -1321,6 +1326,11 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,gen_,tim_,n) {
 	moveBomExp(bmx_,n);
 	moveBomSmT(bmt_,tim_,n);
 	moveBomSmk(bms_,bom_,gen_,n);
+	// Compute New Relative Position
+	let X = bom_.MapPos[n].x-air_.MapPos.x;
+	let Y = bom_.MapPos[n].y-gen_.AltDif;
+	let Z = air_.MapPos.z-bom_.MapPos[n].z;
+	bom_.ExpGrp[n].position.set(X,Y,Z);
 }
 
 /*******************************************************************************
@@ -1350,7 +1360,7 @@ function moveBomExp(bmx_,n) {
 		bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
 		bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa[n];
 		// Adjust Opacity and Size
-		bmx_.ExpSiz[n] = bmx_.ExpSiz[n] + 0.1; // Expand
+		bmx_.ExpSiz[n] = bmx_.ExpSiz[n] + 0.5; // Expand
 		bmx_.ExpOpa[n] = bmx_.ExpOpa[n] - 0.01; // Fade Away
 		// If Size > MaxSiz, Turn Off and Reset
 		if (bmx_.ExpSiz[n] > bmx_.MaxSiz) {
@@ -1467,7 +1477,7 @@ function moveBomSmT(bmt_,tim_,n) {
 
 function initBomSmk(bms_,bom_,n) {
 	//	Init Values
-	bms_.RemSiz[n] = bms_.MaxSiz;	
+	bms_.RemSiz[n] = 0.001;
 	//- Commom Variables -------------------------------------------------------
 	//	Speed
 	let speed = uniform(.2); // Used by scaledTime
@@ -1513,7 +1523,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 
 	// Expand Quickly
 	if (bms_.GroFlg[n]) {
-		bms_.RemSiz[n] = bms_.RemSiz[n] + 0.175; // (default = 0.175)
+		bms_.RemSiz[n] = bms_.RemSiz[n] + 0.2; // (default = 0.175)
 		if (bms_.RemSiz[n] > bms_.MaxSiz) {
 			bms_.RemSiz[n] = bms_.MaxSiz;
 			bms_.GroFlg[n] = 0;
