@@ -1349,9 +1349,9 @@ function moveBomExp(bmx_,n) {
 		// Display New Size and Opacity
 		bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
 		bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa[n];
-		// Adjust Side and Opacity
-		bmx_.ExpSiz[n] = bmx_.ExpSiz[n] + 1/Ft2Mtr; // Expand
+		// Adjust Opacity and Size
 		bmx_.ExpOpa[n] = bmx_.ExpOpa[n] - 0.01; // Fade Away
+		if (bmx_.ExpFlg[n]) bmx_.ExpSiz[n] = bmx_.ExpSiz[n] + 1/Ft2Mtr; // Expand
 		// If Size > MaxSiz, Turn Off and Reset
 		if (bmx_.ExpSiz[n] > bmx_.MaxSiz) {
 			bmx_.ExpFlg[n] = 0;
