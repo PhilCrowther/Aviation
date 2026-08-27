@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 Aug 2026
+Version dated 27 Aug 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -175,6 +175,10 @@ let LagAtP = new THREE.Vector2(0.967,0.099);	// CfL - Autopilot
 let LagBnk = new THREE.Vector3(1-1/30,1/15,0);	// Bank
 //- Key Vaulues (XZ = Autopilot Pitch/Bank; Y = Yaw Mouse Button or Key) .......
 let KeyVal = new THREE.Vector3(1,.25,0.25);	// Key Values (Yaw = turn rate in 15 deg bank)
+//-	Constants
+let Rad090 = 90*DegRad;
+let Rad180 = 180*DegRad;
+let Rad270 = 270*DegRad;
 
 //= SUN VALUES =================//==============================================
 //- Source (Default)
@@ -317,16 +321,23 @@ let mntSiz = 3.75*MtrMil
 
 //- Static Objects -------------//----------------------------------------------
 //	Adjustments
-	fxd_.ObjNum = 2;
-	fxd_.ObjSrc = [
-			"https://PhilCrowther.github.io/Aviation/scenery/models/hangar1.glb",
-			"https://PhilCrowther.github.io/Aviation/scenery/models/hangar2.glb"
-		];
+	fxd_.ObjNum = 3;
+	//	Hangar
+	fxd_.ObjSrc[0] = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar1.glb";
+	fxd_.MapPos[0] = new THREE.Vector3(1200,0.3048,5000);	// relative to mountain
+	fxd_.ObjRot[0] = new THREE.Euler();	// Rotation
+	//	Hangar - Damaged
+	fxd_.ObjSrc[1] = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar1.glb";
+	fxd_.MapPos[1] = new THREE.Vector3(1200,0.3048,5000);	// relative to mountain
+	fxd_.ObjRot[1] = new THREE.Euler();	// Rotation
+	//	Zeppelin
+	fxd_.ObjSrc[2] = "https://PhilCrowther.github.io/Aviation/models/vehicles/zeppelin.glb"
+	fxd_.MapPos[2] = new THREE.Vector3(-10*304.8,5*304.8,2*304.8);	// relative to mountain
+	fxd_.ObjRot[2] = new THREE.Euler();	// Rotation
+	//	General
 	for (let n = 0; n < fxd_.ObjNum; n ++) {
 		fxd_.ObjSiz[n] = 1;		// Scale
 		fxd_.RndOrd[n] = 0;		// renderOrder
-		fxd_.ObjRot[n] = new THREE.Euler(); // Rotation
-		fxd_.MapPos[n] = new THREE.Vector3(1200,0.3048,5000); // Relative Position
 		fxd_.ObjRef[n] = mnt_.ObjGrp[0];
 		fxd_.VrtAdj[n] = -mnt_.VrtAdj[0];
 	}
@@ -384,6 +395,18 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb
 //- BFM
 	bfm_.PosCut = 15;
 	BnkMax = 60;
+//-	Shadow Texture
+let	shd_ = 	{
+		ShdNum: 2,				// Number of Shadow Textures
+		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/shadow_l21.png",
+				 "https://PhilCrowther.github.io/Aviation/textures/fx/shadow_sf1.png"],
+		ObjTxt: [],				// Loaded Texture
+		TxtRef: [0,1,1,1],		// Texture Reference
+		ObjMat: [],
+		ObjPtr: [],				// Mesh Address
+		ObjSiz: [2,1,1,1], // Object Size
+		SunOff: new THREE.Vector2(), // Lateral offset (meters) per altitude (meters)
+	}
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 //- Adjustments
@@ -628,7 +651,7 @@ function rendAll() {
 	// This block runs while resources are loading.
 	if(RESOURCES_LOADED == false){
 		boxrot = Mod360(boxrot - 3);
-		loadingScreen.box.rotation.set(Math.PI,0,boxrot * DegRad);
+		loadingScreen.box.rotation.set(Math.PI,0,boxrot*DegRad);
 		renderer.render(loadingScreen.scene,loadingScreen.camera);
 		return;					// Stop the function here.
 	}
@@ -692,6 +715,7 @@ function loadObject() {
 	loadStatic();
 	loadMoving();
 	loadAAAGun(aaf_,gen_);
+	loadXACShd();
 }
 
 //= INIT OBJECTS ===============//==============================================
@@ -702,6 +726,7 @@ function initObject() {
 	initAAAGun(aaf_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_,air_);
 	initSmkTrl(smt_,air_,xac_,gen_);
+	initXACShd();
 }
 
 //- Init Bomb Explostion -------//----------------------------------------------
@@ -734,6 +759,8 @@ function moveObject() {
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,air_,n);
 	}
+	//	XAC Shadows
+	moveXACShd();
 }
 
 //= STATIC OBJECTS =============//=============================================
@@ -766,6 +793,56 @@ function initMoving() {
 
 function moveMoving() {
 	moveMovPln();				// Airplanes
+}
+
+//= SHADOWS ====================================================================
+
+function loadXACShd() {
+	// Load Textures and Create Materials
+	for (let n = 0; n < shd_.ShdNum; n++) {	
+		gen_.txtrLd.load(shd_.ObjSrc[n], function (map) {
+			shd_.ObjMat[n] = new THREE.MeshBasicNodeMaterial();
+			shd_.ObjMat[n].colorNode = color(0x000000);
+			shd_.ObjMat[n].colorNode = texture(map);
+			shd_.ObjMat[n].transparent = true;
+			shd_.ObjMat[n].depthWrite = false;
+		});
+	}
+}
+
+function initXACShd() {
+	let ShdGeo = new THREE.PlaneGeometry(10,10);	
+	for (let n = 0; n < xac_.ObjNum; n++) {
+		shd_.ObjPtr[n] = new THREE.Mesh(ShdGeo,shd_.ObjMat[shd_.TxtRef[n]]);
+		shd_.ObjPtr[n].rotation.order = "YXZ";
+		shd_.ObjPtr[n].scale.setScalar(shd_.ObjSiz[n]);
+		shd_.ObjPtr[n].rotation.x = Rad270;
+		scene.add(shd_.ObjPtr[n]);
+		//	Relative Position
+		let X = xac_.MapPos[n].x-air_.MapPos.x;
+		let Y = 1-air_.MapPos.y;
+		let Z = air_.MapPos.z-xac_.MapPos[n].z;
+		shd_.ObjPtr[n].position.set(X,Y,Z);	
+	}
+	// Sun Offset per meter
+	shd_.SunOff.x = Math.sin(sky_.SunLat*DegRad)*Math.sin(Mod360(sky_.SunLon+180)*DegRad);	// cos(023)*sin(312) = 0.9205* 0.7431 =  0.6874
+	shd_.SunOff.y = Math.sin(sky_.SunLat*DegRad)*Math.cos(Mod360(sky_.SunLon+180)*DegRad);	// cps(023)*cos(312) = 0.9205*-0.6691 = -0.6189
+}
+
+function moveXACShd() {
+	let MapX,MapZ;
+	let X,Y,Z;
+	for (let n = 0; n < xac_.ObjNum; n++) {
+//		shd_.ObjPtr[n].rotation.y = Mod360(xac_.AirRot[n].y+180)*DegRad;
+		shd_.ObjPtr[n].rotation.y = xac_.AirObj[n].rotation.y;
+		//	Map Position
+		MapX = xac_.MapPos[n].x + xac_.MapPos[n].y * shd_.SunOff.x;
+		MapZ = xac_.MapPos[n].z + xac_.MapPos[n].y * shd_.SunOff.y;
+		//	Relative Position
+		X = MapX - air_.MapPos.x;
+		Y = 1-air_.MapPos.y;
+		Z = air_.MapPos.z-MapZ;
+		shd_.ObjPtr[n].position.set(X,Y,Z);	}
 }
 
 //- Animated Attachments -------//----------------------------------------------
@@ -891,14 +968,14 @@ function makeXACSpn(n,xac_) {
 //	For selected airplanes only
 
 function BFM(n) {
-	let BnkDif,BnkRot;
 	// Distances	
 	bfm_.MapDif[n].x = xac_.AirObj[n].position.x;
 	bfm_.MapDif[n].y = xac_.AirObj[n].position.y;
 	bfm_.MapDif[n].z = xac_.AirObj[n].position.z;
-	bfm_.VecHrz[n] = Math.sqrt(bfm_.MapDif[n].x**2+bfm_.MapDif[n].z**2); // Horizontal Vector
-	if (air_.MapPos.y*Mtr2Ft > 800) {
-		bfm_.BFMflg[n] = 1; // Start Engagement
+//	if (bfm_.RotOff[n].y > 90 && bfm_.RotOff[n].y < 270) bfm_.MapDif[n].x = bfm_.MapDif[n].x + 10; // ### No Head-On (Not Work)
+	bfm_.VecHrz[n] = Math.sqrt(bfm_.MapDif[n].x**2+bfm_.MapDif[n].z**2); // Horizontal Distance
+	if (air_.MapPos.y*Mtr2Ft > 800) {	// If Height > 800 feet
+		bfm_.BFMflg[n] = 1;		// Start Engagement
 		for (let n = 0; n < aaf_.ObjNum; n ++) {	// Stop AAA
 			aaf_.AAAFlg[n] = 0;
 			xac_.SpdMPS[n] = 50;
@@ -906,11 +983,12 @@ function BFM(n) {
 	}
 	// Longitude and Latitude
 	bfm_.PosAbs[n].y = Mod360(-Math.atan2(bfm_.MapDif[n].x,bfm_.MapDif[n].z)*RadDeg); // Map Direction to My Plane from His
-	bfm_.PosOff[n].y = PoM360( Mod360(bfm_.PosAbs[n].y - xac_.AirRot[n].y)); // Relative Direction to My Plane from His
+	bfm_.PosOff[n].y = PoM360(Mod360(bfm_.PosAbs[n].y - xac_.AirRot[n].y)); // Relative Direction to My Plane from His
 	bfm_.PosAbs[n].x = Mod360(Math.atan2(bfm_.MapDif[n].y,bfm_.VecHrz[n])*RadDeg); // Latitude
-	bfm_.PosOff[n].x = PoM360( Mod360(bfm_.PosAbs[n].x - xac_.AirRot[n].x)); // Relative Latitude
+	bfm_.PosOff[n].x = PoM360(Mod360(bfm_.PosAbs[n].x - xac_.AirRot[n].x)); // Relative Latitude
 	bfm_.RotOff[n].y = PoM360(xac_.AirRot[n].y - air_.AirRot.y + 180);
-	BnkRot = PoM360(xac_.AirRot[n].z);
+	let BnkRot = PoM360(xac_.AirRot[n].z);
+	//	Only 3 Types of Maneuvers: Hard Right, Hard Left, Target
 	if (bfm_.BFMflg[n]) {
 		xac_.AirRot[n].x = -PoM360(bfm_.PosAbs[n].x);
 		// Continue Fixed Maneuvers
