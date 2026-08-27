@@ -47,6 +47,7 @@ import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh
 //=	CONVERSIONS ================//==============================================
 let Ft2Mtr = 0.3048;			// Convert Feet to Meters
 let DegRad = Math.PI/180;		// Convert Degrees to Radians
+let Rad090 = 90*DegRad;
 
 /*******************************************************************************
 *
@@ -790,7 +791,7 @@ function init1Road(grd_,gen_,road) {
 	// Set Starting Position of Squares
 	for (let z = 0; z < road.RCs; z++) {		// Row
 		for (let x = 0; x < road.RCs; x++) {	// Column
-			road.Ptr[n].rotation.x = -90*DegRad;
+			road.Ptr[n].rotation.x = Rad270;
 			gen_.scene.add(road.Ptr[n]);
 			road.Ptr[n].renderOrder = 1;
 			road.Ptr[n].position.set(road.MXV[x],-grd_.SPS.y*gen_.AltAdj+0.01,-road.MZV[z]);
@@ -1147,7 +1148,7 @@ function init1GrMap(grd_,grx_,gen_) {
 	// Set Starting Position of Squares
 	for (let y = 0; y < grx_.RCs; y++) {		// Row
 		for (let x = 0; x < grx_.RCs; x++) {	// Column
-			grx_.Ptr[n].rotation.x = -90*DegRad;
+			grx_.Ptr[n].rotation.x = Rad270;
 			gen_.scene.add(grx_.Ptr[n]);
 			grx_.Ptr[n].position.set(grx_.MXV[x],-grd_.SPS.y,-grx_.MZV[y]);
 			n++;
