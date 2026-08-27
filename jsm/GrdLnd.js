@@ -47,7 +47,9 @@ import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh
 //=	CONVERSIONS ================//==============================================
 let Ft2Mtr = 0.3048;			// Convert Feet to Meters
 let DegRad = Math.PI/180;		// Convert Degrees to Radians
-let Rad090 = 90*DegRad;
+let Rad090 =  90*DegRad;
+let Rad180 = 180*DegRad;
+let Rad270 = 270*DegRad;
 
 /*******************************************************************************
 *
