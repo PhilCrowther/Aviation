@@ -740,39 +740,8 @@ function makeShdH(dtData) {
 function initRoads(grd_,gen_) {
 	rd1_.Siz = 2*grd_.Siz;
 	rd2_.Siz = 2*grd_.Siz;
-	rd0_.r0Data = new Uint8Array(4*rd0_.r0Size*rd0_.r0Size);
-	initRClr(rd0_.rodclr,rd0_.r0Data,1);
-	rd0_.txtrod = new DataTexture(rd0_.r0Data,rd0_.r0Size,rd0_.r0Size);
-	rd0_.txtrod.format = RGBAFormat;
-	rd0_.txtrod.magFilter = LinearFilter;
-	rd0_.txtrod.minFilter = LinearMipMapLinearFilter;
-	rd0_.txtrod.generateMipmaps = true;
-	rd0_.txtrod.wrapS = rd0_.txtrod.wrapT = RepeatWrapping;
-	rd0_.txtrod.offset.set(0,0);
-	rd1_.Txt = rd0_.txtrod;
-	rd2_.Txt = rd0_.txtrod;
 	init1Road(grd_,gen_,rd1_);
 	init1Road(grd_,gen_,rd2_);
-}
-
-function initRClr(dtColr,dtData,Weight) {
-	// Load 2 colors
-	for (let i = 0; i < 2; i++) {
-		let clr = new Color(dtColr[i]);
-		red[i] = Math.floor(clr.r * 255);
-		grn[i] = Math.floor(clr.g * 255);
-		blu[i] = Math.floor(clr.b * 255);
-	}
-	// Assign colors
-	let idx, i;
-	let end =  4*rd0_.r0Size*rd0_.r0Size;
-	for (let n = 0; n <end; n+=4) {
-		i = Math.floor(Weight*Math.random());
-		dtData[n  ] = red[i];
-		dtData[n+1] = grn[i];
-		dtData[n+2] = blu[i];
-		dtData[n+3] = 255;
-	}
 }
 
 function init1Road(grd_,gen_,road) {
@@ -794,11 +763,6 @@ function init1Road(grd_,gen_,road) {
 			zx = zx + road.Siz;
 		}
 		let geometry = new PlaneGeometry(25*Ft2Mtr,road.Siz);	// N/S Road;
-//		let DatTxt = road.Txt;
-//		DatTxt.repeat.set(10,10);
-//		DatTxt.anisotropy = gen_.maxAns;		// ###
-//		DatTxt.needsUpdate = true;
-//		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		let material = new MeshLambertNodeMaterial({colorNode: texture(grd_.DfR[0])});
 		for (let n = 0; n < road.Num; n++) {	// Source
 			road.Ptr[n] = new Mesh(geometry,material);
@@ -815,11 +779,6 @@ function init1Road(grd_,gen_,road) {
 			zx = zx + road.Siz;
 		}
 		let geometry = new PlaneGeometry(road.Siz,25*Ft2Mtr);	// E/W Road;
-//		let DatTxt = road.Txt;
-//		DatTxt.repeat.set(10,10);
-//		DatTxt.anisotropy = gen_.maxAns;		// ###
-//		DatTxt.needsUpdate = true;
-//		let material = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		let material = new MeshLambertNodeMaterial({colorNode: texture(grd_.DfR[1])});
 		for (let n = 0; n < road.Num; n++) {	// Source
 			road.Ptr[n] = new Mesh(geometry,material);
@@ -1368,4 +1327,5 @@ export {loadSkyBox,initSkyBox,loadGrdMat,initGrdMat,GrdMap,initRoads,moveRoads,l
 260125: Reduce areas for trees
 260304:	Add textures for roads
 260518: Add SkyBox routines
+260827L Remove color creation from roads
 */
