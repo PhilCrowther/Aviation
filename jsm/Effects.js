@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 Aug 2026
+Version dated 27 Aug 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -624,7 +624,8 @@ function initAAAGun(aaf_,air_,gen_) {
 			line = new Line(AAAGeD,AAAMtD); // Dark Color
 			line.position.z = lnB;
 			aaf_.AAAPtr[n][i].add(line);
-			aaf_.AAAPtr[n][i].scale.set(scale,scale,scale);
+//			aaf_.AAAPtr[n][i].scale.set(scale,scale,scale);
+			aaf_.AAAPtr[n][i].scale.setScalar(scale);		
 			aaf_.AAAPtr[n][i].rotation.order = "YXZ";
 			// 
 			gen_.scene.add(aaf_.AAAPtr[n][i]);
@@ -653,7 +654,8 @@ function initAAAGun(aaf_,air_,gen_) {
 		//	Gunfire Smoke Sprite
 		aaf_.GfSPtr[n] = new Sprite(aaf_.GfSMat[n]);
 		aaf_.GfSPtr[n].position.set(0,2.75,0);
-		aaf_.GfSPtr[n].scale.set(15,15,15);
+//		aaf_.GfSPtr[n].scale.set(15,15,15);
+		aaf_.GfSPtr[n].scale.setScalar(15);
 		aaf_.GunPtr[n].add(aaf_.GfSPtr[n]);
 		aaf_.GfSPtr[n].visible = false;
 		//. Create Explosion Graphics ..........................................
@@ -671,7 +673,8 @@ function initAAAGun(aaf_,air_,gen_) {
 		aaf_.SmkMat[n].depthWrite = false;
 		//	Explosion Smoke Sprite
 		aaf_.SmkPtr[n] = new Sprite(aaf_.SmkMat[n]);
-		aaf_.SmkPtr[n].scale.set(100,100,100);	
+//		aaf_.SmkPtr[n].scale.set(100,100,100);
+		aaf_.SmkPtr[n].scale.setScalar(100);	
 		aaf_.ExpGrp[n].add(aaf_.SmkPtr[n]);
 		aaf_.SmkPtr[n].visible = false;		// hide it
 		//.	Create Sounds ......................................................
@@ -1115,7 +1118,8 @@ function initXSHGun(xsg_,gen_) {
 		//	Explosion Smoke Sprite
 		xsg_.SmkPtr[n] = new Sprite(xsg_.SmkMat[n]);
 		xsg_.SmkPtr[n].position.set(0,0,10);
-		xsg_.SmkPtr[n].scale.set(15,15,15);
+//		xsg_.SmkPtr[n].scale.set(15,15,15);
+		xsg_.SmkPtr[[n].scale.setScalar(15);
 		xsg_.GunPtr[n].add(xsg_.SmkPtr[n]);
 		xsg_.SmkPtr[n].visible = false;
 		//.	Sounds .............................................................
@@ -1753,4 +1757,5 @@ export {
 260817: Add xsg_ ship guns firing animation and sounds
 260818: Move load of common textures and sounds to this module; move reference to those files internally
 260819: Add Smoke to Gunfire
+260827: Change scale.set(x,x,x) to scale.setScalar(x);
 */
