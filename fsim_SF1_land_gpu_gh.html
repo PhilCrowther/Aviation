@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Aug 2026
+Version dated 20 Aug 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -715,7 +715,6 @@ function loadObject() {
 	loadStatic();
 	loadMoving();
 	loadAAAGun(aaf_,gen_);
-	loadXACShd();
 }
 
 //= INIT OBJECTS ===============//==============================================
@@ -726,7 +725,6 @@ function initObject() {
 	initAAAGun(aaf_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_,air_);
 	initSmkTrl(smt_,air_,xac_,gen_);
-	initXACShd();
 }
 
 //- Init Bomb Explostion -------//----------------------------------------------
@@ -759,8 +757,6 @@ function moveObject() {
 	for (let n = 0; n < smt_.ObjNum; n++) {
 		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,air_,n);
 	}
-	//	XAC Shadows
-	moveXACShd();
 }
 
 //= STATIC OBJECTS =============//=============================================
@@ -785,64 +781,17 @@ function moveStatic() {
 
 function loadMoving() {
 	loadXACVeh(xac_,anm_,gen_); // Airplanes
+	loadXACShd(shd_,gen_);		// Shadow
 }
 
 function initMoving() {
 	initMovPln();				// Airplanes
+	initXACShd(shd_,xac_,air_,gen_,sky_); // Shadow
 }
 
 function moveMoving() {
 	moveMovPln();				// Airplanes
-}
-
-//= SHADOWS ====================================================================
-
-function loadXACShd() {
-	// Load Textures and Create Materials
-	for (let n = 0; n < shd_.ShdNum; n++) {	
-		gen_.txtrLd.load(shd_.ObjSrc[n], function (map) {
-			shd_.ObjMat[n] = new THREE.MeshBasicNodeMaterial();
-			shd_.ObjMat[n].colorNode = color(0x000000);
-			shd_.ObjMat[n].colorNode = texture(map);
-			shd_.ObjMat[n].transparent = true;
-			shd_.ObjMat[n].depthWrite = false;
-		});
-	}
-}
-
-function initXACShd() {
-	let ShdGeo = new THREE.PlaneGeometry(10,10);	
-	for (let n = 0; n < xac_.ObjNum; n++) {
-		shd_.ObjPtr[n] = new THREE.Mesh(ShdGeo,shd_.ObjMat[shd_.TxtRef[n]]);
-		shd_.ObjPtr[n].rotation.order = "YXZ";
-		shd_.ObjPtr[n].scale.setScalar(shd_.ObjSiz[n]);
-		shd_.ObjPtr[n].rotation.x = Rad270;
-		scene.add(shd_.ObjPtr[n]);
-		//	Relative Position
-		let X = xac_.MapPos[n].x-air_.MapPos.x;
-		let Y = 1-air_.MapPos.y;
-		let Z = air_.MapPos.z-xac_.MapPos[n].z;
-		shd_.ObjPtr[n].position.set(X,Y,Z);	
-	}
-	// Sun Offset per meter
-	shd_.SunOff.x = Math.sin(sky_.SunLat*DegRad)*Math.sin(Mod360(sky_.SunLon+180)*DegRad);	// cos(023)*sin(312) = 0.9205* 0.7431 =  0.6874
-	shd_.SunOff.y = Math.sin(sky_.SunLat*DegRad)*Math.cos(Mod360(sky_.SunLon+180)*DegRad);	// cps(023)*cos(312) = 0.9205*-0.6691 = -0.6189
-}
-
-function moveXACShd() {
-	let MapX,MapZ;
-	let X,Y,Z;
-	for (let n = 0; n < xac_.ObjNum; n++) {
-//		shd_.ObjPtr[n].rotation.y = Mod360(xac_.AirRot[n].y+180)*DegRad;
-		shd_.ObjPtr[n].rotation.y = xac_.AirObj[n].rotation.y;
-		//	Map Position
-		MapX = xac_.MapPos[n].x + xac_.MapPos[n].y * shd_.SunOff.x;
-		MapZ = xac_.MapPos[n].z + xac_.MapPos[n].y * shd_.SunOff.y;
-		//	Relative Position
-		X = MapX - air_.MapPos.x;
-		Y = 1-air_.MapPos.y;
-		Z = air_.MapPos.z-MapZ;
-		shd_.ObjPtr[n].position.set(X,Y,Z);	}
+	moveXACShd(shd_,xac_,air_); // Shadow
 }
 
 //- Animated Attachments -------//----------------------------------------------
@@ -1075,6 +1024,77 @@ function moveXACGun(n) {
 		if (xag_.SndPtr[n].isPlaying) xag_.SndPtr[n].stop();
 	}
 	moveXACBul(xag_,air_,gen_,tim_);
+}
+
+/*******************************************************************************
+*
+*	XAC SHADOWS
+*
+*******************************************************************************/
+
+//= LOAD SHADOWS ===============//==============================================
+
+function loadXACShd(shd_,gen_) {
+	// Load Textures and Create Materials
+	for (let n = 0; n < shd_.ShdNum; n++) {	
+		gen_.txtrLd.load(shd_.ObjSrc[n], function (map) {
+			shd_.ObjMat[n] = new THREE.MeshLambertNodeMaterial();
+			shd_.ObjMat[n].colorNode = color(0x3f3f3f);
+			shd_.ObjMat[n].colorNode = texture(map);			
+			shd_.ObjMat[n].transparent = true;
+			shd_.ObjMat[n].depthWrite = false;
+		});
+	}
+}
+
+//= INIT SHADOWS ===============//==============================================
+
+function initXACShd(shd_,xac_,air_,gen_,sky_) {
+	let X,Y,Z;
+	let ShdGeo = new THREE.PlaneGeometry(10,10);	
+	for (let n = 0; n < xac_.ObjNum; n++) {
+		shd_.ObjPtr[n] = new THREE.Mesh(ShdGeo,shd_.ObjMat[shd_.TxtRef[n]]);
+		shd_.ObjPtr[n].rotation.order = "YXZ";
+		shd_.ObjPtr[n].scale.setScalar(shd_.ObjSiz[n]);
+//		shd_.ObjPtr[n].opacityNode = 0.75;
+		shd_.ObjPtr[n].rotation.x = Rad270;
+		gen_.scene.add(shd_.ObjPtr[n]);
+		//	Relative Position
+		X = xac_.MapPos[n].x-air_.MapPos.x;
+		Y = 1-air_.MapPos.y;
+		Z = air_.MapPos.z-xac_.MapPos[n].z;
+		shd_.ObjPtr[n].position.set(X,Y,Z);	
+	}
+	// Sun Offset per meter
+	shd_.SunOff.x = Math.sin(sky_.SunLat*DegRad)*Math.sin(Mod360(sky_.SunLon+180)*DegRad);	// cos(023)*sin(312) = 0.9205* 0.7431 =  0.6874
+	shd_.SunOff.y = Math.sin(sky_.SunLat*DegRad)*Math.cos(Mod360(sky_.SunLon+180)*DegRad);	// cps(023)*cos(312) = 0.9205*-0.6691 = -0.6189
+}
+
+//= MOVE SHADOWS ===============//==============================================
+
+function moveXACShd(shd_,xac_,air_) {
+	let MapX,MapZ;
+	let X,Y,Z;
+	let WidX;
+	for (let n = 0; n < xac_.ObjNum; n++) {
+		if (shd_.ObjPtr[n].visible = true) {
+			//	Width
+			WidX = Math.cos(xac_.AirRot[n].z * DegRad) * shd_.ObjSiz[n];
+			shd_.ObjPtr[n].scale.set(WidX,shd_.ObjSiz[n],shd_.ObjSiz[n]);			
+			//	Rotation
+			shd_.ObjPtr[n].rotation.y = xac_.AirObj[n].rotation.y;
+			//	Map Position
+			MapX = xac_.MapPos[n].x + xac_.MapPos[n].y * shd_.SunOff.x;
+			MapZ = xac_.MapPos[n].z + xac_.MapPos[n].y * shd_.SunOff.y;
+			//	Relative Position
+			X = MapX - air_.MapPos.x;
+			Y = 0.5-air_.MapPos.y;
+			Z = air_.MapPos.z-MapZ;
+			//	End if Crashed
+			if (xac_.MapPos[n].y <= 0) shd_.ObjPtr[n].visible = false;	// Crashed
+		}
+		shd_.ObjPtr[n].position.set(X,Y,Z);
+	}
 }
 
 /*******************************************************************************
