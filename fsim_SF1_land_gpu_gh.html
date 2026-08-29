@@ -327,7 +327,7 @@ let mntSiz = 3.75*MtrMil
 	fxd_.MapPos[0] = new THREE.Vector3(1200,0.3048,5000);	// relative to mountain
 	fxd_.ObjRot[0] = new THREE.Euler();	// Rotation
 	//	Hangar - Damaged
-	fxd_.ObjSrc[1] = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar1.glb";
+	fxd_.ObjSrc[1] = "https://PhilCrowther.github.io/Aviation/scenery/models/hangar2.glb";
 	fxd_.MapPos[1] = new THREE.Vector3(1200,0.3048,5000);	// relative to mountain
 	fxd_.ObjRot[1] = new THREE.Euler();	// Rotation
 	//	Zeppelin
@@ -526,10 +526,10 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	bms_.SmkCol[0].z = "black";	// No Fire
 	bms_.SmkCol[1].z = "black";	// No Fire
 	//	Life
-	bms_.SubSiz[0] = 0.2;		// No Fire, Shorter Life
-	bms_.SubSiz[1] = 0.2;		// No Fire, Shorter Life
+	bms_.SubSiz[0] = 0.02;		// No Fire, Shorter Life
+	bms_.SubSiz[1] = 0.02;		// No Fire, Shorter Life
 	//	Size
-	bmx_.MaxSiz = 15;
+	bmx_.MaxSiz = 14;
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -792,6 +792,8 @@ function initMoving() {
 function moveMoving() {
 	moveMovPln();				// Airplanes
 	moveXACShd(shd_,xac_,air_); // Shadow
+	fxd_.MapPos[2].z = fxd_.MapPos[2].z + 20*tim_.DLTime;	// Zeppelin
+	fxd_.MapPos[2].y = fxd_.MapPos[2].y + 2*tim_.DLTime;
 }
 
 //- Animated Attachments -------//----------------------------------------------
