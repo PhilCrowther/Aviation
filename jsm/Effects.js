@@ -1544,7 +1544,10 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 			bom_.ExpGrp[n].position.y = -10000;
 		}
 	}
-	bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
+//	bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
+	let bmy = 1.5*bms_.RemSiz[n];	// Retain height
+	if (bmy > bms_.MaxSiz) bmy = bms_.MaxSiz;
+	bms_.SmkSpr[n].scale.set(bms_.RemSiz[n],bmy,bms_.RemSiz[n]);
 }
 
 /*******************************************************************************
