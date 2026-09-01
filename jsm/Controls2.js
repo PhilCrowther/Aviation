@@ -181,7 +181,7 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
 				if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
 				if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
-				if (key_.Target) {
+				if (key_.Trgflg) {
 					cam_.CamLLD.x = cam_.Target.x;
 					cam_.CamLLD.x = cam_.Target.y;
 				}
