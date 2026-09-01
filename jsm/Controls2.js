@@ -183,7 +183,7 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
 				if (key_.Trgflg) {
 					cam_.CamLLD.x = cam_.Target.x;
-					cam_.CamLLD.x = cam_.Target.y;
+					cam_.CamLLD.y = cam_.Target.y;
 				}
 			}
 			// Internal View
