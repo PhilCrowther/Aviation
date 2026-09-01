@@ -131,7 +131,7 @@ function initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos) {
 	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators to new CamPar (AirObj or CamPVC)
 	gen_.camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
 	//- Initialize Targeting Vairables -----------------------------------------
-	cam_.Target = new THREE.Vector2(0,0);
+	cam_.Target = new Vector3(0,0,0);
 	key_.Trgflg = 0;
 	//
 	moveCamera(cam_,air_,key_,gen_,InpMos);
