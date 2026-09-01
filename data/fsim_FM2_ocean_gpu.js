@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260820
+*	FSIM FM2 DATA: 260901
 *
 ********************************************************************************
 
@@ -1031,6 +1031,8 @@ let cam_ = {
 		SrcAdj: [180,0],
 		SrcFlg: [0,1],			// 1 = Internal View
 		SrcLnk: [1,1],			// 1 = Linked to Airplane
+		//	Target
+		Target: 0,				// Direction to Target (lat/lon) Vector2
 	}
 
 //= 8. OUTPUT VARIABLES ========//==============================================
@@ -1140,7 +1142,7 @@ let InfoData = [
 //- DEFAULT KEY BINDINGS -------//----------------------------------------------
 let key_ = {
 		//	Basic
-		PwLU:	87,				// Power Up (w) - keyboard left
+		PwLU:	 87,			// Power Up (w) - keyboard left
 		PwLD:	 81,			// Power Down (q) - keyboard left
 		PwRU:	187,			// Power Up (=) - keyboard right
 		PwRD:	189,			// Power Down (-) - keyboard right
@@ -1154,6 +1156,7 @@ let key_ = {
 		YwRR:	190,			// Yaw Left (.) - keyboard right
 		Brak:	 66,			// Brakes (b)
 		Guns:	 32,			// Guns (spacebar)
+		Targ:	 77,			// Targeting (m)
 		//	Additional
 		Flap:	 70,			// Flaps (f)
 		Gear:	 71,			// Landing Gear (g)
@@ -1190,4 +1193,5 @@ let key_ = {
 		LBkflg:	0,				// Left Back 45 deg (225 deg)
 		RBkflg:	0,				// Right Back 45 deg (135 deg)
 		CBkflg:	0,				// Center Back (180 degrees)
+		Trgflg:	0,				// Targeting
 	}
