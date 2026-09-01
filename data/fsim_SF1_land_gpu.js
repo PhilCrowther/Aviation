@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260820
+*	FSIM SF1 DATA: 260901
 *
 *********************************************************************************
 
@@ -693,36 +693,38 @@ let cam_ = {
 		CamSel: 0,				// View Selector (0 = External, 1 = Internal)
 		OrbFlg: 0,				// Orbit Flag (1 = Orbiting)
 		Parent: 0,				// Object holding camera (0 = air_.AirPBY, 1 = xac_.AirObj[0], etc ###260607
-		// Camera
+		//	Camera
 		CamLLD: 0, 				// cam_.MshRot Lat, Lon, Dst
 		CamAdj: 0,				// Camera Adjustment (180 = look in)
 		CamMMD: 0,				// In/Out - min,max,spd
-		// Rotator
+		//	Rotator
 		MshRot: 0,				// Camera Rotator
 		CamMMR: 0,				// Rotate - min/max Lat/Lon,rspd
-		// Center of Rotation
+		//	Center of Rotation
 		CamPar: 0,				// Center of Rotation	
 		CamFlg: 0,				// View Flag (0 = External, 1 = Internal)
-		// Linked Airplane
+		//	Linked Airplane
 		CamLnk: 0,
 		MshObj: 0,
 		MshDeg: 0,
-		//- Camera Vertical Lag
+		//	Camera Vertical Lag
 		LagFlg: 0,				// 1 = Enable
 		CmAdjX: 0,				// Airborne Pitch Adjustment
 		CmMulX: 35,				// Pitch Adjustment Multiplier
 		CmLagX: 0,				// Transition Offset
 		CmGrdF: 0,				// Camera Ground Flag (1 = On Ground)
-		// Beginning Head Rotation
+		//	Beginning Head Rotation
 		VewRot: 0,
-		//- Source
+		//	Source
 		SrcLLD: [0,0],
 		SrcMMD: [0,0],
 		SrcMMR: [0,0],
 		SrcPar: [0,0],
 		SrcAdj: [180,0],
 		SrcFlg: [0,1],			// 1 = Internal View
-		SrcLnk: [1,1],			// 1 = Linked to Airplane	
+		SrcLnk: [1,1],			// 1 = Linked to Airplane
+		//	Target
+		Target: 0,				// Direction to Target (lat/lon) Vector2
 	}
 
 //= 8. OUTPUT VARIABLES ========//==============================================
@@ -809,9 +811,10 @@ let key_ = {
 		YwRR:	190,			// Yaw Left (.) - keyboard right
 		Brak:	66,				// Brakes (b)
 		Guns:	32,				// Guns (spacebar)
+		Targ:	77,				// Targeting (m)
 		//	View
 		Look:	16,				// Pan (shift)
-		// View Keys (Keypad Num Lock)
+		//	View Keys (Keypad Num Lock)
 		KPad:	0,				// 1 = Using KeyPad
 //		VR45:	105,			// [9] Right 45 deg
 //		VU45:	104,			// [8] View Up 45 deg
@@ -836,11 +839,12 @@ let key_ = {
 		Soun:	83,				// Toggle sound (s)
 		Auto:	65,				// Autopilot (a)
 		Info:	73,				// Info (i)
-		// Flags
+		//	Flags
 		U45flg:	0,				// Up 45 degrees
 		D45flg:	0,				// Down 45 degrees
 		L45flg:	0,				// Left 45 degrees
 		R45flg:	0,				// Right 45 degrees
 		L90flg:	0,				// Left 90 degrees
 		R90flg:	0,				// Right 90 degrees
+		Trgflg:	0,				// Targeting
 };
