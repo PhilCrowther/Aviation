@@ -173,15 +173,15 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			if (!cam_.CamFlg) {
 				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
 				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
-				if (key_.D45flg && (air_.MapPos.y>50 || !cam_.Parent)) cam_.CamLLD.x = 45; // Up
-				if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
-				if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
-				if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
-				if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-				if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
-				if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-				if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
-				if (key_.Trgflg) {
+				else if (key_.D45flg && (air_.MapPos.y>50 || !cam_.Parent)) cam_.CamLLD.x = 45; // Up
+				else if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
+				else if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
+				else if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
+				else if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
+				else if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
+				else if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
+				else if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
+				else if (key_.Trgflg) {	// Targeting
 					cam_.CamLLD.x = cam_.Target.x;
 					cam_.CamLLD.y = cam_.Target.y;
 				}
@@ -217,6 +217,10 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				else if (key_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
 				else if (key_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
 				else if (key_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
+				else if (key_.Trgflg) {	// Targeting
+					cam_.CamLLD.x = cam_.Target.x;
+					cam_.CamLLD.y = cam_.Target.y;
+				}
 			}	
 			// Internal View
 			else {
