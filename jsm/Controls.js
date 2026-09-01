@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 May 2026
+Version dated 1 Sep 2026
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -130,13 +130,17 @@ function initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos) {
 	//- Final Adjustments ------------------------------------------------------
 	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators to new CamPar (AirObj or CamPVC)
 	gen_.camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
+	//- Initialize Targeting Vairables -----------------------------------------
+	cam_.Target = new THREE.Vector2(0,0);
+	key_.Trgflg = 0;
+	//
 	moveCamera(cam_,air_,key_,gen_,InpMos);
 }
 
 //= MOVE CAMERA VIEW ===========//==============================================
 function moveCamera(cam_,air_,key_,gen_,InpMos) {
 	gen_.camera.rotation.x = 0;		// Default
-	// Starting Head Rotation
+	//	Starting Head Rotation
 	if (cam_.VewRot) {
 		// Zero Out When Moving Forward
 		if (!air_.MovFlg) {		// Throttle is trigger
@@ -144,9 +148,9 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			if (Math.abs(cam_.VewRot < 0.1)) cam_.VewRot = 0;
 		}
 	}
-	// Camera In/Out
+	//	Camera In/Out
 	gen_.camera.position.z = -cam_.CamLLD.z;
-	// PointerLockControls
+	//	PointerLockControls
 	if (cam_.OrbFlg) {			// If Orbiting
 		cam_.CamLLD.x = cam_.CamLLD.x - InpMos.y * cam_.CamMMR.z; // Camera Position (Lat)
 		cam_.CamLLD.x = MaxVal(cam_.CamLLD.x,cam_.CamMMR.x);
@@ -156,33 +160,37 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			if (cam_.CamLLD.y > 180 && cam_.CamLLD.y < (360-cam_.CamMMR.y)) cam_.CamLLD.y = (360-cam_.CamMMR.y);
 			if (cam_.CamLLD.y < 180 && cam_.CamLLD.y > cam_.CamMMR.y) cam_.CamLLD.y = cam_.CamMMR.y;
 		}
-		// External View (Only if Camera Connected to My Airplane)
+		//	External View (Only if Camera Connected to My Airplane)
 		else {
 			if (air_.GrdFlg && !cam_.Parent && cam_.CamLLD.x > -12.5) cam_.CamLLD.x = -12.5;
 		}
 		InpMos.x = InpMos.y = 0;
 	}
-	// View Keys (NumLock)
+	//	View Keys (NumLock)
 	else {						// If Not Orbiting
 		// Default
 		cam_.CamLLD = new Vector3().copy(cam_.SrcLLD[cam_.CamSel]);
-		// Although these are mostly identical, we need separate routines to interpret KeyPad vs. Other
-		// KeyPad (used by FM2 demo) ...........................................
+		//	Although these are mostly identical, we need separate routines to interpret KeyPad vs. Other
+		//	KeyPad (used by FM2 demo) ...........................................
 		if (key_.KPad) {
-			// Exterior View
+			//	Exterior View
 			if (!cam_.CamFlg) {
 				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
 				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
-				if (key_.D45flg && (air_.MapPos.y>50 || !cam_.Parent)) cam_.CamLLD.x = 45; // Up
-				if (key_.CBkflg) cam_.CamLLD.y = 180; // Look Back (only in External View)
-				if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
-				if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
-				if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
-				if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
-				if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
-				if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
+				else if (key_.D45flg && (air_.MapPos.y>50 || !cam_.Parent)) cam_.CamLLD.x = 45; // Up
+				else if (key_.CBkflg) cam_.CamLLD.y = 180;	// Look Back (only in External View)
+				else if (key_.L45flg) cam_.CamLLD.y = 315;	// Look Left 45
+				else if (key_.R45flg) cam_.CamLLD.y = 45;	// Look Right 45
+				else if (key_.L90flg) cam_.CamLLD.y = 270;	// Look Left 90
+				else if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
+				else if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
+				else if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
+				else if (key_.Trgflg) {						// Targeting
+					cam_.CamLLD.x = cam_.Target.x;
+					cam_.CamLLD.y = cam_.Target.y;
+				}
 			}
-			// Internal View
+			//	Internal View
 			else {
 				cam_.CamLLD.y = cam_.VewRot;
 				if (key_.U45flg) cam_.CamLLD.x = 315; // Down
@@ -198,13 +206,12 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				else if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
 			}
 		}
-		// Alt Keys (keys above arrow keys) ....................................
+		//	Alt Keys (keys above arrow keys) ....................................
 		else {
-			// Exterior View
+			//	Exterior View
 			if (!cam_.CamFlg) {
 				cam_.CamLLD.x = cam_.SrcLLD[cam_.CamSel].x;
 				if (key_.U45flg && air_.MapPos.y>50) cam_.CamLLD.x = 45; // Up
-//				else if (key_.D45flg) cam_.CamLLD.x = 315;	// Look Down 45
 				else if (key_.D45flg) {
 					cam_.CamLLD.x = 45;						// Look Up 45
 					cam_.CamLLD.y = 180;					// Look Back
@@ -213,8 +220,12 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				else if (key_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
 				else if (key_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
 				else if (key_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
+				else if (key_.Trgflg) {						// Targeting
+					cam_.CamLLD.x = cam_.Target.x;
+					cam_.CamLLD.y = cam_.Target.y;
+				}
 			}	
-			// Internal View
+			//	Internal View
 			else {
 				cam_.CamLLD.y = cam_.VewRot;
 				if (key_.U45flg) {
@@ -305,4 +316,5 @@ export {PointerLockControls,initCamera,moveCamera};
 		Added LagFlg to make camera vertical lag optional.
 		Added initCamera
 260527:	In external view, look down = look back and up
+260901:	Added Target computations
 */
