@@ -811,6 +811,7 @@ let key_ = {
 		YwRR:	190,			// Yaw Left (.) - keyboard right
 		Brak:	66,				// Brakes (b)
 		Guns:	32,				// Guns (spacebar)
+		Targ:	84,				// Targeting (t)
 		//	View
 		Look:	16,				// Pan (shift)
 		// View Keys (Keypad Num Lock)
@@ -845,6 +846,5 @@ let key_ = {
 		R45flg:	0,				// Right 45 degrees
 		L90flg:	0,				// Left 90 degrees
 		R90flg:	0,				// Right 90 degrees
-		// Target
-		Targ:	84,				// Targeting (t)
+		Trgflg:	0,				// Targeting
 };
