@@ -273,7 +273,7 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 		}
 		gen_.camera.rotation.x = cam_.CmAdjX*DegRad; // + = up/airplane down
 		if (key_.Trgflg) gen_.camera.rotation.z = cam_.CamLLD.z*DegRad;
-		else {gen_.camera.rotation.z = 0];
+		else {gen_.camera.rotation.z = 0};
 		// External Values
 		cam_.MshRot.rotation.x = Mod360(-cam_.CamLLD.x)*DegRad;
 		cam_.MshRot.rotation.y = Mod360(180-cam_.CamLLD.y)*DegRad;
