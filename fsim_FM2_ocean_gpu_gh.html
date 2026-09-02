@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 21 Aug 2026
+Version dated 1 Sep 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -32,8 +32,6 @@ This demo has now been expanded to include a battle scenario which will eventual
 		<br>
 		<div>Bank....: <span id="Air_Bnk"></span> deg</div>
 		<div>Heading.: <span id="Air_Hdg"></span> deg</div>
-		<div>TgtDir..: <span id="Air_Tgt"></span> deg</div>
-		<div>TgtDst..: <span id="Air_Dst"></span> ft</div>
 		<br>
 		<div>CfLift..: <span id="Air_CfL"></span></div>
 		<div>GForce..: <span id="Air_GFm"></span> Gs</div>
@@ -1727,21 +1725,6 @@ function prntHUDval() {
 	Air_Hdg = Mod360(air_.AirRot.y);
 	if (cam_.Parent) Air_Bnk = xac_.AirRot[cam_.Parent-1].y;
 	Air_HdgNode.nodeValue = Air_Hdg.toFixed(0);
-	//	Relative Direction to Target
-	let n,x,z = 0
-	if (!cam_.Parent) {
-		n = myg_.HitTgt-1; 
-		x = xac_.AirObj[n].position.x;
-		z = -xac_.AirObj[n].position.z;
-		Air_Tgt = Mod360(Math.atan2(x,z)*RadDeg);
-		Air_Tgt = PoM360( Mod360(Air_Tgt - air_.AirRot.y));
-	}
-	if (cam_.Parent) Air_Tgt = bfm_.PosOff[cam_.Parent-1].y;
-	Air_TgtNode.nodeValue = Air_Tgt.toFixed(0);
-	//	Horiztonal Distance to Target
-	Air_Dst = Math.sqrt(x**2+z**2)*Mtr2Ft; // Horizontal Vector
-	if (cam_.Parent) Air_Dst = bfm_.VecHrz[cam_.Parent-1]*Mtr2Ft;
-	Air_DstNode.nodeValue = Air_Dst.toFixed(0);
 	//	Cf Lift
 	Air_CfL = air_.CfLift;
 	if (cam_.Parent) Air_CfL = 0;
@@ -1856,19 +1839,20 @@ function onDocumentMouseWheel(event) {
 function onDocumentKeyDown(event) {
 	let keyCode = event.which;
 	// Basic
-	if (event.keyCode == key_.PwLU) gen_.PwrDif = 0.1;		// Power Up - keyboard left
-	if (event.keyCode == key_.PwLD) gen_.PwrDif = -0.1;		// Power Down - keyboard left
-	if (event.keyCode == key_.PwRU) gen_.PwrDif = 0.1;		// Power Up - keyboard right
-	if (event.keyCode == key_.PwRD) gen_.PwrDif = -0.1;		// Power Down - keyboard right
-	if (event.keyCode == key_.BnkL) air_.InpKey.z = -KeyVal.z; // Bank Left - autopilot only
+	if (event.keyCode == key_.PwLU) gen_.PwrDif = 0.1;	// Power Up - keyboard left
+	if (event.keyCode == key_.PwLD) gen_.PwrDif = -0.1;	// Power Down - keyboard left
+	if (event.keyCode == key_.PwRU) gen_.PwrDif = 0.1;	// Power Up - keyboard right
+	if (event.keyCode == key_.PwRD) gen_.PwrDif = -0.1;	// Power Down - keyboard right
+	if (event.keyCode == key_.BnkL) air_.InpKey.z = -KeyVal.z;	// Bank Left - autopilot only
 	if (event.keyCode == key_.BnkR) air_.InpKey.z = KeyVal.z;	// Bank Right - autopilot only
 	if (event.keyCode == key_.PitU) air_.InpKey.x = KeyVal.x;	// Pitch Up - autopilot only
-	if (event.keyCode == key_.PitD) air_.InpKey.x = -KeyVal.x; // Pitch Down - autopilot only
-	if (event.keyCode == key_.YwLL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard left
-	if (event.keyCode == key_.YwLR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard left
-	if (event.keyCode == key_.YwRL) air_.RotDif.y = -KeyVal.z; // YawL - keyboard right
-	if (event.keyCode == key_.YwRR) air_.RotDif.y = KeyVal.z;  // YawR - keyboard right
-	if (event.keyCode == key_.Brak) gen_.InpBrk = 0.01;		// Brakes
+	if (event.keyCode == key_.PitD) air_.InpKey.x = -KeyVal.x;	// Pitch Down - autopilot only
+	if (event.keyCode == key_.YwLL) air_.RotDif.y = -KeyVal.z;	// YawL - keyboard left
+	if (event.keyCode == key_.YwLR) air_.RotDif.y = KeyVal.z;	// YawR - keyboard left
+	if (event.keyCode == key_.YwRL) air_.RotDif.y = -KeyVal.z;	// YawL - keyboard right
+	if (event.keyCode == key_.YwRR) air_.RotDif.y = KeyVal.z;	// YawR - keyboard right
+	if (event.keyCode == key_.Brak) gen_.InpBrk = 0.01;	// Brakes
+	if (event.keyCode == key_.Targ) findTarg();			// Targeting ("t")
 	// Additional
 	if (event.keyCode == key_.Gear) anm_.lngflg = 1; 	// Gear
 	if (event.keyCode == key_.Flap) anm_.flpflg = 1; 	// Flaps
@@ -1923,6 +1907,7 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == key_.YwRL) air_.RotDif.y = 0;	// YawL - keyboard right side
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = 0;	// YawR - keyboard right side
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0;	// Brakes
+	if (event.keyCode == key_.Targ) key_.Trgflg = 0;	// Targeting ("t")
 	// Additional
 	if (event.keyCode == key_.Gear) anm_.lngflg = 0;	// Gear
 	if (event.keyCode == key_.Flap) anm_.flpflg = 0;	// Flaps
@@ -2009,6 +1994,21 @@ function toglInfo() {
 	gen_.InfoOn++
 	if (gen_.InfoOn == 3) gen_.InfoOn = 0;
 	InfoText();
+}
+
+//. Select Target ..............................................................
+function findTarg() {
+	key_.Trgflg = 0;			// Default
+	if (myg_.HitTgt && !cam_.CamFlg) {	// If external view and there is a target
+		let n = 1;				// Airplane (Zero)
+		let x = xac_.AirObj[n].position.x;
+		let y = xac_.AirObj[n].position.y;
+		let z = -xac_.AirObj[n].position.z;
+		cam_.Target.x = PoM360(Math.atan2(y,z)*RadDeg - air_.AirRot.x);
+		cam_.Target.y = Mod360(Math.atan2(x,z)*RadDeg - air_.AirRot.y);
+		key_.Trgflg = 1;
+		console.log(cam_.Target.x);
+	}
 }
 
 //- Reset Position (wip) -------//----------------------------------------------
