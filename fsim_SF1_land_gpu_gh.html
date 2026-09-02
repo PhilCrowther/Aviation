@@ -1,6 +1,5 @@
 ﻿<!doctype html>
 <html>
-
 <!--
 /*******************************************************************************
 *
@@ -10,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 20 Aug 2026
+Version dated 1 Sep 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -1484,6 +1483,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.YwRL) air_.RotDif.y = -KeyVal.z;	// YawL - keyboard right
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = KeyVal.z;	// YawR - keyboard right
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0.01;	// Brakes
+	if (event.keyCode == key_.Targ) findTarg();			// Targeting ("t")
 	// Views
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 1;	// Orbit View
 	if (event.keyCode == key_.VU45) key_.U45flg = 1;	// View - 45 deg up
@@ -1527,6 +1527,7 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == key_.YwRL) air_.RotDif.y = 0;	// YawL - keyboard right
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = 0;	// YawR - keyboard right
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0;	// Brakes
+	if (event.keyCode == key_.Targ) key_.Trgflg = 0;	// Targeting ("t")
 	// Views
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 0;	// Orbit View
 	if (event.keyCode == key_.VU45) key_.U45flg = 0;	// View - 45 deg up
@@ -1603,6 +1604,22 @@ function toglInfo() {
 	gen_.InfoOn++
 	if (gen_.InfoOn == 3) gen_.InfoOn = 0;
 	InfoText();
+}
+
+//. Select Target ..............................................................
+function findTarg() {
+	key_.Trgflg = 0;			// Default
+	if (myg_.HitTgt && !cam_.CamFlg) {	// If external view and there is a target
+		let n = myg_.HitTgt-1;		// Airplane
+//		x = xac_.AirObj[n].position.x;
+//		z = -xac_.AirObj[n].position.z;
+//		Air_Tgt = Mod360(Math.atan2(x,z)*RadDeg);
+//		Air_Tgt = PoM360(Mod360(Air_Tgt - air_.AirRot.y));
+		cam_.Target.x = 0;
+		cam_.Target.y = Mod360(bfm_.PosAbs[n].y +180 - air_.AirRot.y);
+		key_.Trgflg = 1;
+		console.log(cam_.Target.y);
+	}
 }
 
 //= WINDOW RESIZE ==============//==============================================
