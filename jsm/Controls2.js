@@ -223,7 +223,6 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				else if (key_.Trgflg) {						// Targeting
 					cam_.CamLLD.x = cam_.Target.x;
 					cam_.CamLLD.y = cam_.Target.y;
-					cam_.CamLLD.z = -air_.AirRot.z;
 				}
 			}	
 			//	Internal View
@@ -272,7 +271,7 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 			}
 		}
 		gen_.camera.rotation.x = cam_.CmAdjX*DegRad; // + = up/airplane down
-		if (key_.Trgflg) gen_.camera.rotation.z = cam_.CamLLD.z*DegRad;
+		if (key_.Trgflg) gen_.camera.rotation.z = cam_.Target.z;
 		else {gen_.camera.rotation.z = 0};
 		// External Values
 		cam_.MshRot.rotation.x = Mod360(-cam_.CamLLD.x)*DegRad;
