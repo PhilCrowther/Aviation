@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 1 Sep 2026
+Version dated 4 Sep 2026
 
 @fileoverview
 The three.js pointer lock control (modified) and camera controls
@@ -130,14 +130,12 @@ function initCamera(cam_,air_,key_,gen_,mxr_,vxr_,InpMos) {
 	//- Final Adjustments ------------------------------------------------------
 	cam_.CamPar.add(cam_.MshRot);			// Attach Rotators to new CamPar (AirObj or CamPVC)
 	gen_.camera.rotation.y = cam_.CamAdj*DegRad;	// 180 = Looking in
-	//- Initialize Targeting Vairables -----------------------------------------
-	cam_.Target = new Vector3(0,0,0);
-	key_.Trgflg = 0;
-	//
+	//-	Move Camera ------------------------------------------------------------
 	moveCamera(cam_,air_,key_,gen_,InpMos);
 }
 
 //= MOVE CAMERA VIEW ===========//==============================================
+//	Called if not TrgFlg
 function moveCamera(cam_,air_,key_,gen_,InpMos) {
 	gen_.camera.rotation.x = 0;		// Default
 	//	Starting Head Rotation
@@ -185,10 +183,6 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				else if (key_.R90flg) cam_.CamLLD.y = 90;	// Look Right 90
 				else if (key_.LBkflg) cam_.CamLLD.y = 225;	// Look Left 135
 				else if (key_.RBkflg) cam_.CamLLD.y = 135;	// Look Right 135
-				else if (key_.Trgflg) {						// Targeting
-					cam_.CamLLD.x = cam_.Target.x;
-					cam_.CamLLD.y = cam_.Target.y;
-				}
 			}
 			//	Internal View
 			else {
@@ -220,10 +214,6 @@ function moveCamera(cam_,air_,key_,gen_,InpMos) {
 				else if (key_.R45flg) cam_.CamLLD.y = 315;	// Look Right 45
 				else if (key_.L90flg) cam_.CamLLD.y = 90;	// Look Left 90
 				else if (key_.R90flg) cam_.CamLLD.y = 270;	// Look Right 90
-				else if (key_.Trgflg) {						// Targeting
-					cam_.CamLLD.x = cam_.Target.x;
-					cam_.CamLLD.y = cam_.Target.y;
-				}
 			}	
 			//	Internal View
 			else {
