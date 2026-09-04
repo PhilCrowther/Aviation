@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260901
+*	FSIM SF1 DATA: 260904
 *
 *********************************************************************************
 
@@ -724,7 +724,8 @@ let cam_ = {
 		SrcFlg: [0,1],			// 1 = Internal View
 		SrcLnk: [1,1],			// 1 = Linked to Airplane
 		//	Target
-		Target: 0,				// Direction to Target (lat/lon) Vector2
+		TrgBas: 0,				// Target Camera Base
+		TrgRot: 0,				// Direction to Target (lat/lon) Vector2
 	}
 
 //= 8. OUTPUT VARIABLES ========//==============================================
