@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 1 Sep 2026
+Version dated 4 Sep 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -536,10 +536,15 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 
 //= CAMERA =====================//==============================================
 //- Create Internal Attach Point
-const CamPVC = new THREE.Object3D();
+let CamPVC = new THREE.Object3D();
 	CamPVC.rotation.order = "YXZ";
 	CamPVC.position.set(0,0.7,0.125); // Internal View
 	air_.AirPBY.add(CamPVC); 	// Attach CamPVC to AirPBY (### not AirObj)
+//-	Target
+	cam_.TrgBas = new THREE.Object3D();
+	cam_.TrgBas.rotation.order = "YXZ";
+	scene.add(cam_.TrgBas);
+	cam_.TrgRot = new THREE.Vector2();
 //- Camera Inputs (External Camera linked to air_.AirPBY; 1 Internal Camera Linked to cam_.PVC)
 	cam_.SrcLLD = [new THREE.Vector3(-10,0,15),new THREE.Vector3(0,0,0.001)];
 	cam_.SrcMMD = [new THREE.Vector3(cam_.SrcLLD[0].z*0.5,cam_.SrcLLD[0].z*2.0,0.1),new THREE.Vector3(0,1,0.001)]; // In/Out - min,max,spd
@@ -664,7 +669,8 @@ function rendAll() {
 		tim_.GrvDLT = GrvMPS*tim_.DLTim2;
 		timer.update();			// update timer
 		// Camera
-		moveCamera(cam_,air_,key_,gen_,InpMos);
+		if (!key_.Trgflg) moveCamera(cam_,air_,key_,gen_,InpMos);
+		if (key_.Trgflg) moveTarget();
 		// Move Objects
 		moveAirPln();			// Move aircaft
 		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
@@ -698,6 +704,31 @@ function moveEvents() {
 		initBomExp(2,new THREE.Vector3(200,0,275),240);
 		fxd_.ObjAdr[0].visible = false;	// undamaged model invisible
 		fxd_.ObjAdr[1].visible = true;	// damaged model visible
+	}
+}
+
+//= MOVE TARGETING ================//===========================================
+function moveTarget() {
+	//	Turn Off Tracking - if (1) No Target; or (2) Not External Camera View
+	if (!myg_.HitTgt || cam_.CamFlg) {
+		key_.Trgflg = 0; // Turn Off Tracking
+		initCamPup();
+	}
+	//	If Still Tracking
+	if (key_.Trgflg) {			// If external view and there is a target
+		let n, x, y, z, xz;
+		n = myg_.HitTgt-1;	// Airplane
+		//	Heading
+		x = xac_.MapPos[n].x - air_.MapPos.x;
+		z = xac_.MapPos[n].z - air_.MapPos.z;
+		cam_.TrgRot.y = -Mod360(Math.atan2(x,z)*RadDeg); // Heading
+		//	Pitch
+		y = xac_.MapPos[n].y - air_.MapPos.y; // Vertical Distance
+		xz = Math.sqrt(x**2 + z**2); // Horizontal Distance		
+		cam_.TrgRot.x = Mod360(Math.atan2(y,xz)*RadDeg);
+		//	Rotate
+		cam_.TrgBas.rotation.x = cam_.TrgRot.x*DegRad;
+		cam_.TrgBas.rotation.y = cam_.TrgRot.y*DegRad;
 	}
 }
 
@@ -1483,7 +1514,6 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.YwRL) air_.RotDif.y = -KeyVal.z;	// YawL - keyboard right
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = KeyVal.z;	// YawR - keyboard right
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0.01;	// Brakes
-	if (event.keyCode == key_.Targ) findTarg();			// Targeting ("t")
 	// Views
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 1;	// Orbit View
 	if (event.keyCode == key_.VU45) key_.U45flg = 1;	// View - 45 deg up
@@ -1508,6 +1538,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.Auto) toglAuto();			// Toggle AutoPilot
 	if (event.keyCode == key_.Soun) toglSoun();			// Toggle Sound
 	if (event.keyCode == key_.Info) toglInfo();			// Toggle Information
+	if (event.keyCode == key_.Targ) toglTarg();			// Targeting ("m")
 }
 
 //-	Keyboard (Up) --------------------------------------------------------------
@@ -1527,7 +1558,6 @@ function onDocumentKeyUp(event) {
 	if (event.keyCode == key_.YwRL) air_.RotDif.y = 0;	// YawL - keyboard right
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = 0;	// YawR - keyboard right
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0;	// Brakes
-	if (event.keyCode == key_.Targ) key_.Trgflg = 0;	// Targeting ("t")
 	// Views
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 0;	// Orbit View
 	if (event.keyCode == key_.VU45) key_.U45flg = 0;	// View - 45 deg up
@@ -1606,19 +1636,15 @@ function toglInfo() {
 	InfoText();
 }
 
-//. Select Target ..............................................................
-function findTarg() {
-	key_.Trgflg = 0;			// Default
-	if (myg_.HitTgt && !cam_.CamFlg) {	// If external view and there is a target
-		let n = myg_.HitTgt-1;		// Airplane
-//		x = xac_.AirObj[n].position.x;
-//		z = -xac_.AirObj[n].position.z;
-//		Air_Tgt = Mod360(Math.atan2(x,z)*RadDeg);
-//		Air_Tgt = PoM360(Mod360(Air_Tgt - air_.AirRot.y));
-		cam_.Target.x = 0;
-		cam_.Target.y = Mod360(bfm_.PosAbs[n].y +180 - air_.AirRot.y);
+//. Toggle Target ..............................................................
+function toglTarg() {
+	if (key_.Trgflg == 0 && myg_.HitTgt && !cam_.CamFlg) {
 		key_.Trgflg = 1;
-		console.log(cam_.Target.y);
+		cam_.TrgBas.add(cam_.MshRot); // Attach Rotator (makes view level with horizon)
+	}
+	else {
+		key_.Trgflg = 0;
+		initCamPup();
 	}
 }
 
