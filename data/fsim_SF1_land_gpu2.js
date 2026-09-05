@@ -97,6 +97,7 @@ let gen_ = {
 		//- Display
 		PawsOn:	0,				// Pause
 		InfoOn:	0,				// Info
+		MesgOn: 0,
 		SndFlg:	0,				// Sound (0 = off; 1 = on)
 		StatOn:	1,				// Stats (0 = off, 1 = on)
 		LnFFlg:	1,				// Lensflare
