@@ -793,7 +793,7 @@ let On_Inf9Node = document.createTextNode("");
 	On_Inf9Element.appendChild(On_Inf9Node);
 //	Messages
 let On_Msg0Element = document.getElementById("On_Msg0");
-let	OnMsg0Node = document.createTextNode("");
+let	On_Msg0Node = document.createTextNode("");
 	On_Msg0Element.appendChild(OnMsg0Node);
 let On_Msg1Element = document.getElementById("On_Msg1");
 let On_Msg1Node = document.createTextNode("");
