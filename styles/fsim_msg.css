@@ -24,10 +24,10 @@ canvas {
 /* Messages */
 .overlay0 {
 	position: absolute;
-	top: 10%;
+	top: 5%;
 	left: 2%;
-	width: 220px;
-	height: 110px;
+	width: 250px;
+	height: 50px;
 	color: black;
 	font-family: "Courier New";
 	font-size: 18pt;
