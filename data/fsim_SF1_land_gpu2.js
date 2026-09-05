@@ -761,12 +761,12 @@ let Air_AtPElement = document.getElementById("Air_AtP"); // Autopilot
 let Air_AtPNode = document.createTextNode("");
 	Air_AtPElement.appendChild(Air_AtPNode);
 //	Messages
-let On_Msg0Element = document.getElementById("On_Msg0");
-let On_Msg0Node = document.createTextNode("");
-	On_Msg0Element.appendChild(On_Msg0Node);
 let On_Msg1Element = document.getElementById("On_Msg1");
 let On_Msg1Node = document.createTextNode("");
 	On_Msg1Element.appendChild(On_Msg1Node);
+let On_Msg2Element = document.getElementById("On_Msg2");
+let On_Msg2Node = document.createTextNode("");
+	On_Msg2Element.appendChild(On_Msg2Node);
 //	Information
 let On_Inf0Element = document.getElementById("On_Inf0");
 let On_Inf0Node = document.createTextNode("");
@@ -801,7 +801,7 @@ let On_Inf9Node = document.createTextNode("");
 //	Variables
 let Air_Pwr,Air_Spd,Air_Alt,Air_Bnk,Air_Hdg,Air_CfL,Air_GFm;
 let On_Paws,Air_AtP;
-let On_Msg0,On_Msg1;
+let On_Msg1,On_Msg2;
 let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
 //= 9. INPUT VARIABLES =========//==============================================
