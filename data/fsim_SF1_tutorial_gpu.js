@@ -868,6 +868,6 @@ let key_ = {
 		R90flg:	0,				// Right 90 degrees
 		Trgflg:	0,				// Targeting
 		//	Messages
-		MsgNxt: 190,			// Next Message
-		MsgBak: 188,			// Prior Message
+		MNxt: 	190,			// Next Message
+		MBak: 	188,			// Prior Message
 };
