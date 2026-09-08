@@ -21,7 +21,7 @@ canvas {
 	height: 100%;
 	z-index: 0;
 }
-/* Messages */
+/* Messages (Top Left)*/
 .overlay0 {
 	position: absolute;
 	top: 5%;
@@ -34,7 +34,7 @@ canvas {
 	font-weight: bold;
 	z-index: 1;
 }
-/* Data */
+/* Data (Middle Left)*/
 .overlay1 {
 	position: absolute;
 	top: 40%;
@@ -47,7 +47,7 @@ canvas {
 	font-weight: bold;
 	z-index: 1;
 }
-/* Toggle */
+/* Toggle (Right Middle)*/
 .overlay2 {
 	position: absolute;
 	top: 40%;
@@ -60,13 +60,13 @@ canvas {
 	font-weight: bold;
 	z-index: 1;
 }
-/* Instructions */
+/* Instructions (Bottom Left)*/
 .overlay3 {
 	position: absolute;
-	top: 60%;
+	top: 70%;
 	left: 2%;
 	width: 35%;
-	height: 500px;
+	height: 400px;
 	color: black;
 	font-family: "Courier New";
 	font-size: 14pt;
