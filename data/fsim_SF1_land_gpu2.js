@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260904
+*	FSIM SF1 DATA: 260908
 *
 *********************************************************************************
 
@@ -97,7 +97,6 @@ let gen_ = {
 		//- Display
 		PawsOn:	0,				// Pause
 		InfoOn:	0,				// Info
-		MsgIdx: 0,				// Tutorial Index
 		SndFlg:	0,				// Sound (0 = off; 1 = on)
 		StatOn:	1,				// Stats (0 = off, 1 = on)
 		LnFFlg:	1,				// Lensflare
@@ -440,30 +439,32 @@ let vxr_ = {
 
 //- My Guns --------------------//----------------------------------------------
 let myg_ = {
-		// Data
+		//	Data
 		BulSpd: 744,			// Muzzle Velocity (mps)
 		BulDLT: 0.5,			// Max Bullet Time in Flight
 		BulNum: 16,				// Number of Tracers
 		BulSpc: 0.125,			// Bullet Spacing (4*BulDLT/BulNum)
 		BulSp2: 0.125,			// Bullet Spacing - time remaining
-		// Appearance
+		//	Appearance
 		BulClr: 0,				// Tracer Colors X2 (Vector2) Alternating
 		BulLen: 10,				// Tracer Length (meters)
 		BulWid: 5,				// Tracer Width - Line2
-		// Object
+		//	Object
 		BulPtr: [0],			// Bullet Objects
 		BulMpS: [0],			// Bullet Speed
 		BulTim: [0],			// Bullet Time in Flight
-		// Sound
+		//	Sound
 		ObjNum: 2,				// Number of Barrels
 		ObjPos: [0,0],			// Position of Each Barrel
 		SndSrc: 0,				// File (my guns)
 		SndPtr: [0,0],			// For Each Gun
 		SndVol: 0.5,			// Volume
 		SndMsh: [0,0],			// For Each Gun
-		// HitBox
+		//	HitBox
 		HitTgt: 1,				// Hit Target (1 = enemy airplane)
 		HitDst: 10,				// Hit Radius
+		//	Combat Flag
+		BegBat: 0,				// Begin Battle
 	}
 
 //- Moving Airplanes -----------//----------------------------------------------
@@ -767,6 +768,15 @@ let On_Msg1Node = document.createTextNode("");
 let On_Msg2Element = document.getElementById("On_Msg2");
 let On_Msg2Node = document.createTextNode("");
 	On_Msg2Element.appendChild(On_Msg2Node);
+let On_Msg3Element = document.getElementById("On_Msg3");
+let On_Msg3Node = document.createTextNode("");
+	On_Msg3Element.appendChild(On_Msg3Node);
+let On_Msg4Element = document.getElementById("On_Msg4");
+let On_Msg4Node = document.createTextNode("");
+	On_Msg4Element.appendChild(On_Msg4Node);
+let On_Msg5Element = document.getElementById("On_Msg5");
+let On_Msg5Node = document.createTextNode("");
+	On_Msg5Element.appendChild(On_Msg5Node);
 //	Information
 let On_Inf0Element = document.getElementById("On_Inf0");
 let On_Inf0Node = document.createTextNode("");
@@ -801,7 +811,7 @@ let On_Inf9Node = document.createTextNode("");
 //	Variables
 let Air_Pwr,Air_Spd,Air_Alt,Air_Bnk,Air_Hdg,Air_CfL,Air_GFm;
 let On_Paws,Air_AtP;
-let On_Msg1,On_Msg2;
+let On_Msg1,On_Msg2,On_Msg3,On_Msg4,On_Msg5;
 let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
 //= 9. INPUT VARIABLES =========//==============================================
@@ -818,11 +828,10 @@ let key_ = {
 		PitD:	38,				// Pitch down (up arrow) - autopilot only
 		YwLL:	90,				// Yaw Left (z) - keyboard left
 		YwLR:	88,				// Yaw Left (x) - keyboard left
-		YwRL:	188,			// Yaw Left (,) - keyboard right
-		YwRR:	190,			// Yaw Left (.) - keyboard right
 		Brak:	66,				// Brakes (b)
 		Guns:	32,				// Guns (spacebar)
 		Targ:	77,				// Targeting (m)
+		Batl:	75,				// Megin Battle (k)
 		//	View
 		Look:	16,				// Pan (shift)
 		//	View Keys (Keypad Num Lock)
@@ -858,4 +867,7 @@ let key_ = {
 		L90flg:	0,				// Left 90 degrees
 		R90flg:	0,				// Right 90 degrees
 		Trgflg:	0,				// Targeting
+		//	Messages
+		MNxt: 	190,			// Next Message
+		MBak: 	188,			// Prior Message
 };
