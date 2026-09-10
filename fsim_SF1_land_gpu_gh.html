@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 8 Sep 2026
+Version dated 10 Sep 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -543,7 +543,7 @@ let DlyTm5 = 300;				// 5 Seconds
 //	Variables
 let msg_ =	{
 		MsgDly: DlyTm3,
-		MsgMax: 28,				// Number of Messages - 1
+		MsgMax: 29,				// Number of Messages - 1
 		MsgIdx: 0,				// Message Index
 		HdgMax: 9,				// Number of Headings - 1
 		HdgIdx: 1,				// Heading Index (start at 1)
@@ -552,8 +552,8 @@ let msg_ =	{
 let MsgIdx = [onMsg00,onMsg01,onMsg02,onMsg03,onMsg04,onMsg05,onMsg06,onMsg07,onMsg08,onMsg09,
 			  onMsg10,onMsg11,onMsg12,onMsg13,onMsg14,onMsg15,onMsg16,onMsg17,onMsg18,onMsg19,
 			  onMsg20,onMsg21,onMsg22,onMsg23,onMsg24,onMsg25,onMsg26,onMsg27,onMsg28,onMsg29,
-			  onMsg30,onMsg31,onMsg32];
-let HdgIdx = [0,1,7,13,16,19,21,23,26,30];	// Empty,Basic,Takeoff,Stalls,Turns,Rolls,Loops,Autopilot,Landing
+			  onMsg30];
+let HdgIdx = [0,1,7,10,14,17,20,22,24,28];	// Empty,Basic,Takeoff,Climb,Stalls,Turns,Rolls,Loops,Landing,AirCombat
 
 //=	MY SOUNDS ==================//==============================================
 //- Adjustments
@@ -1492,6 +1492,7 @@ function prntMsgTxt() {
 	if (msg_.MsgDly == 1) msg_.MsgIdx++;
 }
 
+//	BLANK
 function onMsg00(){
 	On_Msg1Node.nodeValue = "";
 	On_Msg2Node.nodeValue = "";
@@ -1500,19 +1501,20 @@ function onMsg00(){
 	On_Msg5Node.nodeValue = "";
 }
 
+//	BASICS
 function onMsg01(){
-	On_Msg1Node.nodeValue = "TUTORIAL";
+	On_Msg1Node.nodeValue = "BASICS";
 	On_Msg2Node.nodeValue = "Press > Key for Next Heading";
 	On_Msg3Node.nodeValue = "or to hide tutorial";
 	On_Msg4Node.nodeValue = "Press < Key for Prior Message";
-	On_Msg5Node.nodeValue = "or to hide tutorial";	
+	On_Msg5Node.nodeValue = "in Heading";	
 	msg_.MsgDly = DlyTm5;
 }
 
 //	Mouse
 function onMsg02(){
 	On_Msg1Node.nodeValue = "Mouse Controls:";	
-	On_Msg2Node.nodeValue = "Use Mouse to Maneuver.";
+	On_Msg2Node.nodeValue = "Use Mouse to Maneuver";
 	On_Msg3Node.nodeValue = "Use Mousewheel for Throttle";
 	On_Msg4Node.nodeValue = "Use Mouse Buttons for Rudder";
 	On_Msg5Node.nodeValue = "";
@@ -1522,17 +1524,18 @@ function onMsg02(){
 //	View	
 function onMsg03(){
 	On_Msg1Node.nodeValue = "View Keys:";
-	On_Msg2Node.nodeValue = "To Change View, Press V Key.";
+	On_Msg2Node.nodeValue = "To Change View, Press V Key";
 	On_Msg3Node.nodeValue = "To Look Around, Hold Shift Key";
-	On_Msg4Node.nodeValue = "and Move Mouse simultaneously.";
+	On_Msg4Node.nodeValue = "and Move Mouse simultaneously";
+	On_Msg5Node.nodeValue = "";
 	msg_.MsgDly = DlyTm5;
 }
 
 //	Autopilot
 function onMsg04(){
 	On_Msg1Node.nodeValue = "Autopilot:";
-	On_Msg2Node.nodeValue = "Press A Key to Engage/Disengage.";
-	On_Msg3Node.nodeValue = "Use Arrow Keys to Pitch and Bank.";
+	On_Msg2Node.nodeValue = "Press A Key to Engage/Disengage";
+	On_Msg3Node.nodeValue = "Use Arrow Keys to Pitch and Bank";
 	On_Msg4Node.nodeValue = "(Don't Use for Extreme Maneuvers)";
 	On_Msg5Node.nodeValue = "";
 	msg_.MsgDly = DlyTm5;
@@ -1542,9 +1545,9 @@ function onMsg04(){
 function onMsg05(){
 	On_Msg1Node.nodeValue = "Miscellaneous Keys:";
 	On_Msg2Node.nodeValue = "Throttle: w/q or -/+ Keys";
-	On_Msg3Node.nodeValue = "Rudder: z/x Keys.";
-	On_Msg4Node.nodeValue = "Guns: Spacebar.";
-	On_Msg5Node.nodeValue = "Brakes: B Key.";
+	On_Msg3Node.nodeValue = "Rudder: z/x Keys";
+	On_Msg4Node.nodeValue = "Guns: Spacebar";
+	On_Msg5Node.nodeValue = "Brakes: B Key";
 	msg_.MsgDly = DlyTm5;
 }
 
@@ -1553,238 +1556,239 @@ function onMsg06(){
 	On_Msg1Node.nodeValue = "Information";
 	On_Msg2Node.nodeValue = "Press I Key at Any Time";
 	On_Msg3Node.nodeValue = "to See Basic Information";
-	On_Msg4Node.nodeValue = "";
-	On_Msg5Node.nodeValue = "";
+	On_Msg4Node.nodeValue = "---";
+	On_Msg5Node.nodeValue = "Press > to continue";
 }
 
-//	Takeoff
+//	TAKEOFF
 function onMsg07(){
 	On_Msg1Node.nodeValue = "TAKEOFF";
-	On_Msg2Node.nodeValue = "";
-	On_Msg3Node.nodeValue = "";
-	On_Msg4Node.nodeValue = "";
-	On_Msg5Node.nodeValue = "";	
+	On_Msg2Node.nodeValue = "-------";
+	On_Msg3Node.nodeValue = "next";
+	On_Msg4Node.nodeValue = "CLIMB";
+	On_Msg5Node.nodeValue = "STALLS";	
 	msg_.MsgDly = DlyTm5;
 }
 
 //	Takeoff
 function onMsg08(){
 	On_Msg1Node.nodeValue = "Use Mousewheel or w/+ Key";
-	On_Msg2Node.nodeValue = "to increase Throttle.";
-	On_Msg3Node.nodeValue = "";
-	msg_.MsgDly = DlyTm5;
+	On_Msg2Node.nodeValue = "increase Throttle to 100%";
+	On_Msg3Node.nodeValue = "At 50 mph, move Mouse back";
+	On_Msg4Node.nodeValue = "This causes the Airplane";
+	On_Msg5Node.nodeValue = "to Pitch Up";
 }
 
 //	Takeoff
 function onMsg09(){
-	On_Msg1Node.nodeValue = "Move Mouse Towards You.";
-	On_Msg2Node.nodeValue = "This Causes the Airplane";
-	On_Msg3Node.nodeValue = "to Pitch Up.";
-	On_Msg4Node.nodeValue = "";
-	msg_.MsgDly = DlyTm5;
+	On_Msg1Node.nodeValue = "At 50 mph, move Mouse back";
+	On_Msg2Node.nodeValue = "This causes the Airplane";
+	On_Msg3Node.nodeValue = "to Pitch Up";
+	On_Msg4Node.nodeValue = "---";
+	On_Msg5Node.nodeValue = "Press > to Continue";
 }
 
-//	Takeoff
+//	CLIMB
 function onMsg10(){
-	On_Msg1Node.nodeValue = "Pitching Up Creates Lift";
-	On_Msg2Node.nodeValue = "due to a Combination of";
-	On_Msg3Node.nodeValue = "Angle of Attack (AoA)";
-	On_Msg4Node.nodeValue = "and Airspeed.";
+	On_Msg1Node.nodeValue = "CLIMB";
+	On_Msg2Node.nodeValue = "-----";
+	On_Msg3Node.nodeValue = "next";
+	On_Msg4Node.nodeValue = "STALLS";
+	On_Msg5Node.nodeValue = "TURNS";
 	msg_.MsgDly = DlyTm5;
 }
 
-//	Takeoff
+//	Climb
 function onMsg11(){
-	On_Msg1Node.nodeValue = "AoA is the Difference";
-	On_Msg2Node.nodeValue = "Between the Wing Angle";
-	On_Msg3Node.nodeValue = "and Direction of Flight.";
-	On_Msg4Node.nodeValue = "";
+	On_Msg1Node.nodeValue = "Pitching Up creates Lift";
+	On_Msg2Node.nodeValue = "due to a combination of";
+	On_Msg3Node.nodeValue = "Angle of Attack (AoA)";
+	On_Msg4Node.nodeValue = "and Airspeed";
+	On_Msg5Node.nodeValue = "";
 	msg_.MsgDly = DlyTm5;
 }
 
-//	Take0ff
+//	Climb
 function onMsg12(){
-	On_Msg1Node.nodeValue = "Max AoA is Roughly";
-	On_Msg2Node.nodeValue = "+/- 16 degrees.";
-	On_Msg3Node.nodeValue = "Coefficient of Lift (CfL)";
-	On_Msg4Node.nodeValue = "is Roughly 0.1 X AoA.";
-}
-
-//	Stalls
-function onMsg13(){
-	On_Msg1Node.nodeValue = "STALLS";
-	On_Msg2Node.nodeValue = "";
-	On_Msg3Node.nodeValue = "";
-	On_Msg4Node.nodeValue = "";
-	On_Msg5Node.nodeValue = "";	
+	On_Msg1Node.nodeValue = "AoA is the difference";
+	On_Msg2Node.nodeValue = "between the Wing Angle";
+	On_Msg3Node.nodeValue = "and Direction of Flight";
+	On_Msg4Node.nodeValue = "Max AoA is roughly";
+	On_Msg5Node.nodeValue = "+/- 16 degrees";
 	msg_.MsgDly = DlyTm5;
 }
 
-//	Stalls
+//	Climb
+function onMsg13(){
+	On_Msg1Node.nodeValue = "Coefficient of Lift (CfL)";
+	On_Msg2Node.nodeValue = "is roughly 0.1 X AoA";
+	On_Msg3Node.nodeValue = "";
+	On_Msg4Node.nodeValue = "---";
+	On_Msg5Node.nodeValue = "Press > Key to continue";
+}
+
+//	STALLS
 function onMsg14(){
-	On_Msg1Node.nodeValue = "An AoA Beyond Max AoA";
-	On_Msg2Node.nodeValue = "No Longer Creates Lift.";
-	On_Msg3Node.nodeValue = "This is called a Stall.";
-	On_Msg4Node.nodeValue = "";
+	On_Msg1Node.nodeValue = "STALLS";
+	On_Msg2Node.nodeValue = "------";
+	On_Msg3Node.nodeValue = "next";
+	On_Msg4Node.nodeValue = "TURNS";
+	On_Msg5Node.nodeValue = "AILERON ROLLS";	
 	msg_.MsgDly = DlyTm5;
 }
 
 //	Stalls
 function onMsg15(){
-	On_Msg1Node.nodeValue = "In a real Airplane, a Stall can";
-	On_Msg2Node.nodeValue = "cause a wing to drop or cause the";
-	On_Msg3Node.nodeValue = "Airplane to enter a spin.";
-	On_Msg4Node.nodeValue = "Your Pilot will not let you Stall.";
-}
-
-//	Turns
-function onMsg16(){
-	On_Msg1Node.nodeValue = "TURNS";
-	On_Msg2Node.nodeValue = "";
-	On_Msg3Node.nodeValue = "";
-	On_Msg4Node.nodeValue = "";
-	On_Msg5Node.nodeValue = "";	
+	On_Msg1Node.nodeValue = "An AoA Beyond Max AoA";
+	On_Msg2Node.nodeValue = "No Longer Creates Lift";
+	On_Msg3Node.nodeValue = "This is called a Stall";
+	On_Msg4Node.nodeValue = "and could cause the";
+	On_Msg5Node.nodeValue = "Airplane to spin out.";
 	msg_.MsgDly = DlyTm5;
 }
 
-//	Turns
+//	Stalls
+function onMsg16(){
+	On_Msg1Node.nodeValue = "However your skilled Pilot";
+	On_Msg5Node.nodeValue = "will not let you Stall";
+	On_Msg2Node.nodeValue = "and will hold you at Max AoA";
+	On_Msg2Node.nodeValue = "---";
+	On_Msg2Node.nodeValue = "Press > to continue";
+}
+
+//	TURNS
 function onMsg17(){
-	On_Msg1Node.nodeValue = "To Turn the Airplane,";
-	On_Msg2Node.nodeValue = "Move the Mouse Left or Right.";
-	On_Msg3Node.nodeValue = "This Banks the Airplane and";
-	On_Msg4Node.nodeValue = "Deflects Some Lift Sideways";
+	On_Msg1Node.nodeValue = "TURNS";
+	On_Msg2Node.nodeValue = "-----";
+	On_Msg3Node.nodeValue = "next";
+	On_Msg4Node.nodeValue = "AILERON ROLLS";
+	On_Msg5Node.nodeValue = "LOOPS";	
 	msg_.MsgDly = DlyTm5;
 }
 
 //	Turns
 function onMsg18(){
-	On_Msg1Node.nodeValue = "In a Level turn, You Need to";
-	On_Msg2Node.nodeValue = "Increase Pitch Slightly";
-	On_Msg3Node.nodeValue = "to Increase Total Lift and";
-	On_Msg4Node.nodeValue = "Replace Lift Deflected";
+	On_Msg1Node.nodeValue = "To turn the Airplane,";
+	On_Msg2Node.nodeValue = "Move the Mouse left or right";
+	On_Msg3Node.nodeValue = "This Banks the Airplane and";
+	On_Msg4Node.nodeValue = "deflects some Lift sideways";
+	On_Msg5Node.nodeValue = "";
+	msg_.MsgDly = DlyTm5;
 }
 
-//	Rolls
+//	Turns
 function onMsg19(){
-	On_Msg1Node.nodeValue = "AILERON ROLLS";
-	On_Msg2Node.nodeValue = "";
-	On_Msg3Node.nodeValue = "";
-	On_Msg4Node.nodeValue = "";
-	On_Msg5Node.nodeValue = "";
+	On_Msg1Node.nodeValue = "In a Level turn, you should";
+	On_Msg2Node.nodeValue = "increase Pitch slightly to";
+	On_Msg3Node.nodeValue = "increase Total Lift";
+	On_Msg4Node.nodeValue = "---";
+	On_Msg5Node.nodeValue = "Press > to continue";
+}
+
+//	ROLLS
+function onMsg20(){
+	On_Msg1Node.nodeValue = "ROLLS";
+	On_Msg2Node.nodeValue = "-----";
+	On_Msg3Node.nodeValue = "next";
+	On_Msg4Node.nodeValue = "LOOPS";
+	On_Msg5Node.nodeValue = "LANDING";
 	msg_.MsgDly = DlyTm5;
 }
 
 //	Rolls
-function onMsg20(){
-	On_Msg1Node.nodeValue = "Move Mouse Quickly Left or Right.";
-	On_Msg2Node.nodeValue = "If on Side, Use Rudder.";
-	On_Msg3Node.nodeValue = "If Upside Down, Move Mouse Forward.";
-	On_Msg4Node.nodeValue = "(Lift Works Both Ways)";
-	On_Msg5Node.nodeValue = "A Good Roll Takes Practice.";
-}
-
-//	Loops
 function onMsg21(){
+	On_Msg1Node.nodeValue = "Move Mouse Quickly Left or Right";
+	On_Msg2Node.nodeValue = "If Upside Down, move mouse forward";
+	On_Msg3Node.nodeValue = "A bood Roll takes practice";
+	On_Msg4Node.nodeValue = "---";
+	On_Msg5Node.nodeValue = "Press > to continue";
+}
+
+//	LOOPS
+function onMsg22(){
 	On_Msg1Node.nodeValue = "LOOPS";
-	On_Msg2Node.nodeValue = "";
-	On_Msg3Node.nodeValue = "";
-	On_Msg4Node.nodeValue = "";
-	On_Msg5Node.nodeValue = "";
+	On_Msg2Node.nodeValue = "-----";
+	On_Msg3Node.nodeValue = "next";
+	On_Msg4Node.nodeValue = "LANDING";
+	On_Msg5Node.nodeValue = "AIR COMBAT";
 	msg_.MsgDly = DlyTm5;
 }
 
 //	Loops
-function onMsg22(){
-	On_Msg1Node.nodeValue = "Build Up Speed.";
-	On_Msg2Node.nodeValue = "Start by Pitching Up";
-	On_Msg3Node.nodeValue = "Hold Pitch and You Should";
-	On_Msg4Node.nodeValue = "Complete the Loop.";
-	On_Msg5Node.nodeValue = "";
+function onMsg23(){
+	On_Msg1Node.nodeValue = "Speed to 100 mph";
+	On_Msg2Node.nodeValue = "Pitch Up and hold Pitch";
+	On_Msg3Node.nodeValue = "until Loop is complete.";
+	On_Msg4Node.nodeValue = "---";
+	On_Msg5Node.nodeValue = "Press > to continue";
 }
 
-//	Autopilot
-function onMsg23(){
-	On_Msg1Node.nodeValue = "AUTOPILOT";
-	On_Msg2Node.nodeValue = "";
-	On_Msg3Node.nodeValue = "";
+//	LANDING
+function onMsg24(){
+	On_Msg1Node.nodeValue = "LANDING";
+	On_Msg2Node.nodeValue = "-------";
+	On_Msg3Node.nodeValue = "next";
+	On_Msg4Node.nodeValue = "AIR COMBAT";
+	On_Msg5Node.nodeValue = "[BLANK]";
+	msg_.MsgDly = DlyTm5;
+}
+
+//	Landing
+function onMsg25(){
+	On_Msg1Node.nodeValue = "Use Mousewheel or q/- Key";
+	On_Msg2Node.nodeValue = "to decrease Throttle to zero";
+	On_Msg3Node.nodeValue = "The Airplane will descend";
 	On_Msg4Node.nodeValue = "";
 	On_Msg5Node.nodeValue = "";
 	msg_.MsgDly = DlyTm5;
-}
-
-//	Autopilot
-function onMsg24(){
-	On_Msg1Node.nodeValue = "Use Autopilot for Stable Flight";
-	On_Msg2Node.nodeValue = "or if You want to Look Around";
-	On_Msg3Node.nodeValue = "or Take Pictures.";
-	msg_.MsgDly = DlyTm5;
-}
-
-//	Autopilot
-function onMsg25(){
-	On_Msg1Node.nodeValue = "Press A Key to Engage Autopilot";
-	On_Msg2Node.nodeValue = "Use Arrow Keys to Pitch and Bank";
-	On_Msg3Node.nodeValue = "";
 }
 
 //	Landing
 function onMsg26(){
-	On_Msg1Node.nodeValue = "LANDING";
-	On_Msg2Node.nodeValue = "";
-	On_Msg3Node.nodeValue = "";
-	On_Msg4Node.nodeValue = "";
+	On_Msg1Node.nodeValue = "When you are about to Land,";
+	On_Msg2Node.nodeValue = "Pitch Up to level flight";
+	On_Msg3Node.nodeValue = "and add Power to slow descent.";
+	On_Msg4Node.nodeValue = "Ideally, you will land doftly.";
 	On_Msg5Node.nodeValue = "";
 	msg_.MsgDly = DlyTm5;
 }
 
 //	Landing
 function onMsg27(){
-	On_Msg1Node.nodeValue = "Use Mousewheel or q/- Key";
-	On_Msg2Node.nodeValue = "to Decrease Throttle to Zero.";
-	On_Msg3Node.nodeValue = "The Airplane Will Descend";
-	msg_.MsgDly = DlyTm5;
-}
-
-//	Landing
-function onMsg28(){
-	On_Msg1Node.nodeValue = "As You Are About to Land,";
-	On_Msg2Node.nodeValue = "Raise the Nose to Level Flight";
-	On_Msg3Node.nodeValue = "and Add Power to Prevent Stall";
-	msg_.MsgDly = DlyTm5;
-}
-
-//	Landing
-function onMsg29(){
-	On_Msg1Node.nodeValue = "Ideally, You Have Land Softly.";
-	On_Msg2Node.nodeValue = "Press B Key to Apply Brakes.";
+	On_Msg1Node.nodeValue = "Once you have landed.";
+	On_Msg2Node.nodeValue = "Press B Key to apply Brakes";
 	On_Msg3Node.nodeValue = "";
+	On_Msg4Node.nodeValue = "---";
+	On_Msg5Node.nodeValue = "Press > Key to continue";
+}
+
+//	AIR COMBAT
+function onMsg28(){
+	On_Msg1Node.nodeValue = "AIR COMBAT";
+	On_Msg2Node.nodeValue = "----------";
+	On_Msg3Node.nodeValue = "next";
+	On_Msg4Node.nodeValue = "[BLANK]";
+	On_Msg5Node.nodeValue = "BASICS";
+	msg_.MsgDly = DlyTm5;
+}
+
+//	Air Combat
+function onMsg29(){
+	On_Msg1Node.nodeValue = "Press K Key to start combat";
+	On_Msg2Node.nodeValue = "Enemy will fly towards you";
+	On_Msg3Node.nodeValue = "Switch to external view";
+	On_Msg4Node.nodeValue = "Press M Key to track Enemy";
+	On_Msg5Node.nodeValue = "Press Spacebar to fire Guns";
+	msg_.MsgDly = DlyTm5;
 }
 
 //	Air Combat
 function onMsg30(){
-	On_Msg1Node.nodeValue = "AIR COMBAT";
-	On_Msg2Node.nodeValue = "";
-	On_Msg3Node.nodeValue = "";
-	On_Msg4Node.nodeValue = "";
-	On_Msg5Node.nodeValue = "";
-	msg_.MsgDly = DlyTm5;
-}
-
-//	Air Combat
-function onMsg31(){
-	On_Msg1Node.nodeValue = "Press K Key to Start.";
-	On_Msg2Node.nodeValue = "Enemy will fly towards you.";
-	On_Msg3Node.nodeValue = "Switch to external view.";
-	On_Msg4Node.nodeValue = "Press M Key to track Enemy";
-	msg_.MsgDly = DlyTm5;
-}
-
-//	Air Combat
-function onMsg32(){
-	On_Msg1Node.nodeValue = "Press Spacebar to fire guns.";
-	On_Msg2Node.nodeValue = "Smoke indicates damage.";
-	On_Msg3Node.nodeValue = "Fire indicates a kill.";
-	On_Msg4Node.nodeValue = "Next Enemy will attack.";
+	On_Msg1Node.nodeValue = "Smoke indicates damage";
+	On_Msg2Node.nodeValue = "Fire indicates a kill";
+	On_Msg3Node.nodeValue = "Next Enemy will attack";
+	On_Msg4Node.nodeValue = "---";
+	On_Msg5Node.nodeValue = "Press > Key to continue";
 }
 
 /*******************************************************************************
@@ -1994,7 +1998,8 @@ function toglMNxt() {
 //.	Previous Message ...........//..............................................
 function toglMBak() {
 	msg_.MsgIdx--;
-	if (msg_.MsgIdx < 0) msg_.MsgIdx = 0;
+//	if (msg_.MsgIdx < 0) msg_.MsgIdx = 0;
+	if (msg_.MsgIdx < HdgIdx[msg_.HdgIdx]) msg_.MsgIdx = HdgIdx[msg_.HdgIdx];
 	msg_.MsgDly = 1;			// If Manual, No Delay
 }
 
