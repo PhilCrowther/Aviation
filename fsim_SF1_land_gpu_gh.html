@@ -1574,9 +1574,10 @@ function onMsg07(){
 function onMsg08(){
 	On_Msg1Node.nodeValue = "Use Mousewheel or w/+ Key";
 	On_Msg2Node.nodeValue = "increase Throttle to 100%";
-	On_Msg3Node.nodeValue = "At 50 mph, move Mouse back";
-	On_Msg4Node.nodeValue = "This causes the Airplane";
-	On_Msg5Node.nodeValue = "to Pitch Up";
+	On_Msg3Node.nodeValue = "";
+	On_Msg4Node.nodeValue = "";
+	On_Msg5Node.nodeValue = "";
+	msg_.MsgDly = DlyTm5;
 }
 
 //	Takeoff
@@ -1687,7 +1688,7 @@ function onMsg19(){
 
 //	ROLLS
 function onMsg20(){
-	On_Msg1Node.nodeValue = "ROLLS";
+	On_Msg1Node.nodeValue = "AILERON ROLLS";
 	On_Msg2Node.nodeValue = "-----";
 	On_Msg3Node.nodeValue = "next";
 	On_Msg4Node.nodeValue = "LOOPS";
