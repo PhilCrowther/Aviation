@@ -760,6 +760,9 @@ let Air_AtPElement = document.getElementById("Air_AtP"); // Autopilot
 let Air_AtPNode = document.createTextNode("");
 	Air_AtPElement.appendChild(Air_AtPNode);
 //	Messages
+let On_MsgsElement = document.getElementById("On_Msgs");
+let On_MsgsNode = document.createTextNode("");
+	On_MsgsElement.appendChild(On_MsgsNode);
 let On_Msg1Element = document.getElementById("On_Msg1");
 let On_Msg1Node = document.createTextNode("");
 	On_Msg1Element.appendChild(On_Msg1Node);
@@ -809,7 +812,7 @@ let On_Inf9Node = document.createTextNode("");
 //	Variables
 let Air_Pwr,Air_Spd,Air_Alt,Air_Bnk,Air_Hdg,Air_CfL,Air_GFm;
 let On_Paws,Air_AtP;
-let On_Msg1,On_Msg2,On_Msg3,On_Msg4,On_Msg5;
+let On_Msgs,On_Msg1,On_Msg2,On_Msg3,On_Msg4,On_Msg5;
 let On_Inf0,On_Inf1,On_Inf2,On_Inf3,On_Inf4,On_Inf5,On_Inf6,On_Inf7,On_Inf8,On_Inf9;
 
 //= 9. INPUT VARIABLES =========//==============================================
@@ -857,6 +860,7 @@ let key_ = {
 		Soun:	83,				// Toggle sound (s)
 		Auto:	65,				// Autopilot (a)
 		Info:	73,				// Info (i)
+		Msgs:	84,				// Tutorial (t)
 		//	Flags
 		U45flg:	0,				// Up 45 degrees
 		D45flg:	0,				// Down 45 degrees
