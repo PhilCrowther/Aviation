@@ -46,6 +46,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 		<div><span id="On_Paws"></span></div>
 		<div><span id="Air_AtP"></span></div>
 		<div><span id="On_Inf0"></span></div>
+		<div><span id="On_Msgs"></span></div>
 	</div>
 	<div class="overlay3">
 		<div><span id="On_Inf1"></span></div>
@@ -542,9 +543,10 @@ let DlyTm3 = 180;				// 3 Seconds
 let DlyTm5 = 300;				// 5 Seconds
 //	Variables
 let msg_ =	{
-		MsgDly: DlyTm3,
+		MsgFlg: 0,				// Tutorial On
+		MsgDly: 0,
 		MsgMax: 29,				// Number of Messages - 1
-		MsgIdx: 0,				// Message Index
+		MsgIdx: 1,				// Message Index
 		HdgMax: 9,				// Number of Headings - 1
 		HdgIdx: 1,				// Heading Index (start at 1)
 	}
@@ -670,6 +672,7 @@ function initAll() {
 	PawsText();
 	AutoText();
 	InfoText();
+	MsgsText();
 	tim_.NowTim = timer.getElapsed(); // Initialize Timer
 	gen_.LodFlg = 1;
 }
@@ -981,8 +984,8 @@ function BFM(n) {
 	bfm_.MapDif[n].z = xac_.AirObj[n].position.z;
 //	if (bfm_.RotOff[n].y > 90 && bfm_.RotOff[n].y < 270) bfm_.MapDif[n].x = bfm_.MapDif[n].x + 10; // ### No Head-On (Not Work)
 	bfm_.VecHrz[n] = Math.sqrt(bfm_.MapDif[n].x**2+bfm_.MapDif[n].z**2); // Horizontal Distance
-//	if (air_.MapPos.y*Mtr2Ft > 800) {	// Start Battle If Height > 800 feet
-	if (myg_.BegBat) {			// Use Key to Start Battle
+	if ((!msg_.MsgFlg && air_.MapPos.y*Mtr2Ft > 800) || myg_.BegBat) {	// Start Battle If Tutorial Off and Height > 800 feet or if K Key pressed
+//	if (myg_.BegBat) {			// Use Key to Start Battle
 		bfm_.BFMflg[n] = 1;		// Start Engagement
 		for (let n = 0; n < aaf_.ObjNum; n ++) {	// Stop AAA
 			aaf_.AAAFlg[n] = 0;
@@ -1482,14 +1485,23 @@ function onInfo2(){
 	On_Inf9Node.nodeValue = "";
 }
 
+//-	Toggle Messages ------------------------------------------------------------
+function MsgsText(){
+	if (msg_.MsgFlg) On_MsgsNode.nodeValue = "Tutorial On";
+	else {On_MsgsNode.nodeValue = "Tutor: Press T";}
+}
+
 //-	Messages -------------------//----------------------------------------------
 
 function prntMsgTxt() {
-	// Selection
-	if (msg_.MsgDly == 0) MsgIdx[msg_.MsgIdx]();	// Print Only Once
-	// Auto-Advance
-	msg_.MsgDly--;
-	if (msg_.MsgDly == 1) msg_.MsgIdx++;
+	if (msg_.MsgFlg) {
+		// Selection
+		if (msg_.MsgDly == 0) MsgIdx[msg_.MsgIdx]();	// Print Only Once
+		// Auto-Advance
+		msg_.MsgDly--;
+		if (msg_.MsgDly == 1) msg_.MsgIdx++;
+	}
+	else onMsg00();
 }
 
 //	BLANK
@@ -1730,7 +1742,7 @@ function onMsg24(){
 	On_Msg2Node.nodeValue = "-------";
 	On_Msg3Node.nodeValue = "next";
 	On_Msg4Node.nodeValue = "AIR COMBAT";
-	On_Msg5Node.nodeValue = "[BLANK]";
+	On_Msg5Node.nodeValue = "BASICS";
 	msg_.MsgDly = DlyTm5;
 }
 
@@ -1768,8 +1780,8 @@ function onMsg28(){
 	On_Msg1Node.nodeValue = "AIR COMBAT";
 	On_Msg2Node.nodeValue = "----------";
 	On_Msg3Node.nodeValue = "next";
-	On_Msg4Node.nodeValue = "[BLANK]";
-	On_Msg5Node.nodeValue = "BASICS";
+	On_Msg4Node.nodeValue = "BASICS";
+	On_Msg5Node.nodeValue = "TAKEOFF";
 	msg_.MsgDly = DlyTm5;
 }
 
@@ -1851,7 +1863,7 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.YwRL) air_.RotDif.y = -KeyVal.z;	// YawL - keyboard right
 	if (event.keyCode == key_.YwRR) air_.RotDif.y = KeyVal.z;	// YawR - keyboard right
 	if (event.keyCode == key_.Brak) gen_.InpBrk = 0.01;	// Brakes
-	if (event.keyCode == key_.Batl) myg_.BegBat = 1;	// Begin Battle
+	if (event.keyCode == key_.Batl && msg_.MsgFlg) myg_.BegBat = 1;	// Begin Battle
 	// Views
 	if (event.keyCode == key_.Look) cam_.OrbFlg = 1;	// Orbit View
 	if (event.keyCode == key_.VU45) key_.U45flg = 1;	// View - 45 deg up
@@ -1876,7 +1888,8 @@ function onDocumentKeyDown(event) {
 	if (event.keyCode == key_.Auto) toglAuto();			// Toggle AutoPilot
 	if (event.keyCode == key_.Soun) toglSoun();			// Toggle Sound
 	if (event.keyCode == key_.Info) toglInfo();			// Toggle Information
-	if (event.keyCode == key_.Targ) toglTarg();			// Targeting ("m")
+	if (event.keyCode == key_.Targ) toglTarg();			// Toggle Targeting ("m")
+	if (event.keyCode == key_.Msgs) toglMsgs();			// Toggle Tutorial	
 	if (event.keyCode == key_.MNxt) toglMNxt();			// Next Message
 	if (event.keyCode == key_.MBak) toglMBak();			// Prior Message
 }
@@ -1988,10 +2001,17 @@ function toglTarg() {
 	}
 }
 
+//. Messages Flag ..............//..............................................
+function toglMsgs() {
+	msg_.MsgFlg = 1 - msg_.MsgFlg;
+	MsgsText();
+	msg_.MsgDly = 1;			// If Manual, No Delay	
+}
+
 //.	Next Message Heading .......//..............................................
 function toglMNxt() {
 	msg_.HdgIdx++;				// Index to Headings
-	if (msg_.HdgIdx > msg_.HdgMax) msg_.HdgIdx = 0;
+	if (msg_.HdgIdx > msg_.HdgMax) msg_.HdgIdx = 1;
 	msg_.MsgIdx = HdgIdx[msg_.HdgIdx];
 	msg_.MsgDly = 1;			// If Manual, No Delay
 }
@@ -1999,7 +2019,6 @@ function toglMNxt() {
 //.	Previous Message ...........//..............................................
 function toglMBak() {
 	msg_.MsgIdx--;
-//	if (msg_.MsgIdx < 0) msg_.MsgIdx = 0;
 	if (msg_.MsgIdx < HdgIdx[msg_.HdgIdx]) msg_.MsgIdx = HdgIdx[msg_.HdgIdx];
 	msg_.MsgDly = 1;			// If Manual, No Delay
 }
