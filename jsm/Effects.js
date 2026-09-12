@@ -1290,7 +1290,7 @@ function moveSmkTrl(smt_,air_,n) {
 *******************************************************************************/
 
 //= INIT BOMB ==================//==============================================
-function initExpBom(bom_,bmx_,bmt_,bms_,air_) {
+function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 	bom_.SmkMap = txt_.ObjTxt[SmkBlak];
 	let RefDst = 25;			// Reference distance for Positional Audio
 	for (let n = 0; n < bom_.ObjNum; n ++) {
