@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 11 Sep 2026
+Version dated 13 Sep 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -523,20 +523,23 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 //= BOMBS ======================//==============================================
 //-	Adjustments (Identical Inputs for 3 Smoke Trails)
 	for (let n = 0; n < bom_.ObjNum; n ++) {
+		//	Smoke Trails
 		bmt_.SmkVec[n] = [new THREE.Vector3(50,0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)];
 		bmt_.SmkOff[n] = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
 		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
+		//	Smoke
 		bms_.SmkCol[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
 		bms_.SubSiz[n] = 0.01;	// Longer Life w/Fire
+		bms_.MulSiz[n] = new THREE.Vector3(1,1.5,1); // Shape of Cloud
 	}
-	//	Explosion Colors
-	bms_.SmkCol[0].z = "black";	// No Fire
-	bms_.SmkCol[1].z = "black";	// No Fire
-	//	Life
-	bms_.SubSiz[0] = 0.02;		// No Fire, Shorter Life
-	bms_.SubSiz[1] = 0.02;		// No Fire, Shorter Life
-	//	Size
-	bmx_.MaxSiz = 14;
+	//	Max Size
+	bmx_.MaxSiz = 5;			// Explosion
+	bms_.MaxSiz = 40;			// Smoke
+	//	Override for Smoke Only (No Fire)
+	bms_.SmkCol[0].z = "black";	// Colors
+	bms_.SubSiz[0] = 0.02;		// Shorter Life
+	bms_.SmkCol[1].z = "black";	// Colors
+	bms_.SubSiz[1] = 0.02;		// Shorter Life
 
 //=	MESSAGES ===================//==============================================
 let DlyTm3 = 180;				// 3 Seconds
