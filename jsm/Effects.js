@@ -1522,10 +1522,10 @@ function initBomSmk(bms_,bom_,n) {
 //=	MOVE =======================//==============================================
 
 function moveBomSmk(bms_,bom_,gen_,n) {
-	// After First Rep, Smoke Plume is Fully Developed. So You Need to Expand the
-	// Whole Plume to Create the Illusion of a Developing Smoke Plume
+	//	After First Rep, Smoke Plume is Fully Developed. So You Need to Expand the
+	//	Whole Plume to Create the Illusion of a Developing Smoke Plume
 
-	// Expand Quickly
+	//	Expand Quickly
 	if (bms_.GroFlg[n]) {
 		bms_.RemSiz[n] = bms_.RemSiz[n] + 0.2; // (default = 0.175)
 		if (bms_.RemSiz[n] > bms_.MaxSiz) {
@@ -1533,7 +1533,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 			bms_.GroFlg[n] = 0;
 		}
 	}
-	// Contract Slowly
+	//	Contract Slowly
 	if (!bms_.GroFlg[n]) {
 		bms_.RemSiz[n] = bms_.RemSiz[n] - bms_.SubSiz[n]; // (default SubSiz = 0.01; test = 0.05)
 		if (bms_.RemSiz[n] < 0.001) {
@@ -1544,10 +1544,16 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 			bom_.ExpGrp[n].position.y = -10000;
 		}
 	}
-//	bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
-	let bmy = 1.5*bms_.RemSiz[n];	// Retain height
+	//	Resize
+	let bmx = bms_.MulSiz[n].x * bms_.RemSiz[n];
+	let bmy = bms_.MulSiz[n].y * bms_.RemSiz[n];	// Retain height
+	let bmz = bms_.MulSiz[n].z * bms_.RemSiz[n];
+	//
+	if (bmx > bms_.MaxSiz) bmx = bms_.MaxSiz;
 	if (bmy > bms_.MaxSiz) bmy = bms_.MaxSiz;
-	bms_.SmkSpr[n].scale.set(bms_.RemSiz[n],bmy,bms_.RemSiz[n]);
+	if (bmz > bms_.MaxSiz) bmz = bms_.MaxSiz;
+	//
+	bms_.SmkSpr[n].scale.set(bms_.RemSiz[n]*2,bmy,bms_.RemSiz[n]);
 }
 
 /*******************************************************************************
