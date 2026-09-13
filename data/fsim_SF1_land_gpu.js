@@ -670,6 +670,7 @@ let bms_ = {
 		SmkSpr: [],				// Sprite Address
 		MaxSiz: 40,				// Beginning Size
 		RemSiz: [],				// Remaining Size
+		MulSiz: [],
 		GroFlg: [],				// Grow Smoke (after first use)
 		SmkCol: [],				// Smoke Color (vector3)
 		SubSiz: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
