@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260904
+*	FSIM FM2 DATA: 260913
 *
 ********************************************************************************
 
@@ -932,6 +932,7 @@ let bms_ = {
 		SmkSpr: [],				// Sprite Address
 		MaxSiz: 40,				// Beginning Size
 		RemSiz: [],				// Remaining Size
+		MulSiz: [],				// Shape of Cloud
 		GroFlg: [],				// Grow Smoke (after first use)
 		SmkCol: [],				// Smoke Color (vector3)
 		SubSiz: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
