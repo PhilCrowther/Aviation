@@ -244,7 +244,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;	
-	renderer.shadowMap.type = THREE.PCFShadowMap; // r182
+	renderer.shadowMap.type = THREE.PCFShadowMap;		// r182
 	renderer.logarithmicDepthBuffer = true;
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
@@ -530,11 +530,11 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 		//	Smoke
 		bms_.SmkCol[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
 		bms_.SubSiz[n] = 0.01;	// Longer Life w/Fire
-		bms_.MulSiz[n] = new THREE.Vector3(1,1.5,1); // Shape of Cloud
+		bms_.MulSiz[n] = new THREE.Vector3(2,1,2); // Shape of Cloud
 	}
 	//	Max Size
 	bmx_.MaxSiz = 5;			// Explosion
-	bms_.MaxSiz = 40;			// Smoke
+	bms_.MaxSiz = 25;			// Smoke
 	//	Override for Smoke Only (No Fire)
 	bms_.SmkCol[0].z = "black";	// Colors
 	bms_.SubSiz[0] = 0.02;		// Shorter Life
