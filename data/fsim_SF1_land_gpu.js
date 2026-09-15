@@ -674,8 +674,6 @@ let bms_ = {
 		GroFlg: [],				// Grow Smoke (after first use)
 		SmkCol: [],				// Smoke Color (vector3)
 		SubSiz: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
-		Global: [],				// Global Opacity
-		OpaVal: [],				// Global Opacity Value
 	}
 
 //=	MY SOUNDS ==================//==============================================
