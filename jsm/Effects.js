@@ -81,9 +81,7 @@ const GrvMPS = 9.8;				// Gravity Acceleration m/s2
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const animfps = 24;
 
-//	bsm Global Opacity
-let bsmOpaVal = [0.2,0.6,1.0];	// bsm Global Opacity Values
-let bsmGlobal = uniformArray([0.6,0.6,1.0],'float');
+let bsmOpacity = uniformArray([0.2,0.6,1.0],'float');
 
 //= VARIABLES ==================//==============================================
 
@@ -1505,8 +1503,10 @@ function initBomSmk(bms_,bom_,n) {
 	//	Opacity
 	let rotateRange = range(.1,4);
 	let textureNode = texture(bom_.SmkMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
-	let Global = bsmGlobal.element(n).assign(float(bsmOpaVal[n]));
-	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(Global);	
+//	let opacityNode = textureNode.a.mul(life.oneMinus());
+//	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(0.5);	// OK
+//	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bsmOpacity[n]); // OK
+	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bsmOpacity.element(n)); // OK
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
 	let offsetRange = range(new Vector3(-2,3,-2),new Vector3(2,5,2));
@@ -1532,7 +1532,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 
 	//	Expand Quickly
 	if (bms_.GroFlg[n]) {
-		bsmOpaVal[n] = bsmOpaVal[n] - 0.01;
+		bsmOpacity.element(n).value = 1.0;
 		bms_.RemSiz[n] = bms_.RemSiz[n] + 0.2; // (default = 0.175)
 		if (bms_.RemSiz[n] > bms_.MaxSiz) {
 			bms_.RemSiz[n] = bms_.MaxSiz;
@@ -1548,7 +1548,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
 			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
 			bom_.ExpGrp[n].position.y = -10000;
-			bsmOpaVal[n] = bsmOpaVal[n] - 0.01;
+			bsmOpacity.element(n).value = bsmOpacity.element(n).value - 0.01;
 		}
 	}
 	//	Resize
