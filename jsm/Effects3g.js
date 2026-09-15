@@ -1526,12 +1526,6 @@ function initBomSmk(bms_,bom_,n) {
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
 }
 
-const myShaderNode = Fn(() => {
-    // 2. Change the value at index 0 to 5.0
-    myArray.element(0).assign(float(5.0));  
-    // index can also be a dynamic TSL variable or loop index
-}
-
 //=	MOVE =======================//==============================================
 
 function moveBomSmk(bms_,bom_,gen_,n) {
