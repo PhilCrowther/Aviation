@@ -1532,7 +1532,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 
 	//	Expand Quickly
 	if (bms_.GroFlg[n]) {
-		bsmOpacity.element(n) = 1.0;
+		bsmOpacity.element(n).value = 1.0;
 		bms_.RemSiz[n] = bms_.RemSiz[n] + 0.2; // (default = 0.175)
 		if (bms_.RemSiz[n] > bms_.MaxSiz) {
 			bms_.RemSiz[n] = bms_.MaxSiz;
@@ -1548,7 +1548,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
 			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
 			bom_.ExpGrp[n].position.y = -10000;
-			bsmOpacity.element(n) = bsmOpacity.element(n) - 0.01;
+			bsmOpacity.element(n).value = bsmOpacity.element(n).value - 0.01;
 		}
 	}
 	//	Resize
