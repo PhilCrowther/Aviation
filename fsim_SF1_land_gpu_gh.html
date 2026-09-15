@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Sep 2026
+Version dated 15 Sep 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -95,7 +95,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 //= LOAD MODULES ===============================================================
 //- Basic Modules --------------------------------------------------------------
 import * as THREE from "three";
-import {color,float,texture} from "three/tsl";
+import {color,float,texture,uniform} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) -------------------------------------
@@ -532,6 +532,8 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 		bms_.SubSiz[n] = 0.01;	// Longer Life w/Fire
 		bms_.MulSiz[n] = new THREE.Vector3(2,1,2); // Shape of Cloud
 	}
+	//
+	bmt_.BegOpa = 0.2;			// Smoke Trails
 	//	Max Size
 	bmx_.MaxSiz = 5;			// Explosion
 	bms_.MaxSiz = 25;			// Smoke
