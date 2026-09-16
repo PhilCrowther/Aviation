@@ -674,6 +674,9 @@ let bms_ = {
 		GroFlg: [],				// Grow Smoke (after first use)
 		SmkCol: [],				// Smoke Color (vector3)
 		SubSiz: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
+		OpaBeg: 0,				// Global Fade - Starting Values
+		OpaVal: 0,				// Global Fade - Current Values
+		Global: 0,				// Global Fade - TSL Value(s)
 	}
 
 //=	MY SOUNDS ==================//==============================================
