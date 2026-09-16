@@ -1527,8 +1527,6 @@ function initBomSmk(bms_,bom_,n) {
 }
 
 let	updateGlobal = Fn((n) => {
-//	if (bmsOpaVal[n] > 0) bmsOpaVal[n] -= 0.01; // Reduce Smoke Opacity
-//	bmsGlobal.element(n).assign(bmsOpaVal[n]);
     Global.value = bmsOpaVal.element(n);
 });
 
@@ -1567,7 +1565,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 	if (bmz > bms_.MaxSiz) bmz = bms_.MaxSiz;
 	//
 	bms_.SmkSpr[n].scale.set(bms_.RemSiz[n]*2,bmy,bms_.RemSiz[n]);
-	if (bmsOpaVal.value[n] > 0) bmsOpaVal.value[n] -= 0.01; // Reduce Smoke Opacity
+	if (bmsOpaVal[n].value > 0) bmsOpaVal[n].value -= 0.01; // Reduce Smoke Opacity
 }
 
 /*******************************************************************************
