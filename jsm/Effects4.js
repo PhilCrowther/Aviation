@@ -1507,8 +1507,8 @@ function initBomSmk(bms_,bom_,n) {
 //	let opacityNode = textureNode.a.mul(life.oneMinus());
 //	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(0.5);	// OK
 //	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal[n]); // OK
-//	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal.element(n)); // OK
-	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal.array(n));
+	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal.element(n)); // OK
+//	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal.array(n)); // NO - array is not a function
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
 	let offsetRange = range(new Vector3(-2,3,-2),new Vector3(2,5,2));
