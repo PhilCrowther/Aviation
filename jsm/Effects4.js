@@ -1526,15 +1526,11 @@ function initBomSmk(bms_,bom_,n) {
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
 }
 
-//let	updateGlobal = Fn((n) => {
+let	updateGlobal = Fn((n) => {
 //	if (bmsOpaVal[n] > 0) bmsOpaVal[n] -= 0.01; // Reduce Smoke Opacity
 //	bmsGlobal.element(n).assign(bmsOpaVal[n]);
-//});
-
-// 3. Define the logic that varies opacityNode 
-let udpateGlobal = Fn((n) => {
-    Global.value = bmsOpaVal.element(n);;
-})();
+    Global.value = bmsOpaVal.element(n);
+});
 
 //=	MOVE =======================//==============================================
 
