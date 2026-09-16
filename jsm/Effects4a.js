@@ -1510,8 +1510,9 @@ function initBomSmk(bms_,bom_,n) {
 //	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal.element(n)); // OK
 //	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal.array(n)); // NO - array is not a function
 	let opacityNode2 = opacityNode3(n);
+	let opacityNode4 = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal.element(n)); // OK
 //		smokeNodeMaterial.opacityNode = opacityNode;
-		smokeNodeMaterial.opacityNode = opacityNode2;
+		smokeNodeMaterial.opacityNode = opacityNode4;
 	//	Position
 	let offsetRange = range(new Vector3(-2,3,-2),new Vector3(2,5,2));
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
@@ -1528,10 +1529,14 @@ function initBomSmk(bms_,bom_,n) {
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
 }
 
-let opacityNode3 = Fn((n) => {
-    let x = bmsGlobal.element(n); 
-    return x;
-})();
+//let opacityNode3 = Fn((n) => {
+//    let x = bmsGlobal.element(n); 
+//    return x;
+//})();
+
+const  opacityNode3 = Fn((n) => {
+    bmsGlobal.element(n).assign(bmsOpaVal[n]);
+});
 
 //=	MOVE =======================//==============================================
 
