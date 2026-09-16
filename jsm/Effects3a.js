@@ -1508,7 +1508,7 @@ function initBomSmk(bms_,bom_,n) {
 	//	Opacity
 	let rotateRange = range(.1,4);
 	let textureNode = texture(bom_.SmkMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
-		Global.value = bmsOpaVal[n]);
+		Global.value = bmsOpaVal[n];
 	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(Global); // OK
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
