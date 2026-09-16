@@ -1329,11 +1329,14 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 		if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();
 		bom_.SndPtr[n].play();
 		bom_.SndFlg[n] = 0;
+		bmsOpaVal[n] = bmsOpaBeg[n]; // Init Smoke Opacity
 	}
 	// Make/Continue Explosion
 	moveBomExp(bmx_,n);
 	moveBomSmT(bmt_,tim_,n);
 	moveBomSmk(bms_,bom_,gen_,n);
+	// Smoke Opacity
+	bmsOpaVal[n] = bmsOpaVal[n] - 0.01;
 	// Compute New Relative Position
 	let X = bom_.MapPos[n].x-air_.MapPos.x;
 	let Y = bom_.MapPos[n].y-gen_.AltDif;
@@ -1536,8 +1539,6 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 
 	//	Expand Quickly
 	if (bms_.GroFlg[n]) {
-		bmsOpaVal[n] = bmsOpaBeg[n];
-		
 		bms_.RemSiz[n] = bms_.RemSiz[n] + 0.2; // (default = 0.175)
 		if (bms_.RemSiz[n] > bms_.MaxSiz) {
 			bms_.RemSiz[n] = bms_.MaxSiz;
@@ -1553,7 +1554,6 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
 			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
 			bom_.ExpGrp[n].position.y = -10000;
-			bmsOpaVal[n] = bmsOpaVal[n] - 0.01;
 		}
 	}
 	//	Resize
