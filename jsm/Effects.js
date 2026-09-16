@@ -66,7 +66,7 @@ import {
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
-import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,uniformArray,float} from 'three/tsl';
+import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,uniformArray,float,Fn} from 'three/tsl';
 
 /*******************************************************************************
 *
@@ -81,7 +81,9 @@ const GrvMPS = 9.8;				// Gravity Acceleration m/s2
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const animfps = 24;
 
-let bsmOpacity = uniformArray([0.2,0.6,1.0],'float');
+let bmsOpaBeg = [0.2,0.6,1.0];
+let bmsOpaVal = [0.2,0.6,1.0];
+let bmsGlobal = uniformArray(bmsOpaVal,'float');
 
 //= VARIABLES ==================//==============================================
 
@@ -1327,6 +1329,7 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 		if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();
 		bom_.SndPtr[n].play();
 		bom_.SndFlg[n] = 0;
+		bmsOpaVal[n] = bmsOpaBeg[n]; // Init Smoke Opacity
 	}
 	// Make/Continue Explosion
 	moveBomExp(bmx_,n);
@@ -1503,10 +1506,8 @@ function initBomSmk(bms_,bom_,n) {
 	//	Opacity
 	let rotateRange = range(.1,4);
 	let textureNode = texture(bom_.SmkMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
-//	let opacityNode = textureNode.a.mul(life.oneMinus());
-//	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(0.5);	// OK
-//	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bsmOpacity[n]); // OK
-	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bsmOpacity.element(n)); // OK
+		updateGlobal(n);
+	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal.element(n)); // OK
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
 	let offsetRange = range(new Vector3(-2,3,-2),new Vector3(2,5,2));
@@ -1524,6 +1525,11 @@ function initBomSmk(bms_,bom_,n) {
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
 }
 
+let	updateGlobal = Fn((n) => {
+	if (bmsOpaVal[n] > 0) bmsOpaVal[n] -= 0.01; // Reduce Smoke Opacity
+    bmsGlobal.element(n).assign(bmsOpaVal[n]);
+});
+
 //=	MOVE =======================//==============================================
 
 function moveBomSmk(bms_,bom_,gen_,n) {
@@ -1532,7 +1538,6 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 
 	//	Expand Quickly
 	if (bms_.GroFlg[n]) {
-		bsmOpacity.element(n).value = 1.0;
 		bms_.RemSiz[n] = bms_.RemSiz[n] + 0.2; // (default = 0.175)
 		if (bms_.RemSiz[n] > bms_.MaxSiz) {
 			bms_.RemSiz[n] = bms_.MaxSiz;
@@ -1548,7 +1553,6 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
 			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
 			bom_.ExpGrp[n].position.y = -10000;
-			bsmOpacity.element(n).value = bsmOpacity.element(n).value - 0.01;
 		}
 	}
 	//	Resize
