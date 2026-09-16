@@ -1528,7 +1528,7 @@ function initBomSmk(bms_,bom_,n) {
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
 }
 
-opacityNode3 = Fn((n) => {
+let opacityNode3 = Fn((n) => {
     let x = bmsGlobal.element(n); 
     return x;
 })();
