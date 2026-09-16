@@ -1508,9 +1508,6 @@ function initBomSmk(bms_,bom_,n) {
 	let textureNode = texture(bom_.SmkMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
 		updateGlobal(n);
 	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bmsGlobal.element(n)); // OK
-	// 4. Combine your logic by multiplying your global uniform node
-material.opacityNode = textureAlpha.mul(lifeFade).mul(globalOpacityNode);
-	
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
 	let offsetRange = range(new Vector3(-2,3,-2),new Vector3(2,5,2));
