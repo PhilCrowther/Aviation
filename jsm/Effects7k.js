@@ -1548,7 +1548,9 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
 			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
 			bom_.ExpGrp[n].position.y = -10000;
-			if (bms_.OpaVal[n] > 0) bms_.OpaVal[n] -= 0.01; // Reduce Smoke Opacity
+//			if (bms_.OpaVal[n] > 0) bms_.OpaVal[n] -= 0.01; // Reduce Smoke Opacity
+			bms_.OpaVal[n] = bms_.OpaVal[n] - 0.01;
+			if (bms_.OpaVal[n] < 0) bms_.OpaVal[n] = 0.0;
 			bms_.Global.needsUpdate = true; 
 		}
 	}
