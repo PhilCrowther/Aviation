@@ -81,10 +81,6 @@ const GrvMPS = 9.8;				// Gravity Acceleration m/s2
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const animfps = 24;
 
-//let bmsOpaBeg = [0.2,0.6,1.0];
-//let bmsOpaVal = [0.2,0.6,1.0];
-//let bmsGlobal = array(bmsOpaVal);
-
 //= VARIABLES ==================//==============================================
 
 //. Shared Textures ............//..............................................
