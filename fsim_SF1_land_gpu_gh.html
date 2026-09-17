@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 15 Sep 2026
+Version dated 17 Sep 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -95,7 +95,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 //= LOAD MODULES ===============================================================
 //- Basic Modules --------------------------------------------------------------
 import * as THREE from "three";
-import {color,float,texture,uniform} from "three/tsl";
+import {color,float,texture,uniform,uniformArray,array,Fn} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) -------------------------------------
@@ -542,6 +542,10 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	bms_.SubSiz[0] = 0.02;		// Shorter Life
 	bms_.SmkCol[1].z = "black";	// Colors
 	bms_.SubSiz[1] = 0.02;		// Shorter Life
+	//	Global Fade
+	bms_.OpaBeg = [0.2,0.6,1.0];
+	bms_.OpaVal = [0.2,0.6,1.0];	// Does not read from OpaBeg
+	bms_.Global = uniformArray([0.2,0.6,1.0]);	// Does not read from OpaVal
 
 //=	MESSAGES ===================//==============================================
 let DlyTm3 = 180;				// 3 Seconds
@@ -677,7 +681,7 @@ function initAll() {
 	PawsText();
 	AutoText();
 	InfoText();
-	MsgsText();
+	MsgsText();	
 	tim_.NowTim = timer.getElapsed(); // Initialize Timer
 	gen_.LodFlg = 1;
 }
@@ -721,6 +725,9 @@ function rendAll() {
 		moveSounds();
 		prntHUDval();			// change HUD value
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
+		
+//		console.log(bms_.Global);
+		
 	}
 	if (controls.isLocked === false && gen_.LodSnd) {
 		stopSounds();

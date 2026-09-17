@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Sep 2026
+Version dated 17 Sep 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -88,7 +88,7 @@ This demo has now been expanded to include a battle scenario which will eventual
 //= LOAD MODULES ===============//==============================================
 //- Basic Modules --------------------------------------------------------------
 import * as THREE from "three";
-import {color,texture,uniform} from "three/tsl";
+import {color,texture,uniform,uniformArray,Fn,array,float} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) ------------------------------------
@@ -698,6 +698,8 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		bms_.SubSiz[n] = 0.01;	// Longer Life w/Fire
 		bms_.MulSiz[n] = new THREE.Vector3(2,1,2); // Shape of Cloud
 	}
+	//
+	bmt_.BegOpa = 0.2;			// Smoke Trails
 	//	Max Size
 	bmx_.MaxSiz = 5;			// Explosion
 	bms_.MaxSiz = 25;			// Smoke
@@ -706,6 +708,10 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	bms_.SubSiz[0] = 0.02;		// Shorter Life
 	bms_.SmkCol[1].z = "black";	// Colors
 	bms_.SubSiz[1] = 0.02;		// Shorter Life
+	//	Global Fade
+	bms_.OpaBeg = [0.2,0.6,1.0];
+	bms_.OpaVal = [0.2,0.6,1.0];	// Does not read from OpaBeg
+	bms_.Global = uniformArray([0.2,0.6,1.0]);	// Does not read from OpaVal
 
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
