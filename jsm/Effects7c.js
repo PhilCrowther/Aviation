@@ -66,7 +66,7 @@ import {
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
-import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,uniformArray,float,Fn} from 'three/tsl';
+import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,uniformArray,float,Fn,array} from 'three/tsl';
 
 /*******************************************************************************
 *
