@@ -1527,7 +1527,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 
 	//	Expand Quickly (rate decreases over time)
 	if (bms_.GroFlg[n]) {
-		bms_.SmkSiz[n] = bms_.SmkSiz[n] + bms_.AddSiz[n]*(bms_.SmkSiz[n]+1)/bms_.SizMax; // (default = 0.175)
+		bms_.SmkSiz[n] = bms_.SmkSiz[n] + bms_.SizAdd[n]*(bms_.SmkSiz[n]+1)/bms_.SizMax; // (default = 0.175)
 		if (bms_.SmkSiz[n] > bms_.SizMax) {
 			bms_.SmkSiz[n] = bms_.SizMax;
 			bms_.GroFlg[n] = 0;
