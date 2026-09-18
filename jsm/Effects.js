@@ -1767,4 +1767,5 @@ export {
 260818: Move load of common textures and sounds to this module; move reference to those files internally
 260819: Add Smoke to Gunfire
 260827: Change scale.set(x,x,x) to scale.setScalar(x);
+260918: Add Global Fade to Bomb Explosion Smoke (bms_)
 */
