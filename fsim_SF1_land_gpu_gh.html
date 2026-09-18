@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Sep 2026
+Version dated 18 Sep 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -95,7 +95,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 //= LOAD MODULES ===============================================================
 //- Basic Modules --------------------------------------------------------------
 import * as THREE from "three";
-import {color,float,texture,uniform,uniformArray,array,Fn} from "three/tsl";
+import {color,float,texture,uniform,uniformArray,array,Fn,time} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) -------------------------------------
@@ -543,9 +543,10 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	bms_.SmkCol[1].z = "black";	// Colors
 	bms_.SubSiz[1] = 0.02;		// Shorter Life
 	//	Global Fade
-	bms_.OpaBeg = [0.2,0.6,1.0];
-	bms_.OpaVal = [0.2,0.6,1.0];	// Does not read from OpaBeg
-	bms_.Global = array([0.2,0.6,1.0]);	// Does not read from OpaVal
+	bms_.OpaBeg = [0.3,0.3,0.5]; // Starting Value
+	bms_.OpaVal = [0.0,0.0,0.0]; // Current Value
+	bms_.OpaFad = [0.0005,0.0005,0.0001]; // Fade Rate
+	bms_.Global = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
 
 //=	MESSAGES ===================//==============================================
 let DlyTm3 = 180;				// 3 Seconds
@@ -699,6 +700,7 @@ function rendAll() {
 	if (controls.isLocked === true && !gen_.LodSnd) loadSounds();
 	if (!gen_.PawsOn && gen_.LodFlg && controls.isLocked === true) {	
 		// Time
+		time.value = performance.now() * 0.001; // For TSL
 		tim_.DifTim = timer.getDelta();
 		tim_.NowTim = tim_.NowTim + tim_.DifTim;
 		tim_.DLTime = 1/60;		// Seconds per frame
@@ -724,10 +726,7 @@ function rendAll() {
 		// Other
 		moveSounds();
 		prntHUDval();			// change HUD value
-		if (gen_.StatOn) gen_.StatOn.update(); // update stats
-		
-//		console.log(bms_.Global);
-		
+		if (gen_.StatOn) gen_.StatOn.update(); // update stats		
 	}
 	if (controls.isLocked === false && gen_.LodSnd) {
 		stopSounds();
@@ -811,6 +810,8 @@ function initBomExp(n,pos,rot) {
 	bom_.ExpGrp[n].visible = true;
 	bom_.MapPos[n].copy(pos); // Used to compute relative Position
 	bom_.ExpGrp[n].rotation.y = rot;
+	bms_.OpaVal[n] = bms_.OpaBeg[n]; // Init Smoke Opacity
+	bms_.Global.array[n] = bms_.OpaVal[n]; // Init TSL Variable
 }
 
 //= MOVE OBJECTS ===============//==============================================
@@ -821,7 +822,12 @@ function moveObject() {
 	moveAAAGun(aaf_,air_,gen_,tim_);
 	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
-		if (bom_.ExpFlg[n]) moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n);
+		if (bom_.ExpFlg[n]) {
+			bms_.Global.array[n] = bms_.OpaVal[n];
+			moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n);
+			bms_.OpaVal[n] = bms_.OpaVal[n] - bms_.OpaFad[n]; // Fade Out
+			if (bms_.OpaVal[n] < 0) bms_.OpaVal[n] = 0.0;
+		}
 	}
 	//	Sprite Smoke Trails
 	if (!air_.GrdFlg) smt_.SmTFlg[0] = 1; // Start Own Smoke

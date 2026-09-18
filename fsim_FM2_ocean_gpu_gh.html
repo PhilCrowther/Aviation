@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Sep 2026
+Version dated 18 Sep 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -709,9 +709,10 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	bms_.SmkCol[1].z = "black";	// Colors
 	bms_.SubSiz[1] = 0.02;		// Shorter Life
 	//	Global Fade
-	bms_.OpaBeg = [0.2,0.6,1.0];
-	bms_.OpaVal = [0.2,0.6,1.0];	// Does not read from OpaBeg
-	bms_.Global = uniformArray([0.2,0.6,1.0]);	// Does not read from OpaVal
+	bms_.OpaBeg = [0.3,0.3,0.5]; // Starting Value
+	bms_.OpaVal = [0.0,0.0,0.0]; // Current Value
+	bms_.OpaFad = [0.0005,0.0005,0.0001]; // Fade Rate
+	bms_.Global = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
 
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
@@ -1072,6 +1073,8 @@ function initBomExp(n,pos,rot) {
 	bom_.ExpGrp[n].visible = true;
 	bom_.MapPos[n].copy(pos); // Used to compute relative Position
 	bom_.ExpGrp[n].rotation.y = rot;
+	bms_.OpaVal[n] = bms_.OpaBeg[n]; // Init Smoke Opacity
+	bms_.Global.array[n] = bms_.OpaVal[n]; // Init TSL Variable
 }
 
 //= MOVE OBJECTS ===============//==============================================
@@ -1085,7 +1088,12 @@ function moveObject() {
 	moveAAAGun(aaf_,air_,gen_,tim_);
 	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
-		if (bom_.ExpFlg[n]) moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n);
+		if (bom_.ExpFlg[n]) {
+			bms_.Global.array[n] = bms_.OpaVal[n];
+			moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n);
+			bms_.OpaVal[n] = bms_.OpaVal[n] - bms_.OpaFad[n]; // Fade Out
+			if (bms_.OpaVal[n] < 0) bms_.OpaVal[n] = 0.0;
+		}
 	}
 	//	Sprite Smoke Trails
 	smt_.SmTFlg[1] = 1;			// FM2 Smoke Test
