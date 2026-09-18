@@ -1325,7 +1325,6 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 		if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();
 		bom_.SndPtr[n].play();
 		bom_.SndFlg[n] = 0;
-		bms_.OpaVal[n] = bms_.OpaBeg[n]; // Init Smoke Opacity
 	}
 	// Make/Continue Explosion
 	moveBomExp(bmx_,n);
@@ -1502,8 +1501,7 @@ function initBomSmk(bms_,bom_,n) {
 	//	Opacity
 	let rotateRange = range(.1,4);
 	let textureNode = texture(bom_.SmkMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
-		updateGlobal(n);
-	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bms_.Global.element(n)); // OK
+	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bms_.Global.element(n));
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
 	let offsetRange = range(new Vector3(-2,3,-2),new Vector3(2,5,2));
@@ -1520,10 +1518,6 @@ function initBomSmk(bms_,bom_,n) {
 		bms_.SmkSpr[n].renderOrder = 1;
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
 }
-
-let	updateGlobal = Fn((n) => {
-    bms_.Global.element(n).assign(bms_.OpaVal[n]);
-});
 
 //=	MOVE =======================//==============================================
 
@@ -1547,8 +1541,7 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 			bms_.GroFlg[n] = 1;	// Grow Next Time
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
 			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
-			bom_.ExpGrp[n].position.y = -10000;
-			if (bms_.OpaVal[n] > 0) bms_.OpaVal[n] -= 0.01; // Reduce Smoke Opacity
+			bom_.ExpGrp[n].position.y = -10000;			 
 		}
 	}
 	//	Resize
