@@ -862,7 +862,7 @@ let smt_ = {
 		OpaMul: [],				// Opacity Decrement Multiplier [default = 0.85]
 		OpaDec: [],				// Opacity Decrement
 		SprSpn: [],				// Sprite Spin [default = 0]
-		BegSiz: [],				// Beginning Size [default = 1.5]
+		SizBeg: [],				// Beginning Size [default = 1.5]
 		Parent: [],				// Parent of Each Sprite
 	}
 
@@ -892,7 +892,7 @@ let bmx_ = {
 		ExpMsh: [],				// Create in Effects
 		ExpFlg: [],
 		ExpSiz: [],				// Explosion Size
-		BegSiz: 0.001,			// Beginning Size
+		SizBeg: 0.001,			// Beginning Size
 		MaxSiz: 30,				// Maximum Size
 		ExpOpa: [],
 	};
