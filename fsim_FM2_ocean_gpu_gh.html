@@ -695,24 +695,26 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
 		//	Smoke
 		bms_.SmkCol[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
-		bms_.SubSiz[n] = 0.01;	// Longer Life w/Fire
-		bms_.MulSiz[n] = new THREE.Vector3(2,1,2); // Shape of Cloud
+		bms_.SizSub[n] = 0.01;	// Longer Life w/Fire
+		bms_.SizMul[n] = new THREE.Vector3(2,1,2); // Shape of Cloud
+		bms_.OpaBeg[n] = 0.3;
+		bms_.OpaVal[n] = 0;
+		bms_.OpaFad[n] = 0.0005;
 	}
-	//
-	bmt_.BegOpa = 0.2;			// Smoke Trails
+	//	Opacity
+	bmt_.OpaBeg = 0.2;			// Smoke Trails
+	bms_.Global = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
 	//	Max Size
-	bmx_.MaxSiz = 5;			// Explosion
-	bms_.MaxSiz = 25;			// Smoke
+	bmx_.SizMax = 5;			// Explosion
+	bms_.SizMax = 25;			// Smoke
 	//	Override for Smoke Only (No Fire)
 	bms_.SmkCol[0].z = "black";	// Colors
-	bms_.SubSiz[0] = 0.02;		// Shorter Life
+	bms_.SizSub[0] = 0.02;		// Shorter Life
 	bms_.SmkCol[1].z = "black";	// Colors
-	bms_.SubSiz[1] = 0.02;		// Shorter Life
-	//	Global Fade
-	bms_.OpaBeg = [0.3,0.3,0.5]; // Starting Value
-	bms_.OpaVal = [0.0,0.0,0.0]; // Current Value
-	bms_.OpaFad = [0.0005,0.0005,0.0001]; // Fade Rate
-	bms_.Global = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
+	bms_.SizSub[1] = 0.02;		// Shorter Life
+	//	Override for Smoke and Fire
+	bms_.OpaBeg[2] = 0.5;		// Starting Value
+	bms_.OpaFad[2] = 0.0001;	// Fade Rate
 
 //- 6. SOUND VARIABLES =========//==============================================
 //- My Sounds ------------------//----------------------------------------------
