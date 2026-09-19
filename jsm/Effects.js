@@ -1189,8 +1189,8 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 // For entire line, Sprite #9 = Sprite #8, etc, Sprite #1 = Object Position
 
 //= INIT =======================//==============================================
-//	0 = Engine Smoke: SprNum = 150, BegOpa = 0.5;
-//	1 = Damage Smoke Trail: SprNum = 250, BegOpa = 0.75;
+//	0 = Engine Smoke: SprNum = 150, OpaBeg = 0.5;
+//	1 = Damage Smoke Trail: SprNum = 250, OpaBeg = 0.75;
 
 function initSmkTrl(smt_,air_,xac_,gen_) {
 	//- My Airplane - Oil Trail
@@ -1198,9 +1198,9 @@ function initSmkTrl(smt_,air_,xac_,gen_) {
 	smt_.ObjNum = 1;
 	smt_.SprNum[0] = 150;		// Number of Sprites
 	smt_.SprSpc[0] = 3;			// Sprite Spacing
-	smt_.BegOpa[0] = 1.0;		// Beginning Opacity
+	smt_.OpaBeg[0] = 1.0;		// Beginning Opacity
 	smt_.OpaMul[0] = 0.85;		// Opacity Decrement Multiplier
-	smt_.BegSiz[0] = 1.5;		// Beginning Size
+	smt_.SizBeg[0] = 1.5;		// Beginning Size
 	smt_.Parent[0] = air_.MapPos; // Change this when add more
 	// Other Airplanes - Damage Trail
 	if (xac_.ObjNum) {
@@ -1208,9 +1208,9 @@ function initSmkTrl(smt_,air_,xac_,gen_) {
 		for (let n = 1; n < smt_.ObjNum; n++) {
 			smt_.SprNum[n] = 250;	// Number of Sprites
 			smt_.SprSpc[n] = 2;		// Sprite Spacing
-			smt_.BegOpa[n] = 1.0;	// Beginning Opacity
+			smt_.OpaBeg[n] = 1.0;	// Beginning Opacity
 			smt_.OpaMul[n] = 0.75;	// Opacity Decrement Multiplier
-			smt_.BegSiz[n] = 2.5;	// Beginning Size	
+			smt_.SizBeg[n] = 2.5;	// Beginning Size	
 			smt_.Parent[n] = xac_.MapPos[n-1];
 		}
 	}
@@ -1222,7 +1222,7 @@ function initSmkTrl(smt_,air_,xac_,gen_) {
 		smt_.SprIdx[n] = smt_.SprNum[n]-1; // First Sprite
 		smt_.SpcCnt[n] = 0;		// Initialize
 		smt_.SprSpn[n] = 0;		// Default = No Spin
-		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.BegOpa[n]/smt_.SprNum[n];
+		smt_.OpaDec[n] = smt_.OpaMul[n]*smt_.OpaBeg[n]/smt_.SprNum[n];
 		let SprRot = 90;
 		//	Init Material
 		smt_.SprMat[n] = new SpriteNodeMaterial(),
@@ -1235,7 +1235,7 @@ function initSmkTrl(smt_,air_,xac_,gen_) {
 			//	Make Sprites
 			smt_.Spritz[n][x] = new Sprite(smt_.SprMat[n]);
 			smt_.Spritz[n][x].material.rotation = SprRot*DegRad;
-			smt_.Spritz[n][x].scale.setScalar(smt_.BegSiz[n]);
+			smt_.Spritz[n][x].scale.setScalar(smt_.SizBeg[n]);
 			gen_.scene.add(smt_.Spritz[n][x]);
 			smt_.MapPos[n][x] = new Vector3();
 			smt_.Spritz[n][x].position.set(0,-10000,0); // Hide Sprites Until Used
@@ -1258,7 +1258,7 @@ function moveSmkTrl(smt_,air_,n) {
 	smt_.SpcCnt[n]++;
 	if (smt_.SpcCnt[n] == smt_.SprSpc[n]) smt_.SpcCnt[n] = 0;
 //	Compute Relative Distance - from 0 to SprNum
-	let Opa = smt_.BegOpa[n];
+	let Opa = smt_.OpaBeg[n];
 	let OpaDif = smt_.OpaDec[n];
 	for (let x = smt_.SprIdx[n]; x < smt_.SprNum[n]; x++) {
 		// Compute New Relative Position
@@ -1354,7 +1354,7 @@ function initBomExp(bmx_,bom_,n) {
 	bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
 	bom_.ExpGrp[n].add(bmx_.ExpMsh[n]);
 	bmx_.ExpMsh[n].position.y = 5;
-	bmx_.ExpSiz[n] = bmx_.BegSiz;
+	bmx_.ExpSiz[n] = bmx_.SizBeg;
 }
 
 //= MOVE =======================//==============================================
@@ -1366,11 +1366,11 @@ function moveBomExp(bmx_,n) {
 		// Adjust Opacity and Size
 		bmx_.ExpSiz[n] = bmx_.ExpSiz[n] + 0.5; // Expand
 		bmx_.ExpOpa[n] = bmx_.ExpOpa[n] - 0.01; // Fade Away
-		// If Size > MaxSiz, Turn Off and Reset
-		if (bmx_.ExpSiz[n] > bmx_.MaxSiz) {
+		// If Size > SizMax, Turn Off and Reset
+		if (bmx_.ExpSiz[n] > bmx_.SizMax) {
 			bmx_.ExpFlg[n] = 0;
 			// Reset
-			bmx_.ExpSiz[n] = bmx_.BegSiz;
+			bmx_.ExpSiz[n] = bmx_.SizBeg;
 			bmx_.ExpOpa[n] = 1;
 			bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
 			bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa[n];
@@ -1389,7 +1389,7 @@ function initBomSmT(bmt_,bom_,n) {
 	bmt_.SmkRot[n] = 90;
 	bmt_.MakFlg[n] = 1;
 	bmt_.FadFlg[n] = 1;
-	bmt_.FadTim[n] = bmt_.BegOpa*bmt_.SmkMul; // Fade Time
+	bmt_.FadTim[n] = bmt_.OpaBeg*bmt_.SmkMul; // Fade Time
 	bmt_.SmkIdx[n] = 0;
 	bmt_.SmkSiz[n] = bmt_.SmkMax; // Size of Next Sprite
 	bmt_.SmkTim[n] = 0;
@@ -1400,7 +1400,7 @@ function initBomSmT(bmt_,bom_,n) {
 	bmt_.SmkMat[n] = new SpriteNodeMaterial(),
 	bmt_.SmkMat[n].colorNode = texture(bom_.SmkMap);
 	bmt_.SmkMat[n].transparent = true;
-	bmt_.SmkMat[n].opacity = bmt_.BegOpa;
+	bmt_.SmkMat[n].opacity = bmt_.OpaBeg;
 	bmt_.SmkMat[n].depthWrite = false;
 	//	Init Sprites (initializes Size and Rotation)
 	for (let t = 0; t < bmt_.Trails; t++) {
@@ -1435,7 +1435,7 @@ function moveBomSmT(bmt_,tim_,n) {
 				bmt_.SmkPos[n].y = bmt_.SmkSpd[n][t].y*bmt_.SmkTim[n]+bmt_.SmkRnd[n][t].y*Math.random()+bmt_.SmkOff[n][t].y-0.5*GrvMPS*(bmt_.SmkTim[n]**2);
 				bmt_.SmkPos[n].z = bmt_.SmkSpd[n][t].z*bmt_.SmkTim[n]+bmt_.SmkRnd[n][t].z*Math.random()+bmt_.SmkOff[n][t].z;
 				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].position.copy(bmt_.SmkPos[n]);
-				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].material.opacity = bmt_.BegOpa;
+				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].material.opacity = bmt_.OpaBeg;
 				bmt_.SmkSpr[n][t][bmt_.SmkIdx[n]].visible = true;
 			}
 			bmt_.SmkIdx[n]++;		// Next Sprite
@@ -1458,13 +1458,13 @@ function moveBomSmT(bmt_,tim_,n) {
 			bmt_.FadFlg[n] = 0;
 			bmt_.SmkIdx[n] = 0;
 			bmt_.SmkTim[n] = 0;
-			bmt_.FadTim[n] = bmt_.BegOpa*bmt_.SmkMul;
+			bmt_.FadTim[n] = bmt_.OpaBeg*bmt_.SmkMul;
 			bmt_.SmkSiz[n] = bmt_.SmkMax;
 			bmt_.SpcCnt[n] = bmt_.SmkSpc;
 			for (let t = 0; t < bmt_.Trails; t++) {
 				for (let x = 0; x < bmt_.SmkNum; x++) {
 					bmt_.SmkSpr[n][t][x].position.set(0,0,0); // Reset Position
-					bmt_.SmkSpr[n][t][x].material.opacity = bmt_.BegOpa; // Reset Opacity
+					bmt_.SmkSpr[n][t][x].material.opacity = bmt_.OpaBeg; // Reset Opacity
 					bmt_.SmkSpr[n][t][x].visible = false; // Make Invisible
 				}
 			}
@@ -1481,7 +1481,7 @@ function moveBomSmT(bmt_,tim_,n) {
 
 function initBomSmk(bms_,bom_,n) {
 	//	Init Values
-	bms_.RemSiz[n] = 0.001;
+	bms_.SmkSiz[n] = 0.001;
 	//- Commom Variables -------------------------------------------------------
 	//	Speed
 	let speed = uniform(.2); // Used by scaledTime
@@ -1511,7 +1511,7 @@ function initBomSmk(bms_,bom_,n) {
 		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
 	//-	Mesh -------------------------------------------------------------------
 		bms_.SmkSpr[n] = new Mesh(new PlaneGeometry(1,1),smokeNodeMaterial);
-		bms_.SmkSpr[n].scale.setScalar(bms_.RemSiz[n]);
+		bms_.SmkSpr[n].scale.setScalar(bms_.SmkSiz[n]);
 		bms_.SmkSpr[n].isInstancedMesh = true;
 		bms_.SmkSpr[n].frustumCulled = false;
 		bms_.SmkSpr[n].count = 1000;
@@ -1525,19 +1525,19 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 	//	After First Rep, Smoke Plume is Fully Developed. So You Need to Expand the
 	//	Whole Plume to Create the Illusion of a Developing Smoke Plume
 
-	//	Expand Quickly
+	//	Expand Quickly (rate decreases over time)
 	if (bms_.GroFlg[n]) {
-		bms_.RemSiz[n] = bms_.RemSiz[n] + 0.2; // (default = 0.175)
-		if (bms_.RemSiz[n] > bms_.MaxSiz) {
-			bms_.RemSiz[n] = bms_.MaxSiz;
+		bms_.SmkSiz[n] = bms_.SmkSiz[n] + bms_.SizAdd[n]*(bms_.SizMax - bms_.SmkSiz[n]+1)/bms_.SizMax;
+		if (bms_.SmkSiz[n] > bms_.SizMax) {
+			bms_.SmkSiz[n] = bms_.SizMax;
 			bms_.GroFlg[n] = 0;
 		}
 	}
 	//	Contract Slowly
 	if (!bms_.GroFlg[n]) {
-		bms_.RemSiz[n] = bms_.RemSiz[n] - bms_.SubSiz[n]; // (default SubSiz = 0.01; test = 0.05)
-		if (bms_.RemSiz[n] < 0.001) {
-			bms_.RemSiz[n] = 0.001;
+		bms_.SmkSiz[n] = bms_.SmkSiz[n] - bms_.SizSub[n]; // (default SizSub = 0.01; test = 0.05)
+		if (bms_.SmkSiz[n] < 0.001) {
+			bms_.SmkSiz[n] = 0.001;
 			bms_.GroFlg[n] = 1;	// Grow Next Time
 			bom_.ExpFlg[n] = 0;	// End Entire Explosion
 			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
@@ -1545,15 +1545,15 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 		}
 	}
 	//	Resize
-	let bmx = bms_.MulSiz[n].x * bms_.RemSiz[n];
-	let bmy = bms_.MulSiz[n].y * bms_.RemSiz[n];	// Retain height
-	let bmz = bms_.MulSiz[n].z * bms_.RemSiz[n];
+	let bmx = bms_.SizMul[n].x * bms_.SmkSiz[n];
+	let bmy = bms_.SizMul[n].y * bms_.SmkSiz[n];	// Retain height
+	let bmz = bms_.SizMul[n].z * bms_.SmkSiz[n];
 	//
-	if (bmx > bms_.MaxSiz) bmx = bms_.MaxSiz;
-	if (bmy > bms_.MaxSiz) bmy = bms_.MaxSiz;
-	if (bmz > bms_.MaxSiz) bmz = bms_.MaxSiz;
+	if (bmx > bms_.SizMax) bmx = bms_.SizMax;
+	if (bmy > bms_.SizMax) bmy = bms_.SizMax;
+	if (bmz > bms_.SizMax) bmz = bms_.SizMax;
 	//
-	bms_.SmkSpr[n].scale.set(bms_.RemSiz[n]*2,bmy,bms_.RemSiz[n]);
+	bms_.SmkSpr[n].scale.set(bms_.SmkSiz[n]*2,bmy,bms_.SmkSiz[n]);
 }
 
 /*******************************************************************************
