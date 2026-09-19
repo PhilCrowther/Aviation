@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Sep 2026
+Version dated 19 Sep 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -695,8 +695,9 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
 		//	Smoke
 		bms_.SmkCol[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
-		bms_.SizSub[n] = 0.01;	// Longer Life w/Fire
 		bms_.SizMul[n] = new THREE.Vector3(2,1,2); // Shape of Cloud
+		bms_.SizAdd[n] = 0.4;	// Default
+		bms_.SizSub[n] = 0.01;	// Longer Life w/Fire
 		bms_.OpaBeg[n] = 0.3;
 		bms_.OpaVal[n] = 0;
 		bms_.OpaFad[n] = 0.0005;
