@@ -581,8 +581,8 @@ let aaf_ = {
 	};
 
 //= SPRITE SMOKE TRAIL =========//==============================================
-//	0 = Engine Smoke: SprNum = 150, BegOpa = 0.5;
-//	1 = Damage Smoke Trail: SprNum = 250, BegOpa = 0.75;
+//	0 = Engine Smoke: SprNum = 150, OpaBeg = 0.5;
+//	1 = Damage Smoke Trail: SprNum = 250, OpaBeg = 0.75;
 let smt_ = {
 		ObjNum: 1,
 		SmTFlg: [],
@@ -596,11 +596,11 @@ let smt_ = {
 		SprSpc: [3],			// Sprite Spacing
 		SpcCnt: [0],			// Spacing Count
 		SprIdx: [],				// Current Sprite
-		BegOpa: [1.0],			// Beginning Opacity
+		OpaBeg: [1.0],			// Beginning Opacity
 		OpaMul: [0.85],			// Opacity Decrement Multiplier
 		OpaDec: [],				// Opacity Decrement
 		SprSpn: [0],			// Sprite Spin
-		BegSiz: [1.5],			// Beginning Size
+		SizBeg: [1.5],			// Beginning Size
 		Parent: [],				// Parent of Each Sprite
 	}
 
@@ -630,8 +630,8 @@ let bmx_ = {
 		ExpMsh: [],				// Create in Effects
 		ExpFlg: [],
 		ExpSiz: [],				// Explosion Size
-		BegSiz: 0.001,			// Beginning Size
-		MaxSiz: 30,				// Maximum Size
+		SizBeg: 0.001,			// Beginning Size
+		SizMax: 30,				// Maximum Size
 		ExpOpa: [],
 	};
 
@@ -640,7 +640,7 @@ let bmt_ = {
 		// Material
 		SmkMat:	[],				// Create in Effects
 		SmkRot: [],				// Rotation of Next Sprite Material
-		BegOpa: 0.75,			// Opacity
+		OpaBeg: 0.75,			// Opacity
 		// Spacing
 		SmkSpc:	1,				// Spacing Between Sprites (Integer)
 		SpcCnt: [],				// Spacing Counter
@@ -668,15 +668,16 @@ let bmt_ = {
 //- Bomb Smoke -----------------//----------------------------------------------
 let bms_ = {
 		SmkSpr: [],				// Sprite Address
-		MaxSiz: 40,				// Beginning Size
-		RemSiz: [],				// Remaining Size
-		MulSiz: [],				// Shape of Cloud
+		SmkSiz: [],				// Size
+		SizMax: 40,				// Max Size
+		SizMul: [],				// Shape of Cloud
+		SizAdd: [],				// Smoke Size Addition
+		SizSub: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
 		GroFlg: [],				// Grow Smoke (after first use)
 		SmkCol: [],				// Smoke Color (vector3)
-		SubSiz: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
-		OpaBeg: 0,				// Global Fade - Starting Values
-		OpaVal: 0,				// Global Fade - Current Values
-		OpaFad: 0,				// Global Fade - Rate
+		OpaBeg: [],				// Global Fade - Starting Values
+		OpaVal: [],				// Global Fade - Current Values
+		OpaFad: [],				// Global Fade - Rate
 		Global: 0,				// Global Fade - TSL Value(s)
 	}
 
