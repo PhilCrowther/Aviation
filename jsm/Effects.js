@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Aug 2026
+Version dated 24 Sep 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1484,37 +1484,37 @@ function initBomSmk(bms_,bom_,n) {
 	bms_.SmkSiz[n] = 0.001;
 	//- Commom Variables -------------------------------------------------------
 	//	Speed
-	let speed = uniform(.2); // Used by scaledTime
-	let scaledTime = time.add(5).mul(speed); // Used by lifeTime and Opacity
+	let speed = uniform(bms_.Speed0.x); // Used by scaledTime
+	let scaledTime = time.add(bms_.Speed0.y).mul(speed); // Used by lifeTime and Opacity
 	//	Life
-	let lifeRange = range(.1,1); // Used by lifeTime and life (for each particle)
-	let lifeTime = scaledTime.mul(lifeRange).mod(1); // used by life and Position
+	let lifeRange = range(bms_.LifRng.x,bms_.LifRng.y); // Used by lifeTime and life (for each particle)
+	let lifeTime = scaledTime.mul(lifeRange).mod(bms_.LifTim); // used by life and Position
 	let life = lifeTime.div(lifeRange);	// Used by Color and Opacity
 	//-	Material ---------------------------------------------------------------
 	let smokeNodeMaterial = new SpriteNodeMaterial();
 		smokeNodeMaterial.transparent = true;
 		smokeNodeMaterial.depthWrite = false;
 	//	Color
-	let smokeColor = mix(color(bms_.SmkCol[n].x),color(bms_.SmkCol[n].y),positionLocal.y.mul(3).clamp());
-	let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-		smokeNodeMaterial.colorNode = mix(color(bms_.SmkCol[n].z),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
+	let smokeColor = mix(color(bms_.Color0[n].x),color(bms_.Color0[n].y),positionLocal.y.mul(bms_.ColPos).clamp());
+	let fakeLightEffect = positionLocal.y.oneMinus().max(bms_.ColEff);
+		smokeNodeMaterial.colorNode = mix(color(bms_.Color0[n].z),smokeColor,life.mul(bms_.MatNod.x).min(bms_.MatNod.y)).mul(fakeLightEffect);
 	//	Opacity
-	let rotateRange = range(.1,4);
+	let rotateRange = range(bms_.RotRng.x,bms_.RotRng.y);
 	let textureNode = texture(bom_.SmkMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
 	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bms_.Global.element(n));
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
-	let offsetRange = range(new Vector3(-2,3,-2),new Vector3(2,5,2));
+	let offsetRange = range(bms_.OffMin,bms_.OffMax);	// V3
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 	//	Scale
-	let scaleRange = range(.3,2);
-		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(0.3));
+	let scaleRange = range(bms_.ScaleR.x,bms_.ScaleR.y);
+		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(bms_.ScaleN));
 	//-	Mesh -------------------------------------------------------------------
 		bms_.SmkSpr[n] = new Mesh(new PlaneGeometry(1,1),smokeNodeMaterial);
 		bms_.SmkSpr[n].scale.setScalar(bms_.SmkSiz[n]);
 		bms_.SmkSpr[n].isInstancedMesh = true;
 		bms_.SmkSpr[n].frustumCulled = false;
-		bms_.SmkSpr[n].count = 1000;
+		bms_.SmkSpr[n].count = bms_.SprCnt;
 		bms_.SmkSpr[n].renderOrder = 1;
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
 }
