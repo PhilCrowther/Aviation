@@ -1306,9 +1306,15 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 		bom_.SndFlg[n] = 0;		// 1 = Sound Ready
 		bom_.SndDTm[n] = 0;
 		bom_.MapPos[n] = new Vector3();
+		//	Explosion
 		initBomExp(bmx_,bom_,n);
+		//	Smoke Trails
 		initBomSmT(bmt_,bom_,n);
-		initBomSmk(bms_,bom_,n);
+		//	Smoke
+		bms_.SmkFlg[n] = 1;		// Smoke On from the Beginning
+		bms_.MatMap = bom_.SmkMap;
+		initBomSmk(bms_,n);
+		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);	
 		bom_.ExpGrp[n].visible = false;
 		// Compute New Relative Position
 		let X = bom_.MapPos[n].x-air_.MapPos.x;
@@ -1320,21 +1326,30 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 
 //= MOVE BOMB ==================//==============================================
 function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
-	// Start Sound
+	//	Start Sound
 	if (gen_.SndFlg && bom_.SndFlg[n]) {
 		if (bom_.SndPtr[n].isPlaying) bom_.SndPtr[n].stop();
 		bom_.SndPtr[n].play();
 		bom_.SndFlg[n] = 0;
 	}
-	// Make/Continue Explosion
+	//	Explosion
 	moveBomExp(bmx_,n);
+	//	Smoke Trails
 	moveBomSmT(bmt_,tim_,n);
-	moveBomSmk(bms_,bom_,gen_,n);
-	// Compute New Relative Position
-	let X = bom_.MapPos[n].x-air_.MapPos.x;
-	let Y = bom_.MapPos[n].y-gen_.AltDif;
-	let Z = air_.MapPos.z-bom_.MapPos[n].z;
-	bom_.ExpGrp[n].position.set(X,Y,Z);
+	//	Smoke
+	moveBomSmk(bms_,n);
+	//	End
+	if (!bms_.SmkFlg[n]) {	// End of Smoke = End of Explosion
+		bom_.ExpFlg[n] = 0;
+		bom_.ExpGrp[n].position.y = -10000;
+	}
+	else {
+		//	Compute New Relative Position
+		let X = bom_.MapPos[n].x-air_.MapPos.x;
+		let Y = bom_.MapPos[n].y-gen_.AltDif;
+		let Z = air_.MapPos.z-bom_.MapPos[n].z;
+		bom_.ExpGrp[n].position.set(X,Y,Z);
+	}
 }
 
 /*******************************************************************************
@@ -1479,7 +1494,8 @@ function moveBomSmT(bmt_,tim_,n) {
 
 //=	INIT =======================//==============================================
 
-function initBomSmk(bms_,bom_,n) {
+function initBomSmk(bms_,n) {
+//function initBomSmk(bms_,n) {
 	//	Init Values
 	bms_.SmkSiz[n] = 0.001;
 	//- Commom Variables -------------------------------------------------------
@@ -1500,7 +1516,7 @@ function initBomSmk(bms_,bom_,n) {
 		smokeNodeMaterial.colorNode = mix(color(bms_.Color0[n].z),smokeColor,life.mul(bms_.MatNod.x).min(bms_.MatNod.y)).mul(fakeLightEffect);
 	//	Opacity
 	let rotateRange = range(bms_.RotRng.x,bms_.RotRng.y);
-	let textureNode = texture(bom_.SmkMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
+	let textureNode = texture(bms_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
 	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bms_.Global.element(n));
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
@@ -1516,14 +1532,13 @@ function initBomSmk(bms_,bom_,n) {
 		bms_.SmkSpr[n].frustumCulled = false;
 		bms_.SmkSpr[n].count = bms_.SprCnt;
 		bms_.SmkSpr[n].renderOrder = 1;
-		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);
 }
 
 //=	MOVE =======================//==============================================
 
-function moveBomSmk(bms_,bom_,gen_,n) {
-	//	After First Rep, Smoke Plume is Fully Developed. So You Need to Expand the
-	//	Whole Plume to Create the Illusion of a Developing Smoke Plume
+function moveBomSmk(bms_,n) {
+	//	After First Rep, Smoke Plume is Fully Developed. So You Need to 
+	//  Expand the Whole Plume to Create the Illusion of a Developing Smoke Plume
 
 	//	Expand Quickly (rate decreases over time)
 	if (bms_.GroFlg[n]) {
@@ -1538,10 +1553,8 @@ function moveBomSmk(bms_,bom_,gen_,n) {
 		bms_.SmkSiz[n] = bms_.SmkSiz[n] - bms_.SizSub[n]; // (default SizSub = 0.01; test = 0.05)
 		if (bms_.SmkSiz[n] < 0.001) {
 			bms_.SmkSiz[n] = 0.001;
-			bms_.GroFlg[n] = 1;	// Grow Next Time
-			bom_.ExpFlg[n] = 0;	// End Entire Explosion
-			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
-			bom_.ExpGrp[n].position.y = -10000;			 
+			bms_.SmkFlg[n] = 0;
+			bms_.GroFlg[n] = 1;	// Grow Next Time			 
 		}
 	}
 	//	Resize
@@ -1768,4 +1781,5 @@ export {
 260819: Add Smoke to Gunfire
 260827: Change scale.set(x,x,x) to scale.setScalar(x);
 260918: Add Global Fade to Bomb Explosion Smoke (bms_)
+260924: Add Sprite variables to bms_ emitter.
 */
