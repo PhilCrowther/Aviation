@@ -1485,7 +1485,7 @@ function initBomSmk(bms_,bom_,n) {
 	//- Commom Variables -------------------------------------------------------
 	//	Speed
 	let speed = uniform(bms_.Speed0.x); // Used by scaledTime
-	let scaledTime = time.add(bms_.Speed1.y).mul(speed); // Used by lifeTime and Opacity
+	let scaledTime = time.add(bms_.Speed0.y).mul(speed); // Used by lifeTime and Opacity
 	//	Life
 	let lifeRange = range(bms_.LifRng.x,bms_.LifRng.y); // Used by lifeTime and life (for each particle)
 	let lifeTime = scaledTime.mul(lifeRange).mod(bms_.LifTim); // used by life and Position
