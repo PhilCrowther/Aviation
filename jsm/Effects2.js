@@ -1507,8 +1507,8 @@ function initBomSmk(bms_,bom_,n) {
 	let offsetRange = range(bms_.OffMin,bms_.OffMax);	// V3
 		smokeNodeMaterial.positionNode = offsetRange.mul(lifeTime);
 	//	Scale
-	let scaleRange = range(ScaleR.x,ScaleR.y);
-		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(bms_.SclNod));
+	let scaleRange = range(bms_.ScaleR.x,bms_.ScaleR.y);
+		smokeNodeMaterial.scaleNode = scaleRange.mul(lifeTime.max(bms_.ScaleN));
 	//-	Mesh -------------------------------------------------------------------
 		bms_.SmkSpr[n] = new Mesh(new PlaneGeometry(1,1),smokeNodeMaterial);
 		bms_.SmkSpr[n].scale.setScalar(bms_.SmkSiz[n]);
