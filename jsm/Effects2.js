@@ -1311,6 +1311,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 		//	Smoke Trails
 		initBomSmT(bmt_,bom_,n);
 		//	Smoke
+		bms_.SmkFlg[n] = 1;		// Smoke On from the Beginning
 		bms_.SmkMap = bom_.SmkMap
 		initBomSmk(bms_,n);
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);	
@@ -1338,8 +1339,8 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 	//	Smoke
 	moveBomSmk(bms_,n);
 	//	End
-	if (bms_.SmkSiz[n] == 0.001) {
-		bom_.ExpFlg[n] = 0;	// End Entire Explosion
+	if (!bms_.SmkFlg[n]) {	// End of Smoke = End of Explosion
+		bom_.ExpFlg[n] = 0;
 		bom_.ExpGrp[n].position.y = -10000;
 	}
 	else {
@@ -1535,8 +1536,8 @@ function initBomSmk(bms_,n) {
 //=	MOVE =======================//==============================================
 
 function moveBomSmk(bms_,gen_,n) {
-	//	After First Rep, Smoke Plume is Fully Developed. So You Need to Expand the Whole Plume
-	//	to Create the Illusion of a Developing Smoke Plume
+	//	After First Rep, Smoke Plume is Fully Developed. So You Need to 
+	//  Expand the Whole Plume to Create the Illusion of a Developing Smoke Plume
 
 	//	Expand Quickly (rate decreases over time)
 	if (bms_.GroFlg[n]) {
@@ -1551,6 +1552,7 @@ function moveBomSmk(bms_,gen_,n) {
 		bms_.SmkSiz[n] = bms_.SmkSiz[n] - bms_.SizSub[n]; // (default SizSub = 0.01; test = 0.05)
 		if (bms_.SmkSiz[n] < 0.001) {
 			bms_.SmkSiz[n] = 0.001;
+			bms_.SmkFlg[n] = 0;
 			bms_.GroFlg[n] = 1;	// Grow Next Time
 //			bom_.ExpFlg[n] = 0;	// End Entire Explosion
 //			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
