@@ -1537,7 +1537,7 @@ function initBomSmk(bms_,bom_,n) {
 
 //=	MOVE =======================//==============================================
 
-function moveBomSmk(bms_,gen_,n) {
+function moveBomSmk(bms_,n) {
 	//	After First Rep, Smoke Plume is Fully Developed. So You Need to 
 	//  Expand the Whole Plume to Create the Illusion of a Developing Smoke Plume
 
