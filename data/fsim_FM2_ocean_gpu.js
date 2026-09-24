@@ -936,6 +936,7 @@ let bms_ = {
 		LifTim: 1,				// Life - Time
 		ColPos: 3,				// Color - Position
 		ColEff: 0.2,			// Color - Effect
+		MatMap: 0,				// Material Map (loaded by initExpBom)
 		MatNod: 0,				// Material Node - Vector2(2.5,1)
 		RotRng: 0,				// Rotate Range - Vector2(.1,4)
 		OffMin: 0,				// Position - Offset Min - Vector3(-2,3,-2)
