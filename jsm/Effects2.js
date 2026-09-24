@@ -1312,8 +1312,8 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 		initBomSmT(bmt_,bom_,n);
 		//	Smoke
 		bms_.SmkFlg[n] = 1;		// Smoke On from the Beginning
-		bms_.MatMap = bom_.SmkMap;
-		initBomSmk(bms_,n);
+//		bms_.MatMap = bom_.SmkMap;
+		initBomSmk(bms_,bom_,n);
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);	
 		bom_.ExpGrp[n].visible = false;
 		// Compute New Relative Position
@@ -1494,7 +1494,8 @@ function moveBomSmT(bmt_,tim_,n) {
 
 //=	INIT =======================//==============================================
 
-function initBomSmk(bms_,n) {
+function initBomSmk(bms_,bom_,n) {
+//function initBomSmk(bms_,n) {
 	//	Init Values
 	bms_.SmkSiz[n] = 0.001;
 	//- Commom Variables -------------------------------------------------------
@@ -1515,7 +1516,8 @@ function initBomSmk(bms_,n) {
 		smokeNodeMaterial.colorNode = mix(color(bms_.Color0[n].z),smokeColor,life.mul(bms_.MatNod.x).min(bms_.MatNod.y)).mul(fakeLightEffect);
 	//	Opacity
 	let rotateRange = range(bms_.RotRng.x,bms_.RotRng.y);
-	let textureNode = texture(bms_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
+	let textureNode = texture(bom_.SmkMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
+//	let textureNode = texture(bms_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
 	let opacityNode = textureNode.a.mul(life.oneMinus()).mul(bms_.Global.element(n));
 		smokeNodeMaterial.opacityNode = opacityNode;
 	//	Position
