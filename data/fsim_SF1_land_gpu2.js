@@ -679,7 +679,7 @@ let bms_ = {
 		OffMin: 0,				// Position - Offset Min - Vector3(-2,3,-2)
 		OffMax: 0,				// Position - Offset Max - Vector3(2,5,2)
 		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
-		SclNod: 0.3,			// Scale - Node
+		ScaleN: 0.3,			// Scale - Node
 		SprCnt: 1000,			// Sprite Count
 		//	Color n
 		Color0: [],				// Color - (vector3)
