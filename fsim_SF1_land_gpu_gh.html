@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 19 Sep 2026
+Version dated 24 Sep 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -521,14 +521,27 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	aaf_.SndVol = 15;			// Explosion Volume
 
 //= BOMBS ======================//==============================================
-//-	Adjustments (Identical Inputs for 3 Smoke Trails)
+//-	Smoke Sprite Inputs --------------------------------------------------------
+	bms_.Speed0 = new THREE.Vector2(0.2,5);	// Speed
+	bms_.LifRng = new THREE.Vector2(0.1,1);	// Life Range
+	bms_.LifTim = 1;			// Life - Time
+	bms_.ColPos = 3;			// Color - Position
+	bms_.ColEff = 0.2,			// Color - Effect
+	bms_.MatNod = new THREE.Vector2(2.5,1);	// Material Node
+	bms_.RotRng = new THREE.Vector2(0.1,4);	// Rotation Range
+	bms_.OffMin = new THREE.Vector3(-2,3,-2); // Offset Min
+	bms_.OffMax = new THREE.Vector3(2,5,2);	// Offset Max
+	bms_.ScaleR = new THREE.Vector2(0.3,2);	// Scale Range
+	bms_.ScaleN = 0.3;			// Scale - Node
+	bms_.SprCnt = 1000;			// Sprite Count
+//-	Adjustments (Identical Inputs for 3 Smoke Trails) --------------------------
 	for (let n = 0; n < bom_.ObjNum; n ++) {
-		//	Smoke Trails
+		//	Smoke Trails Global
 		bmt_.SmkVec[n] = [new THREE.Vector3(50,0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)];
 		bmt_.SmkOff[n] = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
 		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
-		//	Smoke
-		bms_.SmkCol[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
+		//	Smoke Global
+		bms_.Color0[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
 		bms_.SizMul[n] = new THREE.Vector3(2,1,2); // Shape of Cloud
 		bms_.SizAdd[n] = 0.4;	// Default
 		bms_.SizSub[n] = 0.01;	// Longer Life w/Fire
@@ -536,20 +549,20 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 		bms_.OpaVal[n] = 0;
 		bms_.OpaFad[n] = 0.0005;
 	}
+	//.	Override for Smoke Only (No Fire)
+	bms_.Color0[0].z = "black";	// Colors
+	bms_.SizSub[0] = 0.02;		// Shorter Life
+	bms_.Color0[1].z = "black";	// Colors
+	bms_.SizSub[1] = 0.02;		// Shorter Life
+	//.	Override for Smoke and Fire
+	bms_.OpaBeg[2] = 0.5;		// Starting Value
+	bms_.OpaFad[2] = 0.0001;	// Fade Rate
 	//	Opacity
 	bmt_.OpaBeg = 0.2;			// Smoke Trails
 	bms_.Global = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
 	//	Max Size
 	bmx_.SizMax = 5;			// Explosion
 	bms_.SizMax = 25;			// Smoke
-	//	Override for Smoke Only (No Fire)
-	bms_.SmkCol[0].z = "black";	// Colors
-	bms_.SizSub[0] = 0.02;		// Shorter Life
-	bms_.SmkCol[1].z = "black";	// Colors
-	bms_.SizSub[1] = 0.02;		// Shorter Life
-	//	Override for Smoke and Fire
-	bms_.OpaBeg[2] = 0.5;		// Starting Value
-	bms_.OpaFad[2] = 0.0001;	// Fade Rate
 
 //=	MESSAGES ===================//==============================================
 let DlyTm3 = 180;				// 3 Seconds
