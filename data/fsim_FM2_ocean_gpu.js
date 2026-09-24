@@ -930,17 +930,33 @@ let bmt_ = {
 //- Bomb Smoke -----------------//----------------------------------------------
 let bms_ = {
 		SmkSpr: [],				// Sprite Address
-		SmkSiz: [],				// Size
+		//	Sprite Inputs
+		Speed0: 0,				// Speed - Vector2(0.2,5)
+		LifRng: 0,				// Life - Ranbge - Vector2(.1,1)
+		LifTim: 1,				// Life - Time
+		ColPos: 3,				// Color - Position
+		ColEff: 0.2,			// Color - Effect
+		MatNod: 0,				// Material Node - Vector2(2.5,1)
+		RotRng: 0,				// Rotate Range - Vector2(.1,4)
+		OffMin: 0,				// Position - Offset Min - Vector3(-2,3,-2)
+		OffMax: 0,				// Position - Offset Max - Vector3(2,5,2)
+		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
+		ScaleN: 0.3,			// Scale - Node
+		SprCnt: 1000,			// Sprite Count
+		//	Color n
+		Color0: [],				// Color - (vector3)
+		//	Global Size n
 		SizMax: 40,				// Max Size
+		SmkSiz: [],				// Size
 		SizMul: [],				// Shape of Cloud
 		SizAdd: [],				// Smoke Size Addition
 		SizSub: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
 		GroFlg: [],				// Grow Smoke (after first use)
-		SmkCol: [],				// Smoke Color (vector3)
-		OpaBeg: [],				// Global Fade - Starting Values
-		OpaVal: [],				// Global Fade - Current Values
-		OpaFad: [],				// Global Fade - Rate
-		Global: 0,				// Global Fade - TSL Value(s)
+		//	Global Fade n
+		OpaBeg: [],				// Starting Values
+		OpaVal: [],				// Current Values
+		OpaFad: [],				// Rate
+		Global: 0,				// TSL Value(s)
 	}
 
 //- 6. SOUND VARIABLES =========//==============================================
