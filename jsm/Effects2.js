@@ -1312,7 +1312,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 		initBomSmT(bmt_,bom_,n);
 		//	Smoke
 		bms_.SmkFlg[n] = 1;		// Smoke On from the Beginning
-		bms_.SmkMap = bom_.SmkMap
+		bms_.MatMap = bom_.SmkMap;
 		initBomSmk(bms_,n);
 		bom_.ExpGrp[n].add(bms_.SmkSpr[n]);	
 		bom_.ExpGrp[n].visible = false;
@@ -1553,10 +1553,7 @@ function moveBomSmk(bms_,gen_,n) {
 		if (bms_.SmkSiz[n] < 0.001) {
 			bms_.SmkSiz[n] = 0.001;
 			bms_.SmkFlg[n] = 0;
-			bms_.GroFlg[n] = 1;	// Grow Next Time
-//			bom_.ExpFlg[n] = 0;	// End Entire Explosion
-//			gen_.scene.remove(bom_.ExpGrp[n]); // ERR: not make display invisible
-//			bom_.ExpGrp[n].position.y = -10000;			 
+			bms_.GroFlg[n] = 1;	// Grow Next Time			 
 		}
 	}
 	//	Resize
