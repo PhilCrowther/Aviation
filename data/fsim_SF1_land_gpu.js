@@ -668,6 +668,7 @@ let bmt_ = {
 //- Bomb Smoke -----------------//----------------------------------------------
 let bms_ = {
 		SmkSpr: [],				// Sprite Address
+		SmkFlg: [],				// Smoke Flag (1 = on)
 		//	Sprite Inputs
 		Speed0: 0,				// Speed - Vector2(0.2,5)
 		LifRng: 0,				// Life - Ranbge - Vector2(.1,1)
