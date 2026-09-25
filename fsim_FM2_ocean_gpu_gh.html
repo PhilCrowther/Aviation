@@ -530,12 +530,25 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	flg_.MapPos = [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)]; // Relative Map Position
 	flg_.ObjRef = [xsh_.ObjGrp[0]]; // Parent Object
 //- Ship Wake ------------------//----------------------------------------------
+//	Smoke Sprite Inputs
+	wak_.Speed0 = new THREE.Vector2(0.001,125);	// Speed
+	wak_.LifRng = new THREE.Vector2(0.1,1);		// Life Range
+	wak_.LifTim = 0.05;			// Life - Time
+	wak_.ColPos = 3;			// Color - Position
+	wak_.ColEff = 0.2,			// Color - Effect
+	wak_.MatNod = new THREE.Vector2(2.5,1);		// Material Node
+	wak_.RotRng = new THREE.Vector2(0.1,0.2);	// Rotation Range
+	wak_.OpaPwr = new THREE.Vector2(50,0.1);	// Opacity Comp	
+	wak_.OffMin = new THREE.Vector3(0,3,0);		// Offset Min
+	wak_.OffMax = new THREE.Vector3(0,5,0);		// Offset Max
+	wak_.ScaleR = new THREE.Vector2(0.01,0.02);	// Scale Range
+	wak_.ScaleN = 0.3;			// Scale - Node
+	wak_.SprCnt = 600;			// Sprite Count
 //	Adjustments
 	wak_.ObjNum = xsh_.ObjNum;	// Number of Wakes = Number of Ships
 	for (let n = 0; n < wak_.ObjNum; n ++) {
+		wak_.Color0[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"white"); // Default Smoke Colors
 		wak_.ObjSiz[n] = 4000;	// Size
-		wak_.ObjTxt[n] = 0;		// Shared Texture Reference Number
-		wak_.RndOrd[n] = 1;		// Drawing Order
 		wak_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
 		wak_.ObjPos[n] = new THREE.Vector3(0,-5,0); // Offset Position
 		wak_.ObjRef[n] = xsh_.ObjGrp[n]; // Parent Object
