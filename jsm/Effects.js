@@ -1050,7 +1050,7 @@ function initXSHSmk(xss_) {
 }
 
 /*******************************************************************************
-*	INIT SMOKE GENERATOR
+*	INIT SMOKE GENERATOR (No Fade)
 *******************************************************************************/
 
 function initSmoke0(smk_,n) {
@@ -1072,7 +1072,7 @@ function initSmoke0(smk_,n) {
 	//- Opacity
 	let rotateRange = range(smk_.RotRng.x,smk_.RotRng.y);
 	let textureNode = texture(smk_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
-	let opacityNode = textureNode.a.mul(life.oneMinus().pow(smk_.OpaPwr.x),smk_.OpaPwr.y); // ### NEW
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(smk_.OpaPwr.x),smk_.OpaPwr.y);
 	smk_.smokeNodeMater.opacityNode = opacityNode;
 	//	Position
 	let offsetRange = range(smk_.OffMin,smk_.OffMax);	// V3
@@ -1503,7 +1503,6 @@ function moveBomSmT(bmt_,tim_,n) {
 //=	INIT =======================//==============================================
 
 function initBomSmk(bms_,n) {
-//function initBomSmk(bms_,n) {
 	//	Init Values
 	bms_.SmkSiz[n] = 0.001;
 	//- Commom Variables -------------------------------------------------------
