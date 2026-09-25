@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Sep 2026
+Version dated 25 Sep 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1047,40 +1047,41 @@ function moveXSHWak() {
 function initXSHSmk(xss_) {
 	for (let n = 0; n < xss_.ObjNum; n ++) {
 		xss_.ObjTxt[n] = txt_.ObjTxt[SmkBlak];
-		//- Timer
-		let speed = uniform(.001); // r170 Lower = slower
-		let scaledTime = time.add(5).mul(speed); // r170
+		//- Speed		
+		let speed = uniform(xss_.Speed0.x); // Used by scaledTime
+		let scaledTime = time.add(xss_.Speed0.y).mul(speed); // Used by lifeTime and Opacity	
 		//- Life
-		let lifeRange = range(0.1,10); // ###
-		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
-		let life = lifeTime.div(lifeRange);
-		//- Rotation Range
-		let rotateRange = range(1,2); // ###
-		let textureNode = texture(xss_.ObjTxt[n], rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
-		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
-		//- Lateral Offset	
-		let offsetRange = range(new Vector3(-.5,1,2), new Vector3(1,3,6)); // ###
-		//- Size Range
-		let scaleRange = range(.1,.2);
-		//
-		let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
-		//	Color
-		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-		//	Material
-		xss_.ObjMat[n] = new SpriteNodeMaterial();
-		xss_.ObjMat[n].colorNode = mix(color("black"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
-		xss_.ObjMat[n].opacityNode = opacityNode;
-		xss_.ObjMat[n].positionNode = offsetRange.mul(lifeTime);
-		xss_.ObjMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
+		let lifeRange = range(xss_.LifRng.x,xss_.LifRng.y); // Used by lifeTime and life (for each particle)
+		let lifeTime = scaledTime.mul(lifeRange).mod(xss_.LifTim); // used by life and Position
+		let life = lifeTime.div(lifeRange);	// Used by Color and Opacity
+		//-	Material ---------------------------------------------------------------
+		xss_.ObjMat[n] = new SpriteNodeMaterial();		
 		xss_.ObjMat[n].depthWrite = false;
 		xss_.ObjMat[n].transparent = true;
+		//	Color
+		let smokeColor = mix(color(xss_.Color0[n].x),color(xss_.Color0[n].y),positionLocal.y.mul(xss_.ColPos).clamp());
+		let fakeLightEffect = positionLocal.y.oneMinus().max(xss_.ColEff);
+		xss_.ObjMat[n].colorNode = mix(color(xss_.Color0[n].z),smokeColor,life.mul(xss_.MatNod.x).min(xss_.MatNod.y)).mul(fakeLightEffect);		
+		//- Opacity
+		let rotateRange = range(xss_.RotRng.x,xss_.RotRng.y);
+		let textureNode = texture(xss_.ObjTxt[n],rotateUV(uv(),scaledTime.mul(rotateRange)));
+		let opacityNode = textureNode.a.mul(life.oneMinus().pow(xss_.OpaPwr.x),xss_.OpaPwr.y); // ### NEW
+		xss_.ObjMat[n].opacityNode = opacityNode;
+		//	Position
+		let offsetRange = range(xss_.OffMin,xss_.OffMax);	// V3
+		xss_.ObjMat[n].positionNode = offsetRange.mul(lifeTime);
+		//	Scale
+		let scaleRange = range(xss_.ScaleR.x,xss_.ScaleR.y);
+		xss_.ObjMat[n].scaleNode = scaleRange.mul(lifeTime.max(xss_.ScaleN));	
 		//	Mesh
-		xss_.ObjAdr[n] = new Mesh(new PlaneGeometry(1, 1),xss_.ObjMat[n]);
+		xss_.ObjAdr[n] = new Mesh(new PlaneGeometry(1,1),xss_.ObjMat[n]);
 		xss_.ObjAdr[n].scale.setScalar(xss_.ObjSiz[n]);
 		xss_.ObjAdr[n].isInstancedMesh = true;
-		xss_.ObjAdr[n].count = 300; // Increases continuity (was 100)
+		xss_.ObjAdr[n].frustumCulled = false;
+		xss_.ObjAdr[n].count = xss_.SprCnt;
+		xss_.ObjAdr[n].renderOrder = 1;
+		//
 		xss_.ObjAdr[n].position.copy(xss_.ObjPos[n]);
-		//	Link
 		xss_.ObjRef[n].add(xss_.ObjAdr[n]);
 	}
 }
@@ -1288,6 +1289,10 @@ function moveSmkTrl(smt_,air_,n) {
 *	BOMB EXPLOSION
 *
 *******************************************************************************/
+//	The bomb explosion has three components:
+//	1. Explosion (a sphere that expands and contracts)
+//	2. Smoke Trails (optional - default 3 trails)
+//	3. Smoke (expands, contracts and fades)
 
 //= INIT BOMB ==================//==============================================
 function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
