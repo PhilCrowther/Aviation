@@ -1019,7 +1019,7 @@ function initAirFyr(xaf_) {
 //= INIT SHIP WAKE =============//==============================================
 function initXSHWak(wak_) {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.ObjTxt[n] = txt_.ObjTxt[SmkWyte];
+		wak_.MatMap = txt_.ObjTxt[SmkWyte];
 		initSmoke0(wak_,n);
 		wak_.ObjAdr[n].rotation.x = Math.PI/2; // Set Flat
 		wak_.ObjAdr[n].rotation.y = wak_.ObjRot[n].y*DegRad; //rotation around corner
