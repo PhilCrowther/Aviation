@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 24 Sep 2026
+Version dated 25 Sep 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -543,8 +543,24 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 //- Ship Smoke (destroyer only) ------------------------------------------------
 //	Adjustments
 	xss_.ObjNum = 2;			// 2 stacks
+//	Smoke Sprite Inputs
+	xss_.Speed0 = new THREE.Vector2(0.001,5);	// Speed
+	xss_.LifRng = new THREE.Vector2(0.1,10);	// Life Range
+	xss_.LifTim = 0.05;			// Life - Time
+	xss_.ColPos = 3;			// Color - Position
+	xss_.ColEff = 0.2,			// Color - Effect
+	xss_.MatNod = new THREE.Vector2(2.5,1);		// Material Node
+	xss_.RotRng = new THREE.Vector2(1,2);		// Rotation Range
+	xss_.OpaPwr = new THREE.Vector2(50,0.1);	// Opacity Comp	
+	xss_.OffMin = new THREE.Vector3(-.5,1,2);	// Offset Min
+	xss_.OffMax = new THREE.Vector3(1,3,6);		// Offset Max
+	xss_.ScaleR = new THREE.Vector2(0.1,0.2);	// Scale Range
+	xss_.ScaleN = 0.3;			// Scale - Node
+	xss_.SprCnt = 300;			// Sprite Count
+//	Global
 	xss_.ObjPos = [new THREE.Vector3(0,13.5,-9.5),new THREE.Vector3(0,12.5,6)]; // Offset Position
 	for (let n = 0; n < xss_.ObjNum; n ++) {
+		xss_.Color0[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"black"); // Default Smoke Colors
 		xss_.ObjSiz[n] = 200;	// Size
 		xss_.ObjTxt[n] = 0;		// Shared Texture Reference Number
 		xss_.RndOrd[n] = 1;		// Drawing Order
