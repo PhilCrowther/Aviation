@@ -1019,39 +1019,8 @@ function initAirFyr(xaf_) {
 //= INIT SHIP WAKE =============//==============================================
 function initXSHWak(wak_) {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.ObjTxt[n] = txt_.ObjTxt[SmkWyte];
-		//	Speed
-		let speed = uniform(.001); // r170 Lower = slower
-		let scaledTime = time.add(125).mul(speed); // r170
-		//	Life
-		let lifeRange = range(0.1,1);
-		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
-		let life = lifeTime.div(lifeRange);
-		//- Materiazl ----------------------------------------------------------
-		wak_.ObjMat[n] = new SpriteNodeMaterial();
-		wak_.ObjMat[n].depthWrite = false;
-		wak_.ObjMat[n].transparent = true;
-		//	Color
-		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-		let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);		
-		wak_.ObjMat[n].colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);				
-		//	Opacity
-		let rotateRange = range(.1,.2);
-		let textureNode = texture(wak_.ObjTxt[n], rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
-		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
-		wak_.ObjMat[n].opacityNode = opacityNode;
-		//	Position	
-		let offsetRange = range(new Vector3(0,3,0), new Vector3(0,5,0));
-		wak_.ObjMat[n].positionNode = offsetRange.mul(lifeTime);
-		//	Scale
-		let scaleRange = range(.01,.02);
-		wak_.ObjMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
-		//	Mesh
-		wak_.ObjAdr[n] = new Mesh(new PlaneGeometry(1, 1),wak_.ObjMat[n]);
-		wak_.ObjAdr[n].scale.setScalar(wak_.ObjSiz[n]);
-		wak_.ObjAdr[n].isInstancedMesh = true;
-		wak_.ObjAdr[n].count = 600; // Increases continuity (was 100)
-		//
+		wak_.MatMap = txt_.ObjTxt[SmkWyte];
+		initSmoke0(wak_,n);
 		wak_.ObjAdr[n].rotation.x = Math.PI/2; // Set Flat
 		wak_.ObjAdr[n].rotation.y = wak_.ObjRot[n].y*DegRad; //rotation around corner
 		wak_.ObjAdr[n].position.copy(wak_.ObjPos[n]);
@@ -1073,7 +1042,6 @@ function moveXSHWak() {
 //= INIT SHIP SMOKE ============//==============================================
 function initXSHSmk(xss_) {
 	for (let n = 0; n < xss_.ObjNum; n ++) {
-//		xss_.ObjTxt[n] = txt_.ObjTxt[SmkBlak];
 		xss_.MatMap = txt_.ObjTxt[SmkBlak];
 		initSmoke0(xss_,n);
 		xss_.ObjAdr[n].position.copy(xss_.ObjPos[n]);
