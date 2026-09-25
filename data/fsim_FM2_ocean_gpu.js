@@ -430,29 +430,25 @@ let wak_ = {
 //- Ship Smoke (destroyer only) ------------------------------------------------
 let xss_ = {
 		ObjNum: 0,				// Number of Stacks
-		//	Sprite Inputs
+		//	Common Sprite Inputs
 		Speed0: 0,				// Speed - Vector2(0.2,5)
 		LifRng: 0,				// Life - Ranbge - Vector2(.1,1)
 		LifTim: 1,				// Life - Time
 		ColPos: 3,				// Color - Position
 		ColEff: 0.2,			// Color - Effect
-		MatMap: 0,				// Opacity Mask (single material - not used here)
+		MatMap: 0,				// Opacity Mask
 		MatNod: 0,				// Material Node - Vector2(2.5,1)
 		RotRng: 0,				// Rotate Range - Vector2(.1,4)
-		OpaPwr: 0,				// Opacity Node Computation (used here)
+		OpaPwr: 0,				// Opacity Node Computation
 		OffMin: 0,				// Position - Offset Min - Vector3(-2,3,-2)
 		OffMax: 0,				// Position - Offset Max - Vector3(2,5,2)
 		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
 		ScaleN: 0.3,			// Scale - Node
 		SprCnt: 1000,			// Sprite Count
-		//	Color n
-		Color0: [],				// Color - (vector3)
-		//
-		ObjTxt: [0],			// Shared Texture Reference Number
-		ObjMat: [0],			// Material
+		//	For Each Emitter
 		ObjAdr: [0],			// Emitter Address
+		Color0: [0],			// Color - (vector3)
 		ObjSiz: [0],			// Scale
-		RndOrd: [0],			// renderOrder
 		ObjRot: [0],			// Rotation (not used)
 		ObjPos: [0],			// Offset Position
 		ObjRef: [0],			// Parent Object
