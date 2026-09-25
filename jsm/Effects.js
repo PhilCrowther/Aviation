@@ -130,6 +130,35 @@ let xaf_ = {
 		FyrMsh: [0],			// Mesh
 	};
 
+//- Smoke Generator Template ---//----------------------------------------------
+//	Shared with:
+//		xss_
+let smk_ = {
+		ObjNum: 0,				// Number of Stacks
+		//	Common Sprite Inputs
+		Speed0: 0,				// Speed - Vector2(0.2,5)
+		LifRng: 0,				// Life - Ranbge - Vector2(.1,1)
+		LifTim: 1,				// Life - Time
+		ColPos: 3,				// Color - Position
+		ColEff: 0.2,			// Color - Effect
+		MatMap: 0,				// Opacity Mask (single material - not used here)
+		MatNod: 0,				// Material Node - Vector2(2.5,1)
+		RotRng: 0,				// Rotate Range - Vector2(.1,4)
+		OpaPwr: 0,				// Opacity Node Computation (used here)
+		OffMin: 0,				// Position - Offset Min - Vector3(-2,3,-2)
+		OffMax: 0,				// Position - Offset Max - Vector3(2,5,2)
+		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
+		ScaleN: 0.3,			// Scale - Node
+		SprCnt: 1000,			// Sprite Count
+		//	For Each Emitter
+		ObjAdr: [0],			// Emitter Address
+		Color0: [0],			// Color - (vector3)
+		ObjSiz: [0],			// Scale
+		ObjRot: [0],			// Rotation (not used)
+		ObjPos: [0],			// Offset Position
+		ObjRef: [0],			// Parent Object
+	};
+
 /*******************************************************************************
 *
 *	LOAD EFFECTS FILES
@@ -991,44 +1020,42 @@ function initAirFyr(xaf_) {
 function initXSHWak(wak_) {
 	for (let n = 0; n < wak_.ObjNum; n ++) {
 		wak_.ObjTxt[n] = txt_.ObjTxt[SmkWyte];
-		//- Timer
+		//	Speed
 		let speed = uniform(.001); // r170 Lower = slower
 		let scaledTime = time.add(125).mul(speed); // r170
-		//- Life
+		//	Life
 		let lifeRange = range(0.1,1);
 		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
 		let life = lifeTime.div(lifeRange);
-		//- Rotation Range
-		let rotateRange = range(.1,.2);
-		let textureNode = texture(wak_.ObjTxt[n], rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
-		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
-		//- Lateral Offset	
-		let offsetRange = range(new Vector3(0,3,0), new Vector3(0,5,0));
-		//- Size Range
-		let scaleRange = range(.01,.02);
-		//
-		let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);
-		//	Color
-		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-		//	Material
+		//- Materiazl ----------------------------------------------------------
 		wak_.ObjMat[n] = new SpriteNodeMaterial();
-		wak_.ObjMat[n].colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
-		wak_.ObjMat[n].opacityNode = opacityNode;
-		wak_.ObjMat[n].positionNode = offsetRange.mul(lifeTime);
-		wak_.ObjMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
 		wak_.ObjMat[n].depthWrite = false;
 		wak_.ObjMat[n].transparent = true;
+		//	Color
+		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
+		let fakeLightEffect = positionLocal.x.oneMinus().max(0.2);		
+		wak_.ObjMat[n].colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);				
+		//	Opacity
+		let rotateRange = range(.1,.2);
+		let textureNode = texture(wak_.ObjTxt[n], rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
+		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);
+		wak_.ObjMat[n].opacityNode = opacityNode;
+		//	Position	
+		let offsetRange = range(new Vector3(0,3,0), new Vector3(0,5,0));
+		wak_.ObjMat[n].positionNode = offsetRange.mul(lifeTime);
+		//	Scale
+		let scaleRange = range(.01,.02);
+		wak_.ObjMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
 		//	Mesh
 		wak_.ObjAdr[n] = new Mesh(new PlaneGeometry(1, 1),wak_.ObjMat[n]);
 		wak_.ObjAdr[n].scale.setScalar(wak_.ObjSiz[n]);
 		wak_.ObjAdr[n].isInstancedMesh = true;
 		wak_.ObjAdr[n].count = 600; // Increases continuity (was 100)
+		//
 		wak_.ObjAdr[n].rotation.x = Math.PI/2; // Set Flat
 		wak_.ObjAdr[n].rotation.y = wak_.ObjRot[n].y*DegRad; //rotation around corner
-//		wak_.ObjAdr[n].position.y = -5; // Added
 		wak_.ObjAdr[n].position.copy(wak_.ObjPos[n]);
-		//	Link
-		wak_.ObjRef[n].add(wak_.ObjAdr[n]);
+		wak_.ObjRef[n].add(wak_.ObjAdr[n]);	// Link
 	}
 }
 
@@ -1046,44 +1073,52 @@ function moveXSHWak() {
 //= INIT SHIP SMOKE ============//==============================================
 function initXSHSmk(xss_) {
 	for (let n = 0; n < xss_.ObjNum; n ++) {
-		xss_.ObjTxt[n] = txt_.ObjTxt[SmkBlak];
-		//- Speed		
-		let speed = uniform(xss_.Speed0.x); // Used by scaledTime
-		let scaledTime = time.add(xss_.Speed0.y).mul(speed); // Used by lifeTime and Opacity	
-		//- Life
-		let lifeRange = range(xss_.LifRng.x,xss_.LifRng.y); // Used by lifeTime and life (for each particle)
-		let lifeTime = scaledTime.mul(lifeRange).mod(xss_.LifTim); // used by life and Position
-		let life = lifeTime.div(lifeRange);	// Used by Color and Opacity
-		//-	Material ---------------------------------------------------------------
-		xss_.ObjMat[n] = new SpriteNodeMaterial();		
-		xss_.ObjMat[n].depthWrite = false;
-		xss_.ObjMat[n].transparent = true;
-		//	Color
-		let smokeColor = mix(color(xss_.Color0[n].x),color(xss_.Color0[n].y),positionLocal.y.mul(xss_.ColPos).clamp());
-		let fakeLightEffect = positionLocal.y.oneMinus().max(xss_.ColEff);
-		xss_.ObjMat[n].colorNode = mix(color(xss_.Color0[n].z),smokeColor,life.mul(xss_.MatNod.x).min(xss_.MatNod.y)).mul(fakeLightEffect);		
-		//- Opacity
-		let rotateRange = range(xss_.RotRng.x,xss_.RotRng.y);
-		let textureNode = texture(xss_.ObjTxt[n],rotateUV(uv(),scaledTime.mul(rotateRange)));
-		let opacityNode = textureNode.a.mul(life.oneMinus().pow(xss_.OpaPwr.x),xss_.OpaPwr.y); // ### NEW
-		xss_.ObjMat[n].opacityNode = opacityNode;
-		//	Position
-		let offsetRange = range(xss_.OffMin,xss_.OffMax);	// V3
-		xss_.ObjMat[n].positionNode = offsetRange.mul(lifeTime);
-		//	Scale
-		let scaleRange = range(xss_.ScaleR.x,xss_.ScaleR.y);
-		xss_.ObjMat[n].scaleNode = scaleRange.mul(lifeTime.max(xss_.ScaleN));	
-		//	Mesh
-		xss_.ObjAdr[n] = new Mesh(new PlaneGeometry(1,1),xss_.ObjMat[n]);
-		xss_.ObjAdr[n].scale.setScalar(xss_.ObjSiz[n]);
-		xss_.ObjAdr[n].isInstancedMesh = true;
-		xss_.ObjAdr[n].frustumCulled = false;
-		xss_.ObjAdr[n].count = xss_.SprCnt;
-		xss_.ObjAdr[n].renderOrder = 1;
-		//
+//		xss_.ObjTxt[n] = txt_.ObjTxt[SmkBlak];
+		xss_.MatMap = txt_.ObjTxt[SmkBlak];
+		initSmoke0(xss_,n);
 		xss_.ObjAdr[n].position.copy(xss_.ObjPos[n]);
-		xss_.ObjRef[n].add(xss_.ObjAdr[n]);
+		xss_.ObjRef[n].add(xss_.ObjAdr[n]);	// Link
 	}
+}
+
+/*******************************************************************************
+*	INIT SMOKE GENERATOR
+*******************************************************************************/
+
+function initSmoke0(smk_,n) {
+	//- Speed		
+	let speed = uniform(smk_.Speed0.x); // Used by scaledTime
+	let scaledTime = time.add(smk_.Speed0.y).mul(speed); // Used by lifeTime and Opacity	
+	//- Life
+	let lifeRange = range(smk_.LifRng.x,smk_.LifRng.y); // Used by lifeTime and life (for each particle)
+	let lifeTime = scaledTime.mul(lifeRange).mod(smk_.LifTim); // used by life and Position
+	let life = lifeTime.div(lifeRange);	// Used by Color and Opacity
+	//-	Material ---------------------------------------------------------------
+	smk_.smokeNodeMater = new SpriteNodeMaterial();		
+	smk_.smokeNodeMater.depthWrite = false;
+	smk_.smokeNodeMater.transparent = true;
+	//	Color
+	let smokeColor = mix(color(smk_.Color0[n].x),color(smk_.Color0[n].y),positionLocal.y.mul(smk_.ColPos).clamp());
+	let fakeLightEffect = positionLocal.y.oneMinus().max(smk_.ColEff);
+	smk_.smokeNodeMater.colorNode = mix(color(smk_.Color0[n].z),smokeColor,life.mul(smk_.MatNod.x).min(smk_.MatNod.y)).mul(fakeLightEffect);		
+	//- Opacity
+	let rotateRange = range(smk_.RotRng.x,smk_.RotRng.y);
+	let textureNode = texture(smk_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(smk_.OpaPwr.x),smk_.OpaPwr.y); // ### NEW
+	smk_.smokeNodeMater.opacityNode = opacityNode;
+	//	Position
+	let offsetRange = range(smk_.OffMin,smk_.OffMax);	// V3
+	smk_.smokeNodeMater.positionNode = offsetRange.mul(lifeTime);
+	//	Scale
+	let scaleRange = range(smk_.ScaleR.x,smk_.ScaleR.y);
+	smk_.smokeNodeMater.scaleNode = scaleRange.mul(lifeTime.max(smk_.ScaleN));	
+	//	Mesh
+	smk_.ObjAdr[n] = new Mesh(new PlaneGeometry(1,1),smk_.smokeNodeMater);
+	smk_.ObjAdr[n].scale.setScalar(smk_.ObjSiz[n]);
+	smk_.ObjAdr[n].isInstancedMesh = true;
+	smk_.ObjAdr[n].frustumCulled = false;
+	smk_.ObjAdr[n].count = smk_.SprCnt;
+	smk_.ObjAdr[n].renderOrder = 1;
 }
 
 /*******************************************************************************
