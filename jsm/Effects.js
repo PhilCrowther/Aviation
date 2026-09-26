@@ -926,41 +926,11 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 //= INIT SMOKE =================//==============================================
 
 function initGrdSmk(grs_) {
-	grs_.ObjTxt = txt_.ObjTxt[SmkBlak];
+	grs_.MatMap = txt_.ObjTxt[SmkGray];
 	for (let n = 0; n < grs_.ObjNum; n ++) {
-		//- Timer
-		let speed = uniform(.001); // r170
-		let scaledTime = time.add(125).mul(speed); // r170
-		//- Life
-		let lifeRange = range(0.1,1);
-		let lifeTime = scaledTime.mul(lifeRange).mod(.05); // r170
-		let life = lifeTime.div(lifeRange);
-		//- Rotation Range
-		let rotateRange = range(.1,4);
-		let textureNode = texture(grs_.ObjTxt, rotateUV(uv(),scaledTime.mul(rotateRange))); // r170
-		let opacityNode = textureNode.a.mul(life.oneMinus().pow(50),0.1);	
-		//- Lateral Offset	
-		let offsetRange = range(new Vector3(-.5,3,-.5), new Vector3(1,5,1)); // cone shaped
-		//- Size Range
-		let scaleRange = range(.1,.2);
-		//
-		let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-		//-	Wake
-		let smokeColor = mix(color(0xe0e0e0), color(0xd0d0d0), positionLocal.y.mul(3).clamp());
-		//-	Material
-		grs_.SmkMat[n] = new SpriteNodeMaterial();
-		grs_.SmkMat[n].colorNode = mix(color("white"), smokeColor, life.mul(2.5).min(1)).mul(fakeLightEffect);
-		grs_.SmkMat[n].opacityNode = opacityNode;
-		grs_.SmkMat[n].positionNode = offsetRange.mul(lifeTime);
-		grs_.SmkMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
-		grs_.SmkMat[n].depthWrite = false;
-		grs_.SmkMat[n].transparent = true;
-		//-	Mesh
-		grs_.SmkMsh[n] = new Mesh(new PlaneGeometry(1, 1),grs_.SmkMat[n]);
-		grs_.SmkMsh[n].scale.setScalar(grs_.ObjSiz);
-		grs_.SmkMsh[n].isInstancedMesh = true;
-		grs_.SmkMsh[n].count = 600; // Increases continuity (was 100)
-		grs_.SmkMsh[n].renderOrder = 1; // This allows the transparent smoke to work with transparent island
+		initSmoke0(grs_,n);
+		grs_.ObjAdr[n].position.copy(grs_.ObjPos[n]);
+		grs_.ObjRef[n].add(grs_.ObjAdr[n]);	// Link
 	}
 }
 
