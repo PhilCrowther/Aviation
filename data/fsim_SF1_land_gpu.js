@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260924
+*	FSIM SF1 DATA: 260926
 *
 *********************************************************************************
 
@@ -29,8 +29,7 @@ INDEX TO VARIABLES
 	    EFFECTS MODULE
 			Airplane Explosion		(xae_)
 	    	Volcano Smoke			(grs_)
-	    	Ground Fire				(grf_)
-	    	Airplane Smoke Trail	(xas_)
+	    	Airplane Smoke Trail	(xas_)	
 	    	Airplane Fire Trail		(xaf_)
 	    	Ship Wakes				(wak_)
 		MYPEOPLE					(myp_)
@@ -281,39 +280,6 @@ let bfm_ = {
 		// Target
 		Target: [0],			// If BFMflg set: Target (0 = my plane, 1 = xac[0], etc) ###260606
 	}
-
-//= SMOKE MODULE ===============//==============================================
-//- Vertical Smoke -------------//----------------------------------------------
-let grs_ = {
-		ObjNum: 1,				// Number of Smokes
-		// Shared Values		
-		ObjTxt: 1,				// Shared Texture Reference Number
-		ObjSiz: 4000,			// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Emitter Address
-		// Rotaton and Position
-		ObjRot: [0],			// Rotation (not used)
-		MapPos: [0], 			// Map Position
-		ObjRef: [0],			// Parent Object
-	};
-//- Ground Fire ----------------//----------------------------------------------
-let grf_ = {
-		ObjNum: 1,				// Number of Smoke Trails
-		// Shared Values
-		ObjTxt: 0,				// Texture
-		ObjSiz: 40,				// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Mesh
-		// Fire
-		FyrMat: [0],			// Material
-		FyrMsh: [0],			// Mesh
-		// Rotation and Position
-		ObjRot: [0],			// Rotation
-		MapPos: [0],			// Map Position
-		ObjRef: [0],			// Parent Object
-	};
 
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	flight = 0;
