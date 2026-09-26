@@ -1578,11 +1578,11 @@ function moveBomSmk(bms_,n) {
 
 /*******************************************************************************
 *
-*	GROUND BASED SMOKE AND FIRE
+*	SMOKE AND FIRE
 *
 *******************************************************************************/
 
-//= INITIALIZE GROUND SMOKE ====//==============================================
+//= INITIALIZE =================//==============================================
 
 function initGrdSmk(grs_) {
 	grs_.ObjTxt = txt_.ObjTxt[SmkBlak];
@@ -1620,51 +1620,6 @@ function initGrdSmk(grs_) {
 		grs_.SmkMsh[n].isInstancedMesh = true;
 		grs_.SmkMsh[n].count = 600; // Increases continuity (was 100)
 		grs_.SmkMsh[n].renderOrder = 1; // This allows the transparent smoke to work with transparent island
-	}
-}
-
-//= INITIALIZE GROUND FIRE =====//===============================================
-
-function initGrdFyr(grf_) {
-	for (let n = 0; n < grf_.ObjNum; n ++) {
-		// create nodes
-		let lifeRange = range(.1,1);
-		let speed = uniform(.01);
-		let scaledTime = time.add(5).mul(speed);
-		let lifeTime = scaledTime.mul(lifeRange).mod(1);
-		let scaleRange = range(.3,2);
-		let rotateRange = range(.1,4);
-		let life = lifeTime.div(lifeRange);
-		let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-		let textureNode = texture(grf_.ObjTxt, rotateUV(uv(),scaledTime.mul(rotateRange)));
-		let opacityNode = textureNode.a.mul(life.oneMinus());
-		let smokeColor = mix(color(0x2c1501),color(0x222222),positionLocal.y.mul(3).clamp());
-		//-	Smoke
-		grf_.SmkMat[n] = new SpriteNodeMaterial();
-		grf_.SmkMat[n].colorNode = mix(color(0xf27d0c),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
-		grf_.SmkMat[n].opacityNode = opacityNode;
-		grf_.SmkMat[n].positionNode = range(new Vector3(-2,3,-2), new Vector3(2,5,2)).mul(lifeTime);
-		grf_.SmkMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
-		grf_.SmkMat[n].depthWrite = false;
-		//
-		grf_.SmkMsh[n] = new Mesh(new PlaneGeometry(1,1),grf_.SmkMat[n]);
-		grf_.SmkMsh[n].scale.setScalar(grf_.ObjSiz);
-		grf_.SmkMsh[n].count = 2000;
-		grf_.SmkMsh[n].renderOrder = 1;
-		//- Fire
-		grf_.FyrMat[n] = new SpriteNodeMaterial();
-		grf_.FyrMat[n].colorNode = mix(color(0xb72f17),color(0xb72f17),life);
-		grf_.FyrMat[n].positionNode = range(new Vector3(-1,1,-1),new Vector3(1,2,1)).mul(lifeTime);
-		grf_.FyrMat[n].scaleNode = grf_.SmkMat[n].scaleNode;
-		grf_.FyrMat[n].opacityNode = opacityNode.mul(.5);
-		grf_.FyrMat[n].blending = AdditiveBlending;
-		grf_.FyrMat[n].transparent = true;
-		grf_.FyrMat[n].depthWrite = false;
-		//
-		grf_.FyrMsh[n] = new Mesh(new PlaneGeometry(1,1),grf_.FyrMat[n]);
-		grf_.FyrMsh[n].scale.setScalar(grf_.ObjSiz);
-		grf_.FyrMsh[n].count = 1000;
-		grf_.FyrMsh[n].renderOrder = 1;
 	}
 }
 
@@ -1743,7 +1698,7 @@ export {
 	initXSHGun,moveXSHGun,				// Ship Guns
 	initSmkTrl,moveSmkTrl,				// Sprite Smoke Trail
 	initExpBom,moveExpBom,				// Bombs
-	initGrdSmk,initGrdFyr,				// Ground Smoke and Fire
+	initGrdSmk,							// Ground Smoke and Fire
 	stopEffSnd,							// Sounds
 };
 
