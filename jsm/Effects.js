@@ -140,35 +140,6 @@ let smk_ = {
 		ObjRef: [0],			// Parent Object	
 	};
 
-//. Airplane Smoke Trail w/Fire //..............................................
-//	Default Values - Only 1 Object
-let xaf_ = {
-		ObjNum: 1,						// Number of Wakes
-		//	Common Sprite Inputs
-		Speed0: new Vector2(0.2,10),	// Speed - Vector2(0.2,5)
-		LifRng: new Vector2(0.5,5),		// Life - Ranbge - Vector2(.1,1)
-		LifTim: 0.5,					// Life - Time
-		ColPos: 3,						// Color - Position
-		ColEff: 0.2,					// Color - Effect
-		MatMap: 0,						// Opacity Mask (loaded by init)
-		MatNod: new Vector2(2.5,1),		// Material Node - Vector2(2.5,1)
-		RotRng: new Vector2(0.1,4),		// Rotate Range - Vector2(.1,4)
-		OpaPwr: new Vector2(1,1),		// Opacity Node Computation (pow = 1)
-		OffMin: new Vector3(-0.1,3,-0.1), // Position - Offset Min - Vector3(-2,3,-2)
-		OffMax: new Vector3(0.5,5,0.5),	// Position - Offset Max - Vector3(2,5,2)
-		ScaleR:	new Vector2(0.3,1),		// Scale - Range - Vector2(.3,2)
-		ScaleN: 0.3,					// Scale - Node
-		SprCnt: 250,					// Sprite Count	
-		//	Emitter	Data
-		ObjAdr: [0],					// Emitter Address (loaded by init)
-		ObjClr: [new Vector3(0x2c1501,0x222222,0xf27d0c)],	// Color - (vector3)
-		ObjFad: uniformArray([1.0],'float'), // Fade - TSL Value
-		ObjSiz: [10], 					// Scale
-		ObjRot: [new Euler(0,0,0)],		// Rotation (not used)
-		ObjPos: [new Vector3(0,0,0)],	// Map Position
-		ObjRef: [0],					// Parent Object
-	};
-
 /*******************************************************************************
 *
 *	LOAD EFFECTS FILES
@@ -479,7 +450,7 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 
 //= INIT ENDING SEQUENCE =======//==============================================
 
-function initEndSeq() {
+function initEndSeq(xaf_) {
 	for (let n = 0; n < xaf_.ObjNum; n ++) {
 		xaf_.MatMap = txt_.ObjTxt[SmkBlak];
 		initSmoke0(xaf_,n);		// Create Emitter
@@ -496,13 +467,13 @@ let xat_ = {
 		TimRem:	0,				// If Greater Than 0, Continue Sequence
 	}
 
-function moveEndSeq(n,xac_,myg_,tim_) {
+function moveEndSeq(n,xac_,xaf_,myg_,tim_) {
 	//- START SEQUENCE ---------------------------------------------------------
 	if (!xat_.TimRem) {			// Start New Actions (if TimRem = 0)
 		xat_.SeqIdx = 1;		// Advance to Next Sequence
 		// Sequewnce #1 (Only Sequence)
 		if (xat_.SeqIdx) {
-			begnXACFyr(n,xac_); // Start Smoke and Fire
+			begnXACFyr(n,xac_,xaf_); // Start Smoke and Fire
 			xat_.TimRem = 1;	// New Countdown
 		}
 	}
@@ -518,7 +489,7 @@ function moveEndSeq(n,xac_,myg_,tim_) {
 				xac_.HitGrd[n] = 1;		// Set Flag to Stop Further Movement
 				xac_.EndSeq[n] = 0;		// Flag Reset
 				// Stop Fire
-				stopXACFyr();			// End Fire (later make it vertical and slowly shrink)
+				stopXACFyr(xaf_);		// End Fire (later make it vertical and slowly shrink)
 				// Reset xat_ Values
 				xat_.SeqIdx = 0;		// Reset Sequence Index for Next Airplane
 				xat_.TimRem = 0;		// New Countdown
@@ -528,14 +499,14 @@ function moveEndSeq(n,xac_,myg_,tim_) {
 }
 
 //-	Begin Smoke and Fire -------//----------------------------------------------
-function begnXACFyr(n,xac_) {
+function begnXACFyr(n,xac_,xaf_) {
 	// Smoke
 	xac_.AirObj[n].add(xaf_.ObjAdr[0]); // Attach to Airplane
 	xaf_.ObjAdr[0].visible = true;		// Make Visible
 }
 
 //-	End Smoke and Fire ---------//----------------------------------------------
-function stopXACFyr() {
+function stopXACFyr(xaf_) {
 	xaf_.ObjAdr[0].visible = false; // Make Invisible
 }
 
@@ -1433,7 +1404,7 @@ function moveBomSmk(bms_,n) {
 //	This is an adaptation of the official three.js example Particle Emitter at:
 //		https://threejs.org/examples/?q=particle#webgpu_particles
 //	Used by:
-//		xaf_	End Sequence (above)
+//		xaf_	Airplane Smoke and Fire
 //		grs_	Volcano
 //		xss_	Ship Smoke
 //		wak_	Ship Wake
