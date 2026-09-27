@@ -520,6 +520,8 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	aaf_.SndVol = 15;			// Explosion Volume
 
 //= BOMBS ======================//==============================================
+//	Fade - Special Handling
+	bms_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 //-	Smoke Sprite Inputs --------------------------------------------------------
 	bms_.Speed0 = new THREE.Vector2(0.2,5);	// Speed
 	bms_.LifRng = new THREE.Vector2(0.1,1);	// Life Range
@@ -542,6 +544,7 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
 		//	Smoke Global
 		bms_.ObjClr[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
+		bms_.ObjFad.array[n] = 0.0; // Init TSL Variable
 		bms_.ObjSiz[n] = 0.001;
 		bms_.OpaBeg[n] = 0.3;
 		bms_.OpaVal[n] = 0;

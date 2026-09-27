@@ -441,6 +441,8 @@ let FrmCnt = 0;
 		fxd_.VrtAdj[n] = 0;
 	}
 //- Volcano Smoke -------------//----------------------------------------------
+//	Fade - Special Handling
+	grs_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 //	Smoke Sprite Inputs
 	grs_.Speed0 = new THREE.Vector2(0.001,125);	// Speed
 	grs_.LifRng = new THREE.Vector2(0.1,1);		// Life Range
@@ -459,12 +461,13 @@ let FrmCnt = 0;
 	grs_.ObjNum = 1;
 	for (let n = 0; n < grs_.ObjNum; n ++) {
 		grs_.ObjClr[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"white"); // Default Smoke Colors
+		grs_.ObjFad.array[n] = 1.0; // Init TSL Variable
 		grs_.ObjSiz[n] = 4000;	// Size
 		grs_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
 		grs_.ObjPos[n] = new THREE.Vector3(50,75,25); // Offset Position
 		grs_.ObjRef[n] = mnt_.ObjGrp[0]; // Parent Object
 	}
-	grs_.ObjFad = uniformArray([1.0],'float'); // TSL Value
+//	grs_.ObjFad = uniformArray([1.0],'float'); // TSL Value
 	
 //= MOVING AIRPLANES ===========//==============================================
 //- Airplane File Addresses (animated prop only)
@@ -555,6 +558,8 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	flg_.MapPos = [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)]; // Relative Map Position
 	flg_.ObjRef = [xsh_.ObjGrp[0]]; // Parent Object
 //- Ship Wake ------------------//----------------------------------------------
+//	Fade - Special Handling
+	wak_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 //	Smoke Sprite Inputs
 	wak_.Speed0 = new THREE.Vector2(0.001,125);	// Speed
 	wak_.LifRng = new THREE.Vector2(0.1,1);		// Life Range
@@ -573,15 +578,16 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	wak_.ObjNum = xsh_.ObjNum;	// Number of Wakes = Number of Ships
 	for (let n = 0; n < wak_.ObjNum; n ++) {
 		wak_.ObjClr[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"white"); // Default Smoke Colors
+		wak_.ObjFad.array[n] = 1.0; // Init TSL Variable
 		wak_.ObjSiz[n] = 4000;	// Size
 		wak_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
 		wak_.ObjPos[n] = new THREE.Vector3(0,-5,0); // Offset Position
 		wak_.ObjRef[n] = xsh_.ObjGrp[n]; // Parent Object
 	}
-	wak_.ObjFad = uniformArray([1.0,1.0,1.0],'float'); // TSL Value
+//	wak_.ObjFad = uniformArray([1.0,1.0,1.0],'float'); // TSL Value
 //- Ship Smoke (destroyer only) ------------------------------------------------
-//	Adjustments
-	xss_.ObjNum = 2;			// 2 stacks
+//	Fade - Special Handling
+	xss_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 //	Smoke Sprite Inputs
 	xss_.Speed0 = new THREE.Vector2(0.001,5);	// Speed
 	xss_.LifRng = new THREE.Vector2(0.1,10);	// Life Range
@@ -597,14 +603,16 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	xss_.ScaleN = 0.3;			// Scale - Node
 	xss_.SprCnt = 300;			// Sprite Count
 //	Global
-	xss_.ObjPos = [new THREE.Vector3(0,13.5,-9.5),new THREE.Vector3(0,12.5,6)]; // Offset Position
+	xss_.ObjNum = 2;			// 2 stacks
 	for (let n = 0; n < xss_.ObjNum; n ++) {
 		xss_.ObjClr[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"black"); // Default Smoke Colors
+		xss_.ObjFad.array[n] = 1.0; // Init TSL Variable
 		xss_.ObjSiz[n] = 200;	// Size
 		xss_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
 		xss_.ObjRef[n] = xsh_.ObjGrp[1]; // Parent Object
 	}
-	xss_.ObjFad = uniformArray([1.0,1.0],'float'); // TSL Value
+	xss_.ObjPos = [new THREE.Vector3(0,13.5,-9.5),new THREE.Vector3(0,12.5,6)]; // Offset Position
+//	xss_.ObjFad = uniformArray([1.0,1.0],'float'); // TSL Value
 //- Ship Guns ------------------//----------------------------------------------
 //	Adjustments
 	xsg_.ObjNum = 2;			// 2 Guns
@@ -735,6 +743,8 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	aaf_.SndVol = 15;			// Explosion Volume
 
 //= BOMBS ======================//==============================================
+//	Fade - Special Handling
+	bms_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 //-	Smoke Sprite Inputs --------------------------------------------------------
 	bms_.Speed0 = new THREE.Vector2(0.2,5);	// Speed
 	bms_.LifRng = new THREE.Vector2(0.1,1);	// Life Range
@@ -757,6 +767,7 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
 		//	Smoke Global
 		bms_.ObjClr[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
+		bms_.ObjFad.array[n] = 0.0; // Init TSL Variable
 		bms_.ObjSiz[n] = 0.001;
 		bms_.OpaBeg[n] = 0.3;
 		bms_.OpaVal[n] = 0;
@@ -775,7 +786,7 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	bms_.OpaFad[2] = 0.0001;	// Fade Rate
 	//	Opacity
 	bmt_.OpaBeg = 0.2;			// Smoke Trails
-	bms_.ObjFad = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
+//	bms_.ObjFad = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
 	//	Max Size
 	bmx_.SizMax = 5;			// Explosion
 	bms_.SizMax = 25;			// Smoke
