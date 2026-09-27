@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 25 Sep 2026
+Version dated 27 Sep 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -981,6 +981,11 @@ function initXSHSmk(xss_) {
 /*******************************************************************************
 *	INIT SMOKE GENERATOR (No Fade)
 *******************************************************************************/
+//	Used by:
+//		xaf_	End Sequence (above)
+//		grs_	Volcano
+//		xss_	Ship Smoke
+//		wak_	Ship Wake
 
 function initSmoke0(smk_,n) {
 	//- Speed		
@@ -1626,4 +1631,5 @@ export {
 260827: Change scale.set(x,x,x) to scale.setScalar(x);
 260918: Add Global Fade to Bomb Explosion Smoke (bms_)
 260924: Add Sprite variables to bms_ emitter.
+260926: Combined emitters into a single version, using standardized input.  These currently includes xaf_, grs_,xss_ and wak_.
 */
