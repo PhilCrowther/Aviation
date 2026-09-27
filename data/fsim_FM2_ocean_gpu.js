@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260925
+*	FSIM FM2 DATA: 260927
 *
 ********************************************************************************
 
@@ -400,20 +400,6 @@ let	flg_ = {
 
 //= SMOKE MODULE ===============//==============================================
 //- Volcano Smoke --------------//----------------------------------------------
-//let grs_ = {
-//		ObjNum: 1,				// Number of Smokes
-//		// Shared Values		
-//		ObjTxt: 1,				// Shared Texture Reference Number
-//		ObjSiz: 4000,			// Scale
-		// Smoke
-//		SmkMat: [0],			// Material
-//		SmkMsh: [0],			// Emitter Address
-//		// Rotaton and Position
-//		ObjRot: [0],			// Rotation (not used)
-//		MapPos: [0], 			// Map Position
-//		ObjRef: [0],			// Parent Object
-//	};
-
 let grs_ = {
 		ObjNum: 0,				// Number of Wakes
 		//	Common Sprite Inputs
@@ -431,9 +417,10 @@ let grs_ = {
 		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
 		ScaleN: 0.3,			// Scale - Node
 		SprCnt: 600,			// Sprite Count	
-		//	For Each Emitter		
+		//	Emitter	Data
 		ObjAdr: [0],			// Emitter Address
-		Color0: [0],			// Color - (vector3)
+		ObjClr: [0],			// Color - (vector3)
+		ObjFad: [0],			// Fade - TSL Value(s)
 		ObjSiz: [0], 			// Scale
 		ObjRot: [0],			// Rotation (not used)
 		ObjPos: [0],			// Map Position
@@ -457,10 +444,11 @@ let wak_ = {
 		OffMax: 0,				// Position - Offset Max - Vector3(2,5,2)
 		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
 		ScaleN: 0.3,			// Scale - Node
-		SprCnt: 600,			// Sprite Count	
-		//	For Each Emitter		
+		SprCnt: 600,			// Sprite Count
+		//	Emitter	Data
 		ObjAdr: [0],			// Emitter Address
-		Color0: [0],			// Color - (vector3)
+		ObjClr: [0],			// Color - (vector3)
+		ObjFad: [0],			// Fade - TSL Value(s)
 		ObjSiz: [0], 			// Scale
 		ObjRot: [0],			// Rotation (not used)
 		ObjPos: [0],			// Map Position
@@ -485,9 +473,10 @@ let xss_ = {
 		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
 		ScaleN: 0.3,			// Scale - Node
 		SprCnt: 300,			// Sprite Count
-		//	For Each Emitter
+		//	Emitter Data
 		ObjAdr: [0],			// Emitter Address
-		Color0: [0],			// Color - (vector3)
+		ObjClr: [0],			// Color - (vector3)
+		ObjFad: [0],			// Fade - TSL Value(s)
 		ObjSiz: [0],			// Scale
 		ObjRot: [0],			// Rotation (not used)
 		ObjPos: [0],			// Offset Position
@@ -999,20 +988,24 @@ let bms_ = {
 		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
 		ScaleN: 0.3,			// Scale - Node
 		SprCnt: 1000,			// Sprite Count
-		//	Color n
-		Color0: [],				// Color - (vector3)
-		//	Global Size n
+		//	Emitter Data
+		ObjAdr: [0],			// Emitter Address
+		ObjClr: [0],			// Color - (vector3)
+		ObjFad: [0],			// Fade - TSL Value(s)
+		ObjSiz: [0],			// Scale
+		ObjRot: [0],			// Rotation (not used)
+		ObjPos: [0],			// Offset Position
+		ObjRef: [0],			// Parent Object
+		//	Fade Data n [Optional]
+		OpaBeg: [],				// Starting Values
+		OpaVal: [],				// Current Values
+		OpaFad: [],				// Rate
+		//	Size Data n [Optional]
 		SizMax: 40,				// Max Size
-		SmkSiz: [],				// Size
 		SizMul: [],				// Shape of Cloud
 		SizAdd: [],				// Smoke Size Addition
 		SizSub: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
 		GroFlg: [],				// Grow Smoke (after first use)
-		//	Global Fade n
-		OpaBeg: [],				// Starting Values
-		OpaVal: [],				// Current Values
-		OpaFad: [],				// Rate
-		Global: 0,				// TSL Value(s)
 	}
 
 //- 6. SOUND VARIABLES =========//==============================================

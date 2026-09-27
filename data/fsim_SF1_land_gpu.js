@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260926
+*	FSIM SF1 DATA: 260927
 *
 *********************************************************************************
 
@@ -649,20 +649,26 @@ let bms_ = {
 		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
 		ScaleN: 0.3,			// Scale - Node
 		SprCnt: 1000,			// Sprite Count
-		//	Color n
-		Color0: [],				// Color - (vector3)
-		//	Global Size n
+		//	Emitter Data
+		ObjAdr: [0],			// Emitter Address
+//		Color0: [0],			// Color - (vector3)
+//		Global: [0],			// Fade - TSL Value(s)
+		ObjClr: [0],			// Color - (vector3)
+		ObjFad: [0],			// Fade - TSL Value(s)
+		ObjSiz: [0],			// Scale
+		ObjRot: [0],			// Rotation (not used)
+		ObjPos: [0],			// Offset Position
+		ObjRef: [0],			// Parent Object
+		//	Fade Data n [Optional]
+		OpaBeg: [],				// Starting Values
+		OpaVal: [],				// Current Values
+		OpaFad: [],				// Rate
+		//	Size Data n [Optional]
 		SizMax: 40,				// Max Size
-		SmkSiz: [],				// Size
 		SizMul: [],				// Shape of Cloud
 		SizAdd: [],				// Smoke Size Addition
 		SizSub: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
 		GroFlg: [],				// Grow Smoke (after first use)
-		//	Global Fade n
-		OpaBeg: [],				// Starting Values
-		OpaVal: [],				// Current Values
-		OpaFad: [],				// Rate
-		Global: 0,				// TSL Value(s)
 	}
 
 //=	MY SOUNDS ==================//==============================================
