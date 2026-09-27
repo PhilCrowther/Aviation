@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 26 Sep 2026
+Version dated 27 Sep 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -440,6 +440,31 @@ let FrmCnt = 0;
 		fxd_.ObjRef[n] = mnt_.ObjGrp[0];
 		fxd_.VrtAdj[n] = 0;
 	}
+//- Volcano Smoke -------------//----------------------------------------------
+//	Smoke Sprite Inputs
+	grs_.Speed0 = new THREE.Vector2(0.001,125);	// Speed
+	grs_.LifRng = new THREE.Vector2(0.1,1);		// Life Range
+	grs_.LifTim = 0.05;			// Life - Time
+	grs_.ColPos = 3;			// Color - Position
+	grs_.ColEff = 0.2,			// Color - Effect
+	grs_.MatNod = new THREE.Vector2(2.5,1);		// Material Node
+	grs_.RotRng = new THREE.Vector2(0.1,4);		// Rotation Range
+	grs_.OpaPwr = new THREE.Vector2(50,0.1);	// Opacity Comp	
+	grs_.OffMin = new THREE.Vector3(-.5,3,-.5);	// Offset Min
+	grs_.OffMax = new THREE.Vector3(1,5,1);		// Offset Max
+	grs_.ScaleR = new THREE.Vector2(0.1,0.2);	// Scale Range
+	grs_.ScaleN = 0.3;			// Scale - Node
+	grs_.SprCnt = 600;			// Sprite Count
+//	Adjustments
+	grs_.ObjNum = 1;
+	for (let n = 0; n < grs_.ObjNum; n ++) {
+		grs_.ObjClr[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"white"); // Default Smoke Colors
+		grs_.ObjSiz[n] = 4000;	// Size
+		grs_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
+		grs_.ObjPos[n] = new THREE.Vector3(50,75,25); // Offset Position
+		grs_.ObjRef[n] = mnt_.ObjGrp[0]; // Parent Object
+	}
+	grs_.ObjFad = uniformArray([1.0],'float'); // TSL Value
 	
 //= MOVING AIRPLANES ===========//==============================================
 //- Airplane File Addresses (animated prop only)
@@ -547,12 +572,13 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 //	Adjustments
 	wak_.ObjNum = xsh_.ObjNum;	// Number of Wakes = Number of Ships
 	for (let n = 0; n < wak_.ObjNum; n ++) {
-		wak_.Color0[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"white"); // Default Smoke Colors
+		wak_.ObjClr[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"white"); // Default Smoke Colors
 		wak_.ObjSiz[n] = 4000;	// Size
 		wak_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
 		wak_.ObjPos[n] = new THREE.Vector3(0,-5,0); // Offset Position
 		wak_.ObjRef[n] = xsh_.ObjGrp[n]; // Parent Object
 	}
+	wak_.ObjFad = uniformArray([1.0,1.0,1.0],'float'); // TSL Value
 //- Ship Smoke (destroyer only) ------------------------------------------------
 //	Adjustments
 	xss_.ObjNum = 2;			// 2 stacks
@@ -573,11 +599,12 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 //	Global
 	xss_.ObjPos = [new THREE.Vector3(0,13.5,-9.5),new THREE.Vector3(0,12.5,6)]; // Offset Position
 	for (let n = 0; n < xss_.ObjNum; n ++) {
-		xss_.Color0[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"black"); // Default Smoke Colors
+		xss_.ObjClr[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"black"); // Default Smoke Colors
 		xss_.ObjSiz[n] = 200;	// Size
 		xss_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
 		xss_.ObjRef[n] = xsh_.ObjGrp[1]; // Parent Object
 	}
+	xss_.ObjFad = uniformArray([1.0,1.0],'float'); // TSL Value
 //- Ship Guns ------------------//----------------------------------------------
 //	Adjustments
 	xsg_.ObjNum = 2;			// 2 Guns
@@ -600,12 +627,6 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	let XSGRem = 10;
 	let XSGTim = 10;
 
-//= SMOKE MODULE ===============//==============================================
-//- Volcano Smoke -------------//----------------------------------------------
-//	Adjustments
-	grs_.ObjRot = [new THREE.Euler()]; // Rotation (degrees) [not used]
-	grs_.MapPos = [new THREE.Vector3(50,75,25)]; // Map Position
-	grs_.ObjRef = [mnt_.ObjGrp[0]]; // Parent Object
 //= MY PEOPLE (Rigged Animated Characters) =====================================
 //	Adjustments
 	myp_.ObjRot = [new THREE.Euler(0,-45,0)]; // Rotation (degrees)
@@ -722,6 +743,7 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	bms_.ColEff = 0.2,			// Color - Effect
 	bms_.MatNod = new THREE.Vector2(2.5,1);	// Material Node
 	bms_.RotRng = new THREE.Vector2(0.1,4);	// Rotation Range
+	bms_.OpaPwr = new THREE.Vector2(1,1);	// Opacity Comp	(pow = 1)
 	bms_.OffMin = new THREE.Vector3(-2,3,-2); // Offset Min
 	bms_.OffMax = new THREE.Vector3(2,5,2);	// Offset Max
 	bms_.ScaleR = new THREE.Vector2(0.3,2);	// Scale Range
@@ -734,25 +756,26 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 		bmt_.SmkOff[n] = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
 		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
 		//	Smoke Global
-		bms_.Color0[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
-		bms_.SizMul[n] = new THREE.Vector3(2,1,2); // Shape of Cloud
-		bms_.SizAdd[n] = 0.4;	// Default
-		bms_.SizSub[n] = 0.01;	// Longer Life w/Fire
+		bms_.ObjClr[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
+		bms_.ObjSiz[n] = 0.001;
 		bms_.OpaBeg[n] = 0.3;
 		bms_.OpaVal[n] = 0;
 		bms_.OpaFad[n] = 0.0005;
+		bms_.SizMul[n] = new THREE.Vector3(2,1,2); // Shape of Cloud
+		bms_.SizAdd[n] = 0.4;	// Default
+		bms_.SizSub[n] = 0.01;	// Longer Life w/Fire
 	}
 	//.	Override for Smoke Only (No Fire)
-	bms_.Color0[0].z = "black";	// Colors
+	bms_.ObjClr[0].z = "black";	// Colors
 	bms_.SizSub[0] = 0.02;		// Shorter Life
-	bms_.Color0[1].z = "black";	// Colors
+	bms_.ObjClr[1].z = "black";	// Colors
 	bms_.SizSub[1] = 0.02;		// Shorter Life
 	//.	Override for Smoke and Fire
 	bms_.OpaBeg[2] = 0.5;		// Starting Value
 	bms_.OpaFad[2] = 0.0001;	// Fade Rate
 	//	Opacity
 	bmt_.OpaBeg = 0.2;			// Smoke Trails
-	bms_.Global = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
+	bms_.ObjFad = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
 	//	Max Size
 	bmx_.SizMax = 5;			// Explosion
 	bms_.SizMax = 25;			// Smoke
@@ -1117,7 +1140,7 @@ function initBomExp(n,pos,rot) {
 	bom_.MapPos[n].copy(pos); // Used to compute relative Position
 	bom_.ExpGrp[n].rotation.y = rot;
 	bms_.OpaVal[n] = bms_.OpaBeg[n]; // Init Smoke Opacity
-	bms_.Global.array[n] = bms_.OpaVal[n]; // Init TSL Variable
+	bms_.ObjFad.array[n] = bms_.OpaVal[n]; // Init TSL Variable
 }
 
 //= MOVE OBJECTS ===============//==============================================
@@ -1132,7 +1155,7 @@ function moveObject() {
 	//	Bombs
 	for (let n = 0; n < bom_.ObjNum; n++) {
 		if (bom_.ExpFlg[n]) {
-			bms_.Global.array[n] = bms_.OpaVal[n];
+			bms_.ObjFad.array[n] = bms_.OpaVal[n];
 			moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n);
 			bms_.OpaVal[n] = bms_.OpaVal[n] - bms_.OpaFad[n]; // Fade Out
 			if (bms_.OpaVal[n] < 0) bms_.OpaVal[n] = 0.0;
@@ -1191,8 +1214,8 @@ function moveAnmObj() {moveAnmFlg(flg_,tim_);}
 function initVlkSmk() {
 //	grs_.ObjTxt = txt_.ObjTxt[grs_.ObjTxt];
 	initGrdSmk(grs_);
-	grs_.SmkMsh[0].position.copy(grs_.MapPos[0]);
-	grs_.ObjRef[0].add(grs_.SmkMsh[0]);
+//	grs_.SmkMsh[0].position.copy(grs_.ObjPos[0]);
+//	grs_.ObjRef[0].add(grs_.SmkMsh[0]);
 }
 
 /*******************************************************************************
