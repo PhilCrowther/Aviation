@@ -116,23 +116,23 @@ let snd_ = {
 let smk_ = {
 		ObjNum: 0,				// Number of Stacks
 		//	Common Sprite Inputs
-		Speed0: 0,				// Speed - Vector2(0.2,5)
-		LifRng: 0,				// Life - Ranbge - Vector2(.1,1)
+		Speed0: 0,				// Speed - Vector2
+		LifRng: 0,				// Life - Ranbge - Vector2
 		LifTim: 1,				// Life - Time
 		ColPos: 3,				// Color - Position
 		ColEff: 0.2,			// Color - Effect
 		MatMap: 0,				// Opacity Mask (single material - not used here)
-		MatNod: 0,				// Material Node - Vector2(2.5,1)
-		RotRng: 0,				// Rotate Range - Vector2(.1,4)
+		MatNod: 0,				// Material Node - Vector2
+		RotRng: 0,				// Rotate Range - Vector2
 		OpaPwr: 0,				// Opacity Node Computation (used here)
-		OffMin: 0,				// Position - Offset Min - Vector3(-2,3,-2)
-		OffMax: 0,				// Position - Offset Max - Vector3(2,5,2)
-		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
+		OffMin: 0,				// Position - Offset Min - Vector3
+		OffMax: 0,				// Position - Offset Max - Vector3
+		ScaleR:	0,				// Scale - Range - Vector2
 		ScaleN: 0.3,			// Scale - Node
 		SprCnt: 1000,			// Sprite Count
 		//	Emitter Data
 		ObjAdr: [0],			// Emitter Address
-		ObjClr: [0],			// Color - (vector3)
+		ObjClr: [0],			// Color - Vector3
 		ObjFad: [0],			// Fade - TSL Value(s)
 		ObjSiz: [0],			// Scale
 		ObjRot: [0],			// Rotation (not used)
@@ -143,30 +143,30 @@ let smk_ = {
 //. Airplane Smoke Trail w/Fire //..............................................
 //	Default Values - Only 1 Object
 let xaf_ = {
-		ObjNum: 1,				// Number of Wakes
+		ObjNum: 1,						// Number of Wakes
 		//	Common Sprite Inputs
 		Speed0: new Vector2(0.2,10),	// Speed - Vector2(0.2,5)
 		LifRng: new Vector2(0.5,5),		// Life - Ranbge - Vector2(.1,1)
-		LifTim: 0.5,			// Life - Time
-		ColPos: 3,				// Color - Position
-		ColEff: 0.2,			// Color - Effect
-		MatMap: 0,				// Opacity Mask (loaded by init)
-		MatNod: new Vector2(2.5,1),	// Material Node - Vector2(2.5,1)
-		RotRng: new Vector2(0.1,4),	// Rotate Range - Vector2(.1,4)
-		OpaPwr: new Vector2(1,1),	// Opacity Node Computation (pow = 1)
-		OffMin: new Vector3(-0.1,3,-0.1),	// Position - Offset Min - Vector3(-2,3,-2)
+		LifTim: 0.5,					// Life - Time
+		ColPos: 3,						// Color - Position
+		ColEff: 0.2,					// Color - Effect
+		MatMap: 0,						// Opacity Mask (loaded by init)
+		MatNod: new Vector2(2.5,1),		// Material Node - Vector2(2.5,1)
+		RotRng: new Vector2(0.1,4),		// Rotate Range - Vector2(.1,4)
+		OpaPwr: new Vector2(1,1),		// Opacity Node Computation (pow = 1)
+		OffMin: new Vector3(-0.1,3,-0.1), // Position - Offset Min - Vector3(-2,3,-2)
 		OffMax: new Vector3(0.5,5,0.5),	// Position - Offset Max - Vector3(2,5,2)
 		ScaleR:	new Vector2(0.3,1),		// Scale - Range - Vector2(.3,2)
-		ScaleN: 0.3,			// Scale - Node
-		SprCnt: 250,			// Sprite Count	
-		//	For Each Emitter		
-		ObjAdr: [0],			// Emitter Address (loaded by init)
+		ScaleN: 0.3,					// Scale - Node
+		SprCnt: 250,					// Sprite Count	
+		//	Emitter	Data
+		ObjAdr: [0],					// Emitter Address (loaded by init)
 		ObjClr: [new Vector3(0x2c1501,0x222222,0xf27d0c)],	// Color - (vector3)
-		ObjFad: [1],			// Fade - TSL Value(s)
-		ObjSiz: [10], 			// Scale
+		ObjFad: uniformArray([1.0],'float'), // Fade - TSL Value
+		ObjSiz: [10], 					// Scale
 		ObjRot: [new Euler(0,0,0)],		// Rotation (not used)
 		ObjPos: [new Vector3(0,0,0)],	// Map Position
-		ObjRef: [0],			// Parent Object
+		ObjRef: [0],					// Parent Object
 	};
 
 /*******************************************************************************
@@ -1458,10 +1458,10 @@ function initSmoke0(smk_,n) {
 	let rotateRange = range(smk_.RotRng.x,smk_.RotRng.y);
 	let textureNode = texture(smk_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(smk_.OpaPwr.x),smk_.OpaPwr.y); // to make pow = 1, x =1, y=1
-	opacityNode = opacityNode.mul(bms_.ObjFad.element(n)); // global fade
+	opacityNode = opacityNode.mul(smk_.ObjFad.element(n)); // Fade
 	smk_.smokeNodeMater.opacityNode = opacityNode;
 	//	Position
-	let offsetRange = range(smk_.OffMin,smk_.OffMax);	// V3
+	let offsetRange = range(smk_.OffMin,smk_.OffMax);
 	smk_.smokeNodeMater.positionNode = offsetRange.mul(lifeTime);
 	//	Scale
 	let scaleRange = range(smk_.ScaleR.x,smk_.ScaleR.y);
