@@ -1430,6 +1430,8 @@ function moveBomSmk(bms_,n) {
 *	INIT SMOKE EMITTER
 *
 *******************************************************************************/
+//	This is an adaptation of the official three.js example Particle Emitter at:
+//		https://threejs.org/examples/?q=particle#webgpu_particles
 //	Used by:
 //		xaf_	End Sequence (above)
 //		grs_	Volcano
