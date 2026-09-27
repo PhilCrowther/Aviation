@@ -281,6 +281,35 @@ let bfm_ = {
 		Target: [0],			// If BFMflg set: Target (0 = my plane, 1 = xac[0], etc) ###260606
 	}
 
+//. Airplane Smoke Trail w/Fire //..............................................
+//	Default Values - Only 1 Object
+let xaf_ = {
+		ObjNum: 1,				// Number of Smoke Trails
+		//	Common Sprite Inputs
+		Speed0: 0,				// Speed - Vector2(0.2,5)
+		LifRng: 0,				// Life - Ranbge - Vector2(.1,1)
+		LifTim: 0.5,			// Life - Time
+		ColPos: 3,				// Color - Position
+		ColEff: 0.2,			// Color - Effect
+		MatMap: 0,				// Opacity Mask (loaded by init)
+		MatNod: 0,				// Material Node - Vector2(2.5,1)
+		RotRng: 0,				// Rotate Range - Vector2(.1,4)
+		OpaPwr: 0,				// Opacity Node Computation (pow = 1)
+		OffMin: 0, 				// Position - Offset Min - Vector3(-2,3,-2)
+		OffMax: 0,				// Position - Offset Max - Vector3(2,5,2)
+		ScaleR:	0,				// Scale - Range - Vector2(.3,2)
+		ScaleN: 0.3,			// Scale - Node
+		SprCnt: 250,			// Sprite Count	
+		//	Emitter	Data
+		ObjAdr: [0],			// Emitter Address (loaded by init)
+		ObjClr: [0],			// Color - (vector3)
+		ObjFad: [0], 			// Fade - TSL Value
+		ObjSiz: [10], 			// Scale
+		ObjRot: [0],			// Rotation (not used)
+		ObjPos: [0],			// Map Position
+		ObjRef: [0],			// Parent Object
+	};
+
 //= 5. MY AIRPLANE VARIABLES ===//==============================================
 let	flight = 0;
 let air_ = {
