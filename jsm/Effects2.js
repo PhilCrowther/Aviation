@@ -957,7 +957,7 @@ function initXACFyr() {
 	xaf_.ColEff = 0.2,			// Color - Effect
 	xaf_.MatNod = new Vector2(2.5,1);	// Material Node
 	xaf_.RotRng = new Vector2(0.1,4);	// Rotation Range
-	xaf_.OpaPwr = new Vector2(50,0.1);	// Opacity Comp (default)
+	xaf_.OpaPwr = new Vector2(1,1);		// Opacity Comp (pow = 1)
 	xaf_.OffMin = new Vector3(-0.1,3,-0.1);	// Offset Min
 	xaf_.OffMax = new Vector3(0.5,5,0.5);	// Offset Max
 	xaf_.ScaleR = new Vector2(0.3,1);	// Scale Range
@@ -1120,7 +1120,7 @@ function initSmoke0(smk_,n) {
 	//- Opacity
 	let rotateRange = range(smk_.RotRng.x,smk_.RotRng.y);
 	let textureNode = texture(smk_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
-	let opacityNode = textureNode.a.mul(life.oneMinus().pow(smk_.OpaPwr.x),smk_.OpaPwr.y);
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(smk_.OpaPwr.x),smk_.OpaPwr.y); // to make pow = 1, x =1, y=1
 	smk_.smokeNodeMater.opacityNode = opacityNode;
 	//	Position
 	let offsetRange = range(smk_.OffMin,smk_.OffMax);	// V3
