@@ -61,6 +61,7 @@ import {
 	Spherical,
 	Sprite,
 	SpriteNodeMaterial,
+	Vector2,
 	Vector3,	
 } from 'three';
 
