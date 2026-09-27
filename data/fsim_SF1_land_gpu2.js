@@ -665,7 +665,6 @@ let bms_ = {
 		OpaFad: [],				// Rate
 		//	Size Data n [Optional]
 		SizMax: 40,				// Max Size
-		SmkSiz: [],				// Size
 		SizMul: [],				// Shape of Cloud
 		SizAdd: [],				// Smoke Size Addition
 		SizSub: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
