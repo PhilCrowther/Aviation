@@ -398,10 +398,37 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb
 	xac_.AirRot = [new THREE.Euler(0,135,10),new THREE.Euler(0,135,10),new THREE.Euler(0,135,10),new THREE.Euler(0,135,10)]; // Rotation
 	xac_.SpdMPS = [30,30,30,30],	// Speed (mtr/sec) (30 ms = 108 kph = 67 mph)
 	xac_.MapPos = [new THREE.Vector3(100,300,1000), new THREE.Vector3(100,340,975),new THREE.Vector3(115,330,1025),new THREE.Vector3(85,330,1025)]; // meters
-//- BFM
+//- BFM ------------------------------------------------------------------------
 	bfm_.PosCut = 15;
 	BnkMax = 60;
-//-	Shadow Texture
+//- Ending Sequence ------------------------------------------------------------
+//	Fade - Special Handling
+	xaf_.ObjFad = uniformArray([0.0],'float'); // TSL Value
+	//	Smoke Sprite Inputs
+	xaf_.Speed0 = new THREE.Vector2(0.2,10);	// Speed
+	xaf_.LifRng = new THREE.Vector2(0.5,5);	// Life Range
+	xaf_.LifTim = 0.5;			// Life - Time
+	xaf_.ColPos = 3;			// Color - Position
+	xaf_.ColEff = 0.2,			// Color - Effect
+	xaf_.MatNod = new THREE.Vector2(2.5,1);	// Material Node
+	xaf_.RotRng = new THREE.Vector2(0.1,4);	// Rotation Range
+	xaf_.OpaPwr = new THREE.Vector2(1,1);	// Opacity Comp (pow = 1)
+	xaf_.OffMin = new THREE.Vector3(-0.1,3,-0.1); // Offset Min
+	xaf_.OffMax = new THREE.Vector3(0.5,5,0.5);	// Offset Max
+	xaf_.ScaleR = new THREE.Vector2(0.3,1);	// Scale Range
+	xaf_.ScaleN = 0.3;			// Scale - Node
+	xaf_.SprCnt = 250;			// Sprite Count
+	//	Global
+	xaf_.ObjNum = 1;			// Only Use 1 at a Time
+	for (let n = 0; n < xaf_.ObjNum; n ++) {
+		xaf_.ObjClr[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors
+		xaf_.ObjFad.array[n] = 1.0; // Init TSL Variable
+		xaf_.ObjSiz[n] = 10;	// Size
+		xaf_.ObjRot[n] = new THREE.Euler(0,0,0); // Rotation (degrees) [not used]
+		xaf_.ObjRef[n] = 0; // Parent Object
+	}
+	xaf_.ObjPos = [new THREE.Vector3(0,0,0)]; // Offset Position
+//-	Shadow Texture ---------------------------------------------------------------
 let	shd_ = 	{
 		ShdNum: 2,				// Number of Shadow Textures
 		ObjSrc: ["https://PhilCrowther.github.io/Aviation/textures/fx/shadow_l21.png",
@@ -920,7 +947,7 @@ function initMovPln() {
 		bfm_.ManTyp[n] = 0;
 		bfm_.BnkMax[n] = 0;
 	}
-	initEndSeq();
+	initEndSeq(xaf_);
 }
 
 //= MOVE AIRPLANES =============//==============================================
@@ -977,7 +1004,7 @@ function moveMovPln() {
 			}
 			//- ENDING SEQUENCE ------------------------------------------------
 			else {
-				moveEndSeq(n,xac_,myg_,tim_); // Execute Ending Sequence
+				moveEndSeq(n,xac_,xaf_,myg_,tim_); // Execute Ending Sequence
 				if (xac_.HitGrd[n]) {		// If Sequence Over, Select Next Target	
 					myg_.HitTgt = myg_.HitTgt+1;
 					if (myg_.HitTgt > (xac_.ObjNum)) myg_.HitTgt = 0;
