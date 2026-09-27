@@ -482,7 +482,7 @@ function initEndSeq() {
 		xaf_.MatMap = txt_.ObjTxt[SmkBlak];
 		initSmoke0(xaf_,n);		// Create Emitter
 		xaf_.ObjAdr[n].rotation.x = Math.PI/2;
-		xaf_.ObjAdr[n].position.z = 10;
+		xaf_.ObjAdr[n].position.z = 5;
 		xaf_.ObjAdr[n].visible = false; // Turn Off Smoke
 	}
 }
