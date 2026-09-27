@@ -61,6 +61,7 @@ import {
 	Spherical,
 	Sprite,
 	SpriteNodeMaterial,
+	Vector2,
 	Vector3,	
 } from 'three';
 
@@ -105,34 +106,13 @@ let snd_ = {
 		ObjSnd: [],
 	};
 
-//- Airplane Smoke Trail .......//..............................................
-let xas_ = {
-		// Shared Values
-		ObjNum: 1,				// Number of Smoke Trails
-		ObjTxt: 0,				// Shared Texture Reference Number
-		ObjSiz: 800,			// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Emitter Address
-	};
-
-//- Airplane Flame Trail .......//..............................................
-let xaf_ = {
-		ObjNum: 1,				// Number of Smoke Trails
-		// Shared Values
-		ObjTxt: 0,				// Texture
-		ObjSiz: 10,				// Scale
-		// Smoke
-		SmkMat: [0],			// Material
-		SmkMsh: [0],			// Mesh
-		// Fire
-		FyrMat: [0],			// Material
-		FyrMsh: [0],			// Mesh
-	};
-
 //- Smoke Generator Template ---//----------------------------------------------
 //	Shared with:
-//		xss_
+//		xaf_	End Sequence (below)
+//		grs_	Volcano
+//		xss_	Ship Smoke
+//		wak_	Ship Wake
+		
 let smk_ = {
 		ObjNum: 0,				// Number of Stacks
 		//	Common Sprite Inputs
@@ -156,6 +136,34 @@ let smk_ = {
 		ObjSiz: [0],			// Scale
 		ObjRot: [0],			// Rotation (not used)
 		ObjPos: [0],			// Offset Position
+		ObjRef: [0],			// Parent Object
+	};
+
+//. Airplane Smoke Trail w/Fire //..............................................
+//	Default Values - Only 1 Object
+let xaf_ = {
+		ObjNum: 1,				// Number of Wakes
+		//	Common Sprite Inputs
+		Speed0: new Vector2(0.2,10),	// Speed - Vector2(0.2,5)
+		LifRng: new Vector2(0.5,5),		// Life - Ranbge - Vector2(.1,1)
+		LifTim: 0.5,			// Life - Time
+		ColPos: 3,				// Color - Position
+		ColEff: 0.2,			// Color - Effect
+		MatMap: 0,				// Opacity Mask (loaded by init)
+		MatNod: new Vector2(2.5,1),	// Material Node - Vector2(2.5,1)
+		RotRng: new Vector2(0.1,4),	// Rotate Range - Vector2(.1,4)
+		OpaPwr: new Vector2(1,1),	// Opacity Node Computation (pow = 1)
+		OffMin: new Vector3(-0.1,3,-0.1),	// Position - Offset Min - Vector3(-2,3,-2)
+		OffMax: new Vector3(0.5,5,0.5),	// Position - Offset Max - Vector3(2,5,2)
+		ScaleR:	new Vector2(0.3,1),		// Scale - Range - Vector2(.3,2)
+		ScaleN: 0.3,			// Scale - Node
+		SprCnt: 250,			// Sprite Count	
+		//	For Each Emitter		
+		ObjAdr: [0],			// Emitter Address (loaded by init)
+		Color0: [new Vector3(0x2c1501,0x222222,0xf27d0c)],	// Color - (vector3)
+		ObjSiz: [10], 			// Scale
+		ObjRot: [new Euler(0,0,0)],		// Rotation (not used)
+		ObjPos: [new Vector3(0,0,0)],	// Map Position
 		ObjRef: [0],			// Parent Object
 	};
 
@@ -470,15 +478,13 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 //= INIT ENDING SEQUENCE =======//==============================================
 
 function initEndSeq() {
-	initXACFyr();
-}
-
-//- Init Smoke and Fire --------//----------------------------------------------
-function initXACFyr() {
-	xaf_.ObjTxt = txt_.ObjTxt[SmkBlak]; // Assign Texture
-	initAirFyr(xaf_);			// Create Emitter
-	xaf_.SmkMsh[0].visible = false; // Turn Off Smoke
-	xaf_.FyrMsh[0].visible = false; // Turn Off Fire
+	for (let n = 0; n < xaf_.ObjNum; n ++) {
+		xaf_.MatMap = txt_.ObjTxt[SmkBlak];
+		initSmoke0(xaf_,n);		// Create Emitter
+		xaf_.ObjAdr[n].rotation.x = Math.PI/2;
+		xaf_.ObjAdr[n].position.z = 10;
+		xaf_.ObjAdr[n].visible = false; // Turn Off Smoke
+	}
 }
 
 //= MOVE ENDING SEQUENCE =======//==============================================
@@ -522,17 +528,13 @@ function moveEndSeq(n,xac_,myg_,tim_) {
 //-	Begin Smoke and Fire -------//----------------------------------------------
 function begnXACFyr(n,xac_) {
 	// Smoke
-	xac_.AirObj[n].add(xaf_.SmkMsh[0]); // Attach to Airplane
-	xaf_.SmkMsh[0].visible = true;		// Make Visible
-	// Fire
-	xac_.AirObj[n].add(xaf_.FyrMsh[0]);	// Attach to Airplane
-	xaf_.FyrMsh[0].visible = true;		// Make Visible
+	xac_.AirObj[n].add(xaf_.ObjAdr[0]); // Attach to Airplane
+	xaf_.ObjAdr[0].visible = true;		// Make Visible
 }
 
 //-	End Smoke and Fire ---------//----------------------------------------------
 function stopXACFyr() {
-	xaf_.SmkMsh[0].visible = false; // Make Invisible
-	xaf_.FyrMsh[0].visible = false;
+	xaf_.ObjAdr[0].visible = false; // Make Invisible
 }
 
 //-	Make Airplane Spin ---------//----------------------------------------------
@@ -683,7 +685,6 @@ function initAAAGun(aaf_,air_,gen_) {
 		//	Gunfire Smoke Sprite
 		aaf_.GfSPtr[n] = new Sprite(aaf_.GfSMat[n]);
 		aaf_.GfSPtr[n].position.set(0,2.75,0);
-//		aaf_.GfSPtr[n].scale.set(15,15,15);
 		aaf_.GfSPtr[n].scale.setScalar(15);
 		aaf_.GunPtr[n].add(aaf_.GfSPtr[n]);
 		aaf_.GfSPtr[n].visible = false;
@@ -936,61 +937,6 @@ function initGrdSmk(grs_) {
 
 /*******************************************************************************
 *
-*	AIRPLANE SMOKE AND FIRE
-*
-*******************************************************************************/
-
-//= INITIALIZE AIRPLANE FIRE ===================================================
-//	Internal Use Only
-
-function initAirFyr(xaf_) {
-	for (let n = 0; n < xaf_.ObjNum; n ++) {
-		let lifeRange = range(0.5,5); // faster
-		let speed = uniform(0.2);
-		let scaledTime = time.add(10).mul(speed);
-		let lifeTime = scaledTime.mul(lifeRange).mod(0.5); // length
-		let scaleRange = range(0.3,1); // volume - denser
-		let rotateRange = range(0.1,4);
-		let life = lifeTime.div(lifeRange);
-		//- Materials
-		let fakeLightEffect = positionLocal.y.oneMinus().max(0.2);
-		let textureNode = texture(xaf_.ObjTxt, rotateUV(uv(),scaledTime.mul(rotateRange)));
-		let opacityNode = textureNode.a.mul(life.oneMinus());
-		let smokeColor = mix(color(0x2c1501),color(0x222222),positionLocal.y.mul(3).clamp());
-		//-	Smoke Material
-		xaf_.SmkMat[n] = new SpriteNodeMaterial();
-		xaf_.SmkMat[n].colorNode = mix(color(0xf27d0c),smokeColor,life.mul(2.5).min(1)).mul(fakeLightEffect);
-		xaf_.SmkMat[n].opacityNode = opacityNode;
-		xaf_.SmkMat[n].positionNode = range(new Vector3(-.1,3,-.1), new Vector3(0.5,5,0.5)).mul(lifeTime); // narrower
-		xaf_.SmkMat[n].scaleNode = scaleRange.mul(lifeTime.max(0.3));
-		xaf_.SmkMat[n].depthWrite = false;
-		//-	Smoke Mesh
-		xaf_.SmkMsh[n] = new Mesh(new PlaneGeometry(1,1),xaf_.SmkMat[n]);
-		xaf_.SmkMsh[n].scale.setScalar(xaf_.ObjSiz);
-		xaf_.SmkMsh[n].count = 250;
-		xaf_.SmkMsh[n].rotation.x = Math.PI/2;
-		xaf_.SmkMsh[n].position.z = 10;
-		//- Fire Material
-		xaf_.FyrMat[n] = new SpriteNodeMaterial();
-		xaf_.FyrMat[n].colorNode = mix(color(0xb72f17),color(0xb72f17),life);
-		xaf_.FyrMat[n].opacityNode = opacityNode.mul(.5);
-		xaf_.FyrMat[n].positionNode = range(new Vector3(-0.01,0.25,-0.01),new Vector3(0.01,0.5,0.01)).mul(lifeTime);
-		xaf_.FyrMat[n].scaleNode = xaf_.SmkMat[n].scaleNode;
-		xaf_.FyrMat[n].depthWrite = false;
-		xaf_.FyrMat[n].transparent = true;
-		xaf_.FyrMat[n].blending = AdditiveBlending;
-		//-	Fire Mesh
-		xaf_.FyrMsh[n] = new Mesh(new PlaneGeometry(1,1),xaf_.FyrMat[n]);
-		xaf_.FyrMsh[n].scale.setScalar(xaf_.ObjSiz);
-		xaf_.FyrMsh[n].count = 50;
-		xaf_.FyrMsh[n].renderOrder = 1;
-		xaf_.FyrMsh[n].rotation.x = Math.PI/2;
-		xaf_.FyrMsh[n].position.z = 10;
-	}
-}
-
-/*******************************************************************************
-*
 *	SHIP WAKE AND ENGINE SMOKE
 *
 *******************************************************************************/
@@ -1055,7 +1001,7 @@ function initSmoke0(smk_,n) {
 	//- Opacity
 	let rotateRange = range(smk_.RotRng.x,smk_.RotRng.y);
 	let textureNode = texture(smk_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
-	let opacityNode = textureNode.a.mul(life.oneMinus().pow(smk_.OpaPwr.x),smk_.OpaPwr.y);
+	let opacityNode = textureNode.a.mul(life.oneMinus().pow(smk_.OpaPwr.x),smk_.OpaPwr.y); // to make pow = 1, x =1, y=1
 	smk_.smokeNodeMater.opacityNode = opacityNode;
 	//	Position
 	let offsetRange = range(smk_.OffMin,smk_.OffMax);	// V3
