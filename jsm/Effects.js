@@ -106,40 +106,6 @@ let snd_ = {
 		ObjSnd: [],
 	};
 
-//- Smoke Generator Template ---//----------------------------------------------
-//	Shared with:
-//		xaf_	End Sequence (below)
-//		grs_	Volcano
-//		xss_	Ship Smoke
-//		wak_	Ship Wake
-		
-let smk_ = {
-		ObjNum: 0,				// Number of Stacks
-		//	Common Sprite Inputs
-		Speed0: 0,				// Speed - Vector2
-		LifRng: 0,				// Life - Ranbge - Vector2
-		LifTim: 1,				// Life - Time
-		ColPos: 3,				// Color - Position
-		ColEff: 0.2,			// Color - Effect
-		MatMap: 0,				// Opacity Mask (single material - not used here)
-		MatNod: 0,				// Material Node - Vector2
-		RotRng: 0,				// Rotate Range - Vector2
-		OpaPwr: 0,				// Opacity Node Computation (used here)
-		OffMin: 0,				// Position - Offset Min - Vector3
-		OffMax: 0,				// Position - Offset Max - Vector3
-		ScaleR:	0,				// Scale - Range - Vector2
-		ScaleN: 0.3,			// Scale - Node
-		SprCnt: 1000,			// Sprite Count
-		//	Emitter Data
-		ObjAdr: [0],			// Emitter Address
-		ObjClr: [0],			// Color - Vector3
-		ObjFad: [0],			// Fade - TSL Value(s)
-		ObjSiz: [0],			// Scale
-		ObjRot: [0],			// Rotation (not used)
-		ObjPos: [0],			// Offset Position
-		ObjRef: [0],			// Parent Object	
-	};
-
 /*******************************************************************************
 *
 *	LOAD EFFECTS FILES
@@ -819,7 +785,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 					aaf_.GfSPtr[n].visible = false;				
 				}
 			}
-		} // end of i (Bulllets)
+		} // end of i (Bullets)
 		//-	Smoke --------------------------------------------------------------
 		// Smoke Relative Position
 		if (aaf_.SmkPtr[n].visible = true) {
@@ -871,7 +837,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				aaf_.FirPtr[n].play();
 			}
 		}
-		//.	Exlosion ...........................................................
+		//.	Explosion ...........................................................
 		// Start Delay
 		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
 			let delay = aaf_.ExpGrp[n].position.length()/343;
@@ -984,7 +950,6 @@ function initXSHGun(xsg_,gen_) {
 		//	Explosion Smoke Sprite
 		xsg_.SmkPtr[n] = new Sprite(xsg_.SmkMat[n]);
 		xsg_.SmkPtr[n].position.set(0,0,10);
-//		xsg_.SmkPtr[n].scale.set(15,15,15);
 		xsg_.SmkPtr[n].scale.setScalar(15);
 		xsg_.GunPtr[n].add(xsg_.SmkPtr[n]);
 		xsg_.SmkPtr[n].visible = false;
@@ -1398,7 +1363,26 @@ function moveBomSmk(bms_,n) {
 
 /*******************************************************************************
 *
-*	INIT SMOKE EMITTER
+*	CENTER EXPLOSION
+*
+*******************************************************************************/
+
+//- Make Sphere ----------------------------------------------------------------
+function makeSphere(col) {
+	let geometry = new SphereGeometry(1,32,16);
+	let	material = new MeshBasicNodeMaterial({
+		colorNode:color(col),
+		transparent:true,
+		depthWrite: false,
+		opacity:1
+	});
+	let mesh = new Mesh(geometry,material);
+	mesh.visible = false;
+return mesh;}
+
+/*******************************************************************************
+*
+*	SMOKE EMITTER
 *
 *******************************************************************************/
 //	This is an adaptation of the official three.js example Particle Emitter at:
@@ -1409,6 +1393,34 @@ function moveBomSmk(bms_,n) {
 //		xss_	Ship Smoke
 //		wak_	Ship Wake
 //		bms_	Bomb Smoke
+
+//- Smoke Generator Template ---//----------------------------------------------		
+let smk_ = {
+		ObjNum: 0,				// Number of Stacks
+		//	Common Sprite Inputs
+		Speed0: 0,				// Speed - Vector2
+		LifRng: 0,				// Life - Ranbge - Vector2
+		LifTim: 0,				// Life - Time
+		ColPos: 0,				// Color - Position
+		ColEff: 0,				// Color - Effect
+		MatMap: 0,				// Opacity Mask (single material - not used here)
+		MatNod: 0,				// Material Node - Vector2
+		RotRng: 0,				// Rotate Range - Vector2
+		OpaPwr: 0,				// Opacity Node Computation (used here)
+		OffMin: 0,				// Position - Offset Min - Vector3
+		OffMax: 0,				// Position - Offset Max - Vector3
+		ScaleR:	0,				// Scale - Range - Vector2
+		ScaleN: 0,				// Scale - Node
+		SprCnt: 0,				// Sprite Count
+		//	Emitter Data
+		ObjAdr: [0],			// Emitter Address
+		ObjClr: [0],			// Color - Vector3
+		ObjFad: [0],			// Fade - TSL Value(s)
+		ObjSiz: [0],			// Scale
+		ObjRot: [0],			// Rotation (not used)
+		ObjPos: [0],			// Offset Position
+		ObjRef: [0],			// Parent Object	
+	};
 
 function initSmoke0(smk_,n) {
 	//- Commom Variables -------------------------------------------------------
@@ -1495,15 +1507,6 @@ function Mod360(deg) {
 	while (deg < 0) deg = deg + 360; // Make deg a positive number
 	deg = deg % 360;				 // Compute remainder of any number divided by 360
 return deg;}
-
-//= SPHERE =====================//==============================================
-//	Used to create flash explosions
-function makeSphere(col) {
-	let geometry = new SphereGeometry(1,32,16);
-	let	material = new MeshBasicNodeMaterial({colorNode:color(col),transparent:true,opacity:1});
-	let mesh = new Mesh(geometry,material);
-	mesh.visible = false;
-return mesh;}
 
 /*******************************************************************************
 *
