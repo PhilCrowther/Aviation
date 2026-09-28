@@ -628,8 +628,6 @@ function initAAAGun(aaf_,air_,gen_) {
 		aaf_.GfSPtr[n].visible = false;
 		//. Create Explosion Graphics ..........................................
 		//	Explosion Flash
-//		aaf_.ExpPtr[n] = makeSphere("crimson");
-//		aaf_.ExpGrp[n].add(aaf_.ExpPtr[n]);
 		initExplod(aax_,n)
 		//	Explosion Smoke Material
 		//	(need separate material becuase vary opacity)
@@ -753,7 +751,8 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 					aaf_.SmkMat[n].opacity = 1.0;
 					aaf_.SmkRot[n] = Mod360(aaf_.SmkRot[n] + 163); // Change appearance
 					aaf_.SmkDTm[n] = aaf_.SmkDMx[n]; // Reset Delay Timer
-					aaf_.SmkFlg[n] = 1 // Smoke Trigger On (Starts Explosion and Sound) - reset to zero on next rep
+					aaf_.SmkFlg[n] = 1; // Master Trigger On (Starts Sound) - reset to zero on next rep
+					aax_.ExpFlg[n] = 1;	// Explosion Trigger (Starts Explosion)
 				}
 			}
 			// Continue
@@ -802,21 +801,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		if (aaf_.SmkDTm[n] > 0) aaf_.SmkDTm[n] = aaf_.SmkDTm[n] - tim_.DLTime;
 		if (aaf_.SmkDTm[n] < 0) aaf_.SmkDTm[n] = 0; // Ready for Next Explosion
 		// Explosion (Red Flash)
-//		if (aaf_.SmkFlg[n]) {
-//			aaf_.ExpSiz[n] = 1/200; // Start Size
-//			aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
-//			aaf_.ExpPtr[n].visible = true;
-//		}
-//		if (aaf_.ExpLif[n] > 0) {
-//			aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
-//			aaf_.ExpSiz[n] = aaf_.ExpSiz[n] + 1/200;
-//			aaf_.ExpLif[n] = aaf_.ExpLif[n] - tim_.DLTime;
-//			if (aaf_.ExpLif[n] < 0) {
-//				aaf_.ExpLif[n] = 0;
-//				aaf_.ExpPtr[n].visible = false;
-//			}
-//		}
-		moveExplod(aax_,aaf_,n);
+		moveExplod(aax_,n);
 		//-	Sounds -------------------------------------------------------------
 		//.	Play Sounds (No Delay) .............................................
 //		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
@@ -1142,7 +1127,9 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 		bom_.SndDTm[n] = 0;
 		bom_.MapPos[n] = new Vector3();
 		//	Explosion
-		initBomExp(bmx_,bom_,n);
+//		initBomExp(bmx_,bom_,n);
+		initExplod(bmx_,n);
+		bmx_.ExpPtr[n].position.y = 5;
 		//	Smoke Trails
 		initBomSmT(bmt_,bom_,n);
 		//	Smoke
@@ -1168,7 +1155,8 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 		bom_.SndFlg[n] = 0;
 	}
 	//	Explosion
-	moveBomExp(bmx_,n);
+//	moveBomExp(bmx_,n);
+	moveExplod(bmx_,n);
 	//	Smoke Trails
 	moveBomSmT(bmt_,tim_,n);
 	//	Smoke
@@ -1406,13 +1394,14 @@ function initExplod(xxx_,n) {
 }
 
 //= MOVE =======================//==============================================
-function moveExplod(xxx_,aaf_,n) {
+function moveExplod(xxx_,n) {
 	//-	Trigger Explosion
-	if (aaf_.SmkFlg[n]) {
+	if (xxx_.ExpFlg[n]) {
 //		xxx_.ExpOpa[n] = xxx_.ExpOp0	// Start Opacity
 		xxx_.ExpSiz[n] = xxx_.ExpSz0;	// Start Size
 		xxx_.ExpLif[n] = xxx_.ExpLf0;	// Start Life
 		xxx_.ExpPtr[n].visible = true;
+		xxx_.ExpFlg[n] = 0;
 	}
 	//- Continue Explosion
 	if (xxx_.ExpLif[n] > 0) {
@@ -1435,19 +1424,6 @@ function moveExplod(xxx_,aaf_,n) {
 		}
 	}
 }
-
-//- Make Sphere ----------------------------------------------------------------
-function makeSphere(col) {
-	let geometry = new SphereGeometry(1,32,16);
-	let	material = new MeshBasicNodeMaterial({
-		colorNode:color(col),
-		transparent:true,
-		depthWrite: false,
-		opacityNode:1
-	});
-	let mesh = new Mesh(geometry,material);
-	mesh.visible = false;
-return mesh;}
 
 /*******************************************************************************
 *
