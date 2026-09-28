@@ -594,7 +594,6 @@ function initAAAGun(aaf_,air_,gen_) {
 			line = new Line(AAAGeD,AAAMtD); // Dark Color
 			line.position.z = lnB;
 			aaf_.AAAPtr[n][i].add(line);
-//			aaf_.AAAPtr[n][i].scale.set(scale,scale,scale);
 			aaf_.AAAPtr[n][i].scale.setScalar(scale);		
 			aaf_.AAAPtr[n][i].rotation.order = "YXZ";
 			// 
@@ -817,7 +816,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 //				aaf_.ExpPtr[n].visible = false;
 //			}
 //		}
-		moveExplod(aax,aaf,n);
+		moveExplod(aax_,aaf_,n);
 		//-	Sounds -------------------------------------------------------------
 		//.	Play Sounds (No Delay) .............................................
 //		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
@@ -1374,7 +1373,6 @@ function moveBomSmk(bms_,n) {
 //		???_	Ship Guns - Twice
 
 //- Explosion Data Template-----//----------------------------------------------
-
 let xxx = {
 		//-	Common
 		ExpClr: "crimson",		// Material Color
@@ -1409,7 +1407,7 @@ function initExplod(xxx_,n) {
 }
 
 //= MOVE =======================//==============================================
-function moveExplod(xxx_,aaf,n) {
+function moveExplod(xxx_,aaf_,n) {
 	//-	Trigger Explosion
 	if (aaf_.SmkFlg[n]) {
 //		xxx_.ExpOpa[n] = xxx_.ExpOp0	// Start Opacity
