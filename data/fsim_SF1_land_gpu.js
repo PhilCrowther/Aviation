@@ -618,7 +618,7 @@ let bom_ = {
 		MapPos: [],				// Map Position
 	}
 
-//- Bomb Geometry --------------//----------------------------------------------
+//- Bomb Explosion -------------//----------------------------------------------
 let bmx_ = {
 		ExpGeo: [],				// Create in Effects
 		ExpMat: [],				// Create in Effects
