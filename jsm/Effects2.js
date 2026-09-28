@@ -1397,7 +1397,7 @@ let xxx = {
 function initExplod(xxx_,n) {
 	let geometry = new SphereGeometry(1,32,16);
 	xxx_.ExpMat[n] = new MeshBasicNodeMaterial({
-		colorNode:color(xxx_ExpClr),
+		colorNode:color(xxx_.ExpClr),
 		transparent:true,
 		depthWrite:false,
 		opacityNode:xxx_.ExpOp0,
