@@ -1131,7 +1131,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 //		initBomExp(bmx_,bom_,n);
 		initExplod(bmx_,n);
 		bmx_.ExpPtr[n].position.y = 5;
-		bmx_.ExpGrp[n].add(bmx_.SndPtr[n]);		
+		bom_.ExpGrp[n].add(bmx_.ExpPtr[n]);		
 		//	Smoke Trails
 		initBomSmT(bmt_,bom_,n);
 		//	Smoke
