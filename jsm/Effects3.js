@@ -807,7 +807,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		//.	Play Sounds (No Delay) .............................................
 //		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
 		// Play Sound With Delay
-		//. Gunfire ............................................................
+		//. Gunfire Sound ......................................................
 		//	Start Delay
 		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown 		
 			aaf_.FirDTm[n] = aaf_.GunPtr[n].position.length()/343;
@@ -823,7 +823,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				aaf_.FirPtr[n].play();
 			}
 		}
-		//.	Explosion ...........................................................
+		//.	Explosion Sound ....................................................
 		// Start Delay
 		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
 			let delay = aaf_.ExpGrp[n].position.length()/343;
@@ -1176,47 +1176,6 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 }
 
 /*******************************************************************************
-*	BOMB SPHERE GEOMETRY
-*******************************************************************************/
-
-//= INIT =======================//==============================================
-function initBomExp(bmx_,bom_,n) {
-	bmx_.ExpGeo[n] = new SphereGeometry(1,32,16);
-	bmx_.ExpMat[n] = new MeshBasicNodeMaterial({
-			colorNode: color("orange"),
-			transparent: true,
-			depthWrite: false,
-			opacityNode: 1,
-		}),
-	bmx_.ExpMsh[n] = new Mesh(bmx_.ExpGeo[n],bmx_.ExpMat[n]);
-	bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
-	bom_.ExpGrp[n].add(bmx_.ExpMsh[n]);
-	bmx_.ExpMsh[n].position.y = 5;
-	bmx_.ExpSiz[n] = bmx_.SizBeg;
-}
-
-//= MOVE =======================//==============================================
-function moveBomExp(bmx_,n) {
-	if (bmx_.ExpFlg[n]) {
-		// Display New Size and Opacity
-		bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
-		bmx_.ExpMat[n].opacityNode = bmx_.ExpOpa[n];
-		// Adjust Opacity and Size
-		bmx_.ExpSiz[n] = bmx_.ExpSiz[n] + 0.5; // Expand
-		bmx_.ExpOpa[n] = bmx_.ExpOpa[n] - 0.01; // Fade Away
-		// If Size > SizMax, Turn Off and Reset
-		if (bmx_.ExpSiz[n] > bmx_.SizMax) {
-			bmx_.ExpFlg[n] = 0;
-			// Reset
-			bmx_.ExpSiz[n] = bmx_.SizBeg;
-			bmx_.ExpOpa[n] = 1;
-			bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
-			bmx_.ExpMat[n].opacityNode = bmx_.ExpOpa[n];
-		}
-	}
-}
-
-/*******************************************************************************
 *	BOMB SMOKE TRAILS
 *******************************************************************************/
 
@@ -1389,7 +1348,6 @@ function initExplod(xxx_,n) {
 	xxx_.ExpPtr[n] = new Mesh(geometry,xxx_.ExpMat[n]);
 	xxx_.ExpPtr[n].scale.setScalar(xxx_.ExpSz0);
 	xxx_.ExpPtr[n].visible = false;
-//	xxx_.ExpRef[n].add(xxx_.ExpPtr[n]); // Link to Group
 }
 
 //= MOVE =======================//==============================================
