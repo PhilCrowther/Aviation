@@ -553,10 +553,6 @@ let aaf_ = {
 		FirDTm: [],
 		//.	Explosion ..........................................................
 		ExpGrp: [],				// Explosion Group
-		//	Explosion Flash
-//		ExpPtr: [],				// Pointer to Exploding Center
-//		ExpSiz: [],				// Expanding Size
-//		ExpLif: [],				// Life of Explosion (seconds)	
 		//	Explosion Smoke
 		SmkFlg: [],				// 1 = Start Smoke
 		SmkMap: 2,				// Shared Texture Reference Number
@@ -589,8 +585,7 @@ let aax_ = {
 		ExpMat: [],				// Material (if change opacity or color)
 		ExpOpa: [],				// Current Opacity
 		ExpSiz: [],				// Current Size 		
-		ExpLif: [],				// Remaining Life of Explosion 
-		ExpRef: [],				// Parent	
+		ExpLif: [],				// Remaining Life of Explosion	
 	};
 
 //= SPRITE SMOKE TRAIL =========//==============================================
@@ -637,18 +632,6 @@ let bom_ = {
 	}
 
 //- Bomb Explosion -------------//----------------------------------------------
-//let bmx_ = {
-//		ExpGeo: [],				// Create in Effects
-//		ExpMat: [],				// Create in Effects
-//		ExpMsh: [],				// Create in Effects
-//		ExpFlg: [],
-//		ExpSiz: [],				// Explosion Size
-//		SizBeg: 0.001,			// Beginning Size
-//		SizMax: 30,				// Maximum Size
-//		ExpOpa: [],
-//	};
-
-//-	AAF Explosion
 let bmx_ = {		
 		ExpClr: "orange",		// Material Color
 		ExpOp0:	1,				// Opacity - Beginning (default = 1)
@@ -662,8 +645,7 @@ let bmx_ = {
 		ExpMat: [],				// Material (if change opacity or color)
 		ExpOpa: [],				// Current Opacity
 		ExpSiz: [],				// Current Size 		
-		ExpLif: [],				// Remaining Life of Explosion 
-		ExpRef: [],				// Parent	
+		ExpLif: [],				// Remaining Life of Explosion 	
 	};
 
 //- Bomb Smoke Trails ----------//----------------------------------------------
