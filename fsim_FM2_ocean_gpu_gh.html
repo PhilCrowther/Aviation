@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Sep 2026
+Version dated 28 Sep 2026
 
 A basic demo of a flight simulation of an animated airplane model over animated ocean using WebGPU and NodeMaterials.
 This demo has now been expanded to include a battle scenario which will eventually involve air combat
@@ -441,8 +441,6 @@ let FrmCnt = 0;
 		fxd_.VrtAdj[n] = 0;
 	}
 //- Volcano Smoke -------------//----------------------------------------------
-//	Fade - Special Handling
-	grs_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 //	Smoke Sprite Inputs
 	grs_.Speed0 = new THREE.Vector2(0.001,125);	// Speed
 	grs_.LifRng = new THREE.Vector2(0.1,1);		// Life Range
@@ -458,6 +456,7 @@ let FrmCnt = 0;
 	grs_.ScaleN = 0.3;			// Scale - Node
 	grs_.SprCnt = 600;			// Sprite Count
 //	Adjustments
+	grs_.ObjFad = uniformArray([0.0],'float'); // Format TSL Value (special handling)
 	grs_.ObjNum = 1;
 	for (let n = 0; n < grs_.ObjNum; n ++) {
 		grs_.ObjClr[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"white"); // Default Smoke Colors
@@ -467,7 +466,6 @@ let FrmCnt = 0;
 		grs_.ObjPos[n] = new THREE.Vector3(50,75,25); // Offset Position
 		grs_.ObjRef[n] = mnt_.ObjGrp[0]; // Parent Object
 	}
-//	grs_.ObjFad = uniformArray([1.0],'float'); // TSL Value
 	
 //= MOVING AIRPLANES ===========//==============================================
 //- Airplane File Addresses (animated prop only)
@@ -525,8 +523,6 @@ let XPFNam = ["xac_fm2.glb","xac_a6m.glb"];
 	bfm_.BFMflg = [0,1];		// Zero is maneuvering
 	bfm_.Target = [0,1];		// Target is FM2
 //- Ending Sequence ------------------------------------------------------------
-//	Fade - Special Handling
-	xaf_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 	//	Smoke Sprite Inputs
 	xaf_.Speed0 = new THREE.Vector2(0.2,10);	// Speed
 	xaf_.LifRng = new THREE.Vector2(0.5,5);	// Life Range
@@ -542,6 +538,7 @@ let XPFNam = ["xac_fm2.glb","xac_a6m.glb"];
 	xaf_.ScaleN = 0.3;			// Scale - Node
 	xaf_.SprCnt = 250;			// Sprite Count
 	//	Global
+	xaf_.ObjFad = uniformArray([0.0],'float'); // Format TSL Value (Special Handling)
 	xaf_.ObjNum = 1;			// Only Use 1 at a Time
 	for (let n = 0; n < xaf_.ObjNum; n ++) {
 		xaf_.ObjClr[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors
@@ -585,8 +582,6 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	flg_.MapPos = [new THREE.Vector3(44.2,92.47,-58.93).multiplyScalar(Ft2Mtr)]; // Relative Map Position
 	flg_.ObjRef = [xsh_.ObjGrp[0]]; // Parent Object
 //- Ship Wake ------------------//----------------------------------------------
-//	Fade - Special Handling
-	wak_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 //	Smoke Sprite Inputs
 	wak_.Speed0 = new THREE.Vector2(0.001,125);	// Speed
 	wak_.LifRng = new THREE.Vector2(0.1,1);		// Life Range
@@ -602,6 +597,7 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	wak_.ScaleN = 0.3;			// Scale - Node
 	wak_.SprCnt = 600;			// Sprite Count
 //	Adjustments
+	wak_.ObjFad = uniformArray([0.0],'float'); // Format TSL Value (Special Handling)
 	wak_.ObjNum = xsh_.ObjNum;	// Number of Wakes = Number of Ships
 	for (let n = 0; n < wak_.ObjNum; n ++) {
 		wak_.ObjClr[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"white"); // Default Smoke Colors
@@ -611,10 +607,7 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 		wak_.ObjPos[n] = new THREE.Vector3(0,-5,0); // Offset Position
 		wak_.ObjRef[n] = xsh_.ObjGrp[n]; // Parent Object
 	}
-//	wak_.ObjFad = uniformArray([1.0,1.0,1.0],'float'); // TSL Value
 //- Ship Smoke (destroyer only) ------------------------------------------------
-//	Fade - Special Handling
-	xss_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 //	Smoke Sprite Inputs
 	xss_.Speed0 = new THREE.Vector2(0.001,5);	// Speed
 	xss_.LifRng = new THREE.Vector2(0.1,10);	// Life Range
@@ -630,6 +623,7 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 	xss_.ScaleN = 0.3;			// Scale - Node
 	xss_.SprCnt = 300;			// Sprite Count
 //	Global
+	xss_.ObjFad = uniformArray([0.0],'float'); // Format TSL Value (Special Handling)
 	xss_.ObjNum = 2;			// 2 stacks
 	for (let n = 0; n < xss_.ObjNum; n ++) {
 		xss_.ObjClr[n] = new THREE.Vector3(0xe0e0e0,0xd0d0d0,"black"); // Default Smoke Colors
@@ -639,7 +633,6 @@ let XSFNam = ["CVE_noflag_gun.glb","fletcher.glb","liberty.glb"];
 		xss_.ObjRef[n] = xsh_.ObjGrp[1]; // Parent Object
 	}
 	xss_.ObjPos = [new THREE.Vector3(0,13.5,-9.5),new THREE.Vector3(0,12.5,6)]; // Offset Position
-//	xss_.ObjFad = uniformArray([1.0,1.0],'float'); // TSL Value
 //- Ship Guns ------------------//----------------------------------------------
 //	Adjustments
 	xsg_.ObjNum = 2;			// 2 Guns
@@ -768,10 +761,32 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	aaf_.FirVol = 15;			// Gunfire Volume
 	aaf_.SndDst = 5;			// Explosion Reference Distance
 	aaf_.SndVol = 15;			// Explosion Volume
+//-	Explosion
+	aax_.ExpClr = "orange";	// Material Color
+	aax_.ExpOp0 = 1;			// Opacity - Beginning (default = 1)
+	aax_.ExpSz0 = 0.005;		// Size -    Beginning Size (default start = 0.005)
+	aax_.ExpOp1 = 1;			// Opacity - Decrease per frame (default = 1)
+	aax_.ExpSz1 = 1.0;			// Size -    Increase per frame (default = 1)
+	aax_.ExpLf0 = 0.15;			// Beginning Life (default = 0.15 seconds
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		aax_.ExpOpa[n] = aax_.ExpOp0;	// Material Opacity
+		aax_.ExpSiz[n] = aax_.ExpSz0;	// Expanding Size (default start = 1/200)
+		aax_.ExpLif[n] = 0;		// Life of Explosion (default life = 0.15 seconds)
+	}
 
 //= BOMBS ======================//==============================================
-//	Fade - Special Handling
-	bms_.ObjFad = uniformArray([0.0],'float'); // TSL Value
+//-	Explosion ------------------------------------------------------------------
+	bmx_.ExpClr = "orange";	// Material Color
+	bmx_.ExpOp0 = 1;			// Opacity - Beginning (default = 1)
+	bmx_.ExpSz0 = 0.005;		// Size -    Beginning Size (default start = 1/200)
+	bmx_.ExpOp1 = 0;			// Opacity - Decrease per frame (default = ?)
+	bmx_.ExpSz1 = 1.0;			// Size -    Increase per frame (default = 1/200)
+	bmx_.ExpLf0 = 0.15;			// Beginning Life (default = 0.15 seconds
+	for (let n = 0; n < bom_.ObjNum; n ++) {
+		bmx_.ExpOpa[n] = bmx_.ExpOp0;	// Material Opacity
+		bmx_.ExpSiz[n] = bmx_.ExpSz0;	// Expanding Size (default start = 1/200)
+		bmx_.ExpLif[n] = 0;			// Life of Explosion (default life = 0.15 seconds)	
+	}
 //-	Smoke Sprite Inputs --------------------------------------------------------
 	bms_.Speed0 = new THREE.Vector2(0.2,5);	// Speed
 	bms_.LifRng = new THREE.Vector2(0.1,1);	// Life Range
@@ -787,6 +802,7 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	bms_.ScaleN = 0.3;			// Scale - Node
 	bms_.SprCnt = 1000;			// Sprite Count
 //-	Adjustments (Identical Inputs for 3 Smoke Trails) --------------------------
+	bms_.ObjFad = uniformArray([0.0],'float'); // Format TSL Value (Special Handling)
 	for (let n = 0; n < bom_.ObjNum; n ++) {
 		//	Smoke Trails Global
 		bmt_.SmkVec[n] = [new THREE.Vector3(50,0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)];
@@ -813,9 +829,7 @@ for (let n = 0; n < xag_.ObjNum; n ++) {
 	bms_.OpaFad[2] = 0.0001;	// Fade Rate
 	//	Opacity
 	bmt_.OpaBeg = 0.2;			// Smoke Trails
-//	bms_.ObjFad = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
 	//	Max Size
-	bmx_.SizMax = 5;			// Explosion
 	bms_.SizMax = 25;			// Smoke
 
 //- 6. SOUND VARIABLES =========//==============================================

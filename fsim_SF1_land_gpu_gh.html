@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Sep 2026
+Version dated 28 Sep 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -402,8 +402,6 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb
 	bfm_.PosCut = 15;
 	BnkMax = 60;
 //- Ending Sequence ------------------------------------------------------------
-//	Fade - Special Handling
-	xaf_.ObjFad = uniformArray([0.0],'float'); // TSL Value
 	//	Smoke Sprite Inputs
 	xaf_.Speed0 = new THREE.Vector2(0.2,10);	// Speed
 	xaf_.LifRng = new THREE.Vector2(0.5,5);	// Life Range
@@ -419,6 +417,7 @@ let XPFNam = ["xac_l21.glb","xac_dr1_ylo.glb","xac_dr1_grn.glb","xac_dr1_red.glb
 	xaf_.ScaleN = 0.3;			// Scale - Node
 	xaf_.SprCnt = 250;			// Sprite Count
 	//	Global
+	xaf_.ObjFad = uniformArray([0.0],'float'); // Format TSL Value (Special Handling)
 	xaf_.ObjNum = 1;			// Only Use 1 at a Time
 	for (let n = 0; n < xaf_.ObjNum; n ++) {
 		xaf_.ObjClr[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors
@@ -545,11 +544,41 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	aaf_.FirVol = 15;			// Gunfire Volume
 	aaf_.SndDst = 5;			// Explosion Reference Distance
 	aaf_.SndVol = 15;			// Explosion Volume
+//-	Explosion
+	aax_.ExpClr = "orange";	// Material Color
+	aax_.ExpOp0 = 1;			// Opacity - Beginning (default = 1)
+	aax_.ExpSz0 = 0.005;		// Size -    Beginning Size (default start = 0.005)
+	aax_.ExpOp1 = 1;			// Opacity - Decrease per frame (default = 1)
+	aax_.ExpSz1 = 1.0;			// Size -    Increase per frame (default = 1)
+	aax_.ExpLf0 = 0.15;			// Beginning Life (default = 0.15 seconds
+	for (let n = 0; n < aaf_.ObjNum; n ++) {
+		aax_.ExpOpa[n] = aax_.ExpOp0;	// Material Opacity
+		aax_.ExpSiz[n] = aax_.ExpSz0;	// Expanding Size (default start = 0.005)
+		aax_.ExpLif[n] = 0;		// Life of Explosion (default life = 0.15 seconds)
+	}
 
 //= BOMBS ======================//==============================================
-//	Fade - Special Handling
-	bms_.ObjFad = uniformArray([0.0],'float'); // TSL Value
+//-	Explosion ------------------------------------------------------------------
+	bmx_.ExpClr = "orange";	// Material Color
+	bmx_.ExpOp0 = 1;			// Opacity - Beginning (default = 1)
+	bmx_.ExpSz0 = 0.005;		// Size -    Beginning Size (default start = 1/200)
+	bmx_.ExpOp1 = 0;			// Opacity - Decrease per frame (default = ?)
+	bmx_.ExpSz1 = 1.0;			// Size -    Increase per frame (default = 1/200)
+	bmx_.ExpLf0 = 0.15;			// Beginning Life (default = 0.15 seconds
+	for (let n = 0; n < bom_.ObjNum; n ++) {
+		bmx_.ExpOpa[n] = bmx_.ExpOp0;	// Material Opacity
+		bmx_.ExpSiz[n] = bmx_.ExpSz0;	// Expanding Size (default start = 1/200)
+		bmx_.ExpLif[n] = 0;			// Life of Explosion (default life = 0.15 seconds)	
+	}
+//- Smoke Trails ---------------------------------------------------------------
+	for (let n = 0; n < bom_.ObjNum; n ++) {
+		//	Smoke Trails Global
+		bmt_.SmkVec[n] = [new THREE.Vector3(50,0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)];
+		bmt_.SmkOff[n] = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
+		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
+	}
 //-	Smoke Sprite Inputs --------------------------------------------------------
+//	Fade - Special Handling
 	bms_.Speed0 = new THREE.Vector2(0.2,5);	// Speed
 	bms_.LifRng = new THREE.Vector2(0.1,1);	// Life Range
 	bms_.LifTim = 1;			// Life - Time
@@ -564,12 +593,8 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	bms_.ScaleN = 0.3;			// Scale - Node
 	bms_.SprCnt = 1000;			// Sprite Count
 //-	Adjustments (Identical Inputs for 3 Smoke Trails) --------------------------
+	bms_.ObjFad = uniformArray([0.0],'float'); // Format TSL Value (Special Handling)
 	for (let n = 0; n < bom_.ObjNum; n ++) {
-		//	Smoke Trails Global
-		bmt_.SmkVec[n] = [new THREE.Vector3(50,0,100),new THREE.Vector3(60,105,95),new THREE.Vector3(55,220,90)];
-		bmt_.SmkOff[n] = [new THREE.Vector3(0.5,5,0),new THREE.Vector3(-0.2,10,-0.2),new THREE.Vector3(0.2,7.5,0.2)];
-		bmt_.SmkRnd[n] = [new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3),new THREE.Vector3(3,3,3)];
-		//	Smoke Global
 		bms_.ObjClr[n] = new THREE.Vector3(0x2c1501,0x222222,0xf27d0c); // Default Smoke Colors w/Fire
 		bms_.ObjFad.array[n] = 0.0; // Init TSL Variable
 		bms_.ObjSiz[n] = 0.001;
@@ -590,9 +615,7 @@ let AAFHrz = 15;				// Horizontal Inset for Guns
 	bms_.OpaFad[2] = 0.0001;	// Fade Rate
 	//	Opacity
 	bmt_.OpaBeg = 0.2;			// Smoke Trails
-	bms_.ObjFad = uniformArray([0.0,0.0,0.0],'float'); // TSL Value
 	//	Max Size
-	bmx_.SizMax = 5;			// Explosion
 	bms_.SizMax = 25;			// Smoke
 
 //=	MESSAGES ===================//==============================================
