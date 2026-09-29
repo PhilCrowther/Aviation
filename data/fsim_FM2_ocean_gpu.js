@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 260927
+*	FSIM FM2 DATA: 260928
 *
 ********************************************************************************
 
@@ -887,6 +887,23 @@ let aaf_ = {
 		SndDTm: [],
 	};
 
+//-	AAF Explosion
+let aax_ = {		
+		ExpClr: "orange",		// Material Color
+		ExpOp0:	1,				// Opacity - Beginning (default = 1)
+		ExpSz0: 1/200,			// Size -    Beginning Size (default start = 1/200)
+		ExpOp1:	0,				// Opacity - Decrease per frame (default = ?)
+		ExpSz1: 1/200,			// Size -    Increase per frame (default = 1/200)
+		ExpLf0: 0.15,			// Beginning Life (default = 0.15 seconds
+		//	Individual
+		ExpFlg: [],				// Explosion Flag
+		ExpPtr: [],				// Pointer to Exploding Center
+		ExpMat: [],				// Material (if change opacity or color)
+		ExpOpa: [],				// Current Opacity
+		ExpSiz: [],				// Current Size 		
+		ExpLif: [],				// Remaining Life of Explosion	
+	};
+
 //=	SHIP GUNS ==================================================================
 let	xsg_ = {
 		ObjNum: 0,
@@ -958,15 +975,20 @@ let bom_ = {
 	}
 
 //- Bomb Explosion -------------//----------------------------------------------
-let bmx_ = {
-		ExpGeo: [],				// Create in Effects
-		ExpMat: [],				// Create in Effects
-		ExpMsh: [],				// Create in Effects
-		ExpFlg: [],
-		ExpSiz: [],				// Explosion Size
-		SizBeg: 0.001,			// Beginning Size
-		MaxSiz: 30,				// Maximum Size
-		ExpOpa: [],
+let bmx_ = {		
+		ExpClr: "orange",		// Material Color
+		ExpOp0:	1,				// Opacity - Beginning (default = 1)
+		ExpSz0: 0.001,			// Size -    Beginning Size (default start = 1/200)
+		ExpOp1:	0,				// Opacity - Decrease per frame (default = ?)
+		ExpSz1: 0.5,			// Size -    Increase per frame (default = 1/200)
+		ExpLf0: 0.15,			// Beginning Life (default = 0.15 seconds
+		//	Individual
+		ExpFlg: [],				// Explosion Trigger
+		ExpPtr: [],				// Pointer to Exploding Center
+		ExpMat: [],				// Material (if change opacity or color)
+		ExpOpa: [],				// Current Opacity
+		ExpSiz: [],				// Current Size 		
+		ExpLif: [],				// Remaining Life of Explosion 	
 	};
 
 //- Bomb Smoke Trails ----------//----------------------------------------------
