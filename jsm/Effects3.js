@@ -628,7 +628,8 @@ function initAAAGun(aaf_,air_,gen_) {
 		aaf_.GfSPtr[n].visible = false;
 		//. Create Explosion Graphics ..........................................
 		//	Explosion Flash
-		initExplod(aax_,n)
+		initExplod(aax_,n);
+		aaf_.ExpGrp[n].add(aax_.ExpPtr[n]);		
 		//	Explosion Smoke Material
 		//	(need separate material becuase vary opacity)
 		aaf_.SmkMap = txt_.ObjTxt[SmkBlak];
@@ -1127,9 +1128,9 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 		bom_.SndDTm[n] = 0;
 		bom_.MapPos[n] = new Vector3();
 		//	Explosion
-//		initBomExp(bmx_,bom_,n);
 		initExplod(bmx_,n);
 		bmx_.ExpPtr[n].position.y = 5;
+		bom_.ExpGrp[n].add(bmx_.ExpPtr[n]);		
 		//	Smoke Trails
 		initBomSmT(bmt_,bom_,n);
 		//	Smoke
@@ -1155,7 +1156,6 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 		bom_.SndFlg[n] = 0;
 	}
 	//	Explosion
-//	moveBomExp(bmx_,n);
 	moveExplod(bmx_,n);
 	//	Smoke Trails
 	moveBomSmT(bmt_,tim_,n);
@@ -1351,7 +1351,7 @@ function moveBomSmk(bms_,n) {
 
 /*******************************************************************************
 *
-*	CENTER EXPLOSION
+*	EXPLOSION
 *
 *******************************************************************************/
 //	Used by:
@@ -1375,7 +1375,6 @@ let xxx = {
 		ExpOpa: [],				// Current Opacity
 		ExpSiz: [],				// Current Size 		
 		ExpLif: [],				// Remaining Life of Explosion 
-		ExpRef: [],				// Parent
 	};
 
 //= INIT =======================//==============================================
@@ -1390,7 +1389,7 @@ function initExplod(xxx_,n) {
 	xxx_.ExpPtr[n] = new Mesh(geometry,xxx_.ExpMat[n]);
 	xxx_.ExpPtr[n].scale.setScalar(xxx_.ExpSz0);
 	xxx_.ExpPtr[n].visible = false;
-	xxx_.ExpRef[n].add(xxx_.ExpPtr[n]); // Link to Group
+//	xxx_.ExpRef[n].add(xxx_.ExpPtr[n]); // Link to Group
 }
 
 //= MOVE =======================//==============================================
