@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Sep 2026
+Version dated 28 Sep 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -143,7 +143,7 @@ function initFad2Blk(f2b_,gen_) {
 	f2b_.Mat = new MeshBasicNodeMaterial({
 		side:BackSide,
 		colorNode:color(f2b_.Col),
-		opacity:f2b_.Beg,
+		opacityNode:f2b_.Beg,
 //		depthTest:false,		// No effect
 //		depthWrite:false,		// NG - prop shines through
 		transparent:true,
@@ -594,7 +594,6 @@ function initAAAGun(aaf_,air_,gen_) {
 			line = new Line(AAAGeD,AAAMtD); // Dark Color
 			line.position.z = lnB;
 			aaf_.AAAPtr[n][i].add(line);
-//			aaf_.AAAPtr[n][i].scale.set(scale,scale,scale);
 			aaf_.AAAPtr[n][i].scale.setScalar(scale);		
 			aaf_.AAAPtr[n][i].rotation.order = "YXZ";
 			// 
@@ -629,8 +628,8 @@ function initAAAGun(aaf_,air_,gen_) {
 		aaf_.GfSPtr[n].visible = false;
 		//. Create Explosion Graphics ..........................................
 		//	Explosion Flash
-		aaf_.ExpPtr[n] = makeSphere("crimson");
-		aaf_.ExpGrp[n].add(aaf_.ExpPtr[n]);
+		initExplod(aax_,n);
+		aaf_.ExpGrp[n].add(aax_.ExpPtr[n]);		
 		//	Explosion Smoke Material
 		//	(need separate material becuase vary opacity)
 		aaf_.SmkMap = txt_.ObjTxt[SmkBlak];
@@ -642,7 +641,6 @@ function initAAAGun(aaf_,air_,gen_) {
 		aaf_.SmkMat[n].depthWrite = false;
 		//	Explosion Smoke Sprite
 		aaf_.SmkPtr[n] = new Sprite(aaf_.SmkMat[n]);
-//		aaf_.SmkPtr[n].scale.set(100,100,100);
 		aaf_.SmkPtr[n].scale.setScalar(100);	
 		aaf_.ExpGrp[n].add(aaf_.SmkPtr[n]);
 		aaf_.SmkPtr[n].visible = false;		// hide it
@@ -747,14 +745,15 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 			){
 				aaf_.AAATim[n][i] = 0;
 				aaf_.AAAPtr[n][i].visible = false;	
-				// Start Smoke When Designated Bullet Stops
+				// Start Explosion and Smoke When Designated Bullet Stops
 				if (!aaf_.SmkDTm[n] && aaf_.AAAFlg[n]) { // Smoke Delay = 0 and still firing
 					aaf_.SmkMpP[n].copy(aaf_.AAAMpP[n][i]); // Bullet0 MapPos
 					aaf_.SmkPtr[n].visible = true;
 					aaf_.SmkMat[n].opacity = 1.0;
 					aaf_.SmkRot[n] = Mod360(aaf_.SmkRot[n] + 163); // Change appearance
 					aaf_.SmkDTm[n] = aaf_.SmkDMx[n]; // Reset Delay Timer
-					aaf_.SmkFlg[n] = 1 // Smoke Flag On (Used to Start Sound) - reset to zero on next rep
+					aaf_.SmkFlg[n] = 1; // Master Trigger On (Starts Sound) - reset to zero on next rep
+					aax_.ExpFlg[n] = 1;	// Explosion Trigger (Starts Explosion)
 				}
 			}
 			// Continue
@@ -803,25 +802,12 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		if (aaf_.SmkDTm[n] > 0) aaf_.SmkDTm[n] = aaf_.SmkDTm[n] - tim_.DLTime;
 		if (aaf_.SmkDTm[n] < 0) aaf_.SmkDTm[n] = 0; // Ready for Next Explosion
 		// Explosion (Red Flash)
-		if (aaf_.SmkFlg[n]) {
-			aaf_.ExpSiz[n] = 1/200; // Start Size
-			aaf_.ExpLif[n] = 0.15; // Start Life (seconds)
-			aaf_.ExpPtr[n].visible = true;
-		}
-		if (aaf_.ExpLif[n] > 0) {
-			aaf_.ExpPtr[n].scale.setScalar(aaf_.ExpSiz[n]);
-			aaf_.ExpSiz[n] = aaf_.ExpSiz[n] + 1/200;
-			aaf_.ExpLif[n] = aaf_.ExpLif[n] - tim_.DLTime;
-			if (aaf_.ExpLif[n] < 0) {
-				aaf_.ExpLif[n] = 0;
-				aaf_.ExpPtr[n].visible = false;
-			}
-		}
+		moveExplod(aax_,n);
 		//-	Sounds -------------------------------------------------------------
 		//.	Play Sounds (No Delay) .............................................
 //		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
 		// Play Sound With Delay
-		//. Gunfire ............................................................
+		//. Gunfire Sound ......................................................
 		//	Start Delay
 		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown 		
 			aaf_.FirDTm[n] = aaf_.GunPtr[n].position.length()/343;
@@ -837,7 +823,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				aaf_.FirPtr[n].play();
 			}
 		}
-		//.	Explosion ...........................................................
+		//.	Explosion Sound ....................................................
 		// Start Delay
 		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
 			let delay = aaf_.ExpGrp[n].position.length()/343;
@@ -1142,7 +1128,9 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 		bom_.SndDTm[n] = 0;
 		bom_.MapPos[n] = new Vector3();
 		//	Explosion
-		initBomExp(bmx_,bom_,n);
+		initExplod(bmx_,n);
+		bmx_.ExpPtr[n].position.y = 5;
+		bom_.ExpGrp[n].add(bmx_.ExpPtr[n]);		
 		//	Smoke Trails
 		initBomSmT(bmt_,bom_,n);
 		//	Smoke
@@ -1168,7 +1156,7 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 		bom_.SndFlg[n] = 0;
 	}
 	//	Explosion
-	moveBomExp(bmx_,n);
+	moveExplod(bmx_,n);
 	//	Smoke Trails
 	moveBomSmT(bmt_,tim_,n);
 	//	Smoke
@@ -1184,47 +1172,6 @@ function moveExpBom(bom_,bmx_,bmt_,bms_,air_,gen_,tim_,n) {
 		let Y = bom_.MapPos[n].y-gen_.AltDif;
 		let Z = air_.MapPos.z-bom_.MapPos[n].z;
 		bom_.ExpGrp[n].position.set(X,Y,Z);
-	}
-}
-
-/*******************************************************************************
-*	BOMB SPHERE GEOMETRY
-*******************************************************************************/
-
-//= INIT =======================//==============================================
-function initBomExp(bmx_,bom_,n) {
-	bmx_.ExpGeo[n] = new SphereGeometry(1,32,16);
-	bmx_.ExpMat[n] = new MeshBasicNodeMaterial({
-			colorNode: color("orange"),
-			transparent: true,
-			depthWrite: false,
-			opacity: 1,
-		}),
-	bmx_.ExpMsh[n] = new Mesh(bmx_.ExpGeo[n],bmx_.ExpMat[n]);
-	bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
-	bom_.ExpGrp[n].add(bmx_.ExpMsh[n]);
-	bmx_.ExpMsh[n].position.y = 5;
-	bmx_.ExpSiz[n] = bmx_.SizBeg;
-}
-
-//= MOVE =======================//==============================================
-function moveBomExp(bmx_,n) {
-	if (bmx_.ExpFlg[n]) {
-		// Display New Size and Opacity
-		bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
-		bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa[n];
-		// Adjust Opacity and Size
-		bmx_.ExpSiz[n] = bmx_.ExpSiz[n] + 0.5; // Expand
-		bmx_.ExpOpa[n] = bmx_.ExpOpa[n] - 0.01; // Fade Away
-		// If Size > SizMax, Turn Off and Reset
-		if (bmx_.ExpSiz[n] > bmx_.SizMax) {
-			bmx_.ExpFlg[n] = 0;
-			// Reset
-			bmx_.ExpSiz[n] = bmx_.SizBeg;
-			bmx_.ExpOpa[n] = 1;
-			bmx_.ExpMsh[n].scale.setScalar(bmx_.ExpSiz[n]);
-			bmx_.ExpMat[n].OpacityNode = bmx_.ExpOpa[n];
-		}
 	}
 }
 
@@ -1363,22 +1310,77 @@ function moveBomSmk(bms_,n) {
 
 /*******************************************************************************
 *
-*	CENTER EXPLOSION
+*	EXPLOSION
 *
 *******************************************************************************/
+//	Used by:
+//		aax_	Anti-Aircraft Explosion
+//		bmx_	Bomb Explosion
+//		???_	Ship Guns - Twice
 
-//- Make Sphere ----------------------------------------------------------------
-function makeSphere(col) {
+//- Explosion Data Template-----//----------------------------------------------
+let xxx = {
+		//-	Common
+		ExpClr: "crimson",		// Material Color
+		ExpOp0:	1,				// Opacity - Beginning (default = 1)
+		ExpSz0: 1/200,			// Size -    Beginning Size (default start = 1/200)
+		ExpOp1:	0,				// Opacity - Decrease per frame (default = ?)
+		ExpSz1: 1/200,			// Size -    Increase per frame (default = 1/200)
+		ExpLf0: 0.15,			// Beginning Life (default = 0.15 seconds
+		//	Individual
+		ExpFlg: [],				// Trigger to Start
+		ExpPtr: [],				// Pointer to Exploding Center
+		ExpMat: [],				// Material (if change opacity or color)
+		ExpOpa: [],				// Current Opacity
+		ExpSiz: [],				// Current Size 		
+		ExpLif: [],				// Remaining Life of Explosion 
+	};
+
+//= INIT =======================//==============================================
+function initExplod(xxx_,n) {
 	let geometry = new SphereGeometry(1,32,16);
-	let	material = new MeshBasicNodeMaterial({
-		colorNode:color(col),
+	xxx_.ExpMat[n] = new MeshBasicNodeMaterial({
+		colorNode:color(xxx_.ExpClr),
 		transparent:true,
-		depthWrite: false,
-		opacity:1
+		depthWrite:false,
+		opacityNode:xxx_.ExpOp0,
 	});
-	let mesh = new Mesh(geometry,material);
-	mesh.visible = false;
-return mesh;}
+	xxx_.ExpPtr[n] = new Mesh(geometry,xxx_.ExpMat[n]);
+	xxx_.ExpPtr[n].scale.setScalar(xxx_.ExpSz0);
+	xxx_.ExpPtr[n].visible = false;
+}
+
+//= MOVE =======================//==============================================
+function moveExplod(xxx_,n) {
+	//-	Trigger Explosion
+	if (xxx_.ExpFlg[n]) {
+//		xxx_.ExpOpa[n] = xxx_.ExpOp0	// Start Opacity
+		xxx_.ExpSiz[n] = xxx_.ExpSz0;	// Start Size
+		xxx_.ExpLif[n] = xxx_.ExpLf0;	// Start Life
+		xxx_.ExpPtr[n].visible = true;
+		xxx_.ExpFlg[n] = 0;
+	}
+	//- Continue Explosion
+	if (xxx_.ExpLif[n] > 0) {
+//		xxx_.ExpMat[n].opacityNode = xxx_.ExpOpa[n];
+		xxx_.ExpPtr[n].scale.setScalar(xxx_.ExpSiz[n]);
+		//	Change Opacity, Size and Life
+//		xxx_.ExpOpa[n] = xxx_.ExpOpa[n] - xxx_.ExpOp1;
+		xxx_.ExpSiz[n] = xxx_.ExpSiz[n] + xxx_.ExpSz1;
+		xxx_.ExpLif[n] = xxx_.ExpLif[n] - tim_.DLTime;
+		//	If at End of Life, Reset
+		if (xxx_.ExpLif[n] < 0) {
+			//
+//			xxx_.ExpOpa[n] = 0; // Reset Opacity to zero
+			xxx_.ExpSiz[n] = xxx_.ExpSz0; // Reset Size to Min
+			xxx_.ExpLif[n] = 0;
+			//
+//			xxx_.ExpMat[n].opacityNode = xxx_.ExpOpa[n];
+			xxx_.ExpPtr[n].scale.setScalar(xxx_.ExpSiz[n]);	
+			xxx_.ExpPtr[n].visible = false;
+		}
+	}
+}
 
 /*******************************************************************************
 *
@@ -1432,27 +1434,27 @@ function initSmoke0(smk_,n) {
 	let lifeTime = scaledTime.mul(lifeRange).mod(smk_.LifTim); // used by life and Position
 	let life = lifeTime.div(lifeRange);	// Used by Color and Opacity
 	//-	Material ---------------------------------------------------------------
-	smk_.smokeNodeMater = new SpriteNodeMaterial();		
-	smk_.smokeNodeMater.depthWrite = false;
-	smk_.smokeNodeMater.transparent = true;
+	smk_.smokeNodeMat = new SpriteNodeMaterial();		
+	smk_.smokeNodeMat.depthWrite = false;
+	smk_.smokeNodeMat.transparent = true;
 	//	Color
 	let smokeColor = mix(color(smk_.ObjClr[n].x),color(smk_.ObjClr[n].y),positionLocal.y.mul(smk_.ColPos).clamp());
 	let fakeLightEffect = positionLocal.y.oneMinus().max(smk_.ColEff);
-	smk_.smokeNodeMater.colorNode = mix(color(smk_.ObjClr[n].z),smokeColor,life.mul(smk_.MatNod.x).min(smk_.MatNod.y)).mul(fakeLightEffect);		
+	smk_.smokeNodeMat.colorNode = mix(color(smk_.ObjClr[n].z),smokeColor,life.mul(smk_.MatNod.x).min(smk_.MatNod.y)).mul(fakeLightEffect);		
 	//- Opacity
 	let rotateRange = range(smk_.RotRng.x,smk_.RotRng.y);
 	let textureNode = texture(smk_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
 	let opacityNode = textureNode.a.mul(life.oneMinus().pow(smk_.OpaPwr.x),smk_.OpaPwr.y); // to make pow = 1, x =1, y=1
 	opacityNode = opacityNode.mul(smk_.ObjFad.element(n)); // Fade
-	smk_.smokeNodeMater.opacityNode = opacityNode;
+	smk_.smokeNodeMat.opacityNode = opacityNode;
 	//	Position
 	let offsetRange = range(smk_.OffMin,smk_.OffMax);
-	smk_.smokeNodeMater.positionNode = offsetRange.mul(lifeTime);
+	smk_.smokeNodeMat.positionNode = offsetRange.mul(lifeTime);
 	//	Scale
 	let scaleRange = range(smk_.ScaleR.x,smk_.ScaleR.y);
-	smk_.smokeNodeMater.scaleNode = scaleRange.mul(lifeTime.max(smk_.ScaleN));	
+	smk_.smokeNodeMat.scaleNode = scaleRange.mul(lifeTime.max(smk_.ScaleN));	
 	//-	Mesh -------------------------------------------------------------------
-	smk_.ObjAdr[n] = new Mesh(new PlaneGeometry(1,1),smk_.smokeNodeMater);
+	smk_.ObjAdr[n] = new Mesh(new PlaneGeometry(1,1),smk_.smokeNodeMat);
 	smk_.ObjAdr[n].scale.setScalar(smk_.ObjSiz[n]);
 	smk_.ObjAdr[n].isInstancedMesh = true;
 	smk_.ObjAdr[n].frustumCulled = false;
