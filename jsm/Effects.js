@@ -806,7 +806,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		//-	Sounds -------------------------------------------------------------
 		//.	Play Sounds (No Delay) .............................................
 //		if (gen_.SndFlg && aaf_.SmkFlg[n]) aaf_.SndPtr[n].play();
-		// Play Sound With Delay
+		//	Play Sound With Delay
 		//. Gunfire Sound ......................................................
 		//	Start Delay
 		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown 		
@@ -819,20 +819,17 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 			aaf_.FirDTm[n] = 0;
 			if (gen_.SndFlg) {
 				if (aaf_.FirPtr[n].isPlaying) aaf_.FirPtr[n].stop();
-				aaf_.FirPtr[n].setVolume(aaf_.FirVol);
 				aaf_.FirPtr[n].play();
 			}
 		}
 		//.	Explosion Sound ....................................................
-		// Start Delay
-		if (aaf_.SmkFlg[n]) { // Compute Delay and Start Countdown
-			let delay = aaf_.ExpGrp[n].position.length()/343;
-			if (delay > (aaf_.SmkDMx[n]-1)) delay = (aaf_.SmkDMx[n]-1); // Avoid overlap issues
-			aaf_.SndDTm[n] = delay;
-//			aaf_.SmkFlg[n] = 0;		// Automatically reeset with each frame
+		//	Start Delay
+		if (aaf_.SmkFlg[n]) { // Compute Delay
+			aaf_.SndDTm[n] = aaf_.ExpGrp[n].position.length()/343;
 		}
-		// If End of Delay Start Sound
+		//	Countdown
 		if (aaf_.SndDTm[n]) aaf_.SndDTm[n] = aaf_.SndDTm[n] - tim_.DLTime;
+		//	If End of Delay Start Sound
 		if (aaf_.SndDTm[n] < 0) {
 			aaf_.SndDTm[n] = 0;
 			if (gen_.SndFlg) {
@@ -987,7 +984,6 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 				xsg_.FirDTm[n] = 0;
 				if (gen_.SndFlg) {
 					if (xsg_.FirPtr[n].isPlaying) xsg_.FirPtr[n].stop();
-					xsg_.FirPtr[n].setVolume(xsg_.FirVol);
 					xsg_.FirPtr[n].play();
 				}
 			}
@@ -1310,7 +1306,7 @@ function moveBomSmk(bms_,n) {
 
 /*******************************************************************************
 *
-*	EXPLOSION
+*	COMMON EXPLOSION
 *
 *******************************************************************************/
 //	Used by:
@@ -1384,7 +1380,7 @@ function moveExplod(xxx_,n) {
 
 /*******************************************************************************
 *
-*	SMOKE EMITTER
+*	COMMON SMOKE EMITTER
 *
 *******************************************************************************/
 //	This is an adaptation of the official three.js example Particle Emitter at:
@@ -1464,11 +1460,11 @@ function initSmoke0(smk_,n) {
 
 /*******************************************************************************
 *
-*	EFFECTS SOUNDS
+*	COMMON SOUNDS
 *
 *******************************************************************************/
 
-//= LOAD SOUNDS ================//===============================================
+//= LOAD SOUNDS ================//==============================================
 
 //- INIT POSITIONAL AUDIO ------//----------------------------------------------
 function init1Sound(dest,dist,volm,rate,loop,link) {
@@ -1565,7 +1561,7 @@ export {
 260718: Sprite Smoke Trail
 260722: Add Colors to Bomb Explosion
 260801:	Shorten Ending Sequences
-260802: Move Effects Sounds from Objects Module; Elimiate moveEffSnd and play EffSnd subroutines; Replace aag_ with aaf_
+260802: Move Effects Sounds from Objects Module; Eliminate moveEffSnd and playEffSnd subroutines; Replace aag_ with aaf_
 260805: Eliminate xsg_
 260808: Show aaf_ guns firing (FrL)
 260817: Add xsg_ ship guns firing animation and sounds
@@ -1574,5 +1570,7 @@ export {
 260827: Change scale.set(x,x,x) to scale.setScalar(x);
 260918: Add Global Fade to Bomb Explosion Smoke (bms_)
 260924: Add Sprite variables to bms_ emitter.
-260927: Combined emitters into a single version, using standardized input.  These currently includes xaf_, grs_, xss_, wak_ and bms_.
+260927: Create single smoke emitter, using standardized input - currently used by xaf_, grs_, xss_, wak_ and bms_.
+260928: Create single explosion subroutine, using standardized input - currently used by aax_. and bmx_.
+260930: Create single sound delay.
 */
