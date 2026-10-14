@@ -359,7 +359,7 @@ function loadGrdMat(grd_,gen_) {
 		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.wrapS = texture.wrapT = RepeatWrapping;
-		texture.repeat.set(50,50);
+		texture.repeat.set(80,80);
 		texture.needsUpdate = true;
 		GrsTxt = texture;
 	});
