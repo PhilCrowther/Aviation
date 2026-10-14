@@ -376,7 +376,7 @@ let air_ = {
 //-	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/sf1/";	// Used to load models and sounds
 //-	Animation Mixers
-let mxrFNm = "sf1_ktx2.glb"; // Name of aircraft exterior model file (rotated blender file)
+let mxrFNm = "sf1.glb"; // Name of aircraft exterior model file (rotated blender file)
 let vxrFNm = "sf1_int.glb"; // Name of airplane interior model file (rotated blender file)
 
 //- Pup Animations -------------------------------------------------------------
