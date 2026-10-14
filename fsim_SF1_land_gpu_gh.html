@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 1 Oct 2026
+Version dated 14 Oct 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -458,7 +458,7 @@ let	shd_ = 	{
 	air_.InpKey = new THREE.Vector3();
 	air_.OldRot = new THREE.Euler();
 //- Adjustment
-	air_.GrdZed = -.25;
+	air_.GrdZed = -.35;
 
 //= ANIMATIONS =================//==============================================
 //- Instruments ----------------//----------------------------------------------
@@ -796,7 +796,9 @@ function rendAll() {
 		// Other
 		moveSounds();
 		prntHUDval();			// change HUD value
-		if (gen_.StatOn) gen_.StatOn.update(); // update stats		
+		if (gen_.StatOn) gen_.StatOn.update(); // update stats
+		// TEST		
+		console.log(air_.GrdFlg);	
 	}
 	if (controls.isLocked === false && gen_.LodSnd) {
 		stopSounds();
