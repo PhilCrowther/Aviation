@@ -397,6 +397,7 @@ let anm_ = {
 		vchead: 0,				// Pilot head
 		gunval: 180,			// Gun value (0 to 360, stop at 180)
 		spnspn: 180,			// Spinner
+		wheels: 180,			// Wheels
 	}
 //	Animation Mixers - External Model
 let mxr_ = {
@@ -404,8 +405,8 @@ let mxr_ = {
 		Src: AirSrc + mxrFNm,
 		// Address
 		Adr: 0,
-		// Prop,Rudder,Elevator,AilTopLft, AilTopRgt,AilBotLft,AilBotRgt,AilRodLft,AilRodRgt
-		Prp:0,Rdr:0,Elv:0,ATL:0,ATR:0,ABL:0,ABR:0,ARL:0,ARR:0,
+		// Prop,Rudder,Elevator,AilTopLft, AilTopRgt,AilBotLft,AilBotRgt,AilRodLft,AilRodRgt,Wheels
+		Prp:0,Rdr:0,Elv:0,ATL:0,ATR:0,ABL:0,ABR:0,ARL:0,ARR:0,Whl:0,
 	}
 //	Animation Mixers - Internal Model
 let vxr_ = {
@@ -573,7 +574,7 @@ let aaf_ = {
 
 //-	AAF Explosion
 let aax_ = {		
-		ExpClr: "crimson",		// Material Color
+		ExpClr: "orange",		// Material Color
 		ExpOp0:	1,				// Opacity - Beginning (default = 1)
 		ExpSz0: 1/200,			// Size -    Beginning Size (default start = 1/200)
 		ExpOp1:	0,				// Opacity - Decrease per frame (default = ?)
