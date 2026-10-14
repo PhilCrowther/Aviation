@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 260928
+*	FSIM SF1 DATA: 261014
 *
 *********************************************************************************
 
@@ -375,8 +375,8 @@ let air_ = {
 //- Load Models and Animations -------------------------------------------------
 //-	File Path
 let AirSrc = "https://PhilCrowther.github.io/Aviation/models/sf1/";	// Used to load models and sounds
-//-	Animation Mixers - External Model
-let mxrFNm = "sf1.glb"; // Name of aircraft exterior model file (rotated blender file)
+//-	Animation Mixers
+let mxrFNm = "sf1_ktx2.glb"; // Name of aircraft exterior model file (rotated blender file)
 let vxrFNm = "sf1_int.glb"; // Name of airplane interior model file (rotated blender file)
 
 //- Pup Animations -------------------------------------------------------------
