@@ -39,6 +39,9 @@ let	DLTime = 1/60;				// Delta Time (1/60 seconds)
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
 const Km2Mil = 0.621371;
+//- Variables
+let whlflg = 0;					// If on ground = 1, decreases after take-off
+let whlcir = 0.728735 * 2 * Math.PI; // Wheel Circumference
 
 /*******************************************************************************
 *
@@ -130,6 +133,12 @@ function loadAirAnmX(gltf,air_,mxr_,anm_) {
 	actun = mxr_.ARR.clipAction(clip);
 	actun.play();
 	if (mxr_.ARR) mxr_.ARR.setTime(anm_.ailrgt/anm_.anmfps);
+	// Wheels
+	clip = AnimationClip.findByName(gltf.animations,"wheelsAction");
+	mxr_.Whl = new AnimationMixer(gltf.scene);
+	actun = mxr_.Whl.clipAction(clip);
+	actun.play();
+	if (mxr_.Whl) mxr_.Whl.setTime(anm_.wheels/anm_.anmfps);
 }
 
 //= LOAD AIR INTERNAL ==========================================================
@@ -334,7 +343,15 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 	else if (anm_.ailrgt > 209) anm_.ailrgt = 209;
 	// Spinner
 	let spnspd = 1;									// Fixed speed for now
-	anm_.spnspn = Mod360(anm_.spnspn + spnspd);	
+	anm_.spnspn = Mod360(anm_.spnspn + spnspd);
+	// Wheels
+	if (air_.GrdFlg) whlflg = 1;					// Default
+	let whlspd = (360*air_.SpdMPF/whlcir)*whlflg;	// Angle = 360 * Speed/Circumference
+	anm_.wheels = Mod360(anm_.wheels+whlspd);
+	if (whlflg) { // Slow Wheel Rotation after Takeoff
+		whlflg = whlflg - .001;
+		if (whlflg < 0) whlflg = 0;
+	}
 	// Animations (Display) -----------------------------------------------------
 	if (!cam_.CamFlg) { 		// External View
 		// Propeller
@@ -352,6 +369,8 @@ function moveAirObj(air_,mxr_,vxr_,anm_,cam_) {
 		if (mxr_.ATR) mxr_.ATR.setTime(anm_.ailrgt/anm_.anmfps);
 		if (mxr_.ABR) mxr_.ABR.setTime(anm_.ailrgt/anm_.anmfps);
 		if (mxr_.ARR) mxr_.ARR.setTime(anm_.ailrgt/anm_.anmfps); // Aileron Rod
+		// Wheels
+		if (mxr_.Whl && whlflg) mxr_.Whl.setTime(anm_.wheels/anm_.anmfps); 
 	}
 	if (cam_.CamFlg) { 		// Internal View
 		// Propeller
