@@ -353,7 +353,7 @@ function loadGrdMat(grd_,gen_) {
 		grd_.DfR[1] = texture;
 	});
 	//- Grass
-	gen_.txtrLd.load(grsTxt,function(texture) {
+	gen_.txtrLd.load(GrsTxt,function(texture) {
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
 		texture.minFilter = LinearMipMapLinearFilter;
@@ -361,7 +361,7 @@ function loadGrdMat(grd_,gen_) {
 		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.repeat.set(50,50);
 		texture.needsUpdate = true;
-		grsTxt = texture;
+		GrsTxt = texture;
 	});
 }
 
