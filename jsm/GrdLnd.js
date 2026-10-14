@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 May 2026
+Version dated 14 Oct 2026
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -50,6 +50,7 @@ let DegRad = Math.PI/180;		// Convert Degrees to Radians
 let Rad090 =  90*DegRad;
 let Rad180 = 180*DegRad;
 let Rad270 = 270*DegRad;
+let GrsTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/grass.jpg";
 
 /*******************************************************************************
 *
@@ -351,6 +352,17 @@ function loadGrdMat(grd_,gen_) {
 		texture.needsUpdate = true;
 		grd_.DfR[1] = texture;
 	});
+	//- Grass Texture
+	gen_.txtrLd.load(GrsTxt,function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.repeat.set(50,50);
+		texture.needsUpdate = true;
+		GrsTxt = texture;
+	});
 }
 
 /*******************************************************************************
@@ -410,7 +422,8 @@ function initGr0Mat(grd_,gen_) {
 //		gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({colorNode: texture(DatTxt)});
 		if (n < 2) { // 
 			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
-				colorNode: texture(DatTxt).mul(texture(grd_.DfT[0])),
+//				colorNode: texture(DatTxt).mul(texture(grd_.DfT[0])),
+				colorNode: texture(GrsTxt).mul(texture(grd_.DfT[0])),
 			});
 		}
 		if (n > 3) { // Vertical Lines
@@ -918,6 +931,7 @@ function loadTreLn1(tre_,grd_,gen_) {
 		for (let i = 0; i < tre_.ObjSub; i++) {
 			gen_.gltfLd.load(tre_.ObjSrc, function (gltf) {
 				tre_.ObjAdr[n+i] = gltf.scene;
+				tre_.ObjAdr[n+i].castShadow = true;
 				tre_.ObjAdr[n+i].position.x = tre_.ObjMpX[n+i];
 				tre_.ObjAdr[n+i].position.z = tre_.ObjMpZ[n+i];
 				tre_.ObjAdr[n+i].position.y = -100000; // Make invisible
@@ -1331,4 +1345,5 @@ export {loadSkyBox,initSkyBox,loadGrdMat,initGrdMat,GrdMap,initRoads,moveRoads,l
 260304:	Add textures for roads
 260518: Add SkyBox routines
 260827L Remove color creation from roads
+261014: Added grass texture
 */
