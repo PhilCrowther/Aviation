@@ -40,8 +40,8 @@ const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const Mtr2Ft = 1/Ft2Mtr;		// Meters to Feet
 const Km2Mil = 0.621371;
 //- Variables
-let whlflg = 0l;
-let whlcir = 0.728735 * 2 * Math.PI;
+let whlflg = 0;					// If on ground = 1, decreases after take-off
+let whlcir = 0.728735 * 2 * Math.PI; // Wheel Circumference
 
 /*******************************************************************************
 *
