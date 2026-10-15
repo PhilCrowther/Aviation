@@ -54,7 +54,7 @@ let Rad270 = 270*DegRad;
 //- Grass ----------------------------------------------------------------------
 let GrsTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/grass.jpg";
 let GrNTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/grassN.jpg";
-let GrsRep = 80;
+let GrsRep = 200;
 
 /*******************************************************************************
 *
