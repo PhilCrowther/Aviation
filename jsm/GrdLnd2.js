@@ -34,7 +34,7 @@ import {
 	SRGBColorSpace,
 } from 'three';
 
-import {color,texture} from 'three/tsl';
+import {color,texture,normalMap} from 'three/tsl';
 
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 
