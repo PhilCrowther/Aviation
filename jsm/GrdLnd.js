@@ -440,6 +440,7 @@ function initGr0Mat(grd_,gen_) {
 //				colorNode: texture(DatTxt).mul(texture(grd_.DfT[0])),
 				colorNode: texture(GrsTxt).mul(texture(grd_.DfT[0])),
 				normalNode: normalMap(texture(GrNTxt),new Vector2(1.0,1.0)),
+				normalScale: new Vector2(10,10),
 			});
 		}
 		if (n > 3) { // Vertical Lines
