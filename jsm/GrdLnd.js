@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 14 Oct 2026
+Version dated 15 Oct 2026
 
 @fileoverview
 This moduel contains functions creating a scrolling grid map for Land
@@ -32,9 +32,10 @@ import {
 	RepeatWrapping,
 	RGBAFormat,
 	SRGBColorSpace,
+	Vector2,
 } from 'three';
 
-import {color,texture} from 'three/tsl';
+import {color,texture,normalMap} from 'three/tsl';
 
 import {LensflareMesh,LensflareElement} from "three/addons/objects/LensflareMesh.js";
 
@@ -50,7 +51,10 @@ let DegRad = Math.PI/180;		// Convert Degrees to Radians
 let Rad090 =  90*DegRad;
 let Rad180 = 180*DegRad;
 let Rad270 = 270*DegRad;
+//- Grass ----------------------------------------------------------------------
 let GrsTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/grass.jpg";
+let GrNTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/grassN.jpg";
+let GrsRep = 80;
 
 /*******************************************************************************
 *
@@ -359,9 +363,20 @@ function loadGrdMat(grd_,gen_) {
 		texture.minFilter = LinearMipMapLinearFilter;
 		texture.generateMipmaps = true;
 		texture.wrapS = texture.wrapT = RepeatWrapping;
-		texture.repeat.set(80,80);
+		texture.repeat.set(GrsRep,GrsRep);
 		texture.needsUpdate = true;
 		GrsTxt = texture;
+	});
+	//- Grass Texture Normal
+	gen_.txtrLd.load(GrNTxt,function(texture) {
+		texture.format = RGBAFormat;
+		texture.magFilter = LinearFilter;
+		texture.minFilter = LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = RepeatWrapping;
+		texture.repeat.set(GrsRep,GrsRep);
+		texture.needsUpdate = true;
+		GrNTxt = texture;
 	});
 }
 
@@ -424,6 +439,7 @@ function initGr0Mat(grd_,gen_) {
 			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
 //				colorNode: texture(DatTxt).mul(texture(grd_.DfT[0])),
 				colorNode: texture(GrsTxt).mul(texture(grd_.DfT[0])),
+				normalNode: normalMap(texture(GrNTxt),new Vector2(1.0,1.0)),
 			});
 		}
 		if (n > 3) { // Vertical Lines
