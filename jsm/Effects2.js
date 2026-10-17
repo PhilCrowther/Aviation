@@ -1067,7 +1067,7 @@ function moveSmkTrl(smt_,air_,n) {
 		console.log(smt_.SprIdx[n]);
 		smt_.MapPos[n][smt_.SprIdx[n]].copy(smt_.Parent[n]);
 		smt_.SprIdx[n]--;
-		if (smt_.SprIdx[n] < 0) smt_.SprIdx[n] = smt_.SprNum[n]; // Reset Index
+		if (smt_.SprIdx[n] < 0) smt_.SprIdx[n] = smt_.SprNum[n]-1; // Reset Index
 	}
 	smt_.SpcCnt[n]++;
 	if (smt_.SpcCnt[n] == smt_.SprSpc[n]) smt_.SpcCnt[n] = 0; // Reset Space Count
