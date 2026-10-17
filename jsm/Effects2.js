@@ -1064,6 +1064,7 @@ function moveSmkTrl(smt_,air_,n) {
 	let X,Y,Z;
 //	Deposit New Sprite
 	if (!smt_.SpcCnt[n]) {	// If Count is zero
+		console.log(n);
 		smt_.MapPos[n][smt_.SprIdx[n]].copy(smt_.Parent[n]);
 		smt_.SprIdx[n]--;
 		if (smt_.SprIdx[n] < 0) smt_.SprIdx[n] = smt_.SprNum[n]; // Reset Index
