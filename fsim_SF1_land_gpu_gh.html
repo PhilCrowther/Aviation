@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 14 Oct 2026
+Version dated 17 Oct 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -113,7 +113,7 @@ import {loadFXfile,				// Load Common FX Textures and Sounds
 		initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		initExpBom,moveExpBom,	// Bomb
 		stopEffSnd,				// Effects Sounds
-	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
+	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects2.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
 import {loadSkyBox,initSkyBox,
 		loadGrdMat,initGrdMat,GrdMap,
@@ -797,8 +797,6 @@ function rendAll() {
 		moveSounds();
 		prntHUDval();			// change HUD value
 		if (gen_.StatOn) gen_.StatOn.update(); // update stats
-		// TEST		
-		console.log(air_.GrdFlg);	
 	}
 	if (controls.isLocked === false && gen_.LodSnd) {
 		stopSounds();
@@ -867,6 +865,10 @@ function initObject() {
 	initAAAGun(aaf_,air_,gen_);
 	initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_);
 	initSmkTrl(smt_,air_,xac_,gen_);
+	// Init Own Trail = not visible
+	for (let n = 0; n < smt_.SprNum[0]; n++) {	// Other Airplanes
+		smt_.Spritz[0][n].visible = false;	// default
+	}	
 }
 
 //- Init Bomb Explostion -------//----------------------------------------------
@@ -901,9 +903,12 @@ function moveObject() {
 			if (bms_.OpaVal[n] < 0) bms_.OpaVal[n] = 0.0;
 		}
 	}
-	//	Sprite Smoke Trails
-	if (!air_.GrdFlg) smt_.SmTFlg[0] = 1; // Start Own Smoke
-	for (let n = 0; n < smt_.ObjNum; n++) {
+	// Own Smoke Trail
+	smt_.Spritz[0][smt_.SprIdx[0]].visible = false;	// default
+	if (!air_.GrdFlg) smt_.Spritz[0][smt_.SprIdx[0]].visible = true; // Start Own Smoke
+	moveSmkTrl(smt_,air_,0);	// For each sprite
+	// XAC Smoke Trail
+	for (let n = 1; n < smt_.ObjNum; n++) {	// Other Airplanes
 		if (smt_.SmTFlg[n]) moveSmkTrl(smt_,air_,n);
 	}
 }
