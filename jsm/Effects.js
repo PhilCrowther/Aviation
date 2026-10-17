@@ -1063,13 +1063,14 @@ function initSmkTrl(smt_,air_,xac_,gen_) {
 function moveSmkTrl(smt_,air_,n) {
 	let X,Y,Z;
 //	Deposit New Sprite
-	if (!smt_.SpcCnt[n]) {
-		if (!smt_.SprIdx[n]) smt_.SprIdx[n] = smt_.SprNum[n];
-		smt_.SprIdx[n]--;
+	if (!smt_.SpcCnt[n]) {	// If Count is zero
+		console.log(smt_.SprIdx[n]);
 		smt_.MapPos[n][smt_.SprIdx[n]].copy(smt_.Parent[n]);
+		smt_.SprIdx[n]--;
+		if (smt_.SprIdx[n] < 0) smt_.SprIdx[n] = smt_.SprNum[n]-1; // Reset Index
 	}
 	smt_.SpcCnt[n]++;
-	if (smt_.SpcCnt[n] == smt_.SprSpc[n]) smt_.SpcCnt[n] = 0;
+	if (smt_.SpcCnt[n] == smt_.SprSpc[n]) smt_.SpcCnt[n] = 0; // Reset Space Count
 //	Compute Relative Distance - from 0 to SprNum
 	let Opa = smt_.OpaBeg[n];
 	let OpaDif = smt_.OpaDec[n];
@@ -1094,6 +1095,8 @@ function moveSmkTrl(smt_,air_,n) {
 		smt_.Spritz[n][x].material.opacity = Opa;
 		Opa = Opa - OpaDif;
 	}
+//	Next
+
 }
 
 /*******************************************************************************
