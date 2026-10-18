@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 261014
+*	FSIM SF1 DATA: 261018
 *
 *********************************************************************************
 
@@ -174,14 +174,18 @@ let grd_ = {
 		Grx: [],				// Index of Grids (0-2)
 		Idx: [0],				// Index to Patterns
 		Mat: [0],				// Index to Materials
-		// Texture Modifiers
+		//	Texture Modifiers
 		DfT: ["https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G3.jpg"],
 		DfM: [0.75,0.75],		// Darken outer grids to match inner grid [transition1G2]
-		// Road Textures
+		//	Road Textures
 		DfR: ["https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadV.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadH.jpg"],
+		//	Grass Textures
+		Grs: ["https://PhilCrowther.github.io/Aviation/scenery/textures/grass2.jpg",
+			"https://PhilCrowther.github.io/Aviation/scenery/textures/grassN.jpg"],
+		Rep: 150;
 	}
 
 //= STATIC OBJECTS =============//==============================================
