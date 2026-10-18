@@ -361,10 +361,10 @@ function loadGrdMat(grd_,gen_) {
 		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.repeat.set(grd_.Rep,grd_.Rep);
 		texture.needsUpdate = true;
-		GrsTxt = texture;
+		grd_.Grs[0] = texture;
 	});
 	//- Grass Texture Normal
-	gen_.txtrLd.load(grd_.Grs[0],function(texture) {
+	gen_.txtrLd.load(grd_.Grs[1],function(texture) {
 		texture.format = RGBAFormat;
 		texture.magFilter = LinearFilter;
 		texture.minFilter = LinearMipMapLinearFilter;
@@ -372,7 +372,7 @@ function loadGrdMat(grd_,gen_) {
 		texture.wrapS = texture.wrapT = RepeatWrapping;
 		texture.repeat.set(grd_.Rep,grd_.Rep);
 		texture.needsUpdate = true;
-		GrNTxt = texture;
+		grd_.Grs[1] = texture;
 	});
 }
 
@@ -434,8 +434,8 @@ function initGr0Mat(grd_,gen_) {
 		if (n < 2) { // 
 			gt0_.G0MPtr[n] = new MeshLambertNodeMaterial({
 //				colorNode: texture(DatTxt).mul(texture(grd_.DfT[0])),
-				colorNode: texture(GrsTxt).mul(texture(grd_.DfT[0])),
-				normalNode: normalMap(texture(GrNTxt),new Vector2(1.0,1.0)),
+				colorNode: texture(grd_.Grs[0]).mul(texture(grd_.DfT[0])),
+				normalNode: normalMap(texture(grd_.Grs[1]),new Vector2(1.0,1.0)),
 				normalScale: new Vector2(10,10),
 			});
 		}
