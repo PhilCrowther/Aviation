@@ -185,7 +185,7 @@ let grd_ = {
 		//	Grass Textures
 		Grs: ["https://PhilCrowther.github.io/Aviation/scenery/textures/grass2.jpg",
 			"https://PhilCrowther.github.io/Aviation/scenery/textures/grassN.jpg"],
-		Rep: 150;
+		Rep: 150,
 	}
 
 //= STATIC OBJECTS =============//==============================================
