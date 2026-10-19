@@ -437,6 +437,7 @@ function initGr0Mat(grd_,gen_) {
 				colorNode: texture(grd_.Grs[0]).mul(texture(grd_.DfT[0])),
 				normalNode: normalMap(texture(grd_.Grs[1]),new Vector2(1.0,1.0)),
 				normalScale: new Vector2(10,10),
+				reflectivity: 0,
 			});
 		}
 		if (n > 3) { // Vertical Lines
