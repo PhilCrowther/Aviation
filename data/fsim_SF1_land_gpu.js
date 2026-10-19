@@ -183,7 +183,7 @@ let grd_ = {
 		DfR: ["https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadV.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadH.jpg"],
 		//	Grass Textures
-		Grs: ["https://PhilCrowther.github.io/Aviation/scenery/textures/grass2.jpg",
+		Grs: ["https://PhilCrowther.github.io/Aviation/scenery/textures/grass3.jpg",
 			"https://PhilCrowther.github.io/Aviation/scenery/textures/grassN.jpg"],
 		Rep: 150,
 	}
