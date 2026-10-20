@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Oct 2026
+Version dated 20 Oct 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -314,6 +314,22 @@ let ImgSiz = 1024;
 	gen_.contxt = gen_.canvas.getContext("2d",{willReadFrequently: true});
 //- Adjustments
 	grd_.SPS = new THREE.Vector3(); // MSX, MPY, MSZ (meters) (from Flight)
+
+//= CLOUDS =====================//==============================================
+let cld_ = {
+		ObjNum: 1,
+		ObjSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
+		ObjTxt: 0,				// Texture
+		MaxDst: 5000,			// Max Distance
+		MaxOpa: 0.5,			// Max Opacity
+		RelPos: [new THREE.Vector3(0,1000*Ft2Mtr,0)],	// Map Position
+		Object: [],				// Objects
+		SprNum: 180,
+		SprMul: [1],
+		Spritz: [],				// Individual  Sprites
+		TxtTop: [],				// Cloud texture - top
+		TxtBot: [],				// Cloud texture - bottom
+	}
 
 //= 4. OBJECT VARIABLES ========//==============================================
 //= STATIC OBJECTS =============//==============================================
@@ -708,6 +724,7 @@ function loadAll() {
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
 	loadObject();
+	loadClouds();
 	// Load stats
 	if (gen_.StatOn) {			// show stats
 		gen_.StatOn = new Stats();
@@ -747,6 +764,7 @@ function initAll() {
 	initRoads(grd_,gen_);		// Add Roads
 	moveTreLin(grd_,gen_,air_); // Add TreeLines
 	initObject();				// Stationary Objects
+	initClouds();
 	// Other
 	initCamPup();				// position camera
 	PawsText();
@@ -789,6 +807,7 @@ function rendAll() {
 		moveRoads(grd_,gen_);	// Move Roads
 		moveTreLin(grd_,gen_,air_); // Move TreeLines	
 		moveObject();			// Move objects
+		moveClouds();
 		// TimeLine
 		FrmCnt++;				// Frame Counter
 		moveEvents();			// Get Events
@@ -953,6 +972,91 @@ function moveMoving() {
 //- Animated Attachments -------//----------------------------------------------
 
 function moveAnmObj() {moveAnmFlg(flg_,tim_);}
+
+/*******************************************************************************
+*
+*	CLOUDS
+*
+*******************************************************************************/
+
+function loadClouds() {
+	cld_.ObjTxt = txtrLoader.load(cld_.ObjSrc);
+}
+
+function initClouds() {
+	let sprite,posx,posy,posz,dist,indx,scale;
+	for (var n = 0; n < cld_.ObjNum; n++) {	// for each cloud
+		cld_.Object[n] = new THREE.Group;
+		cld_.TxtTop[n] = new THREE.MeshBasicNodeMaterial({	// light above
+			color: 0xd0d0d0,	// lighter color
+			map: cld_.ObjTxt,
+			transparent:true,
+			depthWrite:false
+		});
+		cld_.TxtBot[n] = new THREE.MeshBasicNodeMaterial({	// dark below
+			color: 0xc0c0c0,	// darker color
+			map: cld_.ObjTxt,
+			transparent:true,
+			depthWrite:false
+		});
+		cld_.Spritz[n] = [];
+		let sprnum = cld_.SprNum*cld_.SprMul[n];
+		let sprdst = 180*cld_.SprMul[n];	// Basic Radius
+		let sprexp =  40*cld_.SprMul[n];	// Expansion
+		let sprhrz = 1.75;					// Horizontal Adjustment
+		let sprvrt = 25*cld_.SprMul[n];		// Vertical Adjustment
+		for (var x = 0; x < sprnum; x ++) {	// for each sprite
+			cld_.Spritz[n][x] = new THREE.Mesh(new THREE.PlaneGeometry(1,1),cld_.TxtTop[n]);
+			dist = Math.random()*sprdst+sprexp;	// basic size (40 prevents crowding in center)
+			posx = dist*Math.sin(x*DegRad)*sprhrz;	// creates oval shape
+			posz = dist*Math.cos(x*DegRad);
+			dist = Math.sqrt(posx*posx+posz*posz);	// distance
+			indx = (1000-dist)/1000;	// ratio 1 to 0			
+			posy = (Math.random()-0.5)*sprvrt*indx;	// lens shape
+			if (posy < -.9) cld_.Spritz[n][x].material = cld_.TxtBot[n]; // dark
+			cld_.Spritz[n][x].position.set(posx,posy,posz);
+			cld_.Spritz[n][x].scale.set(150, 90*indx, 90); // sprites smaller at edge (but causes noticeable rotation)
+			cld_.Spritz[n][x].frustumCulled = false;
+			cld_.Object[n].add(cld_.Spritz[n][x]);	// add sprite to cloud
+			cld_.Object[n].rotation.order = "YXZ";
+		}
+		scale = 2*Math.random()+1;	// Range = 1 to 2
+		cld_.Object[n].scale.setScalar(scale);	
+		cld_.Object[n].position.copy(cld_.RelPos[n]);
+		scene.add(cld_.Object[n]);
+	}
+}
+
+function moveClouds() {
+	let direction = new THREE.Vector3();
+	camera.getWorldDirection(direction);
+	let radY = Mod360((Math.atan2(direction.x, direction.z)*RadDeg)+180)*DegRad;
+	let radX = Math.asin(direction.y);	
+	console.log(radX*RadDeg);
+
+	let dist;	// xz distance
+	for (var n = 0; n < cld_.ObjNum; n++) {
+		// Compute new relative position		
+		cld_.RelPos[n].x = cld_.RelPos[n].x - air_.MapSPS.x;
+		cld_.RelPos[n].y = cld_.RelPos[n].y - air_.MapSpd.y;
+		cld_.RelPos[n].z = cld_.RelPos[n].z + air_.MapSPS.z;	
+		// Reset position if out of bounds
+		if (cld_.RelPos[n].x >  cld_.MaxDst) cld_.RelPos[n].x = -cld_.MaxDst;
+		if (cld_.RelPos[n].x < -cld_.MaxDst) cld_.RelPos[n].x =  cld_.MaxDst;
+		if (cld_.RelPos[n].z >  cld_.MaxDst) cld_.RelPos[n].z = -cld_.MaxDst;
+		if (cld_.RelPos[n].z < -cld_.MaxDst) cld_.RelPos[n].z =  cld_.MaxDst;
+		// Set
+		cld_.Object[n].position.copy(cld_.RelPos[n]);
+		let sprnum = cld_.SprNum*cld_.SprMul[n];
+		for (var x = 0; x < sprnum; x ++) {	// for each sprite
+			cld_.Spritz[n][x].rotation.set(radX,radY,0);
+		}
+		// Fade out based on distance
+		dist = Math.sqrt(cld_.RelPos[n].x**2+cld_.RelPos[n].z**2);
+		cld_.TxtTop[n].opacity = cld_.MaxOpa*(1.5*cld_.MaxDst-dist)/(1.5*cld_.MaxDst);
+		cld_.TxtBot[n].opacity = cld_.MaxOpa*(1.5*cld_.MaxDst-dist)/(1.5*cld_.MaxDst);
+	}
+}
 
 /*******************************************************************************
 *
