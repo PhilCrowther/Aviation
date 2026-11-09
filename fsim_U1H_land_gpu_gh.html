@@ -10,13 +10,13 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 13 Sep 2026
+Version dated 9 Nov 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 -->
 
 <head>
-<title>fsim U1H land gpu r186</title>
+<title>fsim U1H land gpu r187</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/fsim_top.css">
@@ -64,10 +64,10 @@ A flight simulation of an animated helicopter model over procedural land using W
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"
 		}
 	}
 </script>
@@ -269,7 +269,7 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;	
-	renderer.shadowMap.type = THREE.BasicShadowMap;
+	renderer.shadowMap.type = THREE.PCFShadowMap;
 	renderer.logarithmicDepthBuffer = true;
 	document.body.appendChild(renderer.domElement);
 	await renderer.init();		// Allows time for backend to initialize
@@ -343,13 +343,18 @@ let grd_ = {
 		Grx: [],				// Index of Grids (0-2)
 		Idx: [0],				// Index to Patterns
 		Mat: [0],				// Index to Materials
-		// Texture Modifiers
+		//	Texture Modifiers
 		DfT: ["https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G3.jpg"],
 		DfM: [0.8,0.8],			// Darken outer grids to match inner grid [transition1G2]
+		//	Road Textures
 		DfR: ["https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadV.jpg",
 			  "https://PhilCrowther.github.io/Aviation/scenery/textures/dirtroadH.jpg"],
+		//	Grass Textures
+		Grs: ["https://PhilCrowther.github.io/Aviation/scenery/textures/grass.jpg",
+			  "https://PhilCrowther.github.io/Aviation/scenery/textures/grassN.jpg"],
+		Rep: 150,
 	}
 
 //= STATIC OBJECTS =============//==============================================
