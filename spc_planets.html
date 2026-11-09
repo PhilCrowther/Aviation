@@ -1,5 +1,14 @@
 ﻿<!doctype html>
 <html>
+
+<!--
+Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
+Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Version dated 9 Nov 2026
+
+This programs shows the inner planets of the solar system with orbits computed using look-up tables.
+-->
+
 <head>
 <title>Planets</title>
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/space.css">
@@ -18,13 +27,13 @@
 	</div>
 </div>
 
-<button class="pauseButton" onclick="togglePause()">Pause</button>
+<button id="PAWS" class="pauseButton">Pause</button>
 
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://unpkg.com/three@0.157/build/three.module.js", 
-			"three/addons/": "https://unpkg.com/three@0.157/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"
 		}
 	}
 </script>
@@ -139,6 +148,8 @@ let	camobj = new THREE.Object3D();				// Armature base - use to rotate camera
 	renderer.domElement.addEventListener("touchend", onTouchEnd, false);
 	window.addEventListener("resize", onWindowResize, false);
 	let	isUserInteracting = false;					// Initial value
+	// Buttons
+	document.getElementById("PAWS").addEventListener("click",togglePause,false);
 // Loading Manager
 // Create a loading manager to set RESOURCES_LOADED when appropriate.
 // Pass loadingManager to all resource loaders.
@@ -302,19 +313,19 @@ function makePlanet() {
 
 // Make Sun
 function makeSunObj() {
-	geometry = new THREE.SphereGeometry(3, 16, 16);
+	geometry = new THREE.SphereGeometry(3,16,16);
 	material = new THREE.MeshBasicMaterial({color: 0xffff00});
 	mesh = new THREE.Mesh(geometry, material);
-//	sunpos.add(mesh);
+	sunpos.add(mesh);
 	// Lens Flare - Load Textures
 	let	texture0 = loader.load("https://PhilCrowther.github.io/Aviation/textures/fx/lensflare1.png");
 	let	texture1 = loader.load("https://PhilCrowther.github.io/Aviation/textures/fx/hexangle.png");
 	// Lens Flare - Activate
 	let	lensFlare = new Lensflare();
-	lensFlare.addElement(new LensflareElement(texture0, 512, 0));
-	lensFlare.addElement(new LensflareElement(texture1, 32, 0.2));
-	lensFlare.addElement(new LensflareElement(texture1, 64, 0.5));
-	lensFlare.addElement(new LensflareElement(texture1, 256, 0.9));
+	lensFlare.addElement(new LensflareElement(texture0,512,0));
+	lensFlare.addElement(new LensflareElement(texture1, 32,0.2));
+	lensFlare.addElement(new LensflareElement(texture1, 64,0.5));
+	lensFlare.addElement(new LensflareElement(texture1,256,0.9));
 	light.add(lensFlare);
 }
 
@@ -363,11 +374,11 @@ function makeLabels() {
 
 function rendAll() {
 	requestAnimationFrame(rendAll);
-	if (PawsOn == 0) {
+	if (!PawsOn) {
 		merday = rotePlanet(merrot,merday,mermax,merorbDAT,meraxy,merpos,merdstDAT,mersun,merDAT);		// Venus
 		venday = rotePlanet(venrot,venday,venmax,venorbDAT,venaxy,venpos,vendstDAT,vensun,venDAT);		// Venus
 		earday = rotePlanet(earrot,earday,earmax,earorbDAT,earaxy,earpos,eardstDAT,earsun,earDAT);		// Earth
-		marday = rotePlanet(marrot,marday,marmax,marorbDAT,maraxy,marpos,mardstDAT,marsun,marDAT);		// Earth
+		marday = rotePlanet(marrot,marday,marmax,marorbDAT,maraxy,marpos,mardstDAT,marsun,marDAT);		// Mars
 	}	
 	moveCamera();								// Camera Position
 	DAT00 = earday;
@@ -493,8 +504,7 @@ function onTouchEnd(event) {
 
 // Toggle Pause
 function togglePause() {
-    if (PawsOn == 0) PawsOn = 1;
-    else PawsOn = 0;
+    PawsOn = 1 - PawsOn;
 }
 
 function onWindowResize() {
