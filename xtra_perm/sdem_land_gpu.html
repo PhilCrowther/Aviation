@@ -4,13 +4,13 @@
 <!--
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 27 Jun 2026
+Version dated 9 Nov 2026
 
 This programs shows procedurally generated farmland plus medium quality trees.
 -->
 
 <head>
-<title>sdem land gpu r185</title>
+<title>sdem land gpu r187</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <link rel="stylesheet" href="https://PhilCrowther.github.io/Aviation/styles/butn_dem.css">
@@ -32,10 +32,10 @@ This programs shows procedurally generated farmland plus medium quality trees.
 <script type="importmap">
 	{
 		"imports": {
-			"three": "https://cdn.jsdelivr.net/npm/three@0.185/build/three.webgpu.js",
-			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.185/build/three.webgpu.js",
-			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.185/build/three.tsl.js",
-			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185/examples/jsm/"
+			"three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
+			"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
+			"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.tsl.js",
+			"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"
 		}
 	}
 </script>
@@ -120,9 +120,7 @@ let SkyLim = 100000;			// Max viewing distance
 let	scene = new THREE.Scene();
 //- Lights
 let sunLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt);
-//	sunLight.position.copy(SunPos).normalize();
 	sunLight.position.copy(SunPos);	// x = -3420, y = 1954, z = -3080
-//	console.log(SunPos.x,SunPos.y,SunPos.z);
 	sunLight.shadow.mapSize.width = 2048;
 	sunLight.shadow.mapSize.height = 2048;
 	sunLight.castShadow = true;
@@ -175,6 +173,9 @@ let	CamDst, CamLat, CamHdg, CamAlt = 0;
 let Df0Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1F2.jpg";
 let Df1Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G2.jpg";
 let Df2Txt = "https://PhilCrowther.github.io/Aviation/scenery/textures/transition1G3.jpg";
+//-	Grass
+let GrsTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/grass.jpg";
+let GrNTxt = "https://PhilCrowther.github.io/Aviation/scenery/textures/grassN.jpg";
 //- Ground Square ---------------------------------------------------------------
 let dqSize = 805;	// size of quarter section in meters = 2640 feet (2 ft per row = 1320 rows)
 let datMax = 6;
@@ -365,6 +366,28 @@ function loadDifTxt() {
 		texture.needsUpdate = true;
 		Df2Txt = texture;
 	});
+	//- Grass
+	txtrLoader.load(GrsTxt,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.repeat.set(200,200);
+		texture.needsUpdate = true;
+		GrsTxt = texture;
+	});
+	//- Grass Normal
+	txtrLoader.load(GrNTxt,function(texture) {
+		texture.format = THREE.RGBAFormat;
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.generateMipmaps = true;
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.repeat.set(200,200);
+		texture.needsUpdate = true;
+		GrNTxt = texture;
+	});
 }
 
 //= INIT ========================================================================
@@ -405,7 +428,10 @@ function initTxtr() {
 		DatTxt.needsUpdate = true;
 		if (i < 2) {
 			dtMats[i] = new THREE.MeshLambertNodeMaterial({
-				colorNode: texture(DatTxt).mul(texture(Df0Txt)),
+//				colorNode: texture(DatTxt).mul(texture(Df0Txt)),
+				colorNode: texture(GrsTxt).mul(texture(Df0Txt)),
+				normalNode: normalMap(texture(GrNTxt),new THREE.Vector2(1.0,1.0)),
+				normalScale: new THREE.Vector2(10,10),
 			});
 		}
 		if (i > 3) {
