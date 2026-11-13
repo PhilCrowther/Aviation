@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Nov 2026
+Version dated 12 Nov 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -95,7 +95,7 @@ A demo of a flight simulation of an animated airplane model over farmland using 
 //= LOAD MODULES ===============================================================
 //- Basic Modules --------------------------------------------------------------
 import * as THREE from "three";
-import {color,float,texture,uniform,uniformArray,array,Fn,time} from "three/tsl";
+import {color,float,texture,uniform,uniformArray,array,Fn,time,instancedBufferAttribute} from "three/tsl";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
 //- Special Modules (in Alphabetical Order) -------------------------------------
@@ -317,19 +317,18 @@ let ImgSiz = 1024;
 
 //= CLOUDS =====================//==============================================
 let cld_ = {
-		ObjNum: 1,
-		ObjSrc: "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
-		ObjTxt: 0,				// Texture
+		ObjNum: 3,
+		ObjTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
+		ObjMat: 0,
 		MaxDst: 5000,			// Max Distance
 		MaxOpa: 0.5,			// Max Opacity
-		RelPos: [new THREE.Vector3(0,1000*Ft2Mtr,0)],	// Map Position
+		RelPos: [new THREE.Vector3(0,600*Ft2Mtr,0),	// Map Position
+				 new THREE.Vector3(-1000,600*Ft2Mtr,-1000),
+				 new THREE.Vector3(750,600*Ft2Mtr,-750)],
 		Object: [],				// Objects
-		SprNum: 180,
-		SprMul: [1],
-		Spritz: [],				// Individual  Sprites
-		TxtTop: [],				// Cloud texture - top
-		TxtBot: [],				// Cloud texture - bottom
+		SprNum: 50,
 	}
+let dummy = new THREE.Object3D();
 
 //= 4. OBJECT VARIABLES ========//==============================================
 //= STATIC OBJECTS =============//==============================================
@@ -980,59 +979,40 @@ function moveAnmObj() {moveAnmFlg(flg_,tim_);}
 *******************************************************************************/
 
 function loadClouds() {
-	cld_.ObjTxt = txtrLoader.load(cld_.ObjSrc);
+	cld_.ObjTxt = txtrLoader.load(cld_.ObjTxt);
 }
 
 function initClouds() {
-	let sprite,posx,posy,posz,dist,indx,scale;
-	for (var n = 0; n < cld_.ObjNum; n++) {	// for each cloud
-		cld_.Object[n] = new THREE.Group;
-		cld_.TxtTop[n] = new THREE.MeshBasicNodeMaterial({	// light above
-			color: 0xd0d0d0,	// lighter color
-			map: cld_.ObjTxt,
-			transparent:true,
-			depthWrite:false
-		});
-		cld_.TxtBot[n] = new THREE.MeshBasicNodeMaterial({	// dark below
-			color: 0xc0c0c0,	// darker color
-			map: cld_.ObjTxt,
-			transparent:true,
-			depthWrite:false
-		});
-		cld_.Spritz[n] = [];
-		let sprnum = cld_.SprNum*cld_.SprMul[n];
-		let sprdst = 180*cld_.SprMul[n];	// Basic Radius
-		let sprexp =  40*cld_.SprMul[n];	// Expansion
-		let sprhrz = 1.75;					// Horizontal Adjustment
-		let sprvrt = 25*cld_.SprMul[n];		// Vertical Adjustment
-		for (var x = 0; x < sprnum; x ++) {	// for each sprite
-			cld_.Spritz[n][x] = new THREE.Mesh(new THREE.PlaneGeometry(1,1),cld_.TxtTop[n]);
-			dist = Math.random()*sprdst+sprexp;	// basic size (40 prevents crowding in center)
-			posx = dist*Math.sin(x*DegRad)*sprhrz;	// creates oval shape
-			posz = dist*Math.cos(x*DegRad);
-			dist = Math.sqrt(posx*posx+posz*posz);	// distance
-			indx = (1000-dist)/1000;	// ratio 1 to 0			
-			posy = (Math.random()-0.5)*sprvrt*indx;	// lens shape
-			if (posy < -.9) cld_.Spritz[n][x].material = cld_.TxtBot[n]; // dark
-			cld_.Spritz[n][x].position.set(posx,posy,posz);
-			cld_.Spritz[n][x].scale.set(150, 90*indx, 90); // sprites smaller at edge (but causes noticeable rotation)
-			cld_.Spritz[n][x].frustumCulled = false;
-			cld_.Object[n].add(cld_.Spritz[n][x]);	// add sprite to cloud
-			cld_.Object[n].rotation.order = "YXZ";
-		}
-		scale = 2*Math.random()+1;	// Range = 1 to 2
-		cld_.Object[n].scale.setScalar(scale);	
+	//	Positions
+	let	count = 70;
+	let	positions = [];
+	for (let i = 0; i < count; i++) {
+		positions.push(150*Math.random()-75,50*Math.random()-25,100*Math.random()-50);
+	}
+	let positionAttribute = new THREE.InstancedBufferAttribute(new Float32Array(positions),3);
+	//	Material
+	cld_.ObjMat = new THREE.SpriteNodeMaterial({
+		map: cld_.ObjTxt,
+		transparent: true,
+		opacity: 0.6,
+		depthWrite: false
+	});
+	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAttribute);
+	cld_.ObjMat.scaleNode = uniform(50);
+	//
+	let particles;
+	for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
+		cld_.Object[n] = new THREE.Group();
 		cld_.Object[n].position.copy(cld_.RelPos[n]);
 		scene.add(cld_.Object[n]);
+		particles = new THREE.Sprite(cld_.ObjMat);
+		particles.count = count;
+		particles.frustumCulled = false;
+		cld_.Object[n].add(particles);
 	}
 }
 
 function moveClouds() {
-	let direction = new THREE.Vector3();
-	camera.getWorldDirection(direction);
-	let radY = Mod360((Math.atan2(direction.x, direction.z)*RadDeg)+180)*DegRad;
-	let radX = Math.asin(direction.y);	
-	let dist;	// xz distance
 	for (var n = 0; n < cld_.ObjNum; n++) {
 		// Compute new relative position		
 		cld_.RelPos[n].x = cld_.RelPos[n].x - air_.MapSPS.x;
@@ -1045,14 +1025,6 @@ function moveClouds() {
 		if (cld_.RelPos[n].z < -cld_.MaxDst) cld_.RelPos[n].z =  cld_.MaxDst;
 		// Set
 		cld_.Object[n].position.copy(cld_.RelPos[n]);
-		let sprnum = cld_.SprNum*cld_.SprMul[n];
-		for (var x = 0; x < sprnum; x ++) {	// for each sprite
-			cld_.Spritz[n][x].rotation.set(radX,radY,0);
-		}
-		// Fade out based on distance
-		dist = Math.sqrt(cld_.RelPos[n].x**2+cld_.RelPos[n].z**2);
-		cld_.TxtTop[n].opacity = cld_.MaxOpa*(1.5*cld_.MaxDst-dist)/(1.5*cld_.MaxDst);
-		cld_.TxtBot[n].opacity = cld_.MaxOpa*(1.5*cld_.MaxDst-dist)/(1.5*cld_.MaxDst);
 	}
 }
 
