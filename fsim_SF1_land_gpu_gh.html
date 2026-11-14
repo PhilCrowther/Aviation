@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 12 Nov 2026
+Version dated 13 Nov 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -984,9 +984,8 @@ function loadClouds() {
 
 function initClouds() {
 	//	Positions
-	let	count = 70;
 	let	positions = [];
-	for (let i = 0; i < count; i++) {
+	for (let i = 0; i < cld_.SprNum; i++) {
 		positions.push(150*Math.random()-75,50*Math.random()-25,100*Math.random()-50);
 	}
 	let positionAttribute = new THREE.InstancedBufferAttribute(new Float32Array(positions),3);
@@ -994,21 +993,21 @@ function initClouds() {
 	cld_.ObjMat = new THREE.SpriteNodeMaterial({
 		map: cld_.ObjTxt,
 		transparent: true,
-		opacity: 0.6,
+		opacity: 0.1,
 		depthWrite: false
 	});
 	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAttribute);
 	cld_.ObjMat.scaleNode = uniform(50);
 	//
-	let particles;
+	let sprites;
 	for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
 		cld_.Object[n] = new THREE.Group();
 		cld_.Object[n].position.copy(cld_.RelPos[n]);
 		scene.add(cld_.Object[n]);
-		particles = new THREE.Sprite(cld_.ObjMat);
-		particles.count = count;
-		particles.frustumCulled = false;
-		cld_.Object[n].add(particles);
+		sprites = new THREE.Sprite(cld_.ObjMat);
+		sprites.count = cld_.SprNum;
+		sprites.frustumCulled = false;
+		cld_.Object[n].add(sprites);
 	}
 }
 
