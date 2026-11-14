@@ -316,26 +316,42 @@ let ImgSiz = 1024;
 	grd_.SPS = new THREE.Vector3(); // MSX, MPY, MSZ (meters) (from Flight)
 
 //= CLOUDS =====================//==============================================
-let CldAlt = 600*Ft2Mtr;
+let CldAlt = 600*Ft2Mtr;		// Same Altitude for all Clouds
 let cld_ = {
 		ObjNum: 3,
+		//	Material (same for all)
 		ObjTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
 		ObjMat: 0,
-		MaxDst: 5000,			// Max Distance
-		MaxOpa: 0.3,			// Max Opacity
+		//	Clouds
+		Object: [],				// Clouds
+		ObjDim: [new THREE.Vector3(150,50,100),		// Only Small Variations Allowed
+				 new THREE.Vector3(150,50,100),		// (Buffer and Performance Limitations)
+				 new THREE.Vector3(150,50,100)],	// Use ObjSize to Make Clouds Larger
+		ObjSiz: [1,1,2],
+		ObjRot: [0,15,30],		// Y-Rotation
 		RelPos: [new THREE.Vector3(0,CldAlt,-500),	// Map Position
 				 new THREE.Vector3(-1000,CldAlt,-1000),
 				 new THREE.Vector3(750,CldAlt,-750)],
-		Object: [],				// Objects
-		SprNum: 50,
-		// Shadows
+		MaxDst: 5000,			// Max Distance
+		//	Sprites
+		MaxOpa: 0.3,			// Max Opacity
+		SprNum: [50,50,50],		// Vary depending on ObjSiz
+		SprMat: [],
+		SprSiz: 50,				// Size of Each Sprite
+		SprPos: [],
+		//	Shadows
 		ShdTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
 		ShdMat: 0,
-		ShdSiz: 25,
 		ShdPtr: [],				// Objects
 		SunOff: 0,				// Vector3
 	}
-let dummy = new THREE.Object3D();
+//	Compute Number of Sprites
+let SprVol = cld_.SprSiz**3;	// e.g 50^3 = 125,000
+let CldVol;
+for (let n = 0; n < cld_.ObjNum; n++) {
+	CldVol = cld_.ObjDim[n].x*cld_.ObjDim[n].y*cld_.ObjDim[n].z; // e.g. 150*50*100 = 750,000
+	cld_.SprNum[n] = 10*CldVol/SprVol;	// e.g. 60 = 10*750/125
+}
 
 //= 4. OBJECT VARIABLES ========//==============================================
 //= STATIC OBJECTS =============//==============================================
@@ -987,41 +1003,49 @@ function moveAnmObj() {moveAnmFlg(flg_,tim_);}
 
 function loadClouds(cld_,gen_) {
 	//	Cloud
-	cld_.ObjTxt = gen_.txtrLd.load(cld_.ObjTxt);
+	gen_.txtrLd.load(cld_.ObjTxt,function (map) {
+		cld_.ObjMat = new THREE.SpriteNodeMaterial
+		cld_.ObjMat.colorNode = texture(map);			
+		cld_.ObjMat.transparent = true;
+		cld_.ObjMat.depthWrite = false;
+		cld_.ObjMat.opacity = cld_.MaxOpa;
+	});	
 	//	Shadow
-	gen_.txtrLd.load(cld_.ShdTxt, function (map) {
+	gen_.txtrLd.load(cld_.ShdTxt,function (map) {
 		cld_.ShdMat = new THREE.MeshLambertNodeMaterial();
 		cld_.ShdMat.colorNode = color(0x3f3f3f);
-		cld_.ShdMat.colorNode = texture(map);			
+		cld_.ShdMat.colorNode = texture(map);
 		cld_.ShdMat.transparent = true;
 		cld_.ShdMat.depthWrite = false;
 	});
 }
 
 function initClouds(cld_,gen_,sky_) {
-	//	Positions
-	let	positions = [];
-	for (let i = 0; i < cld_.SprNum; i++) {
-		positions.push(150*Math.random()-75,50*Math.random()-25,100*Math.random()-50);
-	}
-	let positionAttribute = new THREE.InstancedBufferAttribute(new Float32Array(positions),3);
-	//	Material
-	cld_.ObjMat = new THREE.SpriteNodeMaterial({
-		map: cld_.ObjTxt,
-		transparent: true,
-		opacity: cld_.MaxOpa,
-		depthWrite: false
-	});
-	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAttribute);
-	cld_.ObjMat.scaleNode = uniform(50);
-	//
-	let sprites;
+	let sprites,posatt;
 	for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
+		cld_.SprPos[n] = [];
+		//	Positions
+		for (let i = 0; i < cld_.SprNum[n]; i++) {
+			cld_.SprPos[n].push(
+				cld_.ObjDim[n].x*(Math.random()-0.5),
+				cld_.ObjDim[n].y*(Math.random()),		// Base of cloud
+				cld_.ObjDim[n].z*(Math.random()-0.5)
+			);
+		}
+		posatt = new THREE.InstancedBufferAttribute(new Float32Array(cld_.SprPos[n]),3);
+		//	Material
+		cld_.SprMat[n] = cld_.ObjMat;	// Same material for all clouds
+		cld_.SprMat[n].positionNode = instancedBufferAttribute(posatt);
+		cld_.SprMat[n].scaleNode = uniform(cld_.SprSiz);
+		//	Cloud
 		cld_.Object[n] = new THREE.Group();
 		cld_.Object[n].position.copy(cld_.RelPos[n]);
+		cld_.Object[n].rotation.y = cld_.ObjRot[n]*DegRad;
+		cld_.Object[n].scale.setScalar(cld_.ObjSiz[n]);
 		gen_.scene.add(cld_.Object[n]);
+		//	Sprites
 		sprites = new THREE.Sprite(cld_.ObjMat);
-		sprites.count = cld_.SprNum;
+		sprites.count = cld_.SprNum[n];
 		sprites.frustumCulled = false;
 		cld_.Object[n].add(sprites);
 	}
@@ -1030,10 +1054,11 @@ function initClouds(cld_,gen_,sky_) {
 	for (let n = 0; n < cld_.ObjNum; n++) {
 		cld_.ShdPtr[n] = new THREE.Mesh(ShdGeo,cld_.ShdMat);
 		cld_.ShdPtr[n].rotation.order = "YXZ";
-		cld_.ShdPtr[n].scale.setScalar(cld_.ShdSiz);
+		cld_.ShdPtr[n].scale.set(cld_.ObjSiz[n]*cld_.ObjDim[n].x*2.5/15,cld_.ObjSiz[n]*cld_.ObjDim[n].z*2.5/15,1);
 		cld_.ShdPtr[n].rotation.x = Rad270;
 		cld_.ShdPtr[n].position.y = -10000; // temporary
 		gen_.scene.add(cld_.ShdPtr[n]);
+		cld_.ShdPtr[n].rotation.y = cld_.ObjRot[n]*DegRad;
 	}
 	//	Offset per meter
 	cld_.SunOff = new THREE.Vector3(0,CldAlt,0);
