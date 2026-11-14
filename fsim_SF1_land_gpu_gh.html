@@ -316,17 +316,24 @@ let ImgSiz = 1024;
 	grd_.SPS = new THREE.Vector3(); // MSX, MPY, MSZ (meters) (from Flight)
 
 //= CLOUDS =====================//==============================================
+let CldAlt = 600*Ft2Mtr;
 let cld_ = {
 		ObjNum: 3,
 		ObjTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
 		ObjMat: 0,
 		MaxDst: 5000,			// Max Distance
-		MaxOpa: 0.5,			// Max Opacity
-		RelPos: [new THREE.Vector3(0,600*Ft2Mtr,0),	// Map Position
-				 new THREE.Vector3(-1000,600*Ft2Mtr,-1000),
-				 new THREE.Vector3(750,600*Ft2Mtr,-750)],
+		MaxOpa: 0.3,			// Max Opacity
+		RelPos: [new THREE.Vector3(0,CldAlt,-500),	// Map Position
+				 new THREE.Vector3(-1000,CldAlt,-1000),
+				 new THREE.Vector3(750,CldAlt,-750)],
 		Object: [],				// Objects
 		SprNum: 50,
+		// Shadows
+		ShdTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
+		ShdMat: 0,
+		ShdSiz: 25,
+		ShdPtr: [],				// Objects
+		SunOff: 0,				// Vector3
 	}
 let dummy = new THREE.Object3D();
 
@@ -723,7 +730,7 @@ function loadAll() {
 	loadAirObj();
 	gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Elevate Some Objects
 	loadObject();
-	loadClouds();
+	loadClouds(cld_,gen_);
 	// Load stats
 	if (gen_.StatOn) {			// show stats
 		gen_.StatOn = new Stats();
@@ -763,7 +770,7 @@ function initAll() {
 	initRoads(grd_,gen_);		// Add Roads
 	moveTreLin(grd_,gen_,air_); // Add TreeLines
 	initObject();				// Stationary Objects
-	initClouds();
+	initClouds(cld_,gen_,sky_);
 	// Other
 	initCamPup();				// position camera
 	PawsText();
@@ -806,7 +813,7 @@ function rendAll() {
 		moveRoads(grd_,gen_);	// Move Roads
 		moveTreLin(grd_,gen_,air_); // Move TreeLines	
 		moveObject();			// Move objects
-		moveClouds();
+		moveClouds(cld_,air_);
 		// TimeLine
 		FrmCnt++;				// Frame Counter
 		moveEvents();			// Get Events
@@ -978,11 +985,20 @@ function moveAnmObj() {moveAnmFlg(flg_,tim_);}
 *
 *******************************************************************************/
 
-function loadClouds() {
-	cld_.ObjTxt = txtrLoader.load(cld_.ObjTxt);
+function loadClouds(cld_,gen_) {
+	//	Cloud
+	cld_.ObjTxt = gen_.txtrLd.load(cld_.ObjTxt);
+	//	Shadow
+	gen_.txtrLd.load(cld_.ShdTxt, function (map) {
+		cld_.ShdMat = new THREE.MeshLambertNodeMaterial();
+		cld_.ShdMat.colorNode = color(0x3f3f3f);
+		cld_.ShdMat.colorNode = texture(map);			
+		cld_.ShdMat.transparent = true;
+		cld_.ShdMat.depthWrite = false;
+	});
 }
 
-function initClouds() {
+function initClouds(cld_,gen_,sky_) {
 	//	Positions
 	let	positions = [];
 	for (let i = 0; i < cld_.SprNum; i++) {
@@ -993,7 +1009,7 @@ function initClouds() {
 	cld_.ObjMat = new THREE.SpriteNodeMaterial({
 		map: cld_.ObjTxt,
 		transparent: true,
-		opacity: 0.1,
+		opacity: cld_.MaxOpa,
 		depthWrite: false
 	});
 	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAttribute);
@@ -1003,15 +1019,29 @@ function initClouds() {
 	for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
 		cld_.Object[n] = new THREE.Group();
 		cld_.Object[n].position.copy(cld_.RelPos[n]);
-		scene.add(cld_.Object[n]);
+		gen_.scene.add(cld_.Object[n]);
 		sprites = new THREE.Sprite(cld_.ObjMat);
 		sprites.count = cld_.SprNum;
 		sprites.frustumCulled = false;
 		cld_.Object[n].add(sprites);
 	}
+	//	Shadows
+	let ShdGeo = new THREE.PlaneGeometry(10,10);	
+	for (let n = 0; n < cld_.ObjNum; n++) {
+		cld_.ShdPtr[n] = new THREE.Mesh(ShdGeo,cld_.ShdMat);
+		cld_.ShdPtr[n].rotation.order = "YXZ";
+		cld_.ShdPtr[n].scale.setScalar(cld_.ShdSiz);
+		cld_.ShdPtr[n].rotation.x = Rad270;
+		cld_.ShdPtr[n].position.y = -10000; // temporary
+		gen_.scene.add(cld_.ShdPtr[n]);
+	}
+	//	Offset per meter
+	cld_.SunOff = new THREE.Vector3(0,CldAlt,0);
+	cld_.SunOff.x = cld_.SunOff.y*Math.sin(sky_.SunLat*DegRad)*Math.sin(Mod360(sky_.SunLon+180)*DegRad);	// cos(023)*sin(312) = 0.9205* 0.7431 =  0.6874
+	cld_.SunOff.z = cld_.SunOff.y*Math.sin(sky_.SunLat*DegRad)*Math.cos(Mod360(sky_.SunLon+180)*DegRad);	// cps(023)*cos(312) = 0.9205*-0.6691 = -0.6189
 }
 
-function moveClouds() {
+function moveClouds(cld_,air_) {
 	for (var n = 0; n < cld_.ObjNum; n++) {
 		// Compute new relative position		
 		cld_.RelPos[n].x = cld_.RelPos[n].x - air_.MapSPS.x;
@@ -1024,6 +1054,12 @@ function moveClouds() {
 		if (cld_.RelPos[n].z < -cld_.MaxDst) cld_.RelPos[n].z =  cld_.MaxDst;
 		// Set
 		cld_.Object[n].position.copy(cld_.RelPos[n]);
+	}
+	//	Shadows
+	for (let n = 0; n < cld_.ObjNum; n++) {
+		cld_.ShdPtr[n].position.x = cld_.RelPos[n].x + cld_.SunOff.x;
+		cld_.ShdPtr[n].position.y = cld_.RelPos[n].y - cld_.SunOff.y + 1;
+		cld_.ShdPtr[n].position.z = cld_.RelPos[n].z - cld_.SunOff.z;
 	}
 }
 
