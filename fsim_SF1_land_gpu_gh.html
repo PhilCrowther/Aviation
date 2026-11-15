@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 14 Nov 2026
+Version dated 15 Nov 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -236,7 +236,7 @@ let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(60,CamAsp,0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
-let renderer = new THREE.WebGPURenderer({antialias: true});	// ### WebGPU
+let renderer = new THREE.WebGPURenderer({antialias: true,reversedDepthBuffer: true});	// ### WebGPU
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -2269,6 +2269,8 @@ function onWindowResize() {
 260525: Air combat!
 260704: Bombs
 260719: Sprite Smoke Trail
+261114:	Added sprite clouds
+261115: Added Reverse Z-buffer
 */
 
 </script>
