@@ -236,7 +236,11 @@ let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(60,CamAsp,0.1,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
-let renderer = new THREE.WebGPURenderer({antialias: true,reversedDepthBuffer: true});	// ### WebGPU
+//let renderer = new THREE.WebGPURenderer({antialias: true});
+const renderer = new THREE.WebGPURenderer({
+		antialias: true,
+		reversedDepthBuffer: true
+	});
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -244,7 +248,6 @@ let renderer = new THREE.WebGPURenderer({antialias: true,reversedDepthBuffer: tr
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;	
 	renderer.shadowMap.type = THREE.PCFShadowMap;		// r182
-	renderer.logarithmicDepthBuffer = true;
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 //	Tone Mapping

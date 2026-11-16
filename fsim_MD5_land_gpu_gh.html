@@ -10,7 +10,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 9 Nov 2026
+Version dated 15 Nov 2026
 
 A flight simulation of an animated helicopter model over procedural land using WebGPU
 
@@ -287,13 +287,16 @@ let sonLight = new THREE.DirectionalLight(sky_.SunCol,sky_.SunInt*0.75);
 	sonLight.shadow.camera.top = 2;
 	sonLight.shadow.camera.bottom = -2;
 	sonLight.shadow.bias = -0.0005; // r182
-	scene.add(sonLight);
+//	scene.add(sonLight);	// causes square box around shadow
 // 	Camera
 let	CamAsp = window.innerWidth/window.innerHeight;
 let camera = new THREE.PerspectiveCamera(45,CamAsp, 0.01,100000);
 //	scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 //- Renderer
-let renderer = new THREE.WebGPURenderer({antialias: true});	// r168
+const renderer = new THREE.WebGPURenderer({
+		antialias: true,
+		reversedDepthBuffer: true
+	});
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth,window.innerHeight);
 	renderer.setAnimationLoop(rendAll);
@@ -301,7 +304,6 @@ let renderer = new THREE.WebGPURenderer({antialias: true});	// r168
 	renderer.shadowMap.autoUpdate = true;
 	renderer.receiveShadow = true;	
 	renderer.shadowMap.type = THREE.PCFShadowMap;
-	renderer.logarithmicDepthBuffer = true;
 	document.body.appendChild(renderer.domElement);
 	gen_.MaxAni = renderer.getMaxAnisotropy();
 	await renderer.init();		// Allows time for backend to initialize
