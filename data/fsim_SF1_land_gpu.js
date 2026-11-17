@@ -1,7 +1,7 @@
 ﻿
 /********************************************************************************
 *
-*	FSIM SF1 DATA: 261019
+*	FSIM SF1 DATA: 261117
 *
 *********************************************************************************
 
@@ -42,6 +42,7 @@ INDEX TO VARIABLES
 			My Guns					(myg_)
 			Moving Airplanes		(xag_)
 			Fixed Guns				(aaf_)
+			Clouds					(cld_)
 	6. SOUND VARIABLES
 		My Sounds					(mys_)
 		Radio Variables				(rad_)
@@ -721,6 +722,32 @@ let bms_ = {
 		SizAdd: [],				// Smoke Size Addition
 		SizSub: [],				// Smoke Size Subtraction (default = 0.01; test = 0.05)
 		GroFlg: [],				// Grow Smoke (after first use)
+	}
+
+//= CLOUDS =====================//==============================================
+let cld_ = {
+		ObjNum: 3,				// Number of Clouds
+		//	Material
+		ObjTxt: 0,
+		ObjMat: 0,				// Sprite Material (common)
+		//	Clouds
+		Object: [],				// Clouds
+		ObjDim: 0,				// Shape Fixee, Vary with Siz and Rot
+		ObjSiz: [],				// Size
+		ObjRot: [],				// Y-Rotation
+		RelPos: [],				// Map Position
+		MaxDst: 5000,			// Max Distance
+		MaxOpa: 0.3,			// Max Opacity
+		//	Sprites
+		SprNum: 50,				// Number of Sprites
+		SprSiz: 50,				// Size of Each Sprite
+		SprPos: [],				// Sprite Positions
+		//	Shadows
+		ShdFlg: 1,
+		ShdTxt: 0,
+		ShdMat: 0,				// Shadow Material (common)
+		ShdPtr: [],				// Objects
+		SunOff: 0,				// Offset on Ground (Vector3)
 	}
 
 //=	MY SOUNDS ==================//==============================================
