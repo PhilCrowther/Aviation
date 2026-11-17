@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 Sep 2026
+Version dated 17 Nov 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -49,11 +49,11 @@ import {
 	BufferGeometry,
 	Euler,
 	Group,
-	InstancedBufferAttribute,
 	Line,
 	LineBasicNodeMaterial,
 	Line2NodeMaterial,
 	MeshBasicNodeMaterial,
+	MeshLambertNodeMaterial,
 	Mesh,
 	Object3D,
 	PlaneGeometry,
@@ -68,7 +68,8 @@ import {
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
-import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,uniformArray,float,Fn,array} from 'three/tsl';
+//import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,uniformArray,float,Fn,array,InstancedBufferAttribute} from 'three/tsl';
+import   {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,uniformArray,float,Fn,array,instancedBufferAttribute} from "three/tsl";
 
 /*******************************************************************************
 *
