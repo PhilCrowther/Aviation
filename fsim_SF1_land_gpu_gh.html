@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 15 Nov 2026
+Version dated 17 Nov 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -112,6 +112,7 @@ import {loadFXfile,				// Load Common FX Textures and Sounds
 		initEndSeq,moveEndSeq,	// Other Airplane - Ending Sequence
 		initSmkTrl,moveSmkTrl,	// Sprite Smoke Trail
 		initExpBom,moveExpBom,	// Bomb
+		loadClouds,initClouds,moveClouds,
 		stopEffSnd,				// Effects Sounds
 	} from "https://PhilCrowther.github.io/Aviation/jsm/Effects.js";
 import {Flight,Mod360,PoM360,MaxVal} from "https://PhilCrowther.github.io/Aviation/jsm/Flight.js";
@@ -320,32 +321,22 @@ let ImgSiz = 1024;
 
 //= CLOUDS =====================//==============================================
 let CldAlt = 600*Ft2Mtr;		// Same Altitude for all Clouds
-let cld_ = {
-		ObjNum: 3,
-		//	Material (same for all)
-		ObjTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png",
-		ObjMat: 0,
-		//	Clouds
-		Object: [],				// Clouds
-		ObjDim: new THREE.Vector3(150,50,100),	// Shape Fixee, Vary with Siz and Rot
-		ObjSiz: [1,1,2],		// Size
-		ObjRot: [0,15,30],		// Y-Rotation
-		RelPos: [new THREE.Vector3(0,CldAlt,-500),	// Map Position
-				 new THREE.Vector3(-1000,CldAlt,-1000),
-				 new THREE.Vector3(750,CldAlt,-750)],
-		MaxDst: 5000,			// Max Distance
-		//	Sprites
-		MaxOpa: 0.3,			// Max Opacity
-		SprNum: 50,				// Default
-		SprMat: 0,
-		SprSiz: 50,				// Size of Each Sprite
-		SprPos: [],
-		//	Shadows
-		ShdTxt: "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png",
-		ShdMat: 0,
-		ShdPtr: [],				// Objects
-		SunOff: 0,				// Vector3
-	}
+	cld_.ObjNum = 3;
+	//	Material
+	cld_.ObjTxt = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
+	//	Clouds
+	cld_.Object = [];
+	cld_.ObjDim = new THREE.Vector3(150,50,100);	// Shape Fixee, Vary with Siz and Rot
+	cld_.ObjSiz = [new THREE.Vector3(1,1,1),		// Size
+				   new THREE.Vector3(1,1,1),
+				   new THREE.Vector3(2,2,2)];
+	cld_.ObjRot = [0,15,30];						// Y-Rotation
+	cld_.RelPos = [new THREE.Vector3(0,CldAlt,-500),	// Map Position
+				   new THREE.Vector3(-1000,CldAlt,-1000),
+				   new THREE.Vector3(750,CldAlt,-750)];
+	//	Shadows
+	cld_.ShdTxt = "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png";
+	cld_.SunOff = new THREE.Vector3(0,CldAlt,0); // Shadow Offset
 
 //= 4. OBJECT VARIABLES ========//==============================================
 //= STATIC OBJECTS =============//==============================================
@@ -988,100 +979,6 @@ function moveMoving() {
 //- Animated Attachments -------//----------------------------------------------
 
 function moveAnmObj() {moveAnmFlg(flg_,tim_);}
-
-/*******************************************************************************
-*
-*	CLOUDS
-*
-*******************************************************************************/
-
-function loadClouds(cld_,gen_) {
-	//	Cloud
-	gen_.txtrLd.load(cld_.ObjTxt,function (map) {
-		cld_.ObjMat = new THREE.SpriteNodeMaterial
-		cld_.ObjMat.colorNode = texture(map);			
-		cld_.ObjMat.transparent = true;
-		cld_.ObjMat.depthWrite = false;
-		cld_.ObjMat.opacity = cld_.MaxOpa;
-	});	
-	//	Shadow
-	gen_.txtrLd.load(cld_.ShdTxt,function (map) {
-		cld_.ShdMat = new THREE.MeshLambertNodeMaterial();
-		cld_.ShdMat.colorNode = color(0x3f3f3f);
-		cld_.ShdMat.colorNode = texture(map);
-		cld_.ShdMat.transparent = true;
-		cld_.ShdMat.depthWrite = false;
-	});
-}
-
-function initClouds(cld_,gen_,sky_) {
-	//	Positions
-	let	positions = [];
-	for (let i = 0; i < cld_.SprNum; i++) {
-//		positions.push(150*Math.random()-75,50*Math.random()-25,100*Math.random()-50);
-		positions.push(
-			cld_.ObjDim.x*(Math.random()-0.5),
-			cld_.ObjDim.y*(Math.random()),		// Base of cloud
-			cld_.ObjDim.z*(Math.random()-0.5)
-		);	
-	}
-	let positionAttribute = new THREE.InstancedBufferAttribute(new Float32Array(positions),3);
-	//	Material
-	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAttribute);
-	cld_.ObjMat.scaleNode = uniform(50);
-	//
-	let sprites;
-	for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
-		//	Cloud
-		cld_.Object[n] = new THREE.Group();
-		cld_.Object[n].position.copy(cld_.RelPos[n]);
-		cld_.Object[n].rotation.y = cld_.ObjRot[n]*DegRad;
-		cld_.Object[n].scale.setScalar(cld_.ObjSiz[n]);
-		gen_.scene.add(cld_.Object[n]);
-		//	Sprites
-		sprites = new THREE.Sprite(cld_.ObjMat);
-		sprites.count = cld_.SprNum;
-		sprites.frustumCulled = false;
-		cld_.Object[n].add(sprites);
-	}
-	//	Shadows
-	let ShdGeo = new THREE.PlaneGeometry(10,10);	
-	for (let n = 0; n < cld_.ObjNum; n++) {
-		cld_.ShdPtr[n] = new THREE.Mesh(ShdGeo,cld_.ShdMat);
-		cld_.ShdPtr[n].rotation.order = "YXZ";
-		cld_.ShdPtr[n].scale.set(cld_.ObjSiz[n]*cld_.ObjDim.x*2.5/15,cld_.ObjSiz[n]*cld_.ObjDim.z*2.5/15,1);
-		cld_.ShdPtr[n].rotation.x = Rad270;
-		cld_.ShdPtr[n].position.y = -10000; // temporary
-		gen_.scene.add(cld_.ShdPtr[n]);
-		cld_.ShdPtr[n].rotation.y = cld_.ObjRot[n]*DegRad;
-	}
-	//	Offset per meter
-	cld_.SunOff = new THREE.Vector3(0,CldAlt,0);
-	cld_.SunOff.x = cld_.SunOff.y*Math.sin(sky_.SunLat*DegRad)*Math.sin(Mod360(sky_.SunLon+180)*DegRad);	// cos(023)*sin(312) = 0.9205* 0.7431 =  0.6874
-	cld_.SunOff.z = cld_.SunOff.y*Math.sin(sky_.SunLat*DegRad)*Math.cos(Mod360(sky_.SunLon+180)*DegRad);	// cps(023)*cos(312) = 0.9205*-0.6691 = -0.6189
-}
-
-function moveClouds(cld_,air_) {
-	for (var n = 0; n < cld_.ObjNum; n++) {
-		// Compute new relative position		
-		cld_.RelPos[n].x = cld_.RelPos[n].x - air_.MapSPS.x;
-		cld_.RelPos[n].y = cld_.RelPos[n].y - air_.MapSpd.y;
-		cld_.RelPos[n].z = cld_.RelPos[n].z + air_.MapSPS.z;	
-		// Reset position if out of bounds
-		if (cld_.RelPos[n].x >  cld_.MaxDst) cld_.RelPos[n].x = -cld_.MaxDst;
-		if (cld_.RelPos[n].x < -cld_.MaxDst) cld_.RelPos[n].x =  cld_.MaxDst;
-		if (cld_.RelPos[n].z >  cld_.MaxDst) cld_.RelPos[n].z = -cld_.MaxDst;
-		if (cld_.RelPos[n].z < -cld_.MaxDst) cld_.RelPos[n].z =  cld_.MaxDst;
-		// Set
-		cld_.Object[n].position.copy(cld_.RelPos[n]);
-	}
-	//	Shadows
-	for (let n = 0; n < cld_.ObjNum; n++) {
-		cld_.ShdPtr[n].position.x = cld_.RelPos[n].x + cld_.SunOff.x;
-		cld_.ShdPtr[n].position.y = cld_.RelPos[n].y - cld_.SunOff.y + 1;
-		cld_.ShdPtr[n].position.z = cld_.RelPos[n].z - cld_.SunOff.z;
-	}
-}
 
 /*******************************************************************************
 *
