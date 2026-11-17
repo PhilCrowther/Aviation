@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 28 Sep 2026
+Version dated 17 Nov 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -49,10 +49,12 @@ import {
 	BufferGeometry,
 	Euler,
 	Group,
+	InstancedBufferAttribute,
 	Line,
 	LineBasicNodeMaterial,
 	Line2NodeMaterial,
 	MeshBasicNodeMaterial,
+	MeshLambertNodeMaterial,
 	Mesh,
 	Object3D,
 	PlaneGeometry,
@@ -67,7 +69,7 @@ import {
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
-import {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,uniformArray,float,Fn,array} from 'three/tsl';
+import   {color,mix,positionLocal,range,rotateUV,texture,time,uniform,uv,uniformArray,float,Fn,array,instancedBufferAttribute} from "three/tsl";
 
 /*******************************************************************************
 *
@@ -81,6 +83,8 @@ const DegRad = Math.PI/180;		// Convert Degrees to Radians
 const GrvMPS = 9.8;				// Gravity Acceleration m/s2
 const Ft2Mtr = 0.3048;			// Convert Feet to Meters (exact)
 const animfps = 24;
+//-	Constants
+let Rad270 = 270*DegRad;
 
 //= VARIABLES ==================//==============================================
 
@@ -1462,6 +1466,105 @@ function initSmoke0(smk_,n) {
 
 /*******************************************************************************
 *
+*	CLOUDS
+*
+*******************************************************************************/
+
+function loadClouds(cld_,gen_) {
+	//	Cloud
+	gen_.txtrLd.load(cld_.ObjTxt,function (map) {
+		cld_.ObjMat = new SpriteNodeMaterial
+		cld_.ObjMat.colorNode = texture(map);			
+		cld_.ObjMat.transparent = true;
+		cld_.ObjMat.depthWrite = false;
+		cld_.ObjMat.opacity = cld_.MaxOpa;
+	});	
+	//	Shadow
+	if (cld_.ShdFlg) {
+		//	Shadow
+		gen_.txtrLd.load(cld_.ShdTxt,function (map) {
+			cld_.ShdMat = new MeshLambertNodeMaterial();
+			cld_.ShdMat.colorNode = color(0x3f3f3f);
+			cld_.ShdMat.colorNode = texture(map);
+			cld_.ShdMat.transparent = true;
+			cld_.ShdMat.depthWrite = false;
+		});
+	}
+}
+
+function initClouds(cld_,gen_,sky_) {
+	//	Positions
+	let	positions = [];
+	for (let i = 0; i < cld_.SprNum; i++) {
+		positions.push(
+			cld_.ObjDim.x*(Math.random()-0.5),
+			cld_.ObjDim.y*(Math.random()),		// Base of cloud
+			cld_.ObjDim.z*(Math.random()-0.5)
+		);	
+	}
+	let positionAttribute = new InstancedBufferAttribute(new Float32Array(positions),3);
+	//	Material
+	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAttribute);
+	cld_.ObjMat.scaleNode = uniform(50);
+	//
+	let sprites;
+	for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
+		//	Cloud
+		cld_.Object[n] = new Group();
+		cld_.Object[n].position.copy(cld_.RelPos[n]);
+		cld_.Object[n].rotation.y = cld_.ObjRot[n]*DegRad;
+		cld_.Object[n].scale.set(cld_.ObjSiz[n].x,cld_.ObjSiz[n].y,cld_.ObjSiz[n].z);
+		gen_.scene.add(cld_.Object[n]);
+		//	Sprites
+		sprites = new Sprite(cld_.ObjMat);
+		sprites.count = cld_.SprNum;
+		sprites.frustumCulled = false;
+		cld_.Object[n].add(sprites);
+	}
+	//	Shadows
+	if (cld_.ShdFlg) {
+		let ShdGeo = new PlaneGeometry(10,10);	
+		for (let n = 0; n < cld_.ObjNum; n++) {
+			cld_.ShdPtr[n] = new Mesh(ShdGeo,cld_.ShdMat);
+			cld_.ShdPtr[n].rotation.order = "YXZ";
+			cld_.ShdPtr[n].scale.set(cld_.ObjSiz[n].x*cld_.ObjDim.x*2.5/15,cld_.ObjSiz[n].z*cld_.ObjDim.z*2.5/15,1);
+			cld_.ShdPtr[n].rotation.x = Rad270;
+			cld_.ShdPtr[n].position.y = -10000; // temporary
+			gen_.scene.add(cld_.ShdPtr[n]);
+			cld_.ShdPtr[n].rotation.y = cld_.ObjRot[n]*DegRad;
+		}
+		//	Offset per meter
+		cld_.SunOff.x = cld_.SunOff.y*Math.sin(sky_.SunLat*DegRad)*Math.sin(Mod360(sky_.SunLon+180)*DegRad);	// cos(023)*sin(312) = 0.9205* 0.7431 =  0.6874
+		cld_.SunOff.z = cld_.SunOff.y*Math.sin(sky_.SunLat*DegRad)*Math.cos(Mod360(sky_.SunLon+180)*DegRad);	// cps(023)*cos(312) = 0.9205*-0.6691 = -0.6189
+	}
+}
+
+function moveClouds(cld_,air_) {
+	for (var n = 0; n < cld_.ObjNum; n++) {
+		// Compute new relative position		
+		cld_.RelPos[n].x = cld_.RelPos[n].x - air_.MapSPS.x;
+		cld_.RelPos[n].y = cld_.RelPos[n].y - air_.MapSpd.y;
+		cld_.RelPos[n].z = cld_.RelPos[n].z + air_.MapSPS.z;	
+		// Reset position if out of bounds
+		if (cld_.RelPos[n].x >  cld_.MaxDst) cld_.RelPos[n].x = -cld_.MaxDst;
+		if (cld_.RelPos[n].x < -cld_.MaxDst) cld_.RelPos[n].x =  cld_.MaxDst;
+		if (cld_.RelPos[n].z >  cld_.MaxDst) cld_.RelPos[n].z = -cld_.MaxDst;
+		if (cld_.RelPos[n].z < -cld_.MaxDst) cld_.RelPos[n].z =  cld_.MaxDst;
+		// Set
+		cld_.Object[n].position.copy(cld_.RelPos[n]);
+	}
+	//	Shadows
+	if (cld_.ShdFlg) {
+			for (let n = 0; n < cld_.ObjNum; n++) {
+			cld_.ShdPtr[n].position.x = cld_.RelPos[n].x + cld_.SunOff.x;
+			cld_.ShdPtr[n].position.y = cld_.RelPos[n].y - cld_.SunOff.y + 1;
+			cld_.ShdPtr[n].position.z = cld_.RelPos[n].z - cld_.SunOff.z;
+		}
+	}
+}
+
+/*******************************************************************************
+*
 *	COMMON SOUNDS
 *
 *******************************************************************************/
@@ -1527,6 +1630,7 @@ export {
 	initSmkTrl,moveSmkTrl,				// Sprite Smoke Trail
 	initExpBom,moveExpBom,				// Bombs
 	initGrdSmk,							// Ground Smoke and Fire
+	loadClouds,initClouds,moveClouds,	// Clouds
 	stopEffSnd,							// Sounds
 };
 
@@ -1575,4 +1679,5 @@ export {
 260927: Create single smoke emitter, using standardized input - currently used by xaf_, grs_, xss_, wak_ and bms_.
 260928: Create single explosion subroutine, using standardized input - currently used by aax_. and bmx_.
 260930: Create single sound delay.
+261117:	Added Clouds
 */
