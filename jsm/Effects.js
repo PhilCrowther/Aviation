@@ -1493,17 +1493,31 @@ function loadClouds(cld_,gen_) {
 
 function initClouds(cld_,gen_,sky_) {
 	//	Positions
+	let random = new Vector3();
 	let	positions = [];
+	let color;
+	let colors = [];
 	for (let i = 0; i < cld_.SprNum; i++) {
+		random.x = Math.random();
+		random.y = Math.random();
+		random.z = Math.random();
 		positions.push(
-			cld_.ObjDim.x*(Math.random()-0.5),
-			cld_.ObjDim.y*(Math.random()),		// Base of cloud
-			cld_.ObjDim.z*(Math.random()-0.5)
-		);	
+			cld_.ObjDim.x*(random.x-0.5),
+			cld_.ObjDim.y*(random.y),		// Base of cloud
+			cld_.ObjDim.z*(random.z-0.5)
+		);
+		color = 0.45*random.y+0.55;
+		colors.push(
+			color,
+			color,
+			color
+		);
 	}
 	let positionAttribute = new InstancedBufferAttribute(new Float32Array(positions),3);
+	let colorAttribute = new InstancedBufferAttribute(new Float32Array(colors),3);
 	//	Material
 	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAttribute);
+	cld_.ObjMat.colorNode = instancedBufferAttribute(colorAttribute);
 	cld_.ObjMat.scaleNode = uniform(50);
 	//
 	let sprites;
