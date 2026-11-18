@@ -1504,11 +1504,7 @@ function initClouds(cld_,gen_,sky_) {
 			cld_.ObjDim.z*(Math.random()-0.5)
 		);
 		color = 0.45*random+0.55; // range = .55 to 1 of white
-		colors.push(
-			color,
-			color,
-			color
-		);
+		colors.push(color,color,color);
 	}
 	//	Attach to Material
 	let positionAtt = new InstancedBufferAttribute(new Float32Array(positions),3);
