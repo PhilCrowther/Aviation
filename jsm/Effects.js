@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Nov 2026
+Version dated 18 Nov 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1472,12 +1472,11 @@ function initSmoke0(smk_,n) {
 function loadClouds(cld_,gen_) {
 	//	Cloud
 	gen_.txtrLd.load(cld_.ObjTxt,function (map) {
-		cld_.ObjMat = new SpriteNodeMaterial
-		cld_.ObjMat.colorNode = 0xd0d0d0;	// lighter color
-		cld_.ObjMat.colorNode = texture(map);
+		cld_.ObjMat = new SpriteNodeMaterial();
 		cld_.ObjMat.transparent = true;
 		cld_.ObjMat.depthWrite = false;
-		cld_.ObjMat.opacity = cld_.MaxOpa;
+		cld_.ObjMat.colorNode = color(0xd0d0d0);	// default color
+		cld_.ObjMat.opacityNode = texture(map).a.mul(cld_.MaxOpa);
 	});	
 	//	Shadow
 	if (cld_.ShdFlg) {
