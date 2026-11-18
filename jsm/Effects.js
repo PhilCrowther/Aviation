@@ -64,7 +64,7 @@ import {
 	Sprite,
 	SpriteNodeMaterial,
 	Vector2,
-	Vector3,	
+	Vector3,
 } from 'three';
 
 import {Line2} from "three/addons/lines/webgpu/Line2.js";
@@ -120,7 +120,7 @@ function loadFXfile(gen_) {
 	//	Textures
 	if (txt_.ObjNum) {
 		for (let n = 0; n < txt_.ObjNum; n++) {
-			txt_.ObjTxt[n] = gen_.txtrLd.load(txt_.ObjSrc[n]);	
+			txt_.ObjTxt[n] = gen_.txtrLd.load(txt_.ObjSrc[n]);
 		}
 	}
 	//	Sounds
@@ -312,7 +312,7 @@ function initXACBul(xag_,gen_) {
 	//- Front Line
 	let lnF = 6;	
 	let BulGeL = new LineGeometry();
-	BulGeL.setPositions([0,0,-lnF, 0,0,lnF]);	
+	BulGeL.setPositions([0,0,-lnF, 0,0,lnF]);
 	//- Back Line
 	let lnB = 6;
 	let BulGeD = new LineGeometry();
@@ -323,7 +323,7 @@ function initXACBul(xag_,gen_) {
 	// For Each Gun
 	for (let n = 0; n < xag_.ObjNum; n ++) {
 		// Load Bullets
-		for (let i = 0; i < xag_.BulNum; i ++) {	
+		for (let i = 0; i < xag_.BulNum; i ++) {
 			//	Create Bull Meshes - Double Line 2 Colors
 			xag_.BulPtr[n][i] = new Object3D();
 			//	Left
@@ -373,7 +373,7 @@ function moveXACBul(xag_,air_,gen_,tim_) {
 		if (xag_.BulSp2[n] < 0) xag_.BulSp2[n] = 0;
 		for (let i = 0; i < xag_.BulNum; i ++) {
 			//	Start New Bullets
-			if (!xag_.BulTim[n][i] && !xag_.BulSp2[n] && xag_.BulFlg[n]) {		
+			if (!xag_.BulTim[n][i] && !xag_.BulSp2[n] && xag_.BulFlg[n]) {
 				// Set Initial Rotation
 				xag_.BulPtr[n][i].rotation.x = xag_.XACRot[n].x*DegRad; // Latitude
 				xag_.BulPtr[n][i].rotation.y = -xag_.XACRot[n].y*DegRad; // Longitude
@@ -598,7 +598,7 @@ function initAAAGun(aaf_,air_,gen_) {
 			line = new Line(AAAGeD,AAAMtD); // Dark Color
 			line.position.z = lnB;
 			aaf_.AAAPtr[n][i].add(line);
-			aaf_.AAAPtr[n][i].scale.setScalar(scale);		
+			aaf_.AAAPtr[n][i].scale.setScalar(scale);
 			aaf_.AAAPtr[n][i].rotation.order = "YXZ";
 			// 
 			gen_.scene.add(aaf_.AAAPtr[n][i]);
@@ -633,7 +633,7 @@ function initAAAGun(aaf_,air_,gen_) {
 		//. Create Explosion Graphics ..........................................
 		//	Explosion Flash
 		initExplod(aax_,n);
-		aaf_.ExpGrp[n].add(aax_.ExpPtr[n]);		
+		aaf_.ExpGrp[n].add(aax_.ExpPtr[n]);
 		//	Explosion Smoke Material
 		//	(need separate material becuase vary opacity)
 		aaf_.SmkMap = txt_.ObjTxt[SmkBlak];
@@ -691,7 +691,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		if (aaf_.GunTar) {
 			let DifX,DifY,DifZ,DifH,LonL;
 			let Trgt = new Vector3().copy(aaf_.GunTar);
-			// Targeting - Adjust Gun Longitude		
+			// Targeting - Adjust Gun Longitude
 			DifX = Trgt.x - aaf_.GunPos[n].x;
 			DifY = Trgt.y - aaf_.GunPos[n].y;
 			DifZ = Trgt.z - aaf_.GunPos[n].z;
@@ -748,7 +748,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				(aaf_.AAADLT > 10 && aaf_.AAAMpP[n][i].y > aaf_.AAADLT)		// Altitude Limit (> 10  meters)
 			){
 				aaf_.AAATim[n][i] = 0;
-				aaf_.AAAPtr[n][i].visible = false;	
+				aaf_.AAAPtr[n][i].visible = false;
 				// Start Explosion and Smoke When Designated Bullet Stops
 				if (!aaf_.SmkDTm[n] && aaf_.AAAFlg[n]) { // Smoke Delay = 0 and still firing
 					aaf_.SmkMpP[n].copy(aaf_.AAAMpP[n][i]); // Bullet0 MapPos
@@ -785,7 +785,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 				if (aaf_.GfSOpa[n] < 0) {
 					aaf_.GfSOpa[n] = 0;
 					aaf_.GfSMat[n].opacity = 0;
-					aaf_.GfSPtr[n].visible = false;				
+					aaf_.GfSPtr[n].visible = false;
 				}
 			}
 		} // end of i (Bullets)
@@ -813,7 +813,7 @@ function moveAAAGun(aaf_,air_,gen_,tim_) {
 		//	Play Sound With Delay
 		//. Gunfire Sound ......................................................
 		//	Start Delay
-		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown 		
+		if (aaf_.FirFlg[n]) { // Compute Delay and Start Countdown
 			aaf_.FirDTm[n] = aaf_.GunPtr[n].position.length()/343;
 			aaf_.FirFlg[n] = 0;
 		}
@@ -943,7 +943,7 @@ function initXSHGun(xsg_,gen_) {
 		//.	Sounds .............................................................
 		xsg_.FirPtr[n] = new PositionalAudio(gen_.listnr);
 		xsg_.FirPtr[n].setBuffer(snd_.ObjSnd[0]);	// Gunfire Sound
-		init1Sound(xsg_.FirPtr[n],xsg_.FirDst,xsg_.FirVol,1,0,xsg_.GunPtr[n]);		
+		init1Sound(xsg_.FirPtr[n],xsg_.FirDst,xsg_.FirVol,1,0,xsg_.GunPtr[n]);
 	}
 }
 
@@ -978,7 +978,7 @@ function moveXSHGun(xsg_,xsh_,gen_,tim_) {
 			if (xsg_.SmkOpa[n] < 0) {
 				xsg_.SmkOpa[n] = 0;
 				xsg_.SmkMat[n].opacity = 0;
-				xsg_.SmkPtr[n].visible = false;				
+				xsg_.SmkPtr[n].visible = false;
 			}
 		}
 		//	Sound Delay
@@ -1099,7 +1099,6 @@ function moveSmkTrl(smt_,air_,n) {
 		Opa = Opa - OpaDif;
 	}
 //	Next
-
 }
 
 /*******************************************************************************
@@ -1122,7 +1121,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 		bom_.SndPtr[n] = new PositionalAudio(gen_.listnr);
 		bom_.SndMsh[n] = new Object3D();
 		bom_.SndPtr[n].setBuffer(snd_.ObjSnd[2]);	// Bomb Explosion Sound
-		init1Sound(bom_.SndPtr[n],RefDst,bom_.SndVol,1,0,bom_.SndMsh[n]);	
+		init1Sound(bom_.SndPtr[n],RefDst,bom_.SndVol,1,0,bom_.SndMsh[n]);
 		bom_.ExpGrp[n].add(bom_.SndMsh[n]);
 		//
 		bom_.ExpFlg[n] = 0;
@@ -1132,7 +1131,7 @@ function initExpBom(bom_,bmx_,bmt_,bms_,air_,gen_) {
 		//	Explosion
 		initExplod(bmx_,n);
 		bmx_.ExpPtr[n].position.y = 5;
-		bom_.ExpGrp[n].add(bmx_.ExpPtr[n]);		
+		bom_.ExpGrp[n].add(bmx_.ExpPtr[n]);
 		//	Smoke Trails
 		initBomSmT(bmt_,bom_,n);
 		//	Smoke
@@ -1216,7 +1215,7 @@ function initBomSmT(bmt_,bom_,n) {
 			bmt_.SmkSpr[n][t][x].visible = false;
 			bom_.ExpGrp[n].add(bmt_.SmkSpr[n][t][x]); // Add to Group
 			//	Adjust Size and Rotation
-			bmt_.SmkSiz[n] = bmt_.SmkSiz[n] - 0.01*bmt_.SmkMax;	// Reduce Size of Each Sprite	
+			bmt_.SmkSiz[n] = bmt_.SmkSiz[n] - 0.01*bmt_.SmkMax;	// Reduce Size of Each Sprite
 			bmt_.SmkRot[n] = Mod360(bmt_.SmkRot[n]+36);		// Rotate Each Sprite
 		}
 		bmt_.SmkSiz[n] = bmt_.SmkMax;
@@ -1378,7 +1377,7 @@ function moveExplod(xxx_,n) {
 			xxx_.ExpLif[n] = 0;
 			//
 //			xxx_.ExpMat[n].opacityNode = xxx_.ExpOpa[n];
-			xxx_.ExpPtr[n].scale.setScalar(xxx_.ExpSiz[n]);	
+			xxx_.ExpPtr[n].scale.setScalar(xxx_.ExpSiz[n]);
 			xxx_.ExpPtr[n].visible = false;
 		}
 	}
@@ -1428,21 +1427,21 @@ let smk_ = {
 
 function initSmoke0(smk_,n) {
 	//- Commom Variables -------------------------------------------------------
-	//- Speed		
+	//- Speed
 	let speed = uniform(smk_.Speed0.x); // Used by scaledTime
-	let scaledTime = time.add(smk_.Speed0.y).mul(speed); // Used by lifeTime and Opacity	
+	let scaledTime = time.add(smk_.Speed0.y).mul(speed); // Used by lifeTime and Opacity
 	//- Life
 	let lifeRange = range(smk_.LifRng.x,smk_.LifRng.y); // Used by lifeTime and life (for each particle)
 	let lifeTime = scaledTime.mul(lifeRange).mod(smk_.LifTim); // used by life and Position
 	let life = lifeTime.div(lifeRange);	// Used by Color and Opacity
 	//-	Material ---------------------------------------------------------------
-	smk_.smokeNodeMat = new SpriteNodeMaterial();		
+	smk_.smokeNodeMat = new SpriteNodeMaterial();
 	smk_.smokeNodeMat.depthWrite = false;
 	smk_.smokeNodeMat.transparent = true;
 	//	Color
 	let smokeColor = mix(color(smk_.ObjClr[n].x),color(smk_.ObjClr[n].y),positionLocal.y.mul(smk_.ColPos).clamp());
 	let fakeLightEffect = positionLocal.y.oneMinus().max(smk_.ColEff);
-	smk_.smokeNodeMat.colorNode = mix(color(smk_.ObjClr[n].z),smokeColor,life.mul(smk_.MatNod.x).min(smk_.MatNod.y)).mul(fakeLightEffect);		
+	smk_.smokeNodeMat.colorNode = mix(color(smk_.ObjClr[n].z),smokeColor,life.mul(smk_.MatNod.x).min(smk_.MatNod.y)).mul(fakeLightEffect);
 	//- Opacity
 	let rotateRange = range(smk_.RotRng.x,smk_.RotRng.y);
 	let textureNode = texture(smk_.MatMap,rotateUV(uv(),scaledTime.mul(rotateRange)));
@@ -1454,7 +1453,7 @@ function initSmoke0(smk_,n) {
 	smk_.smokeNodeMat.positionNode = offsetRange.mul(lifeTime);
 	//	Scale
 	let scaleRange = range(smk_.ScaleR.x,smk_.ScaleR.y);
-	smk_.smokeNodeMat.scaleNode = scaleRange.mul(lifeTime.max(smk_.ScaleN));	
+	smk_.smokeNodeMat.scaleNode = scaleRange.mul(lifeTime.max(smk_.ScaleN));
 	//-	Mesh -------------------------------------------------------------------
 	smk_.ObjAdr[n] = new Mesh(new PlaneGeometry(1,1),smk_.smokeNodeMat);
 	smk_.ObjAdr[n].scale.setScalar(smk_.ObjSiz[n]);
@@ -1474,7 +1473,8 @@ function loadClouds(cld_,gen_) {
 	//	Cloud
 	gen_.txtrLd.load(cld_.ObjTxt,function (map) {
 		cld_.ObjMat = new SpriteNodeMaterial
-		cld_.ObjMat.colorNode = texture(map);			
+		cld_.ObjMat.colorNode = 0xd0d0d0;	// lighter color
+		cld_.ObjMat.colorNode = texture(map);
 		cld_.ObjMat.transparent = true;
 		cld_.ObjMat.depthWrite = false;
 		cld_.ObjMat.opacity = cld_.MaxOpa;
@@ -1523,7 +1523,7 @@ function initClouds(cld_,gen_,sky_) {
 	}
 	//	Shadows
 	if (cld_.ShdFlg) {
-		let ShdGeo = new PlaneGeometry(10,10);	
+		let ShdGeo = new PlaneGeometry(10,10);
 		for (let n = 0; n < cld_.ObjNum; n++) {
 			cld_.ShdPtr[n] = new Mesh(ShdGeo,cld_.ShdMat);
 			cld_.ShdPtr[n].rotation.order = "YXZ";
@@ -1541,10 +1541,10 @@ function initClouds(cld_,gen_,sky_) {
 
 function moveClouds(cld_,air_) {
 	for (var n = 0; n < cld_.ObjNum; n++) {
-		// Compute new relative position		
+		// Compute new relative position
 		cld_.RelPos[n].x = cld_.RelPos[n].x - air_.MapSPS.x;
 		cld_.RelPos[n].y = cld_.RelPos[n].y - air_.MapSpd.y;
-		cld_.RelPos[n].z = cld_.RelPos[n].z + air_.MapSPS.z;	
+		cld_.RelPos[n].z = cld_.RelPos[n].z + air_.MapSPS.z;
 		// Reset position if out of bounds
 		if (cld_.RelPos[n].x >  cld_.MaxDst) cld_.RelPos[n].x = -cld_.MaxDst;
 		if (cld_.RelPos[n].x < -cld_.MaxDst) cld_.RelPos[n].x =  cld_.MaxDst;
