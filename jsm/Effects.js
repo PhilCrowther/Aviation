@@ -1492,34 +1492,32 @@ function loadClouds(cld_,gen_) {
 }
 
 function initClouds(cld_,gen_,sky_) {
-	//	Positions
-	let random = new Vector3();
+	//	Create Position and Color Lists
 	let	positions = [];
-	let color;
 	let colors = [];
+	let random, color;
 	for (let i = 0; i < cld_.SprNum; i++) {
-		random.x = Math.random();
-		random.y = Math.random();
-		random.z = Math.random();
+		random = Math.random();
 		positions.push(
-			cld_.ObjDim.x*(random.x-0.5),
-			cld_.ObjDim.y*(random.y),		// Base of cloud
-			cld_.ObjDim.z*(random.z-0.5)
+			cld_.ObjDim.x*(Math.random()-0.5),
+			cld_.ObjDim.y*(random),		// Base of cloud
+			cld_.ObjDim.z*(Math.random()-0.5)
 		);
-		color = 0.45*random.y+0.55;
+		color = 0.45*random+0.55; // range = .55 to 1 of white
 		colors.push(
 			color,
 			color,
 			color
 		);
 	}
-	let positionAttribute = new InstancedBufferAttribute(new Float32Array(positions),3);
-	let colorAttribute = new InstancedBufferAttribute(new Float32Array(colors),3);
-	//	Material
-	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAttribute);
-	cld_.ObjMat.colorNode = instancedBufferAttribute(colorAttribute);
+	//	Attach to Material
+	let positionAtt = new InstancedBufferAttribute(new Float32Array(positions),3);
+	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAtt);
+	let colorAtt = new InstancedBufferAttribute(new Float32Array(colors),3);
+	cld_.ObjMat.colorNode = instancedBufferAttribute(colorAtt);
 	cld_.ObjMat.scaleNode = uniform(50);
 	//
+	//	Create Clouds with Sprites
 	let sprites;
 	for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
 		//	Cloud
@@ -1534,7 +1532,7 @@ function initClouds(cld_,gen_,sky_) {
 		sprites.frustumCulled = false;
 		cld_.Object[n].add(sprites);
 	}
-	//	Shadows
+	//	Create Shadows
 	if (cld_.ShdFlg) {
 		let ShdGeo = new PlaneGeometry(10,10);
 		for (let n = 0; n < cld_.ObjNum; n++) {
@@ -1546,7 +1544,7 @@ function initClouds(cld_,gen_,sky_) {
 			gen_.scene.add(cld_.ShdPtr[n]);
 			cld_.ShdPtr[n].rotation.y = cld_.ObjRot[n]*DegRad;
 		}
-		//	Offset per meter
+		//	Horizontal Offset for All Shadows
 		cld_.SunOff.x = cld_.SunOff.y*Math.sin(sky_.SunLat*DegRad)*Math.sin(Mod360(sky_.SunLon+180)*DegRad);	// cos(023)*sin(312) = 0.9205* 0.7431 =  0.6874
 		cld_.SunOff.z = cld_.SunOff.y*Math.sin(sky_.SunLat*DegRad)*Math.cos(Mod360(sky_.SunLon+180)*DegRad);	// cps(023)*cos(312) = 0.9205*-0.6691 = -0.6189
 	}
@@ -1554,16 +1552,16 @@ function initClouds(cld_,gen_,sky_) {
 
 function moveClouds(cld_,air_) {
 	for (var n = 0; n < cld_.ObjNum; n++) {
-		// Compute new relative position
+		//	Compute new relative position
 		cld_.RelPos[n].x = cld_.RelPos[n].x - air_.MapSPS.x;
 		cld_.RelPos[n].y = cld_.RelPos[n].y - air_.MapSpd.y;
 		cld_.RelPos[n].z = cld_.RelPos[n].z + air_.MapSPS.z;
-		// Reset position if out of bounds
+		//	Reset position if out of bounds
 		if (cld_.RelPos[n].x >  cld_.MaxDst) cld_.RelPos[n].x = -cld_.MaxDst;
 		if (cld_.RelPos[n].x < -cld_.MaxDst) cld_.RelPos[n].x =  cld_.MaxDst;
 		if (cld_.RelPos[n].z >  cld_.MaxDst) cld_.RelPos[n].z = -cld_.MaxDst;
 		if (cld_.RelPos[n].z < -cld_.MaxDst) cld_.RelPos[n].z =  cld_.MaxDst;
-		// Set
+		//	Set
 		cld_.Object[n].position.copy(cld_.RelPos[n]);
 	}
 	//	Shadows
