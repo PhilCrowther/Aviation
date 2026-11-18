@@ -1072,7 +1072,7 @@ let cld_ = {
 		ObjRot: [],				// Y-Rotation
 		RelPos: [],				// Map Position
 		MaxDst: 5000,			// Max Distance
-		MaxOpa: 0.3,			// Max Opacity
+		MaxOpa: 0.5,			// Max Opacity
 		//	Sprites
 		SprNum: 50,				// Number of Sprites
 		SprSiz: 50,				// Size of Each Sprite
