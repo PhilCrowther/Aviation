@@ -1553,11 +1553,7 @@ function moveClouds(cld_,air_) {
 	let worldQuaternion = new Quaternion();
 	camera.getWorldQuaternion(worldQuaternion);
 	let worldEuler = new Euler();
-	worldEuler.setFromQuaternion(worldQuaternion,'XYZ'); // Specify rotation order if needed
-	let RotZ = worldEuler.z*RadDeg;
-	let RotY = worldEuler.y*RadDeg;
-	RotZ = RotZ*Math.sin((90-RotY)*DegRad);
-	let RotVal = RotZ*DegRad;
+	worldEuler.setFromQuaternion(worldQuaternion,'YXZ'); // Specify rotation order if needed
 	//
 	let sprite;
 	for (var n = 0; n < cld_.ObjNum; n++) {
@@ -1573,10 +1569,11 @@ function moveClouds(cld_,air_) {
 		//	Set
 		cld_.Object[n].position.copy(cld_.RelPos[n]);
 		//	Undo Sprite Z-Rotation
+		let sprite;
 		for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
 			for (let i = 0, l = cld_.Object[n].children.length; i < l; i++) {
 				sprite = cld_.Object[n].children[i];
-				sprite.material.rotation = -RotVal;
+				sprite.material.rotation = -worldEuler.z;
 			}
 		}
 	}
