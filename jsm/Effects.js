@@ -59,6 +59,7 @@ import {
 	Object3D,
 	PlaneGeometry,
 	PositionalAudio,
+	Quaternion,
 	SphereGeometry,
 	Spherical,
 	Sprite,
@@ -1547,7 +1548,14 @@ function initClouds(cld_,gen_,sky_) {
 	}
 }
 
-function moveClouds(cld_,air_) {
+function moveClouds(cld_,air_,gen_) {
+	//	Compute Camera Z-Rotation Adjustment
+	let worldQuaternion = new Quaternion();
+	gen_.camera.getWorldQuaternion(worldQuaternion);
+	let worldEuler = new Euler();
+	worldEuler.setFromQuaternion(worldQuaternion,'YXZ'); // Specify rotation order if needed
+	//
+	let sprite;
 	for (var n = 0; n < cld_.ObjNum; n++) {
 		//	Compute new relative position
 		cld_.RelPos[n].x = cld_.RelPos[n].x - air_.MapSPS.x;
@@ -1560,6 +1568,14 @@ function moveClouds(cld_,air_) {
 		if (cld_.RelPos[n].z < -cld_.MaxDst) cld_.RelPos[n].z =  cld_.MaxDst;
 		//	Set
 		cld_.Object[n].position.copy(cld_.RelPos[n]);
+		//	Undo Sprite Z-Rotation
+		let sprite;
+		for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
+			for (let i = 0, l = cld_.Object[n].children.length; i < l; i++) {
+				sprite = cld_.Object[n].children[i];
+				sprite.material.rotation = -worldEuler.z;
+			}
+		}
 	}
 	//	Shadows
 	if (cld_.ShdFlg) {
