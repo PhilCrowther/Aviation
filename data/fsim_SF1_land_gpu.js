@@ -739,8 +739,8 @@ let cld_ = {
 		MaxDst: 5000,			// Max Distance
 		MaxOpa: 0.5,			// Max Opacity
 		//	Sprites
-		SprNum: 50,				// Number of Sprites
-		SprSiz: 50,				// Size of Each Sprite
+		SprNum: 100,			// Number of Sprites
+		SprSiz: 0,				// Size of Each Sprite (Vector2)
 		SprPos: [],				// Sprite Positions
 		//	Shadows
 		ShdFlg: 1,
