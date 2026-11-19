@@ -1,7 +1,7 @@
 ﻿
 /*******************************************************************************
 *
-*	FSIM FM2 DATA: 261117
+*	FSIM FM2 DATA: 261119
 *
 ********************************************************************************
 
@@ -1083,6 +1083,8 @@ let cld_ = {
 		ShdMat: 0,				// Shadow Material (common)
 		ShdPtr: [],				// Objects
 		SunOff: 0,				// Offset on Ground (Vector3)
+		//	Shading (Range = black to white = 0 to $ffffff)
+		MaxMin: 0,				// as a fraction of white (Vector2)
 	}
 
 //- 6. SOUND VARIABLES =========//==============================================
