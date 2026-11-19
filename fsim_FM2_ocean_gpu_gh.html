@@ -429,21 +429,21 @@ let CldAlt = 1000*Ft2Mtr;		// Same Altitude for all Clouds
 	//	Material
 	cld_.ObjTxt = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
 	//	Clouds
-	cld_.ObjDim = new THREE.Vector3(150,50,100);	// Shape Fixee, Vary with Siz and Rot
-	cld_.ObjSiz = [new THREE.Vector3(2,2,2),		// Size
+	cld_.ObjDim = new THREE.Vector3(150,50,100); // Shape Fixee, Vary with Siz and Rot
+	cld_.ObjSiz = [new THREE.Vector3(2,2,2),	// Size
 				   new THREE.Vector3(2,2,2),
 				   new THREE.Vector3(2,2,2)];
-	cld_.ObjRot = [0,15,30];						// Y-Rotation
-	cld_.RelPos = [new THREE.Vector3(-250,CldAlt,-2000),	// Map Position
+	cld_.ObjRot = [0,15,30];					// Y-Rotation
+	cld_.RelPos = [new THREE.Vector3(-250,CldAlt,-2000), // Map Position
 				   new THREE.Vector3( 500,CldAlt,-3000),
 				   new THREE.Vector3(2000,CldAlt,-4000)];
 	//	Sprites
-	cld_.SprNum = 100;								// Number of Sprites
+	cld_.SprSiz = new THREE.Vector2(50,40);		// Sprite Size
 	//	Shadows
 	cld_.ShdTxt = "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png";
-	cld_.SunOff = new THREE.Vector3(0,CldAlt,0);	// Shadow Offset
+	cld_.SunOff = new THREE.Vector3(0,CldAlt,0); // Shadow Offset
 	//	Shading
-	cld_.MaxMin = new THREE.Vector2(1.0,0.5);		// as a fraction of white
+	cld_.MaxMin = new THREE.Vector2(1.0,0.5);	// as a fraction of white
 
 //= 4. OBJECT VARIABLES ========//==============================================
 //= STATIC OBJECTS =============//==============================================
