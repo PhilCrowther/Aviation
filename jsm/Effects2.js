@@ -1497,9 +1497,7 @@ function initClouds(cld_,gen_,sky_) {
 	let	positions = [];
 	let colors = [];
 	let scales = [];
-	let random, color;
-	let scale = new THREE.Vector2();
-		scale.x = 50;
+	let random, color,scale;
 	for (let i = 0; i < cld_.SprNum; i++) {
 		random = Math.random();
 		if (!i) positions.push(0,cld_.ObjDim.y*0.5,0); // Create Center Sprite
@@ -1512,10 +1510,9 @@ function initClouds(cld_,gen_,sky_) {
 		}
 		color = (cld_.MaxMin.x-cld_.MaxMin.y)*random+cld_.MaxMin.y;
 		colors.push(color,color,color);
-
-		scale.y = 40*(0.45*(1-random)+0.55);
-		if (!i) scale.y = 75;	// Make Center Sprite Bigger
-		scales.push(scale.x,scale.y);
+		scale = cld_.SprSiz.y*(0.45*(1-random)+0.55);
+		if (!i) scale = 75;	// Make Center Sprite Bigger
+		scales.push(cld_.SprSiz.x,scale);
 	}
 	//	Attach to Material
 	let positionAtt = new THREE.InstancedBufferAttribute(new Float32Array(positions),3);
