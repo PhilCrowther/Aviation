@@ -428,16 +428,18 @@ let CldAlt = 1000*Ft2Mtr;		// Same Altitude for all Clouds
 	cld_.ObjNum = 3;
 	//	Material
 	cld_.ObjTxt = "https://PhilCrowther.github.io/Aviation/textures/fx/smoke1.png";
-		//	Clouds
+	//	Clouds
 	cld_.ObjDim = new THREE.Vector3(150,50,100);	// Shape Fixee, Vary with Siz and Rot
 	cld_.ObjSiz = [new THREE.Vector3(2,2,2),		// Size
-				 new THREE.Vector3(2,2,2),
-				 new THREE.Vector3(2,2,2)];
+				   new THREE.Vector3(2,2,2),
+				   new THREE.Vector3(2,2,2)];
 	cld_.ObjRot = [0,15,30];						// Y-Rotation
 	cld_.RelPos = [new THREE.Vector3(-250,CldAlt,-2000),	// Map Position
-				 new THREE.Vector3( 500,CldAlt,-3000),
-				 new THREE.Vector3(2000,CldAlt,-4000)];
-		//	Shadows
+				   new THREE.Vector3( 500,CldAlt,-3000),
+				   new THREE.Vector3(2000,CldAlt,-4000)];
+	//	Sprites
+	cld_.SprNum = 100;								// Number of Sprites
+	//	Shadows
 	cld_.ShdTxt = "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png";
 	cld_.SunOff = new THREE.Vector3(0,CldAlt,0);	// Shadow Offset
 	//	Shading
@@ -1030,7 +1032,7 @@ function rendAll() {
 		gen_.AltDif = air_.MapPos.y*gen_.AltAdj; // Used by everything
 		moveMinAlt();			// If on CVE, changes air_.Spd
 		moveObject();			// Move objects
-		moveClouds(cld_,air_);
+		moveClouds(cld_,air_,gen_);
 		// Move Grids
 		waves.update();			// Move Ocean
 		grd_.MSP.copy(air_.MapSPS);

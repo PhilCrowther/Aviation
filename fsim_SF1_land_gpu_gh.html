@@ -334,6 +334,8 @@ let CldAlt = 600*Ft2Mtr;		// Same Altitude for all Clouds
 	cld_.RelPos = [new THREE.Vector3(0,CldAlt,-500),	// Map Position
 				   new THREE.Vector3(-1000,CldAlt,-1000),
 				   new THREE.Vector3(750,CldAlt,-750)];
+	//	Sprites
+	cld_.SprNum = 100;								// Number of Sprites
 	//	Shadows
 	cld_.ShdTxt = "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png";
 	cld_.SunOff = new THREE.Vector3(0,CldAlt,0); 	// Shadow Offset
@@ -816,7 +818,7 @@ function rendAll() {
 		moveRoads(grd_,gen_);	// Move Roads
 		moveTreLin(grd_,gen_,air_); // Move TreeLines	
 		moveObject();			// Move objects
-		moveClouds(cld_,air_);
+		moveClouds(cld_,air_,gen_);
 		// TimeLine
 		FrmCnt++;				// Frame Counter
 		moveEvents();			// Get Events
