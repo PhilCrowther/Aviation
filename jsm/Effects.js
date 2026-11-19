@@ -1513,7 +1513,7 @@ function initClouds(cld_,gen_,sky_) {
 	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAtt);
 	let colorAtt = new InstancedBufferAttribute(new Float32Array(colors),3);
 	cld_.ObjMat.colorNode = instancedBufferAttribute(colorAtt);
-	cld_.ObjMat.scaleNode = uniform(50);
+	cld_.ObjMat.scaleNode = new Vector2(cld_.SprSiz.x,cld_.SprSiz.y);
 	//
 	//	Create Clouds with Sprites
 	let sprites;
