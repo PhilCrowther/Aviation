@@ -1496,25 +1496,31 @@ function initClouds(cld_,gen_,sky_) {
 	//	Create Position and Color Lists
 	let	positions = [];
 	let colors = [];
-	let random, color;
+	let scales = [];
+	let random, color,scale;
 	for (let i = 0; i < cld_.SprNum; i++) {
 		random = Math.random();
-		positions.push(
-			cld_.ObjDim.x*(Math.random()-0.5),
-			cld_.ObjDim.y*(random),		// Base of cloud
-			cld_.ObjDim.z*(Math.random()-0.5)
-		);
-//		color = 0.45*random+0.55; // range = .55 to 1 of white
+		if (!i) positions.push(0,cld_.ObjDim.y*0.5,0); // Create Center Sprite
+		else {
+			positions.push(
+				cld_.ObjDim.x*(Math.random()-0.5),
+				cld_.ObjDim.y*(random),		// Base of cloud
+				cld_.ObjDim.z*(Math.random()-0.5)
+			);
+		}
 		color = (cld_.MaxMin.x-cld_.MaxMin.y)*random+cld_.MaxMin.y;
 		colors.push(color,color,color);
+		scale = cld_.SprSiz.y*(0.45*(1-random)+0.55);
+		if (!i) scale = 75;	// Make Center Sprite Bigger
+		scales.push(cld_.SprSiz.x,scale);
 	}
 	//	Attach to Material
 	let positionAtt = new InstancedBufferAttribute(new Float32Array(positions),3);
 	cld_.ObjMat.positionNode = instancedBufferAttribute(positionAtt);
 	let colorAtt = new InstancedBufferAttribute(new Float32Array(colors),3);
 	cld_.ObjMat.colorNode = instancedBufferAttribute(colorAtt);
-	cld_.ObjMat.scaleNode = new Vector2(cld_.SprSiz.x,cld_.SprSiz.y);
-	//
+	let scaleAtt = new InstancedBufferAttribute(new Float32Array(scales),2);
+	cld_.ObjMat.scaleNode = instancedBufferAttribute(scaleAtt);
 	//	Create Clouds with Sprites
 	let sprites;
 	for (let n = 0; n < cld_.ObjNum; n++) {	// for each cloud
