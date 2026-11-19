@@ -6,7 +6,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 18 Nov 2026
+Version dated 19 Nov 2026
 
 @fileoverview
 Subroutines to create an air combat simulation
@@ -1503,7 +1503,8 @@ function initClouds(cld_,gen_,sky_) {
 			cld_.ObjDim.y*(random),		// Base of cloud
 			cld_.ObjDim.z*(Math.random()-0.5)
 		);
-		color = 0.45*random+0.55; // range = .55 to 1 of white
+//		color = 0.45*random+0.55; // range = .55 to 1 of white
+		color = (cld_.MaxMin.x-cld_.MaxMin.y)*random+cld_.MaxMin.y;
 		colors.push(color,color,color);
 	}
 	//	Attach to Material
