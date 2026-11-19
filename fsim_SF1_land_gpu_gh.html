@@ -9,7 +9,7 @@
 
 Copyright 2017-26, Phil Crowther <phil@philcrowther.com>
 Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Version dated 17 Nov 2026
+Version dated 19 Nov 2026
 
 A demo of a flight simulation of an animated airplane model over farmland using WebGPU and NodeMaterials.
 -->
@@ -337,6 +337,8 @@ let CldAlt = 600*Ft2Mtr;		// Same Altitude for all Clouds
 	//	Shadows
 	cld_.ShdTxt = "https://PhilCrowther.github.io/Aviation/textures/fx/aaa.png";
 	cld_.SunOff = new THREE.Vector3(0,CldAlt,0); // Shadow Offset
+	//	Shading
+	cld_.MaxMin: new THREE.Vector2(1.0,0.5),	// as a fraction of white
 
 //= 4. OBJECT VARIABLES ========//==============================================
 //= STATIC OBJECTS =============//==============================================
